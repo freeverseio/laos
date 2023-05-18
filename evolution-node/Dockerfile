@@ -22,14 +22,14 @@ RUN mkdir -p /data /laos/.local/share && \
     chown -R laos:laos /data /laos/.local/share && \
     ln -s /data /laos/.local/share/laos 
 
+# Check if executable works in this container
+RUN su laos -c '/usr/local/bin/node-template --version'
+
 # Clean up unnecessary directories
 RUN rm -rf /usr/bin /usr/sbin
 
 # Switch to user laos
 USER laos
-
-# Check if executable works in this container
-RUN /usr/local/bin/node-template --version
 
 # Expose necessary ports
 EXPOSE 30333 9933 9944 9615
