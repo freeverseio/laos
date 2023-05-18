@@ -2,26 +2,23 @@ name: Check Set-Up & Build
 
 # Controls when the action will run.
 on:
-  # Triggers the workflow on push or pull request events but only for the master branch
   push:
     branches: [main, dev]
   pull_request:
     branches: [main, dev]
-
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   check:
-    # The type of runner that the job will run on
     runs-on: ubuntu-22.04
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v3
+      # Checks-out your repository under $GITHUB_WORKSPACE
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      # Caching paths to speed up builds
+      - name: Cache Paths
+        uses: actions/cache@v3
         with:
           path: |
             ~/.cargo/bin/
@@ -31,9 +28,11 @@ jobs:
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }} 
 
-      - name: Set-Up
+      # Installing dependencies
+      - name: Install Dependencies
         run: sudo apt install -y git clang curl libssl-dev llvm libudev-dev protobuf-compiler
 
+      # Install and set up Rust
       - name: Install Rustup
         run: |
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
@@ -43,10 +42,12 @@ jobs:
           rustup update stable
           rustup target add wasm32-unknown-unknown --toolchain nightly
 
+      # Check the build
       - name: Check Build
         run: |
           SKIP_WASM_BUILD=1 cargo check --release
 
+      # Check the build for benchmarking
       - name: Check Build for Benchmarking
         run: >
           pushd node &&
