@@ -18,7 +18,7 @@ on:
   
 # Set an environment variable (that can be overriden) for the Docker Repo
 env:
-  DOCKER_REPO: parity/polkadot
+  DOCKER_REPO: freeverseio/laos-evolution-node
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
