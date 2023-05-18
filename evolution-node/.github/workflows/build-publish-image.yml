@@ -9,16 +9,17 @@ name: Build & Publish Docker Image
 
 # Controls when the action will run.
 on:
-  # Triggers the workflow on push events but only for the main branch
-  # push:
-    # branches: [ main ]
+  # Triggers the workflow on push events for tags only
+  push:
+    tags:
+      - 'v*.*.*'
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
   
 # Set an environment variable (that can be overriden) for the Docker Repo
 env:
-  DOCKER_REPO: parity/polkadot
+  DOCKER_REPO: freeverseio/laos-evolution-node
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
