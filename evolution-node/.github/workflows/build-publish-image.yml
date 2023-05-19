@@ -42,7 +42,7 @@ jobs:
 
       - name: Print the commit tag
         run: |
-          echo "Commit tag: $GITHUB_REF"
+          echo "Commit tag: $GITHUB_REF_NAME"
       
       # Build and push images the version tag
       - name: Build and push Docker images
@@ -50,4 +50,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.DOCKER_REPO }}:$GITHUB_REF
+          tags: ${{ env.DOCKER_REPO }}:$GITHUB_REF_NAME
