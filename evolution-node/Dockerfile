@@ -4,9 +4,8 @@ FROM docker.io/paritytech/ci-linux:production as builder
 WORKDIR /laos
 COPY . /laos
 
-RUN rustup update && \
-    rustup target add wasm32-unknown-unknown --toolchain nightly && \
-    cargo build --locked --release
+RUN rustup target add wasm32-unknown-unknown --toolchain nightly 
+RUN cargo build --locked --release
 
 # This is the 2nd stage: a very small image where we copy the laos binary."
 FROM docker.io/library/ubuntu:22.04
