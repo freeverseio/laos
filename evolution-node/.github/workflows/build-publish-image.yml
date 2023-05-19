@@ -31,8 +31,8 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Check out the repo
-        uses: actions/checkout@v2.5.0
-      
+        uses: actions/checkout@v3      
+
       # Login to Docker hub using the credentials stored in the repository secrets
       - name: Log in to Docker Hub
         uses: docker/login-action@v2.1.0
