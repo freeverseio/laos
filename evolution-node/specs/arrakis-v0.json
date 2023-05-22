@@ -1,6 +1,6 @@
 {
-  "name": "Local Testnet",
-  "id": "local_testnet",
+  "name": "Arrakis Evolution Chain",
+  "id": "arrakis_evolution_chain",
   "chainType": "Local",
   "bootNodes": [],
   "telemetryEndpoints": null,
