@@ -3,6 +3,7 @@ name: Check Set-Up, Build & Tests
 # Controls when the action will run.
 on:
   push:
+    branches: [main, dev]
   pull_request:
     branches: [main, dev]
   workflow_dispatch:
@@ -15,31 +16,16 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # Caching paths to speed up builds
-      - name: Cache Paths
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }} 
+      - name: Install linux dependencies
+        run: sudo apt-get install -y clang libssl-dev llvm libudev-dev protobuf-compiler
 
-      # Installing dependencies
-      - name: Install Dependencies
-        run: sudo apt install -y git clang curl libssl-dev llvm libudev-dev protobuf-compiler
-
-      # Install and set up Rust
-      - name: Install Rustup
+      - name: Install Rust
         run: |
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-          source ~/.cargo/env
-          rustup default stable
-          rustup update nightly
-          rustup update stable
-          rustup target add wasm32-unknown-unknown --toolchain nightly
+          rustup update stable --no-self-update
+          rustup target add wasm32-unknown-unknown
+      
+      # Rust cache
+      - uses: Swatinem/rust-cache@v2
 
       # Check the build
       - name: Check Build
