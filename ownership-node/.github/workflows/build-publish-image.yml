@@ -48,3 +48,4 @@ jobs:
           context: .
           push: true
           tags: ${{ env.DOCKER_REPO }}:${{ github.ref_name }}
+          tags: ${{ env.DOCKER_REPO }}:latest
