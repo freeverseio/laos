@@ -1,71 +1,30 @@
-repositories:
-- name: parity
-  url: https://paritytech.github.io/helm-charts/
-
 helmDefaults:
   createNamespace: false
   waitForJobs: true
 
+namespace: arrakis-evolution-chain
+
 releases:
-- name: validator-alice
-  namespace: arrakis-evolution-chain
-  chart: parity/node
-  version: 4.7.2
+- name: validator-alice-node
+  chart: ./laos-evolution-node
+  version: v0.0.4
   values:
   - image:
       repository: freeverseio/laos-evolution-node
       tag: v0.0.4
-  - node:
-      chain: arrakis
+    command:
+      args:
+        - --alice
+        - --validator
 
-# repositories:
-#   - name: parity
-#     url: https://paritytech.github.io/helm-charts/
-
-# helmDefaults:
-#   createNamespace: false
-#   waitForJobs: true
-
-# releases:
-# ## relay chain Rococo ##
-#   - name: validator-alice
-#     namespace: arrakis-evolution-chain
-#     chart: parity/node
-#     version: 2.11.4
-#     values:
-#       - node:
-#           image: freeverseio/laos-evolution-chain:v0.0.4
-#           chain: arrakis
-#           replicas: 1
-#           role: authority
-#           flags:
-#             - "--alice"
-#             # - "--unsafe-rpc-external"
-#             # - "--unsafe-ws-external"
-#             # - "--rpc-methods=unsafe"
-#             # - "--rpc-cors=all"
-#             - "--node-key 0x91cb59d86820419075b08e3043cd802ba3506388d8b161d2d4acd203af5194c1"
-#         # storageClass: standard
-#         # extraLabels:
-        #   validatorAccount: "5GNJqTPyNqANBkUVMN1LPPrxXnFouWXoe2wNSmmEoLctxiZY" # Alice address
-        #   ss58Format: "0"
-  # - name: validator-bob
-  #   namespace: rococo
-  #   chart: parity/node
-  #   version: 2.11.4
-  #   values:
-  #     - node:
-  #         chain: rococo-local
-  #         customChainspecUrl: "http://chainspec.rococo/rococo-local.json"
-  #         role: authority
-  #         replicas: 1
-  #         flags:
-  #           - "--bob"
-  #           - "--unsafe-rpc-external"
-  #           - "--unsafe-ws-external"
-  #           - "--rpc-methods=unsafe"
-  #           - "--rpc-cors=all"
-  #       storageClass: standard
-  #       extraLabels:
-  #         validatorAccount: "5HpG9w8EBLe5XCrbczpwq5TSXvedjrBGCwqxK1iQ7qUsSWFc" # Bob address
-  #         ss58Format: "0"
+- name: validator-bob-node
+  chart: ./laos-evolution-node
+  version: v0.0.4
+  values:
+  - image:
+      repository: freeverseio/laos-evolution-node
+      tag: v0.0.4
+    command:
+      args:
+        - --bob
+        - --validator
