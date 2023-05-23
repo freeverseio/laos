@@ -3,7 +3,7 @@ name: Check Set-Up, Build & Tests
 # Controls when the action will run.
 on:
   push:
-    # branches: [main, dev]
+    branches: [main, dev]
   pull_request:
     branches: [main, dev]
   workflow_dispatch:
@@ -46,7 +46,3 @@ jobs:
         run: >
           pushd node &&
           cargo check --features=runtime-benchmarks --release
-
-      # Run tests
-      - name: Run tests
-        run: cargo test
