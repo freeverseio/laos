@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "laos-evolution-node.fullname" . }}
+  labels:
+    {{- include "laos-evolution-node.labels" . | nindent 4 }}
+spec:
+  serviceName: "my-service"
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "laos-evolution-node.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "laos-evolution-node.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "freeverseio/laos-evolution-node:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: IfNotPresent
+        args: {{ .Values.image.args | toYaml | nindent 12 }} 
+        volumeMounts:
+        - name: my-storage
+          mountPath: /data
+      volumes:
+      - name: my-storage
+        {{- if .Values.usePersistentStorage }}
+        persistentVolumeClaim:
+          claimName: my-storage
+        {{- else }}
+        emptyDir: {}
+        {{- end }}
+  {{- if .Values.usePersistentStorage }}
+  volumeClaimTemplates:
+  - metadata:
+      name: my-storage
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: {{ .Values.statefulset.storageSize }}
+  {{- end }}

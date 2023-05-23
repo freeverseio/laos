@@ -5,26 +5,22 @@ helmDefaults:
 namespace: arrakis-evolution-chain
 
 releases:
-- name: validator-alice-node
+- name: alice
   chart: ./laos-evolution-node
-  version: v0.0.4
   values:
-  - image:
-      repository: freeverseio/laos-evolution-node
+  - usePersistentStorage: false
+    image:
       tag: v0.0.4
-    command:
       args:
-        - --alice
-        - --validator
+      - --alice
 
-- name: validator-bob-node
+- name: bob
   chart: ./laos-evolution-node
-  version: v0.0.4
   values:
-  - image:
-      repository: freeverseio/laos-evolution-node
+  - usePersistentStorage: false
+    image:
       tag: v0.0.4
-    command:
       args:
-        - --bob
-        - --validator
+      - --bob
+
+
