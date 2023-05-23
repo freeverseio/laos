@@ -24,8 +24,17 @@ jobs:
           rustup update stable --no-self-update
           rustup target add wasm32-unknown-unknown
       
-      # Rust cache
-      - uses: Swatinem/rust-cache@v2
+      # Caching paths to speed up builds
+      - name: Cache Paths
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }} 
 
       # Check the build
       - name: Check Build
