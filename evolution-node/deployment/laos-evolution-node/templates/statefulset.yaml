@@ -21,20 +21,20 @@ spec:
         imagePullPolicy: IfNotPresent
         args: {{ .Values.image.args | toYaml | nindent 12 }} 
         volumeMounts:
-        - name: my-storage
+        - name: evolution-node-storage
           mountPath: /data
       volumes:
-      - name: my-storage
+      - name: evolution-node-storage
         {{- if .Values.usePersistentStorage }}
         persistentVolumeClaim:
-          claimName: my-storage
+          claimName: evolution-node-storage
         {{- else }}
         emptyDir: {}
         {{- end }}
   {{- if .Values.usePersistentStorage }}
   volumeClaimTemplates:
   - metadata:
-      name: my-storage
+      name: evolution-node-storage
     spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
