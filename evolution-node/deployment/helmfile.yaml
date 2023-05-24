@@ -1,0 +1,34 @@
+helmDefaults:
+  createNamespace: false
+  waitForJobs: true
+
+environments:
+  local:
+    values:
+    - usePersistentStorage: false
+  default:
+    values:
+    - usePersistentStorage: true
+
+namespace: arrakis-evolution-chain
+
+releases:
+- name: alice
+  chart: ./laos-evolution-node
+  values:
+  - usePersistentStorage: {{ .Environment.Values.usePersistentStorage }}
+    image:
+      tag: v0.0.5
+      args:
+      - --chain=arrakis
+      - --alice
+
+- name: bob
+  chart: ./laos-evolution-node
+  values:
+  - usePersistentStorage: {{ .Environment.Values.usePersistentStorage }}
+    image:
+      tag: v0.0.5
+      args:
+      - --chain=arrakis
+      - --bob
