@@ -24,9 +24,6 @@ RUN mkdir -p /data /laos/.local/share && \
 # Check if executable works in this container
 RUN su laos -c '/usr/local/bin/parachain-template-node --version'
 
-# Clean up unnecessary directories
-RUN rm -rf /usr/bin /usr/sbin
-
 # Switch to user laos
 USER laos
 
