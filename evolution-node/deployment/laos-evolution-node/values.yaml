@@ -4,9 +4,12 @@
 usePersistentStorage: false
 
 statefulset:
-  storageSize: 1Gi
+  storageSize: 10Gi
 
 image:
   tag: "v0.0.4"
   args: []
+
+ingress:
+  enabled: false
 

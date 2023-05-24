@@ -6,9 +6,14 @@ environments:
   local:
     values:
     - usePersistentStorage: false
+    - ingress:
+        enabled: false
   default:
     values:
     - usePersistentStorage: true
+    - ingress:
+        enabled: true
+        host: arrakis.gorengine.com
 
 namespace: arrakis-evolution-chain
 
@@ -17,18 +22,25 @@ releases:
   chart: ./laos-evolution-node
   values:
   - usePersistentStorage: {{ .Environment.Values.usePersistentStorage }}
-    image:
+  - image:
       tag: v0.0.5
       args:
       - --chain=arrakis
       - --alice
+  - ingress:
+      enabled: {{ .Environment.Values.ingress.enabled }}
+      {{ if .Environment.Values.ingress.enabled }}
+      host: {{ .Environment.Values.ingress.host }}
+      {{ end }}
 
 - name: bob
   chart: ./laos-evolution-node
   values:
   - usePersistentStorage: {{ .Environment.Values.usePersistentStorage }}
-    image:
+  - image:
       tag: v0.0.5
       args:
       - --chain=arrakis
       - --bob
+  - ingress:
+      enabled: false

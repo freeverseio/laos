@@ -15,6 +15,21 @@ spec:
       labels:
         {{- include "laos-evolution-node.selectorLabels" . | nindent 8 }}
     spec:
+      initContainers:
+        - name: fix-perms
+          image: busybox
+          command:
+            - /bin/chmod
+            - '-R'
+            - '777'
+            - /data
+          resources: {}
+          volumeMounts:
+            - name: evolution-node-storage
+              mountPath: /data
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: Always
       containers:
       - name: {{ .Chart.Name }}
         image: "freeverseio/laos-evolution-node:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -45,6 +60,7 @@ spec:
       name: evolution-node-storage
     spec:
       accessModes: [ "ReadWriteOnce" ]
+      storageClassName: do-block-storage
       resources:
         requests:
           storage: {{ .Values.statefulset.storageSize }}
