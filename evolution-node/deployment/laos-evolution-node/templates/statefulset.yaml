@@ -19,6 +19,13 @@ spec:
       - name: {{ .Chart.Name }}
         image: "freeverseio/laos-evolution-node:{{ .Values.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 30333
+          name: p2p-port
+        - containerPort: 9944
+          name: ws-port
+        - containerPort: 9933
+          name: rpc-port
         args: {{ .Values.image.args | toYaml | nindent 8 }}
         - --base-path=/data  
         volumeMounts:
