@@ -68,6 +68,6 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          dockerfile: ./localbuild.Dockerfile
+          file: ./localbuild.Dockerfile
           push: true
           tags: ${{ env.DOCKER_REPO }}:${{ github.sha }}
