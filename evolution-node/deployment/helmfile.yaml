@@ -13,26 +13,28 @@ environments:
 namespace: arrakis-evolution-chain
 
 releases:
-- name: alice
+- name: node0
   chart: ./laos-evolution-node
   values:
   - usePersistentStorage: {{ .Environment.Values.usePersistentStorage }}
   - image:
-      tag: v0.0.5
+      tag: test
       args:
       - --chain=arrakis
-      - --alice
+      - --validator
+      - --name freeverse0
   - service:
       type: LoadBalancer
 
-- name: bob
+- name: node1
   chart: ./laos-evolution-node
   values:
   - usePersistentStorage: {{ .Environment.Values.usePersistentStorage }}
   - image:
-      tag: v0.0.5
+      tag: test
       args:
       - --chain=arrakis
-      - --bob
+      - --validator
+      - --name freeverse1
   - service:
       type: LoadBalancer
