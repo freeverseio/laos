@@ -26,7 +26,7 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }} 
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-delete-me 
 
       # Installing dependencies
       - name: Install Dependencies
@@ -43,11 +43,11 @@ jobs:
           rustup target add wasm32-unknown-unknown --toolchain nightly
 
       # Check the build
-      - name: build
+      - name: Build
         run: |
           cargo build --release
 
       # Check the build
-      - name: build
+      - name: Test
         run: |
           cargo test --release
