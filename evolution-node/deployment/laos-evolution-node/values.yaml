@@ -10,6 +10,5 @@ image:
   tag: "v0.0.4"
   args: []
 
-ingress:
-  enabled: false
-
+service:
+  type: ClusterIP
