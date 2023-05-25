@@ -19,11 +19,25 @@ spec:
   - host: {{ .Values.ingress.host }}
     http:
       paths:
-      - path: /node/p2p
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ include "laos-evolution-node.fullname" . }}-p2p
+            port:
+              number: 30333
+      - path: /ws
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ include "laos-evolution-node.fullname" . }}-ws
+            port:
+              number: 9944
+      - path: /rpc
         pathType: Prefix
         backend:
           service:
             name: {{ include "laos-evolution-node.fullname" . }}-rpc
             port:
-              number: 30333
+              number: 9933
 {{- end }}

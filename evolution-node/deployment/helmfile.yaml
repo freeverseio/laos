@@ -8,9 +8,10 @@ environments:
     - usePersistentStorage: false
     - ingress:
         enabled: false
+        host: localhost
   default:
     values:
-    - usePersistentStorage: true
+    - usePersistentStorage: false
     - ingress:
         enabled: true
         host: arrakis.gorengine.com
@@ -29,18 +30,19 @@ releases:
       - --alice
   - ingress:
       enabled: {{ .Environment.Values.ingress.enabled }}
-      {{ if .Environment.Values.ingress.enabled }}
-      host: {{ .Environment.Values.ingress.host }}
-      {{ end }}
+      host: alice.{{ .Environment.Values.ingress.host }}
+  - service:
+      type: ClusterIP
 
-- name: bob
-  chart: ./laos-evolution-node
-  values:
-  - usePersistentStorage: {{ .Environment.Values.usePersistentStorage }}
-  - image:
-      tag: v0.0.5
-      args:
-      - --chain=arrakis
-      - --bob
-  - ingress:
-      enabled: false
+# - name: bob
+#   chart: ./laos-evolution-node
+#   values:
+#   - usePersistentStorage: {{ .Environment.Values.usePersistentStorage }}
+#   - image:
+#       tag: v0.0.5
+#       args:
+#       - --chain=arrakis
+#       - --bob
+#   - ingress:
+#       enabled: {{ .Environment.Values.ingress.enabled }}
+#       host: bob.{{ .Environment.Values.ingress.host }}
