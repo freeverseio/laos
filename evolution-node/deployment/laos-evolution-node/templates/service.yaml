@@ -5,7 +5,7 @@ metadata:
   labels:
     {{- include "laos-evolution-node.labels" . | nindent 4 }}
 spec:
-  type: ClusterIP
+  type: {{ .Values.service.type }}
   selector:
     {{- include "laos-evolution-node.selectorLabels" . | nindent 4 }}
   ports:
