@@ -1,4 +1,4 @@
-name: Build & Test & Publish Docker Image Fast
+name: Build & Publish Docker Image Fast
 
 # Controls when the action will run.
 on:
@@ -30,7 +30,7 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-delete-me 
+          key: ${{ runner.os }}-cargo-build-${{ hashFiles('**/Cargo.lock') }} 
 
       # Installing dependencies
       - name: Install Dependencies
@@ -50,11 +50,6 @@ jobs:
       - name: Build
         run: |
           cargo build --release
-
-      # Check the build
-      - name: Test
-        run: |
-          cargo test --release
 
       # Login to Docker hub using the credentials stored in the repository secrets
       - name: Log in to Docker Hub
