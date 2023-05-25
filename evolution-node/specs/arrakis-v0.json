@@ -3,8 +3,8 @@
   "id": "arrakis_evolution_chain",
   "chainType": "Local",
   "bootNodes": [
-    "/ip4/188.166.134.30/tcp/30333/p2p/12D3KooWFmjb3vLDgS2PCSzvvEX3LJqG1deRLBfFV5LxgqYkYVRS",
-    "/ip4/159.223.240.138/tcp/30333/p2p/12D3KooWLwAwPPsY6YUzZxrEa9c1aVJy3c9KNKTtcpYbPYBUn5fM"
+    "/dns/node0.arrakis.gorengine.com/tcp/30333/p2p/12D3KooWFmjb3vLDgS2PCSzvvEX3LJqG1deRLBfFV5LxgqYkYVRS",
+    "/dns/node1.arrakis.gorengine.com/tcp/30333/p2p/12D3KooWLwAwPPsY6YUzZxrEa9c1aVJy3c9KNKTtcpYbPYBUn5fM"
   ],
   "telemetryEndpoints": null,
   "protocolId": null,
