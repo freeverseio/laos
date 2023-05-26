@@ -30,8 +30,7 @@ releases:
   - service:
       type: LoadBalancer
       ports:
-        ws: false
-        rpc: false
+        p2p: true
 
 - name: freeverse1
   chart: ./laos-evolution-node
@@ -46,8 +45,7 @@ releases:
   - service:
       type: LoadBalancer
       ports:
-        ws: false
-        rpc: false
+        p2p: true
 
 - name: freeverse2
   chart: ./laos-evolution-node
@@ -58,5 +56,11 @@ releases:
       args:
       - --chain=arrakis
       - --name=freeverse2
+      - --ws-external
+      - --rpc-cors=all
   - service:
-      type: LoadBalancer
+      ports:
+        ws: true
+  - ingress:
+      enabled: true
+      host: "arrakis.gorengine.com"
