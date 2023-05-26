@@ -1,0 +1,40 @@
+helmDefaults:
+  createNamespace: false
+  waitForJobs: true
+
+environments:
+  local:
+    values:
+    - usePersistentStorage: false
+  default:
+    values:
+    - usePersistentStorage: true
+
+namespace: arrakis-evolution-chain
+
+releases:
+- name: freeverse0
+  chart: ./laos-evolution-node
+  values:
+  - usePersistentStorage: {{ .Environment.Values.usePersistentStorage }}
+  - image:
+      tag: test
+      args:
+      - --chain=arrakis
+      - --validator
+      - --name=freeverse0
+  - service:
+      type: LoadBalancer
+
+- name: freeverse1
+  chart: ./laos-evolution-node
+  values:
+  - usePersistentStorage: {{ .Environment.Values.usePersistentStorage }}
+  - image:
+      tag: test
+      args:
+      - --chain=arrakis
+      - --validator
+      - --name=freeverse1
+  - service:
+      type: LoadBalancer

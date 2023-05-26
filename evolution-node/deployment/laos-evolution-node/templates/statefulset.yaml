@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "laos-evolution-node.fullname" . }}
+  labels:
+    {{- include "laos-evolution-node.labels" . | nindent 4 }}
+spec:
+  serviceName: "my-service"
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "laos-evolution-node.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "laos-evolution-node.selectorLabels" . | nindent 8 }}
+    spec:
+      initContainers:
+        - name: fix-perms
+          image: busybox
+          command:
+            - /bin/chmod
+            - '-R'
+            - '777'
+            - /data
+          resources: {}
+          volumeMounts:
+            - name: evolution-node-storage
+              mountPath: /data
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: Always
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "freeverseio/laos-evolution-node:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: IfNotPresent
+        args: {{ .Values.image.args | toYaml | nindent 8 }}
+        - --base-path=/data  
+        ports:
+        - containerPort: 30333
+          name: p2p-port
+        - containerPort: 9944
+          name: ws-port
+        - containerPort: 9933
+          name: rpc-port
+        volumeMounts:
+        - name: evolution-node-storage
+          mountPath: /data
+      volumes:
+      - name: evolution-node-storage
+        {{- if .Values.usePersistentStorage }}
+        persistentVolumeClaim:
+          claimName: evolution-node-storage
+        {{- else }}
+        emptyDir: {}
+        {{- end }}
+  {{- if .Values.usePersistentStorage }}
+  volumeClaimTemplates:
+  - metadata:
+      name: evolution-node-storage
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: do-block-storage
+      resources:
+        requests:
+          storage: {{ .Values.statefulset.storageSize }}
+  {{- end }}

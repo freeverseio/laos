@@ -1,0 +1,14 @@
+# Default values for laos-evolution-node.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+usePersistentStorage: false
+
+statefulset:
+  storageSize: 10Gi
+
+image:
+  tag: "v0.0.4"
+  args: []
+
+service:
+  type: ClusterIP
