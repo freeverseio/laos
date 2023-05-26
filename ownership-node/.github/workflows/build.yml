@@ -36,7 +36,7 @@ jobs:
 
       # Build binary
       - name: Build
-        run: cargo build
+        run: cargo build --release
 
       - name: Upload x86_64 linux binary to workflow
         uses: actions/upload-artifact@v3
