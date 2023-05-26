@@ -1,0 +1,51 @@
+name: Build
+
+# Controls when the action will run.
+on:
+  push:
+    # branches: [main, dev]
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-22.04
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Install linux dependencies
+        run: sudo apt-get install -y clang libssl-dev llvm libudev-dev protobuf-compiler
+
+      - name: Install Rust
+        run: |
+          rustup update stable --no-self-update
+          rustup target add wasm32-unknown-unknown
+      
+      # Caching paths to speed up builds
+      - name: Cache Paths
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }} 
+
+      # Build binary
+      - name: Build
+        run: cargo build
+
+      - name: Upload x86_64 linux binary to workflow
+        uses: actions/upload-artifact@v3
+        with:
+          name: parachain-template-node
+          path: ${{ github.workspace }}/target/release/parachain-template-node
+
+      # Check the build for benchmarking
+      - name: Check Build for Benchmarking
+        run: >
+          pushd node &&
+          cargo check --features=runtime-benchmarks --release
