@@ -13,7 +13,7 @@ environments:
 namespace: arrakis-evolution-chain
 
 releases:
-- name: node0
+- name: freeverse0
   chart: ./laos-evolution-node
   values:
   - usePersistentStorage: {{ .Environment.Values.usePersistentStorage }}
@@ -22,11 +22,11 @@ releases:
       args:
       - --chain=arrakis
       - --validator
-      - --name freeverse0
+      - --name=freeverse0
   - service:
       type: LoadBalancer
 
-- name: node1
+- name: freeverse1
   chart: ./laos-evolution-node
   values:
   - usePersistentStorage: {{ .Environment.Values.usePersistentStorage }}
@@ -35,6 +35,6 @@ releases:
       args:
       - --chain=arrakis
       - --validator
-      - --name freeverse1
+      - --name=freeverse1
   - service:
       type: LoadBalancer

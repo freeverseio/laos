@@ -2,7 +2,10 @@
   "name": "Arrakis Evolution Chain",
   "id": "arrakis_evolution_chain",
   "chainType": "Local",
-  "bootNodes": [],
+  "bootNodes": [
+    "/dns/node0.arrakis.gorengine.com/tcp/30333/p2p/12D3KooWMoHhX3gAnqm7CefKCLPqELYS26KmRsQqVkX3h6xypSv1",
+    "/dns/node1.arrakis.gorengine.com/tcp/30333/p2p/12D3KooWFWWN7SLLShizJwPoRenTBvuQT6mE3iaukW34vMqA6dV6"
+    ],
   "telemetryEndpoints": null,
   "protocolId": null,
   "properties": null,
