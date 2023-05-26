@@ -12,3 +12,8 @@ image:
 
 service:
   type: ClusterIP
+  ports:
+    p2p: true
+    ws: true
+    rpc: true
+

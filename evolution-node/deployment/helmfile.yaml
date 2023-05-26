@@ -6,9 +6,13 @@ environments:
   local:
     values:
     - usePersistentStorage: false
+    - image:
+        tag: c901deb33180b01cc076efc6a85a3bc2233795c1
   default:
     values:
     - usePersistentStorage: true
+    - image:
+        tag: c901deb33180b01cc076efc6a85a3bc2233795c1
 
 namespace: arrakis-evolution-chain
 
@@ -18,23 +22,41 @@ releases:
   values:
   - usePersistentStorage: {{ .Environment.Values.usePersistentStorage }}
   - image:
-      tag: test
+      tag: {{ .Environment.Values.image.tag }}
       args:
       - --chain=arrakis
       - --validator
       - --name=freeverse0
   - service:
       type: LoadBalancer
+      ports:
+        ws: false
+        rpc: false
 
 - name: freeverse1
   chart: ./laos-evolution-node
   values:
   - usePersistentStorage: {{ .Environment.Values.usePersistentStorage }}
   - image:
-      tag: test
+      tag: {{ .Environment.Values.image.tag }}
       args:
       - --chain=arrakis
       - --validator
       - --name=freeverse1
+  - service:
+      type: LoadBalancer
+      ports:
+        ws: false
+        rpc: false
+
+- name: freeverse2
+  chart: ./laos-evolution-node
+  values:
+  - usePersistentStorage: {{ .Environment.Values.usePersistentStorage }}
+  - image:
+      tag: {{ .Environment.Values.image.tag }}
+      args:
+      - --chain=arrakis
+      - --name=freeverse2
   - service:
       type: LoadBalancer
