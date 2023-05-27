@@ -1,10 +1,11 @@
-name: Build
+name: Test
 
 # Controls when the action will run.
-on: [workflow_call] 
+on:
+  push:
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-22.04
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE
@@ -21,7 +22,7 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: ${{ runner.os }}-cargo-build-${{ hashFiles('**/Cargo.lock') }} 
+          key: ${{ runner.os }}-cargo-test-${{ hashFiles('**/Cargo.lock') }} 
       
       - name: Install linux dependencies
         run: sudo apt-get install -y clang libssl-dev llvm libudev-dev protobuf-compiler
@@ -36,18 +37,6 @@ jobs:
         run: |
           SKIP_WASM_BUILD=1 cargo check --release
 
-      # Check the build for benchmarking
-      - name: Check Build for Benchmarking
-        run: >
-          pushd node &&
-          cargo check --features=runtime-benchmarks --release
-
-      # Build binary
-      - name: Build
-        run: cargo build --release
-
-      - name: Upload x86_64 linux binary to workflow
-        uses: actions/upload-artifact@v3
-        with:
-          name: parachain-template-node
-          path: ${{ github.workspace }}/target/release/parachain-template-node
+      # Test code
+      - name: Test
+        run: cargo test

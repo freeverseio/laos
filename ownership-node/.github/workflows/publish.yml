@@ -3,10 +3,9 @@ name: Publish
 on:
   # Triggers the workflow on push events for tags only
   push:
-    branches: [devops/new_image_every_push]
+    branches: [main, dev]
     tags:
-      # Catches v1.2.3 and v1.2.3-rc1
-      - v[0-9]+.[0-9]+.[0-9]+*
+      - '*' 
   # Triggger the workflow whenever the "Build" workflow completes
   workflow_run:
     workflows: [Build]
@@ -59,6 +58,7 @@ jobs:
           tags: |
             ${{ env.DOCKER_REPO }}:${{ github.ref_name }}
             ${{ env.DOCKER_REPO }}:latest
+      
       # Publish image version sha
       - name: Publish docker image using commit sha
         if: startsWith(github.event.ref, 'refs/heads/')
