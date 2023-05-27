@@ -4,21 +4,13 @@ name: Build
 on: [workflow_call] 
 
 jobs:
-  check:
+  build:
     runs-on: ubuntu-22.04
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Install linux dependencies
-        run: sudo apt-get install -y clang libssl-dev llvm libudev-dev protobuf-compiler
-
-      - name: Install Rust
-        run: |
-          rustup update stable --no-self-update
-          rustup target add wasm32-unknown-unknown
-      
       # Caching paths to speed up builds
       - name: Cache Paths
         uses: actions/cache@v3
@@ -30,6 +22,25 @@ jobs:
             ~/.cargo/git/db/
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }} 
+      
+      - name: Install linux dependencies
+        run: sudo apt-get install -y clang libssl-dev llvm libudev-dev protobuf-compiler
+
+      - name: Install Rust
+        run: |
+          rustup update stable --no-self-update
+          rustup target add wasm32-unknown-unknown
+
+      # Check the build
+      - name: Check Build
+        run: |
+          SKIP_WASM_BUILD=1 cargo check --release
+
+      # Check the build for benchmarking
+      - name: Check Build for Benchmarking
+        run: >
+          pushd node &&
+          cargo check --features=runtime-benchmarks --release
 
       # Build binary
       - name: Build
@@ -40,9 +51,3 @@ jobs:
         with:
           name: parachain-template-node
           path: ${{ github.workspace }}/target/release/parachain-template-node
-
-      # Check the build for benchmarking
-      - name: Check Build for Benchmarking
-        run: >
-          pushd node &&
-          cargo check --features=runtime-benchmarks --release

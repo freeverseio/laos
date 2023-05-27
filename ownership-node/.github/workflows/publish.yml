@@ -1,22 +1,19 @@
-# This is an example GitHub action that will build and publish a Docker image to DockerHub
-# You need to add the following secrets to your GitHub Repository or Organization to make this work
-# - DOCKER_USERNAME: The username of the DockerHub account. E.g. parity
-# - DOCKER_TOKEN: Access token for DockerHub, see https://docs.docker.com/docker-hub/access-tokens/. E.g. VVVVVVVV-WWWW-XXXXXX-YYYY-ZZZZZZZZZ
-# The following are setup as an environment variable below
-# - DOCKER_REPO: The unique name of the DockerHub repository. E.g. parity/polkadot
+name: Publish
 
-name: Release Dev
-
-# Controls when the action will run.
 on:
+  # Triggers the workflow on push events for tags only
   push:
-    # branches: [main, dev]
-    
+    branches: [devops/new_image_every_push]
+    tags:
+      # Catches v1.2.3 and v1.2.3-rc1
+      - v[0-9]+.[0-9]+.[0-9]+*
   # Triggger the workflow whenever the "Build" workflow completes
   workflow_run:
     workflows: [Build]
     types:
       - completed
+  
+  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
   
 # Set an environment variable (that can be overriden) for the Docker Repo
@@ -52,11 +49,23 @@ jobs:
           name: parachain-template-node
           path: ${{ github.workspace }}
 
-      # Build and push images the version tag
-      - name: Build and push Docker images
+      # Publish image version tag
+      - name: Publish docker image using tag
+        if: startsWith(github.event.ref, 'refs/tags/')
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.DOCKER_REPO }}:${{ github.ref_name }}
+            ${{ env.DOCKER_REPO }}:latest
+      # Publish image version sha
+      - name: Publish docker image using commit sha
+        if: startsWith(github.event.ref, 'refs/heads/')
         uses: docker/build-push-action@v4
         with:
           context: .
           push: true
           tags: |
             ${{ env.DOCKER_REPO }}:${{ github.ref_sha }}
+
