@@ -27,4 +27,4 @@ EXPOSE 9930 9333 9944 30333 30334
 VOLUME ["/data"]
 
 # ws_port
-CMD ["/usr/bin/parachain-template-node"]
+ENTRYPOINT ["/usr/bin/parachain-template-node"]
