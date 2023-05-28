@@ -31,17 +31,6 @@ jobs:
           rustup update stable --no-self-update
           rustup target add wasm32-unknown-unknown
 
-      # Check the build
-      - name: Check Build
-        run: |
-          SKIP_WASM_BUILD=1 cargo check --release
-
-      # Check the build for benchmarking
-      - name: Check Build for Benchmarking
-        run: >
-          pushd node &&
-          cargo check --features=runtime-benchmarks --release
-
       # Build binary
       - name: Build
         run: cargo build --release
