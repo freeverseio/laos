@@ -6,7 +6,7 @@
     "/dns/node0.arrakis.gorengine.com/tcp/30333/p2p/12D3KooWMoHhX3gAnqm7CefKCLPqELYS26KmRsQqVkX3h6xypSv1",
     "/dns/node1.arrakis.gorengine.com/tcp/30333/p2p/12D3KooWFWWN7SLLShizJwPoRenTBvuQT6mE3iaukW34vMqA6dV6"
     ],
-  "telemetryEndpoints": null,
+  "telemetryEndpoints": [["wss://telemetry.polkadot.io/submit/", 0]],
   "protocolId": null,
   "properties": null,
   "codeSubstitutes": {},
