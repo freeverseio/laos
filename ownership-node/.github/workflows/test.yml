@@ -1,0 +1,43 @@
+name: Test
+
+# Controls when the action will run.
+on:
+  push:
+    branches: '**'
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Caching paths to speed up builds
+      - name: Cache Paths
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-test-${{ hashFiles('**/Cargo.lock') }} 
+      
+      - name: Install linux dependencies
+        run: sudo apt-get install -y clang libssl-dev llvm libudev-dev protobuf-compiler
+
+      - name: Install Rust
+        run: |
+          rustup update stable --no-self-update
+          rustup target add wasm32-unknown-unknown
+
+      # Check the build
+      - name: Check Build
+        run: |
+          SKIP_WASM_BUILD=1 cargo check --release
+
+      # Test code
+      - name: Test
+        run: cargo test
