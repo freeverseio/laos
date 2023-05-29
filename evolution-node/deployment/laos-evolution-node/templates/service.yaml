@@ -9,12 +9,18 @@ spec:
   selector:
     {{- include "laos-evolution-node.selectorLabels" . | nindent 4 }}
   ports:
+    {{- if .Values.service.ports.p2p }}
     - name: p2p
       port: 30333
       targetPort: p2p-port
-    # - name: ws
-    #   port: 9944
-    #   targetPort: ws-port
-    # - name: rpc
-    #   port: 9933
-    #   targetPort: rpc-port
+    {{- end }}
+    {{- if .Values.service.ports.ws }}
+    - name: ws
+      port: 9944
+      targetPort: ws-port
+    {{- end }}
+    {{- if .Values.service.ports.rpc }}
+    - name: rpc
+      port: 9933
+      targetPort: rpc-port
+    {{- end }}

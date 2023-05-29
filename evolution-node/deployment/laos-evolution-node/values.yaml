@@ -12,3 +12,12 @@ image:
 
 service:
   type: ClusterIP
+  ports:
+    p2p: false
+    ws: false
+    rpc: false
+
+ingress:
+  enabled: false
+  host: "myhost.example.com"
+
