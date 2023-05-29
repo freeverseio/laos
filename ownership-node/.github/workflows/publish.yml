@@ -57,7 +57,6 @@ jobs:
           push: true
           tags: |
             ${{ env.DOCKER_REPO }}:${{ github.ref_name }}
-            ${{ env.DOCKER_REPO }}:latest
       
       # Publish image version sha
       - name: Publish docker image using commit sha
