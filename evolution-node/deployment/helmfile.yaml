@@ -27,6 +27,7 @@ releases:
       - --chain=arrakis
       - --validator
       - --name=freeverse0
+      - --telemetry-url="wss://telemetry.polkadot.io/submit/ 0"
   - service:
       type: LoadBalancer
       ports:
@@ -42,6 +43,7 @@ releases:
       - --chain=arrakis
       - --validator
       - --name=freeverse1
+      - --telemetry-url="wss://telemetry.polkadot.io/submit/ 0"
   - service:
       type: LoadBalancer
       ports:
@@ -58,6 +60,7 @@ releases:
       - --name=freeverse2
       - --ws-external
       - --rpc-cors=all
+      - --telemetry-url="wss://telemetry.polkadot.io/submit/ 0"
   - service:
       ports:
         ws: true
