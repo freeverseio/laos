@@ -3,6 +3,7 @@
   "id": "rococo_freeverse",
   "chainType": "Development",
   "bootNodes": [
+    "/ip4/178.128.138.76/tcp/30333/p2p/12D3KooWHwCWzce2eyrLh8MofzL6EUh723PEhU22UbjkavqJur3s"
   ],
   "telemetryEndpoints": [
     [
