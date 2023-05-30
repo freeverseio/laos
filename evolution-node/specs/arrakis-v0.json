@@ -3,8 +3,7 @@
   "id": "arrakis_evolution_chain",
   "chainType": "Local",
   "bootNodes": [
-    "/dns/node0.arrakis.gorengine.com/tcp/30333/p2p/12D3KooWMoHhX3gAnqm7CefKCLPqELYS26KmRsQqVkX3h6xypSv1",
-    "/dns/node1.arrakis.gorengine.com/tcp/30333/p2p/12D3KooWFWWN7SLLShizJwPoRenTBvuQT6mE3iaukW34vMqA6dV6"
+    "/ip4/161.35.247.139/tcp/30333/p2p/12D3KooWCG4ktp4DwsBHn9ETZa5x23ZX9AsH9fcDUEWcCqza8JcP"
   ],
   "telemetryEndpoints": [
     ["wss://telemetry.polkadot.io/submit/", 0]
@@ -19,18 +18,18 @@
       },
       "aura": {
         "authorities": [
-          "5Eh7hkbPpJ8cfJDt3BcAGVcBVLFqizs1qoLAnfkpN3rXrkwk",
-          "5Dy52UbmJpiLEwkeGE3HPtd6BLkugt1MhyKQuR9BJxn7ztLd"
+          "5HQmMyrZQgxzM8tprXxRrV6C68WHemm47ZnbxQfnrTQDrS9Y",
+          "5CSf8Eap6RXHFLNvdMmM9TivTcLT8D1Ni2MkMXVfj8pWja2o"
         ]
       },
       "grandpa": {
         "authorities": [
           [
-            "5E9CnnpfRTS9EXQeDcERzFPV6GYrKuGuqk6pUw2SmsFUz9kS",
+            "5Froy96xxeRWzXTR2TPFp5NWJfGCpRQvzP3RuqwfkgsfLJHf",
             1
           ],
           [
-            "5CfM2cceVDUh2wPgPt6mSg4sVwkRpn5UmAiXbmVTXB83pP5q",
+            "5G5hCiiBPDVsv7koDTJDwE2Y3Hos3Uhz8fKFmBaxHVDLrF14",
             1
           ]
         ]
@@ -38,11 +37,11 @@
       "balances": {
         "balances": [
           [
-            "5Eh7hkbPpJ8cfJDt3BcAGVcBVLFqizs1qoLAnfkpN3rXrkwk",
+            "5HQmMyrZQgxzM8tprXxRrV6C68WHemm47ZnbxQfnrTQDrS9Y",
             1152921504606846976
           ],
           [
-            "5Dy52UbmJpiLEwkeGE3HPtd6BLkugt1MhyKQuR9BJxn7ztLd",
+            "5CSf8Eap6RXHFLNvdMmM9TivTcLT8D1Ni2MkMXVfj8pWja2o",
             1152921504606846976
           ]
         ]
@@ -51,7 +50,7 @@
         "multiplier": "1000000000000000000"
       },
       "sudo": {
-        "key": "5Eh7hkbPpJ8cfJDt3BcAGVcBVLFqizs1qoLAnfkpN3rXrkwk"
+        "key": "5HQmMyrZQgxzM8tprXxRrV6C68WHemm47ZnbxQfnrTQDrS9Y"
       }
     }
   }
