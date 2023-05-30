@@ -7,44 +7,48 @@ helmDefaults:
   waitForJobs: true
 
 releases:
-  - name: validator-alice
-    namespace: ziggy-pandora
+  - name: validator-car
+    namespace: freeverse-relay-chain
     chart: parity/node
     version: 4.7.2
     values:
       - image:
           tag: v0.9.42
       - node:
+          legacyRpcFlags: true
           chain: rococo-freeverse
           replicas: 1
           customChainspecUrl: "https://raw.githubusercontent.com/freeverseio/laos-ownership-node/feature/deploy_rococo_freeverse/specs/rococo-freeverse-chainspec.json"
+          forceDownloadChainspec: true
           role: authority
-          flags:
-            - "--alice"
           chainData:
             storageClass: do-block-storage
           perNodeServices:
             relayP2pService:
               enabled: true
               type: LoadBalancer
+              ws:
+                enabled: true
           allowUnsafeRpcMethods: true
-  - name: validator-charlie
-    namespace: ziggy-pandora
+  - name: validator-ale
+    namespace: freeverse-relay-chain
     chart: parity/node
     version: 4.7.2
     values:
       - image:
           tag: v0.9.42
       - node:
+          legacyRpcFlags: true
           chain: rococo-freeverse
           replicas: 1
           customChainspecUrl: "https://raw.githubusercontent.com/freeverseio/laos-ownership-node/feature/deploy_rococo_freeverse/specs/rococo-freeverse-chainspec.json"
+          forceDownloadChainspec: true
           role: authority
-          flags:
-            - "--charlie"
           chainData:
             storageClass: do-block-storage
           perNodeServices:
             relayP2pService:
               enabled: true
+              ws:
+                enabled: true
           allowUnsafeRpcMethods: true
