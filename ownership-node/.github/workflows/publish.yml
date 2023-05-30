@@ -66,5 +66,5 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ env.DOCKER_REPO }}:${{ github.ref_sha }}
+            ${{ env.DOCKER_REPO }}:${{ github.sha }}
 
