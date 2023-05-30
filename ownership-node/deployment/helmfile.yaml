@@ -1,0 +1,46 @@
+repositories:
+  - name: parity
+    url: https://paritytech.github.io/helm-charts/
+
+helmDefaults:
+  createNamespace: false
+  waitForJobs: true
+
+releases:
+  - name: validator-alice
+    namespace: ziggy-pandora
+    chart: parity/node
+    version: 4.7.2
+    values:
+      - image:
+          tag: v0.9.42
+      - node:
+          chain: rococo-freeverse
+          replicas: 1
+          customChainspecUrl: "https://raw.githubusercontent.com/freeverseio/laos-ownership-node/feature/deploy_rococo_freeverse/specs/rococo-freeverse-chainspec.json"
+          role: authority
+          flags:
+            - "--alice"
+          chainData:
+            storageClass: do-block-storage
+          perNodeServices:
+            relayP2pService:
+              enabled: true
+              type: LoadBalancer
+          allowUnsafeRpcMethods: true
+  - name: validator-bob
+    namespace: ziggy-pandora
+    chart: parity/node
+    version: 4.7.2
+    values:
+      - image:
+          tag: v0.9.42
+      - node:
+          chain: rococo-freeverse
+          replicas: 1
+          customChainspecUrl: "https://raw.githubusercontent.com/freeverseio/laos-ownership-node/feature/deploy_rococo_freeverse/specs/rococo-freeverse-chainspec.json"
+          role: authority
+          flags:
+            - "--bob"
+          chainData:
+            storageClass: do-block-storage
