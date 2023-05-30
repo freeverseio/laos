@@ -2,7 +2,10 @@
   "name": "Rococo Freeverse",
   "id": "rococo_freeverse",
   "chainType": "Development",
-  "bootNodes": [],
+  "bootNodes": [
+    "/ip4/167.99.18.193/tcp/30333/p2p/12D3KooWRixkXLCLD8ao9yXQwES1Fvrg7Fatst3gmNzfAaCPGQru",
+    "/ip4/167.99.18.204/tcp/30333/p2p/12D3KooWGKNnQgPAnBYESWGpsX9KM71AVU5DmPNYCgN66MuFNWCz"
+  ],
   "telemetryEndpoints": [
     [
       "wss://telemetry.polkadot.io/submit/",
