@@ -28,7 +28,7 @@ releases:
               enabled: true
               type: LoadBalancer
           allowUnsafeRpcMethods: true
-  - name: validator-bob
+  - name: validator-charlie
     namespace: ziggy-pandora
     chart: parity/node
     version: 4.7.2
@@ -41,6 +41,10 @@ releases:
           customChainspecUrl: "https://raw.githubusercontent.com/freeverseio/laos-ownership-node/feature/deploy_rococo_freeverse/specs/rococo-freeverse-chainspec.json"
           role: authority
           flags:
-            - "--bob"
+            - "--charlie"
           chainData:
             storageClass: do-block-storage
+          perNodeServices:
+            relayP2pService:
+              enabled: true
+          allowUnsafeRpcMethods: true
