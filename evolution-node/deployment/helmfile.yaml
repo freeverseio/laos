@@ -43,7 +43,6 @@ releases:
       - --validator
       - --name=freeverse1
   - service:
-      type: LoadBalancer
       ports:
         p2p: true
 
