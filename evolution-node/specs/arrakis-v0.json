@@ -8,7 +8,7 @@
   "telemetryEndpoints": [
     ["wss://telemetry.polkadot.io/submit/", 0]
   ],
-  "protocolId": null,
+  "protocolId": "laos-arrakis-evolution-chain",
   "properties": null,
   "codeSubstitutes": {},
   "genesis": {
