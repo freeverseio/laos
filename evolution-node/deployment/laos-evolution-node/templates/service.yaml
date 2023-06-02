@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "laos-evolution-node.fullname" . }}
+  labels:
+    {{- include "laos-evolution-node.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    {{- include "laos-evolution-node.selectorLabels" . | nindent 4 }}
+  ports:
+    {{- if .Values.service.ports.p2p }}
+    - name: p2p
+      port: 30333
+      targetPort: p2p-port
+    {{- end }}
+    {{- if .Values.service.ports.ws }}
+    - name: ws
+      port: 9944
+      targetPort: ws-port
+    {{- end }}
+    {{- if .Values.service.ports.rpc }}
+    - name: rpc
+      port: 9933
+      targetPort: rpc-port
+    {{- end }}

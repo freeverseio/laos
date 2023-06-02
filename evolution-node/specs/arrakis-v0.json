@@ -2,9 +2,13 @@
   "name": "Arrakis Evolution Chain",
   "id": "arrakis_evolution_chain",
   "chainType": "Local",
-  "bootNodes": [],
-  "telemetryEndpoints": null,
-  "protocolId": null,
+  "bootNodes": [
+    "/ip4/161.35.247.139/tcp/30333/p2p/12D3KooWCG4ktp4DwsBHn9ETZa5x23ZX9AsH9fcDUEWcCqza8JcP"
+  ],
+  "telemetryEndpoints": [
+    ["wss://telemetry.polkadot.io/submit/", 0]
+  ],
+  "protocolId": "laos-arrakis-evolution-chain",
   "properties": null,
   "codeSubstitutes": {},
   "genesis": {
@@ -14,18 +18,18 @@
       },
       "aura": {
         "authorities": [
-          "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
-          "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+          "5HQmMyrZQgxzM8tprXxRrV6C68WHemm47ZnbxQfnrTQDrS9Y",
+          "5CSf8Eap6RXHFLNvdMmM9TivTcLT8D1Ni2MkMXVfj8pWja2o"
         ]
       },
       "grandpa": {
         "authorities": [
           [
-            "5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu",
+            "5Froy96xxeRWzXTR2TPFp5NWJfGCpRQvzP3RuqwfkgsfLJHf",
             1
           ],
           [
-            "5GoNkf6WdbxCFnPdAnYYQyCjAKPJgLNxXwPjwTh6DGg6gN3E",
+            "5G5hCiiBPDVsv7koDTJDwE2Y3Hos3Uhz8fKFmBaxHVDLrF14",
             1
           ]
         ]
@@ -33,51 +37,11 @@
       "balances": {
         "balances": [
           [
-            "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+            "5HQmMyrZQgxzM8tprXxRrV6C68WHemm47ZnbxQfnrTQDrS9Y",
             1152921504606846976
           ],
           [
-            "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
-            1152921504606846976
-          ],
-          [
-            "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y",
-            1152921504606846976
-          ],
-          [
-            "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYum3PTXFy",
-            1152921504606846976
-          ],
-          [
-            "5HGjWAeFDfFCWPsjFQdVV2Msvz2XtMktvgocEZcCj68kUMaw",
-            1152921504606846976
-          ],
-          [
-            "5CiPPseXPECbkjWCa6MnjNokrgYjMqmKndv2rSnekmSK2DjL",
-            1152921504606846976
-          ],
-          [
-            "5GNJqTPyNqANBkUVMN1LPPrxXnFouWXoe2wNSmmEoLctxiZY",
-            1152921504606846976
-          ],
-          [
-            "5HpG9w8EBLe5XCrbczpwq5TSXvedjrBGCwqxK1iQ7qUsSWFc",
-            1152921504606846976
-          ],
-          [
-            "5Ck5SLSHYac6WFt5UZRSsdJjwmpSZq85fd5TRNAdZQVzEAPT",
-            1152921504606846976
-          ],
-          [
-            "5HKPmK9GYtE1PSLsS1qiYU9xQ9Si1NcEhdeCq9sw5bqu4ns8",
-            1152921504606846976
-          ],
-          [
-            "5FCfAonRZgTFrTd9HREEyeJjDpT397KMzizE6T3DvebLFE7n",
-            1152921504606846976
-          ],
-          [
-            "5CRmqmsiNFExV6VbdmPJViVxrWmkaXXvBrSX8oqBT8R9vmWk",
+            "5CSf8Eap6RXHFLNvdMmM9TivTcLT8D1Ni2MkMXVfj8pWja2o",
             1152921504606846976
           ]
         ]
@@ -86,7 +50,7 @@
         "multiplier": "1000000000000000000"
       },
       "sudo": {
-        "key": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+        "key": "5HQmMyrZQgxzM8tprXxRrV6C68WHemm47ZnbxQfnrTQDrS9Y"
       }
     }
   }

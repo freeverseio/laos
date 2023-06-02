@@ -1,2 +1,3 @@
 doc
 **/target
+!./target/release/node-template
