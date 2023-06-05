@@ -23,7 +23,6 @@ use crate::{
 fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 	Ok(match id {
 		"arrakis" => Box::new(chain_spec::ChainSpec::from_json_bytes(&include_bytes!("../../specs/arrakis.json")[..])?),
-		"rococo_local" => Box::new(chain_spec::ChainSpec::from_json_bytes(&include_bytes!("../../specs/rococo-local.json")[..])?),
 		"dev" => Box::new(chain_spec::development_config()),
 		"template-rococo" => Box::new(chain_spec::local_testnet_config()),
 		"" | "local" => Box::new(chain_spec::local_testnet_config()),
@@ -103,7 +102,10 @@ impl SubstrateCli for RelayChainCli {
 	}
 
 	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
-		polkadot_cli::Cli::from_iter([RelayChainCli::executable_name()].iter()).load_spec(id)
+		match id {
+			"rococo_local_testnet" => Ok(Box::new(chain_spec::ChainSpec::from_json_bytes(&include_bytes!("../../specs/rococo-local.json")[..])?)),
+			_ => polkadot_cli::Cli::from_iter([RelayChainCli::executable_name()].iter()).load_spec(id),
+		}
 	}
 
 	fn native_runtime_version(chain_spec: &Box<dyn ChainSpec>) -> &'static RuntimeVersion {

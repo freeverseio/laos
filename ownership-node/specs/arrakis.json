@@ -8,7 +8,7 @@
   "telemetryEndpoints": null,
   "protocolId": "laos-arrakis-ownership-chain",
   "properties": null,
-  "relay_chain": "rococo_local",
+  "relay_chain": "rococo_local_testnet",
   "para_id": 2000,
   "codeSubstitutes": {},
   "genesis": {
