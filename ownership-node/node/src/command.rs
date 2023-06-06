@@ -6,6 +6,7 @@ use cumulus_primitives_core::ParaId;
 use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
 use log::{info, warn};
 use parachain_template_runtime::Block;
+use polkadot_service::RococoChainSpec;
 use sc_cli::{
 	ChainSpec, CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams,
 	NetworkParams, Result, RuntimeVersion, SharedParams, SubstrateCli,
@@ -103,7 +104,7 @@ impl SubstrateCli for RelayChainCli {
 
 	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
 		match id {
-			"rococo_local_testnet" => Ok(Box::new(chain_spec::ChainSpec::from_json_bytes(&include_bytes!("../../specs/rococo-local.json")[..])?)),
+			"rococo_local_testnet" => Ok(Box::new(RococoChainSpec::from_json_bytes(&include_bytes!("../../specs/rococo-local.json")[..])?)),
 			_ => polkadot_cli::Cli::from_iter([RelayChainCli::executable_name()].iter()).load_spec(id),
 		}
 	}
