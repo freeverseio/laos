@@ -18,7 +18,7 @@ releases:
           legacyRpcFlags: true
           chain: rococo-freeverse
           replicas: 1
-          customChainspecUrl: "https://raw.githubusercontent.com/freeverseio/laos-ownership-node/feature/deploy_rococo_freeverse/specs/rococo-freeverse-chainspec.json"
+          customChainspecUrl: "https://raw.githubusercontent.com/freeverseio/laos-ownership-node/dev/specs/rococo-freeverse-chainspec.json"
           forceDownloadChainspec: true
           role: authority
           chainData:
@@ -41,7 +41,7 @@ releases:
           legacyRpcFlags: true
           chain: rococo-freeverse
           replicas: 1
-          customChainspecUrl: "https://raw.githubusercontent.com/freeverseio/laos-ownership-node/feature/deploy_rococo_freeverse/specs/rococo-freeverse-chainspec.json"
+          customChainspecUrl: "https://raw.githubusercontent.com/freeverseio/laos-ownership-node/dev/specs/rococo-freeverse-chainspec.json"
           forceDownloadChainspec: true
           role: authority
           chainData:
@@ -53,7 +53,7 @@ releases:
                 enabled: true
           allowUnsafeRpcMethods: true
   - name: collator-car
-    namespace: ziggy-pandora
+    namespace: arrakis-ownership-chain
     chart: parity/node
     version: 4.7.2
     values:
