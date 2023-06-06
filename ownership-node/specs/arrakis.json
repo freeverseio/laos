@@ -3,6 +3,7 @@
   "id": "arrakis_ownership_chain",
   "chainType": "Local",
   "bootNodes": [
+    "/ip4/188.166.135.215/tcp/30334/p2p/12D3KooWQ2fUbR1JcRheFrjSWZep1dQw7oqzJZaHsRQQwKCLEx4s"
   ],
   "telemetryEndpoints": null,
   "protocolId": "laos-arrakis-ownership-chain",
