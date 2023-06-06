@@ -59,7 +59,7 @@ releases:
     values:
       - image:
           repository: freeverseio/laos-ownership-node
-          tag: v0.0.1-dev
+          tag: v0.0.2-dev
       - node:
           legacyRpcFlags: true
           chain: arrakis
