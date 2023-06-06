@@ -3,12 +3,11 @@
   "id": "arrakis_ownership_chain",
   "chainType": "Local",
   "bootNodes": [
-    "/ip4/161.35.247.173/tcp/30334/p2p/12D3KooWKyFhcHTAPdwnydWimLLW2W3NP8K8uux2Nc2o7rgsTKVH"
   ],
   "telemetryEndpoints": null,
   "protocolId": "laos-arrakis-ownership-chain",
   "properties": null,
-  "relay_chain": "rococo_local_testnet",
+  "relay_chain": "rococo_freeverse",
   "para_id": 2000,
   "codeSubstitutes": {},
   "genesis": {

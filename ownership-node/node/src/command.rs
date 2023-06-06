@@ -104,7 +104,7 @@ impl SubstrateCli for RelayChainCli {
 
 	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
 		match id {
-			"rococo_local_testnet" => Ok(Box::new(RococoChainSpec::from_json_bytes(&include_bytes!("../../specs/rococo-local.json")[..])?)),
+			"rococo_freeverse" => Ok(Box::new(RococoChainSpec::from_json_bytes(&include_bytes!("../../specs/rococo-freeverse-chainspec.json")[..])?)),
 			_ => polkadot_cli::Cli::from_iter([RelayChainCli::executable_name()].iter()).load_spec(id),
 		}
 	}
