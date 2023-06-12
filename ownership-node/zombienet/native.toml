@@ -1,0 +1,31 @@
+[relaychain]
+default_command = "../../binaries/polkadot-v0.9.42"
+default_args = [ "-lparachain=debug" ]
+chain_spec_path = "./specs/rococo-freeverse-chainspec.json"
+
+  [[relaychain.nodes]]
+  name = "alice"
+  validator = true
+
+  [[relaychain.nodes]]
+  name = "bob"
+  validator = true
+
+[[parachains]]
+id = 2000
+cumulus_based = true
+chain = "arrakis"
+
+  [parachains.collator]
+  name = "ownership-collator"
+  command = "./target/release/parachain-template-node"
+  validator = true
+
+[[parachains]]
+id = 2002
+cumulus_based = true
+chain = "arrakis"
+
+  [parachains.collator]
+  name = "ownership-collator"
+  command = "../../binaries/parachain-template-node-v0.0.4-dev"
