@@ -1,12 +1,12 @@
 {
-  "name": "Arrakis Ownership Chain",
+  "name": "Arrakis Ownership Chain Sudo Dev",
   "id": "arrakis_ownership_chain",
   "chainType": "Local",
   "bootNodes": [],
   "telemetryEndpoints": null,
-  "protocolId": "laos-arrakis-ownership-chain",
+  "protocolId": "laos-arrakis-ownership-chain_dev",
   "properties": null,
-  "relay_chain": "rococo_local_testnet",
+  "relay_chain": "rococo_local_dev",
   "para_id": 2002,
   "codeSubstitutes": {},
   "genesis": {

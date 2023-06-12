@@ -1,7 +1,7 @@
 [relaychain]
 default_command = "../../binaries/polkadot-v0.9.42"
 default_args = [ "-lparachain=debug" ]
-chain_spec_path = "./specs/rococo-freeverse-chainspec.json"
+chain_spec_path = "./specs/rococo-freeverse-chainspec-local.json"
 
   [[relaychain.nodes]]
   name = "alice"
@@ -14,11 +14,11 @@ chain_spec_path = "./specs/rococo-freeverse-chainspec.json"
 [[parachains]]
 id = 2000
 cumulus_based = true
-chain = "arrakis"
+chain_spec_path = "./specs/arrakis-local.json"
 
   [parachains.collator]
-  name = "ownership-collator"
-  command = "./target/release/parachain-template-node"
+  name = "ownership-collator-pandora"
+  command = "../../binaries/parachain-template-node-pandora-arrakis"
   validator = true
 
 [[parachains]]
@@ -27,5 +27,5 @@ cumulus_based = true
 chain = "arrakis"
 
   [parachains.collator]
-  name = "ownership-collator"
-  command = "../../binaries/parachain-template-node-v0.0.4-dev"
+  name = "ownership-collator-sudo"
+  command = "../../binaries/parachain-template-node-v0.0.4-dev-local"
