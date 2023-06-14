@@ -2,7 +2,9 @@
   "name": "Arrakis Ownership Chain 2001",
   "id": "arrakis_ownership_chain",
   "chainType": "Local",
-  "bootNodes": [],
+  "bootNodes": [
+    "/ip4/174.138.105.84/tcp/30334/p2p/12D3KooWLPHNq9Jz8HLwLk7STSsrtuhRT4bCYNzKVLojQy6eootk"
+  ],
   "telemetryEndpoints": null,
   "protocolId": "laos-arrakis-ownership-chain",
   "properties": null,
