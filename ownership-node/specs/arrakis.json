@@ -1,12 +1,12 @@
 {
-  "name": "Arrakis Ownership Chain Sudo Pandora",
-  "id": "arrakis_ownership_chain_pandora",
+  "name": "Arrakis Ownership Chain 2001",
+  "id": "arrakis_ownership_chain",
   "chainType": "Local",
   "bootNodes": [],
   "telemetryEndpoints": null,
-  "protocolId": "laos-arrakis-ownership-chain-pandora",
+  "protocolId": "laos-arrakis-ownership-chain",
   "properties": null,
-  "relay_chain": "rococo_pandora",
+  "relay_chain": "rococo_freeverse",
   "para_id": 2001,
   "codeSubstitutes": {},
   "genesis": {
