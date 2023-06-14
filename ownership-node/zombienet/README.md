@@ -1,6 +1,6 @@
 # Zombienet
 
-You will find relay and parachain chain specs are in the `./specs` folder.
+You will find relay and parachain chain specs are in the [./specs](./specs) folder.
 
 ## How to
 
