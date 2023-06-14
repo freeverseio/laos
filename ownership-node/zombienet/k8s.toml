@@ -1,0 +1,25 @@
+[relaychain]
+
+default_command = "polkadot"
+default_args = [ "-lparachain=debug" ]
+default_image = "parity/polkadot:v0.9.42"
+
+chain = "rococo-local"
+
+  [[relaychain.nodes]]
+  name = "alice"
+  validator = true
+
+  [[relaychain.nodes]]
+  name = "bob"
+  validator = true
+
+[[parachains]]
+id = 1000
+cumulus_based = true
+
+  [parachains.collator]
+  name = "ownership-collator"
+  command = "parachain-template-node"
+  image = "freeverseio/laos-ownership-node:latest"
+  args = [ "--collator" ]
