@@ -79,6 +79,33 @@ releases:
           collatorRelayChain:
             chainData:
               storageClass: do-block-storage
+  - name: collator2-car
+    namespace: arrakis-ownership-chain
+    chart: parity/node
+    version: 4.7.2
+    values:
+      - image:
+          repository: freeverseio/laos-ownership-node
+          tag: v0.0.4-dev
+      - node:
+          legacyRpcFlags: true
+          chain: arrakis
+          command: "parachain-template-node"
+          replicas: 1
+          role: authority
+          chainData:
+            storageClass: do-block-storage
+          perNodeServices:
+            paraP2pService:
+              enabled: true
+              type: LoadBalancer
+              ws:
+                enabled: true
+          allowUnsafeRpcMethods: true
+          isParachain: true
+          collatorRelayChain:
+            chainData:
+              storageClass: do-block-storage
   - name: public-node
     namespace: arrakis-ownership-chain
     chart: parity/node
@@ -86,7 +113,7 @@ releases:
     values:
       - image:
           repository: freeverseio/laos-ownership-node
-          tag: v0.0.3-dev
+          tag: v0.0.4-dev
       - node:
           chain: arrakis
           legacyRpcFlags: true
