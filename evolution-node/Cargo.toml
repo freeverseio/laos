@@ -3,6 +3,7 @@ members = [
     "node",
     "pallets/template",
     "runtime",
+    "primitives/ethereum-account",
 ]
 [profile.release]
 panic = "unwind"
