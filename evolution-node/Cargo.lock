@@ -4252,6 +4252,7 @@ dependencies = [
 name = "node-template-runtime"
 version = "4.0.0-dev"
 dependencies = [
+ "ethereum-account",
  "frame-benchmarking",
  "frame-executive",
  "frame-support",
