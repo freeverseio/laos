@@ -5,8 +5,9 @@ use node_template_runtime::{
 use sc_service::ChainType;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_consensus_grandpa::AuthorityId as GrandpaId;
-use sp_core::{Pair, Public, ecdsa};
+use sp_core::{Pair, Public, ecdsa, H160};
 use sp_runtime::traits::{IdentifyAccount, Verify};
+use hex;
 
 // The URL for the telemetry server.
 // const STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
@@ -58,6 +59,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
 					get_account_id_from_seed::<ecdsa::Public>("Bob"),
 					get_account_id_from_seed::<ecdsa::Public>("Alice//stash"),
 					get_account_id_from_seed::<ecdsa::Public>("Bob//stash"),
+					AccountId::from(H160::from_slice(&hex::decode("A9c0F76cA045163E28afDdFe035ec76a44f5C1F3").unwrap())),
 				],
 				true,
 			)
@@ -95,7 +97,8 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 				// Pre-funded accounts
 				vec![
 					get_account_id_from_seed::<ecdsa::Public>("Alice"),
-					get_account_id_from_seed::<ecdsa::Public>("Bob"),
+					// get_account_id_from_seed::<ecdsa::Public>("Bob"),
+					AccountId::from(H160::from_slice(&hex::decode("A9c0F76cA045163E28afDdFe035ec76a44f5C1F3").unwrap())),
 					get_account_id_from_seed::<ecdsa::Public>("Charlie"),
 					get_account_id_from_seed::<ecdsa::Public>("Dave"),
 					get_account_id_from_seed::<ecdsa::Public>("Eve"),
@@ -152,5 +155,18 @@ fn testnet_genesis(
 			key: Some(root_key),
 		},
 		transaction_payment: Default::default(),
+	}
+}
+
+// add tests
+#[cfg(test)]
+mod test {
+	use super::*;
+	use hex;
+
+	#[test]
+	fn test_account_id_from_seed_alice() {
+		let alice = get_account_id_from_seed::<ecdsa::Public>("Alice");
+		assert_eq!(hex::encode(alice.0),"e04cc55ebee1cbce552f250e85c57b70b2e2625b");
 	}
 }
