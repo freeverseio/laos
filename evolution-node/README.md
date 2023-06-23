@@ -180,3 +180,24 @@ To get all the correct dependencies, activate direnv `direnv allow` and lorri `l
 ### Docker
 
 Please follow the [Substrate Docker instructions here](https://github.com/paritytech/substrate/blob/master/docker/README.md) to build the Docker container with the Substrate Node Template binary.
+
+### Prefunded Developer Accounts
+* **Alith**:
+
+Public Address: 0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac
+Private Key: 0x5fb92d6e98884f76de468fa3f6278f8807c48bebc13595d45af5bdc4da702133
+
+* **Baltathar**:
+
+Public Address: 0x3Cd0A705a2DC65e5b1E1205896BaA2be8A07c6e0
+Private Key: 0x8075991ce870b93a8870eca0c0f91913d12f47948ca0fd25b49c6fa7cdbeee8b
+
+* **Charleth**:
+
+Public Address: 0x798d4Ba9baf0064Ec19eB4F0a1a45785ae9D6DFc
+Private Key: 0x0b6e18cafb6ed99687ec547bd28139cafdd2bffe70e6b688025de6b445aa5c5b
+
+* **Dorothy**:
+
+Public Address: 0x773539d4Ac0e786233D90A233654ccEE26a613D9
+Private Key: 0x39539ab1876910bbf3a223d84a29e28f1cb4e2e456503e7e91ed39b2e7223d68
