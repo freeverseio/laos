@@ -1,13 +1,12 @@
 use node_template_runtime::{
-	AccountId, AuraConfig, BalancesConfig, GenesisConfig, GrandpaConfig, Signature, SudoConfig,
+	AccountId, AuraConfig, BalancesConfig, GenesisConfig, GrandpaConfig, SudoConfig,
 	SystemConfig, WASM_BINARY,
 };
 use sc_service::ChainType;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_consensus_grandpa::AuthorityId as GrandpaId;
-use sp_core::{Pair, Public, ecdsa, H160};
-use sp_runtime::traits::{IdentifyAccount, Verify};
-use hex;
+use sp_core::{Pair, Public};
+use hex_literal::hex;
 
 // The URL for the telemetry server.
 // const STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
@@ -20,16 +19,6 @@ pub fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Pu
 	TPublic::Pair::from_string(&format!("//{}", seed), None)
 		.expect("static values are valid; qed")
 		.public()
-}
-
-type AccountPublic = <Signature as Verify>::Signer;
-
-/// Generate an account ID from seed.
-pub fn get_account_id_from_seed<TPublic: Public>(seed: &str) -> AccountId
-where
-	AccountPublic: From<<TPublic::Pair as Pair>::Public>,
-{
-	AccountPublic::from(get_from_seed::<TPublic>(seed)).into_account()
 }
 
 /// Generate an Aura authority key.
@@ -52,14 +41,13 @@ pub fn development_config() -> Result<ChainSpec, String> {
 				// Initial PoA authorities
 				vec![authority_keys_from_seed("Alice")],
 				// Sudo account
-				get_account_id_from_seed::<ecdsa::Public>("Alice"),
+				AccountId::from(hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac")),
 				// Pre-funded accounts
 				vec![
-					get_account_id_from_seed::<ecdsa::Public>("Alice"),
-					get_account_id_from_seed::<ecdsa::Public>("Bob"),
-					get_account_id_from_seed::<ecdsa::Public>("Alice//stash"),
-					get_account_id_from_seed::<ecdsa::Public>("Bob//stash"),
-					AccountId::from(H160::from_slice(&hex::decode("A9c0F76cA045163E28afDdFe035ec76a44f5C1F3").unwrap())),
+					AccountId::from(hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac")),
+					AccountId::from(hex!("3Cd0A705a2DC65e5b1E1205896BaA2be8A07c6e0")),
+					AccountId::from(hex!("798d4Ba9baf0064Ec19eB4F0a1a45785ae9D6DFc")),
+					AccountId::from(hex!("773539d4Ac0e786233D90A233654ccEE26a613D9")),
 				],
 				true,
 			)
@@ -93,22 +81,13 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 				// Initial PoA authorities
 				vec![authority_keys_from_seed("Alice"), authority_keys_from_seed("Bob")],
 				// Sudo account
-				get_account_id_from_seed::<ecdsa::Public>("Alice"),
+				AccountId::from(hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac")),
 				// Pre-funded accounts
 				vec![
-					get_account_id_from_seed::<ecdsa::Public>("Alice"),
-					// get_account_id_from_seed::<ecdsa::Public>("Bob"),
-					AccountId::from(H160::from_slice(&hex::decode("A9c0F76cA045163E28afDdFe035ec76a44f5C1F3").unwrap())),
-					get_account_id_from_seed::<ecdsa::Public>("Charlie"),
-					get_account_id_from_seed::<ecdsa::Public>("Dave"),
-					get_account_id_from_seed::<ecdsa::Public>("Eve"),
-					get_account_id_from_seed::<ecdsa::Public>("Ferdie"),
-					get_account_id_from_seed::<ecdsa::Public>("Alice//stash"),
-					get_account_id_from_seed::<ecdsa::Public>("Bob//stash"),
-					get_account_id_from_seed::<ecdsa::Public>("Charlie//stash"),
-					get_account_id_from_seed::<ecdsa::Public>("Dave//stash"),
-					get_account_id_from_seed::<ecdsa::Public>("Eve//stash"),
-					get_account_id_from_seed::<ecdsa::Public>("Ferdie//stash"),
+					AccountId::from(hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac")),
+					AccountId::from(hex!("3Cd0A705a2DC65e5b1E1205896BaA2be8A07c6e0")),
+					AccountId::from(hex!("798d4Ba9baf0064Ec19eB4F0a1a45785ae9D6DFc")),
+					AccountId::from(hex!("773539d4Ac0e786233D90A233654ccEE26a613D9")),
 				],
 				true,
 			)
@@ -155,18 +134,5 @@ fn testnet_genesis(
 			key: Some(root_key),
 		},
 		transaction_payment: Default::default(),
-	}
-}
-
-// add tests
-#[cfg(test)]
-mod test {
-	use super::*;
-	use hex;
-
-	#[test]
-	fn test_account_id_from_seed_alice() {
-		let alice = get_account_id_from_seed::<ecdsa::Public>("Alice");
-		assert_eq!(hex::encode(alice.0),"e04cc55ebee1cbce552f250e85c57b70b2e2625b");
 	}
 }
