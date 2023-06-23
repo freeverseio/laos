@@ -240,4 +240,12 @@ mod tests {
 		let new = AccountId20(H160::from_slice(&Keccak256::digest(&m).as_slice()[12..32]).0);
 		assert_eq!(new, old);
 	}
+	#[test]
+	fn test_account_from_private_key() {
+		let secret_key = hex::decode("a98c8730d71a46bcc40fb06fc68142edbc2fdf17b89197db0fbe41d35718d5fc").unwrap();
+		let public_key = ecdsa::Pair::from_seed_slice(&secret_key).unwrap().public();
+		let account: EthereumSigner = public_key.into();
+		let expected_account = AccountId20::from(H160::from_slice(&hex::decode("A9c0F76cA045163E28afDdFe035ec76a44f5C1F3").unwrap()));
+		assert_eq!(account.into_account(), expected_account);
+	}
 }

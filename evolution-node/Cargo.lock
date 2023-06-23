@@ -4415,6 +4415,7 @@ dependencies = [
  "frame-benchmarking-cli",
  "frame-system",
  "futures",
+ "hex",
  "jsonrpsee",
  "node-template-runtime",
  "pallet-transaction-payment",
