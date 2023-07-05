@@ -29,6 +29,7 @@ jobs:
         run: |
           rustup update stable --no-self-update
           rustup target add wasm32-unknown-unknown
+          rustup component add clippy
 
       # Rust cache
       - uses: Swatinem/rust-cache@v2
@@ -36,6 +37,10 @@ jobs:
       - name: Check Build
         run: |
           SKIP_WASM_BUILD=1 cargo check --release
+        
+      - name: Check clippy
+        run: |
+          cargo clippy  --all-targets --workspace --features runtime-benchmarks --features try-runtime
 
       - name: Check Build for Benchmarking
         run: >

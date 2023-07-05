@@ -67,6 +67,7 @@ impl From<[u8; 20]> for AccountId20 {
 	}
 }
 
+#[allow(clippy::from_over_into)]
 impl Into<[u8; 20]> for AccountId20 {
 	fn into(self) -> [u8; 20] {
 		self.0
@@ -87,6 +88,7 @@ impl From<H160> for AccountId20 {
 	}
 }
 
+#[allow(clippy::from_over_into)]
 impl Into<H160> for AccountId20 {
 	fn into(self) -> H160 {
 		H160(self.0)
@@ -97,9 +99,7 @@ impl Into<H160> for AccountId20 {
 impl std::str::FromStr for AccountId20 {
 	type Err = &'static str;
 	fn from_str(input: &str) -> Result<Self, Self::Err> {
-		H160::from_str(input)
-			.map(Into::into)
-			.map_err(|_| "invalid hex address.")
+		H160::from_str(input).map(Into::into).map_err(|_| "invalid hex address.")
 	}
 }
 
@@ -119,22 +119,21 @@ impl sp_runtime::traits::Verify for EthereumSignature {
 		let mut m = [0u8; 32];
 		m.copy_from_slice(Keccak256::digest(msg.get()).as_slice());
 		match sp_io::crypto::secp256k1_ecdsa_recover(self.0.as_ref(), &m) {
-			Ok(pubkey) => {
-				AccountId20(H160::from_slice(&Keccak256::digest(&pubkey).as_slice()[12..32]).0)
-					== *signer
-			}
+			Ok(pubkey) =>
+				AccountId20(H160::from_slice(&Keccak256::digest(pubkey).as_slice()[12..32]).0) ==
+					*signer,
 			Err(sp_io::EcdsaVerifyError::BadRS) => {
 				log::error!(target: "evm", "Error recovering: Incorrect value of R or S");
 				false
-			}
+			},
 			Err(sp_io::EcdsaVerifyError::BadV) => {
 				log::error!(target: "evm", "Error recovering: Incorrect value of V");
 				false
-			}
+			},
 			Err(sp_io::EcdsaVerifyError::BadSignature) => {
 				log::error!(target: "evm", "Error recovering: Invalid signature");
 				false
-			}
+			},
 		}
 	}
 }
@@ -169,7 +168,7 @@ impl From<ecdsa::Public> for EthereumSigner {
 		.serialize();
 		let mut m = [0u8; 64];
 		m.copy_from_slice(&decompressed[1..65]);
-		let account = H160::from_slice(&Keccak256::digest(&m).as_slice()[12..32]);
+		let account = H160::from_slice(&Keccak256::digest(m).as_slice()[12..32]);
 		EthereumSigner(account.into())
 	}
 }
@@ -178,7 +177,7 @@ impl From<libsecp256k1::PublicKey> for EthereumSigner {
 	fn from(x: libsecp256k1::PublicKey) -> Self {
 		let mut m = [0u8; 64];
 		m.copy_from_slice(&x.serialize()[1..65]);
-		let account = H160::from_slice(&Keccak256::digest(&m).as_slice()[12..32]);
+		let account = H160::from_slice(&Keccak256::digest(m).as_slice()[12..32]);
 		EthereumSigner(account.into())
 	}
 }
@@ -203,11 +202,8 @@ mod tests {
 			hex::decode("502f97299c472b88754accd412b7c9a6062ef3186fba0c0388365e1edec24875")
 				.unwrap();
 		let mut expected_hex_account = [0u8; 20];
-		hex::decode_to_slice(
-			"976f8456e4e2034179b284a23c0e0c8f6d3da50c",
-			&mut expected_hex_account,
-		)
-		.expect("example data is 20 bytes of valid hex");
+		hex::decode_to_slice("976f8456e4e2034179b284a23c0e0c8f6d3da50c", &mut expected_hex_account)
+			.expect("example data is 20 bytes of valid hex");
 
 		let public_key = ecdsa::Pair::from_seed_slice(&secret_key).unwrap().public();
 		let account: EthereumSigner = public_key.into();
@@ -221,11 +217,8 @@ mod tests {
 			hex::decode("0f02ba4d7f83e59eaa32eae9c3c4d99b68ce76decade21cdab7ecce8f4aef81a")
 				.unwrap();
 		let mut expected_hex_account = [0u8; 20];
-		hex::decode_to_slice(
-			"420e9f260b40af7e49440cead3069f8e82a5230f",
-			&mut expected_hex_account,
-		)
-		.expect("example data is 20 bytes of valid hex");
+		hex::decode_to_slice("420e9f260b40af7e49440cead3069f8e82a5230f", &mut expected_hex_account)
+			.expect("example data is 20 bytes of valid hex");
 
 		let public_key = ecdsa::Pair::from_seed_slice(&secret_key).unwrap().public();
 		let account: EthereumSigner = public_key.into();
@@ -242,10 +235,14 @@ mod tests {
 	}
 	#[test]
 	fn test_account_from_private_key() {
-		let secret_key = hex::decode("a98c8730d71a46bcc40fb06fc68142edbc2fdf17b89197db0fbe41d35718d5fc").unwrap();
+		let secret_key =
+			hex::decode("a98c8730d71a46bcc40fb06fc68142edbc2fdf17b89197db0fbe41d35718d5fc")
+				.unwrap();
 		let public_key = ecdsa::Pair::from_seed_slice(&secret_key).unwrap().public();
 		let account: EthereumSigner = public_key.into();
-		let expected_account = AccountId20::from(H160::from_slice(&hex::decode("A9c0F76cA045163E28afDdFe035ec76a44f5C1F3").unwrap()));
+		let expected_account = AccountId20::from(H160::from_slice(
+			&hex::decode("A9c0F76cA045163E28afDdFe035ec76a44f5C1F3").unwrap(),
+		));
 		assert_eq!(account.into_account(), expected_account);
 	}
 }
