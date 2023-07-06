@@ -5912,7 +5912,7 @@ dependencies = [
 [[package]]
 name = "pallet-livingassets-ownership"
 version = "0.0.1"
-source = "git+https://github.com/freeverseio/pallet-livingassets-ownership?rev=a15098e080aee626580a383df1382b3cd020deae#a15098e080aee626580a383df1382b3cd020deae"
+source = "git+https://github.com/freeverseio/pallet-livingassets-ownership?branch=dev#939d6dcc0e745eab5c96b21c6ea1b2947281c3d1"
 dependencies = [
  "frame-benchmarking",
  "frame-support",

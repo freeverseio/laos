@@ -32,12 +32,13 @@ jobs:
         run: |
           rustup update stable --no-self-update
           rustup target add wasm32-unknown-unknown
+          rustup component add clippy
 
       # Check the build
       - name: Check Build
         run: |
           SKIP_WASM_BUILD=1 cargo check --release
 
-      # # Test code
-      # - name: Test
-      #   run: cargo test
+      - name: Check clippy
+        run: |
+          cargo clippy  --all-targets --workspace --features runtime-benchmarks --features try-runtime
