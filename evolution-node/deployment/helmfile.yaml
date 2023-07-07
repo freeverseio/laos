@@ -14,7 +14,7 @@ releases:
     values:
       - image:
           repository: freeverseio/laos-evolution-node
-          tag: 26df0d236d2015dc9e5c10bf07b351fbea780348
+          tag: {{ requiredEnv "TAG" }}
       - node:
           legacyRpcFlags: true
           chain: arrakis
@@ -35,7 +35,7 @@ releases:
     values:
       - image:
           repository: freeverseio/laos-evolution-node
-          tag: 26df0d236d2015dc9e5c10bf07b351fbea780348
+          tag: {{ requiredEnv "TAG" }}
       - node:
           legacyRpcFlags: true
           chain: arrakis
