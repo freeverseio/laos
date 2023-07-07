@@ -49,6 +49,3 @@ releases:
             relayP2pService:
               enabled: true
               type: LoadBalancer
-            # apiService:
-            #   type: LoadBalancer
-          allowUnsafeRpcMethods: true
