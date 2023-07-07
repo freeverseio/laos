@@ -7,10 +7,10 @@ helmDefaults:
   waitForJobs: true
 
 releases:
-  - name: validator0
+  - name: validator
     namespace: arrakis-evolution-chain
     chart: parity/node
-    version: 4.7.2
+    version: 5.1.0
     values:
       - image:
           repository: freeverseio/laos-evolution-node
@@ -19,7 +19,7 @@ releases:
           legacyRpcFlags: true
           chain: arrakis
           command: "node-template"
-          replicas: 1
+          replicas: 2
           role: authority
           chainData:
               volumeSize: 200Gi
@@ -27,36 +27,12 @@ releases:
             relayP2pService:
               enabled: true
               type: LoadBalancer
-              ws:
-                enabled: true
-          allowUnsafeRpcMethods: true
-  - name: validator1
-    namespace: arrakis-evolution-chain
-    chart: parity/node
-    version: 4.7.2
-    values:
-      - image:
-          repository: freeverseio/laos-evolution-node
-          tag: 26df0d236d2015dc9e5c10bf07b351fbea780348
-      - node:
-          legacyRpcFlags: true
-          chain: arrakis
-          command: "node-template"
-          replicas: 1
-          role: authority
-          chainData:
-              volumeSize: 200Gi
-          perNodeServices:
-            relayP2pService:
-              enabled: true
-              type: LoadBalancer
-              ws:
-                enabled: true
-          allowUnsafeRpcMethods: true
+            apiService:
+              enabled: false
   - name: public-node
     namespace: arrakis-evolution-chain
     chart: parity/node
-    version: 4.7.2
+    version: 5.1.0
     values:
       - image:
           repository: freeverseio/laos-evolution-node
@@ -73,6 +49,6 @@ releases:
             relayP2pService:
               enabled: true
               type: LoadBalancer
-              ws:
-                enabled: true
+            # apiService:
+            #   type: LoadBalancer
           allowUnsafeRpcMethods: true

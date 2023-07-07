@@ -1,9 +1,11 @@
 {
   "name": "Arrakis Evolution Chain",
   "id": "arrakis_evolution_chain",
-  "chainType": "Local",
+  "chainType": "Live",
   "bootNodes": [
-    "/ip4/161.35.247.139/tcp/30333/p2p/12D3KooWCG4ktp4DwsBHn9ETZa5x23ZX9AsH9fcDUEWcCqza8JcP"
+    "/ip4/206.189.240.60/tcp/30333/p2p/12D3KooWNoWhGnTyVMnjxiKVqLfJzcfSTG8q9dq6gyvL7qYPUpgc",
+    "/ip4/188.166.202.189/tcp/30333/p2p/12D3KooWQrLpytBmYNN6bfTdqDEby3JUQiAWBmJndfWMafaE5yF6",
+    "/ip4/64.225.81.112/tcp/30333/p2p/12D3KooWRc8wP6GftfASBMSF1s4hTXv4HRJDCt9AKabVfvFxzvxG"
   ],
   "telemetryEndpoints": [
     ["wss://telemetry.polkadot.io/submit/", 0]
