@@ -5,14 +5,14 @@ A fresh [Substrate](https://substrate.io/) node, ready for hacking :rocket:
 A standalone version of this template is available for each release of Polkadot in the [Substrate Developer Hub Parachain Template](https://github.com/substrate-developer-hub/substrate-parachain-template/) repository.
 The parachain template is generated directly at each Polkadot release branch from the [Node Template in Substrate](https://github.com/paritytech/substrate/tree/master/bin/node-template) upstream
 
-It is usually best to use the stand-alone version to start a new project.
+It is usually best to use the standalone version to start a new project.
 All bugs, suggestions, and feature requests should be made upstream in the [Substrate](https://github.com/paritytech/substrate/tree/master/bin/node-template) repository.
 
 ## Getting Started
 
 Depending on your operating system and Rust version, there might be additional packages required to compile this template.
-Check the [Install](https://docs.substrate.io/install/) instructions for your platform for the most common dependencies.
-Alternatively, you can use one of the [alternative installation](#alternatives-installations) options.
+Check the [installation](https://docs.substrate.io/install/) instructions for your platform for the most common dependencies.
+Alternatively, you can use one of the [alternative installation](#alternative-installations) options.
 
 ### Build
 
@@ -63,7 +63,6 @@ Development chains:
 - Use the **Alice** account as the default `sudo` account.
 - Are preconfigured with a genesis state (`/node/src/chain_spec.rs`) that includes several prefunded development accounts.
 
-
 To persist chain state between runs, specify a base path by running a command similar to the following:
 
 ```sh
@@ -112,14 +111,12 @@ Take special note of the following:
 
 - [`chain_spec.rs`](./node/src/chain_spec.rs): A [chain specification](https://docs.substrate.io/build/chain-spec/) is a source code file that defines a Substrate chain's initial (genesis) state.
   Chain specifications are useful for development and testing, and critical when architecting the launch of a production chain.
-  Take note of the `development_config` and `testnet_genesis` functions,.
+  Take note of the `development_config` and `testnet_genesis` functions.
   These functions are used to define the genesis state for the local development chain configuration.
   These functions identify some [well-known accounts](https://docs.substrate.io/reference/command-line-tools/subkey/) and use them to configure the blockchain's initial state.
 - [`service.rs`](./node/src/service.rs): This file defines the node implementation.
   Take note of the libraries that this file imports and the names of the functions it invokes.
   In particular, there are references to consensus-related topics, such as the [block finalization and forks](https://docs.substrate.io/fundamentals/consensus/#finalization-and-forks) and other [consensus mechanisms](https://docs.substrate.io/fundamentals/consensus/#default-consensus-models) such as Aura for block authoring and GRANDPA for finality.
-
-
 
 ### Runtime
 
@@ -147,9 +144,33 @@ A FRAME pallet is compromised of a number of blockchain primitives:
 - Errors: When a dispatchable fails, it returns an error.
 - Config: The `Config` configuration interface is used to define the types and parameters upon which a FRAME pallet depends.
 
-## Alternatives Installations
+## Alternative Installations
 
 Instead of installing dependencies and building this source directly, consider the following alternatives.
+
+### CI
+
+#### Binary
+
+Check the [CI release workflow](./.github/workflows/release.yml) to see how the binary is built on CI.
+You can modify the compilation targets depending on your needs.
+
+Allow GitHub actions in your forked repository to build the binary for you.
+
+Push a tag. For example, `v0.1.1`. Based on [Semantic Versioning](https://semver.org/), the supported tag format is `v?MAJOR.MINOR.PATCH(-PRERELEASE)?(+BUILD_METADATA)?` (the leading "v", pre-release version, and build metadata are optional and the optional prefix is also supported).
+
+After the pipeline is finished, you can download the binary from the releases page.
+
+#### Container
+
+Check the [CI release workflow](./.github/workflows/release.yml) to see how the Docker image is built on CI.
+
+Add your `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` secrets or other organization settings to your forked repository.
+Change the `DOCKER_REPO` variable in the workflow to `[your DockerHub registry name]/[image name]`.
+
+Push a tag.
+
+After the image is built and pushed, you can pull it with `docker pull <DOCKER_REPO>:<tag>`.
 
 ### Nix
 
@@ -159,3 +180,28 @@ To get all the correct dependencies, activate direnv `direnv allow` and lorri `l
 ### Docker
 
 Please follow the [Substrate Docker instructions here](https://github.com/paritytech/substrate/blob/master/docker/README.md) to build the Docker container with the Substrate Node Template binary.
+
+### Prefunded Developer Accounts
+* **Alith**:
+
+Public Address: 0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac
+
+Private Key: 0x5fb92d6e98884f76de468fa3f6278f8807c48bebc13595d45af5bdc4da702133
+
+* **Baltathar**:
+
+Public Address: 0x3Cd0A705a2DC65e5b1E1205896BaA2be8A07c6e0
+
+Private Key: 0x8075991ce870b93a8870eca0c0f91913d12f47948ca0fd25b49c6fa7cdbeee8b
+
+* **Charleth**:
+
+Public Address: 0x798d4Ba9baf0064Ec19eB4F0a1a45785ae9D6DFc
+
+Private Key: 0x0b6e18cafb6ed99687ec547bd28139cafdd2bffe70e6b688025de6b445aa5c5b
+
+* **Dorothy**:
+
+Public Address: 0x773539d4Ac0e786233D90A233654ccEE26a613D9
+
+Private Key: 0x39539ab1876910bbf3a223d84a29e28f1cb4e2e456503e7e91ed39b2e7223d68
