@@ -16,10 +16,10 @@ releases:
           repository: freeverseio/laos-evolution-node
           tag: {{ requiredEnv "TAG" }}
       - node:
-          legacyRpcFlags: true
           chain: arrakis
           command: "node-template"
           replicas: 2
+          role: "validator"
           chainData:
               volumeSize: 200Gi
           perNodeServices:
@@ -37,7 +37,6 @@ releases:
           repository: freeverseio/laos-evolution-node
           tag: {{ requiredEnv "TAG" }}
       - node:
-          legacyRpcFlags: true
           chain: arrakis
           command: "node-template"
           replicas: 1
