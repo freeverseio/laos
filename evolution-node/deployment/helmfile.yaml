@@ -1,65 +1,49 @@
+repositories:
+  - name: parity
+    url: https://paritytech.github.io/helm-charts/
+
 helmDefaults:
   createNamespace: false
   waitForJobs: true
 
-environments:
-  local:
-    values:
-    - usePersistentStorage: false
-    - ingress:
-        enabled: false
-  default:
-    values:
-    - usePersistentStorage: true
-    - ingress:
-        enabled: true
-
-namespace: arrakis-evolution-chain
-
 releases:
-- name: freeverse0
-  chart: ./laos-evolution-node
-  values:
-  - usePersistentStorage: {{ .Environment.Values.usePersistentStorage }}
-  - image:
-      tag: {{ requiredEnv "TAG" }}
-      args:
-      - --chain=arrakis
-      - --validator
-      - --name=freeverse0
-  - service:
-      type: LoadBalancer
-      ports:
-        p2p: true
-
-- name: freeverse1
-  chart: ./laos-evolution-node
-  values:
-  - usePersistentStorage: {{ .Environment.Values.usePersistentStorage }}
-  - image:
-      tag: {{ requiredEnv "TAG" }}
-      args:
-      - --chain=arrakis
-      - --validator
-      - --name=freeverse1
-  - service:
-      ports:
-        p2p: true
-
-- name: freeverse2
-  chart: ./laos-evolution-node
-  values:
-  - usePersistentStorage: {{ .Environment.Values.usePersistentStorage }}
-  - image:
-      tag: {{ requiredEnv "TAG" }}
-      args:
-      - --chain=arrakis
-      - --name=freeverse2
-      - --ws-external
-      - --rpc-cors=all
-  - service:
-      ports:
-        ws: true
-  - ingress:
-      enabled: {{ .Values.ingress.enabled }}
-      host: "arrakis.gorengine.com"
+  - name: validator
+    namespace: arrakis-evolution-chain
+    chart: parity/node
+    version: 5.1.0
+    values:
+      - image:
+          repository: freeverseio/laos-evolution-node
+          tag: {{ requiredEnv "TAG" }}
+      - node:
+          legacyRpcFlags: true
+          chain: arrakis
+          command: "node-template"
+          replicas: 2
+          chainData:
+              volumeSize: 200Gi
+          perNodeServices:
+            relayP2pService:
+              enabled: true
+              type: LoadBalancer
+            apiService:
+              enabled: false
+  - name: public-node
+    namespace: arrakis-evolution-chain
+    chart: parity/node
+    version: 5.1.0
+    values:
+      - image:
+          repository: freeverseio/laos-evolution-node
+          tag: {{ requiredEnv "TAG" }}
+      - node:
+          legacyRpcFlags: true
+          chain: arrakis
+          command: "node-template"
+          replicas: 1
+          chainData:
+              volumeSize: 200Gi
+          perNodeServices:
+            relayP2pService:
+              enabled: true
+              type: LoadBalancer
