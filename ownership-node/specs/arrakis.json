@@ -3,7 +3,9 @@
   "id": "arrakis_ownership_chain",
   "chainType": "Live",
   "bootNodes": [
-    "/ip4/174.138.105.84/tcp/30334/p2p/12D3KooWLPHNq9Jz8HLwLk7STSsrtuhRT4bCYNzKVLojQy6eootk"
+    "/ip4/174.138.105.84/tcp/30334/p2p/12D3KooWLPHNq9Jz8HLwLk7STSsrtuhRT4bCYNzKVLojQy6eootk",
+    "/ip4/178.128.138.230/tcp/30334/p2p/12D3KooWQRWY52QrbRr5Ygi8DF27qzknHbgWUbL9EcGmmQXK8tro",
+    "/ip4/206.189.241.143/tcp/30334/p2p/12D3KooWAvXvgDGVfT47G8Qs4A9iurduHF3vg7d2gCEj7Zcnj9Z6"
   ],
   "telemetryEndpoints": null,
   "protocolId": "laos-arrakis-ownership-chain",
