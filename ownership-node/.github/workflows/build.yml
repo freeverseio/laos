@@ -1,17 +1,33 @@
-name: Build
+name: Build 
 
 # Controls when the action will run.
-on: [workflow_call] 
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+  workflow_dispatch:
+
+# Set an environment variable (that can be overriden) for the Docker Repo
+env:
+  DOCKER_REPO: freeverseio/laos-ownership-node
 
 jobs:
-  build:
+  build_and_push:
     runs-on: ubuntu-22.04
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      # Caching paths to speed up builds
+      - name: Install linux dependencies
+        run: sudo apt-get install -y clang libssl-dev llvm libudev-dev protobuf-compiler
+
+      - name: Install Rust
+        run: |
+          rustup update stable --no-self-update
+          rustup target add wasm32-unknown-unknown
+
+       # Caching paths to speed up builds
       - name: Cache Paths
         uses: actions/cache@v3
         with:
@@ -21,8 +37,34 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: ${{ runner.os }}-cargo-build-${{ hashFiles('**/Cargo.lock') }} 
-      
+          key: ${{ runner.os }}-cargo-${{ github.job }}-${{ hashFiles('**/Cargo.lock') }} 
+
+      - name: Build
+        run: |
+          cargo build --release
+
+      # Login to Docker hub using the credentials stored in the repository secrets
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2.1.0
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      # create Docker image and push to Docker Hub
+      - name: Push Docker images
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./local.Dockerfile
+          push: true
+          tags: ${{ env.DOCKER_REPO }}:${{ github.sha }}
+
+  lint:
+    runs-on: ubuntu-22.04
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE
+      - uses: actions/checkout@v3
+
       - name: Install linux dependencies
         run: sudo apt-get install -y clang libssl-dev llvm libudev-dev protobuf-compiler
 
@@ -30,13 +72,23 @@ jobs:
         run: |
           rustup update stable --no-self-update
           rustup target add wasm32-unknown-unknown
+          rustup component add clippy
 
-      # Build binary
-      - name: Build
-        run: cargo build --release
-
-      - name: Upload x86_64 linux binary to workflow
-        uses: actions/upload-artifact@v3
+       # Caching paths to speed up builds
+      - name: Cache Paths
+        uses: actions/cache@v3
         with:
-          name: parachain-template-node
-          path: ${{ github.workspace }}/target/release/parachain-template-node
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ github.job }}-${{ hashFiles('**/Cargo.lock') }} 
+ 
+      - name: Check clippy
+        run: |
+          cargo clippy --all-targets --workspace --features runtime-benchmarks --features try-runtime
+
+
+
