@@ -94,5 +94,37 @@ jobs:
         run: |
           cargo clippy --all-targets --workspace --features runtime-benchmarks --features try-runtime
 
+  test:
+    runs-on: 
+      group: laos
+      labels: ubuntu-16-cores
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE
+      - uses: actions/checkout@v3
+
+      - name: Install linux dependencies
+        run: sudo apt-get install -y clang libssl-dev llvm libudev-dev protobuf-compiler
+
+      - name: Install Rust
+        run: |
+          rustup update stable --no-self-update
+          rustup target add wasm32-unknown-unknown
+
+       # Caching paths to speed up builds
+      - name: Cache Paths
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ github.job }}-${{ hashFiles('**/Cargo.lock') }} 
+ 
+      - name: Test
+        run: |
+          cargo test
+
 
 
