@@ -86,7 +86,7 @@ mod precompiles;
 use precompiles::FrontierPrecompiles;
 
 /// Import the template pallet.
-pub use pallet_livingassets_ownership;
+pub use pallet_living_assets_ownership;
 
 /// Alias to 512-bit hash when used in the context of a transaction signature on the chain.
 pub type Signature = MultiSignature;
@@ -501,7 +501,7 @@ impl pallet_collator_selection::Config for Runtime {
 	type WeightInfo = ();
 }
 
-impl pallet_livingassets_ownership::Config for Runtime {
+impl pallet_living_assets_ownership::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 }
 
@@ -688,7 +688,7 @@ construct_runtime!(
 
 		// Template
 		Sudo: pallet_sudo = 40,
-		LivingassetsOwnership: pallet_livingassets_ownership = 41,
+		LivingassetsOwnership: pallet_living_assets_ownership = 41,
 
 		// Frontier
 		Ethereum: pallet_ethereum = 50,

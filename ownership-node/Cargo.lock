@@ -6544,15 +6544,18 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-livingassets-ownership"
+name = "pallet-living-assets-ownership"
 version = "0.0.1"
-source = "git+https://github.com/freeverseio/pallet-livingassets-ownership?branch=feature/updated_substrate_0.9.43#666101084885bf57e644b957f12a44bb790ba9ee"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
  "parity-scale-codec",
  "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
 ]
 
 [[package]]
@@ -7263,7 +7266,7 @@ dependencies = [
  "pallet-evm-precompile-modexp",
  "pallet-evm-precompile-sha3fips",
  "pallet-evm-precompile-simple",
- "pallet-livingassets-ownership",
+ "pallet-living-assets-ownership",
  "pallet-session",
  "pallet-sudo",
  "pallet-timestamp",
