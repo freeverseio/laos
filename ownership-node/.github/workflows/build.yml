@@ -5,7 +5,7 @@ on:
   push:
     branches: [main, dev]
   pull_request:
-    branches: [main, dev]
+    types: [opened, synchronize]
   workflow_dispatch:
 
 # Set an environment variable (that can be overriden) for the Docker Repo
@@ -13,46 +13,40 @@ env:
   DOCKER_REPO: freeverseio/laos-ownership-node
 
 jobs:
-  build_and_push:
+  check:
+    if: github.event_name == 'pull_request'
     runs-on: 
       group: laos
       labels: ubuntu-16-cores
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE
       - uses: actions/checkout@v3
-
-      - name: Install linux dependencies
-        run: sudo apt-get install -y clang libssl-dev llvm libudev-dev protobuf-compiler
-
-      - name: Install Rust
-        run: |
-          rustup update stable --no-self-update
-          rustup target add wasm32-unknown-unknown
-
-       # Caching paths to speed up builds
-      - name: Cache Paths
-        uses: actions/cache@v3
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/cache
         with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-${{ github.job }}-${{ hashFiles('**/Cargo.lock') }} 
+          cache-key: build_and_push
+      - name: Check
+        run: |
+          SKIP_WASM_BUILD=1 cargo check --release
 
+  build_and_push:
+    if: github.event_name == 'push'
+    runs-on: 
+      group: laos
+      labels: ubuntu-16-cores
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/cache
+        with:
+          cache-key: build_and_push
       - name: Build
         run: |
           cargo build --release
-
-      # Login to Docker hub using the credentials stored in the repository secrets
       - name: Log in to Docker Hub
         uses: docker/login-action@v2.1.0
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
-
-      # create Docker image and push to Docker Hub
       - name: Push Docker images
         uses: docker/build-push-action@v4
         with:
@@ -66,29 +60,14 @@ jobs:
       group: laos
       labels: ubuntu-16-cores
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE
       - uses: actions/checkout@v3
-
-      - name: Install linux dependencies
-        run: sudo apt-get install -y clang libssl-dev llvm libudev-dev protobuf-compiler
-
-      - name: Install Rust
-        run: |
-          rustup update stable --no-self-update
-          rustup target add wasm32-unknown-unknown
-          rustup component add clippy
-
-       # Caching paths to speed up builds
-      - name: Cache Paths
-        uses: actions/cache@v3
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/cache
         with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-${{ github.job }}-${{ hashFiles('**/Cargo.lock') }} 
+          cache-key: lint
+      - name: install clippy
+        run: |
+          rustup component add clippy
  
       - name: Check clippy
         run: |
@@ -99,32 +78,12 @@ jobs:
       group: laos
       labels: ubuntu-16-cores
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE
       - uses: actions/checkout@v3
-
-      - name: Install linux dependencies
-        run: sudo apt-get install -y clang libssl-dev llvm libudev-dev protobuf-compiler
-
-      - name: Install Rust
-        run: |
-          rustup update stable --no-self-update
-          rustup target add wasm32-unknown-unknown
-
-       # Caching paths to speed up builds
-      - name: Cache Paths
-        uses: actions/cache@v3
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/cache
         with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-${{ github.job }}-${{ hashFiles('**/Cargo.lock') }} 
+          cache-key: test
  
       - name: Test
         run: |
-          cargo test
-
-
-
+          SKIP_WASM_BUILD=1 cargo test
