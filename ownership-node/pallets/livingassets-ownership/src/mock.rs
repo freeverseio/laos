@@ -50,6 +50,7 @@ impl frame_system::Config for Test {
 
 impl pallet_livingassets_ownership::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
+	type CollectionId = u64;
 }
 
 // Build genesis storage according to the mock runtime.
