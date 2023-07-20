@@ -1,0 +1,53 @@
+[package]
+name = "precompile-utils"
+authors = ["StakeTechnologies", "PureStake"]
+description = "Utils to write EVM precompiles."
+version = "0.4.3"
+edition = "2021"
+
+[dependencies]
+# There's a problem with --all-features when this is moved under dev-deps
+evm = { git = "https://github.com/rust-blockchain/evm", rev = "b7b82c7e1fc57b7449d6dfa6826600de37cc1e65", features = ["std"], optional = true, default-features = false }
+impl-trait-for-tuples = "0.2.1"
+num_enum = { version = "0.5.3", default-features = false }
+sha3 = { version = "0.10.1", default-features = false }
+similar-asserts = { version = "1.1.0", optional = true }
+assert_matches = "1.3.0"
+
+precompile-utils-macro = { path = "./macro", default-features = false }
+
+# Substrate
+frame-support = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.43" }
+frame-system = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.43" }
+parity-scale-codec = { version = "3.2.2", default-features = false }
+sp-core = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.43" }
+sp-io = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.43" }
+sp-runtime = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.43" }
+sp-std = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.43" }
+
+# Frontier
+fp-evm = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.43", default-features = false }
+pallet-evm = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.43", default-features = false }
+
+# Polkadot / XCM
+xcm = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.43" }
+
+[dev-dependencies]
+hex-literal = "0.3.4"
+
+[features]
+default = ["std"]
+std = [
+	"evm/std",
+	"parity-scale-codec/std",
+	"fp-evm/std",
+	"frame-support/std",
+	"frame-system/std",
+	"pallet-evm/std",
+	"sp-core/std",
+	"sp-io/std",
+	"sp-std/std",
+	"sp-runtime/std",
+	"xcm/std",
+]
+testing = ["similar-asserts", "std"]

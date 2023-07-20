@@ -3,30 +3,40 @@
 use pallet_evm::{
 	IsPrecompileResult, Precompile, PrecompileHandle, PrecompileResult, PrecompileSet,
 };
+use polkadot_primitives::BlakeTwo256;
 use sp_core::H160;
 use sp_std::marker::PhantomData;
 
+use pallet_evm_living_assets_ownership::LivingAssetsOwnershipPrecompile;
 use pallet_evm_precompile_modexp::Modexp;
-use pallet_evm_precompile_sha3fips::Sha3FIPS256;
 use pallet_evm_precompile_simple::{ECRecover, ECRecoverPublicKey, Identity, Ripemd160, Sha256};
 
-pub struct FrontierPrecompiles<R>(PhantomData<R>);
+use crate::{AccountId, CollectionId};
 
-impl<R> FrontierPrecompiles<R>
+pub struct FrontierPrecompiles<Runtime>(PhantomData<Runtime>);
+
+impl<Runtime> FrontierPrecompiles<Runtime>
 where
-	R: pallet_evm::Config,
+	Runtime: pallet_evm::Config,
 {
 	pub fn new() -> Self {
 		Self(Default::default())
 	}
 	pub fn used_addresses() -> [H160; 7] {
-		[hash(1), hash(2), hash(3), hash(4), hash(5), hash(1024), hash(1025)]
+		[hash(1), hash(2), hash(3), hash(4), hash(5), hash(1025), hash(1026)]
 	}
 }
 
-impl<R> PrecompileSet for FrontierPrecompiles<R>
+type LivingAssetsPrecompile = LivingAssetsOwnershipPrecompile<
+	pallet_evm::HashedAddressMapping<BlakeTwo256>,
+	AccountId,
+	CollectionId,
+	pallet_living_assets_ownership::Pallet<crate::Runtime>,
+>;
+
+impl<Runtime> PrecompileSet for FrontierPrecompiles<Runtime>
 where
-	R: pallet_evm::Config,
+	Runtime: pallet_evm::Config + pallet_living_assets_ownership::Config,
 {
 	fn execute(&self, handle: &mut impl PrecompileHandle) -> Option<PrecompileResult> {
 		match handle.code_address() {
@@ -37,8 +47,9 @@ where
 			a if a == hash(4) => Some(Identity::execute(handle)),
 			a if a == hash(5) => Some(Modexp::execute(handle)),
 			// Non-Frontier specific nor Ethereum precompiles :
-			a if a == hash(1024) => Some(Sha3FIPS256::execute(handle)),
+			// a if a == hash(1024) => Some(Sha3FIPS256::execute(handle)),
 			a if a == hash(1025) => Some(ECRecoverPublicKey::execute(handle)),
+			a if a == hash(1026) => Some(LivingAssetsPrecompile::execute(handle)),
 			_ => None,
 		}
 	}

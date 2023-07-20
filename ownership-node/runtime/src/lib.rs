@@ -98,6 +98,9 @@ pub type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::Account
 /// Balance of an account.
 pub type Balance = u128;
 
+/// Collection id
+pub type CollectionId = u64;
+
 /// Index of a transaction in the chain.
 pub type Index = u32;
 
@@ -503,7 +506,7 @@ impl pallet_collator_selection::Config for Runtime {
 
 impl pallet_living_assets_ownership::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type CollectionId = u64;
+	type CollectionId = CollectionId;
 }
 
 impl pallet_sudo::Config for Runtime {

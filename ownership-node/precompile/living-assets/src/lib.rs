@@ -1,0 +1,108 @@
+//! Living Assets precompile module.
+
+#![cfg_attr(not(feature = "std"), no_std)]
+#![cfg_attr(test, feature(assert_matches))]
+use fp_evm::{ExitError, ExitSucceed, PrecompileFailure, PrecompileHandle, PrecompileOutput};
+use frame_support::log;
+use pallet_living_assets_ownership::LivingAssetsOwnership;
+use parity_scale_codec::Encode;
+use precompile_utils::{Address, EvmResult, FunctionModifier, PrecompileHandleExt};
+use sp_arithmetic::traits::BaseArithmetic;
+use sp_runtime::SaturatedConversion;
+
+use sp_std::marker::PhantomData;
+
+#[precompile_utils_macro::generate_function_selector]
+#[derive(Debug, PartialEq)]
+pub enum Action {
+	/// Create a new collection
+	CreateCollection = "createCollection(uint64,address)",
+	/// Get owner of the collection
+	OwnerOfCollection = "owner_of_collection(uint64)",
+}
+
+/// Wrapper for the precompile function.
+pub struct LivingAssetsOwnershipPrecompile<AddressMapping, AccountId, CollectionId, LivingAssets>(
+	PhantomData<(AddressMapping, AccountId, CollectionId, LivingAssets)>,
+)
+where
+	AddressMapping: pallet_evm::AddressMapping<AccountId>,
+	AccountId: Encode,
+	CollectionId: BaseArithmetic,
+	LivingAssets: LivingAssetsOwnership<AccountId, CollectionId>;
+
+impl<AddressMapping, AccountId, CollectionId, LivingAssets>
+	LivingAssetsOwnershipPrecompile<AddressMapping, AccountId, CollectionId, LivingAssets>
+where
+	AddressMapping: pallet_evm::AddressMapping<AccountId>,
+	AccountId: Encode,
+	CollectionId: BaseArithmetic,
+	LivingAssets: LivingAssetsOwnership<AccountId, CollectionId>,
+{
+	#[allow(clippy::new_without_default)]
+	pub fn new() -> Self {
+		Self(PhantomData)
+	}
+}
+
+impl<AddressMapping, AccountId, CollectionId, LivingAssets> fp_evm::Precompile
+	for LivingAssetsOwnershipPrecompile<AddressMapping, AccountId, CollectionId, LivingAssets>
+where
+	AddressMapping: pallet_evm::AddressMapping<AccountId>,
+	AccountId: Encode,
+	CollectionId: BaseArithmetic,
+	LivingAssets: LivingAssetsOwnership<AccountId, CollectionId>,
+{
+	fn execute(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
+		log::trace!(target: "ds-precompile", "Execute input = {:?}", handle.input());
+		let selector = handle.read_selector()?;
+
+		handle.check_function_modifier(match selector {
+			Action::OwnerOfCollection => FunctionModifier::View,
+			_ => FunctionModifier::NonPayable,
+		})?;
+
+		match selector {
+			// read storage
+			Action::OwnerOfCollection => {
+				let mut input = handle.read_input()?;
+				input.expect_arguments(1)?;
+
+				if let Some(owner) =
+					LivingAssets::owner_of_collection(input.read::<u64>()?.saturated_into())
+				{
+					Ok(PrecompileOutput {
+						exit_status: ExitSucceed::Returned,
+						output: owner.encode(),
+					})
+				} else {
+					Ok(PrecompileOutput {
+						exit_status: ExitSucceed::Stopped,
+						output: sp_std::vec::Vec::new(),
+					})
+				}
+			},
+			// write storage
+			Action::CreateCollection => {
+				let mut input = handle.read_input()?;
+				input.expect_arguments(2)?;
+
+				let collection_id = input.read::<u64>()?.saturated_into();
+				let owner = AddressMapping::into_account_id(input.read::<Address>()?.0);
+
+				if LivingAssets::create_collection(collection_id, owner).is_err() {
+					return Err(PrecompileFailure::Error {
+						exit_status: ExitError::Other(sp_std::borrow::Cow::Borrowed(
+							"Could net create collection",
+						)),
+					})
+				}
+
+				Ok(PrecompileOutput {
+					exit_status: ExitSucceed::Returned,
+					output: sp_std::vec::Vec::new(),
+				})
+			},
+		}
+	}
+}
