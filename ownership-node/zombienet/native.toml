@@ -1,5 +1,5 @@
 [relaychain]
-default_command = "~/Documents/efinity/polkadot/target/release/polkadot"
+default_command = "{{ZOMBIENET_RELAYCHAIN_COMMAND}}"
 default_args = [ "-lparachain=debug" ]
 chain = "rococo-local"
 
@@ -18,5 +18,5 @@ chain = "local"
 
   [parachains.collator]
   name = "ownership-collator-pandora"
-  command = "./target/release/parachain-template-node"
+  command = "{{ZOMBIENET_PARACHAIN_COMMAND}}"
   validator = true
