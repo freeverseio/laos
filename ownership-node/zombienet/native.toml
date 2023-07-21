@@ -18,5 +18,7 @@ chain = "local"
 
   [parachains.collator]
   name = "ownership-collator-pandora"
+  ws_port = 9999
   command = "{{ZOMBIENET_PARACHAIN_COMMAND}}"
   validator = true
+  args = ["-ldebug,info"]
