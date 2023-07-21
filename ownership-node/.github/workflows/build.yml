@@ -65,10 +65,12 @@ jobs:
       - uses: ./.github/actions/cache
         with:
           cache-key: lint
+      - name: check format
+        run: |
+          cargo fmt --all --check
       - name: install clippy
         run: |
           rustup component add clippy
- 
       - name: Check clippy
         run: |
           cargo clippy --all-targets --workspace --features runtime-benchmarks --features try-runtime

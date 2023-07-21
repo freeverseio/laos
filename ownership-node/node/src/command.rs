@@ -327,7 +327,7 @@ pub fn run() -> Result<()> {
 					AccountIdConversion::<polkadot_primitives::v4::AccountId>::into_account_truncating(&id);
 
 				let state_version = Cli::native_runtime_version(&config.chain_spec).state_version();
-				
+
 				#[allow(clippy::redundant_clone)]
 				let block: Block = generate_genesis_block(&*config.chain_spec, state_version)
 					.map_err(|e| e.to_string())?;

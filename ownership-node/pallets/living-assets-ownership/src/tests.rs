@@ -6,7 +6,7 @@ mod test {
 	use super::*;
 
 	type AccountId = <Test as frame_system::Config>::AccountId;
-    type CollectionId = <Test as crate::Config>::CollectionId;
+	type CollectionId = <Test as crate::Config>::CollectionId;
 
 	#[test]
 	fn owner_of_unexistent_collection_is_none() {
@@ -48,7 +48,7 @@ mod test {
 
 	#[test]
 	fn living_assets_ownership_trait_create_new_collection_by_living() {
-    	new_test_ext().execute_with(|| {
+		new_test_ext().execute_with(|| {
         	let result = <LivingAssetsModule as LivingAssetsOwnership<AccountId, CollectionId>>::create_collection(0, 1);
         	assert_ok!(result);
         	assert_eq!(LivingAssetsModule::owner_of_collection(0), Some(1));
