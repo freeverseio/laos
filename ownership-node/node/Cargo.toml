@@ -1,5 +1,5 @@
 [package]
-name = "parachain-template-node"
+name = "laos"
 version = "0.1.0"
 authors = ["Anonymous"]
 description = "A new Cumulus FRAME-based Substrate Node, ready for hacking together a parachain."
@@ -19,7 +19,7 @@ jsonrpsee = { version = "0.16.2", features = ["server"] }
 hex-literal = { version = "0.4.1" }
 
 # Local
-parachain-template-runtime = { path = "../runtime" }
+laos-runtime = { path = "../runtime" }
 
 # Substrate
 frame-benchmarking = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43" }
@@ -87,7 +87,7 @@ substrate-build-script-utils = { git = "https://github.com/paritytech/substrate"
 [features]
 default = []
 runtime-benchmarks = [
-	"parachain-template-runtime/runtime-benchmarks",
+	"laos-runtime/runtime-benchmarks",
 	"polkadot-cli/runtime-benchmarks",
 	"polkadot-service/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
@@ -98,7 +98,7 @@ runtime-benchmarks = [
 ]
 try-runtime = [
 	"try-runtime-cli/try-runtime",
-	"parachain-template-runtime/try-runtime",
+	"laos-runtime/try-runtime",
 	"polkadot-cli/try-runtime",
 	"polkadot-service/try-runtime",
 	"sp-runtime/try-runtime",

@@ -14,7 +14,7 @@ FROM docker.io/library/ubuntu:22.04
 RUN useradd -m -u 1000 -U -s /bin/sh -d /laos laos 
 
 # Copy binary from builder
-COPY --from=builder /laos/target/release/parachain-template-node /usr/local/bin
+COPY --from=builder /laos/target/release/laos /usr/local/bin
 
 # Set up directories and permissions
 RUN mkdir -p /data /laos/.local/share && \
@@ -22,7 +22,7 @@ RUN mkdir -p /data /laos/.local/share && \
     ln -s /data /laos/.local/share/laos 
 
 # Check if executable works in this container
-RUN su laos -c '/usr/local/bin/parachain-template-node --version'
+RUN su laos -c '/usr/local/bin/laos --version'
 
 # Switch to user laos
 USER laos
@@ -34,4 +34,4 @@ EXPOSE 9930 9333 9944 30333 30334
 VOLUME ["/data"]
 
 # Set the entrypoint
-ENTRYPOINT ["/usr/local/bin/parachain-template-node"]
+ENTRYPOINT ["/usr/local/bin/laos"]

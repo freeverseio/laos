@@ -7,7 +7,7 @@
 
 use std::sync::Arc;
 
-use parachain_template_runtime::{opaque::Block, AccountId, Balance, Index as Nonce};
+use laos_runtime::{opaque::Block, AccountId, Balance, Index as Nonce};
 
 use sc_client_api::{
 	backend::{AuxStore, Backend, StorageProvider},

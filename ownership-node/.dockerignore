@@ -3,7 +3,7 @@
 **/*.txt
 **/*.md
 /docker/
-!/target/release/parachain-template-node
+!/target/release/laos
 
 # dotfiles in the repo root
 /.*
