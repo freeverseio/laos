@@ -9,9 +9,9 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 mod weights;
 pub mod xcm_config;
 
-use codec::{Decode, Encode};
 use core::marker::PhantomData;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
+use parity_scale_codec::{Decode, Encode};
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
 use sp_core::{

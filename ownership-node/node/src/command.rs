@@ -1,11 +1,11 @@
 use std::net::SocketAddr;
 
-use codec::Encode;
 use cumulus_client_cli::generate_genesis_block;
 use cumulus_primitives_core::ParaId;
 use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
 use laos_runtime::Block;
 use log::{info, warn};
+use parity_scale_codec::Encode;
 use polkadot_service::RococoChainSpec;
 use sc_cli::{
 	ChainSpec, CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams,

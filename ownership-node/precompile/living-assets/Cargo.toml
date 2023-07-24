@@ -8,32 +8,32 @@ repository = "https://github.com/freeverseio/pallet-livingassets-ownership"
 edition = "2021"
 
 [dependencies]
-parity-scale-codec = { version = "3.2.2", default-features = false, features = [
+parity-scale-codec = { workspace = true, features = [
 	"derive",
 ] }
-scale-info = { version = "2.0", default-features = false, features = [
+scale-info = { workspace = true, features = [
 	"derive",
 ] }
 
 # Frontier
-fp-evm = { git = "https://github.com/paritytech/frontier.git", branch = "polkadot-v0.9.43", default-features = false }
-pallet-evm = { git = "https://github.com/paritytech/frontier.git", branch = "polkadot-v0.9.43", default-features = false }
+fp-evm = { workspace = true }
+pallet-evm = { workspace = true }
 
 # Substrate
-frame-support = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.43" }
-sp-arithmetic = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.43" }
-sp-core = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.43" }
-sp-runtime = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.43" }
-sp-std = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.43" }
+frame-support = { workspace = true }
+sp-arithmetic = { workspace = true }
+sp-core = { workspace = true }
+sp-runtime = { workspace = true }
+sp-std = { workspace = true }
 
 # Local pallet
-pallet-living-assets-ownership = { path = "../../pallets/living-assets-ownership", default-features = false }
+pallet-living-assets-ownership = { workspace = true }
 
 # Utils
-precompile-utils = { path = "../utils", default-features = false }
-precompile-utils-macro = { path = "../utils/macro", default-features = false }
+precompile-utils = { workspace = true }
+precompile-utils-macro = { workspace = true }
 
-num_enum = { version = "0.5.3", default-features = false }
+num_enum = { workspace = true }
 
 [features]
 default = ["std"]
