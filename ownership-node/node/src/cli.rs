@@ -1,7 +1,9 @@
+use crate::eth::EthConfiguration;
 use std::path::PathBuf;
 
 /// Sub-commands supported by the collator.
 #[derive(Debug, clap::Subcommand)]
+#[allow(clippy::large_enum_variant)]
 pub enum Subcommand {
 	/// Build a chain specification.
 	BuildSpec(sc_cli::BuildSpecCmd),
@@ -42,27 +44,17 @@ pub enum Subcommand {
 	/// Errors since the binary was not build with `--features try-runtime`.
 	#[cfg(not(feature = "try-runtime"))]
 	TryRuntime,
+
+	/// Db meta columns information.
+	FrontierDb(fc_cli::FrontierDbCmd),
 }
 
-const AFTER_HELP_EXAMPLE: &str = color_print::cstr!(
-	r#"<bold><underline>Examples:</></>
-   <bold>parachain-template-node build-spec --disable-default-bootnode > plain-parachain-chainspec.json</>
-           Export a chainspec for a local testnet in json format.
-   <bold>parachain-template-node --chain plain-parachain-chainspec.json --tmp -- --chain rococo-local</>
-           Launch a full node with chain specification loaded from plain-parachain-chainspec.json.
-   <bold>parachain-template-node</>
-           Launch a full node with default parachain <italic>local-testnet</> and relay chain <italic>rococo-local</>.
-   <bold>parachain-template-node --collator</>
-           Launch a collator with default parachain <italic>local-testnet</> and relay chain <italic>rococo-local</>.
- "#
-);
 #[derive(Debug, clap::Parser)]
 #[command(
 	propagate_version = true,
 	args_conflicts_with_subcommands = true,
 	subcommand_negates_reqs = true
 )]
-#[clap(after_help = AFTER_HELP_EXAMPLE)]
 pub struct Cli {
 	#[command(subcommand)]
 	pub subcommand: Option<Subcommand>,
@@ -83,6 +75,10 @@ pub struct Cli {
 	/// Relay chain arguments
 	#[arg(raw = true)]
 	pub relay_chain_args: Vec<String>,
+
+	// Frontier arguments
+	#[command(flatten)]
+	pub eth: EthConfiguration,
 }
 
 #[derive(Debug)]
@@ -105,7 +101,11 @@ impl RelayChainCli {
 	) -> Self {
 		let extension = crate::chain_spec::Extensions::try_get(&*para_config.chain_spec);
 		let chain_id = extension.map(|e| e.relay_chain.clone());
-		let base_path = para_config.base_path.as_ref().map(|x| x.path().join("polkadot"));
-		Self { base_path, chain_id, base: clap::Parser::parse_from(relay_chain_args) }
+		let base_path = para_config.base_path.path().join("polkadot");
+		Self {
+			base_path: Some(base_path),
+			chain_id,
+			base: clap::Parser::parse_from(relay_chain_args),
+		}
 	}
 }

@@ -1,22 +1,30 @@
-# Substrate Cumulus Parachain Template
+# LAOS Ownership Parachain
 
-A new [Cumulus](https://github.com/paritytech/cumulus/)-based Substrate node, ready for hacking ☁️..
+The LAOS Ownership Parachain is a specialized chain built on Polkadot. 
 
-This project is originally a fork of the
-[Substrate Node Template](https://github.com/substrate-developer-hub/substrate-node-template)
-modified to include dependencies required for registering this node as a **parathread** or
-**parachain** to a **relay chain**.
+It offers several functionalities that enable the management and transfer of LAOS native utility tokens, as well as the ownership of all LA (Living Assets) created directly within LAOS. Additionally, the Parachain handles the runtime upgrades and stores state roots of Evolution Chains (Evochains), providing asset attribute certification methods and rewarding Evochain validators upon receiving new correct roots. 
 
-The stand-alone version of this template is hosted on the
-[Substrate Devhub Parachain Template](https://github.com/substrate-developer-hub/substrate-parachain-template/)
-for each release of Polkadot. It is generated directly to the upstream
-[Parachain Template in Cumulus](https://github.com/paritytech/cumulus/tree/master/parachain-template)
-at each release branch using the
-[Substrate Template Generator](https://github.com/paritytech/substrate-template-generator/).
+## Run your own Node
 
-👉 Learn more about parachains [here](https://wiki.polkadot.network/docs/learn-parachains), and
-parathreads [here](https://wiki.polkadot.network/docs/learn-parathreads).
+You can start and sync ownership node locally with the following command:
+```
+$ docker run freeverseio/laos-ownership-node:<release> --chain=arrakis
+```
 
+## Networks
+### Arrakis (testnet)
 
-🧙 Learn about how to use this template and run your own parachain testnet for it in the
-[Devhub Cumulus Tutorial](https://docs.substrate.io/tutorials/v3/cumulus/start-relay/).
+The Arrakis network serves as the testnet for the LAOS Ownership Parachain. It can be accessed and interacted with using either the Substrate RPC (Polkadot JS extension) or the Ethereum RPC wallet (Metamask).
+
+#### Substrate RPC
+* **RPC URL**: wss://arrakis.gorengine.com/own
+
+#### Ethereum RPC
+* **Network ID**: Arrakis
+* **Chain ID**: 667
+* **RPC URL**: https://arrakis.gorengine.com/own
+* **Currency Symbol**: DROP
+
+## Contributing
+
+Contributions to the LAOS Ownership Parachain project are welcome.
