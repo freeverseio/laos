@@ -690,7 +690,7 @@ construct_runtime!(
 		CumulusXcm: cumulus_pallet_xcm = 32,
 		DmpQueue: cumulus_pallet_dmp_queue = 33,
 
-		// Sudo 
+		// Sudo
 		Sudo: pallet_sudo = 40,
 
 		// Local pallets
