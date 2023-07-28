@@ -39,7 +39,6 @@ pub enum Subcommand {
 	// /// Sub-commands concerned with benchmarking.
 	// #[command(subcommand)]
 	// Benchmark(frame_benchmarking_cli::BenchmarkCmd),
-
 	/// Try some command against runtime state.
 	#[cfg(feature = "try-runtime")]
 	TryRuntime(try_runtime_cli::TryRuntimeCmd),
