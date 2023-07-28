@@ -5,7 +5,7 @@ use crate::{
 	service,
 };
 // use frame_benchmarking_cli::{BenchmarkCmd, ExtrinsicFactory, SUBSTRATE_REFERENCE_HARDWARE};
-use node_template_runtime::{Block, /* EXISTENTIAL_DEPOSIT */};
+use node_template_runtime::Block;
 use sc_cli::{ChainSpec, RuntimeVersion, SubstrateCli};
 use sc_service::PartialComponents;
 // use sp_keyring::Sr25519Keyring;
@@ -40,7 +40,9 @@ impl SubstrateCli for Cli {
 
 	fn load_spec(&self, id: &str) -> Result<Box<dyn sc_service::ChainSpec>, String> {
 		Ok(match id {
-			"arrakis" => Box::new(chain_spec::ChainSpec::from_json_bytes(&include_bytes!("../../specs/arrakis-v0.json")[..])?),
+			"arrakis" => Box::new(chain_spec::ChainSpec::from_json_bytes(
+				&include_bytes!("../../specs/arrakis-v0.json")[..],
+			)?),
 			"dev" => Box::new(chain_spec::development_config()?),
 			"" | "local" => Box::new(chain_spec::local_testnet_config()?),
 			path =>
@@ -109,7 +111,7 @@ pub fn run() -> sc_cli::Result<()> {
 				Ok((cmd.run(client, backend, Some(aux_revert)), task_manager))
 			})
 		},
-/*		Some(Subcommand::Benchmark(cmd)) => {
+		/*		Some(Subcommand::Benchmark(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 
 			runner.sync_run(|config| {
