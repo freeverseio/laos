@@ -131,8 +131,8 @@ mod tests {
 			Ok(())
 		}
 
-		fn owner_of_collection(_collection_id: u64) -> Option<AccountId> {
-			None
+		fn owner_of_collection(_collection_id: CollectionId) -> Option<AccountId> {
+			Some(H160::zero())
 		}
 	}
 
@@ -140,8 +140,14 @@ mod tests {
 		LivingAssetsOwnershipPrecompile<AddressMapping, AccountId, CollectionId, LivingAssets>;
 
 	#[test]
-	fn hello_world() -> Result<(), String> {
+	fn check_create_collection() -> Result<(), String> {
 		test_precompile_test_vectors::<Precompile>("testdata/living_assets_ownership.json")?;
+		Ok(())
+	}
+
+	#[test]
+	fn check_owner_of() -> Result<(), String> {
+		test_precompile_test_vectors::<Precompile>("testdata/owner_of.json")?;
 		Ok(())
 	}
 }
