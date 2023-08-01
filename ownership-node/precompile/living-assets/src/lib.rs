@@ -108,8 +108,8 @@ where
 mod tests {
 	use super::*;
 	use pallet_evm_test_vector_support::test_precompile_test_vectors;
-	use sp_runtime::DispatchResult;
 	use sp_core::H160;
+	use sp_runtime::DispatchResult;
 
 	type AccountId = H160;
 	type CollectionId = u64;
@@ -121,7 +121,7 @@ mod tests {
 	impl pallet_living_assets_ownership::LivingAssetsOwnership<AccountId, CollectionId>
 		for CollectionManagerMock
 	{
-fn create_collection(_collection_id: CollectionId, _who: AccountId) -> DispatchResult {
+		fn create_collection(_collection_id: CollectionId, _who: AccountId) -> DispatchResult {
 			Ok(())
 		}
 
@@ -130,7 +130,8 @@ fn create_collection(_collection_id: CollectionId, _who: AccountId) -> DispatchR
 		}
 	}
 
-	type Precompile = LivingAssetsOwnershipPrecompile<AddressMapping, AccountId, CollectionId, LivingAssets>;
+	type Precompile =
+		LivingAssetsOwnershipPrecompile<AddressMapping, AccountId, CollectionId, LivingAssets>;
 
 	#[test]
 	fn hello_world() -> Result<(), String> {
@@ -138,4 +139,3 @@ fn create_collection(_collection_id: CollectionId, _who: AccountId) -> DispatchR
 		Ok(())
 	}
 }
-
