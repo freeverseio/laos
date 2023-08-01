@@ -120,7 +120,6 @@ mod tests {
 	type AccountId = H160;
 	type CollectionId = u64;
 	type AddressMapping = pallet_evm::IdentityAddressMapping;
-	type LivingAssets = CollectionManagerMock;
 
 	struct CollectionManagerMock;
 
@@ -137,7 +136,7 @@ mod tests {
 	}
 
 	type Precompile =
-		LivingAssetsOwnershipPrecompile<AddressMapping, AccountId, CollectionId, LivingAssets>;
+		LivingAssetsOwnershipPrecompile<AddressMapping, AccountId, CollectionId, CollectionManagerMock>;
 
 	#[test]
 	fn check_create_collection() -> Result<(), String> {
