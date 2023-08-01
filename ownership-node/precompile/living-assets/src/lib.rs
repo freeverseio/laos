@@ -135,8 +135,12 @@ mod tests {
 		}
 	}
 
-	type Precompile =
-		LivingAssetsOwnershipPrecompile<AddressMapping, AccountId, CollectionId, CollectionManagerMock>;
+	type Precompile = LivingAssetsOwnershipPrecompile<
+		AddressMapping,
+		AccountId,
+		CollectionId,
+		CollectionManagerMock,
+	>;
 
 	#[test]
 	fn check_create_collection() -> Result<(), String> {
