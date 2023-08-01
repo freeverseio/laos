@@ -141,7 +141,7 @@ mod tests {
 
 	#[test]
 	fn hello_world() -> Result<(), String> {
-		test_precompile_test_vectors::<Precompile>("testdata/hello_world.json")?;
+		test_precompile_test_vectors::<Precompile>("testdata/living_assets_ownership.json")?;
 		Ok(())
 	}
 }
