@@ -111,6 +111,12 @@ mod tests {
 	use sp_core::H160;
 	use sp_runtime::DispatchResult;
 
+	#[test]
+	fn check_selectors() {
+		assert_eq!(Action::CreateCollection as u32, 0x1EAF2516);
+		assert_eq!(Action::OwnerOfCollection as u32, 0xFB34AE53);
+	}
+
 	type AccountId = H160;
 	type CollectionId = u64;
 	type AddressMapping = pallet_evm::IdentityAddressMapping;
