@@ -37,6 +37,16 @@ fn create_collection_on_mock_fail_with_other_error() {
 }
 
 #[test]
+fn create_collection_on_mock_with_nonzero_value_fails() {
+	define_precompile_mock!(Ok(()), Some(H160::zero()));
+
+	let input = "1eaf25160000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b7469c43535c826e29c30d25a9f3a035759cf132";
+	let mut handle = create_mock_handle(input, 0, 1);
+	let result = PrecompileMock::execute(&mut handle);
+	assert!(result.is_err());
+}
+
+#[test]
 fn create_collection_on_mock_fail_with_corruption_error() {
 	define_precompile_mock!(Err(DispatchError::Corruption), Some(H160::zero()));
 
@@ -50,6 +60,16 @@ fn create_collection_on_mock_fail_with_corruption_error() {
 			exit_status: ExitError::Other(sp_std::borrow::Cow::Borrowed("Corruption"))
 		}
 	);
+}
+
+#[test]
+fn owner_of_with_nonzero_transfer_should_fail() {
+	define_precompile_mock!(Ok(()), None);
+
+	let input = "fb34ae530000000000000000000000000000000000000000000000000000000000000000";
+	let mut handle = create_mock_handle(input, 0, 1);
+	let result = PrecompileMock::execute(&mut handle);
+	assert!(result.is_err());
 }
 
 #[test]
