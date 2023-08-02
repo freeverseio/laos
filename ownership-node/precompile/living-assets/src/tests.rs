@@ -4,6 +4,8 @@ use helpers::*;
 use sp_core::H160;
 use sp_runtime::{DispatchError, DispatchResult};
 
+type CollectionId = u64;
+
 #[test]
 fn check_selectors() {
 	assert_eq!(Action::CreateCollection as u32, 0x1EAF2516);
@@ -110,14 +112,90 @@ fn call_unexistent_selector_should_fail() {
 	);
 }
 
+#[test]
+fn create_collection_with_max_id() {
+	define_precompile_mock_closures!(
+		PrecompileMock, // name of the defined precompile
+		|collection_id, _| {
+			assert_eq!(collection_id, CollectionId::max_value());
+			Ok(())
+		}, // Closure for create_collection result
+		|_| { Some(H160::zero()) }  // Closure for owner_of_collection result
+	);
+
+	let input = "1eaf2516000000000000000000000000000000000000000000000000ffffffffffffffff000000000000000000000000b7469c43535c826e29c30d25a9f3a035759cf132";
+	let mut handle = create_mock_handle(input, 0, 0);
+	let result = PrecompileMock::execute(&mut handle);
+	assert!(result.is_ok());
+}
+
 mod helpers {
 	use evm::Context;
 	use pallet_evm_test_vector_support::MockHandle;
+
+	/// Macro to define a precompile mock with custom closures for testing.
+	///
+	/// This macro creates mock implementations of the `LivingAssetsOwnership` trait,
+	/// allowing you to test how your code interacts with the precompiled contracts.
+	/// You can define custom closures for the create_collection and owner_of_collection functions.
+	///
+	/// # Arguments
+	///
+	/// * `$name`: An identifier to name the precompile mock type.
+	/// * `$create_collection_result`: A closure that takes `collection_id` and `who` and returns a `DispatchResult`.
+	/// * `$owner_of_collection_result`: A closure that takes `collection_id` and returns an `Option<AccountId>`.
+	///
+	/// # Example
+	///
+	/// ```
+	/// define_precompile_mock_closures!(
+	///     MyPrecompileMock,
+	///     |collection_id, who| { Ok(()) },
+	///     |collection_id| { Some(H160::zero()) }
+	/// );
+	/// ```
+	#[macro_export]
+	macro_rules! define_precompile_mock_closures {
+		($name:ident, $create_collection_result:expr, $owner_of_collection_result:expr) => {
+			type AccountId = H160;
+			type AddressMapping = pallet_evm::IdentityAddressMapping;
+
+			struct CollectionManagerMock;
+
+			impl pallet_living_assets_ownership::LivingAssetsOwnership<AccountId, CollectionId>
+				for CollectionManagerMock
+			{
+				fn create_collection(
+					collection_id: CollectionId,
+					who: AccountId,
+				) -> DispatchResult {
+					($create_collection_result)(collection_id, who)
+				}
+
+				fn owner_of_collection(collection_id: CollectionId) -> Option<AccountId> {
+					($owner_of_collection_result)(collection_id)
+				}
+			}
+
+			type $name = LivingAssetsOwnershipPrecompile<
+				AddressMapping,
+				AccountId,
+				CollectionId,
+				CollectionManagerMock,
+			>;
+		};
+	}
 
 	/// Macro to define a precompile mock for testing.
 	///
 	/// This macro creates mock implementations of the `LivingAssetsOwnership` trait,
 	/// allowing you to test how your code interacts with the precompiled contracts.
+	/// The mock type is named `PrecompileMock`, and the implementation uses the provided expressions.
+	///
+	/// # Arguments
+	///
+	/// * `$create_collection_result`: An expression that evaluates to a `DispatchResult`.
+	/// * `$owner_of_collection_result`: An expression that evaluates to an `Option<AccountId>`.
 	///
 	/// # Example
 	///
@@ -127,33 +205,11 @@ mod helpers {
 	#[macro_export]
 	macro_rules! define_precompile_mock {
 		($create_collection_result:expr, $owner_of_collection_result:expr) => {
-			type AccountId = H160;
-			type CollectionId = u64;
-			type AddressMapping = pallet_evm::IdentityAddressMapping;
-
-			struct CollectionManagerMock;
-
-			impl pallet_living_assets_ownership::LivingAssetsOwnership<AccountId, CollectionId>
-				for CollectionManagerMock
-			{
-				fn create_collection(
-					_collection_id: CollectionId,
-					_who: AccountId,
-				) -> DispatchResult {
-					$create_collection_result
-				}
-
-				fn owner_of_collection(_collection_id: CollectionId) -> Option<AccountId> {
-					$owner_of_collection_result
-				}
-			}
-
-			type PrecompileMock = LivingAssetsOwnershipPrecompile<
-				AddressMapping,
-				AccountId,
-				CollectionId,
-				CollectionManagerMock,
-			>;
+			define_precompile_mock_closures!(
+				PrecompileMock,
+				|_collection_id, _who| { $create_collection_result },
+				|_collection_id| { $owner_of_collection_result }
+			);
 		};
 	}
 
