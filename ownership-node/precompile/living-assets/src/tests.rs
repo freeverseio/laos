@@ -21,8 +21,8 @@ fn create_collection_on_mock_succeed_should_succeed() {
 }
 
 #[test]
-fn create_collection_on_mock_fail_should_error() {
-	define_precompile_mock!(Err(DispatchError::Other("error")), Some(H160::zero()));
+fn create_collection_on_mock_fail_with_other_error() {
+	define_precompile_mock!(Err(DispatchError::Other("pizza error")), Some(H160::zero()));
 
 	let input = "1eaf25160000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b7469c43535c826e29c30d25a9f3a035759cf132";
 	let mut handle = create_mock_handle(input, 0);
@@ -32,7 +32,25 @@ fn create_collection_on_mock_fail_should_error() {
 		result.unwrap_err(),
 		PrecompileFailure::Error {
 			exit_status: ExitError::Other(sp_std::borrow::Cow::Borrowed(
-				"Could net create collection"
+				"pizza error"
+			))
+		}
+	);
+}
+
+#[test]
+fn create_collection_on_mock_fail_with_corruption_error() {
+	define_precompile_mock!(Err(DispatchError::Corruption), Some(H160::zero()));
+
+	let input = "1eaf25160000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b7469c43535c826e29c30d25a9f3a035759cf132";
+	let mut handle = create_mock_handle(input, 0);
+	let result = PrecompileMock::execute(&mut handle);
+	assert!(result.is_err());
+	assert_eq!(
+		result.unwrap_err(),
+		PrecompileFailure::Error {
+			exit_status: ExitError::Other(sp_std::borrow::Cow::Borrowed(
+				"Corruption"
 			))
 		}
 	);

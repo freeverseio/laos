@@ -11,9 +11,10 @@ use precompile_utils::{
 	succeed, Address, EvmDataWriter, EvmResult, FunctionModifier, PrecompileHandleExt,
 };
 use sp_arithmetic::traits::BaseArithmetic;
-use sp_runtime::SaturatedConversion;
+use sp_runtime::{SaturatedConversion, DispatchError};
 
 use sp_std::{fmt::Debug, marker::PhantomData};
+use scale_info::prelude::format;
 
 #[precompile_utils_macro::generate_function_selector]
 #[derive(Debug, PartialEq)]
@@ -80,10 +81,15 @@ where
 
 				match LivingAssets::create_collection(collection_id, owner) {
 					Ok(_) => Ok(succeed(EvmDataWriter::new().write(true).build())),
-					Err(_) => Err(PrecompileFailure::Error {
-						exit_status: ExitError::Other(sp_std::borrow::Cow::Borrowed(
-							"Could net create collection",
-						)),
+					Err(DispatchError::Other(err)) => Err(PrecompileFailure::Error {
+						exit_status: ExitError::Other(sp_std::borrow::Cow::Borrowed(err)),
+					}),
+					// for the other errors the type or error is returned
+					Err(e) => Err(PrecompileFailure::Error {
+						exit_status: ExitError::Other(sp_std::borrow::Cow::Owned(format!(
+							"{:?}",
+							e
+						))),
 					}),
 				}
 			},
