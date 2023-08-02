@@ -34,20 +34,6 @@ where
 	CollectionId: BaseArithmetic + Debug,
 	LivingAssets: LivingAssetsOwnership<AccountId, CollectionId>;
 
-impl<AddressMapping, AccountId, CollectionId, LivingAssets>
-	LivingAssetsOwnershipPrecompile<AddressMapping, AccountId, CollectionId, LivingAssets>
-where
-	AddressMapping: pallet_evm::AddressMapping<AccountId>,
-	AccountId: Encode + Debug,
-	CollectionId: BaseArithmetic + Debug,
-	LivingAssets: LivingAssetsOwnership<AccountId, CollectionId>,
-{
-	#[allow(clippy::new_without_default)]
-	pub fn new() -> Self {
-		Self(PhantomData)
-	}
-}
-
 impl<AddressMapping, AccountId, CollectionId, LivingAssets> Precompile
 	for LivingAssetsOwnershipPrecompile<AddressMapping, AccountId, CollectionId, LivingAssets>
 where
