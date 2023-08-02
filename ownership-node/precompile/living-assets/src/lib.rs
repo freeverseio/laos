@@ -117,39 +117,45 @@ mod tests {
 		assert_eq!(Action::OwnerOfCollection as u32, 0xFB34AE53);
 	}
 
-	type AccountId = H160;
-	type CollectionId = u64;
-	type AddressMapping = pallet_evm::IdentityAddressMapping;
+	macro_rules! define_precompile {
+    ($create_collection_result:expr, $owner_of_collection_result:expr) => {
+        type AccountId = H160;
+        type CollectionId = u64;
+        type AddressMapping = pallet_evm::IdentityAddressMapping;
 
-	struct CollectionManagerMock;
+        struct CollectionManagerMock;
 
-	impl pallet_living_assets_ownership::LivingAssetsOwnership<AccountId, CollectionId>
-		for CollectionManagerMock
-	{
-		fn create_collection(_collection_id: CollectionId, _who: AccountId) -> DispatchResult {
-			Ok(())
-		}
+        impl pallet_living_assets_ownership::LivingAssetsOwnership<AccountId, CollectionId>
+            for CollectionManagerMock
+        {
+            fn create_collection(_collection_id: CollectionId, _who: AccountId) -> DispatchResult {
+                $create_collection_result
+            }
 
-		fn owner_of_collection(_collection_id: CollectionId) -> Option<AccountId> {
-			Some(H160::zero())
-		}
-	}
+            fn owner_of_collection(_collection_id: CollectionId) -> Option<AccountId> {
+                $owner_of_collection_result
+            }
+        }
 
-	type Precompile = LivingAssetsOwnershipPrecompile<
-		AddressMapping,
-		AccountId,
-		CollectionId,
-		CollectionManagerMock,
-	>;
+        type Precompile = LivingAssetsOwnershipPrecompile<
+            AddressMapping,
+            AccountId,
+            CollectionId,
+            CollectionManagerMock,
+        >;
+    };
+}
 
 	#[test]
 	fn check_create_collection() -> Result<(), String> {
+		define_precompile!(Ok(()), Some(H160::zero()));
 		test_precompile_test_vectors::<Precompile>("testdata/living_assets_ownership.json")?;
 		Ok(())
 	}
 
 	#[test]
 	fn check_owner_of() -> Result<(), String> {
+		define_precompile!(Ok(()), Some(H160::zero()));
 		test_precompile_test_vectors::<Precompile>("testdata/owner_of.json")?;
 		Ok(())
 	}
