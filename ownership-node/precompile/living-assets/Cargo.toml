@@ -36,6 +36,7 @@ precompile-utils-macro = { workspace = true }
 num_enum = { workspace = true }
 
 [dev-dependencies]
+pallet-evm-test-vector-support = { workspace = true }
 evm = { workspace = true }
 hex = { version = "0.4.3" }
 

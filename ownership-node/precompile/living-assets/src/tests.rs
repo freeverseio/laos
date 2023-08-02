@@ -1,4 +1,5 @@
 use super::*;
+use evm::ExitRevert;
 use helpers::*;
 use sp_core::H160;
 use sp_runtime::{DispatchError, DispatchResult};
@@ -56,6 +57,23 @@ fn owner_of_should_return_owner_of_mock() {
 	let result = PrecompileMock::execute(&mut handle);
 	assert!(result.is_ok());
 	assert_eq!(result.unwrap().output, H160::from_low_u64_be(0x1234).encode());
+}
+
+#[test]
+fn call_unexistent_selector_should_fail() {
+	define_precompile_mock!(Ok(()), Some(H160::from_low_u64_be(0x1234)));
+
+	let input = "fb24ae530000000000000000000000000000000000000000000000000000000000000000";
+	let mut handle = create_mock_handle(input, 0);
+	let result = PrecompileMock::execute(&mut handle);
+	assert_eq!(
+		result.unwrap_err(),
+		PrecompileFailure::Revert {
+			exit_status: ExitRevert::Reverted,
+			output: [117, 110, 107, 110, 111, 119, 110, 32, 115, 101, 108, 101, 99, 116, 111, 114]
+				.to_vec()
+		}
+	);
 }
 
 mod helpers {
