@@ -1,7 +1,7 @@
 use super::*;
 use helpers::*;
 use sp_core::H160;
-use sp_runtime::DispatchResult;
+use sp_runtime::{DispatchError, DispatchResult};
 
 #[test]
 fn check_selectors() {
@@ -10,13 +10,52 @@ fn check_selectors() {
 }
 
 #[test]
-fn test_directly() {
+fn create_collection_0_should_succeed() {
 	define_precompile_mock!(Ok(()), Some(H160::zero()));
 
-	let create_collection_0 = "1eaf25160000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b7469c43535c826e29c30d25a9f3a035759cf132";
-	let mut handle = create_mock_handle(create_collection_0, 0);
+	let input = "1eaf25160000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b7469c43535c826e29c30d25a9f3a035759cf132";
+	let mut handle = create_mock_handle(input, 0);
 	let result = PrecompileMock::execute(&mut handle);
 	assert!(result.is_ok());
+}
+
+#[test]
+fn on_collection_creation_fail_should_return_error() {
+	define_precompile_mock!(Err(DispatchError::Other("error")), Some(H160::zero()));
+
+	let input = "1eaf25160000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b7469c43535c826e29c30d25a9f3a035759cf132";
+	let mut handle = create_mock_handle(input, 0);
+	let result = PrecompileMock::execute(&mut handle);
+	assert!(result.is_err());
+	assert_eq!(
+		result.unwrap_err(),
+		PrecompileFailure::Error {
+			exit_status: ExitError::Other(sp_std::borrow::Cow::Borrowed(
+				"Could net create collection"
+			))
+		}
+	);
+}
+
+#[test]
+fn check_no_owner_of_collection_when_no_owner() {
+	define_precompile_mock!(Ok(()), None);
+
+	let input = "fb34ae530000000000000000000000000000000000000000000000000000000000000000";
+	let mut handle = create_mock_handle(input, 0);
+	let result = PrecompileMock::execute(&mut handle);
+	assert_eq!(result.unwrap().output, Vec::<u8>::new());
+}
+
+#[test]
+fn owner_of_collection_should_return_the_correct_address() {
+	define_precompile_mock!(Ok(()), Some(H160::from_low_u64_be(0x1234)));
+
+	let input = "fb34ae530000000000000000000000000000000000000000000000000000000000000000";
+	let mut handle = create_mock_handle(input, 0);
+	let result = PrecompileMock::execute(&mut handle);
+	assert!(result.is_ok());
+	assert_eq!(result.unwrap().output, H160::from_low_u64_be(0x1234).encode());
 }
 
 mod helpers {

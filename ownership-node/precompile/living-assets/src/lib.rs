@@ -92,15 +92,14 @@ where
 				let collection_id = input.read::<u64>()?.saturated_into();
 				let owner = AddressMapping::into_account_id(input.read::<Address>()?.0);
 
-				if LivingAssets::create_collection(collection_id, owner).is_err() {
-					return Err(PrecompileFailure::Error {
+				match LivingAssets::create_collection(collection_id, owner) {
+					Ok(_) => Ok(succeed(EvmDataWriter::new().write(true).build())),
+					Err(_) => Err(PrecompileFailure::Error {
 						exit_status: ExitError::Other(sp_std::borrow::Cow::Borrowed(
 							"Could net create collection",
 						)),
-					})
+					}),
 				}
-
-				Ok(succeed(EvmDataWriter::new().write(true).build()))
 			},
 		}
 	}
