@@ -49,7 +49,6 @@ where
 		handle.check_function_modifier(match selector {
 			Action::OwnerOfCollection => FunctionModifier::View,
 			Action::CreateCollection => FunctionModifier::NonPayable,
-			_ => FunctionModifier::NonPayable,
 		})?;
 
 		match selector {
