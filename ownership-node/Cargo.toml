@@ -140,7 +140,6 @@ pallet-ethereum = { git = "https://github.com/paritytech/frontier.git", branch =
 pallet-evm-chain-id = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.43", default-features = false }
 pallet-evm-precompile-modexp = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.43", default-features = false }
 pallet-evm-precompile-simple = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.43", default-features = false }
-pallet-evm-test-vector-support = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.43", default-features = false }
 fp-self-contained = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.43", default-features = false }
 fp-rpc = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.43", default-features = false }
 fp-evm = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.43", default-features = false }
