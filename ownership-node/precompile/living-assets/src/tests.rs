@@ -23,6 +23,16 @@ mod helpers {
 	use evm::Context;
 	use pallet_evm_test_vector_support::MockHandle;
 
+	/// Macro to define a precompile mock for testing.
+	///
+	/// This macro creates mock implementations of the `LivingAssetsOwnership` trait,
+	/// allowing you to test how your code interacts with the precompiled contracts.
+	///
+	/// # Example
+	///
+	/// ```
+	/// define_precompile_mock!(Ok(()), Some(H160::zero()));
+	/// ```
 	#[macro_export]
 	macro_rules! define_precompile_mock {
 		($create_collection_result:expr, $owner_of_collection_result:expr) => {
@@ -56,6 +66,21 @@ mod helpers {
 		};
 	}
 
+	/// Create a mock handle for testing precompiled contracts.
+	///
+	/// This function takes an input string representing the data to be sent to the precompiled contract
+	/// and a cost value, returning a `MockHandle` that can be used for testing.
+	///
+	/// # Arguments
+	///
+	/// * `input` - The input data as a hexadecimal string.
+	/// * `cost` - A cost value as u64.
+	///
+	/// # Example
+	///
+	/// ```
+	/// let handle = create_mock_handle("68656c6c6f", 0);
+	/// ```
 	pub fn create_mock_handle(input: &str, cost: u64) -> MockHandle {
 		let i: Vec<u8> = hex::decode(input).expect("todo");
 
