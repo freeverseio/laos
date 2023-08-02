@@ -31,9 +31,7 @@ fn create_collection_on_mock_fail_with_other_error() {
 	assert_eq!(
 		result.unwrap_err(),
 		PrecompileFailure::Error {
-			exit_status: ExitError::Other(sp_std::borrow::Cow::Borrowed(
-				"pizza error"
-			))
+			exit_status: ExitError::Other(sp_std::borrow::Cow::Borrowed("pizza error"))
 		}
 	);
 }
@@ -49,9 +47,7 @@ fn create_collection_on_mock_fail_with_corruption_error() {
 	assert_eq!(
 		result.unwrap_err(),
 		PrecompileFailure::Error {
-			exit_status: ExitError::Other(sp_std::borrow::Cow::Borrowed(
-				"Corruption"
-			))
+			exit_status: ExitError::Other(sp_std::borrow::Cow::Borrowed("Corruption"))
 		}
 	);
 }

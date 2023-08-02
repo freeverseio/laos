@@ -11,10 +11,10 @@ use precompile_utils::{
 	succeed, Address, EvmDataWriter, EvmResult, FunctionModifier, PrecompileHandleExt,
 };
 use sp_arithmetic::traits::BaseArithmetic;
-use sp_runtime::{SaturatedConversion, DispatchError};
+use sp_runtime::{DispatchError, SaturatedConversion};
 
-use sp_std::{fmt::Debug, marker::PhantomData};
 use scale_info::prelude::format;
+use sp_std::{fmt::Debug, marker::PhantomData};
 
 #[precompile_utils_macro::generate_function_selector]
 #[derive(Debug, PartialEq)]
