@@ -10,7 +10,7 @@ fn check_selectors() {
 }
 
 #[test]
-fn create_collection_0_should_succeed() {
+fn create_collection_on_mock_succeed_should_succeed() {
 	define_precompile_mock!(Ok(()), Some(H160::zero()));
 
 	let input = "1eaf25160000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b7469c43535c826e29c30d25a9f3a035759cf132";
@@ -20,7 +20,7 @@ fn create_collection_0_should_succeed() {
 }
 
 #[test]
-fn on_collection_creation_fail_should_return_error() {
+fn create_collection_on_mock_fail_should_error() {
 	define_precompile_mock!(Err(DispatchError::Other("error")), Some(H160::zero()));
 
 	let input = "1eaf25160000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b7469c43535c826e29c30d25a9f3a035759cf132";
@@ -38,7 +38,7 @@ fn on_collection_creation_fail_should_return_error() {
 }
 
 #[test]
-fn check_no_owner_of_collection_when_no_owner() {
+fn owner_of_on_no_owner_should_return_null() {
 	define_precompile_mock!(Ok(()), None);
 
 	let input = "fb34ae530000000000000000000000000000000000000000000000000000000000000000";
@@ -48,7 +48,7 @@ fn check_no_owner_of_collection_when_no_owner() {
 }
 
 #[test]
-fn owner_of_collection_should_return_the_correct_address() {
+fn owner_of_should_return_owner_of_mock() {
 	define_precompile_mock!(Ok(()), Some(H160::from_low_u64_be(0x1234)));
 
 	let input = "fb34ae530000000000000000000000000000000000000000000000000000000000000000";
