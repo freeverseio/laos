@@ -2,7 +2,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![cfg_attr(test, feature(assert_matches))]
-use fp_evm::{ExitError, ExitSucceed, PrecompileFailure, PrecompileHandle, PrecompileOutput};
+use fp_evm::{ExitError, ExitSucceed, PrecompileFailure, PrecompileHandle, PrecompileOutput, Precompile};
 use pallet_living_assets_ownership::LivingAssetsOwnership;
 use parity_scale_codec::Encode;
 use precompile_utils::{
@@ -46,7 +46,7 @@ where
 	}
 }
 
-impl<AddressMapping, AccountId, CollectionId, LivingAssets> fp_evm::Precompile
+impl<AddressMapping, AccountId, CollectionId, LivingAssets> Precompile
 	for LivingAssetsOwnershipPrecompile<AddressMapping, AccountId, CollectionId, LivingAssets>
 where
 	AddressMapping: pallet_evm::AddressMapping<AccountId>,
@@ -107,9 +107,10 @@ where
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use pallet_evm_test_vector_support::test_precompile_test_vectors;
+	use pallet_evm_test_vector_support::{ MockHandle, test_precompile_test_vectors };
 	use sp_core::H160;
 	use sp_runtime::DispatchResult;
+	use evm::Context;
 
 	#[test]
 	fn check_selectors() {
@@ -117,7 +118,7 @@ mod tests {
 		assert_eq!(Action::OwnerOfCollection as u32, 0xFB34AE53);
 	}
 
-	macro_rules! define_precompile {
+	macro_rules! define_precompile_mock {
     ($create_collection_result:expr, $owner_of_collection_result:expr) => {
         type AccountId = H160;
         type CollectionId = u64;
@@ -137,7 +138,7 @@ mod tests {
             }
         }
 
-        type Precompile = LivingAssetsOwnershipPrecompile<
+        type PrecompileMock = LivingAssetsOwnershipPrecompile<
             AddressMapping,
             AccountId,
             CollectionId,
@@ -148,15 +149,37 @@ mod tests {
 
 	#[test]
 	fn check_create_collection() -> Result<(), String> {
-		define_precompile!(Ok(()), Some(H160::zero()));
-		test_precompile_test_vectors::<Precompile>("testdata/living_assets_ownership.json")?;
+		define_precompile_mock!(Ok(()), Some(H160::zero()));
+		test_precompile_test_vectors::<PrecompileMock>("testdata/living_assets_ownership.json")?;
 		Ok(())
 	}
 
 	#[test]
 	fn check_owner_of() -> Result<(), String> {
-		define_precompile!(Ok(()), Some(H160::zero()));
-		test_precompile_test_vectors::<Precompile>("testdata/owner_of.json")?;
+		define_precompile_mock!(Ok(()), Some(H160::zero()));
+		test_precompile_test_vectors::<PrecompileMock>("testdata/owner_of.json")?;
 		Ok(())
+	}
+
+	fn create_mock_handle(input: &str, cost: Option<u64>) -> MockHandle {
+		let i: Vec<u8> = hex::decode(input).expect("todo");
+
+		let context: Context = Context {
+			address: Default::default(),
+			caller: Default::default(),
+			apparent_value: From::from(0),
+		};
+
+		MockHandle::new(i, cost, context)
+	}
+
+	#[test]
+	fn test_directly() {
+		define_precompile_mock!(Ok(()), Some(H160::zero()));
+
+		let create_collection_0 = "1eaf25160000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b7469c43535c826e29c30d25a9f3a035759cf132";
+		let mut handle = create_mock_handle(create_collection_0, None);
+		let result = PrecompileMock::execute(&mut handle);
+		assert!(result.is_ok());
 	}
 }

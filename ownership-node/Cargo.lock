@@ -6581,8 +6581,10 @@ dependencies = [
 name = "pallet-evm-living-assets-ownership"
 version = "2.0.0-dev"
 dependencies = [
+ "evm",
  "fp-evm",
  "frame-support",
+ "hex",
  "num_enum 0.5.11",
  "pallet-evm",
  "pallet-evm-test-vector-support",
