@@ -2,15 +2,18 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![cfg_attr(test, feature(assert_matches))]
-use fp_evm::{ExitError, ExitSucceed, PrecompileFailure, PrecompileHandle, PrecompileOutput};
+use fp_evm::{
+	ExitError, ExitSucceed, Precompile, PrecompileFailure, PrecompileHandle, PrecompileOutput,
+};
 use pallet_living_assets_ownership::LivingAssetsOwnership;
 use parity_scale_codec::Encode;
 use precompile_utils::{
 	succeed, Address, EvmDataWriter, EvmResult, FunctionModifier, PrecompileHandleExt,
 };
 use sp_arithmetic::traits::BaseArithmetic;
-use sp_runtime::SaturatedConversion;
+use sp_runtime::{DispatchError, SaturatedConversion};
 
+use scale_info::prelude::format;
 use sp_std::{fmt::Debug, marker::PhantomData};
 
 #[precompile_utils_macro::generate_function_selector]
@@ -32,21 +35,7 @@ where
 	CollectionId: BaseArithmetic + Debug,
 	LivingAssets: LivingAssetsOwnership<AccountId, CollectionId>;
 
-impl<AddressMapping, AccountId, CollectionId, LivingAssets>
-	LivingAssetsOwnershipPrecompile<AddressMapping, AccountId, CollectionId, LivingAssets>
-where
-	AddressMapping: pallet_evm::AddressMapping<AccountId>,
-	AccountId: Encode + Debug,
-	CollectionId: BaseArithmetic + Debug,
-	LivingAssets: LivingAssetsOwnership<AccountId, CollectionId>,
-{
-	#[allow(clippy::new_without_default)]
-	pub fn new() -> Self {
-		Self(PhantomData)
-	}
-}
-
-impl<AddressMapping, AccountId, CollectionId, LivingAssets> fp_evm::Precompile
+impl<AddressMapping, AccountId, CollectionId, LivingAssets> Precompile
 	for LivingAssetsOwnershipPrecompile<AddressMapping, AccountId, CollectionId, LivingAssets>
 where
 	AddressMapping: pallet_evm::AddressMapping<AccountId>,
@@ -59,7 +48,7 @@ where
 
 		handle.check_function_modifier(match selector {
 			Action::OwnerOfCollection => FunctionModifier::View,
-			_ => FunctionModifier::NonPayable,
+			Action::CreateCollection => FunctionModifier::NonPayable,
 		})?;
 
 		match selector {
@@ -90,16 +79,23 @@ where
 				let collection_id = input.read::<u64>()?.saturated_into();
 				let owner = AddressMapping::into_account_id(input.read::<Address>()?.0);
 
-				if LivingAssets::create_collection(collection_id, owner).is_err() {
-					return Err(PrecompileFailure::Error {
-						exit_status: ExitError::Other(sp_std::borrow::Cow::Borrowed(
-							"Could net create collection",
-						)),
-					})
+				match LivingAssets::create_collection(collection_id, owner) {
+					Ok(_) => Ok(succeed(EvmDataWriter::new().write(true).build())),
+					Err(DispatchError::Other(err)) => Err(PrecompileFailure::Error {
+						exit_status: ExitError::Other(sp_std::borrow::Cow::Borrowed(err)),
+					}),
+					// for the other errors the type or error is returned
+					Err(e) => Err(PrecompileFailure::Error {
+						exit_status: ExitError::Other(sp_std::borrow::Cow::Owned(format!(
+							"{:?}",
+							e
+						))),
+					}),
 				}
-
-				Ok(succeed(EvmDataWriter::new().write(true).build()))
 			},
 		}
 	}
 }
+
+#[cfg(test)]
+mod tests;
