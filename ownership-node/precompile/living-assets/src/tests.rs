@@ -21,7 +21,7 @@ fn check_selectors() {
 
 #[test]
 fn create_collection_should_return_id() {
-	define_precompile_mock!(Mock, Ok(()), Some(H160::zero()));
+	define_precompile_mock!(Mock, Ok(()), Ok(()), Some(H160::zero()));
 
 	let input = "647f1a9c";
 	let mut handle = handle_from_input(input);
@@ -147,6 +147,7 @@ fn create_collection_with_max_id() {
 			assert_eq!(collection_id, CollectionId::max_value());
 			Ok(())
 		}, // Closure for create_collection result
+		|| { Ok(()) }, // Closure for create_collection2 result
 		|_| { Some(H160::zero()) }  // Closure for owner_of_collection result
 	);
 
@@ -197,6 +198,10 @@ mod helpers {
 					($create_collection_result)(collection_id, who)
 				}
 
+				fn create_collection2() -> DispatchResult {
+					($create_collection2_result)()
+				}
+
 				fn owner_of_collection(collection_id: CollectionId) -> Option<AccountId> {
 					($owner_of_collection_result)(collection_id)
 				}
@@ -233,6 +238,7 @@ mod helpers {
 			impl_precompile_mock!(
 				$name,
 				|_collection_id, _who| { $create_collection_result },
+				|| { $create_collection2_result },
 				|_collection_id| { $owner_of_collection_result }
 			);
 		};

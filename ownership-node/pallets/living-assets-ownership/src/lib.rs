@@ -97,6 +97,7 @@ pub mod pallet {
 
 		/// Create collection
 		fn create_collection(collection_id: CollectionId, who: AccountId) -> DispatchResult;
+		fn create_collection2() -> DispatchResult;
 	}
 
 	impl<T: Config> LivingAssetsOwnership<T::AccountId, T::CollectionId> for Pallet<T> {
@@ -106,6 +107,10 @@ pub mod pallet {
 
 		fn create_collection(collection_id: T::CollectionId, who: T::AccountId) -> DispatchResult {
 			Self::do_create_collection(collection_id, who)
+		}
+
+		fn create_collection2() -> DispatchResult {
+			todo!();
 		}
 	}
 }
