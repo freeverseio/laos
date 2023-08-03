@@ -96,14 +96,19 @@ where
 					}),
 				}
 			},
-			Action::CreateCollectionReturnId => match LivingAssets::create_collection2() {
-				Ok(collection_id) => Ok(PrecompileOutput {
-					exit_status: ExitSucceed::Returned,
-					output: collection_id.saturated_into::<u64>().encode(),
-				}),
-				Err(err) => Err(PrecompileFailure::Error {
-					exit_status: ExitError::Other(sp_std::borrow::Cow::Borrowed(err)),
-				}),
+			Action::CreateCollectionReturnId => {
+				let caller = handle.context().caller;
+				let owner = AddressMapping::into_account_id(caller);
+
+				match LivingAssets::create_collection2(owner) {
+					Ok(collection_id) => Ok(PrecompileOutput {
+						exit_status: ExitSucceed::Returned,
+						output: collection_id.saturated_into::<u64>().encode(),
+					}),
+					Err(err) => Err(PrecompileFailure::Error {
+						exit_status: ExitError::Other(sp_std::borrow::Cow::Borrowed(err)),
+					}),
+				}
 			},
 		}
 	}

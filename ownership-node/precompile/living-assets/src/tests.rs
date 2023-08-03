@@ -162,7 +162,7 @@ fn create_collection_with_max_id() {
 			assert_eq!(collection_id, CollectionId::max_value());
 			Ok(())
 		}, // Closure for create_collection result
-		|| { Ok(0) }, // Closure for create_collection2 result
+		|_| { Ok(0) }, // Closure for create_collection2 result
 		|_| { Some(H160::zero()) }  // Closure for owner_of_collection result
 	);
 
@@ -213,8 +213,8 @@ mod helpers {
 					($create_collection_result)(collection_id, who)
 				}
 
-				fn create_collection2() -> Result<CollectionId, &'static str> {
-					($create_collection2_result)()
+				fn create_collection2(owner: AccountId) -> Result<CollectionId, &'static str> {
+					($create_collection2_result)(owner)
 				}
 
 				fn owner_of_collection(collection_id: CollectionId) -> Option<AccountId> {
@@ -253,7 +253,7 @@ mod helpers {
 			impl_precompile_mock!(
 				$name,
 				|_collection_id, _who| { $create_collection_result },
-				|| { $create_collection2_result },
+				|_owner| { $create_collection2_result },
 				|_collection_id| { $owner_of_collection_result }
 			);
 		};
