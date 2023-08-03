@@ -21,7 +21,7 @@ fn check_selectors() {
 
 #[test]
 fn create_collection_should_return_id() {
-	impl_precompile_mock_simple!(Mock, Ok(()), Ok(()), Some(H160::zero()));
+	impl_precompile_mock_simple!(Mock, Ok(()), Ok(0), Some(H160::zero()));
 
 	let input = "647f1a9c";
 	let mut handle = create_mock_handle_from_input(input);
@@ -33,7 +33,7 @@ fn create_collection_should_return_id() {
 
 #[test]
 fn create_collection_on_mock_succeed_should_succeed() {
-	impl_precompile_mock_simple!(Mock, Ok(()), Ok(()), Some(H160::zero()));
+	impl_precompile_mock_simple!(Mock, Ok(()), Ok(0), Some(H160::zero()));
 
 	let mut handle = create_mock_handle_from_input(
 		CREATE_COLLECTION_0_OWNER_B7469C43535C826E29C30D25A9F3A035759CF132,
@@ -47,7 +47,7 @@ fn create_collection_on_mock_fail_with_other_error() {
 	impl_precompile_mock_simple!(
 		Mock,
 		Err(DispatchError::Other("pizza error")),
-		Ok(()),
+		Ok(0),
 		Some(H160::zero())
 	);
 
@@ -66,7 +66,7 @@ fn create_collection_on_mock_fail_with_other_error() {
 
 #[test]
 fn create_collection_on_mock_with_nonzero_value_fails() {
-	impl_precompile_mock_simple!(Mock, Ok(()), Ok(()), Some(H160::zero()));
+	impl_precompile_mock_simple!(Mock, Ok(()), Ok(0), Some(H160::zero()));
 
 	let mut handle = create_mock_handle(
 		CREATE_COLLECTION_0_OWNER_B7469C43535C826E29C30D25A9F3A035759CF132,
@@ -79,7 +79,7 @@ fn create_collection_on_mock_with_nonzero_value_fails() {
 
 #[test]
 fn create_collection_on_mock_fail_with_corruption_error() {
-	impl_precompile_mock_simple!(Mock, Err(DispatchError::Corruption), Ok(()), Some(H160::zero()));
+	impl_precompile_mock_simple!(Mock, Err(DispatchError::Corruption), Ok(0), Some(H160::zero()));
 
 	let mut handle = create_mock_handle_from_input(
 		CREATE_COLLECTION_0_OWNER_B7469C43535C826E29C30D25A9F3A035759CF132,
@@ -96,7 +96,7 @@ fn create_collection_on_mock_fail_with_corruption_error() {
 
 #[test]
 fn owner_of_with_nonzero_transfer_should_fail() {
-	impl_precompile_mock_simple!(Mock, Ok(()), Ok(()), None);
+	impl_precompile_mock_simple!(Mock, Ok(()), Ok(0), None);
 
 	let mut handle = create_mock_handle("", 0, 1);
 	let result = Mock::execute(&mut handle);
@@ -105,7 +105,7 @@ fn owner_of_with_nonzero_transfer_should_fail() {
 
 #[test]
 fn owner_of_on_no_owner_should_return_null() {
-	impl_precompile_mock_simple!(Mock, Ok(()), Ok(()), None);
+	impl_precompile_mock_simple!(Mock, Ok(()), Ok(0), None);
 
 	let mut handle = create_mock_handle_from_input(OWNER_OF_COLLECTION_0);
 	let result = Mock::execute(&mut handle);
@@ -114,7 +114,7 @@ fn owner_of_on_no_owner_should_return_null() {
 
 #[test]
 fn owner_of_should_return_owner_of_mock() {
-	impl_precompile_mock_simple!(Mock, Ok(()), Ok(()), Some(H160::from_low_u64_be(0x1234)));
+	impl_precompile_mock_simple!(Mock, Ok(()), Ok(0), Some(H160::from_low_u64_be(0x1234)));
 
 	let mut handle = create_mock_handle_from_input(OWNER_OF_COLLECTION_0);
 	let result = Mock::execute(&mut handle);
@@ -124,7 +124,7 @@ fn owner_of_should_return_owner_of_mock() {
 
 #[test]
 fn call_unexistent_selector_should_fail() {
-	impl_precompile_mock_simple!(Mock, Ok(()), Ok(()), Some(H160::from_low_u64_be(0x1234)));
+	impl_precompile_mock_simple!(Mock, Ok(()), Ok(0), Some(H160::from_low_u64_be(0x1234)));
 
 	// unexistent selector
 	let input = "fb24ae530000000000000000000000000000000000000000000000000000000000000000";
@@ -148,7 +148,7 @@ fn create_collection_with_max_id() {
 			assert_eq!(collection_id, CollectionId::max_value());
 			Ok(())
 		}, // Closure for create_collection result
-		|| { Ok(()) }, // Closure for create_collection2 result
+		|| { Ok(0) }, // Closure for create_collection2 result
 		|_| { Some(H160::zero()) }  // Closure for owner_of_collection result
 	);
 
@@ -199,7 +199,7 @@ mod helpers {
 					($create_collection_result)(collection_id, who)
 				}
 
-				fn create_collection2() -> DispatchResult {
+				fn create_collection2() -> Result<CollectionId, &'static str> {
 					($create_collection2_result)()
 				}
 
@@ -231,7 +231,7 @@ mod helpers {
 	/// # Example
 	///
 	/// ```
-	/// impl_precompile_mock_simple!(Mock,Ok(()), Some(H160::zero()));
+	/// impl_precompile_mock_simple!(Mock,On(0), Some(H160::zero()));
 	/// ```
 	#[macro_export]
 	macro_rules! impl_precompile_mock_simple {
