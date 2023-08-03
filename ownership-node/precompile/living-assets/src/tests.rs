@@ -48,6 +48,13 @@ fn create_collection_on_mock_with_nonzero_value_fails() {
 	let mut handle = create_mock_handle(OWNER_OF_COLLECTION_0, 0, 1, H160::zero());
 	let result = Mock::execute(&mut handle);
 	assert!(result.is_err());
+	assert_eq!(
+		result.unwrap_err(),
+		PrecompileFailure::Revert {
+			exit_status: ExitRevert::Reverted,
+			output: "function is not payable".to_string().into_bytes()
+		}
+	);
 }
 
 #[test]
