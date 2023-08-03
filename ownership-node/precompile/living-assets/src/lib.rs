@@ -23,6 +23,8 @@ pub enum Action {
 	CreateCollection = "createCollection(uint64,address)",
 	/// Get owner of the collection
 	OwnerOfCollection = "ownerOfCollection(uint64)",
+
+	CreateCollectionReturnId = "createCollection()",
 }
 
 /// Wrapper for the precompile function.
@@ -49,6 +51,7 @@ where
 		handle.check_function_modifier(match selector {
 			Action::OwnerOfCollection => FunctionModifier::View,
 			Action::CreateCollection => FunctionModifier::NonPayable,
+			Action::CreateCollectionReturnId => FunctionModifier::NonPayable,
 		})?;
 
 		match selector {
@@ -92,6 +95,10 @@ where
 						))),
 					}),
 				}
+			},
+			Action::CreateCollectionReturnId => {
+				// return 0
+				Ok(PrecompileOutput { exit_status: ExitSucceed::Returned, output: 0u64.encode() })
 			},
 		}
 	}

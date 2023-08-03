@@ -16,6 +16,19 @@ const OWNER_OF_COLLECTION_0: &str =
 fn check_selectors() {
 	assert_eq!(Action::CreateCollection as u32, 0x1EAF2516);
 	assert_eq!(Action::OwnerOfCollection as u32, 0xFB34AE53);
+	assert_eq!(Action::CreateCollectionReturnId as u32, 0x647F1A9C);
+}
+
+#[test]
+fn create_collection_should_return_id() {
+	define_precompile_mock!(Mock, Ok(()), Some(H160::zero()));
+
+	let input = "647f1a9c";
+	let mut handle = handle_from_input(input);
+	let result = Mock::execute(&mut handle);
+	assert!(result.is_ok());
+	// check that the output is the collection id 0
+	assert_eq!(result.unwrap().output, 0u64.encode());
 }
 
 #[test]
