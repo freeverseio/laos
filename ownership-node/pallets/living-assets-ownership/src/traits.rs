@@ -17,9 +17,9 @@
 /// of the newly created collection.
 ///
 pub trait CollectionManager<AccountId, CollectionId> {
-    /// Get owner of collection
-    fn owner_of_collection(collection_id: CollectionId) -> Option<AccountId>;
+	/// Get owner of collection
+	fn owner_of_collection(collection_id: CollectionId) -> Option<AccountId>;
 
-    /// Create collection
-    fn create_collection(owner: AccountId) -> Result<CollectionId, &'static str>;
+	/// Create collection
+	fn create_collection(owner: AccountId) -> Result<CollectionId, &'static str>;
 }
