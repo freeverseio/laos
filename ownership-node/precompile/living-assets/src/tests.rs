@@ -19,7 +19,7 @@ fn create_collection_on_mock_succeed_should_succeed() {
 	impl_precompile_mock_simple!(Mock, Ok(()), Some(H160::zero()));
 
 	let input = "1eaf25160000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b7469c43535c826e29c30d25a9f3a035759cf132";
-	let mut handle = handle_from_input(input);
+	let mut handle = create_mock_handle_from_input(input);
 	let result = Mock::execute(&mut handle);
 	assert!(result.is_ok());
 }
@@ -33,7 +33,7 @@ fn create_collection_on_mock_fail_with_other_error() {
 	);
 
 	let input = "1eaf25160000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b7469c43535c826e29c30d25a9f3a035759cf132";
-	let mut handle = handle_from_input(input);
+	let mut handle = create_mock_handle_from_input(input);
 	let result = Mock::execute(&mut handle);
 	assert!(result.is_err());
 	assert_eq!(
@@ -59,7 +59,7 @@ fn create_collection_on_mock_fail_with_corruption_error() {
 	impl_precompile_mock_simple!(Mock, Err(DispatchError::Corruption), Some(H160::zero()));
 
 	let input = "1eaf25160000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b7469c43535c826e29c30d25a9f3a035759cf132";
-	let mut handle = handle_from_input(input);
+	let mut handle = create_mock_handle_from_input(input);
 	let result = Mock::execute(&mut handle);
 	assert!(result.is_err());
 	assert_eq!(
@@ -85,7 +85,7 @@ fn owner_of_on_no_owner_should_return_null() {
 	impl_precompile_mock_simple!(Mock, Ok(()), None);
 
 	let input = "fb34ae530000000000000000000000000000000000000000000000000000000000000000";
-	let mut handle = handle_from_input(input);
+	let mut handle = create_mock_handle_from_input(input);
 	let result = Mock::execute(&mut handle);
 	assert_eq!(result.unwrap().output, Vec::<u8>::new());
 }
@@ -95,7 +95,7 @@ fn owner_of_should_return_owner_of_mock() {
 	impl_precompile_mock_simple!(Mock, Ok(()), Some(H160::from_low_u64_be(0x1234)));
 
 	let input = "fb34ae530000000000000000000000000000000000000000000000000000000000000000";
-	let mut handle = handle_from_input(input);
+	let mut handle = create_mock_handle_from_input(input);
 	let result = Mock::execute(&mut handle);
 	assert!(result.is_ok());
 	assert_eq!(result.unwrap().output, H160::from_low_u64_be(0x1234).encode());
@@ -106,7 +106,7 @@ fn call_unexistent_selector_should_fail() {
 	impl_precompile_mock_simple!(Mock, Ok(()), Some(H160::from_low_u64_be(0x1234)));
 
 	let input = "fb24ae530000000000000000000000000000000000000000000000000000000000000000";
-	let mut handle = handle_from_input(input);
+	let mut handle = create_mock_handle_from_input(input);
 	let result = Mock::execute(&mut handle);
 	assert_eq!(
 		result.unwrap_err(),
@@ -130,7 +130,7 @@ fn create_collection_with_max_id() {
 	);
 
 	let input = "1eaf2516000000000000000000000000000000000000000000000000ffffffffffffffff000000000000000000000000b7469c43535c826e29c30d25a9f3a035759cf132";
-	let mut handle = handle_from_input(input);
+	let mut handle = create_mock_handle_from_input(input);
 	let result = Mock::execute(&mut handle);
 	assert!(result.is_ok());
 }
@@ -256,9 +256,9 @@ mod helpers {
 	/// # Example
 	///
 	/// ```
-	/// let handle = handle_from_input("68656c6c6f");
+	/// let handle = create_mock_handle_from_input("68656c6c6f");
 	/// ```
-	pub fn handle_from_input(input: &str) -> MockHandle {
+	pub fn create_mock_handle_from_input(input: &str) -> MockHandle {
 		create_mock_handle(input, 0, 0)
 	}
 }
