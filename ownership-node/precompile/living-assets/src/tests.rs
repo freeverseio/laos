@@ -120,7 +120,7 @@ fn call_unexistent_selector_should_fail() {
 
 #[test]
 fn create_collection_with_max_id() {
-	define_precompile_mock_closures!(
+	impl_precompile_mock!(
 		Mock, // name of the defined precompile
 		|collection_id, _| {
 			assert_eq!(collection_id, CollectionId::max_value());
@@ -154,14 +154,14 @@ mod helpers {
 	/// # Example
 	///
 	/// ```
-	/// define_precompile_mock_closures!(
+	/// impl_precompile_mock!(
 	///     MyMock,
 	///     |collection_id, who| { Ok(()) },
 	///     |collection_id| { Some(H160::zero()) }
 	/// );
 	/// ```
 	#[macro_export]
-	macro_rules! define_precompile_mock_closures {
+	macro_rules! impl_precompile_mock {
 		($name:ident, $create_collection_result:expr, $owner_of_collection_result:expr) => {
 			struct CollectionManagerMock;
 
@@ -208,7 +208,7 @@ mod helpers {
 	#[macro_export]
 	macro_rules! define_precompile_mock_simple {
 		($name:ident, $create_collection_result:expr, $owner_of_collection_result:expr) => {
-			define_precompile_mock_closures!(
+			impl_precompile_mock!(
 				$name,
 				|_collection_id, _who| { $create_collection_result },
 				|_collection_id| { $owner_of_collection_result }
