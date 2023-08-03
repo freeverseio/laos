@@ -46,6 +46,23 @@ fn create_collection_should_return_id() {
 }
 
 #[test]
+fn create_collection_assign_collection_to_caller() {
+	impl_precompile_mock!(
+		Mock,              // name of the defined precompile
+		|_, _| { Ok(()) }, // Closure for create_collection result
+		|owner| {
+			assert_eq!(owner, H160::from_low_u64_be(0x1234));
+			Ok(0)
+		}, // Closure for create_collection2 result
+		|_| { Some(H160::zero()) }  // Closure for owner_of_collection result
+	);
+
+	let mut handle = create_mock_handle(CREATE_COLLECTION2, 0, 0, H160::from_low_u64_be(0x1234));
+	let result = Mock::execute(&mut handle);
+	assert!(result.is_ok());
+}
+
+#[test]
 fn create_collection_on_mock_succeed_should_succeed() {
 	impl_precompile_mock_simple!(Mock, Ok(()), Ok(0), Some(H160::zero()));
 
@@ -86,6 +103,7 @@ fn create_collection_on_mock_with_nonzero_value_fails() {
 		CREATE_COLLECTION_0_OWNER_B7469C43535C826E29C30D25A9F3A035759CF132,
 		0,
 		1,
+		H160::zero(),
 	);
 	let result = Mock::execute(&mut handle);
 	assert!(result.is_err());
@@ -112,7 +130,7 @@ fn create_collection_on_mock_fail_with_corruption_error() {
 fn owner_of_with_nonzero_transfer_should_fail() {
 	impl_precompile_mock_simple!(Mock, Ok(()), Ok(0), None);
 
-	let mut handle = create_mock_handle("", 0, 1);
+	let mut handle = create_mock_handle("", 0, 1, H160::zero());
 	let result = Mock::execute(&mut handle);
 	assert!(result.is_err());
 }
@@ -176,6 +194,7 @@ fn create_collection_with_max_id() {
 mod helpers {
 	use evm::Context;
 	use pallet_evm_test_vector_support::MockHandle;
+	use sp_core::H160;
 
 	/// Macro to define a precompile mock with custom closures for testing.
 	///
@@ -275,14 +294,11 @@ mod helpers {
 	/// ```
 	/// let handle = create_mock_handle("68656c6c6f", 0, 0);
 	/// ```
-	pub fn create_mock_handle(input: &str, cost: u64, value: u64) -> MockHandle {
+	pub fn create_mock_handle(input: &str, cost: u64, value: u64, caller: H160) -> MockHandle {
 		let i: Vec<u8> = hex::decode(input).expect("invalid input");
 
-		let context: Context = Context {
-			address: Default::default(),
-			caller: Default::default(),
-			apparent_value: From::from(value),
-		};
+		let context: Context =
+			Context { address: Default::default(), caller, apparent_value: From::from(value) };
 
 		MockHandle::new(i, Some(cost), context)
 	}
@@ -302,6 +318,6 @@ mod helpers {
 	/// let handle = create_mock_handle_from_input("68656c6c6f");
 	/// ```
 	pub fn create_mock_handle_from_input(input: &str) -> MockHandle {
-		create_mock_handle(input, 0, 0)
+		create_mock_handle(input, 0, 0, H160::zero())
 	}
 }
