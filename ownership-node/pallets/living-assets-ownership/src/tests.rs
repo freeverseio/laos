@@ -1,4 +1,4 @@
-use crate::{mock::*, Event, LivingAssetsOwnership};
+use crate::{mock::*, traits::LivingAssetsOwnership, Event};
 use frame_support::assert_ok;
 
 #[cfg(test)]
