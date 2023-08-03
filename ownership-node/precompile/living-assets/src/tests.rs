@@ -8,6 +8,10 @@ type CollectionId = u64;
 type AccountId = H160;
 type AddressMapping = pallet_evm::IdentityAddressMapping;
 
+const CREATE_COLLECTION_0_OWNER_B7469C43535C826E29C30D25A9F3A035759CF132: &str = "1eaf25160000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b7469c43535c826e29c30d25a9f3a035759cf132";
+const OWNER_OF_COLLECTION_0: &str =
+	"fb34ae530000000000000000000000000000000000000000000000000000000000000000";
+
 #[test]
 fn check_selectors() {
 	assert_eq!(Action::CreateCollection as u32, 0x1EAF2516);
@@ -18,9 +22,9 @@ fn check_selectors() {
 fn create_collection_on_mock_succeed_should_succeed() {
 	impl_precompile_mock_simple!(Mock, Ok(()), Some(H160::zero()));
 
-	// create collection 0 for account b7469c43535c826e29c30d25a9f3a035759cf132
-	let input = "1eaf25160000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b7469c43535c826e29c30d25a9f3a035759cf132";
-	let mut handle = create_mock_handle_from_input(input);
+	let mut handle = create_mock_handle_from_input(
+		CREATE_COLLECTION_0_OWNER_B7469C43535C826E29C30D25A9F3A035759CF132,
+	);
 	let result = Mock::execute(&mut handle);
 	assert!(result.is_ok());
 }
@@ -33,9 +37,9 @@ fn create_collection_on_mock_fail_with_other_error() {
 		Some(H160::zero())
 	);
 
-	// create collection 0 for account b7469c43535c826e29c30d25a9f3a035759cf132
-	let input = "1eaf25160000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b7469c43535c826e29c30d25a9f3a035759cf132";
-	let mut handle = create_mock_handle_from_input(input);
+	let mut handle = create_mock_handle_from_input(
+		CREATE_COLLECTION_0_OWNER_B7469C43535C826E29C30D25A9F3A035759CF132,
+	);
 	let result = Mock::execute(&mut handle);
 	assert!(result.is_err());
 	assert_eq!(
@@ -50,9 +54,11 @@ fn create_collection_on_mock_fail_with_other_error() {
 fn create_collection_on_mock_with_nonzero_value_fails() {
 	impl_precompile_mock_simple!(Mock, Ok(()), Some(H160::zero()));
 
-	// create collection 0 for account b7469c43535c826e29c30d25a9f3a035759cf132
-	let input = "1eaf25160000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b7469c43535c826e29c30d25a9f3a035759cf132";
-	let mut handle = create_mock_handle(input, 0, 1);
+	let mut handle = create_mock_handle(
+		CREATE_COLLECTION_0_OWNER_B7469C43535C826E29C30D25A9F3A035759CF132,
+		0,
+		1,
+	);
 	let result = Mock::execute(&mut handle);
 	assert!(result.is_err());
 }
@@ -61,9 +67,9 @@ fn create_collection_on_mock_with_nonzero_value_fails() {
 fn create_collection_on_mock_fail_with_corruption_error() {
 	impl_precompile_mock_simple!(Mock, Err(DispatchError::Corruption), Some(H160::zero()));
 
-	// create collection 0 for account b7469c43535c826e29c30d25a9f3a035759cf132
-	let input = "1eaf25160000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b7469c43535c826e29c30d25a9f3a035759cf132";
-	let mut handle = create_mock_handle_from_input(input);
+	let mut handle = create_mock_handle_from_input(
+		CREATE_COLLECTION_0_OWNER_B7469C43535C826E29C30D25A9F3A035759CF132,
+	);
 	let result = Mock::execute(&mut handle);
 	assert!(result.is_err());
 	assert_eq!(
@@ -87,9 +93,7 @@ fn owner_of_with_nonzero_transfer_should_fail() {
 fn owner_of_on_no_owner_should_return_null() {
 	impl_precompile_mock_simple!(Mock, Ok(()), None);
 
-	// owner of collection 0
-	let input = "fb34ae530000000000000000000000000000000000000000000000000000000000000000";
-	let mut handle = create_mock_handle_from_input(input);
+	let mut handle = create_mock_handle_from_input(OWNER_OF_COLLECTION_0);
 	let result = Mock::execute(&mut handle);
 	assert_eq!(result.unwrap().output, Vec::<u8>::new());
 }
@@ -98,9 +102,7 @@ fn owner_of_on_no_owner_should_return_null() {
 fn owner_of_should_return_owner_of_mock() {
 	impl_precompile_mock_simple!(Mock, Ok(()), Some(H160::from_low_u64_be(0x1234)));
 
-	// owner of collection 0
-	let input = "fb34ae530000000000000000000000000000000000000000000000000000000000000000";
-	let mut handle = create_mock_handle_from_input(input);
+	let mut handle = create_mock_handle_from_input(OWNER_OF_COLLECTION_0);
 	let result = Mock::execute(&mut handle);
 	assert!(result.is_ok());
 	assert_eq!(result.unwrap().output, H160::from_low_u64_be(0x1234).encode());
