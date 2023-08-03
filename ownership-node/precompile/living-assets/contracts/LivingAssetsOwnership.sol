@@ -7,17 +7,16 @@ pragma solidity >=0.8.3;
 /// @custom:address 0x0000000000000000000000000000000000000402
 interface LivingAssets {
     /// @dev Create collection
-    /// @custom:selector 0x1eaf2516
-    ///
     /// @param collection_id The `collection_id` to be associated
     function createCollection(
         uint64 collection_id,
         address who
-    ) external payable;
+    ) external;
+
+    /// @dev Create collection 2
+    function createCollection() external returns (uint64);
 
     /// @dev Get collection owner
-    /// @custom:selector 0xfb34ae53
-    ///
     /// @param collection_id The `collection_id`
     function ownerOfCollection(
         uint64 collection_id
