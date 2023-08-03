@@ -1,4 +1,4 @@
-/// The `LivingAssetsOwnership` trait provides an interface for managing collections in a
+/// The `CollectionManager` trait provides an interface for managing collections in a
 /// decentralized and non-fungible asset management system. This system allows for the creation of
 /// collections, each of which can be owned by a unique `AccountId`.
 ///
@@ -21,7 +21,7 @@
 /// - `CollectionAlreadyExists`: This error is returned by the `create_collection` method when a collection
 /// with the provided `collection_id` already exists.
 ///
-pub trait LivingAssetsOwnership<AccountId, CollectionId> {
+pub trait CollectionManager<AccountId, CollectionId> {
 	/// Get owner of collection
 	fn owner_of_collection(collection_id: CollectionId) -> Option<AccountId>;
 

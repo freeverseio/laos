@@ -5,7 +5,7 @@
 use fp_evm::{
 	ExitError, ExitSucceed, Precompile, PrecompileFailure, PrecompileHandle, PrecompileOutput,
 };
-use pallet_living_assets_ownership::LivingAssetsOwnership;
+use pallet_living_assets_ownership::traits::CollectionManager;
 use parity_scale_codec::Encode;
 use precompile_utils::{EvmResult, FunctionModifier, PrecompileHandleExt};
 use sp_arithmetic::traits::BaseArithmetic;
@@ -23,22 +23,22 @@ pub enum Action {
 }
 
 /// Wrapper for the precompile function.
-pub struct LivingAssetsOwnershipPrecompile<AddressMapping, AccountId, CollectionId, LivingAssets>(
+pub struct CollectionManagerPrecompile<AddressMapping, AccountId, CollectionId, LivingAssets>(
 	PhantomData<(AddressMapping, AccountId, CollectionId, LivingAssets)>,
 )
 where
 	AddressMapping: pallet_evm::AddressMapping<AccountId>,
 	AccountId: Encode + Debug,
 	CollectionId: BaseArithmetic + Debug,
-	LivingAssets: LivingAssetsOwnership<AccountId, CollectionId>;
+	LivingAssets: CollectionManager<AccountId, CollectionId>;
 
 impl<AddressMapping, AccountId, CollectionId, LivingAssets> Precompile
-	for LivingAssetsOwnershipPrecompile<AddressMapping, AccountId, CollectionId, LivingAssets>
+	for CollectionManagerPrecompile<AddressMapping, AccountId, CollectionId, LivingAssets>
 where
 	AddressMapping: pallet_evm::AddressMapping<AccountId>,
 	AccountId: Encode + Debug,
 	CollectionId: BaseArithmetic + Debug,
-	LivingAssets: LivingAssetsOwnership<AccountId, CollectionId>,
+	LivingAssets: CollectionManager<AccountId, CollectionId>,
 {
 	fn execute(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
 		let selector = handle.read_selector()?;

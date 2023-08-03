@@ -2,7 +2,7 @@
 pragma solidity >=0.8.3;
 
 /// @author Freeverse team
-/// @title Pallet LivingAssetsOwnership Interface
+/// @title Pallet CollectionManager Interface
 /// @dev The interface through which solidity contracts will interact with pallet-living-assets
 /// @custom:address 0x0000000000000000000000000000000000000402
 interface LivingAssets {

@@ -1,4 +1,4 @@
-use crate::{mock::*, traits::LivingAssetsOwnership, Event};
+use crate::{mock::*, traits::CollectionManager, Event};
 use frame_support::assert_ok;
 
 #[cfg(test)]
@@ -44,7 +44,7 @@ mod test {
 	#[test]
 	fn living_assets_ownership_trait_create_new_collection() {
 		new_test_ext().execute_with(|| {
-        	let result = <LivingAssetsModule as LivingAssetsOwnership<AccountId, CollectionId>>::create_collection(1);
+        	let result = <LivingAssetsModule as CollectionManager<AccountId, CollectionId>>::create_collection(1);
         	assert_ok!(result);
         	assert_eq!(LivingAssetsModule::owner_of_collection(0), Some(1));
     	});
@@ -53,8 +53,8 @@ mod test {
 	#[test]
 	fn living_assets_ownership_trait_owner_of_unexistent_collection_is_none() {
 		new_test_ext().execute_with(|| {
-			assert_eq!(<LivingAssetsModule as LivingAssetsOwnership<AccountId, CollectionId>>::owner_of_collection(0), None);
-			assert_eq!(<LivingAssetsModule as LivingAssetsOwnership<AccountId, CollectionId>>::owner_of_collection(1), None);
+			assert_eq!(<LivingAssetsModule as CollectionManager<AccountId, CollectionId>>::owner_of_collection(0), None);
+			assert_eq!(<LivingAssetsModule as CollectionManager<AccountId, CollectionId>>::owner_of_collection(1), None);
 		});
 	}
 
@@ -64,7 +64,7 @@ mod test {
 			// Go past genesis block so events get deposited
 			System::set_block_number(1);
 
-			assert_ok!(<LivingAssetsModule as LivingAssetsOwnership<AccountId, CollectionId>>::create_collection(1));
+			assert_ok!(<LivingAssetsModule as CollectionManager<AccountId, CollectionId>>::create_collection(1));
 			System::assert_last_event(Event::CollectionCreated { collection_id: 0, who: 1 }.into());
 		});
 	}
@@ -72,12 +72,12 @@ mod test {
 	#[test]
 	fn living_assets_ownership_trait_id_of_new_collection_should_be_consecutive() {
 		new_test_ext().execute_with(|| {
-			assert_eq!(<LivingAssetsModule as LivingAssetsOwnership<AccountId, CollectionId>>::create_collection(1).unwrap(), 0);
-			assert_eq!(<LivingAssetsModule as LivingAssetsOwnership<AccountId, CollectionId>>::create_collection(1).unwrap(), 1);
-			assert_eq!(<LivingAssetsModule as LivingAssetsOwnership<AccountId, CollectionId>>::create_collection(1).unwrap(), 2);
-			assert_eq!(<LivingAssetsModule as LivingAssetsOwnership<AccountId, CollectionId>>::create_collection(1).unwrap(), 3);
-			assert_eq!(<LivingAssetsModule as LivingAssetsOwnership<AccountId, CollectionId>>::create_collection(1).unwrap(), 4);
-			assert_eq!(<LivingAssetsModule as LivingAssetsOwnership<AccountId, CollectionId>>::create_collection(1).unwrap(), 5);
+			assert_eq!(<LivingAssetsModule as CollectionManager<AccountId, CollectionId>>::create_collection(1).unwrap(), 0);
+			assert_eq!(<LivingAssetsModule as CollectionManager<AccountId, CollectionId>>::create_collection(1).unwrap(), 1);
+			assert_eq!(<LivingAssetsModule as CollectionManager<AccountId, CollectionId>>::create_collection(1).unwrap(), 2);
+			assert_eq!(<LivingAssetsModule as CollectionManager<AccountId, CollectionId>>::create_collection(1).unwrap(), 3);
+			assert_eq!(<LivingAssetsModule as CollectionManager<AccountId, CollectionId>>::create_collection(1).unwrap(), 4);
+			assert_eq!(<LivingAssetsModule as CollectionManager<AccountId, CollectionId>>::create_collection(1).unwrap(), 5);
 		});
 	}
 }

@@ -111,7 +111,7 @@ mod helpers {
 
 	/// Macro to define a precompile mock with custom closures for testing.
 	///
-	/// This macro creates mock implementations of the `LivingAssetsOwnership` trait,
+	/// This macro creates mock implementations of the `CollectionManager` trait,
 	/// allowing you to test how your code interacts with the precompiled contracts.
 	/// You can define custom closures for the create_collection and owner_of_collection functions.
 	///
@@ -135,7 +135,7 @@ mod helpers {
 		($name:ident, $create_collection_result:expr, $owner_of_collection_result:expr) => {
 			struct CollectionManagerMock;
 
-			impl pallet_living_assets_ownership::LivingAssetsOwnership<AccountId, CollectionId>
+			impl pallet_living_assets_ownership::traits::CollectionManager<AccountId, CollectionId>
 				for CollectionManagerMock
 			{
 				fn create_collection(owner: AccountId) -> Result<CollectionId, &'static str> {
@@ -147,7 +147,7 @@ mod helpers {
 				}
 			}
 
-			type $name = LivingAssetsOwnershipPrecompile<
+			type $name = CollectionManagerPrecompile<
 				AddressMapping,
 				AccountId,
 				CollectionId,
@@ -158,7 +158,7 @@ mod helpers {
 
 	/// Macro to define a precompile mock for testing.
 	///
-	/// This macro creates mock implementations of the `LivingAssetsOwnership` trait,
+	/// This macro creates mock implementations of the `CollectionManager` trait,
 	/// allowing you to test how your code interacts with the precompiled contracts.
 	/// The mock type is named `Mock`, and the implementation uses the provided expressions.
 	///

@@ -89,7 +89,7 @@ pub mod pallet {
 		}
 	}
 
-	impl<T: Config> traits::LivingAssetsOwnership<T::AccountId, T::CollectionId> for Pallet<T> {
+	impl<T: Config> traits::CollectionManager<T::AccountId, T::CollectionId> for Pallet<T> {
 		fn owner_of_collection(collection_id: T::CollectionId) -> Option<T::AccountId> {
 			OwnerOfCollection::<T>::get(collection_id)
 		}
