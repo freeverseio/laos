@@ -240,6 +240,20 @@ mod helpers {
 		MockHandle::new(i, Some(cost), context)
 	}
 
+	/// Create a mock handle for testing precompiled contracts without a specific cost or value.
+	///
+	/// This function takes an input string representing the data to be sent to the precompiled contract
+	/// and returns a `MockHandle` that can be used for testing.
+	///
+	/// # Arguments
+	///
+	/// * `input` - The input data as a hexadecimal string.
+	///
+	/// # Example
+	///
+	/// ```
+	/// let handle = handle_from_input("68656c6c6f");
+	/// ```
 	pub fn handle_from_input(input: &str) -> MockHandle {
 		let i: Vec<u8> = hex::decode(input).expect("invalid input");
 
