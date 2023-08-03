@@ -43,6 +43,14 @@ fn create_collection_should_return_id() {
 }
 
 #[test]
+fn create_collection_on_mock_with_nonzero_value_fails() {
+	impl_precompile_mock_simple!(Mock, Ok(5), Some(H160::zero()));
+	let mut handle = create_mock_handle(OWNER_OF_COLLECTION_0, 0, 1, H160::zero());
+	let result = Mock::execute(&mut handle);
+	assert!(result.is_err());
+}
+
+#[test]
 fn create_collection_assign_collection_to_caller() {
 	impl_precompile_mock!(
 		Mock, // name of the defined precompile
