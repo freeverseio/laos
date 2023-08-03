@@ -15,8 +15,12 @@ mod tests;
 
 #[frame_support::pallet]
 pub mod pallet {
-	use frame_support::pallet_prelude::{OptionQuery, *};
+	use frame_support::{
+		pallet_prelude::{OptionQuery, ValueQuery, *},
+		sp_runtime::traits::{CheckedAdd, One},
+	};
 	use frame_system::pallet_prelude::*;
+	use sp_arithmetic::traits::Unsigned;
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
@@ -27,7 +31,14 @@ pub mod pallet {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		/// Collection id type
-		type CollectionId: Member + Parameter + MaxEncodedLen + Copy;
+		type CollectionId: Member
+			+ Parameter
+			+ MaxEncodedLen
+			+ Copy
+			+ Default
+			+ CheckedAdd
+			+ One
+			+ Unsigned;
 	}
 
 	/// Mapping from collection id to owner
@@ -35,6 +46,11 @@ pub mod pallet {
 	#[pallet::getter(fn owner_of_collection)]
 	pub(super) type OwnerOfCollection<T: Config> =
 		StorageMap<_, Blake2_128Concat, T::CollectionId, T::AccountId, OptionQuery>;
+
+	/// Collection counter
+	#[pallet::storage]
+	#[pallet::getter(fn collection_counter)]
+	pub(super) type CollectionCounter<T: Config> = StorageValue<_, T::CollectionId, ValueQuery>;
 
 	/// Pallet events
 	#[pallet::event]
@@ -50,6 +66,8 @@ pub mod pallet {
 	pub enum Error<T> {
 		/// Collection already exists
 		CollectionAlreadyExists,
+		/// Collection id overflow
+		CollectionIdOverflow,
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -64,7 +82,11 @@ pub mod pallet {
 			collection_id: T::CollectionId,
 		) -> DispatchResult {
 			let who = ensure_signed(origin)?;
-			Self::do_create_collection(collection_id, who)
+			
+			match Self::do_create_collection(collection_id, who) {
+				Ok(_) => Ok(()),
+				Err(err) => Err(err.into()),
+			}
 		}
 	}
 
