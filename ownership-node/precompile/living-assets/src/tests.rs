@@ -9,7 +9,7 @@ type AddressMapping = pallet_evm::IdentityAddressMapping;
 
 const OWNER_OF_COLLECTION_0: &str =
 	"fb34ae530000000000000000000000000000000000000000000000000000000000000000";
-const CREATE_COLLECTION2: &str = "647f1a9c";
+const CREATE_COLLECTION: &str = "647f1a9c";
 
 #[test]
 fn check_selectors() {
@@ -21,7 +21,7 @@ fn check_selectors() {
 fn failing_create_collection_should_return_error() {
 	impl_precompile_mock_simple!(Mock, Err("spaghetti code"), Some(H160::zero()));
 
-	let mut handle = create_mock_handle_from_input(CREATE_COLLECTION2);
+	let mut handle = create_mock_handle_from_input(CREATE_COLLECTION);
 	let result = Mock::execute(&mut handle);
 	assert_eq!(
 		result.unwrap_err(),
@@ -35,7 +35,7 @@ fn failing_create_collection_should_return_error() {
 fn create_collection_should_return_id() {
 	impl_precompile_mock_simple!(Mock, Ok(5), Some(H160::zero()));
 
-	let mut handle = create_mock_handle_from_input(CREATE_COLLECTION2);
+	let mut handle = create_mock_handle_from_input(CREATE_COLLECTION);
 	let result = Mock::execute(&mut handle);
 	assert!(result.is_ok());
 	// check that the output is the collection id 0
@@ -53,7 +53,7 @@ fn create_collection_assign_collection_to_caller() {
 		|_| { Some(H160::zero()) }  // Closure for owner_of_collection result
 	);
 
-	let mut handle = create_mock_handle(CREATE_COLLECTION2, 0, 0, H160::from_low_u64_be(0x1234));
+	let mut handle = create_mock_handle(CREATE_COLLECTION, 0, 0, H160::from_low_u64_be(0x1234));
 	let result = Mock::execute(&mut handle);
 	assert!(result.is_ok());
 }
