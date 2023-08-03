@@ -126,7 +126,7 @@ mod helpers {
 	/// ```
 	/// impl_precompile_mock!(
 	///     MyMock,
-	///     |collection_id, who| { Ok(()) },
+	///     |who| { Ok(0) },
 	///     |collection_id| { Some(H160::zero()) }
 	/// );
 	/// ```
@@ -170,7 +170,7 @@ mod helpers {
 	/// # Example
 	///
 	/// ```
-	/// impl_precompile_mock_simple!(Mock,On(0), Some(H160::zero()));
+	/// impl_precompile_mock_simple!(Mock, Ok(0), Some(H160::zero()));
 	/// ```
 	#[macro_export]
 	macro_rules! impl_precompile_mock_simple {

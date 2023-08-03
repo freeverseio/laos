@@ -8,23 +8,18 @@
 ///
 /// # Methods
 ///
-/// - `owner_of_collection(collection_id: T::CollectionId) -> Option<AccountId>`: This method retrieves the owner
+/// - `owner_of_collection(collection_id: CollectionId) -> Option<AccountId>`: This method retrieves the owner
 /// of a collection given its `collection_id`. If no collection exists with the provided `collection_id`,
 /// the method returns `None`.
 ///
-/// - `create_collection(collection_id: T::CollectionId, who: AccountId) -> DispatchResult`: This method creates a
-/// new collection with the specified `collection_id` and assigns ownership to the provided `AccountId`.
-/// If a collection already exists with the provided `collection_id`, the method will return an error.
-///
-/// # Errors
-///
-/// - `CollectionAlreadyExists`: This error is returned by the `create_collection` method when a collection
-/// with the provided `collection_id` already exists.
+/// - `create_collection(owner: AccountId) -> Result<CollectionId, &'static str>`: This method creates a
+/// new collection and assigns ownership to the provided `AccountId`. The method returns the `collection_id`
+/// of the newly created collection.
 ///
 pub trait CollectionManager<AccountId, CollectionId> {
-	/// Get owner of collection
-	fn owner_of_collection(collection_id: CollectionId) -> Option<AccountId>;
+    /// Get owner of collection
+    fn owner_of_collection(collection_id: CollectionId) -> Option<AccountId>;
 
-	/// Create collection
-	fn create_collection(owner: AccountId) -> Result<CollectionId, &'static str>;
+    /// Create collection
+    fn create_collection(owner: AccountId) -> Result<CollectionId, &'static str>;
 }
