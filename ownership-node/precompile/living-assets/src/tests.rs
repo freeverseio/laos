@@ -259,14 +259,6 @@ mod helpers {
 	/// let handle = handle_from_input("68656c6c6f");
 	/// ```
 	pub fn handle_from_input(input: &str) -> MockHandle {
-		let i: Vec<u8> = hex::decode(input).expect("invalid input");
-
-		let context: Context = Context {
-			address: Default::default(),
-			caller: Default::default(),
-			apparent_value: Default::default(),
-		};
-
-		MockHandle::new(i, None, context)
+		create_mock_handle(input, 0, 0)
 	}
 }
