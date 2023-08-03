@@ -96,9 +96,17 @@ where
 					}),
 				}
 			},
-			Action::CreateCollectionReturnId => {
-				// return 0
-				Ok(PrecompileOutput { exit_status: ExitSucceed::Returned, output: 0u64.encode() })
+			Action::CreateCollectionReturnId => match LivingAssets::create_collection2() {
+				Ok(_) => {
+					// return 0
+					Ok(PrecompileOutput {
+						exit_status: ExitSucceed::Returned,
+						output: 0u64.encode(),
+					})
+				},
+				Err(err) => Err(PrecompileFailure::Error {
+					exit_status: ExitError::Other(sp_std::borrow::Cow::Borrowed(err)),
+				}),
 			},
 		}
 	}
