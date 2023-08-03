@@ -5,6 +5,8 @@ use sp_core::H160;
 use sp_runtime::{DispatchError, DispatchResult};
 
 type CollectionId = u64;
+type AccountId = H160;
+type AddressMapping = pallet_evm::IdentityAddressMapping;
 
 #[test]
 fn check_selectors() {
@@ -157,9 +159,6 @@ mod helpers {
 	#[macro_export]
 	macro_rules! define_precompile_mock_closures {
 		($name:ident, $create_collection_result:expr, $owner_of_collection_result:expr) => {
-			type AccountId = H160;
-			type AddressMapping = pallet_evm::IdentityAddressMapping;
-
 			struct CollectionManagerMock;
 
 			impl pallet_living_assets_ownership::LivingAssetsOwnership<AccountId, CollectionId>
