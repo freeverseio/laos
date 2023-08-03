@@ -16,7 +16,7 @@ fn check_selectors() {
 
 #[test]
 fn create_collection_on_mock_succeed_should_succeed() {
-	define_precompile_mock!(Ok(()), Some(H160::zero()));
+	define_precompile_mock!(PrecompileMock, Ok(()), Some(H160::zero()));
 
 	let input = "1eaf25160000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b7469c43535c826e29c30d25a9f3a035759cf132";
 	let mut handle = create_mock_handle(input, 0, 0);
@@ -26,7 +26,11 @@ fn create_collection_on_mock_succeed_should_succeed() {
 
 #[test]
 fn create_collection_on_mock_fail_with_other_error() {
-	define_precompile_mock!(Err(DispatchError::Other("pizza error")), Some(H160::zero()));
+	define_precompile_mock!(
+		PrecompileMock,
+		Err(DispatchError::Other("pizza error")),
+		Some(H160::zero())
+	);
 
 	let input = "1eaf25160000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b7469c43535c826e29c30d25a9f3a035759cf132";
 	let mut handle = create_mock_handle(input, 0, 0);
@@ -42,7 +46,7 @@ fn create_collection_on_mock_fail_with_other_error() {
 
 #[test]
 fn create_collection_on_mock_with_nonzero_value_fails() {
-	define_precompile_mock!(Ok(()), Some(H160::zero()));
+	define_precompile_mock!(PrecompileMock, Ok(()), Some(H160::zero()));
 
 	let input = "1eaf25160000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b7469c43535c826e29c30d25a9f3a035759cf132";
 	let mut handle = create_mock_handle(input, 0, 1);
@@ -52,7 +56,7 @@ fn create_collection_on_mock_with_nonzero_value_fails() {
 
 #[test]
 fn create_collection_on_mock_fail_with_corruption_error() {
-	define_precompile_mock!(Err(DispatchError::Corruption), Some(H160::zero()));
+	define_precompile_mock!(PrecompileMock, Err(DispatchError::Corruption), Some(H160::zero()));
 
 	let input = "1eaf25160000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b7469c43535c826e29c30d25a9f3a035759cf132";
 	let mut handle = create_mock_handle(input, 0, 0);
@@ -68,7 +72,7 @@ fn create_collection_on_mock_fail_with_corruption_error() {
 
 #[test]
 fn owner_of_with_nonzero_transfer_should_fail() {
-	define_precompile_mock!(Ok(()), None);
+	define_precompile_mock!(PrecompileMock, Ok(()), None);
 
 	let input = "fb34ae530000000000000000000000000000000000000000000000000000000000000000";
 	let mut handle = create_mock_handle(input, 0, 1);
@@ -78,7 +82,7 @@ fn owner_of_with_nonzero_transfer_should_fail() {
 
 #[test]
 fn owner_of_on_no_owner_should_return_null() {
-	define_precompile_mock!(Ok(()), None);
+	define_precompile_mock!(PrecompileMock, Ok(()), None);
 
 	let input = "fb34ae530000000000000000000000000000000000000000000000000000000000000000";
 	let mut handle = create_mock_handle(input, 0, 0);
@@ -88,7 +92,7 @@ fn owner_of_on_no_owner_should_return_null() {
 
 #[test]
 fn owner_of_should_return_owner_of_mock() {
-	define_precompile_mock!(Ok(()), Some(H160::from_low_u64_be(0x1234)));
+	define_precompile_mock!(PrecompileMock, Ok(()), Some(H160::from_low_u64_be(0x1234)));
 
 	let input = "fb34ae530000000000000000000000000000000000000000000000000000000000000000";
 	let mut handle = create_mock_handle(input, 0, 0);
@@ -99,7 +103,7 @@ fn owner_of_should_return_owner_of_mock() {
 
 #[test]
 fn call_unexistent_selector_should_fail() {
-	define_precompile_mock!(Ok(()), Some(H160::from_low_u64_be(0x1234)));
+	define_precompile_mock!(PrecompileMock, Ok(()), Some(H160::from_low_u64_be(0x1234)));
 
 	let input = "fb24ae530000000000000000000000000000000000000000000000000000000000000000";
 	let mut handle = create_mock_handle(input, 0, 0);
@@ -199,13 +203,13 @@ mod helpers {
 	/// # Example
 	///
 	/// ```
-	/// define_precompile_mock!(Ok(()), Some(H160::zero()));
+	/// define_precompile_mock!(PrecompileMock,Ok(()), Some(H160::zero()));
 	/// ```
 	#[macro_export]
 	macro_rules! define_precompile_mock {
-		($create_collection_result:expr, $owner_of_collection_result:expr) => {
+		($name:ident, $create_collection_result:expr, $owner_of_collection_result:expr) => {
 			define_precompile_mock_closures!(
-				PrecompileMock,
+				$name,
 				|_collection_id, _who| { $create_collection_result },
 				|_collection_id| { $owner_of_collection_result }
 			);
