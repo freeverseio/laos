@@ -82,8 +82,8 @@ pub mod pallet {
 			collection_id: T::CollectionId,
 		) -> DispatchResult {
 			let who = ensure_signed(origin)?;
-			
-			match Self::do_create_collection(collection_id, who) {
+
+			match Self::do_create_collection(who) {
 				Ok(_) => Ok(()),
 				Err(err) => Err(err.into()),
 			}

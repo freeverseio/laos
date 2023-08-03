@@ -1,15 +1,10 @@
 //! Contains helper and utility functions of the pallet
 use super::*;
-use frame_support::sp_runtime::{
-	traits::{CheckedAdd, One},
-};
+use frame_support::sp_runtime::traits::{CheckedAdd, One};
 
 impl<T: Config> Pallet<T> {
 	/// See [Self::create_collection]
-	pub fn do_create_collection(
-		collection_id: T::CollectionId,
-		who: T::AccountId,
-	) -> Result<T::CollectionId, &'static str> {
+	pub fn do_create_collection(who: T::AccountId) -> Result<T::CollectionId, &'static str> {
 		// Retrieve the current collection count to use as the new collection's ID
 		let collection_id = Self::collection_counter();
 
