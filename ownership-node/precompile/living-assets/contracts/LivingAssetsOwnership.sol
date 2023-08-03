@@ -8,14 +8,6 @@ pragma solidity >=0.8.3;
 interface LivingAssets {
     /// @notice Creates a new collection
     /// @dev Call this function to create a new collection
-    /// @return collection_id The unique ID of the newly created collection
-    function createCollection() external returns (uint64);
-
-    /// @notice Retrieves the owner of a specific collection
-    /// @dev Call this function to get the owner of the specified collection
-    /// @param collection_id The unique ID of the collection whose owner is to be retrieved
-    /// @return The owner's address in bytes32 format
-    function ownerOfCollection(
-        uint64 collection_id
-    ) external view returns (bytes32);
+    /// @return address of the ERC721 collection
+    function createCollection() external returns (address);
 }

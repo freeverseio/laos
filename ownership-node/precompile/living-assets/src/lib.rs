@@ -17,8 +17,6 @@ use sp_std::{fmt::Debug, marker::PhantomData};
 #[precompile_utils_macro::generate_function_selector]
 #[derive(Debug, PartialEq)]
 pub enum Action {
-	/// Get owner of the collection
-	OwnerOfCollection = "ownerOfCollection(uint64)",
 	/// Create collection
 	CreateCollection = "createCollection()",
 }
@@ -45,30 +43,10 @@ where
 		let selector = handle.read_selector()?;
 
 		handle.check_function_modifier(match selector {
-			Action::OwnerOfCollection => FunctionModifier::View,
 			Action::CreateCollection => FunctionModifier::NonPayable,
 		})?;
 
 		match selector {
-			// read storage
-			Action::OwnerOfCollection => {
-				let mut input = handle.read_input()?;
-				input.expect_arguments(1)?;
-
-				if let Some(owner) =
-					LivingAssets::owner_of_collection(input.read::<u64>()?.saturated_into())
-				{
-					Ok(PrecompileOutput {
-						exit_status: ExitSucceed::Returned,
-						output: owner.encode(),
-					})
-				} else {
-					Ok(PrecompileOutput {
-						exit_status: ExitSucceed::Stopped,
-						output: sp_std::vec::Vec::new(),
-					})
-				}
-			},
 			Action::CreateCollection => {
 				let caller = handle.context().caller;
 				let owner = AddressMapping::into_account_id(caller);
@@ -88,17 +66,16 @@ where
 	}
 }
 
-fn collection_id_to_address(collection_id: u64) -> H160 {
+/// Converts a `u64` collection ID to an `H160` address.
+///
+/// This function takes a `u64` collection ID and converts it into an `H160` address by using the
+/// `from_low_u64_be` method to convert the `u64` value into the lower 64 bits of the `H160`.
+/// Additionally, the function sets the first bit of the resulting `H160` to 1, which can be used to
+/// distinguish addresses created by this function from other addresses.
+pub fn collection_id_to_address(collection_id: u64) -> H160 {
 	let mut address = H160::from_low_u64_be(collection_id);
-	address.0[0] |= 0x80;
+	address.0[0] |= 0x80; // Set the first bit to 1
 	address
-}
-
-fn address_to_collection_id(address: H160) -> u64 {
-	let mut collection_id_bytes = [0u8; 8];
-	collection_id_bytes.copy_from_slice(&address.0[12..]); // Extract the last 8 bytes
-	collection_id_bytes[0] &= 0x7F; // Clear the first bit
-	u64::from_be_bytes(collection_id_bytes)
 }
 
 #[cfg(test)]

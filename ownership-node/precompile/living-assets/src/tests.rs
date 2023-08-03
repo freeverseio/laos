@@ -7,13 +7,10 @@ type CollectionId = u64;
 type AccountId = H160;
 type AddressMapping = pallet_evm::IdentityAddressMapping;
 
-const OWNER_OF_COLLECTION_0: &str =
-	"fb34ae530000000000000000000000000000000000000000000000000000000000000000";
 const CREATE_COLLECTION: &str = "647f1a9c";
 
 #[test]
 fn check_selectors() {
-	assert_eq!(Action::OwnerOfCollection as u32, 0xFB34AE53);
 	assert_eq!(Action::CreateCollection as u32, 0x647F1A9C);
 }
 
@@ -24,23 +21,6 @@ fn test_collection_id_to_address() {
 	let bytes = hex::decode(hex_value).expect("Decoding failed");
 	let expected_address = H160::from_slice(&bytes);
 	assert_eq!(collection_id_to_address(collection_id), expected_address);
-}
-
-#[test]
-fn test_address_to_collection_id() {
-	let hex_value = "8000000000000000000000000000000000000005";
-	let bytes = hex::decode(hex_value).expect("Decoding failed");
-	let address = H160::from_slice(&bytes);
-	let expected_collection_id: u64 = 5;
-	assert_eq!(address_to_collection_id(address), expected_collection_id);
-}
-
-#[test]
-fn test_conversion_reversible() {
-	let collection_id: u64 = 42;
-	let address = collection_id_to_address(collection_id);
-	let recovered_collection_id = address_to_collection_id(address);
-	assert_eq!(collection_id, recovered_collection_id);
 }
 
 #[test]
@@ -94,25 +74,6 @@ fn owner_of_with_nonzero_transfer_should_fail() {
 	let mut handle = create_mock_handle("", 0, 1, H160::zero());
 	let result = Mock::execute(&mut handle);
 	assert!(result.is_err());
-}
-
-#[test]
-fn owner_of_on_no_owner_should_return_null() {
-	impl_precompile_mock_simple!(Mock, Ok(0), None);
-
-	let mut handle = create_mock_handle_from_input(OWNER_OF_COLLECTION_0);
-	let result = Mock::execute(&mut handle);
-	assert_eq!(result.unwrap().output, Vec::<u8>::new());
-}
-
-#[test]
-fn owner_of_should_return_owner_of_mock() {
-	impl_precompile_mock_simple!(Mock, Ok(0), Some(H160::from_low_u64_be(0x1234)));
-
-	let mut handle = create_mock_handle_from_input(OWNER_OF_COLLECTION_0);
-	let result = Mock::execute(&mut handle);
-	assert!(result.is_ok());
-	assert_eq!(result.unwrap().output, H160::from_low_u64_be(0x1234).encode());
 }
 
 #[test]
