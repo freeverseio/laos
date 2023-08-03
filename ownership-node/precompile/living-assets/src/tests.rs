@@ -16,25 +16,25 @@ fn check_selectors() {
 
 #[test]
 fn create_collection_on_mock_succeed_should_succeed() {
-	define_precompile_mock!(PrecompileMock, Ok(()), Some(H160::zero()));
+	define_precompile_mock!(Mock, Ok(()), Some(H160::zero()));
 
 	let input = "1eaf25160000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b7469c43535c826e29c30d25a9f3a035759cf132";
 	let mut handle = create_mock_handle(input, 0, 0);
-	let result = PrecompileMock::execute(&mut handle);
+	let result = Mock::execute(&mut handle);
 	assert!(result.is_ok());
 }
 
 #[test]
 fn create_collection_on_mock_fail_with_other_error() {
 	define_precompile_mock!(
-		PrecompileMock,
+		Mock,
 		Err(DispatchError::Other("pizza error")),
 		Some(H160::zero())
 	);
 
 	let input = "1eaf25160000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b7469c43535c826e29c30d25a9f3a035759cf132";
 	let mut handle = create_mock_handle(input, 0, 0);
-	let result = PrecompileMock::execute(&mut handle);
+	let result = Mock::execute(&mut handle);
 	assert!(result.is_err());
 	assert_eq!(
 		result.unwrap_err(),
@@ -46,21 +46,21 @@ fn create_collection_on_mock_fail_with_other_error() {
 
 #[test]
 fn create_collection_on_mock_with_nonzero_value_fails() {
-	define_precompile_mock!(PrecompileMock, Ok(()), Some(H160::zero()));
+	define_precompile_mock!(Mock, Ok(()), Some(H160::zero()));
 
 	let input = "1eaf25160000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b7469c43535c826e29c30d25a9f3a035759cf132";
 	let mut handle = create_mock_handle(input, 0, 1);
-	let result = PrecompileMock::execute(&mut handle);
+	let result = Mock::execute(&mut handle);
 	assert!(result.is_err());
 }
 
 #[test]
 fn create_collection_on_mock_fail_with_corruption_error() {
-	define_precompile_mock!(PrecompileMock, Err(DispatchError::Corruption), Some(H160::zero()));
+	define_precompile_mock!(Mock, Err(DispatchError::Corruption), Some(H160::zero()));
 
 	let input = "1eaf25160000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b7469c43535c826e29c30d25a9f3a035759cf132";
 	let mut handle = create_mock_handle(input, 0, 0);
-	let result = PrecompileMock::execute(&mut handle);
+	let result = Mock::execute(&mut handle);
 	assert!(result.is_err());
 	assert_eq!(
 		result.unwrap_err(),
@@ -72,42 +72,42 @@ fn create_collection_on_mock_fail_with_corruption_error() {
 
 #[test]
 fn owner_of_with_nonzero_transfer_should_fail() {
-	define_precompile_mock!(PrecompileMock, Ok(()), None);
+	define_precompile_mock!(Mock, Ok(()), None);
 
 	let input = "fb34ae530000000000000000000000000000000000000000000000000000000000000000";
 	let mut handle = create_mock_handle(input, 0, 1);
-	let result = PrecompileMock::execute(&mut handle);
+	let result = Mock::execute(&mut handle);
 	assert!(result.is_err());
 }
 
 #[test]
 fn owner_of_on_no_owner_should_return_null() {
-	define_precompile_mock!(PrecompileMock, Ok(()), None);
+	define_precompile_mock!(Mock, Ok(()), None);
 
 	let input = "fb34ae530000000000000000000000000000000000000000000000000000000000000000";
 	let mut handle = create_mock_handle(input, 0, 0);
-	let result = PrecompileMock::execute(&mut handle);
+	let result = Mock::execute(&mut handle);
 	assert_eq!(result.unwrap().output, Vec::<u8>::new());
 }
 
 #[test]
 fn owner_of_should_return_owner_of_mock() {
-	define_precompile_mock!(PrecompileMock, Ok(()), Some(H160::from_low_u64_be(0x1234)));
+	define_precompile_mock!(Mock, Ok(()), Some(H160::from_low_u64_be(0x1234)));
 
 	let input = "fb34ae530000000000000000000000000000000000000000000000000000000000000000";
 	let mut handle = create_mock_handle(input, 0, 0);
-	let result = PrecompileMock::execute(&mut handle);
+	let result = Mock::execute(&mut handle);
 	assert!(result.is_ok());
 	assert_eq!(result.unwrap().output, H160::from_low_u64_be(0x1234).encode());
 }
 
 #[test]
 fn call_unexistent_selector_should_fail() {
-	define_precompile_mock!(PrecompileMock, Ok(()), Some(H160::from_low_u64_be(0x1234)));
+	define_precompile_mock!(Mock, Ok(()), Some(H160::from_low_u64_be(0x1234)));
 
 	let input = "fb24ae530000000000000000000000000000000000000000000000000000000000000000";
 	let mut handle = create_mock_handle(input, 0, 0);
-	let result = PrecompileMock::execute(&mut handle);
+	let result = Mock::execute(&mut handle);
 	assert_eq!(
 		result.unwrap_err(),
 		PrecompileFailure::Revert {
@@ -121,7 +121,7 @@ fn call_unexistent_selector_should_fail() {
 #[test]
 fn create_collection_with_max_id() {
 	define_precompile_mock_closures!(
-		PrecompileMock, // name of the defined precompile
+		Mock, // name of the defined precompile
 		|collection_id, _| {
 			assert_eq!(collection_id, CollectionId::max_value());
 			Ok(())
@@ -131,7 +131,7 @@ fn create_collection_with_max_id() {
 
 	let input = "1eaf2516000000000000000000000000000000000000000000000000ffffffffffffffff000000000000000000000000b7469c43535c826e29c30d25a9f3a035759cf132";
 	let mut handle = create_mock_handle(input, 0, 0);
-	let result = PrecompileMock::execute(&mut handle);
+	let result = Mock::execute(&mut handle);
 	assert!(result.is_ok());
 }
 
@@ -155,7 +155,7 @@ mod helpers {
 	///
 	/// ```
 	/// define_precompile_mock_closures!(
-	///     MyPrecompileMock,
+	///     MyMock,
 	///     |collection_id, who| { Ok(()) },
 	///     |collection_id| { Some(H160::zero()) }
 	/// );
@@ -193,7 +193,7 @@ mod helpers {
 	///
 	/// This macro creates mock implementations of the `LivingAssetsOwnership` trait,
 	/// allowing you to test how your code interacts with the precompiled contracts.
-	/// The mock type is named `PrecompileMock`, and the implementation uses the provided expressions.
+	/// The mock type is named `Mock`, and the implementation uses the provided expressions.
 	///
 	/// # Arguments
 	///
@@ -203,7 +203,7 @@ mod helpers {
 	/// # Example
 	///
 	/// ```
-	/// define_precompile_mock!(PrecompileMock,Ok(()), Some(H160::zero()));
+	/// define_precompile_mock!(Mock,Ok(()), Some(H160::zero()));
 	/// ```
 	#[macro_export]
 	macro_rules! define_precompile_mock {
