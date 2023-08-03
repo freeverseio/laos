@@ -2,22 +2,20 @@ use super::*;
 use evm::ExitRevert;
 use helpers::*;
 use sp_core::H160;
-use sp_runtime::{DispatchError, DispatchResult};
+use sp_runtime::DispatchResult;
 
 type CollectionId = u64;
 type AccountId = H160;
 type AddressMapping = pallet_evm::IdentityAddressMapping;
 
-const CREATE_COLLECTION_0_OWNER_B7469C43535C826E29C30D25A9F3A035759CF132: &str = "1eaf25160000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b7469c43535c826e29c30d25a9f3a035759cf132";
 const OWNER_OF_COLLECTION_0: &str =
 	"fb34ae530000000000000000000000000000000000000000000000000000000000000000";
 const CREATE_COLLECTION2: &str = "647f1a9c";
 
 #[test]
 fn check_selectors() {
-	assert_eq!(Action::CreateCollection as u32, 0x1EAF2516);
 	assert_eq!(Action::OwnerOfCollection as u32, 0xFB34AE53);
-	assert_eq!(Action::CreateCollectionReturnId as u32, 0x647F1A9C);
+	assert_eq!(Action::CreateCollection as u32, 0x647F1A9C);
 }
 
 #[test]
@@ -60,70 +58,6 @@ fn create_collection_assign_collection_to_caller() {
 	let mut handle = create_mock_handle(CREATE_COLLECTION2, 0, 0, H160::from_low_u64_be(0x1234));
 	let result = Mock::execute(&mut handle);
 	assert!(result.is_ok());
-}
-
-#[test]
-fn create_collection_on_mock_succeed_should_succeed() {
-	impl_precompile_mock_simple!(Mock, Ok(()), Ok(0), Some(H160::zero()));
-
-	let mut handle = create_mock_handle_from_input(
-		CREATE_COLLECTION_0_OWNER_B7469C43535C826E29C30D25A9F3A035759CF132,
-	);
-	let result = Mock::execute(&mut handle);
-	assert!(result.is_ok());
-}
-
-#[test]
-fn create_collection_on_mock_fail_with_other_error() {
-	impl_precompile_mock_simple!(
-		Mock,
-		Err(DispatchError::Other("pizza error")),
-		Ok(0),
-		Some(H160::zero())
-	);
-
-	let mut handle = create_mock_handle_from_input(
-		CREATE_COLLECTION_0_OWNER_B7469C43535C826E29C30D25A9F3A035759CF132,
-	);
-	let result = Mock::execute(&mut handle);
-	assert!(result.is_err());
-	assert_eq!(
-		result.unwrap_err(),
-		PrecompileFailure::Error {
-			exit_status: ExitError::Other(sp_std::borrow::Cow::Borrowed("pizza error"))
-		}
-	);
-}
-
-#[test]
-fn create_collection_on_mock_with_nonzero_value_fails() {
-	impl_precompile_mock_simple!(Mock, Ok(()), Ok(0), Some(H160::zero()));
-
-	let mut handle = create_mock_handle(
-		CREATE_COLLECTION_0_OWNER_B7469C43535C826E29C30D25A9F3A035759CF132,
-		0,
-		1,
-		H160::zero(),
-	);
-	let result = Mock::execute(&mut handle);
-	assert!(result.is_err());
-}
-
-#[test]
-fn create_collection_on_mock_fail_with_corruption_error() {
-	impl_precompile_mock_simple!(Mock, Err(DispatchError::Corruption), Ok(0), Some(H160::zero()));
-
-	let mut handle = create_mock_handle_from_input(
-		CREATE_COLLECTION_0_OWNER_B7469C43535C826E29C30D25A9F3A035759CF132,
-	);
-	let result = Mock::execute(&mut handle);
-	assert!(result.is_err());
-	assert_eq!(
-		result.unwrap_err(),
-		PrecompileFailure::Error {
-			exit_status: ExitError::Other(sp_std::borrow::Cow::Borrowed("Corruption"))
-		}
-	);
 }
 
 #[test]
@@ -170,25 +104,6 @@ fn call_unexistent_selector_should_fail() {
 				.to_vec()
 		}
 	);
-}
-
-#[test]
-fn create_collection_with_max_id() {
-	impl_precompile_mock!(
-		Mock, // name of the defined precompile
-		|collection_id, _| {
-			assert_eq!(collection_id, CollectionId::max_value());
-			Ok(())
-		}, // Closure for create_collection result
-		|_| { Ok(0) }, // Closure for create_collection2 result
-		|_| { Some(H160::zero()) }  // Closure for owner_of_collection result
-	);
-
-	// create collection max_value() for account b7469c43535c826e29c30d25a9f3a035759cf132
-	let input = "1eaf2516000000000000000000000000000000000000000000000000ffffffffffffffff000000000000000000000000b7469c43535c826e29c30d25a9f3a035759cf132";
-	let mut handle = create_mock_handle_from_input(input);
-	let result = Mock::execute(&mut handle);
-	assert!(result.is_ok());
 }
 
 mod helpers {

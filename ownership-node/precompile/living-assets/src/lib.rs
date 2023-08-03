@@ -19,12 +19,10 @@ use sp_std::{fmt::Debug, marker::PhantomData};
 #[precompile_utils_macro::generate_function_selector]
 #[derive(Debug, PartialEq)]
 pub enum Action {
-	/// Create a new collection
-	CreateCollection = "createCollection(uint64,address)",
 	/// Get owner of the collection
 	OwnerOfCollection = "ownerOfCollection(uint64)",
-
-	CreateCollectionReturnId = "createCollection()",
+	/// Create collection
+	CreateCollection = "createCollection()",
 }
 
 /// Wrapper for the precompile function.
@@ -51,7 +49,6 @@ where
 		handle.check_function_modifier(match selector {
 			Action::OwnerOfCollection => FunctionModifier::View,
 			Action::CreateCollection => FunctionModifier::NonPayable,
-			Action::CreateCollectionReturnId => FunctionModifier::NonPayable,
 		})?;
 
 		match selector {
@@ -74,29 +71,7 @@ where
 					})
 				}
 			},
-			// write storage
 			Action::CreateCollection => {
-				let mut input = handle.read_input()?;
-				input.expect_arguments(2)?;
-
-				let collection_id = input.read::<u64>()?.saturated_into();
-				let owner = AddressMapping::into_account_id(input.read::<Address>()?.0);
-
-				match LivingAssets::create_collection(collection_id, owner) {
-					Ok(_) => Ok(succeed(EvmDataWriter::new().write(true).build())),
-					Err(DispatchError::Other(err)) => Err(PrecompileFailure::Error {
-						exit_status: ExitError::Other(sp_std::borrow::Cow::Borrowed(err)),
-					}),
-					// for the other errors the type or error is returned
-					Err(e) => Err(PrecompileFailure::Error {
-						exit_status: ExitError::Other(sp_std::borrow::Cow::Owned(format!(
-							"{:?}",
-							e
-						))),
-					}),
-				}
-			},
-			Action::CreateCollectionReturnId => {
 				let caller = handle.context().caller;
 				let owner = AddressMapping::into_account_id(caller);
 
