@@ -17,8 +17,14 @@ fn owner_of_unexistent_collection_is_none() {
 #[test]
 fn create_new_collection() {
 	new_test_ext().execute_with(|| {
+		assert_eq!(LivingAssetsModule::owner_of_collection(0), None);
+
 		assert_ok!(LivingAssetsModule::create_collection(RuntimeOrigin::signed(ALICE)));
 		assert_eq!(LivingAssetsModule::owner_of_collection(0).unwrap(), ALICE);
+		assert_ok!(LivingAssetsModule::create_collection(RuntimeOrigin::signed(ALICE)));
+		assert_eq!(LivingAssetsModule::owner_of_collection(1).unwrap(), ALICE);
+		assert_ok!(LivingAssetsModule::create_collection(RuntimeOrigin::signed(ALICE)));
+		assert_eq!(LivingAssetsModule::owner_of_collection(2).unwrap(), ALICE);
 	});
 }
 
