@@ -97,13 +97,10 @@ where
 				}
 			},
 			Action::CreateCollectionReturnId => match LivingAssets::create_collection2() {
-				Ok(_) => {
-					// return 0
-					Ok(PrecompileOutput {
-						exit_status: ExitSucceed::Returned,
-						output: 0u64.encode(),
-					})
-				},
+				Ok(collection_id) => Ok(PrecompileOutput {
+					exit_status: ExitSucceed::Returned,
+					output: collection_id.saturated_into::<u64>().encode(),
+				}),
 				Err(err) => Err(PrecompileFailure::Error {
 					exit_status: ExitError::Other(sp_std::borrow::Cow::Borrowed(err)),
 				}),
