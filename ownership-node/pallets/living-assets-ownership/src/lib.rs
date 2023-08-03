@@ -96,8 +96,7 @@ pub mod pallet {
 		fn owner_of_collection(collection_id: CollectionId) -> Option<AccountId>;
 
 		/// Create collection
-		fn create_collection(collection_id: CollectionId, who: AccountId) -> DispatchResult;
-		fn create_collection2(owner: AccountId) -> Result<CollectionId, &'static str>;
+		fn create_collection(owner: AccountId) -> Result<CollectionId, &'static str>;
 	}
 
 	impl<T: Config> LivingAssetsOwnership<T::AccountId, T::CollectionId> for Pallet<T> {
@@ -105,11 +104,7 @@ pub mod pallet {
 			OwnerOfCollection::<T>::get(collection_id)
 		}
 
-		fn create_collection(collection_id: T::CollectionId, who: T::AccountId) -> DispatchResult {
-			Self::do_create_collection(collection_id, who)
-		}
-
-		fn create_collection2(_owner: T::AccountId) -> Result<T::CollectionId, &'static str> {
+		fn create_collection(_owner: T::AccountId) -> Result<T::CollectionId, &'static str> {
 			todo!();
 		}
 	}

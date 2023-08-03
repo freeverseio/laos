@@ -2,7 +2,6 @@ use super::*;
 use evm::ExitRevert;
 use helpers::*;
 use sp_core::H160;
-use sp_runtime::DispatchResult;
 
 type CollectionId = u64;
 type AccountId = H160;
@@ -20,7 +19,7 @@ fn check_selectors() {
 
 #[test]
 fn failing_create_collection_should_return_error() {
-	impl_precompile_mock_simple!(Mock, Ok(()), Err("spaghetti code"), Some(H160::zero()));
+	impl_precompile_mock_simple!(Mock, Err("spaghetti code"), Some(H160::zero()));
 
 	let mut handle = create_mock_handle_from_input(CREATE_COLLECTION2);
 	let result = Mock::execute(&mut handle);
@@ -34,7 +33,7 @@ fn failing_create_collection_should_return_error() {
 
 #[test]
 fn create_collection_should_return_id() {
-	impl_precompile_mock_simple!(Mock, Ok(()), Ok(5), Some(H160::zero()));
+	impl_precompile_mock_simple!(Mock, Ok(5), Some(H160::zero()));
 
 	let mut handle = create_mock_handle_from_input(CREATE_COLLECTION2);
 	let result = Mock::execute(&mut handle);
@@ -46,12 +45,11 @@ fn create_collection_should_return_id() {
 #[test]
 fn create_collection_assign_collection_to_caller() {
 	impl_precompile_mock!(
-		Mock,              // name of the defined precompile
-		|_, _| { Ok(()) }, // Closure for create_collection result
+		Mock, // name of the defined precompile
 		|owner| {
 			assert_eq!(owner, H160::from_low_u64_be(0x1234));
 			Ok(0)
-		}, // Closure for create_collection2 result
+		}, // Closure for create_collection result
 		|_| { Some(H160::zero()) }  // Closure for owner_of_collection result
 	);
 
@@ -62,7 +60,7 @@ fn create_collection_assign_collection_to_caller() {
 
 #[test]
 fn owner_of_with_nonzero_transfer_should_fail() {
-	impl_precompile_mock_simple!(Mock, Ok(()), Ok(0), None);
+	impl_precompile_mock_simple!(Mock, Ok(0), None);
 
 	let mut handle = create_mock_handle("", 0, 1, H160::zero());
 	let result = Mock::execute(&mut handle);
@@ -71,7 +69,7 @@ fn owner_of_with_nonzero_transfer_should_fail() {
 
 #[test]
 fn owner_of_on_no_owner_should_return_null() {
-	impl_precompile_mock_simple!(Mock, Ok(()), Ok(0), None);
+	impl_precompile_mock_simple!(Mock, Ok(0), None);
 
 	let mut handle = create_mock_handle_from_input(OWNER_OF_COLLECTION_0);
 	let result = Mock::execute(&mut handle);
@@ -80,7 +78,7 @@ fn owner_of_on_no_owner_should_return_null() {
 
 #[test]
 fn owner_of_should_return_owner_of_mock() {
-	impl_precompile_mock_simple!(Mock, Ok(()), Ok(0), Some(H160::from_low_u64_be(0x1234)));
+	impl_precompile_mock_simple!(Mock, Ok(0), Some(H160::from_low_u64_be(0x1234)));
 
 	let mut handle = create_mock_handle_from_input(OWNER_OF_COLLECTION_0);
 	let result = Mock::execute(&mut handle);
@@ -90,7 +88,7 @@ fn owner_of_should_return_owner_of_mock() {
 
 #[test]
 fn call_unexistent_selector_should_fail() {
-	impl_precompile_mock_simple!(Mock, Ok(()), Ok(0), Some(H160::from_low_u64_be(0x1234)));
+	impl_precompile_mock_simple!(Mock, Ok(0), Some(H160::from_low_u64_be(0x1234)));
 
 	// unexistent selector
 	let input = "fb24ae530000000000000000000000000000000000000000000000000000000000000000";
@@ -134,21 +132,14 @@ mod helpers {
 	/// ```
 	#[macro_export]
 	macro_rules! impl_precompile_mock {
-		($name:ident, $create_collection_result:expr, $create_collection2_result:expr, $owner_of_collection_result:expr) => {
+		($name:ident, $create_collection_result:expr, $owner_of_collection_result:expr) => {
 			struct CollectionManagerMock;
 
 			impl pallet_living_assets_ownership::LivingAssetsOwnership<AccountId, CollectionId>
 				for CollectionManagerMock
 			{
-				fn create_collection(
-					collection_id: CollectionId,
-					who: AccountId,
-				) -> DispatchResult {
-					($create_collection_result)(collection_id, who)
-				}
-
-				fn create_collection2(owner: AccountId) -> Result<CollectionId, &'static str> {
-					($create_collection2_result)(owner)
+				fn create_collection(owner: AccountId) -> Result<CollectionId, &'static str> {
+					($create_collection_result)(owner)
 				}
 
 				fn owner_of_collection(collection_id: CollectionId) -> Option<AccountId> {
@@ -183,11 +174,10 @@ mod helpers {
 	/// ```
 	#[macro_export]
 	macro_rules! impl_precompile_mock_simple {
-		($name:ident, $create_collection_result:expr, $create_collection2_result:expr, $owner_of_collection_result:expr) => {
+		($name:ident, $create_collection_result:expr, $owner_of_collection_result:expr) => {
 			impl_precompile_mock!(
 				$name,
-				|_collection_id, _who| { $create_collection_result },
-				|_owner| { $create_collection2_result },
+				|_owner| { $create_collection_result },
 				|_collection_id| { $owner_of_collection_result }
 			);
 		};

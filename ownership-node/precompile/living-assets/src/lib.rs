@@ -7,13 +7,10 @@ use fp_evm::{
 };
 use pallet_living_assets_ownership::LivingAssetsOwnership;
 use parity_scale_codec::Encode;
-use precompile_utils::{
-	succeed, Address, EvmDataWriter, EvmResult, FunctionModifier, PrecompileHandleExt,
-};
+use precompile_utils::{EvmResult, FunctionModifier, PrecompileHandleExt};
 use sp_arithmetic::traits::BaseArithmetic;
-use sp_runtime::{DispatchError, SaturatedConversion};
+use sp_runtime::SaturatedConversion;
 
-use scale_info::prelude::format;
 use sp_std::{fmt::Debug, marker::PhantomData};
 
 #[precompile_utils_macro::generate_function_selector]
@@ -75,7 +72,7 @@ where
 				let caller = handle.context().caller;
 				let owner = AddressMapping::into_account_id(caller);
 
-				match LivingAssets::create_collection2(owner) {
+				match LivingAssets::create_collection(owner) {
 					Ok(collection_id) => Ok(PrecompileOutput {
 						exit_status: ExitSucceed::Returned,
 						output: collection_id.saturated_into::<u64>().encode(),
