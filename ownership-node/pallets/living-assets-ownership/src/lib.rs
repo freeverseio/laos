@@ -77,10 +77,7 @@ pub mod pallet {
 	impl<T: Config> Pallet<T> {
 		#[pallet::call_index(0)]
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())] // TODO set proper weight
-		pub fn create_collection(
-			origin: OriginFor<T>,
-			collection_id: T::CollectionId,
-		) -> DispatchResult {
+		pub fn create_collection(origin: OriginFor<T>) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
 			match Self::do_create_collection(who) {
@@ -126,8 +123,8 @@ pub mod pallet {
 			OwnerOfCollection::<T>::get(collection_id)
 		}
 
-		fn create_collection(_owner: T::AccountId) -> Result<T::CollectionId, &'static str> {
-			todo!();
+		fn create_collection(owner: T::AccountId) -> Result<T::CollectionId, &'static str> {
+			Self::do_create_collection(owner)
 		}
 	}
 }
