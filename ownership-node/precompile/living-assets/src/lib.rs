@@ -11,6 +11,7 @@ use precompile_utils::{EvmResult, FunctionModifier, PrecompileHandleExt};
 use sp_arithmetic::traits::BaseArithmetic;
 use sp_runtime::SaturatedConversion;
 
+use sp_core::H160;
 use sp_std::{fmt::Debug, marker::PhantomData};
 
 #[precompile_utils_macro::generate_function_selector]
@@ -75,7 +76,8 @@ where
 				match LivingAssets::create_collection(owner) {
 					Ok(collection_id) => Ok(PrecompileOutput {
 						exit_status: ExitSucceed::Returned,
-						output: collection_id.saturated_into::<u64>().encode(),
+						output: collection_id_to_address(collection_id.saturated_into::<u64>())
+							.encode(),
 					}),
 					Err(err) => Err(PrecompileFailure::Error {
 						exit_status: ExitError::Other(sp_std::borrow::Cow::Borrowed(err)),
@@ -84,6 +86,19 @@ where
 			},
 		}
 	}
+}
+
+fn collection_id_to_address(collection_id: u64) -> H160 {
+	let mut address = H160::from_low_u64_be(collection_id);
+	address.0[0] |= 0x80;
+	address
+}
+
+fn address_to_collection_id(address: H160) -> u64 {
+	let mut collection_id_bytes = [0u8; 8];
+	collection_id_bytes.copy_from_slice(&address.0[12..]); // Extract the last 8 bytes
+	collection_id_bytes[0] &= 0x7F; // Clear the first bit
+	u64::from_be_bytes(collection_id_bytes)
 }
 
 #[cfg(test)]

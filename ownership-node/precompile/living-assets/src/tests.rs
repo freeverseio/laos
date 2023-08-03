@@ -18,6 +18,32 @@ fn check_selectors() {
 }
 
 #[test]
+fn test_collection_id_to_address() {
+	let collection_id: u64 = 5;
+	let hex_value = "8000000000000000000000000000000000000005";
+	let bytes = hex::decode(hex_value).expect("Decoding failed");
+	let expected_address = H160::from_slice(&bytes);
+	assert_eq!(collection_id_to_address(collection_id), expected_address);
+}
+
+#[test]
+fn test_address_to_collection_id() {
+	let hex_value = "8000000000000000000000000000000000000005";
+	let bytes = hex::decode(hex_value).expect("Decoding failed");
+	let address = H160::from_slice(&bytes);
+	let expected_collection_id: u64 = 5;
+	assert_eq!(address_to_collection_id(address), expected_collection_id);
+}
+
+#[test]
+fn test_conversion_reversible() {
+	let collection_id: u64 = 42;
+	let address = collection_id_to_address(collection_id);
+	let recovered_collection_id = address_to_collection_id(address);
+	assert_eq!(collection_id, recovered_collection_id);
+}
+
+#[test]
 fn failing_create_collection_should_return_error() {
 	impl_precompile_mock_simple!(Mock, Err("spaghetti code"), Some(H160::zero()));
 
@@ -32,14 +58,17 @@ fn failing_create_collection_should_return_error() {
 }
 
 #[test]
-fn create_collection_should_return_id() {
+fn create_collection_should_return_address() {
 	impl_precompile_mock_simple!(Mock, Ok(5), Some(H160::zero()));
 
 	let mut handle = create_mock_handle_from_input(CREATE_COLLECTION);
 	let result = Mock::execute(&mut handle);
 	assert!(result.is_ok());
 	// check that the output is the collection id 0
-	assert_eq!(result.unwrap().output, 5u64.encode());
+	assert_eq!(
+		result.unwrap().output,
+		hex::decode("8000000000000000000000000000000000000005").unwrap()
+	);
 }
 
 #[test]
