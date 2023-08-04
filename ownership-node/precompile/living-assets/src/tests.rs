@@ -290,7 +290,7 @@ mod helpers {
 
 		fn refund_external_cost(&mut self, _: Option<u64>, _: Option<u64>) {}
 
-		fn log(&mut self, _: H160, _: Vec<H256>, _: Vec<u8>) -> Result<(), ExitError> {
+		fn log(&mut self, from: H160, topics: Vec<H256>, data: Vec<u8>) -> Result<(), ExitError> {
 			Ok(())
 		}
 

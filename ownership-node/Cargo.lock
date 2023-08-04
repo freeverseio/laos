@@ -7037,7 +7037,6 @@ dependencies = [
  "hex",
  "num_enum 0.5.11",
  "pallet-evm",
- "pallet-evm-test-vector-support",
  "pallet-living-assets-ownership",
  "parity-scale-codec",
  "precompile-utils",
@@ -7066,19 +7065,6 @@ dependencies = [
  "fp-evm",
  "ripemd",
  "sp-io",
-]
-
-[[package]]
-name = "pallet-evm-test-vector-support"
-version = "1.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.0.0#b520b749eb90df15177144dbece3fbd3622a2b19"
-dependencies = [
- "evm",
- "fp-evm",
- "hex",
- "serde",
- "serde_json",
- "sp-core",
 ]
 
 [[package]]
