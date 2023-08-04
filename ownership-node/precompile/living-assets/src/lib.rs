@@ -5,10 +5,9 @@
 use fp_evm::{
 	ExitError, ExitSucceed, Precompile, PrecompileFailure, PrecompileHandle, PrecompileOutput,
 };
-use pallet_living_assets_ownership::traits::CollectionManager;
+use pallet_living_assets_ownership::{traits::CollectionManager, CollectionId};
 use parity_scale_codec::Encode;
 use precompile_utils::{EvmResult, FunctionModifier, PrecompileHandleExt};
-use sp_arithmetic::traits::BaseArithmetic;
 use sp_runtime::SaturatedConversion;
 
 use sp_std::{fmt::Debug, marker::PhantomData};
@@ -23,22 +22,20 @@ pub enum Action {
 }
 
 /// Wrapper for the precompile function.
-pub struct CollectionManagerPrecompile<AddressMapping, AccountId, CollectionId, LivingAssets>(
-	PhantomData<(AddressMapping, AccountId, CollectionId, LivingAssets)>,
+pub struct CollectionManagerPrecompile<AddressMapping, AccountId, LivingAssets>(
+	PhantomData<(AddressMapping, AccountId, LivingAssets)>,
 )
 where
 	AddressMapping: pallet_evm::AddressMapping<AccountId>,
 	AccountId: Encode + Debug,
-	CollectionId: BaseArithmetic + Debug,
-	LivingAssets: CollectionManager<AccountId, CollectionId>;
+	LivingAssets: CollectionManager<AccountId>;
 
-impl<AddressMapping, AccountId, CollectionId, LivingAssets> Precompile
-	for CollectionManagerPrecompile<AddressMapping, AccountId, CollectionId, LivingAssets>
+impl<AddressMapping, AccountId, LivingAssets> Precompile
+	for CollectionManagerPrecompile<AddressMapping, AccountId, LivingAssets>
 where
 	AddressMapping: pallet_evm::AddressMapping<AccountId>,
 	AccountId: Encode + Debug,
-	CollectionId: BaseArithmetic + Debug,
-	LivingAssets: CollectionManager<AccountId, CollectionId>,
+	LivingAssets: CollectionManager<AccountId>,
 {
 	fn execute(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
 		let selector = handle.read_selector()?;
@@ -54,9 +51,10 @@ where
 				let mut input = handle.read_input()?;
 				input.expect_arguments(1)?;
 
-				if let Some(owner) =
-					LivingAssets::owner_of_collection(input.read::<u64>()?.saturated_into())
-				{
+				// TODO check: maybe we won't saturate
+				if let Some(owner) = LivingAssets::owner_of_collection(
+					input.read::<CollectionId>()?.saturated_into(),
+				) {
 					Ok(PrecompileOutput {
 						exit_status: ExitSucceed::Returned,
 						output: owner.encode(),
@@ -75,7 +73,8 @@ where
 				match LivingAssets::create_collection(owner) {
 					Ok(collection_id) => Ok(PrecompileOutput {
 						exit_status: ExitSucceed::Returned,
-						output: collection_id.saturated_into::<u64>().encode(),
+						// TODO check if this is correct: maybe we won't saturate
+						output: collection_id.saturated_into::<CollectionId>().encode(),
 					}),
 					Err(err) => Err(PrecompileFailure::Error {
 						exit_status: ExitError::Other(sp_std::borrow::Cow::Borrowed(err)),
