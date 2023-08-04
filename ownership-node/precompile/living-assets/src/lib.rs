@@ -14,6 +14,7 @@ use sp_runtime::SaturatedConversion;
 
 use sp_core::H160;
 use sp_std::{fmt::Debug, marker::PhantomData};
+use sp_std::vec::Vec;
 
 /// Solidity selector of the CreateCollection log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_CREATE_COLLECTION: [u8; 32] = keccak256!("CreateCollection(address)");
@@ -60,7 +61,7 @@ where
 						);
 
 						LogsBuilder::new(handle.context().address)
-							.log1(SELECTOR_LOG_CREATE_COLLECTION, collection_address.encode())
+							.log2(SELECTOR_LOG_CREATE_COLLECTION, collection_address, Vec::new() )
 							.record(handle)?;
 
 						Ok(PrecompileOutput {
