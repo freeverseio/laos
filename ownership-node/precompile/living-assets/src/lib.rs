@@ -7,11 +7,16 @@ use fp_evm::{
 };
 use pallet_living_assets_ownership::{traits::CollectionManager, CollectionId};
 use parity_scale_codec::Encode;
-use precompile_utils::{EvmResult, FunctionModifier, PrecompileHandleExt};
+use precompile_utils::{
+	keccak256, EvmResult, FunctionModifier, LogExt, LogsBuilder, PrecompileHandleExt,
+};
 use sp_runtime::SaturatedConversion;
 
 use sp_core::H160;
 use sp_std::{fmt::Debug, marker::PhantomData};
+
+/// Solidity selector of the CreateCollection log, which is the Keccak of the Log signature.
+pub const SELECTOR_LOG_CREATE_COLLECTION: [u8; 32] = keccak256!("CreateCollection(address)");
 
 #[precompile_utils_macro::generate_function_selector]
 #[derive(Debug, PartialEq)]
@@ -49,13 +54,20 @@ where
 				let owner = AddressMapping::into_account_id(caller);
 
 				match LivingAssets::create_collection(owner) {
-					Ok(collection_id) => Ok(PrecompileOutput {
-						exit_status: ExitSucceed::Returned,
-						output: collection_id_to_address(
+					Ok(collection_id) => {
+						let collection_address = collection_id_to_address(
 							collection_id.saturated_into::<CollectionId>(),
-						)
-						.encode(),
-					}),
+						);
+
+						LogsBuilder::new(handle.context().address)
+							.log1(SELECTOR_LOG_CREATE_COLLECTION, collection_address.encode())
+							.record(handle)?;
+
+						Ok(PrecompileOutput {
+							exit_status: ExitSucceed::Returned,
+							output: collection_address.encode(),
+						})
+					},
 					Err(err) => Err(PrecompileFailure::Error {
 						exit_status: ExitError::Other(sp_std::borrow::Cow::Borrowed(err)),
 					}),
