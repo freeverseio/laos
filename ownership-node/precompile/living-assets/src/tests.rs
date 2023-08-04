@@ -130,7 +130,7 @@ fn call_unexistent_selector_should_fail() {
 
 mod helpers {
 	use evm::{Context, ExitError, ExitReason, Transfer};
-	use fp_evm::PrecompileHandle;
+	use fp_evm::{Log, PrecompileHandle};
 	use sp_core::{H160, H256};
 
 	/// Macro to define a precompile mock with custom closures for testing.
@@ -252,11 +252,12 @@ mod helpers {
 		pub context: Context,
 		pub is_static: bool,
 		pub gas_used: u64,
+		pub logs: Vec<Log>,
 	}
 
 	impl MockHandle {
 		pub fn new(input: Vec<u8>, gas_limit: Option<u64>, context: Context) -> Self {
-			Self { input, gas_limit, context, is_static: false, gas_used: 0 }
+			Self { input, gas_limit, context, is_static: false, gas_used: 0, logs: vec![] }
 		}
 	}
 
@@ -290,7 +291,14 @@ mod helpers {
 
 		fn refund_external_cost(&mut self, _: Option<u64>, _: Option<u64>) {}
 
-		fn log(&mut self, from: H160, topics: Vec<H256>, data: Vec<u8>) -> Result<(), ExitError> {
+		fn log(
+			&mut self,
+			address: H160,
+			topics: Vec<H256>,
+			data: Vec<u8>,
+		) -> Result<(), ExitError> {
+			let log = Log { address, topics, data };
+			self.logs.push(log);
 			Ok(())
 		}
 
