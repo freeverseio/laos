@@ -6,7 +6,8 @@
 use super::*;
 use evm::ExitRevert;
 use helpers::*;
-use sp_core::H160;
+use sp_core::{H160, H256};
+use sp_std::vec::Vec;
 
 type CollectionId = u64;
 type AccountId = H160;
@@ -62,6 +63,28 @@ fn create_collection_should_return_address() {
 		result.unwrap().output,
 		hex::decode("8000000000000000000000000000000000000005").unwrap()
 	);
+}
+
+#[test]
+fn create_collection_should_generate_log() {
+	impl_precompile_mock_simple!(Mock, Ok(5), Some(H160::zero()));
+
+	let mut handle = create_mock_handle_from_input(CREATE_COLLECTION);
+	let result = Mock::execute(&mut handle);
+	assert!(result.is_ok());
+	let logs = handle.logs;
+	assert_eq!(logs.len(), 1);
+	assert_eq!(logs[0].address, H160::zero());
+	assert_eq!(logs[0].topics.len(), 2);
+	assert_eq!(logs[0].topics[0], SELECTOR_LOG_CREATE_COLLECTION.into());
+	assert_eq!(
+		logs[0].topics[1],
+		H256::from_slice(
+			&hex::decode("0000000000000000000000008000000000000000000000000000000000000005")
+				.unwrap()
+		)
+	);
+	assert_eq!(logs[0].data, Vec::<u8>::new());
 }
 
 #[test]
