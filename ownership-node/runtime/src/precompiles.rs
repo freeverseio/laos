@@ -11,7 +11,7 @@ use pallet_evm_living_assets_ownership::CollectionManagerPrecompile;
 use pallet_evm_precompile_modexp::Modexp;
 use pallet_evm_precompile_simple::{ECRecover, ECRecoverPublicKey, Identity, Ripemd160, Sha256};
 
-use crate::{AccountId, CollectionId};
+use crate::AccountId;
 
 pub struct FrontierPrecompiles<Runtime>(PhantomData<Runtime>);
 
@@ -30,7 +30,6 @@ where
 type LivingAssetsPrecompile = CollectionManagerPrecompile<
 	pallet_evm::HashedAddressMapping<BlakeTwo256>,
 	AccountId,
-	CollectionId,
 	pallet_living_assets_ownership::Pallet<crate::Runtime>,
 >;
 

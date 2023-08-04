@@ -11,12 +11,12 @@ pub mod traits;
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use frame_support::{
-		pallet_prelude::{OptionQuery, ValueQuery, *},
-		sp_runtime::traits::{CheckedAdd, One},
-	};
+	use frame_support::pallet_prelude::{OptionQuery, ValueQuery, *};
 	use frame_system::pallet_prelude::*;
-	use sp_arithmetic::traits::Unsigned;
+
+	/// Collection id type
+	/// TODO: use 256 bits
+	pub type CollectionId = u64;
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
@@ -26,27 +26,18 @@ pub mod pallet {
 	pub trait Config: frame_system::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
-		/// Collection id type
-		type CollectionId: Member
-			+ Parameter
-			+ MaxEncodedLen
-			+ Copy
-			+ Default
-			+ CheckedAdd
-			+ One
-			+ Unsigned;
 	}
 
 	/// Mapping from collection id to owner
 	#[pallet::storage]
 	#[pallet::getter(fn owner_of_collection)]
 	pub(super) type OwnerOfCollection<T: Config> =
-		StorageMap<_, Blake2_128Concat, T::CollectionId, T::AccountId, OptionQuery>;
+		StorageMap<_, Blake2_128Concat, CollectionId, T::AccountId, OptionQuery>;
 
 	/// Collection counter
 	#[pallet::storage]
 	#[pallet::getter(fn collection_counter)]
-	pub(super) type CollectionCounter<T: Config> = StorageValue<_, T::CollectionId, ValueQuery>;
+	pub(super) type CollectionCounter<T: Config> = StorageValue<_, CollectionId, ValueQuery>;
 
 	/// Pallet events
 	#[pallet::event]
@@ -54,7 +45,7 @@ pub mod pallet {
 	pub enum Event<T: Config> {
 		/// Collection created
 		/// parameters. [collection_id, who]
-		CollectionCreated { collection_id: T::CollectionId, who: T::AccountId },
+		CollectionCreated { collection_id: CollectionId, who: T::AccountId },
 	}
 
 	// Errors inform users that something went wrong.
@@ -83,12 +74,12 @@ pub mod pallet {
 		}
 	}
 
-	impl<T: Config> traits::CollectionManager<T::AccountId, T::CollectionId> for Pallet<T> {
-		fn owner_of_collection(collection_id: T::CollectionId) -> Option<T::AccountId> {
+	impl<T: Config> traits::CollectionManager<T::AccountId> for Pallet<T> {
+		fn owner_of_collection(collection_id: CollectionId) -> Option<T::AccountId> {
 			OwnerOfCollection::<T>::get(collection_id)
 		}
 
-		fn create_collection(owner: T::AccountId) -> Result<T::CollectionId, &'static str> {
+		fn create_collection(owner: T::AccountId) -> Result<CollectionId, &'static str> {
 			Self::do_create_collection(owner)
 		}
 	}

@@ -1,3 +1,5 @@
+use crate::CollectionId;
+
 /// The `CollectionManager` trait provides an interface for managing collections in a
 /// decentralized and non-fungible asset management system. This system allows for the creation of
 /// collections, each of which can be owned by a unique `AccountId`.
@@ -16,7 +18,7 @@
 /// new collection and assigns ownership to the provided `AccountId`. The method returns the `collection_id`
 /// of the newly created collection.
 ///
-pub trait CollectionManager<AccountId, CollectionId> {
+pub trait CollectionManager<AccountId> {
 	/// Get owner of collection
 	fn owner_of_collection(collection_id: CollectionId) -> Option<AccountId>;
 
