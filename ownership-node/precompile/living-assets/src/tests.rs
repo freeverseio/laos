@@ -20,6 +20,14 @@ fn check_selectors() {
 }
 
 #[test]
+fn check_log_selectors() {
+	assert_eq!(
+		hex::encode(SELECTOR_LOG_CREATE_COLLECTION),
+		"18896a5e5f9fd6b9d74f89291fe4640722c8dc4d6a1025ccf047607f3e6954ee"
+	);
+}
+
+#[test]
 fn test_collection_id_to_address() {
 	let collection_id: u64 = 5;
 	let hex_value = "8000000000000000000000000000000000000005";
