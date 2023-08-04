@@ -146,7 +146,7 @@ mod helpers {
 		($name:ident, $create_collection_result:expr, $owner_of_collection_result:expr) => {
 			struct CollectionManagerMock;
 
-			impl pallet_living_assets_ownership::traits::CollectionManager<AccountId, CollectionId>
+			impl pallet_living_assets_ownership::traits::CollectionManager<AccountId>
 				for CollectionManagerMock
 			{
 				fn create_collection(owner: AccountId) -> Result<CollectionId, &'static str> {
@@ -158,12 +158,8 @@ mod helpers {
 				}
 			}
 
-			type $name = CollectionManagerPrecompile<
-				AddressMapping,
-				AccountId,
-				CollectionId,
-				CollectionManagerMock,
-			>;
+			type $name =
+				CollectionManagerPrecompile<AddressMapping, AccountId, CollectionManagerMock>;
 		};
 	}
 
