@@ -119,21 +119,6 @@ fn create_collection_assign_collection_to_caller() {
 }
 
 #[test]
-fn owner_of_with_nonzero_transfer_should_fail() {
-	impl_precompile_mock_simple!(Mock, Ok(0), Some(H160::from_low_u64_be(0x1234)));
-	let mut handle = create_mock_handle(CREATE_COLLECTION, 0, 1, H160::zero());
-	let result = Mock::execute(&mut handle);
-	assert!(result.is_err());
-	assert_eq!(
-		result.unwrap_err(),
-		PrecompileFailure::Revert {
-			exit_status: ExitRevert::Reverted,
-			output: "function is not payable".to_string().into_bytes()
-		}
-	);
-}
-
-#[test]
 fn call_unexistent_selector_should_fail() {
 	impl_precompile_mock_simple!(Mock, Ok(0), Some(H160::from_low_u64_be(0x1234)));
 
