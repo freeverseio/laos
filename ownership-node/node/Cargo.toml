@@ -33,6 +33,7 @@ sc-consensus = { workspace = true }
 sc-executor = { workspace = true }
 sc-network = { workspace = true }
 sc-network-sync = { workspace = true }
+sc-offchain = { workspace = true }
 sc-rpc = { workspace = true }
 sc-service = { workspace = true }
 sc-sysinfo = { workspace = true }

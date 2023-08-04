@@ -16,7 +16,7 @@ scale-info = { workspace = true, features = [
 ] }
 
 # Frontier
-fp-evm = { workspace = true }
+fp-evm = { workspace = true, features = ["serde"] }
 pallet-evm = { workspace = true }
 
 # Substrate

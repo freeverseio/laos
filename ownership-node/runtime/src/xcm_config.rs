@@ -20,7 +20,7 @@ use xcm_builder::{
 	SiblingParachainConvertsVia, SignedAccountId32AsNative, SignedToAccountId32,
 	SovereignSignedViaLocation, TakeWeightCredit, UsingComponents, WithComputedOrigin,
 };
-use xcm_executor::{traits::ShouldExecute, XcmExecutor};
+use xcm_executor::{traits::Properties, traits::ShouldExecute, XcmExecutor};
 
 parameter_types! {
 	pub const RelayLocation: MultiLocation = MultiLocation::parent();
@@ -105,12 +105,12 @@ where
 {
 	fn should_execute<RuntimeCall>(
 		origin: &MultiLocation,
-		message: &mut [Instruction<RuntimeCall>],
+		instructions: &mut [Instruction<RuntimeCall>],
 		max_weight: Weight,
-		weight_credit: &mut Weight,
+		properties: &mut Properties,
 	) -> Result<(), ProcessMessageError> {
-		Deny::should_execute(origin, message, max_weight, weight_credit)?;
-		Allow::should_execute(origin, message, max_weight, weight_credit)
+		Deny::should_execute(origin, instructions, max_weight, properties)?;
+		Allow::should_execute(origin, instructions, max_weight, properties)
 	}
 }
 
@@ -119,21 +119,21 @@ pub struct DenyReserveTransferToRelayChain;
 impl ShouldExecute for DenyReserveTransferToRelayChain {
 	fn should_execute<RuntimeCall>(
 		origin: &MultiLocation,
-		message: &mut [Instruction<RuntimeCall>],
+		instructions: &mut [Instruction<RuntimeCall>],
 		_max_weight: Weight,
-		_weight_credit: &mut Weight,
+		_properties: &mut Properties,
 	) -> Result<(), ProcessMessageError> {
-		message.matcher().match_next_inst_while(
+		instructions.matcher().match_next_inst_while(
 			|_| true,
 			|inst| match inst {
 				InitiateReserveWithdraw {
 					reserve: MultiLocation { parents: 1, interior: Here },
 					..
-				} |
-				DepositReserveAsset {
+				}
+				| DepositReserveAsset {
 					dest: MultiLocation { parents: 1, interior: Here }, ..
-				} |
-				TransferReserveAsset {
+				}
+				| TransferReserveAsset {
 					dest: MultiLocation { parents: 1, interior: Here }, ..
 				} => {
 					Err(ProcessMessageError::Unsupported) // Deny
@@ -201,6 +201,7 @@ impl xcm_executor::Config for XcmConfig {
 	type UniversalAliases = Nothing;
 	type CallDispatcher = RuntimeCall;
 	type SafeCallFilter = Everything;
+	type Aliasers = Nothing;
 }
 
 /// No local origins on this chain are allowed to dispatch XCM sends/executions.

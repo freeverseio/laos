@@ -18,8 +18,10 @@ use cumulus_client_service::{
 };
 use cumulus_primitives_core::ParaId;
 use cumulus_relay_chain_interface::RelayChainInterface;
+use futures::FutureExt;
 
 // Substrate Imports
+use sc_client_api::Backend;
 use sc_consensus::ImportQueue;
 use sc_executor::{
 	HeapAllocStrategy, NativeElseWasmExecutor, WasmExecutor, DEFAULT_HEAP_ALLOC_STRATEGY,
@@ -28,6 +30,7 @@ use sc_network::NetworkBlock;
 use sc_network_sync::SyncingService;
 use sc_service::{Configuration, PartialComponents, TFullBackend, TFullClient, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryHandle, TelemetryWorker, TelemetryWorkerHandle};
+use sc_transaction_pool_api::OffchainTransactionPoolFactory;
 use sp_core::U256;
 use sp_keystore::KeystorePtr;
 use substrate_prometheus_endpoint::Registry;
@@ -189,6 +192,7 @@ async fn start_node_impl(
 	let client = params.client.clone();
 	let backend = params.backend.clone();
 	let mut task_manager = params.task_manager;
+	let keystore_container = params.keystore_container;
 
 	let (relay_chain_interface, collator_key) = build_relay_chain_interface(
 		polkadot_config,
@@ -232,11 +236,23 @@ async fn start_node_impl(
 		.await?;
 
 	if parachain_config.offchain_worker.enabled {
-		sc_service::build_offchain_workers(
-			&parachain_config,
-			task_manager.spawn_handle(),
-			client.clone(),
-			network.clone(),
+		task_manager.spawn_handle().spawn(
+			"offchain-workers-runner",
+			"offchain-work",
+			sc_offchain::OffchainWorkers::new(sc_offchain::OffchainWorkerOptions {
+				runtime_api_provider: client.clone(),
+				keystore: Some(keystore_container.keystore()),
+				offchain_db: backend.offchain_storage(),
+				transaction_pool: Some(OffchainTransactionPoolFactory::new(
+					transaction_pool.clone(),
+				)),
+				network_provider: network.clone(),
+				is_validator: parachain_config.role.is_authority(),
+				enable_http_requests: true,
+				custom_extensions: move |_| vec![],
+			})
+			.run(client.clone(), task_manager.spawn_handle())
+			.boxed(),
 		);
 	}
 
@@ -298,7 +314,7 @@ async fn start_node_impl(
 		transaction_pool: transaction_pool.clone(),
 		task_manager: &mut task_manager,
 		config: parachain_config,
-		keystore: params.keystore_container.keystore(),
+		keystore: keystore_container.keystore(),
 		backend: backend.clone(),
 		network: network.clone(),
 		sync_service: sync_service.clone(),
@@ -354,7 +370,7 @@ async fn start_node_impl(
 			relay_chain_interface.clone(),
 			transaction_pool,
 			sync_service.clone(),
-			params.keystore_container.keystore(),
+			keystore_container.keystore(),
 			force_authoring,
 			para_id,
 		)?;

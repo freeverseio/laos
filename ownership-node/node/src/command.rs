@@ -1,26 +1,23 @@
 use std::net::SocketAddr;
 
-use cumulus_client_cli::generate_genesis_block;
 use cumulus_primitives_core::ParaId;
 use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
 use laos_runtime::Block;
 use log::{info, warn};
-use parity_scale_codec::Encode;
 use polkadot_service::RococoChainSpec;
 use sc_cli::{
 	ChainSpec, CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams,
-	NetworkParams, Result, RuntimeVersion, SharedParams, SubstrateCli,
+	NetworkParams, Result, SharedParams, SubstrateCli,
 };
 use sc_service::config::{BasePath, /*DatabaseSource,*/ PrometheusConfig};
-use sp_core::hexdisplay::HexDisplay;
-use sp_runtime::traits::{AccountIdConversion, Block as BlockT};
+use sp_runtime::traits::AccountIdConversion;
 // Frontier
 // use fc_db::frontier_database_dir;
 
 use crate::{
 	chain_spec,
 	cli::{Cli, RelayChainCli, Subcommand},
-	service::{/*db_config_dir,*/ new_partial, ParachainNativeExecutor},
+	service::{self, /*db_config_dir,*/ new_partial},
 };
 
 fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
@@ -69,10 +66,6 @@ impl SubstrateCli for Cli {
 	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
 		load_spec(id)
 	}
-
-	fn native_runtime_version(_: &Box<dyn ChainSpec>) -> &'static RuntimeVersion {
-		&laos_runtime::VERSION
-	}
 }
 
 impl SubstrateCli for RelayChainCli {
@@ -114,10 +107,6 @@ impl SubstrateCli for RelayChainCli {
 			_ => polkadot_cli::Cli::from_iter([RelayChainCli::executable_name()].iter())
 				.load_spec(id),
 		}
-	}
-
-	fn native_runtime_version(chain_spec: &Box<dyn ChainSpec>) -> &'static RuntimeVersion {
-		polkadot_cli::Cli::native_runtime_version(chain_spec)
 	}
 }
 
@@ -203,10 +192,9 @@ pub fn run() -> Result<()> {
 		},
 		Some(Subcommand::ExportGenesisState(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
-			runner.sync_run(|_config| {
-				let spec = cli.load_spec(&cmd.shared_params.chain.clone().unwrap_or_default())?;
-				let state_version = Cli::native_runtime_version(&spec).state_version();
-				cmd.run::<Block>(&*spec, state_version)
+			runner.sync_run(|config| {
+				let partials = service::new_partial(&config, &cli.eth)?;
+				cmd.run(&*config.chain_spec, &*partials.client)
 			})
 		},
 		Some(Subcommand::ExportGenesisWasm(cmd)) => {
@@ -220,26 +208,25 @@ pub fn run() -> Result<()> {
 			let runner = cli.create_runner(cmd)?;
 			// Switch on the concrete benchmark sub-command-
 			match cmd {
-				BenchmarkCmd::Pallet(cmd) =>
+				BenchmarkCmd::Pallet(cmd) => {
 					if cfg!(feature = "runtime-benchmarks") {
-						runner.sync_run(|config| cmd.run::<Block, ParachainNativeExecutor>(config))
+						runner.sync_run(|config| cmd.run::<Block, ()>(config))
 					} else {
 						Err("Benchmarking wasn't enabled when building the node. \
 					You can enable it with `--features runtime-benchmarks`."
 							.into())
-					},
+					}
+				},
 				BenchmarkCmd::Block(cmd) => runner.sync_run(|config| {
 					let partials = new_partial(&config, &eth_cfg)?;
 					cmd.run(partials.client)
 				}),
 				#[cfg(not(feature = "runtime-benchmarks"))]
-				BenchmarkCmd::Storage(_) =>
-					return Err(sc_cli::Error::Input(
-						"Compile with --features=runtime-benchmarks \
+				BenchmarkCmd::Storage(_) => Err(sc_cli::Error::Input(
+					"Compile with --features=runtime-benchmarks \
 						to enable storage benchmarks."
-							.into(),
-					)
-					.into()),
+						.into(),
+				)),
 				#[cfg(feature = "runtime-benchmarks")]
 				BenchmarkCmd::Storage(cmd) => runner.sync_run(|config| {
 					let partials = new_partial(&config, &eth_cfg)?;
@@ -247,8 +234,9 @@ pub fn run() -> Result<()> {
 					let storage = partials.backend.expose_storage();
 					cmd.run(config, partials.client.clone(), db, storage)
 				}),
-				BenchmarkCmd::Machine(cmd) =>
-					runner.sync_run(|config| cmd.run(&config, SUBSTRATE_REFERENCE_HARDWARE.clone())),
+				BenchmarkCmd::Machine(cmd) => {
+					runner.sync_run(|config| cmd.run(&config, SUBSTRATE_REFERENCE_HARDWARE.clone()))
+				},
 				// NOTE: this allows the Client to leniently implement
 				// new benchmark commands without requiring a companion MR.
 				#[allow(unreachable_patterns)]
@@ -257,6 +245,7 @@ pub fn run() -> Result<()> {
 		},
 		#[cfg(feature = "try-runtime")]
 		Some(Subcommand::TryRuntime(cmd)) => {
+			use crate::service::ParachainNativeExecutor;
 			use laos_runtime::MILLISECS_PER_BLOCK;
 			use sc_executor::{sp_wasm_interface::ExtendedHostFunctions, NativeExecutionDispatch};
 			use try_runtime_cli::block_building_info::timestamp_with_aura_info;
@@ -324,14 +313,7 @@ pub fn run() -> Result<()> {
 				let id = ParaId::from(para_id);
 
 				let parachain_account =
-					AccountIdConversion::<polkadot_primitives::v4::AccountId>::into_account_truncating(&id);
-
-				let state_version = Cli::native_runtime_version(&config.chain_spec).state_version();
-
-				#[allow(clippy::redundant_clone)]
-				let block: Block = generate_genesis_block(&*config.chain_spec, state_version)
-					.map_err(|e| e.to_string())?;
-				let genesis_state = format!("0x{:?}", HexDisplay::from(&block.header().encode()));
+					AccountIdConversion::<polkadot_primitives::v5::AccountId>::into_account_truncating(&id);
 
 				let tokio_handle = config.tokio_handle.clone();
 				let polkadot_config =
@@ -340,7 +322,6 @@ pub fn run() -> Result<()> {
 
 				info!("Parachain id: {:?}", id);
 				info!("Parachain Account: {}", parachain_account);
-				info!("Parachain genesis state: {}", genesis_state);
 				info!("Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
 
 				if !collator_options.relay_chain_rpc_urls.is_empty() && !cli.relay_chain_args.is_empty() {

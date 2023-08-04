@@ -1,3 +1,8 @@
+//! Living assets precompile tests.
+
+//TODO: remove this and fix clippy issues
+#![allow(clippy::redundant_closure_call)]
+
 use super::*;
 use evm::ExitRevert;
 use helpers::*;
