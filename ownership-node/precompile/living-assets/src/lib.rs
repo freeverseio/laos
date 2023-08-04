@@ -2,12 +2,12 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 use fp_evm::{
-	ExitError, ExitSucceed, Precompile, PrecompileFailure, PrecompileHandle, PrecompileOutput,
+	ExitError, Precompile, PrecompileFailure, PrecompileHandle, PrecompileOutput,
 };
 use pallet_living_assets_ownership::{traits::CollectionManager, CollectionId};
 use parity_scale_codec::Encode;
 use precompile_utils::{
-	keccak256, EvmResult, FunctionModifier, LogExt, LogsBuilder, PrecompileHandleExt,
+	keccak256, succeed, EvmResult, FunctionModifier, LogExt, LogsBuilder, PrecompileHandleExt,
 };
 use sp_runtime::SaturatedConversion;
 
@@ -62,10 +62,7 @@ where
 							.log2(SELECTOR_LOG_CREATE_COLLECTION, collection_address, Vec::new())
 							.record(handle)?;
 
-						Ok(PrecompileOutput {
-							exit_status: ExitSucceed::Returned,
-							output: collection_address.encode(),
-						})
+						Ok(succeed(collection_address.encode()))
 					},
 					Err(err) => Err(PrecompileFailure::Error {
 						exit_status: ExitError::Other(sp_std::borrow::Cow::Borrowed(err)),
