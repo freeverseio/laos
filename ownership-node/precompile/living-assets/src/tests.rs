@@ -54,7 +54,7 @@ fn create_collection_should_return_address() {
 #[test]
 fn create_collection_on_mock_with_nonzero_value_fails() {
 	impl_precompile_mock_simple!(Mock, Ok(5), Some(H160::zero()));
-	let mut handle = create_mock_handle(OWNER_OF_COLLECTION_0, 0, 1, H160::zero());
+	let mut handle = create_mock_handle(CREATE_COLLECTION, 0, 1, H160::zero());
 	let result = Mock::execute(&mut handle);
 	assert!(result.is_err());
 	assert_eq!(
@@ -85,7 +85,7 @@ fn create_collection_assign_collection_to_caller() {
 #[test]
 fn owner_of_with_nonzero_transfer_should_fail() {
 	impl_precompile_mock_simple!(Mock, Ok(0), Some(H160::from_low_u64_be(0x1234)));
-	let mut handle = create_mock_handle(OWNER_OF_COLLECTION_0, 0, 1, H160::zero());
+	let mut handle = create_mock_handle(CREATE_COLLECTION, 0, 1, H160::zero());
 	let result = Mock::execute(&mut handle);
 	assert!(result.is_err());
 	assert_eq!(
