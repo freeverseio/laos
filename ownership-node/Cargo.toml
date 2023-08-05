@@ -143,7 +143,6 @@ pallet-evm-precompile-simple = { git = "https://github.com/paritytech/frontier",
 fp-self-contained = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0", default-features = false }
 fp-rpc = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0", default-features = false }
 fp-evm = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0", default-features = false }
-pallet-evm-test-vector-support = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0", default-features = false }
 
 # Frontier
 # (native)
