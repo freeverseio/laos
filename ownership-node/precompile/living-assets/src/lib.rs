@@ -5,7 +5,8 @@ use fp_evm::{ExitError, Precompile, PrecompileFailure, PrecompileHandle, Precomp
 use pallet_living_assets_ownership::{traits::CollectionManager, CollectionId};
 use parity_scale_codec::Encode;
 use precompile_utils::{
-	keccak256, succeed, EvmResult, FunctionModifier, LogExt, LogsBuilder, PrecompileHandleExt,
+	keccak256, succeed, Address, EvmDataWriter, EvmResult, FunctionModifier, LogExt, LogsBuilder,
+	PrecompileHandleExt,
 };
 use sp_runtime::SaturatedConversion;
 
@@ -60,7 +61,7 @@ where
 							.log2(SELECTOR_LOG_CREATE_COLLECTION, collection_address, Vec::new())
 							.record(handle)?;
 
-						Ok(succeed(collection_address.encode()))
+						Ok(succeed(EvmDataWriter::new().write(Address(collection_address)).build()))
 					},
 					Err(err) => Err(PrecompileFailure::Error {
 						exit_status: ExitError::Other(sp_std::borrow::Cow::Borrowed(err)),

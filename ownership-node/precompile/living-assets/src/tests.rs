@@ -6,7 +6,7 @@
 use super::*;
 use evm::ExitRevert;
 use helpers::*;
-use sp_core::{H160, H256};
+use sp_core::H160;
 use sp_std::vec::Vec;
 
 type CollectionId = u64;
@@ -58,16 +58,15 @@ fn create_collection_should_return_address() {
 	let mut handle = create_mock_handle_from_input(CREATE_COLLECTION);
 	let result = Mock::execute(&mut handle);
 	assert!(result.is_ok());
-	// check that the output is the collection id 0
 	assert_eq!(
-		result.unwrap().output,
-		hex::decode("8000000000000000000000000000000000000005").unwrap()
+		hex::encode(result.unwrap().output),
+		"0000000000000000000000008000000000000000000000000000000000000005"
 	);
 }
 
 #[test]
 fn create_collection_should_generate_log() {
-	impl_precompile_mock_simple!(Mock, Ok(5), Some(H160::zero()));
+	impl_precompile_mock_simple!(Mock, Ok(0xffff), Some(H160::zero()));
 
 	let mut handle = create_mock_handle_from_input(CREATE_COLLECTION);
 	let result = Mock::execute(&mut handle);
@@ -78,11 +77,8 @@ fn create_collection_should_generate_log() {
 	assert_eq!(logs[0].topics.len(), 2);
 	assert_eq!(logs[0].topics[0], SELECTOR_LOG_CREATE_COLLECTION.into());
 	assert_eq!(
-		logs[0].topics[1],
-		H256::from_slice(
-			&hex::decode("0000000000000000000000008000000000000000000000000000000000000005")
-				.unwrap()
-		)
+		hex::encode(logs[0].topics[1]),
+		"000000000000000000000000800000000000000000000000000000000000ffff"
 	);
 	assert_eq!(logs[0].data, Vec::<u8>::new());
 }
@@ -141,26 +137,22 @@ mod helpers {
 	use fp_evm::{Log, PrecompileHandle};
 	use sp_core::{H160, H256};
 
-	/// Macro to define a precompile mock with custom closures for testing.
+	/// Macro to define a precompile mock for testing.
 	///
 	/// This macro creates mock implementations of the `CollectionManager` trait,
 	/// allowing you to test how your code interacts with the precompiled contracts.
-	/// You can define custom closures for the create_collection and owner_of_collection functions.
+	/// The mock type is named `Mock`, and the implementation uses the provided expressions.
 	///
 	/// # Arguments
 	///
 	/// * `$name`: An identifier to name the precompile mock type.
-	/// * `$create_collection_result`: A closure that takes `collection_id` and `who` and returns a `DispatchResult`.
-	/// * `$owner_of_collection_result`: A closure that takes `collection_id` and returns an `Option<AccountId>`.
+	/// * `$create_collection_result`: An expression that evaluates to a `Result<CollectionId, &'static str>`.
+	/// * `$owner_of_collection_result`: An expression that evaluates to an `Option<AccountId>`.
 	///
 	/// # Example
 	///
 	/// ```
-	/// impl_precompile_mock!(
-	///     MyMock,
-	///     |who| { Ok(0) },
-	///     |collection_id| { Some(H160::zero()) }
-	/// );
+	/// impl_precompile_mock_simple!(Mock, Ok(0), Some(H160::zero()));
 	/// ```
 	#[macro_export]
 	macro_rules! impl_precompile_mock {
@@ -192,7 +184,7 @@ mod helpers {
 	///
 	/// # Arguments
 	///
-	/// * `$create_collection_result`: An expression that evaluates to a `DispatchResult`.
+	/// * `$create_collection_result`: An expression that evaluates to a `Result`.
 	/// * `$owner_of_collection_result`: An expression that evaluates to an `Option<AccountId>`.
 	///
 	/// # Example
