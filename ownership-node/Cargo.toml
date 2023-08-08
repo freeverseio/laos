@@ -222,6 +222,7 @@ pallet-bridge-relayers = { git = "https://github.com/freeverseio/parity-bridges-
 # LAOS pallets
 pallet-living-assets-ownership = { path = "./pallets/living-assets-ownership", default-features = false }
 pallet-evm-living-assets-ownership = { path = "./precompile/living-assets", default-features = false }
+pallet-evm-erc721 = { path = "./precompile/erc721", default-features = false }
 
 # Utils
 precompile-utils = { path = "./precompile/utils", default-features = false }

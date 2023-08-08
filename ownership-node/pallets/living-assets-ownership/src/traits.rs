@@ -1,3 +1,5 @@
+use sp_core::{H160, U256};
+
 use crate::CollectionId;
 
 /// The `CollectionManager` trait provides an interface for managing collections in a
@@ -24,4 +26,23 @@ pub trait CollectionManager<AccountId> {
 
 	/// Create collection
 	fn create_collection(owner: AccountId) -> Result<CollectionId, &'static str>;
+}
+
+/// `Erc721` Trait
+///
+/// This trait provides an interface for handling ERC721 tokens, a standard for non-fungible tokens on the blockchain.
+pub trait Erc721 {
+	/// Retrieves the owner of a specific asset in a collection.
+	///
+	/// # Parameters
+	///
+	/// * `collection_id`: An identifier for the collection to which the asset belongs.
+	/// * `asset_id`: The unique identifier for the asset within the specified collection.
+	///
+	/// # Returns
+	///
+	/// * A `Result` which is:
+	///   - `Ok(H160)`: Returns the Ethereum address (`H160`) of the owner of the asset.
+	///   - `Err(&'static str)`: Returns an error message if the asset owner could not be determined.
+	fn owner_of(collection_id: CollectionId, asset_id: U256) -> Result<H160, &'static str>;
 }

@@ -50,6 +50,7 @@ sp-version = { workspace = true }
 
 pallet-living-assets-ownership = { workspace = true }
 pallet-evm-living-assets-ownership = { workspace = true }
+pallet-evm-erc721 = { workspace = true }
 
 # Polkadot
 pallet-xcm = { workspace = true }
@@ -155,6 +156,7 @@ std = [
 	"pallet-base-fee/std",
 	"pallet-ethereum/std",
 	"pallet-evm/std",
+	"pallet-evm-erc721/std",
 	"pallet-evm-chain-id/std",
 	"pallet-evm-precompile-modexp/std",
 	"pallet-evm-precompile-simple/std",
