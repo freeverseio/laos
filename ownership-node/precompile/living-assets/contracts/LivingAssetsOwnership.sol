@@ -1,25 +1,17 @@
 // SPDX-License-Identifier: GPL-3.0-only
 pragma solidity >=0.8.3;
 
+/// @title Pallet Collection Manager Interface
 /// @author Freeverse team
-/// @title Pallet LivingAssetsOwnership Interface
-/// @dev The interface through which solidity contracts will interact with pallet-living-assets
+/// @notice This interface allows Solidity contracts to interact with pallet-living-assets
 /// @custom:address 0x0000000000000000000000000000000000000402
 interface LivingAssets {
-    /// @dev Create collection
-    /// @custom:selector 0x1eaf2516
-    ///
-    /// @param collection_id The `collection_id` to be associated
-    function createCollection(
-        uint64 collection_id,
-        address who
-    ) external payable;
+    /// @notice Event emitted when a new collection is created
+    /// @param collectionAddress Address of the newly created ERC721 collection
+    event CreateCollection(address indexed collectionAddress);
 
-    /// @dev Get collection owner
-    /// @custom:selector 0xfb34ae53
-    ///
-    /// @param collection_id The `collection_id`
-    function ownerOfCollection(
-        uint64 collection_id
-    ) external view returns (bytes32);
+    /// @notice Creates a new collection
+    /// @dev Call this function to create a new collection
+    /// @return address of the ERC721 collection
+    function createCollection() external returns (address);
 }

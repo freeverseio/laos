@@ -30,13 +30,10 @@ use fp_evm::{
 	Context, ExitError, ExitRevert, ExitSucceed, PrecompileFailure, PrecompileHandle,
 	PrecompileOutput,
 };
-use frame_support::{
-	dispatch::{Dispatchable, GetDispatchInfo, PostDispatchInfo},
-	traits::Get,
-};
-use pallet_evm::{GasWeightMapping, Log};
+
+use pallet_evm::Log;
 use sp_core::{H160, H256, U256};
-use sp_std::{marker::PhantomData, vec, vec::Vec};
+use sp_std::{vec, vec::Vec};
 
 mod data;
 
@@ -147,75 +144,75 @@ impl LogExt for Log {
 	}
 }
 
-/// Helper functions requiring a Runtime.
-/// This runtime must of course implement `pallet_evm::Config`.
-#[derive(Clone, Copy, Debug)]
-pub struct RuntimeHelper<Runtime>(PhantomData<Runtime>);
+// /// Helper functions requiring a Runtime.
+// /// This runtime must of course implement `pallet_evm::Config`.
+// #[derive(Clone, Copy, Debug)]
+// pub struct RuntimeHelper<Runtime>(PhantomData<Runtime>);
 
-impl<Runtime> RuntimeHelper<Runtime>
-where
-	Runtime: pallet_evm::Config,
-	Runtime::RuntimeCall: Dispatchable<PostInfo = PostDispatchInfo> + GetDispatchInfo,
-{
-	/// Try to dispatch a Substrate call.
-	/// Return an error if there are not enough gas, or if the call fails.
-	/// If successful returns the used gas using the Runtime GasWeightMapping.
-	pub fn try_dispatch<Call>(
-		handle: &mut impl PrecompileHandleExt,
-		origin: <Runtime::RuntimeCall as Dispatchable>::RuntimeOrigin,
-		call: Call,
-	) -> EvmResult<()>
-	where
-		Runtime::RuntimeCall: From<Call>,
-	{
-		let call = Runtime::RuntimeCall::from(call);
-		let dispatch_info = call.get_dispatch_info();
+// impl<Runtime> RuntimeHelper<Runtime>
+// where
+// 	Runtime: pallet_evm::Config,
+// 	Runtime::RuntimeCall: Dispatchable<PostInfo = PostDispatchInfo> + GetDispatchInfo,
+// {
+// 	/// Try to dispatch a Substrate call.
+// 	/// Return an error if there are not enough gas, or if the call fails.
+// 	/// If successful returns the used gas using the Runtime GasWeightMapping.
+// 	pub fn try_dispatch<Call>(
+// 		handle: &mut impl PrecompileHandleExt,
+// 		origin: <Runtime::RuntimeCall as Dispatchable>::RuntimeOrigin,
+// 		call: Call,
+// 	) -> EvmResult<()>
+// 	where
+// 		Runtime::RuntimeCall: From<Call>,
+// 	{
+// 		let call = Runtime::RuntimeCall::from(call);
+// 		let dispatch_info = call.get_dispatch_info();
 
-		// Make sure there is enough gas.
-		let remaining_gas = handle.remaining_gas();
-		let required_gas = Runtime::GasWeightMapping::weight_to_gas(dispatch_info.weight);
-		if required_gas > remaining_gas {
-			return Err(PrecompileFailure::Error { exit_status: ExitError::OutOfGas })
-		}
+// 		// Make sure there is enough gas.
+// 		let remaining_gas = handle.remaining_gas();
+// 		let required_gas = Runtime::GasWeightMapping::weight_to_gas(dispatch_info.weight);
+// 		if required_gas > remaining_gas {
+// 			return Err(PrecompileFailure::Error { exit_status: ExitError::OutOfGas })
+// 		}
 
-		// Dispatch call.
-		// It may be possible to not record gas cost if the call returns Pays::No.
-		// However while Substrate handle checking weight while not making the sender pay for it,
-		// the EVM doesn't. It seems this safer to always record the costs to avoid unmetered
-		// computations.
-		let result = call
-			.dispatch(origin)
-			.map_err(|e| revert(alloc::format!("Dispatched call failed with error: {:?}", e)))?;
+// 		// Dispatch call.
+// 		// It may be possible to not record gas cost if the call returns Pays::No.
+// 		// However while Substrate handle checking weight while not making the sender pay for it,
+// 		// the EVM doesn't. It seems this safer to always record the costs to avoid unmetered
+// 		// computations.
+// 		let result = call
+// 			.dispatch(origin)
+// 			.map_err(|e| revert(alloc::format!("Dispatched call failed with error: {:?}", e)))?;
 
-		let used_weight = result.actual_weight;
+// 		let used_weight = result.actual_weight;
 
-		let used_gas =
-			Runtime::GasWeightMapping::weight_to_gas(used_weight.unwrap_or(dispatch_info.weight));
+// 		let used_gas =
+// 			Runtime::GasWeightMapping::weight_to_gas(used_weight.unwrap_or(dispatch_info.weight));
 
-		handle.record_cost(used_gas)?;
+// 		handle.record_cost(used_gas)?;
 
-		Ok(())
-	}
-}
+// 		Ok(())
+// 	}
+// }
 
-impl<Runtime> RuntimeHelper<Runtime>
-where
-	Runtime: pallet_evm::Config,
-{
-	/// Cost of a Substrate DB write in gas.
-	pub fn db_write_gas_cost() -> u64 {
-		<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
-			<Runtime as frame_system::Config>::DbWeight::get().writes(1),
-		)
-	}
+// impl<Runtime> RuntimeHelper<Runtime>
+// where
+// 	Runtime: pallet_evm::Config + frame_system::Config,
+// {
+// 	/// Cost of a Substrate DB write in gas.
+// 	pub fn db_write_gas_cost() -> u64 {
+// 		<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
+// 			<Runtime as frame_system::Config>::DbWeight::get().writes(1),
+// 		)
+// 	}
 
-	/// Cost of a Substrate DB read in gas.
-	pub fn db_read_gas_cost() -> u64 {
-		<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
-			<Runtime as frame_system::Config>::DbWeight::get().reads(1),
-		)
-	}
-}
+// 	/// Cost of a Substrate DB read in gas.
+// 	pub fn db_read_gas_cost() -> u64 {
+// 		<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
+// 			<Runtime as frame_system::Config>::DbWeight::get().reads(1),
+// 		)
+// 	}
+// }
 
 /// Represents modifiers a Solidity function can be annotated with.
 #[derive(Copy, Clone, PartialEq, Eq)]
@@ -343,11 +340,11 @@ fn check_function_modifier(
 	modifier: FunctionModifier,
 ) -> EvmResult {
 	if is_static && modifier != FunctionModifier::View {
-		return Err(revert("can't call non-static function in static context"))
+		return Err(revert("can't call non-static function in static context"));
 	}
 
 	if modifier != FunctionModifier::Payable && context.apparent_value > U256::zero() {
-		return Err(revert("function is not payable"))
+		return Err(revert("function is not payable"));
 	}
 
 	Ok(())

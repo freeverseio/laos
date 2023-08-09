@@ -1,6 +1,5 @@
 use std::{collections::BTreeMap, sync::Arc};
 
-use fc_rpc::TxPool;
 use jsonrpsee::RpcModule;
 // Substrate
 use sc_client_api::{
@@ -151,14 +150,12 @@ where
 		.into_rpc(),
 	)?;
 
-	let tx_pool = TxPool::new(client.clone(), graph);
-
 	if let Some(filter_pool) = filter_pool {
 		io.merge(
 			EthFilter::new(
 				client.clone(),
 				frontier_backend,
-				tx_pool,
+				graph,
 				filter_pool,
 				500_usize, // max stored filters
 				max_past_logs,
