@@ -4,6 +4,7 @@
 #![allow(clippy::redundant_closure_call)]
 
 use super::*;
+use pallet_living_assets_ownership::traits::CollectionManagerError;
 use precompile_utils::{
 	revert, succeed,
 	testing::{create_mock_handle, create_mock_handle_from_input},
@@ -31,11 +32,15 @@ fn check_log_selectors() {
 
 #[test]
 fn failing_create_collection_should_return_error() {
-	impl_precompile_mock_simple!(Mock, Err("spaghetti code"), Some(H160::zero()));
+	impl_precompile_mock_simple!(
+		Mock,
+		Err(CollectionManagerError::CollectionAlreadyExists),
+		Some(H160::zero())
+	);
 
 	let mut handle = create_mock_handle_from_input(hex::decode(CREATE_COLLECTION).unwrap());
 	let result = Mock::execute(&mut handle);
-	assert_eq!(result.unwrap_err(), revert("spaghetti code"));
+	assert_eq!(result.unwrap_err(), revert(CollectionManagerError::CollectionAlreadyExists));
 }
 
 #[test]
@@ -142,7 +147,9 @@ mod helpers {
 			impl pallet_living_assets_ownership::traits::CollectionManager<AccountId>
 				for CollectionManagerMock
 			{
-				fn create_collection(owner: AccountId) -> Result<CollectionId, &'static str> {
+				fn create_collection(
+					owner: AccountId,
+				) -> Result<CollectionId, CollectionManagerError> {
 					($create_collection_result)(owner)
 				}
 

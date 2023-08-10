@@ -5,7 +5,7 @@ use sp_core::{H160, U256};
 
 impl<T: Config> Pallet<T> {
 	/// See [Self::create_collection]
-	pub fn do_create_collection(who: T::AccountId) -> Result<CollectionId, &'static str> {
+	pub fn do_create_collection(who: T::AccountId) -> Result<CollectionId, Error<T>> {
 		// Retrieve the current collection count to use as the new collection's ID
 		let collection_id = Self::collection_counter();
 

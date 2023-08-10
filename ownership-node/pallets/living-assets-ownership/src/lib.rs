@@ -55,8 +55,6 @@ pub mod pallet {
 	// Errors inform users that something went wrong.
 	#[pallet::error]
 	pub enum Error<T> {
-		/// Collection already exists
-		CollectionAlreadyExists,
 		/// Collection id overflow
 		CollectionIdOverflow,
 	}
@@ -83,16 +81,29 @@ pub mod pallet {
 			OwnerOfCollection::<T>::get(collection_id)
 		}
 
-		fn create_collection(owner: T::AccountId) -> Result<CollectionId, &'static str> {
-			Self::do_create_collection(owner)
+		fn create_collection(
+			owner: T::AccountId,
+		) -> Result<CollectionId, traits::CollectionManagerError> {
+			match Self::do_create_collection(owner) {
+				Ok(collection_id) => Ok(collection_id),
+				Err(err) => match err {
+					Error::CollectionIdOverflow => {
+						Err(traits::CollectionManagerError::CollectionIdOverflow)
+					},
+					_ => Err(traits::CollectionManagerError::UnknownError),
+				},
+			}
 		}
 	}
 
 	impl<T: Config> traits::Erc721 for Pallet<T> {
-		fn owner_of(collection_id: CollectionId, asset_id: U256) -> Result<H160, &'static str> {
+		fn owner_of(
+			collection_id: CollectionId,
+			asset_id: U256,
+		) -> Result<H160, traits::Erc721Error> {
 			match OwnerOfCollection::<T>::get(collection_id) {
 				Some(_) => Ok(convert_asset_id_to_owner(asset_id)),
-				None => Err("Collection does not exist"),
+				None => Err(traits::Erc721Error::UnexistentCollection),
 			}
 		}
 	}

@@ -1,7 +1,7 @@
 use core::str::FromStr;
 
 use super::*;
-use pallet_living_assets_ownership::CollectionId;
+use pallet_living_assets_ownership::{traits::Erc721Error, CollectionId};
 use precompile_utils::testing::create_mock_handle_from_input;
 use sp_core::{H160, U256};
 
@@ -39,7 +39,7 @@ fn owner_of_asset_should_return_an_address() {
 
 #[test]
 fn if_mock_fails_should_return_the_error() {
-	impl_precompile_mock_simple!(Mock, Err("spaghetti error"));
+	impl_precompile_mock_simple!(Mock, Err(Erc721Error::UnexistentCollection));
 
 	let owner_of_asset_4 =
 		hex::decode("6352211e0000000000000000000000000000000000000000000000000000000000000004")
@@ -48,7 +48,7 @@ fn if_mock_fails_should_return_the_error() {
 	handle.code_address = H160::from_str("ffffffffffffffffffffffff0000000000000005").unwrap();
 	let result = Mock::execute(&mut handle);
 	assert!(result.is_err());
-	assert_eq!(result.unwrap_err(), revert("spaghetti error"),);
+	assert_eq!(result.unwrap_err(), revert(Erc721Error::UnexistentCollection));
 }
 
 #[test]
@@ -91,7 +91,7 @@ mod helpers {
 				fn owner_of(
 					collectio_id: CollectionId,
 					asset_id: U256,
-				) -> Result<AccountId, &'static str> {
+				) -> Result<AccountId, Erc721Error> {
 					($owner_of_collection)(collectio_id, asset_id)
 				}
 			}

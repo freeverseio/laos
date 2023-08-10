@@ -3,10 +3,10 @@ use core::str::FromStr;
 use crate::{
 	address_to_collection_id, collection_id_to_address, is_collection_address,
 	mock::*,
-	traits::{CollectionManager, Erc721},
+	traits::{self, CollectionManager, Erc721},
 	CollectionError, Event,
 };
-use frame_support::assert_ok;
+use frame_support::{assert_err, assert_ok};
 use sp_core::H160;
 
 type AccountId = <Test as frame_system::Config>::AccountId;
@@ -119,10 +119,8 @@ fn living_assets_ownership_trait_id_of_new_collection_should_be_consecutive() {
 #[test]
 fn erc721_owner_of_asset_of_unexistent_collection() {
 	new_test_ext().execute_with(|| {
-		assert_eq!(
-			<LivingAssetsModule as Erc721>::owner_of(0, 2.into()),
-			Err("Collection does not exist")
-		);
+		let result = <LivingAssetsModule as Erc721>::owner_of(0, 2.into());
+		assert_err!(result, traits::Erc721Error::UnexistentCollection);
 	});
 }
 
