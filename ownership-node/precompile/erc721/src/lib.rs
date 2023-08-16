@@ -14,8 +14,8 @@ use sp_std::{fmt::Debug, marker::PhantomData};
 #[precompile_utils_macro::generate_function_selector]
 #[derive(Debug, PartialEq)]
 pub enum Action {
-	/// Get tocken URI
-	TockenURI = "tokenURI(uint256)",
+	/// Get token URI
+	TokenURI = "tokenURI(uint256)",
 	/// Owner of
 	OwnerOf = "ownerOf(uint256)",
 }
@@ -40,12 +40,12 @@ where
 		let selector = handle.read_selector()?;
 
 		handle.check_function_modifier(match selector {
-			Action::TockenURI => FunctionModifier::View,
+			Action::TokenURI => FunctionModifier::View,
 			Action::OwnerOf => FunctionModifier::View,
 		})?;
 
 		match selector {
-			Action::TockenURI => Err(revert("not implemented")),
+			Action::TokenURI => Err(revert("not implemented")),
 			Action::OwnerOf => {
 				let mut input = handle.read_input()?;
 				input.expect_arguments(1)?;

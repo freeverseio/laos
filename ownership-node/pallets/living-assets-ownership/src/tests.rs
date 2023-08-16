@@ -14,7 +14,7 @@ type AccountId = <Test as frame_system::Config>::AccountId;
 const ALICE: AccountId = 0x1234;
 
 #[test]
-fn owner_of_unexistent_collection_is_none() {
+fn owner_of_nonexistent_collection_is_none() {
 	new_test_ext().execute_with(|| {
 		assert_eq!(LivingAssetsModule::owner_of_collection(0), None);
 		assert_eq!(LivingAssetsModule::owner_of_collection(1), None);
@@ -62,7 +62,7 @@ fn living_assets_ownership_trait_create_new_collection() {
 }
 
 #[test]
-fn living_assets_ownership_trait_owner_of_unexistent_collection_is_none() {
+fn living_assets_ownership_trait_owner_of_nonexistent_collection_is_none() {
 	new_test_ext().execute_with(|| {
 		assert_eq!(
 			<LivingAssetsModule as CollectionManager<AccountId>>::owner_of_collection(0),
@@ -117,7 +117,7 @@ fn living_assets_ownership_trait_id_of_new_collection_should_be_consecutive() {
 }
 
 #[test]
-fn erc721_owner_of_asset_of_unexistent_collection() {
+fn erc721_owner_of_asset_of_nonexistent_collection() {
 	new_test_ext().execute_with(|| {
 		let result = <LivingAssetsModule as Erc721>::owner_of(0, 2.into());
 		assert_err!(result, traits::Erc721Error::UnexistentCollection);
