@@ -7,7 +7,7 @@ use crate::{
 	CollectionError, Event,
 };
 use frame_support::{assert_err, assert_ok};
-use sp_core::H160;
+use sp_core::{H160, U256};
 
 type AccountId = <Test as frame_system::Config>::AccountId;
 
@@ -132,6 +132,27 @@ fn erc721_owner_of_asset_of_collection() {
 		assert_eq!(
 			<LivingAssetsModule as Erc721>::owner_of(collection_id, 2.into()).unwrap(),
 			H160::from_low_u64_be(0x0000000000000002)
+		);
+	});
+}
+
+#[test]
+fn erc721_owner_of_asset_coincides_for_ids_larger_than_160b() {
+	new_test_ext().execute_with(|| {
+		let collection_id =
+			<LivingAssetsModule as CollectionManager<AccountId>>::create_collection(ALICE).unwrap();
+		let expected_owner = H160::from_str("931D387731BBBC988B312206C74F77D004D6B84B");
+		// build two asset ids by prepending "0x1" and "0x2" to the same owner:
+		let asset_id_1 = U256::from("0x1931D387731BBBC988B312206C74F77D004D6B84B");
+		let asset_id_2 = U256::from("0x2931D387731BBBC988B312206C74F77D004D6B84B");
+
+		assert_eq!(
+			<LivingAssetsModule as Erc721>::owner_of(collection_id, asset_id_1).unwrap(),
+			expected_owner.unwrap()
+		);
+		assert_eq!(
+			<LivingAssetsModule as Erc721>::owner_of(collection_id, asset_id_2).unwrap(),
+			expected_owner.unwrap()
 		);
 	});
 }
