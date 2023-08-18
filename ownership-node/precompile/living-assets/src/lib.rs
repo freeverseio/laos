@@ -7,7 +7,7 @@ use pallet_living_assets_ownership::{
 };
 use parity_scale_codec::Encode;
 use precompile_utils::{
-	keccak256, revert, succeed, Address, EvmDataWriter, EvmResult, FunctionModifier, LogExt,
+	keccak256, revert, succeed, Address, Bytes, EvmDataWriter, EvmResult, FunctionModifier, LogExt,
 	LogsBuilder, PrecompileHandleExt,
 };
 use sp_runtime::SaturatedConversion;
@@ -21,7 +21,7 @@ pub const SELECTOR_LOG_CREATE_COLLECTION: [u8; 32] = keccak256!("CreateCollectio
 #[derive(Debug, PartialEq)]
 pub enum Action {
 	/// Create collection
-	CreateCollection = "createCollection()",
+	CreateCollection = "createCollection(string)",
 }
 
 /// Wrapper for the precompile function.
@@ -31,14 +31,14 @@ pub struct CollectionManagerPrecompile<AddressMapping, AccountId, LivingAssets>(
 where
 	AddressMapping: pallet_evm::AddressMapping<AccountId>,
 	AccountId: Encode + Debug,
-	LivingAssets: CollectionManager<AccountId>;
+	LivingAssets: CollectionManager;
 
 impl<AddressMapping, AccountId, LivingAssets> Precompile
 	for CollectionManagerPrecompile<AddressMapping, AccountId, LivingAssets>
 where
 	AddressMapping: pallet_evm::AddressMapping<AccountId>,
 	AccountId: Encode + Debug,
-	LivingAssets: CollectionManager<AccountId>,
+	LivingAssets: CollectionManager<AccountId = AccountId>,
 {
 	fn execute(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
 		let selector = handle.read_selector()?;
@@ -49,10 +49,23 @@ where
 
 		match selector {
 			Action::CreateCollection => {
+				let mut input = handle.read_input()?;
+				input.expect_arguments(1)?;
+
+				let base_uri_bytes: Vec<u8> = match input.read::<Bytes>() {
+					Ok(bytes) => bytes.into(),
+					Err(e) => return Err(e),
+				};
+
+				let base_uri = match base_uri_bytes.try_into() {
+					Ok(value) => value,
+					Err(_) => return Err(revert("base_uri too long")),
+				};
+
 				let caller = handle.context().caller;
 				let owner = AddressMapping::into_account_id(caller);
 
-				match LivingAssets::create_collection(owner) {
+				match LivingAssets::create_collection(owner, base_uri) {
 					Ok(collection_id) => {
 						let collection_address = collection_id_to_address(
 							collection_id.saturated_into::<CollectionId>(),

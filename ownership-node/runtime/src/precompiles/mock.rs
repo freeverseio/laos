@@ -1,6 +1,6 @@
 use frame_support::{
 	construct_runtime, parameter_types,
-	traits::{ConstU64, FindAuthor},
+	traits::{ConstU32, ConstU64, FindAuthor},
 	weights::Weight,
 };
 use pallet_evm::{
@@ -88,6 +88,7 @@ impl pallet_timestamp::Config for Runtime {
 
 impl pallet_living_assets_ownership::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
+	type BaseURILimit = ConstU32<256>;
 }
 
 pub struct FixedGasPrice;

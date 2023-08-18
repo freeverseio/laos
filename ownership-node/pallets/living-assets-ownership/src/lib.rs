@@ -14,13 +14,18 @@ pub mod pallet {
 	use crate::functions::convert_asset_id_to_owner;
 
 	use super::*;
-	use frame_support::pallet_prelude::{OptionQuery, ValueQuery, *};
+	use frame_support::{
+		pallet_prelude::{OptionQuery, ValueQuery, *},
+		BoundedVec,
+	};
 	use frame_system::pallet_prelude::*;
 	use sp_core::{H160, U256};
 
 	/// Collection id type
-	/// TODO: use 256 bits
 	pub type CollectionId = u64;
+
+	/// Base URI type
+	pub type BaseURI<T> = BoundedVec<u8, <T as Config>::BaseURILimit>;
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
@@ -30,18 +35,29 @@ pub mod pallet {
 	pub trait Config: frame_system::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
-	}
 
-	/// Mapping from collection id to owner
-	#[pallet::storage]
-	#[pallet::getter(fn owner_of_collection)]
-	pub(super) type OwnerOfCollection<T: Config> =
-		StorageMap<_, Blake2_128Concat, CollectionId, T::AccountId, OptionQuery>;
+		/// Specifies the advised maximum length for a Base URI.
+		//s
+		/// The URI standard (RFC 3986) doesn't dictates a limit for the length of URIs.
+		/// However it seems the max supported length in browsers is 2,048 characters.
+		///
+		/// The base should be capped at 2,015 characters in length. This ensures room for
+		/// the token URI formation, where it combines `BaseURILimit`, a `'/'`, and a `tokenID`
+		/// (which takes up 33 characters).
+		#[pallet::constant]
+		type BaseURILimit: Get<u32>;
+	}
 
 	/// Collection counter
 	#[pallet::storage]
 	#[pallet::getter(fn collection_counter)]
 	pub(super) type CollectionCounter<T: Config> = StorageValue<_, CollectionId, ValueQuery>;
+
+	/// Collection base URI
+	#[pallet::storage]
+	#[pallet::getter(fn collection_base_uri)]
+	pub(super) type CollectionBaseURI<T: Config> =
+		StorageMap<_, Blake2_128Concat, CollectionId, BaseURI<T>, OptionQuery>;
 
 	/// Pallet events
 	#[pallet::event]
@@ -54,9 +70,22 @@ pub mod pallet {
 
 	// Errors inform users that something went wrong.
 	#[pallet::error]
+	#[derive(PartialEq)]
 	pub enum Error<T> {
 		/// Collection id overflow
 		CollectionIdOverflow,
+		/// Unexistent collection
+		UnexistentCollection,
+	}
+
+	impl<T: Config> AsRef<[u8]> for Error<T> {
+		fn as_ref(&self) -> &[u8] {
+			match self {
+				Error::__Ignore(_, _) => b"__Ignore",
+				Error::CollectionIdOverflow => b"CollectionIdOverflow",
+				Error::UnexistentCollection => b"UnexistentCollection",
+			}
+		}
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -66,44 +95,40 @@ pub mod pallet {
 	impl<T: Config> Pallet<T> {
 		#[pallet::call_index(0)]
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())] // TODO set proper weight
-		pub fn create_collection(origin: OriginFor<T>) -> DispatchResult {
+		pub fn create_collection(origin: OriginFor<T>, base_uri: BaseURI<T>) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
-			match Self::do_create_collection(who) {
+			match Self::do_create_collection(who, base_uri) {
 				Ok(_) => Ok(()),
 				Err(err) => Err(err.into()),
 			}
 		}
 	}
 
-	impl<T: Config> traits::CollectionManager<T::AccountId> for Pallet<T> {
-		fn owner_of_collection(collection_id: CollectionId) -> Option<T::AccountId> {
-			OwnerOfCollection::<T>::get(collection_id)
+	impl<T: Config> traits::CollectionManager for Pallet<T> {
+		type Error = Error<T>;
+		type AccountId = T::AccountId;
+		type BaseURI = BaseURI<T>;
+
+		fn base_uri(collection_id: CollectionId) -> Option<Self::BaseURI> {
+			CollectionBaseURI::<T>::get(collection_id)
 		}
 
 		fn create_collection(
 			owner: T::AccountId,
-		) -> Result<CollectionId, traits::CollectionManagerError> {
-			match Self::do_create_collection(owner) {
-				Ok(collection_id) => Ok(collection_id),
-				Err(err) => match err {
-					Error::CollectionIdOverflow => {
-						Err(traits::CollectionManagerError::CollectionIdOverflow)
-					},
-					_ => Err(traits::CollectionManagerError::UnknownError),
-				},
-			}
+			base_uri: Self::BaseURI,
+		) -> Result<CollectionId, Self::Error> {
+			Self::do_create_collection(owner, base_uri)
 		}
 	}
 
 	impl<T: Config> traits::Erc721 for Pallet<T> {
-		fn owner_of(
-			collection_id: CollectionId,
-			asset_id: U256,
-		) -> Result<H160, traits::Erc721Error> {
-			match OwnerOfCollection::<T>::get(collection_id) {
+		type Error = Error<T>;
+
+		fn owner_of(collection_id: CollectionId, asset_id: U256) -> Result<H160, Self::Error> {
+			match CollectionBaseURI::<T>::get(collection_id) {
 				Some(_) => Ok(convert_asset_id_to_owner(asset_id)),
-				None => Err(traits::Erc721Error::UnexistentCollection),
+				None => Err(Error::UnexistentCollection),
 			}
 		}
 	}

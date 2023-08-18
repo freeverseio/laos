@@ -505,6 +505,7 @@ impl pallet_collator_selection::Config for Runtime {
 
 impl pallet_living_assets_ownership::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
+	type BaseURILimit = ConstU32<2015>;
 }
 
 impl pallet_sudo::Config for Runtime {
