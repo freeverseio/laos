@@ -6,7 +6,6 @@ use precompile_utils::testing::create_mock_handle_from_input;
 use sp_core::{H160, U256};
 
 type AccountId = H160;
-type AddressMapping = pallet_evm::IdentityAddressMapping;
 
 #[test]
 fn check_selectors() {
@@ -96,7 +95,7 @@ mod helpers {
 				}
 			}
 
-			type $name = Erc721Precompile<AddressMapping, AccountId, Erc721Mock>;
+			type $name = Erc721Precompile<Erc721Mock>;
 		};
 	}
 

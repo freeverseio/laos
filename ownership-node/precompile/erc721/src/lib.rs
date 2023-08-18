@@ -1,13 +1,9 @@
-//! Living Assets precompile module.
-
 #![cfg_attr(not(feature = "std"), no_std)]
 use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
-use pallet_living_assets_ownership::{address_to_collection_id, traits::Erc721};
-use parity_scale_codec::Encode;
+use pallet_living_assets_ownership::address_to_collection_id;
 use precompile_utils::{
 	revert, succeed, Address, EvmDataWriter, EvmResult, FunctionModifier, PrecompileHandleExt,
 };
-
 use sp_core::U256;
 use sp_std::{fmt::Debug, marker::PhantomData};
 
@@ -21,20 +17,11 @@ pub enum Action {
 }
 
 /// Wrapper for the precompile function.
-pub struct Erc721Precompile<AddressMapping, AccountId, AssetManager>(
-	PhantomData<(AddressMapping, AccountId, AssetManager)>,
-)
-where
-	AddressMapping: pallet_evm::AddressMapping<AccountId>,
-	AccountId: Encode + Debug,
-	AssetManager: Erc721;
+pub struct Erc721Precompile<AssetManager>(PhantomData<AssetManager>);
 
-impl<AddressMapping, AccountId, AssetManager> Precompile
-	for Erc721Precompile<AddressMapping, AccountId, AssetManager>
+impl<AssetManager> Precompile for Erc721Precompile<AssetManager>
 where
-	AddressMapping: pallet_evm::AddressMapping<AccountId>,
-	AccountId: Encode + Debug,
-	AssetManager: Erc721,
+	AssetManager: pallet_living_assets_ownership::traits::Erc721,
 {
 	fn execute(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
 		let selector = handle.read_selector()?;
@@ -46,22 +33,30 @@ where
 
 		match selector {
 			Action::TokenURI => Err(revert("not implemented")),
-			Action::OwnerOf => {
-				let mut input = handle.read_input()?;
-				input.expect_arguments(1)?;
+			Action::OwnerOf => Self::owner_of(handle),
+		}
+	}
+}
 
-				let asset_id: U256 = input.read()?;
+impl<AssetManager> Erc721Precompile<AssetManager>
+where
+	AssetManager: pallet_living_assets_ownership::traits::Erc721,
+{
+	fn owner_of(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
+		let mut input = handle.read_input()?;
+		input.expect_arguments(1)?;
 
-				// collection id is encoded into the contract address
-				let collection_id = match address_to_collection_id(handle.code_address()) {
-					Ok(collection_id) => collection_id,
-					Err(_) => return Err(revert("invalid collection address")),
-				};
-				match AssetManager::owner_of(collection_id, asset_id) {
-					Ok(owner) => Ok(succeed(EvmDataWriter::new().write(Address(owner)).build())),
-					Err(err) => Err(revert(err)),
-				}
-			},
+		let asset_id: U256 = input.read()?;
+
+		// collection id is encoded into the contract address
+		let collection_id = match address_to_collection_id(handle.code_address()) {
+			Ok(collection_id) => collection_id,
+			Err(_) => return Err(revert("invalid collection address")),
+		};
+
+		match AssetManager::owner_of(collection_id, asset_id) {
+			Ok(owner) => Ok(succeed(EvmDataWriter::new().write(Address(owner)).build())),
+			Err(err) => Err(revert(err)),
 		}
 	}
 }
