@@ -4,7 +4,9 @@
 /// Learn more about FRAME and the core library of Substrate FRAME pallets:
 /// <https://docs.substrate.io/reference/frame-pallets/>
 pub use pallet::*;
-use sp_core::H160;
+use parity_scale_codec::alloc::string::ToString;
+use sp_core::{H160, U256};
+use sp_std::vec::Vec;
 
 mod functions;
 pub mod traits;
@@ -19,7 +21,6 @@ pub mod pallet {
 		BoundedVec,
 	};
 	use frame_system::pallet_prelude::*;
-	use sp_core::{H160, U256};
 
 	/// Collection id type
 	pub type CollectionId = u64;
@@ -130,6 +131,17 @@ pub mod pallet {
 				Some(_) => Ok(convert_asset_id_to_owner(asset_id)),
 				None => Err(Error::UnexistentCollection),
 			}
+		}
+
+		fn token_uri(collection_id: CollectionId, asset_id: U256) -> Result<Vec<u8>, Self::Error> {
+			let base_uri = Pallet::<T>::collection_base_uri(collection_id)
+				.ok_or(Error::UnexistentCollection)?;
+
+			// concatenate base_uri with asset_id
+			let mut token_uri = base_uri.to_vec();
+			token_uri.push(b'/');
+			token_uri.extend_from_slice(&asset_id.to_string().as_bytes());
+			Ok(token_uri)
 		}
 	}
 }

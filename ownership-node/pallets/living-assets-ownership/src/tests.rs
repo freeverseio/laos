@@ -241,4 +241,29 @@ mod traits {
 			);
 		});
 	}
+
+	#[test]
+	fn token_uri_of_unexistent_collection() {
+		new_test_ext().execute_with(|| {
+			let result = <LivingAssetsModule as Erc721>::token_uri(0, 2.into());
+			assert_err!(result, Error::UnexistentCollection);
+		});
+	}
+
+	#[test]
+	fn token_uri_should_concatenate_the_base_uri_with_the_token_id() {
+		let base_uri = BaseURI::try_from("https://example.com".as_bytes().to_vec()).unwrap();
+
+		new_test_ext().execute_with(|| {
+			let collection_id = <LivingAssetsModule as CollectionManager>::create_collection(
+				ALICE,
+				base_uri.clone(),
+			)
+			.unwrap();
+			assert_eq!(
+				<LivingAssetsModule as Erc721>::token_uri(collection_id, 2.into()).unwrap(),
+				"https://example.com/2".as_bytes().to_vec()
+			);
+		});
+	}
 }
