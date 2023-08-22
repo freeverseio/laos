@@ -1,5 +1,6 @@
 use cumulus_primitives_core::ParaId;
-use laos_runtime::{AccountId, AuraId, Signature, EXISTENTIAL_DEPOSIT};
+use fp_evm::GenesisAccount;
+use laos_runtime::{AccountId, AuraId, Precompiles, Signature, EXISTENTIAL_DEPOSIT};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
@@ -190,6 +191,12 @@ fn testnet_genesis(
 	// let alice = get_from_seed::<sr25519::Public>("Alice");
 	// let bob = get_from_seed::<sr25519::Public>("Bob");
 
+	// This is the simplest bytecode to revert without returning any data.
+	// We will pre-deploy it under all of our precompiles to ensure they can be called from
+	// within contracts.
+	// (PUSH1 0x00 PUSH1 0x00 REVERT)
+	let revert_bytecode = vec![0x60, 0x00, 0x60, 0x00, 0xFD];
+
 	laos_runtime::RuntimeGenesisConfig {
 		system: laos_runtime::SystemConfig {
 			code: laos_runtime::WASM_BINARY
@@ -259,7 +266,21 @@ fn testnet_genesis(
 		evm_chain_id: laos_runtime::EVMChainIdConfig { chain_id: 1000, ..Default::default() },
 		evm: laos_runtime::EVMConfig {
 			accounts: {
-				let mut map = BTreeMap::new();
+				let mut map: BTreeMap<_, _> = Precompiles::used_addresses()
+					.iter()
+					.map(|&address| {
+						(
+							address.into(),
+							GenesisAccount {
+								nonce: Default::default(),
+								balance: Default::default(),
+								storage: Default::default(),
+								code: revert_bytecode.clone(),
+							},
+						)
+					})
+					.collect();
+
 				map.insert(
 					// H160 address of Alice dev account
 					// Derived from SS58 (42 prefix) address
