@@ -1,16 +1,17 @@
 use core::str::FromStr;
 
 use crate::{
-	address_to_collection_id, collection_id_to_address, is_collection_address, mock::*,
-	CollectionError, Event,
+	address_to_collection_id, collection_id_to_address, is_collection_address, mock::*, AssetOwner,
+	CollectionBaseURI, CollectionError, Event,
 };
 use frame_support::assert_ok;
 use sp_core::H160;
 
-type AccountId = <Test as frame_system::Config>::AccountId;
 type BaseURI = crate::BaseURI<Test>;
+type AccountId = <Test as frame_system::Config>::AccountId;
 
 const ALICE: AccountId = 0x1234;
+const BOB: AccountId = 0x2234;
 
 #[test]
 fn base_uri_unexistent_collection_is_none() {
@@ -126,7 +127,8 @@ mod traits {
 		traits::{CollectionManager, Erc721},
 		Error, Event,
 	};
-	use frame_support::{assert_err, assert_ok};
+	use frame_support::{assert_err, assert_noop, assert_ok};
+	use sp_core::U256;
 
 	#[test]
 	fn base_uri_of_unexistent_collection_is_none() {
@@ -223,7 +225,7 @@ mod traits {
 	fn owner_of_asset_of_unexistent_collection_should_error() {
 		new_test_ext().execute_with(|| {
 			let result = <LivingAssetsModule as Erc721>::owner_of(0, 2.into());
-			assert_err!(result, Error::UnexistentCollection);
+			assert_err!(result, Error::CollectionDoesNotExist);
 		});
 	}
 
@@ -243,10 +245,121 @@ mod traits {
 	}
 
 	#[test]
+	fn caller_is_not_current_owner_should_fail() {
+		let asset_id = U256::from(5);
+		let sender = H160::from_str("0000000000000000000000000000000000000006").unwrap();
+		let receiver = H160::from_low_u64_be(BOB);
+		new_test_ext().execute_with(|| {
+			System::set_block_number(1);
+			assert!(AssetOwner::<Test>::get(asset_id).is_none());
+			CollectionBaseURI::<Test>::insert(1, BaseURI::default());
+			assert_noop!(
+				<LivingAssetsModule as Erc721>::transfer_from(
+					H160::from_low_u64_be(ALICE),
+					1,
+					sender,
+					receiver,
+					asset_id,
+				),
+				Error::<Test>::NoPermission
+			);
+		});
+	}
+
+	#[test]
+	fn sender_is_not_current_owner_should_fail() {
+		let asset_id = U256::from(5);
+		let sender = H160::from_str("0000000000000000000000000000000000000006").unwrap();
+		let receiver = H160::from_low_u64_be(BOB);
+		new_test_ext().execute_with(|| {
+			System::set_block_number(1);
+			assert!(AssetOwner::<Test>::get(asset_id).is_none());
+			CollectionBaseURI::<Test>::insert(1, BaseURI::default());
+			assert_noop!(
+				<LivingAssetsModule as Erc721>::transfer_from(
+					sender, 1, sender, receiver, asset_id,
+				),
+				Error::<Test>::NoPermission
+			);
+		});
+	}
+
+	#[test]
+	fn same_sender_and_receiver_should_fail() {
+		let asset_id = U256::from(5);
+		let sender = H160::from_str("0000000000000000000000000000000000000005").unwrap();
+		new_test_ext().execute_with(|| {
+			System::set_block_number(1);
+			assert!(AssetOwner::<Test>::get(asset_id).is_none());
+			CollectionBaseURI::<Test>::insert(1, BaseURI::default());
+			assert_noop!(
+				<LivingAssetsModule as Erc721>::transfer_from(sender, 1, sender, sender, asset_id,),
+				Error::<Test>::CannotTransferSelf
+			);
+		});
+	}
+
+	#[test]
+	fn receiver_is_the_zero_address_should_fail() {
+		let asset_id = U256::from(5);
+		let sender = H160::from_str("0000000000000000000000000000000000000005").unwrap();
+		let receiver = H160::from_str("0000000000000000000000000000000000000000").unwrap();
+		new_test_ext().execute_with(|| {
+			System::set_block_number(1);
+			assert!(AssetOwner::<Test>::get(asset_id).is_none());
+			CollectionBaseURI::<Test>::insert(1, BaseURI::default());
+			assert_noop!(
+				<LivingAssetsModule as Erc721>::transfer_from(
+					sender, 1, sender, receiver, asset_id,
+				),
+				Error::<Test>::TransferToNullAddress
+			);
+		});
+	}
+
+	#[test]
+	fn unexistent_collection_when_transfer_from_should_fail() {
+		let asset_id = U256::from(5);
+		let sender = H160::from_str("0000000000000000000000000000000000000005").unwrap();
+		let receiver = H160::from_low_u64_be(BOB);
+		new_test_ext().execute_with(|| {
+			System::set_block_number(1);
+			assert!(AssetOwner::<Test>::get(asset_id).is_none());
+			assert_noop!(
+				<LivingAssetsModule as Erc721>::transfer_from(
+					sender, 1, sender, receiver, asset_id,
+				),
+				Error::<Test>::CollectionDoesNotExist
+			);
+		});
+	}
+
+	#[test]
+	fn sucessful_transfer_from_trait_should_work() {
+		let asset_id = U256::from(
+			hex::decode("03C0F0f4ab324C46e55D02D0033343B4Be8A55532d").unwrap().as_slice(),
+		);
+		let sender = H160::from_str("C0F0f4ab324C46e55D02D0033343B4Be8A55532d").unwrap();
+		let receiver = H160::from_low_u64_be(BOB);
+		new_test_ext().execute_with(|| {
+			System::set_block_number(1);
+			CollectionBaseURI::<Test>::insert(1, BaseURI::default());
+			assert!(AssetOwner::<Test>::get(asset_id).is_none());
+			assert_eq!(<LivingAssetsModule as Erc721>::owner_of(1, asset_id).unwrap(), sender);
+			assert_ok!(<LivingAssetsModule as Erc721>::transfer_from(
+				sender, 1, sender, receiver, asset_id,
+			));
+			assert_eq!(AssetOwner::<Test>::get(asset_id).unwrap(), receiver);
+			assert_eq!(<LivingAssetsModule as Erc721>::owner_of(1, asset_id).unwrap(), receiver);
+			System::assert_last_event(Event::AssetTransferred { asset_id, receiver }.into());
+		});
+	}
+
+	#[test]
 	fn token_uri_of_unexistent_collection() {
 		new_test_ext().execute_with(|| {
 			let result = <LivingAssetsModule as Erc721>::token_uri(0, 2.into());
-			assert_err!(result, Error::UnexistentCollection);
+			assert_err!(result, Error::CollectionDoesNotExist);
 		});
 	}
 

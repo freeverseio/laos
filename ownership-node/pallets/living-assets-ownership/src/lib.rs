@@ -13,6 +13,7 @@ pub mod traits;
 
 #[frame_support::pallet]
 pub mod pallet {
+
 	use crate::functions::convert_asset_id_to_owner;
 
 	use super::*;
@@ -60,6 +61,15 @@ pub mod pallet {
 	pub(super) type CollectionBaseURI<T: Config> =
 		StorageMap<_, Blake2_128Concat, CollectionId, BaseURI<T>, OptionQuery>;
 
+	/// Asset owner
+	#[pallet::storage]
+	pub(super) type AssetOwner<T: Config> =
+		StorageMap<_, Blake2_128Concat, U256, H160, OptionQuery>;
+
+	fn asset_owner<T: Config>(key: U256) -> H160 {
+		AssetOwner::<T>::get(key).unwrap_or_else(|| convert_asset_id_to_owner(key))
+	}
+
 	/// Pallet events
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
@@ -67,6 +77,9 @@ pub mod pallet {
 		/// Collection created
 		/// parameters. [collection_id, who]
 		CollectionCreated { collection_id: CollectionId, who: T::AccountId },
+		/// Asset transferred to `who`
+		/// parameters. [asset_id_id, who]
+		AssetTransferred { asset_id: U256, receiver: H160 },
 	}
 
 	// Errors inform users that something went wrong.
@@ -75,8 +88,16 @@ pub mod pallet {
 	pub enum Error<T> {
 		/// Collection id overflow
 		CollectionIdOverflow,
-		/// Unexistent collection
-		UnexistentCollection,
+		/// Collection does not exist
+		CollectionDoesNotExist,
+		// NoPermission,
+		NoPermission,
+		// AssetDoesNotExist,
+		AssetDoesNotExist,
+		// CannotTransferSelf,
+		CannotTransferSelf,
+		// TransferToNullAddress,
+		TransferToNullAddress,
 	}
 
 	impl<T: Config> AsRef<[u8]> for Error<T> {
@@ -84,7 +105,11 @@ pub mod pallet {
 			match self {
 				Error::__Ignore(_, _) => b"__Ignore",
 				Error::CollectionIdOverflow => b"CollectionIdOverflow",
-				Error::UnexistentCollection => b"UnexistentCollection",
+				Error::CollectionDoesNotExist => b"CollectionDoesNotExist",
+				Error::NoPermission => b"NoPermission",
+				Error::AssetDoesNotExist => b"AssetDoesNotExist",
+				Error::CannotTransferSelf => b"CannotTransferSelf",
+				Error::TransferToNullAddress => b"TransferToNullAddress",
 			}
 		}
 	}
@@ -127,15 +152,32 @@ pub mod pallet {
 		type Error = Error<T>;
 
 		fn owner_of(collection_id: CollectionId, asset_id: U256) -> Result<H160, Self::Error> {
-			match CollectionBaseURI::<T>::get(collection_id) {
-				Some(_) => Ok(convert_asset_id_to_owner(asset_id)),
-				None => Err(Error::UnexistentCollection),
-			}
+			Pallet::<T>::collection_base_uri(collection_id).ok_or(Error::CollectionDoesNotExist)?;
+			Ok(asset_owner::<T>(asset_id))
+		}
+
+		fn transfer_from(
+			origin: H160,
+			collection_id: CollectionId,
+			from: H160,
+			to: H160,
+			asset_id: U256,
+		) -> Result<(), Self::Error> {
+			Pallet::<T>::collection_base_uri(collection_id).ok_or(Error::CollectionDoesNotExist)?;
+			ensure!(origin == from, Error::NoPermission);
+			ensure!(asset_owner::<T>(asset_id) == from, Error::NoPermission);
+			ensure!(from != to, Error::CannotTransferSelf);
+			ensure!(to != H160::zero(), Error::TransferToNullAddress);
+
+			AssetOwner::<T>::set(asset_id, Some(to.clone()));
+			Self::deposit_event(Event::AssetTransferred { asset_id, receiver: to });
+
+			Ok(())
 		}
 
 		fn token_uri(collection_id: CollectionId, asset_id: U256) -> Result<Vec<u8>, Self::Error> {
 			let base_uri = Pallet::<T>::collection_base_uri(collection_id)
-				.ok_or(Error::UnexistentCollection)?;
+				.ok_or(Error::CollectionDoesNotExist)?;
 
 			// concatenate base_uri with asset_id
 			let mut token_uri = base_uri.to_vec();

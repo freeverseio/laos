@@ -72,11 +72,27 @@ pub trait Erc721 {
 	///
 	/// # Arguments
 	///
-	/// * `collection_id` - The unique identifier for the collection.
 	/// * `asset_id` - The unique identifier for the asset within the collection.
 	///
 	/// # Returns
 	///
 	/// A `Vec<u8>` representing the URI of the asset or an error if retrieval fails.
 	fn token_uri(collection_id: CollectionId, asset_id: U256) -> Result<Vec<u8>, Self::Error>;
+
+	/// Transfers the ownership of a asset from one address to another address
+	///
+	/// # Arguments
+	///
+	/// * `origin` - The caller's address.
+	/// * `collection_id` - The unique identifier for the collection.
+	/// * `from` - The current owner of the asset.
+	/// * `to` - The new owner.
+	/// * `asset_id` - The unique identifier for the asset within the collection.
+	fn transfer_from(
+		origin: H160,
+		collection_id: CollectionId,
+		from: H160,
+		to: H160,
+		asset_id: U256,
+	) -> Result<(), Self::Error>;
 }
