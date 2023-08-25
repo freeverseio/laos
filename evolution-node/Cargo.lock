@@ -1912,6 +1912,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0206175f82b8d6bf6652ff7d71a1e27fd2e4efde587fd368662814d6ec1d9ce0"
 
 [[package]]
+name = "evochain-primitives"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "sp-core",
+ "sp-runtime",
+]
+
+[[package]]
 name = "exit-future"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4462,9 +4472,11 @@ dependencies = [
  "sc-consensus",
  "sc-consensus-aura",
  "sc-consensus-grandpa",
+ "sc-consensus-grandpa-rpc",
  "sc-executor",
  "sc-keystore",
  "sc-network",
+ "sc-network-common",
  "sc-offchain",
  "sc-rpc",
  "sc-rpc-api",
@@ -4472,6 +4484,7 @@ dependencies = [
  "sc-telemetry",
  "sc-transaction-pool",
  "sc-transaction-pool-api",
+ "serde_json",
  "sp-api",
  "sp-block-builder",
  "sp-blockchain",
@@ -4493,6 +4506,7 @@ dependencies = [
 name = "node-template-runtime"
 version = "4.0.0-dev"
 dependencies = [
+ "evochain-primitives",
  "fp-account",
  "frame-benchmarking",
  "frame-executive",
@@ -6357,6 +6371,26 @@ dependencies = [
  "sp-keystore",
  "sp-runtime",
  "substrate-prometheus-endpoint",
+ "thiserror",
+]
+
+[[package]]
+name = "sc-consensus-grandpa-rpc"
+version = "0.10.0-dev"
+source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v1.0.0#948fbd2fd1233dc26dbb9f9bbc1d2cca2c03945d"
+dependencies = [
+ "finality-grandpa",
+ "futures",
+ "jsonrpsee",
+ "log",
+ "parity-scale-codec",
+ "sc-client-api",
+ "sc-consensus-grandpa",
+ "sc-rpc",
+ "serde",
+ "sp-blockchain",
+ "sp-core",
+ "sp-runtime",
  "thiserror",
 ]
 

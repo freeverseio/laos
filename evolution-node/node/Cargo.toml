@@ -20,6 +20,7 @@ name = "node-template"
 clap = { version = "4.0.9", features = ["derive"] }
 futures = { version = "0.3.21", features = ["thread-pool"]}
 hex-literal = { version = "0.4.1" }
+serde_json = "1.0.104"
 
 sc-cli = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 sp-core = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
@@ -54,6 +55,8 @@ sc-rpc-api = { git = "https://github.com/paritytech/substrate.git", branch = "po
 sp-blockchain = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 sp-block-builder = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 sc-basic-authorship = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
+sc-consensus-grandpa-rpc = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
+sc-network-common = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 substrate-frame-rpc-system = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 pallet-transaction-payment-rpc = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 

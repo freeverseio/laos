@@ -1,114 +1,142 @@
-use hex_literal::hex;
+//! Chain specification for Evochain.
+
 use node_template_runtime::{
-	AccountId, AuraConfig, BalancesConfig, GrandpaConfig, RuntimeGenesisConfig, SudoConfig,
-	SystemConfig, WASM_BINARY,
+	AccountId, AuraConfig, BalancesConfig, GrandpaConfig, RuntimeGenesisConfig, Signature,
+	SudoConfig, SystemConfig, WASM_BINARY,
 };
-use sc_service::ChainType;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_consensus_grandpa::AuthorityId as GrandpaId;
-use sp_core::{Pair, Public};
+use sp_core::{sr25519, Pair, Public};
+use sp_runtime::traits::{IdentifyAccount, Verify};
 
-// The URL for the telemetry server.
-// const STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
+/// "Names" of the authorities accounts at local testnet.
+const LOCAL_AUTHORITIES_ACCOUNTS: [&str; 5] = ["Alice", "Bob", "Charlie", "Dave", "Eve"];
+/// "Names" of the authorities accounts at development testnet.
+const DEV_AUTHORITIES_ACCOUNTS: [&str; 1] = [LOCAL_AUTHORITIES_ACCOUNTS[0]];
+/// "Names" of all possible authorities accounts.
+const ALL_AUTHORITIES_ACCOUNTS: [&str; 5] = LOCAL_AUTHORITIES_ACCOUNTS;
+/// "Name" of the `sudo` account.
+const SUDO_ACCOUNT: &str = "Alice";
 
 /// Specialized `ChainSpec`. This is a specialization of the general Substrate ChainSpec type.
 pub type ChainSpec = sc_service::GenericChainSpec<RuntimeGenesisConfig>;
 
-/// Generate a crypto pair from seed.
+/// The chain specification option. This is expected to come in from the CLI and
+/// is little more than one of a number of alternatives which can easily be converted
+/// from a string (`--chain=...`) into a `ChainSpec`.
+#[derive(Clone, Debug)]
+pub enum Alternative {
+	/// Whatever the current runtime is, with just Alice as an auth.
+	Development,
+	/// Whatever the current runtime is, with simple Alice/Bob/Charlie/Dave/Eve auths.
+	LocalTestnet,
+}
+
+/// Helper function to generate a crypto pair from seed
 pub fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public {
 	TPublic::Pair::from_string(&format!("//{seed}"), None)
 		.expect("static values are valid; qed")
 		.public()
 }
 
-/// Generate an Aura authority key.
-pub fn authority_keys_from_seed(s: &str) -> (AuraId, GrandpaId) {
+type AccountPublic = <Signature as Verify>::Signer;
+
+/// Helper function to generate an account ID from seed
+pub fn get_account_id_from_seed<TPublic: Public>(seed: &str) -> AccountId
+where
+	AccountPublic: From<<TPublic::Pair as Pair>::Public>,
+{
+	AccountPublic::from(get_from_seed::<TPublic>(seed)).into_account()
+}
+
+/// Helper function to generate an authority key for Aura
+pub fn get_authority_keys_from_seed(s: &str) -> (AuraId, GrandpaId) {
 	(get_from_seed::<AuraId>(s), get_from_seed::<GrandpaId>(s))
 }
 
-pub fn development_config() -> Result<ChainSpec, String> {
-	let wasm_binary = WASM_BINARY.ok_or_else(|| "Development wasm not available".to_string())?;
-
-	Ok(ChainSpec::from_genesis(
-		// Name
-		"Development",
-		// ID
-		"dev",
-		ChainType::Development,
-		move || {
-			testnet_genesis(
-				wasm_binary,
-				// Initial PoA authorities
-				vec![authority_keys_from_seed("Alice")],
-				// Sudo account
-				AccountId::from(hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac")),
-				// Pre-funded accounts
-				vec![
-					AccountId::from(hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac")),
-					AccountId::from(hex!("3Cd0A705a2DC65e5b1E1205896BaA2be8A07c6e0")),
-					AccountId::from(hex!("798d4Ba9baf0064Ec19eB4F0a1a45785ae9D6DFc")),
-					AccountId::from(hex!("773539d4Ac0e786233D90A233654ccEE26a613D9")),
-				],
-				true,
-			)
-		},
-		// Bootnodes
-		vec![],
-		// Telemetry
-		None,
-		// Protocol ID
-		None,
-		None,
-		// Properties
-		None,
-		// Extensions
-		None,
-	))
+impl Alternative {
+	/// Get an actual chain config from one of the alternatives.
+	pub(crate) fn load(self) -> ChainSpec {
+		let properties = Some(
+			serde_json::json!({
+				"tokenDecimals": 18,
+				"tokenSymbol": "EVOL"
+			})
+			.as_object()
+			.expect("Map given; qed")
+			.clone(),
+		);
+		match self {
+			Alternative::Development => ChainSpec::from_genesis(
+				"Evochain Development",
+				"evochain_dev",
+				sc_service::ChainType::Development,
+				|| {
+					testnet_genesis(
+						DEV_AUTHORITIES_ACCOUNTS
+							.into_iter()
+							.map(get_authority_keys_from_seed)
+							.collect(),
+						get_account_id_from_seed::<sr25519::Public>(SUDO_ACCOUNT),
+						endowed_accounts(),
+						true,
+					)
+				},
+				vec![],
+				None,
+				None,
+				None,
+				properties,
+				None,
+			),
+			Alternative::LocalTestnet => ChainSpec::from_genesis(
+				"Evochain Local",
+				"evochain_local",
+				sc_service::ChainType::Local,
+				|| {
+					testnet_genesis(
+						LOCAL_AUTHORITIES_ACCOUNTS
+							.into_iter()
+							.map(get_authority_keys_from_seed)
+							.collect(),
+						get_account_id_from_seed::<sr25519::Public>(SUDO_ACCOUNT),
+						endowed_accounts(),
+						true,
+					)
+				},
+				vec![],
+				None,
+				None,
+				None,
+				properties,
+				None,
+			),
+		}
+	}
 }
 
-pub fn local_testnet_config() -> Result<ChainSpec, String> {
-	let wasm_binary = WASM_BINARY.ok_or_else(|| "Development wasm not available".to_string())?;
-
-	Ok(ChainSpec::from_genesis(
-		// Name
-		"Local Testnet",
-		// ID
-		"local_testnet",
-		ChainType::Local,
-		move || {
-			testnet_genesis(
-				wasm_binary,
-				// Initial PoA authorities
-				vec![authority_keys_from_seed("Alice"), authority_keys_from_seed("Bob")],
-				// Sudo account
-				AccountId::from(hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac")),
-				// Pre-funded accounts
-				vec![
-					AccountId::from(hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac")),
-					AccountId::from(hex!("3Cd0A705a2DC65e5b1E1205896BaA2be8A07c6e0")),
-					AccountId::from(hex!("798d4Ba9baf0064Ec19eB4F0a1a45785ae9D6DFc")),
-					AccountId::from(hex!("773539d4Ac0e786233D90A233654ccEE26a613D9")),
-				],
-				true,
-			)
-		},
-		// Bootnodes
-		vec![],
-		// Telemetry
-		None,
-		// Protocol ID
-		None,
-		// Properties
-		None,
-		None,
-		// Extensions
-		None,
-	))
+/// We're using the same set of endowed accounts on all Evochain chains (dev/local) to make
+/// sure that all accounts, required for bridge to be functional (e.g. relayers fund account,
+/// accounts used by relayers in our test deployments, accounts used for demonstration
+/// purposes), are all available on these chains.
+fn endowed_accounts() -> Vec<AccountId> {
+	let all_authorities = ALL_AUTHORITIES_ACCOUNTS.iter().flat_map(|x| {
+		[
+			get_account_id_from_seed::<sr25519::Public>(x),
+			get_account_id_from_seed::<sr25519::Public>(&format!("{x}//stash")),
+		]
+	});
+	vec![
+		// Regular (unused) accounts
+		get_account_id_from_seed::<sr25519::Public>("Ferdie"),
+		get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
+	]
+	.into_iter()
+	.chain(all_authorities)
+	.collect()
 }
 
-/// Configure initial storage state for FRAME modules.
 fn testnet_genesis(
-	wasm_binary: &[u8],
 	initial_authorities: Vec<(AuraId, GrandpaId)>,
 	root_key: AccountId,
 	endowed_accounts: Vec<AccountId>,
@@ -116,13 +144,11 @@ fn testnet_genesis(
 ) -> RuntimeGenesisConfig {
 	RuntimeGenesisConfig {
 		system: SystemConfig {
-			// Add Wasm runtime to storage.
-			code: wasm_binary.to_vec(),
+			code: WASM_BINARY.expect("Evochain development WASM not available").to_vec(),
 			..Default::default()
 		},
 		balances: BalancesConfig {
-			// Configure endowed accounts with initial balance of 1 << 60.
-			balances: endowed_accounts.iter().cloned().map(|k| (k, 1 << 60)).collect(),
+			balances: endowed_accounts.iter().cloned().map(|k| (k, 1 << 50)).collect(),
 		},
 		aura: AuraConfig {
 			authorities: initial_authorities.iter().map(|x| (x.0.clone())).collect(),
@@ -131,10 +157,7 @@ fn testnet_genesis(
 			authorities: initial_authorities.iter().map(|x| (x.1.clone(), 1)).collect(),
 			..Default::default()
 		},
-		sudo: SudoConfig {
-			// Assign network admin rights.
-			key: Some(root_key),
-		},
-		transaction_payment: Default::default(),
+		sudo: SudoConfig { key: Some(root_key) },
+		..Default::default()
 	}
 }
