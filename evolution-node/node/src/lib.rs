@@ -3,7 +3,6 @@ mod chain_spec;
 mod service;
 mod cli;
 mod command;
-mod rpc;
 
 /// Node run result.
 pub type Result = sc_cli::Result<()>;
