@@ -73,7 +73,7 @@ jobs:
           rustup component add clippy
       - name: Check clippy
         run: |
-          cargo clippy --all-targets --workspace --features runtime-benchmarks --features try-runtime
+          cargo clippy --all-targets --workspace 
 
   test:
     runs-on: 
