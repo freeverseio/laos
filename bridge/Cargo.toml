@@ -1,8 +1,51 @@
 [package]
-name = "laos-bridge"
+name = "laos-relay"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+authors = ["Freeverse"]
 
 [dependencies]
+anyhow = "1.0"
+async-std = "1.9.0"
+async-trait = "0.1"
+codec = { package = "parity-scale-codec", version = "3.1.5" }
+futures = "0.3.28"
+hex = "0.4"
+log = "0.4.19"
+num-format = "0.4"
+num-traits = "0.2"
+rbtag = "0.3"
+rustc-hex = "2.1"
+structopt = "0.3"
+signal-hook = "0.3.16"
+signal-hook-async-std = "0.2.2"
+strum = { version = "0.25.0", features = ["derive"] }
+
+# Bridge dependencies
+bp-header-chain = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "dev", default-features = false }
+bp-messages = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "dev", default-features = false }
+bp-runtime = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "dev", default-features = false }
+bridge-runtime-common = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "dev", default-features = false }
+pallet-bridge-parachains = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "dev", default-features = false }
+relay-laos-evolution-client = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "dev", default-features = false }
+relay-laos-ownership-client = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "dev", default-features = false }
+relay-substrate-client = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "dev", default-features = false }
+relay-utils = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "dev", default-features = false }
+
+# we are not using this runtime to craft call or transactions, but we still need it
+# to prepare large XCM messages
+substrate-relay-helper = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "dev", default-features = false }
+
+# Chain primitives
+evochain-primitives = { git = "https://github.com/freeverseio/laos-evolution-node", branch = "dev" }
+node-template-runtime = { git = "https://github.com/freeverseio/laos-evolution-node", branch = "dev" }
+
+# Substrate Dependencies
+sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
+
+[dev-dependencies]
+bp-test-utils = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "dev", default-features = false }
+hex-literal = "0.4"
+sp-keyring = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
+tempfile = "3.7"
+finality-grandpa = { version = "0.16.2" }

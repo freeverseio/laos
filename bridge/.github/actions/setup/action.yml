@@ -10,4 +10,5 @@ runs:
     - name: Install Rust
       run: |
         rustup update stable --no-self-update
+        rustup target add wasm32-unknown-unknown
       shell: bash
