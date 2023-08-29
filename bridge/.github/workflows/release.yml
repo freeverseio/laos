@@ -12,7 +12,7 @@ on:
   
 # Set an environment variable (that can be overriden) for the Docker Repo
 env:
-  DOCKER_REPO: freeverseio/laos-ownership-node
+  DOCKER_REPO: freeverseio/laos-bridge
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
