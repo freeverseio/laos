@@ -270,7 +270,7 @@ fn testnet_genesis(
 					.iter()
 					.map(|&address| {
 						(
-							address.into(),
+							address,
 							GenesisAccount {
 								nonce: Default::default(),
 								balance: Default::default(),
@@ -337,9 +337,6 @@ fn testnet_genesis(
 			},
 			..Default::default()
 		},
-		ethereum: Default::default(),
-		// dynamic_fee: Default::default(),
-		base_fee: Default::default(),
-		bridge_evochain_grandpa: Default::default(),
+		..Default::default()
 	}
 }
