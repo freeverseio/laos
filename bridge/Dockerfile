@@ -22,8 +22,5 @@ RUN su laos -c '/usr/local/bin/laos-relay --version'
 # Switch to user laos
 USER laos
 
-# Define volumes
-VOLUME ["/data"]
-
 # Set the entrypoint
 ENTRYPOINT ["/usr/local/bin/laos-relay"]
