@@ -13,5 +13,5 @@ interface LivingAssets {
     /// @notice Creates a new collection
     /// @dev Call this function to create a new collection
     /// @return address of the ERC721 collection
-    function createCollection() external returns (address);
+    function createCollection(string memory baseURI) external returns (address);
 }

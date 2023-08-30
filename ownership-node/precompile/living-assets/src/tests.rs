@@ -4,6 +4,7 @@
 #![allow(clippy::redundant_closure_call)]
 
 use super::*;
+use frame_support::assert_ok;
 use precompile_utils::{
 	revert, succeed,
 	testing::{create_mock_handle, create_mock_handle_from_input},
@@ -11,14 +12,13 @@ use precompile_utils::{
 use sp_core::H160;
 use sp_std::vec::Vec;
 
+type BaseURI = Vec<u8>;
 type AccountId = H160;
 type AddressMapping = pallet_evm::IdentityAddressMapping;
 
-const CREATE_COLLECTION: &str = "647f1a9c";
-
 #[test]
 fn check_selectors() {
-	assert_eq!(Action::CreateCollection as u32, 0x647F1A9C);
+	assert_eq!(Action::CreateCollection as u32, 0x059dfe13);
 }
 
 #[test]
@@ -31,22 +31,29 @@ fn check_log_selectors() {
 
 #[test]
 fn failing_create_collection_should_return_error() {
-	impl_precompile_mock_simple!(Mock, Err("spaghetti code"), Some(H160::zero()));
+	impl_precompile_mock_simple!(Mock, Err("this is an error"), Some(BaseURI::new()));
 
-	let mut handle = create_mock_handle_from_input(hex::decode(CREATE_COLLECTION).unwrap());
+	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
+		.write(Bytes("ipfs::/carbonara".into()))
+		.build();
+	let mut handle = create_mock_handle_from_input(input);
+
 	let result = Mock::execute(&mut handle);
-	assert_eq!(result.unwrap_err(), revert("spaghetti code"));
+	assert_eq!(result.unwrap_err(), revert("this is an error"));
 }
 
 #[test]
 fn create_collection_should_return_address() {
-	impl_precompile_mock_simple!(Mock, Ok(5), Some(H160::zero()));
+	impl_precompile_mock_simple!(Mock, Ok(5), Some(BaseURI::new()));
 
-	let mut handle = create_mock_handle_from_input(hex::decode(CREATE_COLLECTION).unwrap());
+	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
+		.write(Bytes("ipfs::/carbonara".into()))
+		.build();
+	let mut handle = create_mock_handle_from_input(input);
+
 	let result = Mock::execute(&mut handle);
-	assert!(result.is_ok());
-	assert_eq!(
-		result.unwrap(),
+	assert_ok!(
+		result,
 		succeed(
 			hex::decode("000000000000000000000000ffffffffffffffffffffffff0000000000000005")
 				.unwrap()
@@ -56,9 +63,13 @@ fn create_collection_should_return_address() {
 
 #[test]
 fn create_collection_should_generate_log() {
-	impl_precompile_mock_simple!(Mock, Ok(0xffff), Some(H160::zero()));
+	impl_precompile_mock_simple!(Mock, Ok(0xffff), Some(BaseURI::new()));
 
-	let mut handle = create_mock_handle_from_input(hex::decode(CREATE_COLLECTION).unwrap());
+	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
+		.write(Bytes("ipfs::/carbonara".into()))
+		.build();
+	let mut handle = create_mock_handle_from_input(input);
+
 	let result = Mock::execute(&mut handle);
 	assert!(result.is_ok());
 	let logs = handle.logs;
@@ -75,9 +86,13 @@ fn create_collection_should_generate_log() {
 
 #[test]
 fn create_collection_on_mock_with_nonzero_value_fails() {
-	impl_precompile_mock_simple!(Mock, Ok(5), Some(H160::zero()));
-	let mut handle =
-		create_mock_handle(hex::decode(CREATE_COLLECTION).unwrap(), 0, 1, H160::zero());
+	impl_precompile_mock_simple!(Mock, Ok(5), Some(BaseURI::new()));
+
+	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
+		.write(Bytes("ipfs::/carbonara".into()))
+		.build();
+	let mut handle = create_mock_handle(input, 0, 1, H160::zero());
+
 	let result = Mock::execute(&mut handle);
 	assert!(result.is_err());
 	assert_eq!(result.unwrap_err(), revert("function is not payable"));
@@ -87,31 +102,31 @@ fn create_collection_on_mock_with_nonzero_value_fails() {
 fn create_collection_assign_collection_to_caller() {
 	impl_precompile_mock!(
 		Mock, // name of the defined precompile
-		|owner| {
+		|owner, base_uri: BaseURI| {
 			assert_eq!(owner, H160::from_low_u64_be(0x1234));
+			assert_eq!(base_uri.escape_ascii().to_string(), "ipfs://carbonara");
 			Ok(0)
 		}, // Closure for create_collection result
-		|_| { Some(H160::zero()) }  // Closure for owner_of_collection result
+		|_| { Some(BaseURI::new()) }  // Closure for owner_of_collection result
 	);
 
-	let mut handle = create_mock_handle(
-		hex::decode(CREATE_COLLECTION).unwrap(),
-		0,
-		0,
-		H160::from_low_u64_be(0x1234),
-	);
+	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
+		.write(Bytes("ipfs://carbonara".into()))
+		.build();
+
+	let mut handle = create_mock_handle(input, 0, 0, H160::from_low_u64_be(0x1234));
 	let result = Mock::execute(&mut handle);
 	assert!(result.is_ok());
 }
 
 #[test]
 fn call_unexistent_selector_should_fail() {
-	impl_precompile_mock_simple!(Mock, Ok(0), Some(H160::from_low_u64_be(0x1234)));
+	impl_precompile_mock_simple!(Mock, Ok(0), Some(BaseURI::new()));
 
-	let unexistent_selector =
+	let nonexistent_selector =
 		hex::decode("fb24ae530000000000000000000000000000000000000000000000000000000000000000")
 			.unwrap();
-	let mut handle = create_mock_handle_from_input(unexistent_selector);
+	let mut handle = create_mock_handle_from_input(nonexistent_selector);
 	let result = Mock::execute(&mut handle);
 	assert_eq!(result.unwrap_err(), revert("unknown selector"));
 }
@@ -132,22 +147,29 @@ mod helpers {
 	/// # Example
 	///
 	/// ```
-	/// impl_precompile_mock_simple!(Mock, Ok(0), Some(H160::zero()));
+	/// impl_precompile_mock_simple!(Mock, Ok(0), Some(BaseURI::new());
 	/// ```
 	#[macro_export]
 	macro_rules! impl_precompile_mock {
-		($name:ident, $create_collection_result:expr, $owner_of_collection_result:expr) => {
+		($name:ident, $create_collection_result:expr, $base_uri_result:expr) => {
 			struct CollectionManagerMock;
 
-			impl pallet_living_assets_ownership::traits::CollectionManager<AccountId>
+			impl pallet_living_assets_ownership::traits::CollectionManager
 				for CollectionManagerMock
 			{
-				fn create_collection(owner: AccountId) -> Result<CollectionId, &'static str> {
-					($create_collection_result)(owner)
+				type Error = &'static str;
+				type AccountId = AccountId;
+				type BaseURI = BaseURI;
+
+				fn create_collection(
+					owner: AccountId,
+					base_uri: Self::BaseURI,
+				) -> Result<CollectionId, Self::Error> {
+					($create_collection_result)(owner, base_uri)
 				}
 
-				fn owner_of_collection(collection_id: CollectionId) -> Option<AccountId> {
-					($owner_of_collection_result)(collection_id)
+				fn base_uri(collection_id: CollectionId) -> Option<Self::BaseURI> {
+					($base_uri_result)(collection_id)
 				}
 			}
 
@@ -170,15 +192,15 @@ mod helpers {
 	/// # Example
 	///
 	/// ```
-	/// impl_precompile_mock_simple!(Mock, Ok(0), Some(H160::zero()));
+	/// impl_precompile_mock_simple!(Mock, Ok(0), Some(BaseURI::new());
 	/// ```
 	#[macro_export]
 	macro_rules! impl_precompile_mock_simple {
-		($name:ident, $create_collection_result:expr, $owner_of_collection_result:expr) => {
+		($name:ident, $create_collection_result:expr, $base_uri_result:expr) => {
 			impl_precompile_mock!(
 				$name,
-				|_owner| { $create_collection_result },
-				|_collection_id| { $owner_of_collection_result }
+				|_owner, _base_uri| { $create_collection_result },
+				|_collection_id| { $base_uri_result }
 			);
 		};
 	}
