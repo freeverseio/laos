@@ -20,12 +20,6 @@ impl<T: Config> Pallet<T> {
 			collection_id.checked_add(One::one()).ok_or(Error::<T>::CollectionIdOverflow)?;
 		CollectionCounter::<T>::put(counter);
 
-		// Attempt to increment the collection counter by 1. If this operation
-		// would result in an overflow, return early with an error
-		let counter =
-			collection_id.checked_add(One::one()).ok_or(Error::<T>::CollectionIdOverflow)?;
-		CollectionCounter::<T>::put(counter);
-
 		Self::deposit_event(Event::CollectionCreated { collection_id, who });
 
 		Ok(collection_id)
