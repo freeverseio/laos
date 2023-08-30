@@ -13,23 +13,7 @@ env:
   DOCKER_REPO: freeverseio/laos-bridge
 
 jobs:
-  check:
-    if: github.event_name == 'pull_request'
-    runs-on: 
-      group: laos
-      labels: ubuntu-16-cores
-    steps:
-      - uses: actions/checkout@v3
-      - uses: ./.github/actions/setup
-      - uses: ./.github/actions/cache
-        with:
-          cache-key: build_and_push
-      - name: Check
-        run: |
-          SKIP_WASM_BUILD=1 cargo check --release
-
   build_and_push:
-    if: github.event_name == 'push'
     runs-on: 
       group: laos
       labels: ubuntu-16-cores
