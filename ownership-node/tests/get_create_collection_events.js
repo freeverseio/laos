@@ -1,3 +1,11 @@
+/*
+  This script starts polling for any event produced by the precompiled
+  LivingAssets contract, at address = 0x0000000000000000000000000000000000000402,
+  starting from the latest block, and logs to console.
+  Execute via:
+    $ npm ci && node get_create_collection_events.js
+*/
+
 const { Web3 } = require('web3');
 const web3 = new Web3(new Web3.providers.HttpProvider("https://arrakis.gorengine.com/own"));
 
