@@ -182,7 +182,7 @@ pub mod pallet {
 			// concatenate base_uri with asset_id
 			let mut token_uri = base_uri.to_vec();
 			token_uri.push(b'/');
-			token_uri.extend_from_slice(&asset_id.to_string().as_bytes());
+			token_uri.extend_from_slice(asset_id.to_string().as_bytes());
 			Ok(token_uri)
 		}
 	}

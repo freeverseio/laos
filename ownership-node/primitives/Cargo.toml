@@ -1,0 +1,23 @@
+[package]
+name = "ownership-parachain-primitives"
+description = "Primitives of Ownership parachain runtime."
+version = "0.1.0"
+authors = ["Freeverse"]
+edition = "2021"
+license = "GPL-3.0-or-later WITH Classpath-exception-2.0"
+
+[dependencies]
+# Substrate Based Dependencies
+frame-support = { workspace = true }
+frame-system = { workspace = true }
+sp-core = { workspace = true }
+sp-runtime = { workspace = true }
+
+[features]
+default = ["std"]
+std = [
+	"frame-support/std",
+	"frame-system/std",
+	"sp-core/std",
+	"sp-runtime/std",
+]
