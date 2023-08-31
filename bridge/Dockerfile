@@ -10,7 +10,7 @@ RUN apt-get install -y clang libssl-dev llvm libudev-dev protobuf-compiler pkg-c
 
 RUN rustup toolchain install nightly
 RUN rustup target add wasm32-unknown-unknown --toolchain nightly 
-RUN cargo build --release
+RUN cargo build --release -p laos-relay
 
 # This is the 2nd stage: a very small image where we copy the laos binary."
 FROM docker.io/library/ubuntu:22.04

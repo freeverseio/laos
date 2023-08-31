@@ -1,0 +1,39 @@
+[package]
+name = "bp-laos-ownership"
+description = "Bridge primitives of LAOS ownership parachain"
+version = "0.1.0"
+authors = ["Parity Technologies <admin@parity.io>"]
+edition = "2021"
+license = "GPL-3.0-or-later WITH Classpath-exception-2.0"
+
+[dependencies]
+bp-bridge-hub-cumulus = { git = "https://github.com/paritytech/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+bp-messages = { git = "https://github.com/paritytech/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+bp-polkadot-core = { git = "https://github.com/paritytech/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+bp-runtime = { git = "https://github.com/paritytech/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+bp-header-chain = { git = "https://github.com/paritytech/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
+frame-system = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
+sp-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
+sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
+sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
+sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
+
+# Ownership parachain Primitives
+ownership-parachain-primitives = { git = "https://github.com/freeverseio/laos-ownership-node.git", branch = "dev", default-features = false }
+
+[features]
+default = ["std"]
+std = [
+	"bp-bridge-hub-cumulus/std",
+	"bp-messages/std",
+	"bp-polkadot-core/std",
+	"bp-runtime/std",
+	"frame-support/std",
+	"frame-system/std",
+	"ownership-parachain-primitives/std",
+	"sp-api/std",
+	"sp-core/std",
+	"sp-runtime/std",
+	"sp-std/std",
+]
