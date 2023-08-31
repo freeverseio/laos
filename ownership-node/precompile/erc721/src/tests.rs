@@ -194,7 +194,7 @@ mod transfer_from {
 	fn check_log_selectors() {
 		assert_eq!(
 			hex::encode(SELECTOR_LOG_TRANSFER_FROM),
-			"18896a5e5f9fd6b9d74f89291fe4640722c8dc4d6a1025ccf047607f3e6954ee"
+			"ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
 		);
 	}
 
