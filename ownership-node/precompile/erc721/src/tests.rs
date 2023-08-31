@@ -189,6 +189,67 @@ mod transfer_from {
 		assert!(result.is_err());
 		assert_eq!(result.unwrap_err(), revert("this is an error"));
 	}
+
+	#[test]
+	fn check_log_selectors() {
+		assert_eq!(
+			hex::encode(SELECTOR_LOG_TRANSFER_FROM),
+			"18896a5e5f9fd6b9d74f89291fe4640722c8dc4d6a1025ccf047607f3e6954ee"
+		);
+	}
+
+	#[test]
+	fn transfer_from_should_generate_log() {
+		impl_precompile_mock_simple!(
+			Mock,
+			// owner_of result
+			Ok(H160::from_str("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa").unwrap()),
+			// token_uri result
+			Ok(vec![]),
+			// transfer_from result
+			Ok(())
+		);
+
+		// test data
+		let from = H160::repeat_byte(0xAA);
+		let to = H160::repeat_byte(0xBB);
+		let asset_id = 4;
+		let contract_address = H160::from_str("ffffffffffffffffffffffff0000000000000005");
+
+		let input_data = EvmDataWriter::new_with_selector(Action::TransferFrom)
+			.write(Address(from))
+			.write(Address(to))
+			.write(U256::from(asset_id))
+			.build();
+
+		let mut handle = create_mock_handle(
+			input_data,
+			0,
+			0,
+			H160::from_str("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa").unwrap(),
+		);
+		handle.code_address = contract_address.unwrap();
+		assert_ok!(Mock::execute(&mut handle));
+
+		let logs = handle.logs;
+		assert_eq!(logs.len(), 1);
+		assert_eq!(logs[0].address, H160::zero());
+		assert_eq!(logs[0].topics.len(), 4);
+		assert_eq!(logs[0].topics[0], SELECTOR_LOG_TRANSFER_FROM.into());
+		assert_eq!(
+			hex::encode(logs[0].topics[1]),
+			"000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+		);
+		assert_eq!(
+			hex::encode(logs[0].topics[2]),
+			"000000000000000000000000bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+		);
+		assert_eq!(
+			hex::encode(logs[0].topics[3]),
+			"0000000000000000000000000000000000000000000000000000000000000004"
+		);
+		assert_eq!(logs[0].data, Vec::<u8>::new());
+	}
 }
 #[test]
 fn token_uri_should_return_a_string() {
