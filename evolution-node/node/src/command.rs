@@ -3,7 +3,7 @@ use crate::{
 	cli::{Cli, Subcommand},
 	service,
 };
-use node_template_runtime::Block;
+use laos_evolution_runtime::Block;
 use sc_cli::SubstrateCli;
 use sc_service::PartialComponents;
 

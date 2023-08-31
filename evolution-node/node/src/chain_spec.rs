@@ -1,6 +1,6 @@
 //! Chain specification for Evochain.
 
-use node_template_runtime::{
+use laos_evolution_runtime::{
 	AccountId, AuraConfig, BalancesConfig, GrandpaConfig, RuntimeGenesisConfig, Signature,
 	SudoConfig, SystemConfig, WASM_BINARY,
 };

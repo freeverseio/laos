@@ -1,6 +1,6 @@
 //! Service and ServiceFactory implementation. Specialized wrapper over substrate service.
 use jsonrpsee::RpcModule;
-use node_template_runtime::{opaque::Block, RuntimeApi};
+use laos_evolution_runtime::{opaque::Block, RuntimeApi};
 use sc_client_api::{Backend, BlockBackend};
 use sc_consensus_aura::{CompatibilityMode, ImportQueueParams, SlotProportion, StartAuraParams};
 use sc_consensus_grandpa::SharedVoterState;
@@ -24,11 +24,11 @@ impl sc_executor::NativeExecutionDispatch for ExecutorDispatch {
 	type ExtendHostFunctions = ();
 
 	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
-		node_template_runtime::api::dispatch(method, data)
+		laos_evolution_runtime::api::dispatch(method, data)
 	}
 
 	fn native_version() -> sc_executor::NativeVersion {
-		node_template_runtime::native_version()
+		laos_evolution_runtime::native_version()
 	}
 }
 
