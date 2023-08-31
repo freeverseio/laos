@@ -97,6 +97,8 @@ std = [
 	"sp-version/std",
 	"substrate-wasm-builder",
 	"fp-account/std",
+	"pallet-bridge-grandpa/std",
+	"bp-rococo/std",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
