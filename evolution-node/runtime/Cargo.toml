@@ -54,6 +54,10 @@ frame-system-benchmarking = { default-features = false, git = "https://github.co
 pallet-template = { default-features = false, path = "../pallets/template" }
 fp-account = { git = "https://github.com/paritytech/frontier.git", branch = "polkadot-v1.0.0", default-features = false, features = ["serde"] }
 
+# Bridge dependencies
+pallet-bridge-grandpa = { git = "https://github.com/paritytech/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+bp-rococo = { git = "https://github.com/paritytech/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+
 [build-dependencies]
 substrate-wasm-builder = { git = "https://github.com/paritytech/substrate.git", optional = true , branch = "polkadot-v1.0.0" }
 
