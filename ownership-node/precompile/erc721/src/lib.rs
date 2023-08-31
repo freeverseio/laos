@@ -7,7 +7,7 @@ use precompile_utils::{
 	LogsBuilder, PrecompileHandleExt,
 };
 
-use sp_core::{H160, H256, U256};
+use sp_core::{H160, U256};
 use sp_std::{fmt::Debug, marker::PhantomData, vec, vec::Vec};
 
 /// Solidity selector of the TransferFrom log, which is the Keccak of the Log signature.
@@ -97,13 +97,7 @@ where
 			.map_err(|err| revert(err))?;
 
 		LogsBuilder::new(handle.context().address)
-			.log4(
-				SELECTOR_LOG_TRANSFER_FROM,
-				from,
-				to,
-				H256::from_slice(asset_id.encode().as_slice()),
-				Vec::new(),
-			)
+			.log4(SELECTOR_LOG_TRANSFER_FROM, from, to, asset_id, Vec::new())
 			.record(handle)?;
 
 		Ok(succeed(vec![]))
