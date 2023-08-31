@@ -17,6 +17,7 @@ substrate-wasm-builder = { workspace = true, optional = true }
 [dependencies]
 parity-scale-codec = { workspace = true, features = ["derive"] }
 hex-literal = { workspace = true, optional = true }
+hex = { workspace = true }
 scale-info = { workspace = true, features = ["derive"] }
 smallvec = { workspace = true }
 

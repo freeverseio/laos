@@ -5,16 +5,13 @@
 /// <https://docs.substrate.io/reference/frame-pallets/>
 pub use pallet::*;
 use parity_scale_codec::alloc::string::ToString;
-use sp_core::{H160, U256};
+use sp_core::H160;
 use sp_std::vec::Vec;
-
 mod functions;
 pub mod traits;
 
 #[frame_support::pallet]
 pub mod pallet {
-
-	use crate::functions::convert_asset_id_to_owner;
 
 	use super::*;
 	use frame_support::{
@@ -22,6 +19,8 @@ pub mod pallet {
 		BoundedVec,
 	};
 	use frame_system::pallet_prelude::*;
+	use sp_core::{H160, U256};
+	use sp_runtime::traits::Convert;
 
 	/// Collection id type
 	pub type CollectionId = u64;
@@ -39,7 +38,7 @@ pub mod pallet {
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
 		/// Specifies the advised maximum length for a Base URI.
-		//s
+		///
 		/// The URI standard (RFC 3986) doesn't dictates a limit for the length of URIs.
 		/// However it seems the max supported length in browsers is 2,048 characters.
 		///
@@ -48,6 +47,20 @@ pub mod pallet {
 		/// (which takes up 33 characters).
 		#[pallet::constant]
 		type BaseURILimit: Get<u32>;
+
+		/// This associated type defines a conversion from the `AccountId` type, which is internal
+		/// to the implementing type (represented by `Self`), to an `H160` type. The `H160` type
+		/// is commonly used to represent Ethereum addresses.
+		type AccountIdToH160: Convert<Self::AccountId, H160>;
+
+		/// This associated type defines a conversion from an `H160` type back to the `AccountId` type,
+		/// which is internal to the implementing type (represented by `Self`). This conversion is
+		/// often necessary for mapping Ethereum addresses back to native account IDs.
+		type H160ToAccountId: Convert<H160, Self::AccountId>;
+
+		/// Type alias for implementing the `AssetIdToAddress` trait for a given account ID type.
+		/// This allows you to specify which account should initially own each new asset.
+		type AssetIdToAddress: Convert<U256, Self::AccountId>;
 	}
 
 	/// Collection counter
@@ -64,10 +77,10 @@ pub mod pallet {
 	/// Asset owner
 	#[pallet::storage]
 	pub(super) type AssetOwner<T: Config> =
-		StorageMap<_, Blake2_128Concat, U256, H160, OptionQuery>;
+		StorageMap<_, Blake2_128Concat, U256, T::AccountId, OptionQuery>;
 
-	fn asset_owner<T: Config>(key: U256) -> H160 {
-		AssetOwner::<T>::get(key).unwrap_or_else(|| convert_asset_id_to_owner(key))
+	fn asset_owner<T: Config>(key: U256) -> T::AccountId {
+		AssetOwner::<T>::get(key).unwrap_or_else(|| T::AssetIdToAddress::convert(key))
 	}
 
 	/// Pallet events
@@ -79,7 +92,7 @@ pub mod pallet {
 		CollectionCreated { collection_id: CollectionId, who: T::AccountId },
 		/// Asset transferred to `who`
 		/// parameters. [asset_id_id, who]
-		AssetTransferred { asset_id: U256, receiver: H160 },
+		AssetTransferred { asset_id: U256, receiver: T::AccountId },
 	}
 
 	// Errors inform users that something went wrong.
@@ -153,7 +166,7 @@ pub mod pallet {
 
 		fn owner_of(collection_id: CollectionId, asset_id: U256) -> Result<H160, Self::Error> {
 			Pallet::<T>::collection_base_uri(collection_id).ok_or(Error::CollectionDoesNotExist)?;
-			Ok(asset_owner::<T>(asset_id))
+			Ok(T::AccountIdToH160::convert(asset_owner::<T>(asset_id)))
 		}
 
 		fn transfer_from(
@@ -165,10 +178,14 @@ pub mod pallet {
 		) -> Result<(), Self::Error> {
 			Pallet::<T>::collection_base_uri(collection_id).ok_or(Error::CollectionDoesNotExist)?;
 			ensure!(origin == from, Error::NoPermission);
-			ensure!(asset_owner::<T>(asset_id) == from, Error::NoPermission);
+			ensure!(
+				T::AccountIdToH160::convert(asset_owner::<T>(asset_id)) == from,
+				Error::NoPermission
+			);
 			ensure!(from != to, Error::CannotTransferSelf);
 			ensure!(to != H160::zero(), Error::TransferToNullAddress);
 
+			let to = T::H160ToAccountId::convert(to.clone());
 			AssetOwner::<T>::set(asset_id, Some(to.clone()));
 			Self::deposit_event(Event::AssetTransferred { asset_id, receiver: to });
 
