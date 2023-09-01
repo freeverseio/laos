@@ -1,6 +1,8 @@
 ## LAOS Bridge
 
-Bridge between LAOS evolution chain and LAOS ownership parachain.
+Bridge between [LAOS evolution chain](https://github.com/freeverseio/laos-evolution-node) and [LAOS ownership parachain](https://github.com/freeverseio/laos-ownership-node).
+
+For an in-depth understanding of the LAOS system, refer to the [LAOS Technical Whitepaper](https://github.com/freeverseio/laos-whitepaper/blob/main/laos.pdf), which covers all components extensively.
 
 ### Relay
 
