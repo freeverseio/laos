@@ -1,12 +1,9 @@
-# Substrate Node Template
 
-A fresh [Substrate](https://substrate.io/) node, ready for hacking :rocket:
+# LAOS Evolution Chain
 
-A standalone version of this template is available for each release of Polkadot in the [Substrate Developer Hub Parachain Template](https://github.com/substrate-developer-hub/substrate-parachain-template/) repository.
-The parachain template is generated directly at each Polkadot release branch from the [Node Template in Substrate](https://github.com/paritytech/substrate/tree/master/bin/laos-evolution) upstream
+For an in-depth understanding of the LAOS system, refer to the [LAOS Technical Whitepaper](https://github.com/freeverseio/laos-whitepaper/blob/main/laos.pdf), which covers all components extensively.
 
-It is usually best to use the standalone version to start a new project.
-All bugs, suggestions, and feature requests should be made upstream in the [Substrate](https://github.com/paritytech/substrate/tree/master/bin/laos-evolution) repository.
+The LAOS Evolution chain is a substrate-based solo chain with GRANDPA finality supporting asset mint and evolution at protocol level. It is connected to the [LAOS Ownership Chain](https://github.com/freeverseio/laos-ownership-node) via a trustless lightclient-based bridge.
 
 ## Getting Started
 
