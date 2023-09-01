@@ -336,9 +336,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "ark-scale"
+version = "0.0.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "49b08346a3e38e2be792ef53ee168623c9244d968ff00cd70fb9932f6fe36393"
+dependencies = [
+ "ark-ec",
+ "ark-ff",
+ "ark-serialize",
+ "ark-std",
+ "parity-scale-codec",
+]
+
+[[package]]
 name = "ark-secret-scalar"
 version = "0.0.2"
-source = "git+https://github.com/w3f/ring-vrf?rev=c86ebd4#c86ebd4114d3165d05f9ce28c1d9e8d7a9a4e801"
+source = "git+https://github.com/w3f/ring-vrf?rev=c86ebd4#d9ba2e34592efd32a492d1636294e021875effb2"
 dependencies = [
  "ark-ec",
  "ark-ff",
@@ -386,7 +399,7 @@ dependencies = [
 [[package]]
 name = "ark-transcript"
 version = "0.0.2"
-source = "git+https://github.com/w3f/ring-vrf?rev=c86ebd4#c86ebd4114d3165d05f9ce28c1d9e8d7a9a4e801"
+source = "git+https://github.com/w3f/ring-vrf?rev=c86ebd4#d9ba2e34592efd32a492d1636294e021875effb2"
 dependencies = [
  "ark-ff",
  "ark-serialize",
@@ -732,12 +745,13 @@ dependencies = [
 [[package]]
 name = "bandersnatch_vrfs"
 version = "0.0.1"
-source = "git+https://github.com/w3f/ring-vrf?rev=c86ebd4#c86ebd4114d3165d05f9ce28c1d9e8d7a9a4e801"
+source = "git+https://github.com/w3f/ring-vrf?rev=c86ebd4#d9ba2e34592efd32a492d1636294e021875effb2"
 dependencies = [
  "ark-bls12-381",
  "ark-ec",
  "ark-ed-on-bls12-381-bandersnatch",
  "ark-ff",
+ "ark-scale",
  "ark-serialize",
  "ark-std",
  "dleq_vrf",
@@ -964,7 +978,7 @@ dependencies = [
 [[package]]
 name = "bp-bridge-hub-cumulus"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/parity-bridges-common.git?branch=polkadot-v1.0.0#48c66fdddd8e68f955fb1a65cca8972228350706"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#e24e637d6cf827cd1e6ece224b5b9355999ec346"
 dependencies = [
  "bp-messages",
  "bp-polkadot-core",
@@ -979,7 +993,7 @@ dependencies = [
 [[package]]
 name = "bp-header-chain"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/parity-bridges-common.git?branch=polkadot-v1.0.0#48c66fdddd8e68f955fb1a65cca8972228350706"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#e24e637d6cf827cd1e6ece224b5b9355999ec346"
 dependencies = [
  "bp-runtime",
  "finality-grandpa",
@@ -1030,7 +1044,7 @@ dependencies = [
 [[package]]
 name = "bp-messages"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/parity-bridges-common.git?branch=polkadot-v1.0.0#48c66fdddd8e68f955fb1a65cca8972228350706"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#e24e637d6cf827cd1e6ece224b5b9355999ec346"
 dependencies = [
  "bp-header-chain",
  "bp-runtime",
@@ -1046,7 +1060,7 @@ dependencies = [
 [[package]]
 name = "bp-parachains"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/parity-bridges-common.git?branch=polkadot-v1.0.0#48c66fdddd8e68f955fb1a65cca8972228350706"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#e24e637d6cf827cd1e6ece224b5b9355999ec346"
 dependencies = [
  "bp-header-chain",
  "bp-polkadot-core",
@@ -1063,7 +1077,7 @@ dependencies = [
 [[package]]
 name = "bp-polkadot-core"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/parity-bridges-common.git?branch=polkadot-v1.0.0#48c66fdddd8e68f955fb1a65cca8972228350706"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#e24e637d6cf827cd1e6ece224b5b9355999ec346"
 dependencies = [
  "bp-messages",
  "bp-runtime",
@@ -1081,7 +1095,7 @@ dependencies = [
 [[package]]
 name = "bp-relayers"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/parity-bridges-common.git?branch=polkadot-v1.0.0#48c66fdddd8e68f955fb1a65cca8972228350706"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#e24e637d6cf827cd1e6ece224b5b9355999ec346"
 dependencies = [
  "bp-messages",
  "bp-runtime",
@@ -1093,14 +1107,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "bp-rococo"
+version = "0.1.0"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#e24e637d6cf827cd1e6ece224b5b9355999ec346"
+dependencies = [
+ "bp-header-chain",
+ "bp-polkadot-core",
+ "bp-runtime",
+ "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
+ "sp-api 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
+ "sp-runtime 24.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
+ "sp-std 8.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
+]
+
+[[package]]
 name = "bp-runtime"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/parity-bridges-common.git?branch=polkadot-v1.0.0#48c66fdddd8e68f955fb1a65cca8972228350706"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#e24e637d6cf827cd1e6ece224b5b9355999ec346"
 dependencies = [
  "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
  "frame-system",
  "hash-db",
  "impl-trait-for-tuples",
+ "log",
  "num-traits",
  "parity-scale-codec",
  "scale-info",
@@ -1117,7 +1146,7 @@ dependencies = [
 [[package]]
 name = "bp-test-utils"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/parity-bridges-common.git?branch=polkadot-v1.0.0#48c66fdddd8e68f955fb1a65cca8972228350706"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#e24e637d6cf827cd1e6ece224b5b9355999ec346"
 dependencies = [
  "bp-header-chain",
  "bp-parachains",
@@ -1137,7 +1166,7 @@ dependencies = [
 [[package]]
 name = "bp-xcm-bridge-hub"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/parity-bridges-common.git?branch=polkadot-v1.0.0#48c66fdddd8e68f955fb1a65cca8972228350706"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#e24e637d6cf827cd1e6ece224b5b9355999ec346"
 dependencies = [
  "bp-messages",
  "bp-runtime",
@@ -1152,7 +1181,7 @@ dependencies = [
 [[package]]
 name = "bridge-runtime-common"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/parity-bridges-common.git?branch=polkadot-v1.0.0#48c66fdddd8e68f955fb1a65cca8972228350706"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#e24e637d6cf827cd1e6ece224b5b9355999ec346"
 dependencies = [
  "bp-header-chain",
  "bp-messages",
@@ -1423,7 +1452,7 @@ dependencies = [
 [[package]]
 name = "common"
 version = "0.1.0"
-source = "git+https://github.com/w3f/ring-proof#0e948f3c28cbacecdd3020403c4841c0eb339213"
+source = "git+https://github.com/w3f/ring-proof?rev=0e948f3#0e948f3c28cbacecdd3020403c4841c0eb339213"
 dependencies = [
  "ark-ec",
  "ark-ff",
@@ -2222,10 +2251,11 @@ dependencies = [
 [[package]]
 name = "dleq_vrf"
 version = "0.0.2"
-source = "git+https://github.com/w3f/ring-vrf?rev=c86ebd4#c86ebd4114d3165d05f9ce28c1d9e8d7a9a4e801"
+source = "git+https://github.com/w3f/ring-vrf?rev=c86ebd4#d9ba2e34592efd32a492d1636294e021875effb2"
 dependencies = [
  "ark-ec",
  "ark-ff",
+ "ark-scale",
  "ark-secret-scalar",
  "ark-serialize",
  "ark-std",
@@ -2490,7 +2520,7 @@ checksum = "5443807d6dff69373d433ab9ef5378ad8df50ca6298caf15de6e52e24aaf54d5"
 [[package]]
 name = "equivocation-detector"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/parity-bridges-common.git?branch=polkadot-v1.0.0#48c66fdddd8e68f955fb1a65cca8972228350706"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#e24e637d6cf827cd1e6ece224b5b9355999ec346"
 dependencies = [
  "async-std",
  "async-trait",
@@ -2560,7 +2590,7 @@ checksum = "0206175f82b8d6bf6652ff7d71a1e27fd2e4efde587fd368662814d6ec1d9ce0"
 [[package]]
 name = "evochain-primitives"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/laos-evolution-node.git?branch=dev#29f06d59dec02318989f6ee13cfe0ad0825a75ce"
+source = "git+https://github.com/freeverseio/laos-evolution-node.git?branch=dev#d03cee4482f61cbdb0a1b49fdac53ba3d8918119"
 dependencies = [
  "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
  "frame-system",
@@ -2688,7 +2718,7 @@ dependencies = [
 [[package]]
 name = "finality-relay"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/parity-bridges-common.git?branch=polkadot-v1.0.0#48c66fdddd8e68f955fb1a65cca8972228350706"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#e24e637d6cf827cd1e6ece224b5b9355999ec346"
 dependencies = [
  "async-std",
  "async-trait",
@@ -3822,7 +3852,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cb0889898416213fab133e1d33a0e5858a48177452750691bde3666d0fdbaf8b"
 dependencies = [
  "hermit-abi 0.3.2",
- "rustix 0.38.10",
+ "rustix 0.38.11",
  "windows-sys 0.48.0",
 ]
 
@@ -4163,6 +4193,49 @@ dependencies = [
 ]
 
 [[package]]
+name = "laos-evolution-runtime"
+version = "4.0.0-dev"
+source = "git+https://github.com/freeverseio/laos-evolution-node.git?branch=dev#d03cee4482f61cbdb0a1b49fdac53ba3d8918119"
+dependencies = [
+ "bp-header-chain",
+ "bp-rococo",
+ "bp-runtime",
+ "evochain-primitives",
+ "fp-account",
+ "frame-benchmarking",
+ "frame-executive",
+ "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
+ "frame-system",
+ "frame-system-benchmarking",
+ "frame-system-rpc-runtime-api",
+ "frame-try-runtime",
+ "pallet-aura",
+ "pallet-balances",
+ "pallet-bridge-grandpa",
+ "pallet-grandpa",
+ "pallet-sudo",
+ "pallet-template",
+ "pallet-timestamp",
+ "pallet-transaction-payment",
+ "pallet-transaction-payment-rpc-runtime-api",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-api 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
+ "sp-block-builder",
+ "sp-consensus-aura",
+ "sp-consensus-grandpa",
+ "sp-core 21.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
+ "sp-inherents 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
+ "sp-offchain",
+ "sp-runtime 24.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
+ "sp-session",
+ "sp-std 8.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
+ "sp-transaction-pool",
+ "sp-version 22.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
+ "substrate-wasm-builder",
+]
+
+[[package]]
 name = "laos-relay"
 version = "0.1.0"
 dependencies = [
@@ -4171,6 +4244,8 @@ dependencies = [
  "async-trait",
  "bp-header-chain",
  "bp-messages",
+ "bp-parachains",
+ "bp-rococo",
  "bp-runtime",
  "bp-test-utils",
  "bridge-runtime-common",
@@ -4179,15 +4254,17 @@ dependencies = [
  "futures",
  "hex",
  "hex-literal",
+ "laos-evolution-runtime",
  "log",
- "node-template-runtime",
  "num-format",
  "num-traits",
  "pallet-bridge-parachains",
+ "pallet-sudo",
  "parity-scale-codec",
  "rbtag",
  "relay-laos-evolution-client",
  "relay-laos-ownership-client",
+ "relay-rococo-client",
  "relay-substrate-client",
  "relay-utils",
  "rustc-hex",
@@ -4995,7 +5072,7 @@ dependencies = [
 [[package]]
 name = "messages-relay"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/parity-bridges-common.git?branch=polkadot-v1.0.0#48c66fdddd8e68f955fb1a65cca8972228350706"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#e24e637d6cf827cd1e6ece224b5b9355999ec346"
 dependencies = [
  "async-std",
  "async-trait",
@@ -5259,45 +5336,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "43794a0ace135be66a25d3ae77d41b91615fb68ae937f904090203e81f755b65"
 
 [[package]]
-name = "node-template-runtime"
-version = "4.0.0-dev"
-source = "git+https://github.com/freeverseio/laos-evolution-node.git?branch=dev#29f06d59dec02318989f6ee13cfe0ad0825a75ce"
-dependencies = [
- "evochain-primitives",
- "fp-account",
- "frame-benchmarking",
- "frame-executive",
- "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
- "frame-system",
- "frame-system-benchmarking",
- "frame-system-rpc-runtime-api",
- "frame-try-runtime",
- "pallet-aura",
- "pallet-balances",
- "pallet-grandpa",
- "pallet-sudo",
- "pallet-template",
- "pallet-timestamp",
- "pallet-transaction-payment",
- "pallet-transaction-payment-rpc-runtime-api",
- "parity-scale-codec",
- "scale-info",
- "sp-api 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
- "sp-block-builder",
- "sp-consensus-aura",
- "sp-consensus-grandpa",
- "sp-core 21.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
- "sp-inherents 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
- "sp-offchain",
- "sp-runtime 24.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
- "sp-session",
- "sp-std 8.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
- "sp-transaction-pool",
- "sp-version 22.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
- "substrate-wasm-builder",
-]
-
-[[package]]
 name = "nodrop"
 version = "0.1.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5492,7 +5530,7 @@ dependencies = [
 [[package]]
 name = "ownership-parachain-primitives"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/laos-ownership-node.git?branch=dev#3091a0874ffa50f4338fa4c68d41c683fe9891d4"
+source = "git+https://github.com/freeverseio/laos-ownership-node.git?branch=dev#71e68451d88849bbd2dcaf40ea55fbd69b3ba2c7"
 dependencies = [
  "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
  "frame-system",
@@ -5570,7 +5608,7 @@ dependencies = [
 [[package]]
 name = "pallet-bridge-grandpa"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/parity-bridges-common.git?branch=polkadot-v1.0.0#48c66fdddd8e68f955fb1a65cca8972228350706"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#e24e637d6cf827cd1e6ece224b5b9355999ec346"
 dependencies = [
  "bp-header-chain",
  "bp-runtime",
@@ -5591,7 +5629,7 @@ dependencies = [
 [[package]]
 name = "pallet-bridge-messages"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/parity-bridges-common.git?branch=polkadot-v1.0.0#48c66fdddd8e68f955fb1a65cca8972228350706"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#e24e637d6cf827cd1e6ece224b5b9355999ec346"
 dependencies = [
  "bp-header-chain",
  "bp-messages",
@@ -5612,7 +5650,7 @@ dependencies = [
 [[package]]
 name = "pallet-bridge-parachains"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/parity-bridges-common.git?branch=polkadot-v1.0.0#48c66fdddd8e68f955fb1a65cca8972228350706"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#e24e637d6cf827cd1e6ece224b5b9355999ec346"
 dependencies = [
  "bp-header-chain",
  "bp-parachains",
@@ -5633,7 +5671,7 @@ dependencies = [
 [[package]]
 name = "pallet-bridge-relayers"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/parity-bridges-common.git?branch=polkadot-v1.0.0#48c66fdddd8e68f955fb1a65cca8972228350706"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#e24e637d6cf827cd1e6ece224b5b9355999ec346"
 dependencies = [
  "bp-messages",
  "bp-relayers",
@@ -5712,7 +5750,7 @@ dependencies = [
 [[package]]
 name = "pallet-template"
 version = "4.0.0-dev"
-source = "git+https://github.com/freeverseio/laos-evolution-node.git?branch=dev#29f06d59dec02318989f6ee13cfe0ad0825a75ce"
+source = "git+https://github.com/freeverseio/laos-evolution-node.git?branch=dev#d03cee4482f61cbdb0a1b49fdac53ba3d8918119"
 dependencies = [
  "frame-benchmarking",
  "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
@@ -5786,7 +5824,7 @@ dependencies = [
 [[package]]
 name = "parachains-relay"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/parity-bridges-common.git?branch=polkadot-v1.0.0#48c66fdddd8e68f955fb1a65cca8972228350706"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#e24e637d6cf827cd1e6ece224b5b9355999ec346"
 dependencies = [
  "async-std",
  "async-trait",
@@ -6427,12 +6465,13 @@ dependencies = [
 
 [[package]]
 name = "quick_cache"
-version = "0.3.0"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5253a3a0d56548d5b0be25414171dc780cc6870727746d05bd2bde352eee96c5"
+checksum = "f69f8d22fa3f34f3083d9a4375c038732c7a7e964de1beb81c544da92dfc40b8"
 dependencies = [
  "ahash 0.8.3",
- "hashbrown 0.13.2",
+ "equivalent",
+ "hashbrown 0.14.0",
  "parking_lot 0.12.1",
 ]
 
@@ -6745,7 +6784,7 @@ dependencies = [
  "bp-laos-evolution",
  "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
  "frame-system",
- "node-template-runtime",
+ "laos-evolution-runtime",
  "pallet-transaction-payment",
  "parity-scale-codec",
  "relay-substrate-client",
@@ -6771,13 +6810,31 @@ dependencies = [
  "sp-core 21.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
  "sp-runtime 24.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
  "sp-weights 20.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
- "subxt",
+ "subxt 0.30.1",
+]
+
+[[package]]
+name = "relay-rococo-client"
+version = "0.1.0"
+dependencies = [
+ "bp-polkadot-core",
+ "bp-rococo",
+ "parity-scale-codec",
+ "relay-substrate-client",
+ "relay-utils",
+ "scale-info",
+ "sp-consensus-grandpa",
+ "sp-core 21.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
+ "sp-runtime 24.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
+ "sp-session",
+ "sp-weights 20.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
+ "subxt 0.31.0",
 ]
 
 [[package]]
 name = "relay-substrate-client"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/parity-bridges-common.git?branch=polkadot-v1.0.0#48c66fdddd8e68f955fb1a65cca8972228350706"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#e24e637d6cf827cd1e6ece224b5b9355999ec346"
 dependencies = [
  "async-std",
  "async-trait",
@@ -6820,7 +6877,7 @@ dependencies = [
 [[package]]
 name = "relay-utils"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/parity-bridges-common.git?branch=polkadot-v1.0.0#48c66fdddd8e68f955fb1a65cca8972228350706"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#e24e637d6cf827cd1e6ece224b5b9355999ec346"
 dependencies = [
  "ansi_term",
  "anyhow",
@@ -6877,7 +6934,7 @@ dependencies = [
 [[package]]
 name = "ring"
 version = "0.1.0"
-source = "git+https://github.com/w3f/ring-proof#0e948f3c28cbacecdd3020403c4841c0eb339213"
+source = "git+https://github.com/w3f/ring-proof?rev=0e948f3#0e948f3c28cbacecdd3020403c4841c0eb339213"
 dependencies = [
  "ark-ec",
  "ark-ff",
@@ -7020,9 +7077,9 @@ dependencies = [
 
 [[package]]
 name = "rustix"
-version = "0.38.10"
+version = "0.38.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ed6248e1caa625eb708e266e06159f135e8c26f2bb7ceb72dc4b2766d0340964"
+checksum = "c0c3dde1fc030af041adc40e79c0e7fbcf431dd24870053d187d7c66e4b87453"
 dependencies = [
  "bitflags 2.4.0",
  "errno",
@@ -7443,6 +7500,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "scale-bits"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "036575c29af9b6e4866ffb7fa055dbf623fe7a9cc159b33786de6013a6969d89"
+dependencies = [
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+]
+
+[[package]]
 name = "scale-decode"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7450,11 +7518,26 @@ checksum = "f0459d00b0dbd2e765009924a78ef36b2ff7ba116292d732f00eb0ed8e465d15"
 dependencies = [
  "parity-scale-codec",
  "primitive-types",
- "scale-bits",
- "scale-decode-derive",
+ "scale-bits 0.3.0",
+ "scale-decode-derive 0.7.0",
  "scale-info",
  "smallvec",
  "thiserror",
+]
+
+[[package]]
+name = "scale-decode"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7789f5728e4e954aaa20cadcc370b99096fb8645fca3c9333ace44bb18f30095"
+dependencies = [
+ "derive_more",
+ "parity-scale-codec",
+ "primitive-types",
+ "scale-bits 0.4.0",
+ "scale-decode-derive 0.9.0",
+ "scale-info",
+ "smallvec",
 ]
 
 [[package]]
@@ -7471,6 +7554,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "scale-decode-derive"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "27873eb6005868f8cc72dcfe109fae664cf51223d35387bc2f28be4c28d94c47"
+dependencies = [
+ "darling 0.14.4",
+ "proc-macro-crate",
+ "proc-macro2 1.0.66",
+ "quote 1.0.33",
+ "syn 1.0.109",
+]
+
+[[package]]
 name = "scale-encode"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7478,11 +7574,26 @@ checksum = "b0401b7cdae8b8aa33725f3611a051358d5b32887ecaa0fda5953a775b2d4d76"
 dependencies = [
  "parity-scale-codec",
  "primitive-types",
- "scale-bits",
- "scale-encode-derive",
+ "scale-bits 0.3.0",
+ "scale-encode-derive 0.3.0",
  "scale-info",
  "smallvec",
  "thiserror",
+]
+
+[[package]]
+name = "scale-encode"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6d70cb4b29360105483fac1ed567ff95d65224a14dd275b6303ed0a654c78de5"
+dependencies = [
+ "derive_more",
+ "parity-scale-codec",
+ "primitive-types",
+ "scale-bits 0.4.0",
+ "scale-encode-derive 0.5.0",
+ "scale-info",
+ "smallvec",
 ]
 
 [[package]]
@@ -7490,6 +7601,19 @@ name = "scale-encode-derive"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "316e0fb10ec0fee266822bd641bab5e332a4ab80ef8c5b5ff35e5401a394f5a6"
+dependencies = [
+ "darling 0.14.4",
+ "proc-macro-crate",
+ "proc-macro2 1.0.66",
+ "quote 1.0.33",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "scale-encode-derive"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "995491f110efdc6bea96d6a746140e32bfceb4ea47510750a5467295a4707a25"
 dependencies = [
  "darling 0.14.4",
  "proc-macro-crate",
@@ -7535,13 +7659,33 @@ dependencies = [
  "either",
  "frame-metadata 15.1.0",
  "parity-scale-codec",
- "scale-bits",
- "scale-decode",
- "scale-encode",
+ "scale-bits 0.3.0",
+ "scale-decode 0.7.0",
+ "scale-encode 0.3.0",
  "scale-info",
  "serde",
  "thiserror",
- "yap",
+ "yap 0.10.0",
+]
+
+[[package]]
+name = "scale-value"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6538d1cc1af9c0baf401c57da8a6d4730ef582db0d330d2efa56ec946b5b0283"
+dependencies = [
+ "base58",
+ "blake2",
+ "derive_more",
+ "either",
+ "frame-metadata 15.1.0",
+ "parity-scale-codec",
+ "scale-bits 0.4.0",
+ "scale-decode 0.9.0",
+ "scale-encode 0.5.0",
+ "scale-info",
+ "serde",
+ "yap 0.11.0",
 ]
 
 [[package]]
@@ -9382,7 +9526,7 @@ dependencies = [
 [[package]]
 name = "substrate-relay-helper"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/parity-bridges-common.git?branch=polkadot-v1.0.0#48c66fdddd8e68f955fb1a65cca8972228350706"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#e24e637d6cf827cd1e6ece224b5b9355999ec346"
 dependencies = [
  "anyhow",
  "async-std",
@@ -9475,17 +9619,49 @@ dependencies = [
  "jsonrpsee 0.16.3",
  "parity-scale-codec",
  "primitive-types",
- "scale-bits",
- "scale-decode",
- "scale-encode",
+ "scale-bits 0.3.0",
+ "scale-decode 0.7.0",
+ "scale-encode 0.3.0",
  "scale-info",
- "scale-value",
+ "scale-value 0.10.0",
  "serde",
  "serde_json",
  "sp-core-hashing 9.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "subxt-lightclient",
- "subxt-macro",
- "subxt-metadata",
+ "subxt-lightclient 0.30.1",
+ "subxt-macro 0.30.1",
+ "subxt-metadata 0.30.1",
+ "thiserror",
+ "tracing",
+]
+
+[[package]]
+name = "subxt"
+version = "0.31.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b9d140449e7d967b21b0ae386cdc6bd5933ade38613866bb40bb2c6df79638a4"
+dependencies = [
+ "base58",
+ "blake2",
+ "derivative",
+ "either",
+ "frame-metadata 16.0.0",
+ "futures",
+ "hex",
+ "impl-serde",
+ "jsonrpsee 0.16.3",
+ "parity-scale-codec",
+ "primitive-types",
+ "scale-bits 0.4.0",
+ "scale-decode 0.9.0",
+ "scale-encode 0.5.0",
+ "scale-info",
+ "scale-value 0.12.0",
+ "serde",
+ "serde_json",
+ "sp-core-hashing 9.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "subxt-lightclient 0.31.0",
+ "subxt-macro 0.31.0",
+ "subxt-metadata 0.31.0",
  "thiserror",
  "tracing",
 ]
@@ -9504,7 +9680,27 @@ dependencies = [
  "proc-macro2 1.0.66",
  "quote 1.0.33",
  "scale-info",
- "subxt-metadata",
+ "subxt-metadata 0.30.1",
+ "syn 2.0.29",
+ "thiserror",
+ "tokio",
+]
+
+[[package]]
+name = "subxt-codegen"
+version = "0.31.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9af52575d54de7b9528601788f2876b41965e3e473d137c9c61c1ac35aeeaa3b"
+dependencies = [
+ "frame-metadata 16.0.0",
+ "heck 0.4.1",
+ "hex",
+ "jsonrpsee 0.16.3",
+ "parity-scale-codec",
+ "proc-macro2 1.0.66",
+ "quote 1.0.33",
+ "scale-info",
+ "subxt-metadata 0.31.0",
  "syn 2.0.29",
  "thiserror",
  "tokio",
@@ -9528,6 +9724,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "subxt-lightclient"
+version = "0.31.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6aa72c1cb7e06772efa1476949c3f0e83718c79c1b2615eb510c076b012e9c84"
+dependencies = [
+ "futures",
+ "futures-util",
+ "serde",
+ "serde_json",
+ "smoldot-light",
+ "thiserror",
+ "tokio",
+ "tokio-stream",
+ "tracing",
+]
+
+[[package]]
 name = "subxt-macro"
 version = "0.30.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -9535,7 +9748,19 @@ checksum = "cfda460cc5f701785973382c589e9bb12c23bb8d825bfc3ac547b7c672aba1c0"
 dependencies = [
  "darling 0.20.3",
  "proc-macro-error",
- "subxt-codegen",
+ "subxt-codegen 0.30.1",
+ "syn 2.0.29",
+]
+
+[[package]]
+name = "subxt-macro"
+version = "0.31.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "afe9f7e2994a20ab9748a9a040a3fe96054faa219a60ed21af51b9ab9e5f7da6"
+dependencies = [
+ "darling 0.20.3",
+ "proc-macro-error",
+ "subxt-codegen 0.31.0",
  "syn 2.0.29",
 ]
 
@@ -9544,6 +9769,19 @@ name = "subxt-metadata"
 version = "0.30.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0283bd02163913fbd0a5153d0b179533e48b239b953fa4e43baa27c73f18861c"
+dependencies = [
+ "frame-metadata 16.0.0",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core-hashing 9.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "thiserror",
+]
+
+[[package]]
+name = "subxt-metadata"
+version = "0.31.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "880017c466f66af10e1c9b28cfa4cb2e4f59ab1bfe0b0f7250f7aca6e9d593b0"
 dependencies = [
  "frame-metadata 16.0.0",
  "parity-scale-codec",
@@ -9654,7 +9892,7 @@ dependencies = [
  "cfg-if",
  "fastrand 2.0.0",
  "redox_syscall 0.3.5",
- "rustix 0.38.10",
+ "rustix 0.38.11",
  "windows-sys 0.48.0",
 ]
 
@@ -11420,6 +11658,12 @@ name = "yap"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e2a7eb6d82a11e4d0b8e6bda8347169aff4ccd8235d039bba7c47482d977dcf7"
+
+[[package]]
+name = "yap"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ff4524214bc4629eba08d78ceb1d6507070cc0bcbbed23af74e19e6e924a24cf"
 
 [[package]]
 name = "yasna"

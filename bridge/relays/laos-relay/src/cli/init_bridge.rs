@@ -18,7 +18,10 @@ use async_trait::async_trait;
 use codec::Encode;
 
 use crate::{
-    bridges::ownership_parachain_evochain::evochain_headers_to_ownership_parachain::EvochainToOwnershipParachainCliBridge,
+    bridges::{
+        ownership_parachain_evochain::evochain_headers_to_ownership_parachain::EvochainToOwnershipParachainCliBridge,
+        rococo_evochain::rococo_headers_to_evochain::RococoToEvochainCliBridge,
+    },
     cli::{bridge::CliBridgeBase, chain_schema::*},
 };
 use bp_runtime::Chain as ChainBase;
@@ -49,7 +52,10 @@ pub struct InitBridge {
 #[strum(serialize_all = "kebab_case")]
 /// Bridge to initialize.
 pub enum InitBridgeName {
+    /// Evochain to Ownership Parachain bridge.
     EvochainToOwnershipParachain,
+    /// Rococo to Evochain bridge.
+    RococoToEvochain,
 }
 
 #[async_trait]
@@ -111,6 +117,26 @@ impl BridgeInitializer for EvochainToOwnershipParachainCliBridge {
     }
 }
 
+impl BridgeInitializer for RococoToEvochainCliBridge {
+    type Engine = GrandpaFinalityEngine<Self::Source>;
+    fn encode_init_bridge(
+        init_data: <Self::Engine as Engine<Self::Source>>::InitializationData,
+    ) -> <Self::Target as Chain>::Call {
+        let initialize_call = laos_evolution_runtime::BridgeRococoGrandpaCall::<
+            laos_evolution_runtime::Runtime,
+            (),
+        >::initialize {
+            init_data,
+        };
+
+        relay_laos_evolution_client::RuntimeCall::Sudo(pallet_sudo::Call::<
+            laos_evolution_runtime::Runtime,
+        >::sudo {
+            call: Box::new(initialize_call.into()),
+        })
+    }
+}
+
 impl InitBridge {
     /// Run the command.
     pub async fn run(self) -> anyhow::Result<()> {
@@ -118,6 +144,7 @@ impl InitBridge {
             InitBridgeName::EvochainToOwnershipParachain => {
                 EvochainToOwnershipParachainCliBridge::init_bridge(self)
             }
+            InitBridgeName::RococoToEvochain => RococoToEvochainCliBridge::init_bridge(self),
         }
         .await
     }

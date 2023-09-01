@@ -17,7 +17,7 @@
 //! Evochain chain specification for CLI.
 
 use crate::cli::CliChain;
-use node_template_runtime as evochain_runtime;
+use laos_evolution_runtime as evochain_runtime;
 use relay_laos_evolution_client::Evochain;
 use relay_substrate_client::SimpleRuntimeVersion;
 

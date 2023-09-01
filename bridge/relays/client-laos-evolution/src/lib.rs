@@ -18,7 +18,7 @@
 
 use bp_laos_evolution::{AccountId, EVOCHAIN_SYNCED_HEADERS_GRANDPA_INFO_METHOD};
 use codec::{Compact, Decode, Encode};
-use node_template_runtime as evochain_runtime;
+use laos_evolution_runtime as evochain_runtime;
 use relay_substrate_client::{
     BalanceOf, Chain, ChainWithBalances, ChainWithGrandpa, ChainWithMessages,
     ChainWithTransactions, Error as SubstrateError, NonceOf, SignParam, UnderlyingChainProvider,
@@ -33,6 +33,7 @@ use std::time::Duration;
 
 /// Evochain header id.
 pub type HeaderId = relay_utils::HeaderId<evochain_runtime::Hash, evochain_runtime::BlockNumber>;
+pub type RuntimeCall = evochain_runtime::RuntimeCall;
 
 /// Evochain chain definition.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

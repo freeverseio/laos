@@ -14,66 +14,77 @@
 // You should have received a copy of the GNU General Public License
 // along with Parity Bridges Common.  If not, see <http://www.gnu.org/licenses/>.
 
-//! Types used to connect to the Ownership-Substrate chain.
+//! Types used to connect to the Rococo-Substrate chain.
 
 pub mod codegen_runtime;
 
 use bp_polkadot_core::SuffixedCommonSignedExtensionExt;
+use bp_rococo::ROCOCO_SYNCED_HEADERS_GRANDPA_INFO_METHOD;
 use codec::Encode;
 use relay_substrate_client::{
-    Chain, ChainWithBalances, ChainWithMessages, ChainWithTransactions, Error as SubstrateError,
-    SignParam, UnderlyingChainProvider, UnsignedTransaction,
+    Chain, ChainWithBalances, ChainWithGrandpa, ChainWithTransactions, Error as SubstrateError,
+    RelayChain, SignParam, UnderlyingChainProvider, UnsignedTransaction,
 };
 use sp_core::{storage::StorageKey, Pair};
-use sp_runtime::{generic::SignedPayload, traits::IdentifyAccount};
+use sp_runtime::{generic::SignedPayload, traits::IdentifyAccount, MultiAddress};
+use sp_session::MembershipProof;
 use std::time::Duration;
 
 pub use codegen_runtime::api::runtime_types;
 
-pub type RuntimeCall = runtime_types::laos_runtime::RuntimeCall;
-pub type SudoCall = runtime_types::pallet_sudo::pallet::Call;
-pub type BridgeGrandpaCall = runtime_types::pallet_bridge_grandpa::pallet::Call;
+pub type RuntimeCall = runtime_types::rococo_runtime::RuntimeCall;
+
+pub type GrandpaCall = runtime_types::pallet_grandpa::pallet::Call;
+
+/// Rococo header id.
+pub type HeaderId = relay_utils::HeaderId<bp_rococo::Hash, bp_rococo::BlockNumber>;
+
+/// Rococo header type used in headers sync.
+pub type SyncHeader = relay_substrate_client::SyncHeader<bp_rococo::Header>;
 
 /// The address format for describing accounts.
-pub type Address = bp_laos_ownership::Address;
+pub type Address = MultiAddress<bp_rococo::AccountId, ()>;
 
-/// Ownership parachain definition
+/// Rococo chain definition
 #[derive(Debug, Clone, Copy)]
-pub struct OwnershipParachain;
+pub struct Rococo;
 
-impl UnderlyingChainProvider for OwnershipParachain {
-    type Chain = bp_laos_ownership::OwnershipParachain;
+impl UnderlyingChainProvider for Rococo {
+    type Chain = bp_rococo::Rococo;
 }
 
-impl Chain for OwnershipParachain {
-    const NAME: &'static str = "OwnershipParachain";
+impl Chain for Rococo {
+    const NAME: &'static str = "Rococo";
     const BEST_FINALIZED_HEADER_ID_METHOD: &'static str =
-        bp_laos_ownership::BEST_FINALIZED_OWNERSHIP_PARACHAIN_HEADER_METHOD;
-    const AVERAGE_BLOCK_INTERVAL: Duration = Duration::from_secs(5);
+        bp_rococo::BEST_FINALIZED_ROCOCO_HEADER_METHOD;
+    const AVERAGE_BLOCK_INTERVAL: Duration = Duration::from_secs(6);
 
-    type SignedBlock = bp_polkadot_core::SignedBlock;
+    type SignedBlock = bp_rococo::SignedBlock;
     type Call = RuntimeCall;
 }
 
-impl ChainWithBalances for OwnershipParachain {
+impl ChainWithGrandpa for Rococo {
+    const SYNCED_HEADERS_GRANDPA_INFO_METHOD: &'static str =
+        ROCOCO_SYNCED_HEADERS_GRANDPA_INFO_METHOD;
+
+    type KeyOwnerProof = MembershipProof;
+}
+
+impl ChainWithBalances for Rococo {
     fn account_info_storage_key(account_id: &Self::AccountId) -> StorageKey {
-        bp_polkadot_core::AccountInfoStorageMapKeyProvider::final_key(account_id)
+        bp_rococo::AccountInfoStorageMapKeyProvider::final_key(account_id)
     }
 }
 
-impl ChainWithMessages for OwnershipParachain {
-    // TODO (https://github.com/paritytech/parity-bridges-common/issues/1692): change the name
-    const WITH_CHAIN_RELAYERS_PALLET_NAME: Option<&'static str> = Some("BridgeRelayers");
-    const TO_CHAIN_MESSAGE_DETAILS_METHOD: &'static str =
-        bp_laos_ownership::TO_OWNERSHIP_PARACHAIN_MESSAGE_DETAILS_METHOD;
-    const FROM_CHAIN_MESSAGE_DETAILS_METHOD: &'static str =
-        bp_laos_ownership::FROM_OWNERSHIP_PARACHAIN_MESSAGE_DETAILS_METHOD;
+impl RelayChain for Rococo {
+    const PARAS_PALLET_NAME: &'static str = bp_rococo::PARAS_PALLET_NAME;
+    const PARACHAINS_FINALITY_PALLET_NAME: &'static str = "BridgeRococoParachain";
 }
 
-impl ChainWithTransactions for OwnershipParachain {
+impl ChainWithTransactions for Rococo {
     type AccountKeyPair = sp_core::sr25519::Pair;
     type SignedTransaction =
-        bp_polkadot_core::UncheckedExtrinsic<Self::Call, bp_laos_ownership::SignedExtension>;
+        bp_polkadot_core::UncheckedExtrinsic<Self::Call, bp_rococo::SignedExtension>;
 
     fn sign_transaction(
         param: SignParam<Self>,
@@ -81,14 +92,14 @@ impl ChainWithTransactions for OwnershipParachain {
     ) -> Result<Self::SignedTransaction, SubstrateError> {
         let raw_payload = SignedPayload::new(
             unsigned.call,
-            bp_laos_ownership::SignedExtension::from_params(
+            bp_rococo::SignedExtension::from_params(
                 param.spec_version,
                 param.transaction_version,
                 unsigned.era,
                 param.genesis_hash,
                 unsigned.nonce,
                 unsigned.tip,
-                Default::default(),
+                ((), ()),
             ),
         )?;
 
@@ -120,9 +131,3 @@ impl ChainWithTransactions for OwnershipParachain {
         Some(UnsignedTransaction::new(tx.function, extra.nonce()).tip(extra.tip()))
     }
 }
-
-/// OwnershipParachain signing params.
-pub type SigningParams = sp_core::sr25519::Pair;
-
-/// OwnershipParachain header type used in headers sync.
-pub type SyncHeader = relay_substrate_client::SyncHeader<bp_laos_ownership::Header>;

@@ -3,3 +3,4 @@ members = [
 	"relays/*",
 	"primitives/*",
 ]
+resolver = "2"

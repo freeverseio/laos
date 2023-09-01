@@ -23,9 +23,9 @@ use substrate_relay_helper::{
     parachains::SubstrateParachainsPipeline,
 };
 
+/// Supported full bridges (headers + messages).
 #[derive(Debug, PartialEq, Eq, EnumString, EnumVariantNames)]
 #[strum(serialize_all = "kebab_case")]
-/// Supported full bridges (headers + messages).
 pub enum FullBridge {}
 
 /// Minimal bridge representation that can be used from the CLI.

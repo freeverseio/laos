@@ -20,7 +20,10 @@ use sp_core::Pair;
 use structopt::StructOpt;
 use strum::{EnumString, EnumVariantNames, VariantNames};
 
-use crate::bridges::ownership_parachain_evochain::evochain_headers_to_ownership_parachain::EvochainToOwnershipParachainCliBridge;
+use crate::bridges::{
+    ownership_parachain_evochain::evochain_headers_to_ownership_parachain::EvochainToOwnershipParachainCliBridge,
+    rococo_evochain::rococo_headers_to_evochain::RococoToEvochainCliBridge,
+};
 use relay_substrate_client::Client;
 use relay_utils::metrics::{GlobalMetrics, StandaloneMetric};
 use substrate_relay_helper::finality::SubstrateFinalitySyncPipeline;
@@ -52,6 +55,7 @@ pub struct RelayHeaders {
 /// Headers relay bridge.
 pub enum RelayHeadersBridge {
     EvochainToOwnershipParachain,
+    RococoToEvochain,
 }
 
 #[async_trait]
@@ -93,6 +97,7 @@ where
 }
 
 impl HeadersRelayer for EvochainToOwnershipParachainCliBridge {}
+impl HeadersRelayer for RococoToEvochainCliBridge {}
 
 impl RelayHeaders {
     /// Run the command.
@@ -101,6 +106,7 @@ impl RelayHeaders {
             RelayHeadersBridge::EvochainToOwnershipParachain => {
                 EvochainToOwnershipParachainCliBridge::relay_headers(self)
             }
+            RelayHeadersBridge::RococoToEvochain => RococoToEvochainCliBridge::relay_headers(self),
         }
         .await
     }

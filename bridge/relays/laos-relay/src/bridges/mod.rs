@@ -17,3 +17,4 @@
 //! Declaration of all bridges that the relay is able to serve.
 
 pub mod ownership_parachain_evochain;
+pub mod rococo_evochain;
