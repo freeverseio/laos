@@ -1,9 +1,8 @@
-use core::str::FromStr;
-
 use crate::{
 	address_to_collection_id, collection_id_to_address, is_collection_address, mock::*, AssetOwner,
 	CollectionBaseURI, CollectionError, Event,
 };
+use core::str::FromStr;
 use frame_support::assert_ok;
 use sp_core::H160;
 
@@ -339,7 +338,7 @@ mod traits {
 		let asset_id = U256::from(
 			hex::decode("03C0F0f4ab324C46e55D02D0033343B4Be8A55532d").unwrap().as_slice(),
 		);
-		let sender = H160::from_str("C0F0f4ab324C46e55D02D0033343B4Be8A55532d").unwrap();
+		let sender = H160::from_str("0000000000000000000000003343b4be8a55532d").unwrap();
 		let receiver = H160::from_low_u64_be(BOB);
 		new_test_ext().execute_with(|| {
 			System::set_block_number(1);
@@ -349,9 +348,9 @@ mod traits {
 			assert_ok!(<LivingAssetsModule as Erc721>::transfer_from(
 				sender, 1, sender, receiver, asset_id,
 			));
-			assert_eq!(AssetOwner::<Test>::get(asset_id).unwrap(), receiver);
+			assert_eq!(AssetOwner::<Test>::get(asset_id).unwrap(), BOB);
 			assert_eq!(<LivingAssetsModule as Erc721>::owner_of(1, asset_id).unwrap(), receiver);
-			System::assert_last_event(Event::AssetTransferred { asset_id, receiver }.into());
+			System::assert_last_event(Event::AssetTransferred { asset_id, receiver: BOB }.into());
 		});
 	}
 

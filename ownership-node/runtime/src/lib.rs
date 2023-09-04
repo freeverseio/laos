@@ -6,6 +6,8 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
+#[cfg(test)]
+mod tests;
 mod weights;
 pub mod xcm_config;
 use parity_scale_codec as codec;
@@ -24,11 +26,11 @@ use sp_core::{
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{
-		AccountIdLookup, BlakeTwo256, Block as BlockT, DispatchInfoOf, Dispatchable, Get,
+		AccountIdLookup, BlakeTwo256, Block as BlockT, Convert, DispatchInfoOf, Dispatchable, Get,
 		IdentifyAccount, PostDispatchInfoOf, UniqueSaturatedInto, Verify,
 	},
 	transaction_validity::{TransactionSource, TransactionValidity, TransactionValidityError},
-	ApplyExtrinsicResult, ConsensusEngineId,
+	AccountId32, ApplyExtrinsicResult, ConsensusEngineId,
 };
 
 use sp_std::prelude::*;
@@ -211,7 +213,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("laos-parachain"),
 	impl_name: create_runtime_str!("laos-parachain"),
 	authoring_version: 1,
-	spec_version: 5,
+	spec_version: 6,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -469,12 +471,55 @@ impl pallet_collator_selection::Config for Runtime {
 impl pallet_living_assets_ownership::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type BaseURILimit = ConstU32<2015>;
+	type AccountIdToH160 = AccountIdToH160;
+	type H160ToAccountId = H160ToAccountId;
+	type AssetIdToAddress = AssetIdToAddress;
 }
 
 impl pallet_sudo::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeCall = RuntimeCall;
 	type WeightInfo = ();
+}
+
+/// A struct responsible for converting an `AccountId` to an `H160` address.
+///
+/// The `AccountIdToH160` struct provides a conversion from `AccountId`, typically used
+/// as a native identity in a blockchain, to an `H160` address, commonly used in Ethereum-like networks.
+pub struct AccountIdToH160;
+impl Convert<AccountId, H160> for AccountIdToH160 {
+	fn convert(account_id: AccountId) -> H160 {
+		let mut bytes = [0u8; 20];
+		let account_id_bytes: [u8; 32] = account_id.into();
+		bytes.copy_from_slice(&account_id_bytes[account_id_bytes.len() - 20..]);
+		H160::from(bytes)
+	}
+}
+
+/// A struct responsible for converting an `H160` address to an `AccountId`.
+///
+/// The `H160ToAccountId` struct provides a conversion from `H160`, commonly used in Ethereum-like networks,
+/// to `AccountId`, typically used as a native identity in a blockchain.
+pub struct H160ToAccountId;
+impl Convert<H160, AccountId> for H160ToAccountId {
+	fn convert(account_id: H160) -> AccountId {
+		let mut data = [0u8; 32];
+		data[12..].copy_from_slice(&account_id.0);
+		AccountId32::from(data)
+	}
+}
+
+/// Represents a mapping between `AssetId` and `AccountId`.
+/// This struct provides functionalities to convert an `AssetId` (represented by `U256`) into an `AccountId`.
+pub struct AssetIdToAddress;
+impl Convert<U256, AccountId> for AssetIdToAddress {
+	fn convert(asset_id: U256) -> AccountId {
+		let mut bytes = [0u8; 20];
+		let asset_id_bytes: [u8; 32] = asset_id.into();
+		bytes.copy_from_slice(&asset_id_bytes[asset_id_bytes.len() - 20..]);
+		let owner = H160::from(bytes);
+		H160ToAccountId::convert(owner)
+	}
 }
 
 // Frontier

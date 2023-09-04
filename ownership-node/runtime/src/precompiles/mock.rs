@@ -7,9 +7,10 @@ use pallet_evm::{
 	runner, EnsureAddressNever, EnsureAddressRoot, FeeCalculator, FixedGasWeightMapping,
 	IdentityAddressMapping, SubstrateBlockHashMapping,
 };
+
 use sp_core::{H160, H256, U256};
 use sp_runtime::{
-	traits::{BlakeTwo256, IdentityLookup},
+	traits::{BlakeTwo256, Convert, IdentityLookup},
 	ConsensusEngineId,
 };
 use sp_std::{boxed::Box, prelude::*, str::FromStr};
@@ -17,6 +18,7 @@ use sp_std::{boxed::Box, prelude::*, str::FromStr};
 use super::FrontierPrecompiles;
 
 type Block = frame_system::mocking::MockBlock<Runtime>;
+type AccountId = H160;
 
 // Configure a mock runtime to test the pallet.
 construct_runtime!(
@@ -38,7 +40,7 @@ impl frame_system::Config for Runtime {
 	type RuntimeCall = RuntimeCall;
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
-	type AccountId = H160;
+	type AccountId = AccountId;
 	type Lookup = IdentityLookup<Self::AccountId>;
 	type RuntimeEvent = RuntimeEvent;
 	type BlockHashCount = ConstU64<250>;
@@ -89,6 +91,28 @@ impl pallet_timestamp::Config for Runtime {
 impl pallet_living_assets_ownership::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type BaseURILimit = ConstU32<256>;
+	type AccountIdToH160 = MockAccountIdToH160;
+	type H160ToAccountId = MockH160ToAccountId;
+	type AssetIdToAddress = MockAssetIdToAddress;
+}
+
+pub struct MockAccountIdToH160;
+impl Convert<AccountId, H160> for MockAccountIdToH160 {
+	fn convert(account_id: AccountId) -> H160 {
+		account_id
+	}
+}
+pub struct MockH160ToAccountId;
+impl Convert<H160, AccountId> for MockH160ToAccountId {
+	fn convert(account_id: H160) -> AccountId {
+		account_id
+	}
+}
+pub struct MockAssetIdToAddress;
+impl Convert<U256, AccountId> for MockAssetIdToAddress {
+	fn convert(_asset_id: U256) -> AccountId {
+		H160::zero()
+	}
 }
 
 pub struct FixedGasPrice;
