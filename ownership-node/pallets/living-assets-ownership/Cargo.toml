@@ -28,7 +28,7 @@ sp-runtime = { workspace = true }
 
 [dev-dependencies]
 serde = { workspace = true }
-hex = { version = "0.4.3" }
+hex = { workspace = true }
 
 [features]
 default = ["std"]

@@ -33,7 +33,7 @@ num_enum = { workspace = true }
 
 [dev-dependencies]
 evm = { workspace = true }
-hex = { version = "0.4.3" }
+hex = { workspace = true }
 precompile-utils = { workspace = true, features = ["testing"]}
 
 [features]
