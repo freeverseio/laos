@@ -143,6 +143,7 @@ pub mod pallet {
 				collection_id.checked_add(One::one()).ok_or(Error::<T>::CollectionIdOverflow)?;
 			CollectionCounter::<T>::put(counter);
 
+			// Emit an event.
 			Self::deposit_event(Event::CollectionCreated { collection_id, who });
 
 			// Return a successful DispatchResultWithPostInfo
