@@ -1,4 +1,4 @@
-use crate::{mock::*, Error, Event};
+use crate::{mock::*, CollectionId, Error, Event};
 use frame_support::{assert_noop, assert_ok};
 
 #[test]
@@ -23,5 +23,13 @@ fn correct_error_for_none_value() {
 			TemplateModule::cause_error(RuntimeOrigin::signed(1)),
 			Error::<Test>::NoneValue
 		);
+	});
+}
+
+#[test]
+fn owner_of_unexistent_collection() {
+	new_test_ext().execute_with(|| {
+		let collection_id: CollectionId = 0;
+		assert_eq!(TemplateModule::collection_owner(collection_id), None);
 	});
 }

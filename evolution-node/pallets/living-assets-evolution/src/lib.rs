@@ -22,6 +22,9 @@ pub mod pallet {
 	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
 
+	/// Collection id type
+	pub type CollectionId = u64;
+
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
 
@@ -41,6 +44,12 @@ pub mod pallet {
 	// Learn more about declaring storage items:
 	// https://docs.substrate.io/main-docs/build/runtime-storage/#declaring-storage-items
 	pub type Something<T> = StorageValue<_, u32>;
+
+	// storage for the ownership of collections
+	#[pallet::storage]
+	#[pallet::getter(fn collection_owner)]
+	pub type CollectionOwner<T: Config> =
+		StorageMap<_, Blake2_128Concat, CollectionId, T::AccountId, OptionQuery>;
 
 	// Pallets use events to inform users when important changes are made.
 	// https://docs.substrate.io/main-docs/build/events-errors/
