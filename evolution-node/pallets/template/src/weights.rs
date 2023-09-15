@@ -8,7 +8,7 @@
 //! EXECUTION: Some(Wasm), WASM-EXECUTION: Compiled, CHAIN: Some("dev"), DB CACHE: 1024
 
 // Executed Command:
-// ../../target/release/laos-evolution
+// ../../target/release/node-template
 // benchmark
 // pallet
 // --chain
@@ -19,7 +19,6 @@
 // *
 // --steps=50
 // --repeat=20
-// --execution=wasm
 // --wasm-execution=compiled
 // --output
 // pallets/template/src/weights.rs
