@@ -20,6 +20,7 @@ pub use weights::*;
 pub mod pallet {
 	use super::*;
 	use frame_support::pallet_prelude::*;
+	use frame_support::sp_runtime::traits::One;
 	use frame_system::pallet_prelude::*;
 
 	/// Collection id type
@@ -45,6 +46,11 @@ pub mod pallet {
 	// https://docs.substrate.io/main-docs/build/runtime-storage/#declaring-storage-items
 	pub type Something<T> = StorageValue<_, u32>;
 
+	/// Collection counter
+	#[pallet::storage]
+	#[pallet::getter(fn collection_counter)]
+	pub(super) type CollectionCounter<T: Config> = StorageValue<_, CollectionId, ValueQuery>;
+
 	// storage for the ownership of collections
 	#[pallet::storage]
 	#[pallet::getter(fn collection_owner)]
@@ -59,6 +65,10 @@ pub mod pallet {
 		/// Event documentation should end with an array that provides descriptive names for event
 		/// parameters. [something, who]
 		SomethingStored { something: u32, who: T::AccountId },
+
+		/// Collection created
+		/// parameters. [collection_id, who]
+		CollectionCreated { collection_id: CollectionId, who: T::AccountId },
 	}
 
 	// Errors inform users that something went wrong.
@@ -68,6 +78,8 @@ pub mod pallet {
 		NoneValue,
 		/// Errors should have helpful documentation associated with them.
 		StorageOverflow,
+		/// The collection ID counter has overflowed
+		CollectionIdOverflow,
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -94,7 +106,6 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// An example dispatchable that may throw a custom error.
 		#[pallet::call_index(1)]
 		#[pallet::weight(T::WeightInfo::cause_error())]
 		pub fn cause_error(origin: OriginFor<T>) -> DispatchResult {
@@ -112,6 +123,30 @@ pub mod pallet {
 					Ok(())
 				},
 			}
+		}
+
+		#[pallet::call_index(2)]
+		#[pallet::weight(T::WeightInfo::do_something())]
+		pub fn create_collection(origin: OriginFor<T>) -> DispatchResult {
+			// Check that the extrinsic was signed and get the signer.
+			// This function will return an error if the extrinsic is not signed.
+			// https://docs.substrate.io/main-docs/build/origins/
+			let who = ensure_signed(origin)?;
+
+			let collection_id = Self::collection_counter();
+
+			CollectionOwner::<T>::insert(collection_id, who.clone());
+
+			// Attempt to increment the collection counter by 1. If this operation
+			// would result in an overflow, return early with an error
+			let counter =
+				collection_id.checked_add(One::one()).ok_or(Error::<T>::CollectionIdOverflow)?;
+			CollectionCounter::<T>::put(counter);
+
+			Self::deposit_event(Event::CollectionCreated { collection_id, who });
+
+			// Return a successful DispatchResultWithPostInfo
+			Ok(())
 		}
 	}
 }
