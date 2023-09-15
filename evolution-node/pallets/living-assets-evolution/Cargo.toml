@@ -1,13 +1,10 @@
 [package]
-name = "pallet-template"
+name = "pallet-living-assets-evolution"
 version = "4.0.0-dev"
-description = "FRAME pallet template for defining custom runtime logic."
-authors = ["Substrate DevHub <https://github.com/substrate-developer-hub>"]
-homepage = "https://substrate.io"
+homepage = "https://freeverse.io"
 edition = "2021"
 license = "MIT-0"
 publish = false
-repository = "https://github.com/substrate-developer-hub/substrate-laos-evolution/"
 
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu"]

@@ -1,4 +1,4 @@
-use crate as pallet_template;
+use crate as pallet_living_assets_evolution;
 use frame_support::traits::{ConstU16, ConstU64};
 use sp_core::H256;
 use sp_runtime::{
@@ -13,7 +13,7 @@ frame_support::construct_runtime!(
 	pub enum Test
 	{
 		System: frame_system,
-		TemplateModule: pallet_template,
+		TemplateModule: pallet_living_assets_evolution,
 	}
 );
 
@@ -43,7 +43,7 @@ impl frame_system::Config for Test {
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 
-impl pallet_template::Config for Test {
+impl pallet_living_assets_evolution::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
 }
