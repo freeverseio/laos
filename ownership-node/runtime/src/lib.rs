@@ -473,7 +473,7 @@ impl pallet_living_assets_ownership::Config for Runtime {
 	type BaseURILimit = ConstU32<2015>;
 	type AccountIdToH160 = AccountIdToH160;
 	type H160ToAccountId = H160ToAccountId;
-	type AssetIdToAddress = AssetIdToAddress;
+	type AssetIdToInitialOwner = AssetIdToInitialOwner;
 }
 
 impl pallet_sudo::Config for Runtime {
@@ -511,8 +511,8 @@ impl Convert<H160, AccountId> for H160ToAccountId {
 
 /// Represents a mapping between `AssetId` and `AccountId`.
 /// This struct provides functionalities to convert an `AssetId` (represented by `U256`) into an `AccountId`.
-pub struct AssetIdToAddress;
-impl Convert<U256, AccountId> for AssetIdToAddress {
+pub struct AssetIdToInitialOwner;
+impl Convert<U256, AccountId> for AssetIdToInitialOwner {
 	fn convert(asset_id: U256) -> AccountId {
 		let mut bytes = [0u8; 20];
 		let asset_id_bytes: [u8; 32] = asset_id.into();

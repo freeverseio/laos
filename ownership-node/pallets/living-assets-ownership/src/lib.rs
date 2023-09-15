@@ -58,9 +58,9 @@ pub mod pallet {
 		/// often necessary for mapping Ethereum addresses back to native account IDs.
 		type H160ToAccountId: Convert<H160, Self::AccountId>;
 
-		/// Type alias for implementing the `AssetIdToAddress` trait for a given account ID type.
+		/// Type alias for implementing the `AssetIdToInitialOwner` trait for a given account ID type.
 		/// This allows you to specify which account should initially own each new asset.
-		type AssetIdToAddress: Convert<U256, Self::AccountId>;
+		type AssetIdToInitialOwner: Convert<U256, Self::AccountId>;
 	}
 
 	/// Collection counter
@@ -76,11 +76,19 @@ pub mod pallet {
 
 	/// Asset owner
 	#[pallet::storage]
-	pub(super) type AssetOwner<T: Config> =
-		StorageMap<_, Blake2_128Concat, U256, T::AccountId, OptionQuery>;
+	pub(super) type AssetOwner<T: Config> = StorageDoubleMap<
+		_,
+		Blake2_128Concat,
+		CollectionId,
+		Blake2_128Concat,
+		U256,
+		T::AccountId,
+		OptionQuery,
+	>;
 
-	fn asset_owner<T: Config>(key: U256) -> T::AccountId {
-		AssetOwner::<T>::get(key).unwrap_or_else(|| T::AssetIdToAddress::convert(key))
+	fn asset_owner<T: Config>(collection_id: CollectionId, asset_id: U256) -> T::AccountId {
+		AssetOwner::<T>::get(collection_id, asset_id)
+			.unwrap_or_else(|| T::AssetIdToInitialOwner::convert(asset_id))
 	}
 
 	/// Pallet events
@@ -166,7 +174,7 @@ pub mod pallet {
 
 		fn owner_of(collection_id: CollectionId, asset_id: U256) -> Result<H160, Self::Error> {
 			Pallet::<T>::collection_base_uri(collection_id).ok_or(Error::CollectionDoesNotExist)?;
-			Ok(T::AccountIdToH160::convert(asset_owner::<T>(asset_id)))
+			Ok(T::AccountIdToH160::convert(asset_owner::<T>(collection_id, asset_id)))
 		}
 
 		fn transfer_from(
@@ -179,14 +187,14 @@ pub mod pallet {
 			Pallet::<T>::collection_base_uri(collection_id).ok_or(Error::CollectionDoesNotExist)?;
 			ensure!(origin == from, Error::NoPermission);
 			ensure!(
-				T::AccountIdToH160::convert(asset_owner::<T>(asset_id)) == from,
+				T::AccountIdToH160::convert(asset_owner::<T>(collection_id, asset_id)) == from,
 				Error::NoPermission
 			);
 			ensure!(from != to, Error::CannotTransferSelf);
 			ensure!(to != H160::zero(), Error::TransferToNullAddress);
 
 			let to = T::H160ToAccountId::convert(to.clone());
-			AssetOwner::<T>::set(asset_id, Some(to.clone()));
+			AssetOwner::<T>::set(collection_id, asset_id, Some(to.clone()));
 			Self::deposit_event(Event::AssetTransferred { asset_id, receiver: to });
 
 			Ok(())

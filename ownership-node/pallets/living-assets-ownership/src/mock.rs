@@ -51,7 +51,7 @@ impl pallet_livingassets_ownership::Config for Test {
 	type BaseURILimit = ConstU32<256>;
 	type AccountIdToH160 = MockAccountIdToH160;
 	type H160ToAccountId = MockH160ToAccountId;
-	type AssetIdToAddress = MockAssetIdToAddress;
+	type AssetIdToInitialOwner = MockAssetIdToInitialOwner;
 }
 
 pub struct MockAccountIdToH160;
@@ -67,8 +67,8 @@ impl Convert<H160, AccountId> for MockH160ToAccountId {
 	}
 }
 
-pub struct MockAssetIdToAddress;
-impl Convert<U256, AccountId> for MockAssetIdToAddress {
+pub struct MockAssetIdToInitialOwner;
+impl Convert<U256, AccountId> for MockAssetIdToInitialOwner {
 	fn convert(asset_id: U256) -> AccountId {
 		let mut first_eight_bytes = [0u8; 8];
 		let asset_id_bytes: [u8; 32] = asset_id.into();
