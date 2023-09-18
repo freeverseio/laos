@@ -46,8 +46,7 @@ use pallet_transaction_payment::{ConstFeeMultiplier, CurrencyAdapter, Multiplier
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
 
-/// Import the template pallet.
-pub use pallet_template;
+pub use pallet_living_assets_evolution;
 
 /// An index to a block.
 pub type BlockNumber = evochain_primitives::BlockNumber;
@@ -272,10 +271,10 @@ impl pallet_sudo::Config for Runtime {
 	type WeightInfo = pallet_sudo::weights::SubstrateWeight<Runtime>;
 }
 
-/// Configure the pallet-template in pallets/template.
-impl pallet_template::Config for Runtime {
+/// Configure the pallet-living-assets-evolution in pallets/living-assets-evolution.
+impl pallet_living_assets_evolution::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = pallet_template::weights::SubstrateWeight<Runtime>;
+	type WeightInfo = pallet_living_assets_evolution::weights::SubstrateWeight<Runtime>;
 }
 
 impl pallet_bridge_grandpa::Config for Runtime {
@@ -297,8 +296,8 @@ construct_runtime!(
 		TransactionPayment: pallet_transaction_payment,
 		Sudo: pallet_sudo,
 
-		// Include the custom logic from the pallet-template in the runtime.
-		TemplateModule: pallet_template,
+		// Include the custom logic from the pallet-living-assets-evolution in the runtime.
+		TemplateModule: pallet_living_assets_evolution,
 
 		BridgeRococoGrandpa: pallet_bridge_grandpa,
 	}
@@ -347,7 +346,7 @@ mod benches {
 		[frame_system, SystemBench::<Runtime>]
 		[pallet_balances, Balances]
 		[pallet_timestamp, Timestamp]
-		[pallet_template, TemplateModule]
+		[pallet_living_assets_evolution, TemplateModule]
 	);
 }
 
