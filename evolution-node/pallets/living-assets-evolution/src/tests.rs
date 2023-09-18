@@ -33,13 +33,13 @@ fn counter_of_collection_increases() {
 }
 
 #[test]
-fn crete_collection_emits_event() {
+fn create_collection_emits_event() {
 	new_test_ext().execute_with(|| {
 		// Go past genesis block so events get deposited
 		System::set_block_number(1);
 		// Create a collection
 		assert_ok!(TemplateModule::create_collection(RuntimeOrigin::signed(1)));
 		// Assert that the correct event was deposited
-		System::assert_last_event(Event::CollectionCreated { collection_id: 0, who: 1 }.into());
+		System::assert_last_event(Event::CollectionCreated { collection_id: 0, owner: 1 }.into());
 	});
 }

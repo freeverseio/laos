@@ -56,7 +56,7 @@ pub mod pallet {
 	pub enum Event<T: Config> {
 		/// Collection created
 		/// parameters. [collection_id, who]
-		CollectionCreated { collection_id: CollectionId, who: T::AccountId },
+		CollectionCreated { collection_id: CollectionId, owner: T::AccountId },
 	}
 
 	// Errors inform users that something went wrong.
@@ -108,7 +108,7 @@ pub mod pallet {
 			CollectionCounter::<T>::put(counter);
 
 			// Emit an event.
-			Self::deposit_event(Event::CollectionCreated { collection_id, who });
+			Self::deposit_event(Event::CollectionCreated { collection_id, owner: who });
 
 			// Return a successful DispatchResultWithPostInfo
 			Ok(())

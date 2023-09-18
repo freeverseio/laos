@@ -14,6 +14,7 @@
 // --chain=dev
 // --pallet=pallet_living_assets_evolution
 // --extrinsic=*
+// *
 // --steps=50
 // --repeat=20
 // --wasm-execution=compiled
