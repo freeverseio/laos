@@ -131,7 +131,7 @@ Review the [FRAME runtime implementation](./runtime/src/lib.rs) included in this
 
 ### Pallets
 
-The runtime in this project is constructed using many FRAME pallets that ship with the [core Substrate repository](https://github.com/paritytech/substrate/tree/master/frame) and a template pallet that is [defined in the `pallets`](./pallets/template/src/lib.rs) directory.
+The runtime in this project is constructed using many FRAME pallets that ship with the [core Substrate repository](https://github.com/paritytech/substrate/tree/master/frame) and a template pallet that is [defined in the `pallets`](./pallets/living-assets-evolution/src/lib.rs) directory.
 
 A FRAME pallet is compromised of a number of blockchain primitives:
 

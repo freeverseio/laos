@@ -20,7 +20,11 @@ pub use weights::*;
 pub mod pallet {
 	use super::*;
 	use frame_support::pallet_prelude::*;
+	use frame_support::sp_runtime::traits::One;
 	use frame_system::pallet_prelude::*;
+
+	/// Collection id type
+	pub type CollectionId = u64;
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
@@ -34,31 +38,32 @@ pub mod pallet {
 		type WeightInfo: WeightInfo;
 	}
 
-	// The pallet's runtime storage items.
-	// https://docs.substrate.io/main-docs/build/runtime-storage/
+	/// Collection counter
 	#[pallet::storage]
-	#[pallet::getter(fn something)]
-	// Learn more about declaring storage items:
-	// https://docs.substrate.io/main-docs/build/runtime-storage/#declaring-storage-items
-	pub type Something<T> = StorageValue<_, u32>;
+	#[pallet::getter(fn collection_counter)]
+	pub(super) type CollectionCounter<T: Config> = StorageValue<_, CollectionId, ValueQuery>;
+
+	// storage for the ownership of collections
+	#[pallet::storage]
+	#[pallet::getter(fn collection_owner)]
+	pub type CollectionOwner<T: Config> =
+		StorageMap<_, Blake2_128Concat, CollectionId, T::AccountId, OptionQuery>;
 
 	// Pallets use events to inform users when important changes are made.
 	// https://docs.substrate.io/main-docs/build/events-errors/
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		/// Event documentation should end with an array that provides descriptive names for event
-		/// parameters. [something, who]
-		SomethingStored { something: u32, who: T::AccountId },
+		/// Collection created
+		/// parameters. [collection_id, who]
+		CollectionCreated { collection_id: CollectionId, who: T::AccountId },
 	}
 
 	// Errors inform users that something went wrong.
 	#[pallet::error]
 	pub enum Error<T> {
-		/// Error names should be descriptive.
-		NoneValue,
-		/// Errors should have helpful documentation associated with them.
-		StorageOverflow,
+		/// The collection ID counter has overflowed
+		CollectionIdOverflow,
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -66,43 +71,47 @@ pub mod pallet {
 	// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		/// An example dispatchable that takes a singles value as a parameter, writes the value to
-		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
+		/// The `create_collection` extrinsic allows users to create a new collection.
+		///
+		/// # Parameters
+		///
+		/// - `origin`: The origin account sending the extrinsic, which will be set as the owner of the new collection.
+		///
+		/// # Storage Changes
+		///
+		/// - `CollectionOwner`: Inserts a new mapping from the generated `collection_id` to the `origin` account.
+		/// - `CollectionCounter`: Updates the counter for the next available `collection_id`.
+		///
+		/// # Events
+		///
+		/// Emits a `CollectionCreated` event upon successful execution.
+		///
+		/// # Errors
+		///
+		/// - Returns `CollectionIdOverflow` if incrementing the `collection_id` counter would result in an overflow.
 		#[pallet::call_index(0)]
-		#[pallet::weight(T::WeightInfo::do_something())]
-		pub fn do_something(origin: OriginFor<T>, something: u32) -> DispatchResult {
+		#[pallet::weight(0)]
+		pub fn create_collection(origin: OriginFor<T>) -> DispatchResult {
 			// Check that the extrinsic was signed and get the signer.
 			// This function will return an error if the extrinsic is not signed.
 			// https://docs.substrate.io/main-docs/build/origins/
 			let who = ensure_signed(origin)?;
 
-			// Update storage.
-			<Something<T>>::put(something);
+			let collection_id = Self::collection_counter();
+
+			CollectionOwner::<T>::insert(collection_id, who.clone());
+
+			// Attempt to increment the collection counter by 1. If this operation
+			// would result in an overflow, return early with an error
+			let counter =
+				collection_id.checked_add(One::one()).ok_or(Error::<T>::CollectionIdOverflow)?;
+			CollectionCounter::<T>::put(counter);
 
 			// Emit an event.
-			Self::deposit_event(Event::SomethingStored { something, who });
+			Self::deposit_event(Event::CollectionCreated { collection_id, who });
+
 			// Return a successful DispatchResultWithPostInfo
 			Ok(())
-		}
-
-		/// An example dispatchable that may throw a custom error.
-		#[pallet::call_index(1)]
-		#[pallet::weight(T::WeightInfo::cause_error())]
-		pub fn cause_error(origin: OriginFor<T>) -> DispatchResult {
-			let _who = ensure_signed(origin)?;
-
-			// Read a value from storage.
-			match <Something<T>>::get() {
-				// Return an error if the value has not been set.
-				None => Err(Error::<T>::NoneValue.into()),
-				Some(old) => {
-					// Increment the value read from storage; will error in the event of overflow.
-					let new = old.checked_add(1).ok_or(Error::<T>::StorageOverflow)?;
-					// Update the value in storage with the incremented result.
-					<Something<T>>::put(new);
-					Ok(())
-				},
-			}
 		}
 	}
 }

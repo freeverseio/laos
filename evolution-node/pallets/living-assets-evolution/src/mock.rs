@@ -1,4 +1,4 @@
-use crate as pallet_template;
+use crate as pallet_living_assets_evolution;
 use frame_support::traits::{ConstU16, ConstU64};
 use sp_core::H256;
 use sp_runtime::{
@@ -7,14 +7,13 @@ use sp_runtime::{
 };
 
 type Block = frame_system::mocking::MockBlock<Test>;
-type Nonce = u32;
 
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
 	pub enum Test
 	{
 		System: frame_system,
-		TemplateModule: pallet_template,
+		TemplateModule: pallet_living_assets_evolution,
 	}
 );
 
@@ -25,12 +24,12 @@ impl frame_system::Config for Test {
 	type DbWeight = ();
 	type RuntimeOrigin = RuntimeOrigin;
 	type RuntimeCall = RuntimeCall;
+	type Nonce = u64;
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
 	type AccountId = u64;
-	type Nonce = Nonce;
-	type Block = Block;
 	type Lookup = IdentityLookup<Self::AccountId>;
+	type Block = Block;
 	type RuntimeEvent = RuntimeEvent;
 	type BlockHashCount = ConstU64<250>;
 	type Version = ();
@@ -44,12 +43,12 @@ impl frame_system::Config for Test {
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 
-impl pallet_template::Config for Test {
+impl pallet_living_assets_evolution::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
 }
 
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
-	RuntimeGenesisConfig::default().build_storage().unwrap().into()
+	frame_system::GenesisConfig::<Test>::default().build_storage().unwrap().into()
 }
