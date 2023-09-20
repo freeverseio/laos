@@ -2,7 +2,7 @@ use crate::{mock::*, CollectionId, Event};
 use frame_support::assert_ok;
 
 #[test]
-fn owner_of_inexistent_collection() {
+fn owner_of_unexistent_collection() {
 	new_test_ext().execute_with(|| {
 		let collection_id: CollectionId = 0;
 		assert_eq!(TemplateModule::collection_owner(collection_id), None);

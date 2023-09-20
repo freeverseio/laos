@@ -90,7 +90,7 @@ pub mod pallet {
 		///
 		/// - Returns `CollectionIdOverflow` if incrementing the `collection_id` counter would result in an overflow.
 		#[pallet::call_index(0)]
-		#[pallet::weight(0)]
+		#[pallet::weight(T::WeightInfo::create_collection())]
 		pub fn create_collection(origin: OriginFor<T>) -> DispatchResult {
 			// Check that the extrinsic was signed and get the signer.
 			// This function will return an error if the extrinsic is not signed.
