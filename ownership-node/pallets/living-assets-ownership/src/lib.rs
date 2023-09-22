@@ -99,8 +99,8 @@ pub mod pallet {
 		/// parameters. [collection_id, who]
 		CollectionCreated { collection_id: CollectionId, who: T::AccountId },
 		/// Asset transferred to `who`
-		/// parameters. [asset_id_id, who]
-		AssetTransferred { asset_id: U256, receiver: T::AccountId },
+		/// parameters. [collection_id, asset_id, who]
+		AssetTransferred { collection_id: CollectionId, asset_id: U256, receiver: T::AccountId },
 	}
 
 	// Errors inform users that something went wrong.
@@ -195,7 +195,7 @@ pub mod pallet {
 
 			let to = T::H160ToAccountId::convert(to.clone());
 			AssetOwner::<T>::set(collection_id, asset_id, Some(to.clone()));
-			Self::deposit_event(Event::AssetTransferred { asset_id, receiver: to });
+			Self::deposit_event(Event::AssetTransferred { collection_id, asset_id, receiver: to });
 
 			Ok(())
 		}
@@ -265,7 +265,7 @@ pub fn collection_id_to_address(collection_id: CollectionId) -> H160 {
 /// * A `Result` which is either the `CollectionId` or an error indicating the address is invalid.
 pub fn address_to_collection_id(address: H160) -> Result<CollectionId, CollectionError> {
 	if &address.0[0..12] != ASSET_PRECOMPILE_ADDRESS_PREFIX {
-		return Err(CollectionError::InvalidPrefix);
+		return Err(CollectionError::InvalidPrefix)
 	}
 	let id_bytes: [u8; 8] = address.0[12..].try_into().unwrap();
 	Ok(CollectionId::from_be_bytes(id_bytes))
