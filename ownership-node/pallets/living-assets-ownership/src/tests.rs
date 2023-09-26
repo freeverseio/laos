@@ -370,7 +370,9 @@ mod traits {
 			));
 			assert_eq!(AssetOwner::<Test>::get(collection_id, asset_id).unwrap(), BOB);
 			assert_eq!(<LivingAssetsModule as Erc721>::owner_of(1, asset_id).unwrap(), receiver);
-			System::assert_last_event(Event::AssetTransferred { asset_id, receiver: BOB }.into());
+			System::assert_last_event(
+				Event::AssetTransferred { collection_id, asset_id, to: BOB }.into(),
+			);
 		});
 	}
 
