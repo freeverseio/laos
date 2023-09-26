@@ -265,7 +265,7 @@ pub fn collection_id_to_address(collection_id: CollectionId) -> H160 {
 /// * A `Result` which is either the `CollectionId` or an error indicating the address is invalid.
 pub fn address_to_collection_id(address: H160) -> Result<CollectionId, CollectionError> {
 	if &address.0[0..12] != ASSET_PRECOMPILE_ADDRESS_PREFIX {
-		return Err(CollectionError::InvalidPrefix)
+		return Err(CollectionError::InvalidPrefix);
 	}
 	let id_bytes: [u8; 8] = address.0[12..].try_into().unwrap();
 	Ok(CollectionId::from_be_bytes(id_bytes))
