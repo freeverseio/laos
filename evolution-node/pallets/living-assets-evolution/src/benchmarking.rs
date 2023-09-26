@@ -26,7 +26,8 @@ mod benchmarks {
 	fn mint_with_external_uri() {
 		let caller: T::AccountId = whitelisted_caller();
 		let owner = caller.clone();
-		LivingAssetsEvo::<T>::create_collection(RawOrigin::Signed(caller.clone()).into(), owner).unwrap();
+		LivingAssetsEvo::<T>::create_collection(RawOrigin::Signed(caller.clone()).into(), owner)
+			.unwrap();
 
 		let token_uri: TokenUriOf<T> =
 			vec![0; T::MaxTokenUriLength::get() as usize].try_into().unwrap();
