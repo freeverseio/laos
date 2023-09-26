@@ -6,10 +6,13 @@ use crate::{
 use frame_support::{assert_noop, assert_ok};
 use sp_runtime::traits::Convert;
 
+const ALICE: AccountId = 5;
+const BOB: AccountId = 6;
+
 /// Utility function to create a collection and return its ID
 fn create_collection(owner: u64) -> CollectionId {
 	let collection_id = LivingAssets::collection_counter();
-	assert_ok!(LivingAssets::create_collection(RuntimeOrigin::signed(owner)));
+	assert_ok!(LivingAssets::create_collection(RuntimeOrigin::signed(owner), owner));
 	collection_id
 }
 
@@ -26,12 +29,12 @@ fn create_collection_works() {
 	new_test_ext().execute_with(|| {
 		let collection_id: CollectionId = 0;
 		assert_eq!(LivingAssets::collection_owner(collection_id), None);
-		assert_ok!(LivingAssets::create_collection(RuntimeOrigin::signed(1)));
-		assert_eq!(LivingAssets::collection_owner(collection_id), Some(1));
+		assert_ok!(LivingAssets::create_collection(RuntimeOrigin::signed(1), ALICE));
+		assert_eq!(LivingAssets::collection_owner(collection_id), Some(ALICE));
 		let collection_id: CollectionId = 1;
 		assert_eq!(LivingAssets::collection_owner(collection_id), None);
-		assert_ok!(LivingAssets::create_collection(RuntimeOrigin::signed(2)));
-		assert_eq!(LivingAssets::collection_owner(collection_id), Some(2));
+		assert_ok!(LivingAssets::create_collection(RuntimeOrigin::signed(1), BOB));
+		assert_eq!(LivingAssets::collection_owner(collection_id), Some(BOB));
 	});
 }
 
@@ -39,7 +42,7 @@ fn create_collection_works() {
 fn counter_of_collection_increases() {
 	new_test_ext().execute_with(|| {
 		assert_eq!(LivingAssets::collection_counter(), 0);
-		assert_ok!(LivingAssets::create_collection(RuntimeOrigin::signed(1)));
+		assert_ok!(LivingAssets::create_collection(RuntimeOrigin::signed(1), ALICE));
 		assert_eq!(LivingAssets::collection_counter(), 1);
 	})
 }
@@ -176,9 +179,9 @@ fn mint_with_external_uri_asset_already_minted() {
 		let token_uri: TokenUriOf<Test> =
 			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
 
-		assert_ok!(LivingAssets::create_collection(RuntimeOrigin::signed(1)));
+		assert_ok!(LivingAssets::create_collection(RuntimeOrigin::signed(1), ALICE));
 		assert_ok!(LivingAssets::mint_with_external_uri(
-			RuntimeOrigin::signed(1),
+			RuntimeOrigin::signed(ALICE),
 			collection_id,
 			0,
 			1,
@@ -187,7 +190,7 @@ fn mint_with_external_uri_asset_already_minted() {
 
 		assert_noop!(
 			LivingAssets::mint_with_external_uri(
-				RuntimeOrigin::signed(1),
+				RuntimeOrigin::signed(ALICE),
 				collection_id,
 				0,
 				1,

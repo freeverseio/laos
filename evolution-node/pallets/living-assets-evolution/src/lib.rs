@@ -106,11 +106,12 @@ pub mod pallet {
 		///
 		/// # Parameters
 		///
-		/// - `origin`: The origin account sending the extrinsic, which will be set as the owner of the new collection.
+		/// - `origin`: The origin account sending the extrinsic.
+		/// - `owner`: The account that will be set as the owner of the new collection.
 		///
 		/// # Storage Changes
 		///
-		/// - [`CollectionOwner`](`CollectionOwner`): Inserts a new mapping from the generated `collection_id` to the `origin` account.
+		/// - [`CollectionOwner`](`CollectionOwner`): Inserts a new mapping from the generated `collection_id` to the `owner` account.
 		/// - [`CollectionCounter`](`CollectionCounter`): Updates the counter for the next available `collection_id`.
 		///
 		/// # Events
@@ -122,12 +123,12 @@ pub mod pallet {
 		/// - Returns [`Overflow`](`ArithmeticError::<T>::Overflow`) if incrementing the `collection_id` counter would result in an overflow.
 		#[pallet::call_index(0)]
 		#[pallet::weight(T::WeightInfo::create_collection())]
-		pub fn create_collection(origin: OriginFor<T>) -> DispatchResult {
-			let who = ensure_signed(origin)?;
+		pub fn create_collection(origin: OriginFor<T>, owner: T::AccountId) -> DispatchResult {
+			ensure_signed(origin)?;
 
 			let collection_id = Self::collection_counter();
 
-			CollectionOwner::<T>::insert(collection_id, who.clone());
+			CollectionOwner::<T>::insert(collection_id, owner.clone());
 
 			// Attempt to increment the collection counter by 1. If this operation
 			// would result in an overflow, return early with an error
@@ -135,7 +136,7 @@ pub mod pallet {
 			CollectionCounter::<T>::put(counter);
 
 			// Emit an event.
-			Self::deposit_event(Event::CollectionCreated { collection_id, owner: who });
+			Self::deposit_event(Event::CollectionCreated { collection_id, owner });
 
 			// Return a successful DispatchResult
 			Ok(())
