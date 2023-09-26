@@ -179,7 +179,6 @@ fn mint_with_external_uri_asset_already_minted() {
 		let token_uri: TokenUriOf<Test> =
 			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
 
-
 		assert_ok!(LivingAssets::create_collection(RuntimeOrigin::signed(1), ALICE));
 		assert_ok!(LivingAssets::mint_with_external_uri(
 			RuntimeOrigin::signed(ALICE),
