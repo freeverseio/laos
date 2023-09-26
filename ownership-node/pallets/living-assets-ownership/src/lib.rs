@@ -100,7 +100,7 @@ pub mod pallet {
 		CollectionCreated { collection_id: CollectionId, who: T::AccountId },
 		/// Asset transferred to `who`
 		/// parameters. [collection_id, asset_id, who]
-		AssetTransferred { collection_id: CollectionId, asset_id: U256, receiver: T::AccountId },
+		AssetTransferred { collection_id: CollectionId, asset_id: U256, to: T::AccountId },
 	}
 
 	// Errors inform users that something went wrong.
