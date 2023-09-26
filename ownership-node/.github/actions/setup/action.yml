@@ -6,8 +6,8 @@ runs:
     - uses: actions/checkout@v3
     - name: Install linux dependencies
       run: |
-      sudo apt update -yy
-      sudo apt-get install -y clang libssl-dev llvm libudev-dev protobuf-compiler
+        sudo apt update -yy
+        sudo apt-get install -y clang libssl-dev llvm libudev-dev protobuf-compiler
       shell: bash
     - name: Install Rust
       run: |
