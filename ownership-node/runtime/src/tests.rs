@@ -30,28 +30,28 @@ fn account_mappping_type_max_values() {
 }
 #[test]
 fn asset_id_to_address_type_zero_values() {
-	type TestAssetIdToAddress =
-		<Runtime as pallet_living_assets_ownership::Config>::AssetIdToAddress;
+	type TestAssetIdToInitialOwner =
+		<Runtime as pallet_living_assets_ownership::Config>::AssetIdToInitialOwner;
 
-	assert_eq!(TestAssetIdToAddress::convert(U256::from(0)), AccountId32::from([0u8; 32]));
+	assert_eq!(TestAssetIdToInitialOwner::convert(U256::from(0)), AccountId32::from([0u8; 32]));
 }
 
 #[test]
 fn asset_id_to_address_type_max_values() {
-	type TestAssetIdToAddress =
-		<Runtime as pallet_living_assets_ownership::Config>::AssetIdToAddress;
+	type TestAssetIdToInitialOwner =
+		<Runtime as pallet_living_assets_ownership::Config>::AssetIdToInitialOwner;
 	assert_eq!(
-		TestAssetIdToAddress::convert(U256::max_value()),
+		TestAssetIdToInitialOwner::convert(U256::max_value()),
 		AccountId32::from_str("000000000000000000000000ffffffffffffffffffffffffffffffffffffffff")
 			.unwrap()
 	);
 }
 #[test]
 fn asset_id_to_address_two_assets_same_owner() {
-	type TestAssetIdToAddress =
-		<Runtime as pallet_living_assets_ownership::Config>::AssetIdToAddress;
+	type TestAssetIdToInitialOwner =
+		<Runtime as pallet_living_assets_ownership::Config>::AssetIdToInitialOwner;
 	assert_eq!(
-		TestAssetIdToAddress::convert(U256::max_value()),
+		TestAssetIdToInitialOwner::convert(U256::max_value()),
 		AccountId32::from_str("000000000000000000000000ffffffffffffffffffffffffffffffffffffffff")
 			.unwrap()
 	);
@@ -79,12 +79,12 @@ fn asset_id_to_address_two_assets_same_owner() {
 	);
 
 	assert_eq!(
-		TestAssetIdToAddress::convert(asset1),
+		TestAssetIdToInitialOwner::convert(asset1),
 		AccountId32::from_str("000000000000000000000000c0f0f4ab324c46e55d02d0033343b4be8a55532d")
 			.unwrap()
 	);
 	assert_eq!(
-		TestAssetIdToAddress::convert(asset2),
+		TestAssetIdToInitialOwner::convert(asset2),
 		AccountId32::from_str("000000000000000000000000c0f0f4ab324c46e55d02d0033343b4be8a55532d")
 			.unwrap()
 	);

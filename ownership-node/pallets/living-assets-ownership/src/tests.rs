@@ -229,6 +229,25 @@ mod traits {
 	}
 
 	#[test]
+	fn verify_different_owners_for_same_asset_across_different_collections() {
+		let asset_id = U256::from(
+			hex::decode("03C0F0f4ab324C46e55D02D0033343B4Be8A55532d").unwrap().as_slice(),
+		);
+		let sender = H160::from_str("0000000000000000000000003343b4be8a55532d").unwrap();
+		let receiver = H160::from_low_u64_be(BOB);
+		new_test_ext().execute_with(|| {
+			CollectionBaseURI::<Test>::insert(1, BaseURI::default());
+			CollectionBaseURI::<Test>::insert(2, BaseURI::default());
+			assert_eq!(<LivingAssetsModule as Erc721>::owner_of(1, asset_id).unwrap(), sender);
+			assert_ok!(<LivingAssetsModule as Erc721>::transfer_from(
+				sender, 1, sender, receiver, asset_id,
+			));
+			assert_eq!(<LivingAssetsModule as Erc721>::owner_of(1, asset_id).unwrap(), receiver);
+			assert_eq!(<LivingAssetsModule as Erc721>::owner_of(2, asset_id).unwrap(), sender);
+		});
+	}
+
+	#[test]
 	fn erc721_owner_of_asset_of_collection() {
 		new_test_ext().execute_with(|| {
 			let collection_id = <LivingAssetsModule as CollectionManager>::create_collection(
@@ -250,7 +269,7 @@ mod traits {
 		let receiver = H160::from_low_u64_be(BOB);
 		new_test_ext().execute_with(|| {
 			System::set_block_number(1);
-			assert!(AssetOwner::<Test>::get(asset_id).is_none());
+			assert!(AssetOwner::<Test>::get(0, asset_id).is_none());
 			CollectionBaseURI::<Test>::insert(1, BaseURI::default());
 			assert_noop!(
 				<LivingAssetsModule as Erc721>::transfer_from(
@@ -272,7 +291,7 @@ mod traits {
 		let receiver = H160::from_low_u64_be(BOB);
 		new_test_ext().execute_with(|| {
 			System::set_block_number(1);
-			assert!(AssetOwner::<Test>::get(asset_id).is_none());
+			assert!(AssetOwner::<Test>::get(0, asset_id).is_none());
 			CollectionBaseURI::<Test>::insert(1, BaseURI::default());
 			assert_noop!(
 				<LivingAssetsModule as Erc721>::transfer_from(
@@ -289,7 +308,7 @@ mod traits {
 		let sender = H160::from_str("0000000000000000000000000000000000000005").unwrap();
 		new_test_ext().execute_with(|| {
 			System::set_block_number(1);
-			assert!(AssetOwner::<Test>::get(asset_id).is_none());
+			assert!(AssetOwner::<Test>::get(0, asset_id).is_none());
 			CollectionBaseURI::<Test>::insert(1, BaseURI::default());
 			assert_noop!(
 				<LivingAssetsModule as Erc721>::transfer_from(sender, 1, sender, sender, asset_id,),
@@ -305,7 +324,7 @@ mod traits {
 		let receiver = H160::from_str("0000000000000000000000000000000000000000").unwrap();
 		new_test_ext().execute_with(|| {
 			System::set_block_number(1);
-			assert!(AssetOwner::<Test>::get(asset_id).is_none());
+			assert!(AssetOwner::<Test>::get(0, asset_id).is_none());
 			CollectionBaseURI::<Test>::insert(1, BaseURI::default());
 			assert_noop!(
 				<LivingAssetsModule as Erc721>::transfer_from(
@@ -323,7 +342,7 @@ mod traits {
 		let receiver = H160::from_low_u64_be(BOB);
 		new_test_ext().execute_with(|| {
 			System::set_block_number(1);
-			assert!(AssetOwner::<Test>::get(asset_id).is_none());
+			assert!(AssetOwner::<Test>::get(0, asset_id).is_none());
 			assert_noop!(
 				<LivingAssetsModule as Erc721>::transfer_from(
 					sender, 1, sender, receiver, asset_id,
@@ -340,17 +359,20 @@ mod traits {
 		);
 		let sender = H160::from_str("0000000000000000000000003343b4be8a55532d").unwrap();
 		let receiver = H160::from_low_u64_be(BOB);
+		let collection_id = 1;
 		new_test_ext().execute_with(|| {
 			System::set_block_number(1);
-			CollectionBaseURI::<Test>::insert(1, BaseURI::default());
-			assert!(AssetOwner::<Test>::get(asset_id).is_none());
+			CollectionBaseURI::<Test>::insert(collection_id, BaseURI::default());
+			assert!(AssetOwner::<Test>::get(collection_id, asset_id).is_none());
 			assert_eq!(<LivingAssetsModule as Erc721>::owner_of(1, asset_id).unwrap(), sender);
 			assert_ok!(<LivingAssetsModule as Erc721>::transfer_from(
 				sender, 1, sender, receiver, asset_id,
 			));
-			assert_eq!(AssetOwner::<Test>::get(asset_id).unwrap(), BOB);
+			assert_eq!(AssetOwner::<Test>::get(collection_id, asset_id).unwrap(), BOB);
 			assert_eq!(<LivingAssetsModule as Erc721>::owner_of(1, asset_id).unwrap(), receiver);
-			System::assert_last_event(Event::AssetTransferred { asset_id, receiver: BOB }.into());
+			System::assert_last_event(
+				Event::AssetTransferred { collection_id, asset_id, to: BOB }.into(),
+			);
 		});
 	}
 

@@ -93,7 +93,7 @@ impl pallet_living_assets_ownership::Config for Runtime {
 	type BaseURILimit = ConstU32<256>;
 	type AccountIdToH160 = MockAccountIdToH160;
 	type H160ToAccountId = MockH160ToAccountId;
-	type AssetIdToAddress = MockAssetIdToAddress;
+	type AssetIdToInitialOwner = MockAssetIdToInitialOwner;
 }
 
 pub struct MockAccountIdToH160;
@@ -108,8 +108,8 @@ impl Convert<H160, AccountId> for MockH160ToAccountId {
 		account_id
 	}
 }
-pub struct MockAssetIdToAddress;
-impl Convert<U256, AccountId> for MockAssetIdToAddress {
+pub struct MockAssetIdToInitialOwner;
+impl Convert<U256, AccountId> for MockAssetIdToInitialOwner {
 	fn convert(_asset_id: U256) -> AccountId {
 		H160::zero()
 	}
