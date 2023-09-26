@@ -1,8 +1,11 @@
 use crate as pallet_living_assets_evolution;
-use frame_support::traits::{ConstU16, ConstU64};
-use sp_core::H256;
+use frame_support::{
+	parameter_types,
+	traits::{ConstU16, ConstU64},
+};
+use sp_core::{H160, H256};
 use sp_runtime::{
-	traits::{BlakeTwo256, IdentityLookup},
+	traits::{BlakeTwo256, Convert, IdentityLookup},
 	BuildStorage,
 };
 
@@ -13,10 +16,11 @@ frame_support::construct_runtime!(
 	pub enum Test
 	{
 		System: frame_system,
-		TemplateModule: pallet_living_assets_evolution,
+		LivingAssets: pallet_living_assets_evolution,
 	}
 );
 
+pub type AccountId = u64;
 impl frame_system::Config for Test {
 	type BaseCallFilter = frame_support::traits::Everything;
 	type BlockWeights = ();
@@ -27,7 +31,7 @@ impl frame_system::Config for Test {
 	type Nonce = u64;
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
-	type AccountId = u64;
+	type AccountId = AccountId;
 	type Lookup = IdentityLookup<Self::AccountId>;
 	type Block = Block;
 	type RuntimeEvent = RuntimeEvent;
@@ -43,9 +47,30 @@ impl frame_system::Config for Test {
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 
+parameter_types! {
+	pub const MaxTokenUriLength: u32 = 512;
+}
+
+/// A struct responsible for converting an `AccountId` to an `H160` address.
+///
+/// The `AccountIdToH160` struct provides a conversion from `AccountId`, typically used
+/// as a native identity in a blockchain, to an `H160` address, commonly used in Ethereum-like networks.
+pub struct MockAccountIdToH160;
+impl Convert<AccountId, H160> for MockAccountIdToH160 {
+	fn convert(account_id: AccountId) -> H160 {
+		let mut bytes = [0u8; 20];
+		let account_id_bytes = account_id.to_be_bytes();
+
+		bytes[0..8].copy_from_slice(&account_id_bytes);
+		H160::from(bytes)
+	}
+}
+
 impl pallet_living_assets_evolution::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
+	type AccountIdToH160 = MockAccountIdToH160;
+	type MaxTokenUriLength = MaxTokenUriLength;
 }
 
 // Build genesis storage according to the mock runtime.

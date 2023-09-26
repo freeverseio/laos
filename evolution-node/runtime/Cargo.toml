@@ -115,6 +115,7 @@ runtime-benchmarks = [
 	"pallet-living-assets-evolution/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
+	"pallet-bridge-grandpa/runtime-benchmarks",
 ]
 try-runtime = [
 	"frame-try-runtime/try-runtime",

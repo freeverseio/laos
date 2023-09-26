@@ -3,8 +3,9 @@
 use super::*;
 
 #[allow(unused)]
-use crate::Pallet as Template;
+use crate::Pallet as LivingAssetsEvo;
 use frame_benchmarking::v2::*;
+use frame_support::traits::Get;
 use frame_system::RawOrigin;
 
 #[benchmarks]
@@ -20,5 +21,27 @@ mod benchmarks {
 		assert_eq!(CollectionOwner::<T>::get(0), Some(caller));
 	}
 
-	impl_benchmark_test_suite!(Template, crate::mock::new_test_ext(), crate::mock::Test);
+	#[benchmark]
+	fn mint_with_external_uri() {
+		let caller: T::AccountId = whitelisted_caller();
+		LivingAssetsEvo::<T>::create_collection(RawOrigin::Signed(caller.clone()).into()).unwrap();
+
+		let token_uri: TokenUriOf<T> =
+			vec![0; T::MaxTokenUriLength::get() as usize].try_into().unwrap();
+		let slot = 0;
+		let token_id = LivingAssetsEvo::<T>::slot_and_owner_to_token_id((slot, caller.clone()));
+
+		#[extrinsic_call]
+		mint_with_external_uri(
+			RawOrigin::Signed(caller.clone()),
+			0,
+			slot,
+			caller.clone(),
+			token_uri.clone(),
+		);
+
+		assert_eq!(TokenURI::<T>::get(0, token_id), Some(token_uri));
+	}
+
+	impl_benchmark_test_suite!(LivingAssetsEvo, crate::mock::new_test_ext(), crate::mock::Test);
 }

@@ -9,7 +9,7 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 use pallet_grandpa::AuthorityId as GrandpaId;
 use sp_api::impl_runtime_apis;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
-use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
+use sp_core::{crypto::KeyTypeId, OpaqueMetadata, H160};
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{Block as BlockT, NumberFor, One},
@@ -271,10 +271,31 @@ impl pallet_sudo::Config for Runtime {
 	type WeightInfo = pallet_sudo::weights::SubstrateWeight<Runtime>;
 }
 
+parameter_types! {
+	/// Max length of the `TokenUri`
+	pub const MaxTokenUriLength: u32 = 512;
+}
+
+/// A struct responsible for converting an `AccountId` to an `H160` address.
+///
+/// The `AccountIdToH160` struct provides a conversion from `AccountId`, typically used
+/// as a native identity in a blockchain, to an `H160` address, commonly used in Ethereum-like networks.
+pub struct AccountIdToH160;
+impl sp_runtime::traits::Convert<AccountId, H160> for AccountIdToH160 {
+	fn convert(account_id: AccountId) -> H160 {
+		let mut bytes = [0u8; 20];
+		let account_id_bytes: [u8; 32] = account_id.into();
+		bytes.copy_from_slice(&account_id_bytes[account_id_bytes.len() - 20..]);
+		H160::from(bytes)
+	}
+}
+
 /// Configure the pallet-living-assets-evolution in pallets/living-assets-evolution.
 impl pallet_living_assets_evolution::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = pallet_living_assets_evolution::weights::SubstrateWeight<Runtime>;
+	type AccountIdToH160 = AccountIdToH160;
+	type MaxTokenUriLength = MaxTokenUriLength;
 }
 
 impl pallet_bridge_grandpa::Config for Runtime {
@@ -297,7 +318,7 @@ construct_runtime!(
 		Sudo: pallet_sudo,
 
 		// Include the custom logic from the pallet-living-assets-evolution in the runtime.
-		TemplateModule: pallet_living_assets_evolution,
+		LivingAssetsEvolution: pallet_living_assets_evolution,
 
 		BridgeRococoGrandpa: pallet_bridge_grandpa,
 	}
@@ -346,7 +367,7 @@ mod benches {
 		[frame_system, SystemBench::<Runtime>]
 		[pallet_balances, Balances]
 		[pallet_timestamp, Timestamp]
-		[pallet_living_assets_evolution, TemplateModule]
+		[pallet_living_assets_evolution, LivingAssetsEvolution]
 	);
 }
 
