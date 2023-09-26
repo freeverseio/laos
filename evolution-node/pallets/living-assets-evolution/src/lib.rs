@@ -216,7 +216,6 @@ impl<T: Config> Pallet<T> {
 
 		let slot_bytes = slot.to_be_bytes();
 
-		// NOTE: this will panic at runtime if two arrays overlap, we should see if there is a safer way to do this
 		// we also use the last 12 bytes of the slot, since the first 4 bytes are always 0
 		bytes[..12].copy_from_slice(&slot_bytes[4..]);
 
