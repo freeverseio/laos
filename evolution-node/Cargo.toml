@@ -1,9 +1,11 @@
 [workspace]
 members = [
     "node",
-    "pallets/template",
+    "pallets/living-assets-evolution",
     "runtime",
     "primitives"
 ]
+resolver = "2"
+
 [profile.release]
 panic = "unwind"
