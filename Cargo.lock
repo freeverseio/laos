@@ -1936,7 +1936,7 @@ dependencies = [
 [[package]]
 name = "common"
 version = "0.1.0"
-source = "git+https://github.com/w3f/ring-proof#187ddf74d9c6747bb74c3d8aed252d8913dbab81"
+source = "git+https://github.com/w3f/ring-proof#0e948f3c28cbacecdd3020403c4841c0eb339213"
 dependencies = [
  "ark-ec",
  "ark-ff",
@@ -1945,7 +1945,6 @@ dependencies = [
  "ark-std",
  "fflonk",
  "merlin 3.0.0",
- "rand_chacha 0.3.1",
 ]
 
 [[package]]
