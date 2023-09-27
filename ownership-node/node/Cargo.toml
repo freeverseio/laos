@@ -1,0 +1,106 @@
+[package]
+name = "laos"
+version = "0.1.0"
+authors = ["Anonymous"]
+description = "A new Cumulus FRAME-based Substrate Node, ready for hacking together a parachain."
+license = "Unlicense"
+homepage = "https://substrate.io"
+repository = "https://github.com/paritytech/cumulus/"
+edition = "2021"
+build = "build.rs"
+
+[dependencies]
+clap = { workspace = true, features = ["derive"] }
+futures = { workspace = true }
+log = { workspace = true }
+parity-scale-codec = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+jsonrpsee = { workspace = true, features = ["server"] }
+hex-literal = { workspace = true }
+
+# Local
+laos-runtime = { workspace = true }
+
+# Substrate
+frame-benchmarking = { workspace = true }
+frame-benchmarking-cli = { workspace = true }
+pallet-transaction-payment-rpc = { workspace = true }
+sc-basic-authorship = { workspace = true }
+sc-chain-spec = { workspace = true }
+sc-cli = { workspace = true }
+sc-client-api = { workspace = true }
+sc-consensus = { workspace = true }
+sc-executor = { workspace = true }
+sc-network = { workspace = true }
+sc-network-sync = { workspace = true }
+sc-offchain = { workspace = true }
+sc-rpc = { workspace = true }
+sc-service = { workspace = true }
+sc-sysinfo = { workspace = true }
+sc-telemetry = { workspace = true }
+sc-tracing = { workspace = true }
+sc-transaction-pool = { workspace = true }
+sc-transaction-pool-api = { workspace = true }
+sp-api = { workspace = true }
+sp-block-builder = { workspace = true }
+sp-blockchain = { workspace = true }
+sp-consensus-aura = { workspace = true }
+sp-core = { workspace = true }
+sp-keystore = { workspace = true }
+sp-io = { workspace = true }
+sp-runtime = { workspace = true }
+sp-timestamp = { workspace = true }
+substrate-frame-rpc-system = { workspace = true }
+substrate-prometheus-endpoint = { workspace = true }
+try-runtime-cli = { workspace = true, optional = true }
+
+# Polkadot
+polkadot-cli = { workspace = true, features = ["rococo-native"] }
+polkadot-service = { workspace = true, features = ["rococo-native"] }
+polkadot-primitives = { workspace = true }
+xcm = { workspace = true }
+
+# Cumulus
+cumulus-client-cli = { workspace = true }
+cumulus-client-consensus-aura = { workspace = true }
+cumulus-client-consensus-common = { workspace = true }
+cumulus-client-service = { workspace = true }
+cumulus-primitives-core = { workspace = true }
+cumulus-primitives-parachain-inherent = { workspace = true }
+cumulus-relay-chain-interface = { workspace = true }
+color-print = { workspace = true }
+
+# Frontier
+fc-cli = { workspace = true }
+fc-rpc = { workspace = true, features = [ "rpc-binary-search-estimate" ] }
+fc-rpc-core = { workspace = true }
+fc-mapping-sync = { workspace = true }
+fc-db = { workspace = true }
+fc-consensus = { workspace = true }
+fc-storage = { workspace = true }
+fp-rpc = { workspace = true, default-features = false }
+fp-evm = { workspace = true }
+fp-dynamic-fee = { workspace = true }
+
+[build-dependencies]
+substrate-build-script-utils = { workspace = true }
+
+[features]
+default = []
+runtime-benchmarks = [
+	"laos-runtime/runtime-benchmarks",
+	"polkadot-cli/runtime-benchmarks",
+	"polkadot-service/runtime-benchmarks",
+	"sp-runtime/runtime-benchmarks",
+	"sc-service/runtime-benchmarks",
+	"polkadot-primitives/runtime-benchmarks",
+	"frame-benchmarking/runtime-benchmarks",
+	"frame-benchmarking-cli/runtime-benchmarks",
+]
+try-runtime = [
+	"try-runtime-cli/try-runtime",
+	"laos-runtime/try-runtime",
+	"polkadot-cli/try-runtime",
+	"polkadot-service/try-runtime",
+	"sp-runtime/try-runtime",
+]

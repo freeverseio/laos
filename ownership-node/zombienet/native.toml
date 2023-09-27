@@ -1,0 +1,24 @@
+[relaychain]
+default_command = "{{ZOMBIENET_RELAYCHAIN_COMMAND}}"
+default_args = [ "-lparachain=debug" ]
+chain = "rococo-local"
+
+  [[relaychain.nodes]]
+  name = "alice"
+  validator = true
+
+  [[relaychain.nodes]]
+  name = "bob"
+  validator = true
+
+[[parachains]]
+id = 2000
+cumulus_based = true
+chain = "local"
+
+  [parachains.collator]
+  name = "ownership-collator-pandora"
+  ws_port = 9999
+  command = "{{ZOMBIENET_PARACHAIN_COMMAND}}"
+  validator = true
+  args = ["-ldebug,info"]

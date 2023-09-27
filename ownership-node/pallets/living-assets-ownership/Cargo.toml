@@ -1,0 +1,55 @@
+[package]
+name = "pallet-living-assets-ownership"
+authors = [""]
+description = ""
+version = "0.0.1"
+license = "Unlicense"
+homepage = ""
+repository = "https://github.com/freeverseio/pallet-livingassets-ownership"
+edition = "2021"
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
+
+[dependencies]
+hex-literal = { workspace = true, optional = true}
+parity-scale-codec = { workspace = true, features = ["derive"] }
+scale-info = { workspace = true, features = ["derive"] }
+
+# Substrate
+frame-benchmarking = { workspace = true, optional = true }
+frame-support = { workspace = true }
+frame-system = { workspace = true }
+sp-arithmetic = { workspace = true }
+sp-core = { workspace = true }
+sp-std = { workspace = true }
+sp-io = { workspace = true }
+sp-runtime = { workspace = true }
+
+[dev-dependencies]
+serde = { workspace = true }
+hex = { workspace = true }
+
+[features]
+default = ["std"]
+runtime-benchmarks = [
+	"frame-benchmarking/runtime-benchmarks",
+	"frame-system/runtime-benchmarks",
+	"frame-support/runtime-benchmarks"
+]
+std = [
+	"parity-scale-codec/std",
+	"scale-info/std",
+	"frame-benchmarking/std",
+	"frame-support/std",
+	"frame-system/std",
+	"sp-arithmetic/std",
+	"sp-core/std",
+	"sp-std/std",
+	"sp-io/std",
+	"sp-runtime/std",
+]
+try-runtime = [
+	"frame-system/try-runtime",
+	"frame-support/try-runtime"
+]

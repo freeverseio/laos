@@ -1,0 +1,56 @@
+[package]
+name = "precompile-utils"
+authors = ["StakeTechnologies", "PureStake"]
+description = "Utils to write EVM precompiles."
+version = "0.4.3"
+edition = "2021"
+
+[dependencies]
+# There's a problem with --all-features when this is moved under dev-deps
+evm = { workspace = true, optional = true }
+impl-trait-for-tuples = { workspace = true }
+num_enum = { workspace = true }
+sha3 = { workspace = true }
+similar-asserts = { workspace = true, optional = true }
+assert_matches = { workspace = true }
+
+precompile-utils-macro = { workspace = true }
+
+# Substrate
+frame-support = { workspace = true }
+frame-system = { workspace = true }
+parity-scale-codec = { workspace = true }
+sp-core = { workspace = true }
+sp-io = { workspace = true }
+sp-runtime = { workspace = true }
+sp-std = { workspace = true }
+
+# Frontier
+fp-evm = { workspace = true }
+pallet-evm = { workspace = true }
+
+# Polkadot / XCM
+xcm = { workspace = true }
+
+[dev-dependencies]
+hex-literal = { workspace = true }
+
+[features]
+default = ["std"]
+std = [
+	"evm",
+	"parity-scale-codec/std",
+	"fp-evm/std",
+	"frame-support/std",
+	"frame-system/std",
+	"pallet-evm/std",
+	"evm/with-serde",
+	"sp-core/std",
+	"sp-io/std",
+	"sp-std/std",
+	"sp-runtime/std",
+	"xcm/std",
+	"sha3/std",
+	"num_enum/std",
+]
+testing = ["similar-asserts", "std"]
