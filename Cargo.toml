@@ -8,17 +8,17 @@ license = "GPL-3.0-only"
 resolver = "2"
 
 members = [
-    "ownership-node/node",
-	"ownership-node/runtime",
-	"ownership-node/precompile/*",
-	"ownership-node/pallets/*",
-	"ownership-node/primitives",
     "evolution-node/node",
     "evolution-node/pallets/living-assets-evolution",
     "evolution-node/runtime",
     "evolution-node/primitives",
-    "bridge/relays/*",
-	"bridge/primitives/*"
+#   "bridge/relays/*",
+#	"bridge/primitives/*"
+#   "ownership-node/node",
+#   "ownership-node/runtime",
+#   "ownership-node/precompile/*",
+#   "ownership-node/pallets/*",
+#   "ownership-node/primitives",
 ]
 
 [workspace.dependencies]
