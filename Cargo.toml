@@ -8,17 +8,17 @@ license = "GPL-3.0-only"
 resolver = "2"
 
 members = [
-    "evolution-node/node",
-    "evolution-node/pallets/living-assets-evolution",
-    "evolution-node/runtime",
-    "evolution-node/primitives",
+#    "evolution-chain/node",
+#    "evolution-chain/pallets/living-assets-evolution",
+#    "evolution-chain/runtime",
+#    "evolution-chain/primitives",
 #   "bridge/relays/*",
 #	"bridge/primitives/*"
-#   "ownership-node/node",
-#   "ownership-node/runtime",
-#   "ownership-node/precompile/*",
-#   "ownership-node/pallets/*",
-#   "ownership-node/primitives",
+   "ownership-chain/node",
+   "ownership-chain/runtime",
+   "ownership-chain/precompile/*",
+   "ownership-chain/pallets/*",
+   "ownership-chain/primitives",
 ]
 
 [workspace.dependencies]
@@ -205,16 +205,16 @@ bridge-runtime-common = { git = "https://github.com/freeverseio/parity-bridges-c
 pallet-bridge-grandpa = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "dev", default-features = false }
 
 # LAOS pallets
-pallet-living-assets-ownership = { path = "./ownership-node/pallets/living-assets-ownership", default-features = false }
-pallet-evm-living-assets-ownership = { path = "./ownership-node/precompile/living-assets", default-features = false }
-pallet-evm-erc721 = { path = "./ownership-node/precompile/erc721", default-features = false }
+pallet-living-assets-ownership = { path = "./ownership-chain/pallets/living-assets-ownership", default-features = false }
+pallet-evm-living-assets-ownership = { path = "./ownership-chain/precompile/living-assets", default-features = false }
+pallet-evm-erc721 = { path = "./ownership-chain/precompile/erc721", default-features = false }
 
 # Utils
-precompile-utils = { path = "./ownership-node/precompile/utils", default-features = false }
-precompile-utils-macro = { path = "./ownership-node/precompile/utils/macro", default-features = false }
+precompile-utils = { path = "./ownership-chain/precompile/utils", default-features = false }
+precompile-utils-macro = { path = "./ownership-chain/precompile/utils/macro", default-features = false }
 
 # Primitives
-ownership-parachain-primitives = { path = "./ownership-node/primitives", default-features = false }
+ownership-parachain-primitives = { path = "./ownership-chain/primitives", default-features = false }
 
 # runtime
-laos-runtime = { path = "./ownership-node/runtime" }
+laos-runtime = { path = "./ownership-chain/runtime" }
