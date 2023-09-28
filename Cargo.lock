@@ -1129,7 +1129,7 @@ dependencies = [
 [[package]]
 name = "bp-bridge-hub-cumulus"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0-patch#3462a9ac1293d6eb7c4f4ea8cc9f92d4bfe22233"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#255d93adc7bedaa3fb0fc6387b409b8bee9a4716"
 dependencies = [
  "bp-messages",
  "bp-polkadot-core",
@@ -1144,7 +1144,7 @@ dependencies = [
 [[package]]
 name = "bp-header-chain"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0-patch#3462a9ac1293d6eb7c4f4ea8cc9f92d4bfe22233"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#255d93adc7bedaa3fb0fc6387b409b8bee9a4716"
 dependencies = [
  "bp-runtime",
  "finality-grandpa",
@@ -1177,7 +1177,7 @@ dependencies = [
 [[package]]
 name = "bp-laos-evolution"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0-patch#3462a9ac1293d6eb7c4f4ea8cc9f92d4bfe22233"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#255d93adc7bedaa3fb0fc6387b409b8bee9a4716"
 dependencies = [
  "bp-header-chain",
  "bp-messages",
@@ -1212,7 +1212,7 @@ dependencies = [
 [[package]]
 name = "bp-messages"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0-patch#3462a9ac1293d6eb7c4f4ea8cc9f92d4bfe22233"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#255d93adc7bedaa3fb0fc6387b409b8bee9a4716"
 dependencies = [
  "bp-header-chain",
  "bp-runtime",
@@ -1228,7 +1228,7 @@ dependencies = [
 [[package]]
 name = "bp-parachains"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0-patch#3462a9ac1293d6eb7c4f4ea8cc9f92d4bfe22233"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#255d93adc7bedaa3fb0fc6387b409b8bee9a4716"
 dependencies = [
  "bp-header-chain",
  "bp-polkadot-core",
@@ -1245,7 +1245,7 @@ dependencies = [
 [[package]]
 name = "bp-polkadot-core"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0-patch#3462a9ac1293d6eb7c4f4ea8cc9f92d4bfe22233"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#255d93adc7bedaa3fb0fc6387b409b8bee9a4716"
 dependencies = [
  "bp-messages",
  "bp-runtime",
@@ -1263,7 +1263,7 @@ dependencies = [
 [[package]]
 name = "bp-relayers"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0-patch#3462a9ac1293d6eb7c4f4ea8cc9f92d4bfe22233"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#255d93adc7bedaa3fb0fc6387b409b8bee9a4716"
 dependencies = [
  "bp-messages",
  "bp-runtime",
@@ -1277,7 +1277,7 @@ dependencies = [
 [[package]]
 name = "bp-rococo"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0-patch#3462a9ac1293d6eb7c4f4ea8cc9f92d4bfe22233"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#255d93adc7bedaa3fb0fc6387b409b8bee9a4716"
 dependencies = [
  "bp-header-chain",
  "bp-polkadot-core",
@@ -1291,7 +1291,7 @@ dependencies = [
 [[package]]
 name = "bp-runtime"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0-patch#3462a9ac1293d6eb7c4f4ea8cc9f92d4bfe22233"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#255d93adc7bedaa3fb0fc6387b409b8bee9a4716"
 dependencies = [
  "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
  "frame-system",
@@ -1314,7 +1314,7 @@ dependencies = [
 [[package]]
 name = "bp-test-utils"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0-patch#3462a9ac1293d6eb7c4f4ea8cc9f92d4bfe22233"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#255d93adc7bedaa3fb0fc6387b409b8bee9a4716"
 dependencies = [
  "bp-header-chain",
  "bp-parachains",
@@ -1334,7 +1334,7 @@ dependencies = [
 [[package]]
 name = "bp-xcm-bridge-hub"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0-patch#3462a9ac1293d6eb7c4f4ea8cc9f92d4bfe22233"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#255d93adc7bedaa3fb0fc6387b409b8bee9a4716"
 dependencies = [
  "bp-messages",
  "bp-runtime",
@@ -1349,7 +1349,7 @@ dependencies = [
 [[package]]
 name = "bridge-runtime-common"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0-patch#3462a9ac1293d6eb7c4f4ea8cc9f92d4bfe22233"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#255d93adc7bedaa3fb0fc6387b409b8bee9a4716"
 dependencies = [
  "bp-header-chain",
  "bp-messages",
@@ -3512,7 +3512,7 @@ checksum = "5443807d6dff69373d433ab9ef5378ad8df50ca6298caf15de6e52e24aaf54d5"
 [[package]]
 name = "equivocation-detector"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0-patch#3462a9ac1293d6eb7c4f4ea8cc9f92d4bfe22233"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#255d93adc7bedaa3fb0fc6387b409b8bee9a4716"
 dependencies = [
  "async-std",
  "async-trait",
@@ -4030,7 +4030,7 @@ dependencies = [
 [[package]]
 name = "finality-relay"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0-patch#3462a9ac1293d6eb7c4f4ea8cc9f92d4bfe22233"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#255d93adc7bedaa3fb0fc6387b409b8bee9a4716"
 dependencies = [
  "async-std",
  "async-trait",
@@ -6155,7 +6155,7 @@ name = "laos-runtime"
 version = "0.1.0"
 dependencies = [
  "bp-header-chain",
- "bp-laos-evolution 0.1.0 (git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0-patch)",
+ "bp-laos-evolution 0.1.0 (git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0)",
  "bp-runtime",
  "bridge-runtime-common",
  "cumulus-pallet-aura-ext",
@@ -7085,7 +7085,7 @@ dependencies = [
 [[package]]
 name = "messages-relay"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0-patch#3462a9ac1293d6eb7c4f4ea8cc9f92d4bfe22233"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#255d93adc7bedaa3fb0fc6387b409b8bee9a4716"
 dependencies = [
  "async-std",
  "async-trait",
@@ -7965,7 +7965,7 @@ dependencies = [
 [[package]]
 name = "pallet-bridge-grandpa"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0-patch#3462a9ac1293d6eb7c4f4ea8cc9f92d4bfe22233"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#255d93adc7bedaa3fb0fc6387b409b8bee9a4716"
 dependencies = [
  "bp-header-chain",
  "bp-runtime",
@@ -7986,7 +7986,7 @@ dependencies = [
 [[package]]
 name = "pallet-bridge-messages"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0-patch#3462a9ac1293d6eb7c4f4ea8cc9f92d4bfe22233"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#255d93adc7bedaa3fb0fc6387b409b8bee9a4716"
 dependencies = [
  "bp-header-chain",
  "bp-messages",
@@ -8007,7 +8007,7 @@ dependencies = [
 [[package]]
 name = "pallet-bridge-parachains"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0-patch#3462a9ac1293d6eb7c4f4ea8cc9f92d4bfe22233"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#255d93adc7bedaa3fb0fc6387b409b8bee9a4716"
 dependencies = [
  "bp-header-chain",
  "bp-parachains",
@@ -8028,7 +8028,7 @@ dependencies = [
 [[package]]
 name = "pallet-bridge-relayers"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0-patch#3462a9ac1293d6eb7c4f4ea8cc9f92d4bfe22233"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#255d93adc7bedaa3fb0fc6387b409b8bee9a4716"
 dependencies = [
  "bp-messages",
  "bp-relayers",
@@ -9085,7 +9085,7 @@ dependencies = [
 [[package]]
 name = "parachains-relay"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0-patch#3462a9ac1293d6eb7c4f4ea8cc9f92d4bfe22233"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#255d93adc7bedaa3fb0fc6387b409b8bee9a4716"
 dependencies = [
  "async-std",
  "async-trait",
@@ -11397,7 +11397,7 @@ dependencies = [
 [[package]]
 name = "relay-substrate-client"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0-patch#3462a9ac1293d6eb7c4f4ea8cc9f92d4bfe22233"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#255d93adc7bedaa3fb0fc6387b409b8bee9a4716"
 dependencies = [
  "async-std",
  "async-trait",
@@ -11440,7 +11440,7 @@ dependencies = [
 [[package]]
 name = "relay-utils"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0-patch#3462a9ac1293d6eb7c4f4ea8cc9f92d4bfe22233"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#255d93adc7bedaa3fb0fc6387b409b8bee9a4716"
 dependencies = [
  "ansi_term",
  "anyhow",
@@ -15285,7 +15285,7 @@ dependencies = [
 [[package]]
 name = "substrate-relay-helper"
 version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0-patch#3462a9ac1293d6eb7c4f4ea8cc9f92d4bfe22233"
+source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#255d93adc7bedaa3fb0fc6387b409b8bee9a4716"
 dependencies = [
  "anyhow",
  "async-std",

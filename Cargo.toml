@@ -208,21 +208,21 @@ polkadot-cli = { git = "https://github.com/paritytech/polkadot", branch = "relea
 polkadot-service = { git = "https://github.com/paritytech/polkadot", branch = "release-v1.0.0" }
 
 # Bridge dependencies
-bp-laos-evolution = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0-patch", default-features = false }
-bp-header-chain = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0-patch", default-features = false }
-bp-runtime = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0-patch", default-features = false }
-bridge-runtime-common = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0-patch", default-features = false }
-pallet-bridge-grandpa = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0-patch", default-features = false }
-bp-rococo = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0-patch", default-features = false }
-relay-substrate-client = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0-patch", default-features = false }
-relay-utils = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0-patch", default-features = false }
-bp-messages = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0-patch", default-features = false }
-bp-bridge-hub-cumulus = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0-patch", default-features = false }
-bp-polkadot-core = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0-patch", default-features = false }
-bp-parachains = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0-patch", default-features = false }
-pallet-bridge-parachains = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0-patch", default-features = false }
-substrate-relay-helper = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0-patch", default-features = false }
-bp-test-utils = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0-patch", default-features = false }
+bp-laos-evolution = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+bp-header-chain = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+bp-runtime = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+bridge-runtime-common = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+pallet-bridge-grandpa = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+bp-rococo = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+relay-substrate-client = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+relay-utils = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+bp-messages = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+bp-bridge-hub-cumulus = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+bp-polkadot-core = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+bp-parachains = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+pallet-bridge-parachains = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+substrate-relay-helper = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+bp-test-utils = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
 
 # LAOS pallets
 pallet-living-assets-ownership = { path = "./ownership-chain/pallets/living-assets-ownership", default-features = false }
@@ -235,10 +235,8 @@ precompile-utils-macro = { path = "./ownership-chain/precompile/utils/macro", de
 
 # Primitives
 ownership-parachain-primitives = { path = "./ownership-chain/primitives", default-features = false }
+evochain-primitives = { path = "./evolution-chain/primitives", default-features = false }
 
 # runtime
 laos-runtime = { path = "./ownership-chain/runtime" }
-
-#primitives
-evochain-primitives = { path = "./evolution-chain/primitives", default-features = false }
 laos-evolution-runtime = { path = "./evolution-chain/runtime", default-features = false }
