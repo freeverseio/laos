@@ -14,16 +14,16 @@ codec = { package = "parity-scale-codec", version = "3.6.1", default-features = 
 	"derive",
 ] }
 scale-info = { version = "2.5.0", default-features = false, features = ["derive"] }
-frame-benchmarking = { version = "4.0.0-dev", default-features = false, optional = true, workspace = true}
-frame-support = { version = "4.0.0-dev", default-features = false, workspace = true}
-frame-system = { version = "4.0.0-dev", default-features = false, workspace = true}
-sp-runtime = { default-features = false, workspace = true}
-sp-core = { default-features = false, workspace = true}
-sp-std = { default-features = false, workspace = true}
+frame-benchmarking = { version = "4.0.0-dev", default-features = false, optional = true, workspace = true }
+frame-support = { version = "4.0.0-dev", default-features = false, workspace = true }
+frame-system = { version = "4.0.0-dev", default-features = false, workspace = true }
+sp-runtime = { default-features = false, workspace = true }
+sp-core = { default-features = false, workspace = true }
+sp-std = { default-features = false, workspace = true }
 
 [dev-dependencies]
-sp-io = { version = "23.0.0", workspace = true}
-sp-runtime = { version = "24.0.0", workspace = true}
+sp-io = { version = "23.0.0", workspace = true }
+sp-runtime = { version = "24.0.0", workspace = true }
 
 [features]
 default = ["std"]
