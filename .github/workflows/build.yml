@@ -50,7 +50,7 @@ jobs:
       - name: Push Docker images
         uses: docker/build-push-action@v4
         with:
-          context: .
+          context: ./ownership-chain
           file: ./local.Dockerfile
           push: true
           tags: ${{ env.DOCKER_REPO }}:${{ github.sha }}
