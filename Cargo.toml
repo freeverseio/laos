@@ -16,7 +16,9 @@ members = [
    "evolution-chain/node",
    "evolution-chain/pallets/living-assets-evolution",
    "evolution-chain/runtime",
-   "evolution-chain/primitives"
+   "evolution-chain/primitives",
+  	"bridge/relays/*",
+	"bridge/primitives/*",
 ]
 
 [workspace.dependencies]
@@ -216,3 +218,7 @@ ownership-parachain-primitives = { path = "./ownership-chain/primitives", defaul
 
 # runtime
 laos-runtime = { path = "./ownership-chain/runtime" }
+
+#primitives
+evochain-primitives = { path = "./evolution-chain/primitives", default-features = false }
+laos-evolution-runtime = { path = "./evolution-chain/runtime", default-features = false }

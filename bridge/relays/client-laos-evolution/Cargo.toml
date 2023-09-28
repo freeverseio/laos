@@ -8,13 +8,13 @@ codec = { package = "parity-scale-codec", version = "3.1.5" }
 
 # Laos Evolution Dependencies
 bp-laos-evolution = { path = "../../primitives/chain-laos-evolution" }
-laos-evolution-runtime = { git = "https://github.com/freeverseio/laos-evolution-node.git", branch = "dev" }
+laos-evolution-runtime = { workspace = true }
 
 # Substrate Dependencies
-frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
-frame-system = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
-pallet-transaction-payment = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
-sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
-sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
+frame-support = { workspace = true }
+frame-system = { workspace = true }
+pallet-transaction-payment = { workspace = true }
+sp-core = { workspace = true }
+sp-runtime = { workspace = true }
 relay-substrate-client = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0" }
 relay-utils = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0" }
