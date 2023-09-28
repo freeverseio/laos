@@ -20,8 +20,8 @@ relay-utils =  { git = "https://github.com/freeverseio/parity-bridges-common.git
 
 # Substrate Dependencies
 
-sp-consensus-grandpa = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
-sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
-sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
-sp-session = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
-sp-weights = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
+sp-consensus-grandpa = { workspace = true }
+sp-core = { workspace = true }
+sp-runtime = { workspace = true }
+sp-session = { workspace = true }
+sp-weights = { workspace = true }

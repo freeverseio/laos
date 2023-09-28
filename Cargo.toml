@@ -64,6 +64,7 @@ sp-arithmetic = { git = "https://github.com/paritytech/substrate", branch = "pol
 sp-externalities = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
 sp-consensus-grandpa = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
 sp-keyring = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
+sp-weights = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
 
 # (native)
 sp-blockchain = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
