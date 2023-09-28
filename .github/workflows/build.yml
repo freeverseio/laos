@@ -29,7 +29,7 @@ jobs:
           SKIP_WASM_BUILD=1 cargo check --release
 
   build_and_push:
-    if: github.event_name == 'push'
+    # if: github.event_name == 'push'
     runs-on: 
       group: laos
       labels: ubuntu-16-cores
