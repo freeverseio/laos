@@ -71,7 +71,7 @@ laos-evolution-runtime = { path = "../runtime" }
 try-runtime-cli = { optional = true, workspace = true }
 
 [build-dependencies]
-substrate-build-script-utils = { version = "3.0.0", workspace = true }
+substrate-build-script-utils = { workspace = true }
 
 [features]
 default = []
