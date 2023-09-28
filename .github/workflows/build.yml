@@ -50,22 +50,22 @@ jobs:
       - name: Push Ownership Chain Docker images
         uses: docker/build-push-action@v4
         with:
-          context: ./ownership-chain
-          file: ./ownership-chain/local.Dockerfile
+          context: .
+          file: ./ownership-chain.local.Dockerfile
           push: true
           tags: freeverseio/laos-ownership-node:${{ github.sha }}
       - name: Push Evolution Chain Docker images
         uses: docker/build-push-action@v4
         with:
-          context: ./evolution-chain
-          file: ./evolution-chain/local.Dockerfile
+          context: .
+          file: ./evolution-chain.local.Dockerfile
           push: true
           tags: freeverseio/laos-evolution-node:${{ github.sha }}
       - name: Push Evolution Chain Docker images
         uses: docker/build-push-action@v4
         with:
-          context: ./bridge
-          file: ./bridge/local.Dockerfile
+          context: .
+          file: ./bridge.local.Dockerfile
           push: true
           tags: freeverseio/laos-bridge:${{ github.sha }}
 
