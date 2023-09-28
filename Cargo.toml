@@ -1,13 +1,18 @@
-[profile.release]
-panic = "unwind"
+[workspace.package]
+authors = ["Freverse <info@freeverse.io>"]
+edition = "2021"
+repository = "https://github.com/freeverseio/laos.git"
+license = "GPL-3.0-only"
 
 [workspace]
+resolver = "2"
+
 members = [
-	"node",
-	"runtime",
-	"precompile/*",
-	"pallets/*",
-	"primitives",
+   "ownership-chain/node",
+   "ownership-chain/runtime",
+   "ownership-chain/precompile/*",
+   "ownership-chain/pallets/*",
+   "ownership-chain/primitives",
 ]
 
 [workspace.dependencies]
@@ -194,16 +199,16 @@ bridge-runtime-common = { git = "https://github.com/freeverseio/parity-bridges-c
 pallet-bridge-grandpa = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "dev", default-features = false }
 
 # LAOS pallets
-pallet-living-assets-ownership = { path = "./pallets/living-assets-ownership", default-features = false }
-pallet-evm-living-assets-ownership = { path = "./precompile/living-assets", default-features = false }
-pallet-evm-erc721 = { path = "./precompile/erc721", default-features = false }
+pallet-living-assets-ownership = { path = "./ownership-chain/pallets/living-assets-ownership", default-features = false }
+pallet-evm-living-assets-ownership = { path = "./ownership-chain/precompile/living-assets", default-features = false }
+pallet-evm-erc721 = { path = "./ownership-chain/precompile/erc721", default-features = false }
 
 # Utils
-precompile-utils = { path = "./precompile/utils", default-features = false }
-precompile-utils-macro = { path = "./precompile/utils/macro", default-features = false }
+precompile-utils = { path = "./ownership-chain/precompile/utils", default-features = false }
+precompile-utils-macro = { path = "./ownership-chain/precompile/utils/macro", default-features = false }
 
 # Primitives
-ownership-parachain-primitives = { path = "./primitives", default-features = false }
+ownership-parachain-primitives = { path = "./ownership-chain/primitives", default-features = false }
 
 # runtime
-laos-runtime = { path = "./runtime" }
+laos-runtime = { path = "./ownership-chain/runtime" }
