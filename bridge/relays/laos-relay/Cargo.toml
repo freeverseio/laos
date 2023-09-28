@@ -41,12 +41,12 @@ relay-utils = { git = "https://github.com/freeverseio/parity-bridges-common.git"
 substrate-relay-helper = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0" }
 
 # Chain primitives
-evochain-primitives = { git = "https://github.com/freeverseio/laos-evolution-node.git", branch = "dev" }
-laos-evolution-runtime = { git = "https://github.com/freeverseio/laos-evolution-node.git", branch = "dev" }
+evochain-primitives = { workspace = true }
+laos-evolution-runtime = { workspace = true }
 
 # Substrate Dependencies
-sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
-pallet-sudo = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
+sp-core = { workspace = true }
+pallet-sudo = { workspace = true }
 
 [dev-dependencies]
 bp-test-utils = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0" }
