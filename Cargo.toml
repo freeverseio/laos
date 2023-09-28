@@ -8,12 +8,6 @@ license = "GPL-3.0-only"
 resolver = "2"
 
 members = [
-#    "evolution-chain/node",
-#    "evolution-chain/pallets/living-assets-evolution",
-#    "evolution-chain/runtime",
-#    "evolution-chain/primitives",
-#   "bridge/relays/*",
-#	"bridge/primitives/*"
    "ownership-chain/node",
    "ownership-chain/runtime",
    "ownership-chain/precompile/*",
