@@ -61,6 +61,13 @@ jobs:
           file: ./local.Dockerfile
           push: true
           tags: freeverseio/laos-evolution-node:${{ github.sha }}
+      - name: Push Evolution Chain Docker images
+        uses: docker/build-push-action@v4
+        with:
+          context: ./bridge
+          file: ./local.Dockerfile
+          push: true
+          tags: freeverseio/laos-bridge:${{ github.sha }}
 
   lint:
     runs-on: 
