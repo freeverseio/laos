@@ -55,10 +55,10 @@ pallet-living-assets-evolution = { default-features = false, path = "../pallets/
 fp-account = { workspace = true, default-features = false, features = ["serde"] }
 
 # Bridge dependencies
-pallet-bridge-grandpa = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
-bp-header-chain = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
-bp-rococo = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
-bp-runtime = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+pallet-bridge-grandpa = { workspace = true, default-features = false }
+bp-header-chain = { workspace = true, default-features = false }
+bp-rococo = { workspace = true, default-features = false }
+bp-runtime = { workspace = true, default-features = false }
 
 [build-dependencies]
 substrate-wasm-builder = { workspace = true, optional = true }

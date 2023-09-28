@@ -12,11 +12,11 @@ subxt = { version = "0.31.0", default-features = false, features = ["native"] }
 
 # Bridge dependencies
 
-bp-polkadot-core = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
-bp-rococo =  { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+bp-polkadot-core = { workspace = true, default-features = false }
+bp-rococo =  { workspace = true, default-features = false }
 
-relay-substrate-client =  { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0" }
-relay-utils =  { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0" }
+relay-substrate-client =  { workspace = true }
+relay-utils =  { workspace = true }
 
 # Substrate Dependencies
 

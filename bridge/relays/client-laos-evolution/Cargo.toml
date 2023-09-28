@@ -16,5 +16,5 @@ frame-system = { workspace = true }
 pallet-transaction-payment = { workspace = true }
 sp-core = { workspace = true }
 sp-runtime = { workspace = true }
-relay-substrate-client = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0" }
-relay-utils = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0" }
+relay-substrate-client = { workspace = true }
+relay-utils = { workspace = true }
