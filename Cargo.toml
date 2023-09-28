@@ -13,6 +13,10 @@ members = [
    "ownership-chain/precompile/*",
    "ownership-chain/pallets/*",
    "ownership-chain/primitives",
+   "evolution-chain/node",
+   "evolution-chain/pallets/living-assets-evolution",
+   "evolution-chain/runtime",
+   "evolution-chain/primitives"
 ]
 
 [workspace.dependencies]
