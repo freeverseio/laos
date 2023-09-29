@@ -79,6 +79,9 @@ jobs:
       - uses: ./.github/actions/cache
         with:
           cache-key: lint
+      - name: install nightly
+        run: |
+          rustup toolchain install nightly
       - name: check format
         run: |
           cargo +nightly fmt --all --check
