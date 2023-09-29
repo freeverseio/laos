@@ -26,11 +26,11 @@ use sp_core::{
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{
-		AccountIdLookup, BlakeTwo256, Block as BlockT, Convert, DispatchInfoOf, Dispatchable, Get,
-		IdentifyAccount, PostDispatchInfoOf, UniqueSaturatedInto, Verify,
+		BlakeTwo256, Block as BlockT, Convert, DispatchInfoOf, Dispatchable, Get, IdentityLookup,
+		PostDispatchInfoOf, UniqueSaturatedInto,
 	},
 	transaction_validity::{TransactionSource, TransactionValidity, TransactionValidityError},
-	AccountId32, ApplyExtrinsicResult, ConsensusEngineId,
+	ApplyExtrinsicResult, ConsensusEngineId,
 };
 
 use sp_std::prelude::*;
@@ -80,8 +80,7 @@ use xcm_executor::XcmExecutor;
 use fp_rpc::TransactionStatus;
 use pallet_ethereum::{Call::transact, PostLogContent, Transaction as EthereumTransaction};
 use pallet_evm::{
-	Account as EVMAccount, EVMCurrencyAdapter, EnsureAddressTruncated, FeeCalculator,
-	HashedAddressMapping, OnChargeEVMTransaction, Runner,
+	Account as EVMAccount, EVMCurrencyAdapter, FeeCalculator, OnChargeEVMTransaction, Runner,
 };
 
 mod precompiles;
@@ -112,9 +111,6 @@ pub type BlockNumber = ownership_parachain_primitives::BlockNumber;
 /// The type for storing how many extrinsics an account has signed.
 pub type Nonce = ownership_parachain_primitives::Nonce;
 
-/// The address format for describing accounts.
-pub type Address = ownership_parachain_primitives::AccountId;
-
 /// Block header type as expected by this runtime.
 pub type Header = generic::Header<BlockNumber, ownership_parachain_primitives::Hasher>;
 
@@ -141,7 +137,7 @@ pub type SignedExtra = (
 
 /// Unchecked extrinsic type as expected by this runtime.
 pub type UncheckedExtrinsic =
-	fp_self_contained::UncheckedExtrinsic<Address, RuntimeCall, Signature, SignedExtra>;
+	fp_self_contained::UncheckedExtrinsic<AccountId, RuntimeCall, Signature, SignedExtra>;
 
 /// Extrinsic type that has already been checked.
 pub type CheckedExtrinsic =
@@ -280,7 +276,7 @@ impl frame_system::Config for Runtime {
 	/// The aggregated dispatch type that is available for extrinsics.
 	type RuntimeCall = RuntimeCall;
 	/// The lookup mechanism to get account ID from whatever is passed in dispatchers.
-	type Lookup = AccountIdLookup<AccountId, ()>;
+	type Lookup = IdentityLookup<AccountId>;
 	/// The block type
 	type Block = Block;
 	/// The type for hashing blocks and tries.
@@ -528,11 +524,16 @@ where
 
 pub struct EVMTransactionChargeHandler<OU>(PhantomData<OU>);
 
-type BalanceOf<R> = <pallet_balances::Pallet<R> as Currency<AccountIdOf<R>>>::Balance;
-type PositiveImbalanceOf<R> =
-	<pallet_balances::Pallet<R> as Currency<AccountIdOf<R>>>::PositiveImbalance;
-type NegativeImbalanceOf<R> =
-	<pallet_balances::Pallet<R> as Currency<AccountIdOf<R>>>::NegativeImbalance;
+type CurrencyAccountId<T> = <T as frame_system::Config>::AccountId;
+
+type BalanceOf<T> =
+	<<T as pallet_evm::Config>::Currency as Currency<CurrencyAccountId<T>>>::Balance;
+
+type PositiveImbalanceOf<T> =
+	<<T as pallet_evm::Config>::Currency as Currency<CurrencyAccountId<T>>>::PositiveImbalance;
+
+type NegativeImbalanceOf<T> =
+	<<T as pallet_evm::Config>::Currency as Currency<CurrencyAccountId<T>>>::NegativeImbalance;
 
 impl<R, OU> OnChargeEVMTransaction<R> for EVMTransactionChargeHandler<OU>
 where
@@ -649,7 +650,7 @@ impl pallet_bridge_grandpa::Config for Runtime {
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
-	pub enum Runtime
+	pub struct Runtime
 	{
 		// System support stuff.
 		System: frame_system = 0,

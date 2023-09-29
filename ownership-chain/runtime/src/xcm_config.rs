@@ -1,5 +1,3 @@
-use crate::NegativeImbalanceOf;
-
 use super::{
 	AccountId, AllPalletsWithSystem, Balances, ParachainSystem, PolkadotXcm, Runtime, RuntimeCall,
 	RuntimeEvent, RuntimeOrigin, WeightToFee, XcmpQueue,
@@ -18,15 +16,14 @@ use polkadot_parachain::primitives::Sibling;
 use sp_runtime::traits::TryConvert;
 use xcm::latest::prelude::*;
 use xcm_builder::{
-	AccountId32Aliases, AccountKey20Aliases, AllowExplicitUnpaidExecutionFrom,
-	AllowTopLevelPaidExecutionFrom, CreateMatcher, CurrencyAdapter, EnsureXcmOrigin,
-	FixedWeightBounds, IsConcrete, MatchXcm, NativeAsset, ParentIsPreset, RelayChainAsNative,
-	SiblingParachainAsNative, SiblingParachainConvertsVia, SignedAccountId32AsNative,
-	SignedAccountKey20AsNative, SignedToAccountId32, SovereignSignedViaLocation, TakeRevenue,
+	AccountKey20Aliases, AllowExplicitUnpaidExecutionFrom, AllowTopLevelPaidExecutionFrom,
+	CreateMatcher, CurrencyAdapter, EnsureXcmOrigin, FixedWeightBounds, IsConcrete, MatchXcm,
+	NativeAsset, ParentIsPreset, RelayChainAsNative, SiblingParachainAsNative,
+	SiblingParachainConvertsVia, SignedAccountKey20AsNative, SovereignSignedViaLocation,
 	TakeWeightCredit, UsingComponents, WithComputedOrigin,
 };
 use xcm_executor::{
-	traits::{Properties, ShouldExecute, WeightTrader},
+	traits::{Properties, ShouldExecute},
 	XcmExecutor,
 };
 
@@ -198,13 +195,15 @@ pub type XcmWeigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstruct
 /// TODO: temporary solution until we have a treasury.
 pub struct ToSudo<R>(PhantomData<R>);
 
-impl<R> OnUnbalanced<NegativeImbalanceOf<R>> for ToSudo<R>
+type NegativeImbalanceOfBalances<T> = pallet_balances::NegativeImbalance<T>;
+
+impl<R> OnUnbalanced<NegativeImbalanceOfBalances<R>> for ToSudo<R>
 where
 	R: pallet_balances::Config + pallet_sudo::Config,
 	<R as frame_system::Config>::AccountId: From<AccountId>,
 	<R as frame_system::Config>::AccountId: Into<AccountId>,
 {
-	fn on_nonzero_unbalanced(amount: NegativeImbalanceOf<R>) {
+	fn on_nonzero_unbalanced(amount: NegativeImbalanceOfBalances<R>) {
 		if let Some(account) = <pallet_sudo::Pallet<R>>::key() {
 			<pallet_balances::Pallet<R>>::resolve_creating(&account, amount);
 		}

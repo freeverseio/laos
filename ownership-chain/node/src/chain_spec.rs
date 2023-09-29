@@ -1,20 +1,30 @@
 use cumulus_primitives_core::ParaId;
 use fp_evm::GenesisAccount;
-use laos_runtime::{AccountId, AuraId, Precompiles, Signature, EXISTENTIAL_DEPOSIT};
+use hex_literal::hex;
+use laos_runtime::{AccountId, AuraId, Precompiles, EXISTENTIAL_DEPOSIT};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
-use sp_core::{sr25519, Pair, Public, H160, U256};
-use sp_runtime::traits::{IdentifyAccount, Verify};
+use sp_core::{Pair, Public, H160, U256};
 use std::{collections::BTreeMap, str::FromStr};
 
-// Development accounts
-const ALITH: &str = "f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
-const BALTATHAR: &str = "3Cd0A705a2DC65e5b1E1205896BaA2be8A07c6e0";
-const CHARLETH: &str = "798d4Ba9baf0064Ec19eB4F0a1a45785ae9D6DFc";
-const DOROTHY: &str = "773539d4Ac0e786233D90A233654ccEE26a613D9";
-const ETHAN: &str = "Ff64d3F6efE2317EE2807d223a0Bdc4c0c49dfDB";
-const FAITH: &str = "C0F0f4ab324C46e55D02D0033343B4Be8A55532d";
+/// List of endowed accounts.
+fn endowed_accounts() -> Vec<AccountId> {
+	vec![
+		// ALITH
+		hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").into(),
+		// BALTATHAR
+		hex!("3Cd0A705a2DC65e5b1E1205896BaA2be8A07c6e0").into(),
+		// CHARLETH
+		hex!("798d4Ba9baf0064Ec19eB4F0a1a45785ae9D6DFc").into(),
+		// DOROTHY
+		hex!("773539d4Ac0e786233D90A233654ccEE26a613D9").into(),
+		// ETHAN
+		hex!("Ff64d3F6efE2317EE2807d223a0Bdc4c0c49dfDB").into(),
+		// FAITH
+		hex!("C0F0f4ab324C46e55D02D0033343B4Be8A55532d").into(),
+	]
+}
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
 pub type ChainSpec = sc_service::GenericChainSpec<laos_runtime::RuntimeGenesisConfig, Extensions>;
@@ -46,21 +56,11 @@ impl Extensions {
 	}
 }
 
-type AccountPublic = <Signature as Verify>::Signer;
-
 /// Generate collator keys from seed.
 ///
 /// This function's return type must always match the session keys of the chain in tuple format.
 pub fn get_collator_keys_from_seed(seed: &str) -> AuraId {
 	get_from_seed::<AuraId>(seed)
-}
-
-/// Helper function to generate an account ID from seed
-pub fn get_account_id_from_seed<TPublic: Public>(seed: &str) -> AccountId
-where
-	AccountPublic: From<<TPublic::Pair as Pair>::Public>,
-{
-	AccountPublic::from(get_from_seed::<TPublic>(seed)).into_account()
 }
 
 /// Generate the session keys from individual elements.
@@ -87,19 +87,18 @@ pub fn development_config() -> ChainSpec {
 			testnet_genesis(
 				// initial collators.
 				vec![
-					(hex_literal::hex!(ALITH), get_collator_keys_from_seed("Alice")),
-					(hex_literal::hex!(BALTATHAR), get_collator_keys_from_seed("Bob")),
+					(
+						hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").into(),
+						get_collator_keys_from_seed("Alice"),
+					),
+					(
+						hex!("3Cd0A705a2DC65e5b1E1205896BaA2be8A07c6e0").into(),
+						get_collator_keys_from_seed("Bob"),
+					),
 				],
-				vec![
-					hex_literal::hex!(ALITH),
-					hex_literal::hex!(BALTATHAR),
-					hex_literal::hex!(CHARLETH),
-					hex_literal::hex!(DOROTHY),
-					hex_literal::hex!(ETHAN),
-					hex_literal::hex!(FAITH),
-				],
+				endowed_accounts(),
 				// Give Alice root privileges
-				Some(hex_literal::hex!(ALITH)),
+				Some(hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").into()),
 				1000.into(),
 			)
 		},
@@ -132,19 +131,18 @@ pub fn local_testnet_config() -> ChainSpec {
 			testnet_genesis(
 				// initial collators.
 				vec![
-					(hex_literal::hex!(ALITH), get_collator_keys_from_seed("Alice")),
-					(hex_literal::hex!(BALTATHAR), get_collator_keys_from_seed("Bob")),
+					(
+						hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").into(),
+						get_collator_keys_from_seed("Alice"),
+					),
+					(
+						hex!("3Cd0A705a2DC65e5b1E1205896BaA2be8A07c6e0").into(),
+						get_collator_keys_from_seed("Bob"),
+					),
 				],
-				vec![
-					hex_literal::hex!(ALITH),
-					hex_literal::hex!(BALTATHAR),
-					hex_literal::hex!(CHARLETH),
-					hex_literal::hex!(DOROTHY),
-					hex_literal::hex!(ETHAN),
-					hex_literal::hex!(FAITH),
-				],
+				endowed_accounts(),
 				// Give Alice root privileges
-				Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
+				Some(hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").into()),
 				1000.into(),
 			)
 		},

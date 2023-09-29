@@ -3,7 +3,6 @@
 use pallet_evm::{
 	IsPrecompileResult, Precompile, PrecompileHandle, PrecompileResult, PrecompileSet,
 };
-use polkadot_primitives::BlakeTwo256;
 use sp_core::H160;
 use sp_std::marker::PhantomData;
 
