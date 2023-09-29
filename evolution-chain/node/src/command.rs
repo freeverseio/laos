@@ -43,16 +43,15 @@ impl SubstrateCli for Cli {
 		};
 
 		if let Some(spec) = dev_chain_spec {
-			return Ok(Box::new(spec.load()));
+			return Ok(Box::new(spec.load()))
 		}
 
 		Ok(match id {
 			"arrakis" => Box::new(chain_spec::ChainSpec::from_json_bytes(
 				&include_bytes!("../../specs/arrakis-v0.json")[..],
 			)?),
-			path => {
-				Box::new(chain_spec::ChainSpec::from_json_file(std::path::PathBuf::from(path))?)
-			},
+			path =>
+				Box::new(chain_spec::ChainSpec::from_json_file(std::path::PathBuf::from(path))?),
 		})
 	}
 }
@@ -126,7 +125,7 @@ pub fn run() -> sc_cli::Result<()> {
 								"Runtime benchmarking wasn't enabled when building the node. \
 							You can enable it with `--features runtime-benchmarks`."
 									.into(),
-							);
+							)
 						}
 
 						cmd.run::<Block, ()>(config)
@@ -175,9 +174,8 @@ pub fn run() -> sc_cli::Result<()> {
 
 						cmd.run(client, inherent_benchmark_data()?, Vec::new(), &ext_factory)
 					},
-					BenchmarkCmd::Machine(cmd) => {
-						cmd.run(&config, SUBSTRATE_REFERENCE_HARDWARE.clone())
-					},
+					BenchmarkCmd::Machine(cmd) =>
+						cmd.run(&config, SUBSTRATE_REFERENCE_HARDWARE.clone()),
 				}
 			})
 		},

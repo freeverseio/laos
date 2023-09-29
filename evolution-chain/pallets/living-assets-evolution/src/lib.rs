@@ -21,8 +21,7 @@ use sp_runtime::traits::Convert;
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use frame_support::pallet_prelude::*;
-	use frame_support::sp_runtime::traits::One;
+	use frame_support::{pallet_prelude::*, sp_runtime::traits::One};
 	use frame_system::pallet_prelude::*;
 	use sp_runtime::ArithmeticError;
 
@@ -111,16 +110,20 @@ pub mod pallet {
 		///
 		/// # Storage Changes
 		///
-		/// - [`CollectionOwner`](`CollectionOwner`): Inserts a new mapping from the generated `collection_id` to the `owner` account.
-		/// - [`CollectionCounter`](`CollectionCounter`): Updates the counter for the next available `collection_id`.
+		/// - [`CollectionOwner`](`CollectionOwner`): Inserts a new mapping from the generated
+		///   `collection_id` to the `owner` account.
+		/// - [`CollectionCounter`](`CollectionCounter`): Updates the counter for the next available
+		///   `collection_id`.
 		///
 		/// # Events
 		///
-		/// Emits a [`CollectionCreated`](`Event::<T>::CollectionCreated`) event upon successful execution.
+		/// Emits a [`CollectionCreated`](`Event::<T>::CollectionCreated`) event upon successful
+		/// execution.
 		///
 		/// # Errors
 		///
-		/// - Returns [`Overflow`](`ArithmeticError::<T>::Overflow`) if incrementing the `collection_id` counter would result in an overflow.
+		/// - Returns [`Overflow`](`ArithmeticError::<T>::Overflow`) if incrementing the
+		///   `collection_id` counter would result in an overflow.
 		#[pallet::call_index(0)]
 		#[pallet::weight(T::WeightInfo::create_collection())]
 		pub fn create_collection(origin: OriginFor<T>, owner: T::AccountId) -> DispatchResult {
@@ -153,10 +156,13 @@ pub mod pallet {
 		///
 		///  This function returns a dispatch error in the following cases:
 		///
-		/// * [`NoPermission`](`Error::<T>::NoPermission`) - if the caller is not the owner of the collection
-		/// * [`CollectionDoesNotExist`](`Error::<T>::CollectionDoesNotExist`) - if the collection does not exist
+		/// * [`NoPermission`](`Error::<T>::NoPermission`) - if the caller is not the owner of the
+		///   collection
+		/// * [`CollectionDoesNotExist`](`Error::<T>::CollectionDoesNotExist`) - if the collection
+		///   does not exist
 		/// * [`AlreadyMinted`](`Error::<T>::AlreadyMinted`) - if the asset is already minted
-		/// * [`Overflow`](`ArithmeticError::<T>::Overflow`) - if the `slot` is greater than `2^96 - 1`
+		/// * [`Overflow`](`ArithmeticError::<T>::Overflow`) - if the `slot` is greater than `2^96 -
+		///   1`
 		#[pallet::call_index(1)]
 		#[pallet::weight(T::WeightInfo::mint_with_external_uri())]
 		pub fn mint_with_external_uri(
@@ -209,7 +215,8 @@ impl<T: Config> Pallet<T> {
 	// Utility functions
 	/// A struct responsible for converting `Slot` and `AccountId` to `TokenId`
 	///
-	/// Every slot is identified by a unique `token_id` where `token_id = concat(slot #, owner_address)`
+	/// Every slot is identified by a unique `token_id` where `token_id = concat(slot #,
+	/// owner_address)`
 	fn slot_and_owner_to_token_id(slot_and_owner: (Slot, AccountIdOf<T>)) -> TokenId {
 		let (slot, owner) = slot_and_owner;
 

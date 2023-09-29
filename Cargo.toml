@@ -1,8 +1,5 @@
 [workspace.package]
-authors = ["Freverse <info@freeverse.io>"]
-edition = "2021"
 repository = "https://github.com/freeverseio/laos.git"
-license = "GPL-3.0-only"
 
 [workspace]
 resolver = "2"
@@ -13,6 +10,12 @@ members = [
    "ownership-chain/precompile/*",
    "ownership-chain/pallets/*",
    "ownership-chain/primitives",
+   "evolution-chain/node",
+   "evolution-chain/pallets/living-assets-evolution",
+   "evolution-chain/runtime",
+   "evolution-chain/primitives",
+  	"bridge/relays/*",
+	"bridge/primitives/*",
 ]
 
 [workspace.dependencies]
@@ -36,6 +39,21 @@ proc-macro2 =  "1.0"
 quote = "1.0"
 syn = { version = "1.0" }
 static_assertions = "1.1"
+codec = { package = "parity-scale-codec", version = "3.2.2", default-features = false, features = ["derive"] }
+subxt = { version = "0.30.1", features = ["native"]}
+serde_json = "1.0.104"
+anyhow = "1.0"
+async-std = "1.9.0"
+async-trait = "0.1"
+num-format = "0.4"
+num-traits = "0.2"
+rbtag = "0.3"
+rustc-hex = "2.1"
+structopt = "0.3"
+signal-hook = "0.3.16"
+signal-hook-async-std = "0.2.2"
+strum = { version = "0.25.0", features = ["derive"] }
+finality-grandpa = { version = "0.16.2" }
 
 # Wasm builder
 substrate-wasm-builder = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
@@ -56,6 +74,9 @@ sp-transaction-pool = { git = "https://github.com/paritytech/substrate", branch 
 sp-version = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
 sp-arithmetic = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
 sp-externalities = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
+sp-consensus-grandpa = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
+sp-keyring = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
+sp-weights = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
 
 # (native)
 sp-blockchain = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
@@ -73,6 +94,7 @@ sc-consensus-babe = { git = "https://github.com/paritytech/substrate", branch = 
 sc-executor = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
 sc-network = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
 sc-network-sync = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
+sc-network-common = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
 sc-offchain = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
 sc-rpc = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
 sc-sysinfo = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
@@ -82,6 +104,10 @@ sc-tracing = { git = "https://github.com/paritytech/substrate", branch = "polkad
 sc-transaction-pool = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
 sc-transaction-pool-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
 sc-utils = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
+sc-consensus-grandpa = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
+sc-consensus-grandpa-rpc = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
+sc-keystore = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
+sc-rpc-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
 substrate-prometheus-endpoint = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
 pallet-transaction-payment-rpc = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
 substrate-frame-rpc-system = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
@@ -103,6 +129,7 @@ pallet-aura = { git = "https://github.com/paritytech/substrate", branch = "polka
 pallet-authorship = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
 pallet-session = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false, features = ["historical"] }
 pallet-sudo = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
+pallet-grandpa = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
 pallet-timestamp = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
 pallet-transaction-payment = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
 pallet-transaction-payment-rpc-runtime-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
@@ -193,16 +220,29 @@ polkadot-cli = { git = "https://github.com/paritytech/polkadot", branch = "relea
 polkadot-service = { git = "https://github.com/paritytech/polkadot", branch = "release-v1.0.0" }
 
 # Bridge dependencies
-bp-laos-evolution = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "dev", default-features = false }
-bp-header-chain = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "dev", default-features = false }
-bp-runtime = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "dev", default-features = false }
-bridge-runtime-common = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "dev", default-features = false }
-pallet-bridge-grandpa = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "dev", default-features = false }
+bp-laos-evolution = { path="./bridge/primitives/chain-laos-evolution", default-features = false }
+bp-laos-ownership = { path = "./bridge/primitives/chain-laos-ownership" }
+bp-header-chain = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+bp-runtime = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+bridge-runtime-common = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+pallet-bridge-grandpa = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+bp-rococo = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+relay-substrate-client = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+relay-utils = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+bp-messages = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+bp-bridge-hub-cumulus = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+bp-polkadot-core = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+bp-parachains = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+pallet-bridge-parachains = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+substrate-relay-helper = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+bp-test-utils = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
 
 # LAOS pallets
 pallet-living-assets-ownership = { path = "./ownership-chain/pallets/living-assets-ownership", default-features = false }
+pallet-living-assets-evolution = { path = "./evolution-chain/pallets/living-assets-evolution", default-features = false }
 pallet-evm-living-assets-ownership = { path = "./ownership-chain/precompile/living-assets", default-features = false }
 pallet-evm-erc721 = { path = "./ownership-chain/precompile/erc721", default-features = false }
+
 
 # Utils
 precompile-utils = { path = "./ownership-chain/precompile/utils", default-features = false }
@@ -210,6 +250,12 @@ precompile-utils-macro = { path = "./ownership-chain/precompile/utils/macro", de
 
 # Primitives
 ownership-parachain-primitives = { path = "./ownership-chain/primitives", default-features = false }
+evochain-primitives = { path = "./evolution-chain/primitives", default-features = false }
 
 # runtime
 laos-runtime = { path = "./ownership-chain/runtime" }
+laos-evolution-runtime = { path = "./evolution-chain/runtime", default-features = false }
+
+relay-laos-evolution-client = { path="./bridge/relays/client-laos-evolution" }
+relay-laos-ownership-client = { path="./bridge/relays/client-laos-ownership" }
+relay-rococo-client = { path = "./bridge/relays/client-rococo" }

@@ -54,7 +54,8 @@ parameter_types! {
 /// A struct responsible for converting an `AccountId` to an `H160` address.
 ///
 /// The `AccountIdToH160` struct provides a conversion from `AccountId`, typically used
-/// as a native identity in a blockchain, to an `H160` address, commonly used in Ethereum-like networks.
+/// as a native identity in a blockchain, to an `H160` address, commonly used in Ethereum-like
+/// networks.
 pub struct MockAccountIdToH160;
 impl Convert<AccountId, H160> for MockAccountIdToH160 {
 	fn convert(account_id: AccountId) -> H160 {

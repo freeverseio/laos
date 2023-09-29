@@ -26,12 +26,12 @@ use substrate_relay_helper::TransactionParams;
 #[doc = "Runtime version params."]
 #[derive(StructOpt, Debug, PartialEq, Eq, Clone, Copy, EnumString, EnumVariantNames)]
 pub enum RuntimeVersionType {
-    /// Auto query version from chain
-    Auto,
-    /// Custom `spec_version` and `transaction_version`
-    Custom,
-    /// Read version from bundle dependencies directly.
-    Bundle,
+	/// Auto query version from chain
+	Auto,
+	/// Custom `spec_version` and `transaction_version`
+	Custom,
+	/// Read version from bundle dependencies directly.
+	Bundle,
 }
 
 /// Create chain-specific set of runtime version parameters.
@@ -87,69 +87,69 @@ macro_rules! declare_chain_runtime_version_params_cli_schema {
 /// Create chain-specific set of runtime version parameters.
 #[macro_export]
 macro_rules! declare_chain_connection_params_cli_schema {
-    ($chain:ident, $chain_prefix:ident) => {
-        bp_runtime::paste::item! {
-            #[doc = $chain " connection params."]
-            #[derive(StructOpt, Debug, PartialEq, Eq, Clone)]
-            pub struct [<$chain ConnectionParams>] {
-                #[doc = "Connect to " $chain " node at given host."]
-                #[structopt(long, default_value = "127.0.0.1")]
-                pub [<$chain_prefix _host>]: String,
-                #[doc = "Connect to " $chain " node websocket server at given port."]
-                #[structopt(long, default_value = "9944")]
-                pub [<$chain_prefix _port>]: u16,
-                #[doc = "Use secure websocket connection."]
-                #[structopt(long)]
-                pub [<$chain_prefix _secure>]: bool,
-                #[doc = "Custom runtime version"]
-                #[structopt(flatten)]
-                pub [<$chain_prefix _runtime_version>]: [<$chain RuntimeVersionParams>],
-            }
+	($chain:ident, $chain_prefix:ident) => {
+		bp_runtime::paste::item! {
+			#[doc = $chain " connection params."]
+			#[derive(StructOpt, Debug, PartialEq, Eq, Clone)]
+			pub struct [<$chain ConnectionParams>] {
+				#[doc = "Connect to " $chain " node at given host."]
+				#[structopt(long, default_value = "127.0.0.1")]
+				pub [<$chain_prefix _host>]: String,
+				#[doc = "Connect to " $chain " node websocket server at given port."]
+				#[structopt(long, default_value = "9944")]
+				pub [<$chain_prefix _port>]: u16,
+				#[doc = "Use secure websocket connection."]
+				#[structopt(long)]
+				pub [<$chain_prefix _secure>]: bool,
+				#[doc = "Custom runtime version"]
+				#[structopt(flatten)]
+				pub [<$chain_prefix _runtime_version>]: [<$chain RuntimeVersionParams>],
+			}
 
-            impl [<$chain ConnectionParams>] {
-                /// Convert connection params into Substrate client.
-                #[allow(dead_code)]
-                pub async fn into_client<Chain: CliChain>(
-                    self,
-                ) -> anyhow::Result<$crate::cli::DefaultClient<Chain>> {
-                    let chain_runtime_version = self
-                        .[<$chain_prefix _runtime_version>]
-                        .into_runtime_version(Chain::RUNTIME_VERSION)?;
-                    Ok(relay_substrate_client::new(relay_substrate_client::ConnectionParams {
-                        host: self.[<$chain_prefix _host>],
-                        port: self.[<$chain_prefix _port>],
-                        secure: self.[<$chain_prefix _secure>],
-                        chain_runtime_version,
-                    })
-                    .await
-                    )
-                }
-            }
-        }
-    };
+			impl [<$chain ConnectionParams>] {
+				/// Convert connection params into Substrate client.
+				#[allow(dead_code)]
+				pub async fn into_client<Chain: CliChain>(
+					self,
+				) -> anyhow::Result<$crate::cli::DefaultClient<Chain>> {
+					let chain_runtime_version = self
+						.[<$chain_prefix _runtime_version>]
+						.into_runtime_version(Chain::RUNTIME_VERSION)?;
+					Ok(relay_substrate_client::new(relay_substrate_client::ConnectionParams {
+						host: self.[<$chain_prefix _host>],
+						port: self.[<$chain_prefix _port>],
+						secure: self.[<$chain_prefix _secure>],
+						chain_runtime_version,
+					})
+					.await
+					)
+				}
+			}
+		}
+	};
 }
 
 /// Helper trait to override transaction parameters differently.
 pub trait TransactionParamsProvider {
-    /// Returns `true` if transaction parameters are defined by this provider.
-    fn is_defined(&self) -> bool;
-    /// Returns transaction parameters.
-    fn transaction_params<Chain: ChainWithTransactions>(
-        &self,
-    ) -> anyhow::Result<TransactionParams<AccountKeyPairOf<Chain>>>;
+	/// Returns `true` if transaction parameters are defined by this provider.
+	fn is_defined(&self) -> bool;
+	/// Returns transaction parameters.
+	fn transaction_params<Chain: ChainWithTransactions>(
+		&self,
+	) -> anyhow::Result<TransactionParams<AccountKeyPairOf<Chain>>>;
 
-    /// Returns transaction parameters, defined by `self` provider or, if they're not defined,
-    /// defined by `other` provider.
-    fn transaction_params_or<Chain: ChainWithTransactions, T: TransactionParamsProvider>(
-        &self,
-        other: &T,
-    ) -> anyhow::Result<TransactionParams<AccountKeyPairOf<Chain>>> {
-        if self.is_defined() {
-            self.transaction_params::<Chain>()
-        } else {
-            other.transaction_params::<Chain>()
-        }
-    }
+	/// Returns transaction parameters, defined by `self` provider or, if they're not defined,
+	/// defined by `other` provider.
+	fn transaction_params_or<Chain: ChainWithTransactions, T: TransactionParamsProvider>(
+		&self,
+		other: &T,
+	) -> anyhow::Result<TransactionParams<AccountKeyPairOf<Chain>>> {
+		if self.is_defined() {
+			self.transaction_params::<Chain>()
+		} else {
+			other.transaction_params::<Chain>()
+		}
+	}
 }
 
 /// Create chain-specific set of signing parameters.
@@ -262,11 +262,11 @@ macro_rules! declare_chain_signing_params_cli_schema {
 /// signing parameters and bridge initialization parameters.
 #[macro_export]
 macro_rules! declare_chain_cli_schema {
-    ($chain:ident, $chain_prefix:ident) => {
-        $crate::declare_chain_runtime_version_params_cli_schema!($chain, $chain_prefix);
-        $crate::declare_chain_connection_params_cli_schema!($chain, $chain_prefix);
-        $crate::declare_chain_signing_params_cli_schema!($chain, $chain_prefix);
-    };
+	($chain:ident, $chain_prefix:ident) => {
+		$crate::declare_chain_runtime_version_params_cli_schema!($chain, $chain_prefix);
+		$crate::declare_chain_connection_params_cli_schema!($chain, $chain_prefix);
+		$crate::declare_chain_signing_params_cli_schema!($chain, $chain_prefix);
+	};
 }
 
 declare_chain_cli_schema!(Source, source);

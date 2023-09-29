@@ -11,8 +11,6 @@ evm = { workspace = true, optional = true }
 impl-trait-for-tuples = { workspace = true }
 num_enum = { workspace = true }
 sha3 = { workspace = true }
-similar-asserts = { workspace = true, optional = true }
-assert_matches = { workspace = true }
 
 precompile-utils-macro = { workspace = true }
 
@@ -28,9 +26,6 @@ sp-std = { workspace = true }
 # Frontier
 fp-evm = { workspace = true }
 pallet-evm = { workspace = true }
-
-# Polkadot / XCM
-xcm = { workspace = true }
 
 [dev-dependencies]
 hex-literal = { workspace = true }
@@ -49,8 +44,7 @@ std = [
 	"sp-io/std",
 	"sp-std/std",
 	"sp-runtime/std",
-	"xcm/std",
 	"sha3/std",
 	"num_enum/std",
 ]
-testing = ["similar-asserts", "std"]
+testing = ["std"]

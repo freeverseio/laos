@@ -9,7 +9,7 @@ use sc_cli::{
 	ChainSpec, CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams,
 	NetworkParams, Result, SharedParams, SubstrateCli,
 };
-use sc_service::config::{BasePath, /*DatabaseSource,*/ PrometheusConfig};
+use sc_service::config::{BasePath, /* DatabaseSource, */ PrometheusConfig};
 use sp_runtime::traits::AccountIdConversion;
 // Frontier
 // use fc_db::frontier_database_dir;
@@ -17,7 +17,7 @@ use sp_runtime::traits::AccountIdConversion;
 use crate::{
 	chain_spec,
 	cli::{Cli, RelayChainCli, Subcommand},
-	service::{self, /*db_config_dir,*/ new_partial},
+	service::{self, /* db_config_dir, */ new_partial},
 };
 
 fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {

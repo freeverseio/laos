@@ -1,10 +1,11 @@
 use crate::{types::AssetId, CollectionId};
 use sp_std::vec::Vec;
 
-/// The `CollectionManager` trait provides an interface for managing collections in a decentralized system.
+/// The `CollectionManager` trait provides an interface for managing collections in a decentralized
+/// system.
 ///
-/// A collection is a container for non-fungible assets, uniquely identified by a `collection_id`. The system allows
-/// for the creation and ownership management of these collections.
+/// A collection is a container for non-fungible assets, uniquely identified by a `collection_id`.
+/// The system allows for the creation and ownership management of these collections.
 ///
 /// # Methods
 ///
@@ -41,7 +42,8 @@ where
 
 /// The `Erc721` trait provides an interface for handling ERC721 tokens in a blockchain environment.
 ///
-/// ERC721 tokens are a standard for representing ownership of unique items on the Ethereum blockchain.
+/// ERC721 tokens are a standard for representing ownership of unique items on the Ethereum
+/// blockchain.
 ///
 /// # Methods
 ///
@@ -64,8 +66,9 @@ pub trait Erc721<AccountId> {
 
 	/// Retrieves the URI associated with a specific asset within the specified collection.
 	///
-	/// The URI is often used to provide metadata, images, or other information related to the asset.
-	/// This URI should conform to the ERC721 metadata standards and can be a URL, IPFS hash, or other URI format.
+	/// The URI is often used to provide metadata, images, or other information related to the
+	/// asset. This URI should conform to the ERC721 metadata standards and can be a URL, IPFS hash,
+	/// or other URI format.
 	///
 	/// # Arguments
 	///

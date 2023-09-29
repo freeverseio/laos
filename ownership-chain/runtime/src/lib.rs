@@ -483,7 +483,8 @@ impl pallet_sudo::Config for Runtime {
 }
 
 /// Represents a mapping between `AssetId` and `AccountId`.
-/// This struct provides functionalities to convert an `AssetId` (represented by `U256`) into an `AccountId`.
+/// This struct provides functionalities to convert an `AssetId` (represented by `U256`) into an
+/// `AccountId`.
 pub struct AssetIdToInitialOwner;
 impl Convert<U256, AccountId> for AssetIdToInitialOwner {
 	fn convert(asset_id: U256) -> AccountId {

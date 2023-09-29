@@ -4,19 +4,18 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-codec = { package = "parity-scale-codec", version = "3.1.5" }
-scale-info = { version = "2.9.0", features = ["derive"] }
-subxt = { version = "0.30.1", features = ["native"] }
+codec = { workspace = true, package = "parity-scale-codec" }
+scale-info = { workspace = true }
+subxt = { workspace = true }
 
-bp-bridge-hub-cumulus = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0" }
-bp-header-chain = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0" }
-bp-messages = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0" }
-bp-polkadot-core = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
-bridge-runtime-common = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0" }
-relay-substrate-client = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0" }
-sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
-sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
-sp-weights = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
+bp-bridge-hub-cumulus = { workspace = true }
+bp-header-chain = { workspace = true }
+bp-messages = { workspace = true }
+bp-polkadot-core = { workspace = true }
+relay-substrate-client = { workspace = true }
+sp-core = { workspace = true }
+sp-runtime = { workspace = true }
+sp-weights = { workspace = true }
 
-bp-laos-evolution = { path = "../../primitives/chain-laos-evolution" }
-bp-laos-ownership = { path = "../../primitives/chain-laos-ownership" }
+bp-laos-evolution = { workspace = true }
+bp-laos-ownership = { workspace = true }

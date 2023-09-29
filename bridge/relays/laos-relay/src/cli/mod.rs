@@ -45,82 +45,82 @@ pub type DefaultClient<C> = relay_substrate_client::RpcWithCachingClient<C>;
 
 /// Parse relay CLI args.
 pub fn parse_args() -> Command {
-    Command::from_args()
+	Command::from_args()
 }
 
 /// Substrate-to-Substrate bridge utilities.
 #[derive(StructOpt)]
 #[structopt(about = "Substrate-to-Substrate relay")]
 pub enum Command {
-    /// Start headers relay between two chains.
-    ///
-    /// The on-chain bridge component should have been already initialized with
-    /// `init-bridge` sub-command.
-    RelayHeaders(relay_headers::RelayHeaders),
-    /// Initialize on-chain bridge pallet with current header data.
-    ///
-    /// Sends initialization transaction to bootstrap the bridge with current finalized block data.
-    InitBridge(init_bridge::InitBridge),
+	/// Start headers relay between two chains.
+	///
+	/// The on-chain bridge component should have been already initialized with
+	/// `init-bridge` sub-command.
+	RelayHeaders(relay_headers::RelayHeaders),
+	/// Initialize on-chain bridge pallet with current header data.
+	///
+	/// Sends initialization transaction to bootstrap the bridge with current finalized block data.
+	InitBridge(init_bridge::InitBridge),
 }
 
 impl Command {
-    // Initialize logger depending on the command.
-    fn init_logger(&self) {
-        use relay_utils::initialize::initialize_relay;
+	// Initialize logger depending on the command.
+	fn init_logger(&self) {
+		use relay_utils::initialize::initialize_relay;
 
-        match self {
-            Self::RelayHeaders(_) | Self::InitBridge(_) => {
-                initialize_relay();
-            }
-        }
-    }
+		match self {
+			Self::RelayHeaders(_) | Self::InitBridge(_) => {
+				initialize_relay();
+			},
+		}
+	}
 
-    /// Run the command.
-    async fn do_run(self) -> anyhow::Result<()> {
-        match self {
-            Self::RelayHeaders(arg) => arg.run().await?,
-            Self::InitBridge(arg) => arg.run().await?,
-        }
-        Ok(())
-    }
+	/// Run the command.
+	async fn do_run(self) -> anyhow::Result<()> {
+		match self {
+			Self::RelayHeaders(arg) => arg.run().await?,
+			Self::InitBridge(arg) => arg.run().await?,
+		}
+		Ok(())
+	}
 
-    /// Run the command.
-    pub async fn run(self) {
-        self.init_logger();
+	/// Run the command.
+	pub async fn run(self) {
+		self.init_logger();
 
-        let exit_signals = match Signals::new([SIGINT, SIGTERM]) {
-            Ok(signals) => signals,
-            Err(e) => {
-                log::error!(target: LOG_TARGET, "Could not register exit signals: {}", e);
-                return;
-            }
-        };
-        let run = self.do_run().fuse();
-        futures::pin_mut!(exit_signals, run);
+		let exit_signals = match Signals::new([SIGINT, SIGTERM]) {
+			Ok(signals) => signals,
+			Err(e) => {
+				log::error!(target: LOG_TARGET, "Could not register exit signals: {}", e);
+				return
+			},
+		};
+		let run = self.do_run().fuse();
+		futures::pin_mut!(exit_signals, run);
 
-        select! {
-            signal = exit_signals.next().fuse() => {
-                log::info!(target: LOG_TARGET, "Received exit signal {:?}", signal);
-            },
-            result = run => {
-                if let Err(e) = result {
-                    log::error!(target: LOG_TARGET, "substrate-relay: {}", e);
-                }
-            },
-        }
-    }
+		select! {
+			signal = exit_signals.next().fuse() => {
+				log::info!(target: LOG_TARGET, "Received exit signal {:?}", signal);
+			},
+			result = run => {
+				if let Err(e) = result {
+					log::error!(target: LOG_TARGET, "substrate-relay: {}", e);
+				}
+			},
+		}
+	}
 }
 
 arg_enum! {
-    #[derive(Debug)]
-    /// The origin to use when dispatching the message on the target chain.
-    ///
-    /// - `Target` uses account existing on the target chain (requires target private key).
-    /// - `Origin` uses account derived from the source-chain account.
-    pub enum Origins {
-        Target,
-        Source,
-    }
+	#[derive(Debug)]
+	/// The origin to use when dispatching the message on the target chain.
+	///
+	/// - `Target` uses account existing on the target chain (requires target private key).
+	/// - `Origin` uses account derived from the source-chain account.
+	pub enum Origins {
+		Target,
+		Source,
+	}
 }
 
 /// Generic balance type.
@@ -128,28 +128,28 @@ arg_enum! {
 pub struct Balance(pub u128);
 
 impl std::fmt::Display for Balance {
-    fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
-        use num_format::{Locale, ToFormattedString};
-        write!(fmt, "{}", self.0.to_formatted_string(&Locale::en))
-    }
+	fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
+		use num_format::{Locale, ToFormattedString};
+		write!(fmt, "{}", self.0.to_formatted_string(&Locale::en))
+	}
 }
 
 impl std::str::FromStr for Balance {
-    type Err = <u128 as std::str::FromStr>::Err;
+	type Err = <u128 as std::str::FromStr>::Err;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Self(s.parse()?))
-    }
+	fn from_str(s: &str) -> Result<Self, Self::Err> {
+		Ok(Self(s.parse()?))
+	}
 }
 
 // Bridge-supported network definition.
 ///
 /// Used to abstract away CLI commands.
 pub trait CliChain: relay_substrate_client::Chain {
-    /// Current version of the chain runtime, known to relay.
-    ///
-    /// can be `None` if relay is not going to submit transactions to that chain.
-    const RUNTIME_VERSION: Option<SimpleRuntimeVersion>;
+	/// Current version of the chain runtime, known to relay.
+	///
+	/// can be `None` if relay is not going to submit transactions to that chain.
+	const RUNTIME_VERSION: Option<SimpleRuntimeVersion>;
 }
 
 /// Lane id.
@@ -157,17 +157,17 @@ pub trait CliChain: relay_substrate_client::Chain {
 pub struct HexLaneId(pub H256);
 
 impl From<HexLaneId> for LaneId {
-    fn from(lane_id: HexLaneId) -> LaneId {
-        LaneId::from_inner(lane_id.0)
-    }
+	fn from(lane_id: HexLaneId) -> LaneId {
+		LaneId::from_inner(lane_id.0)
+	}
 }
 
 impl std::str::FromStr for HexLaneId {
-    type Err = rustc_hex::FromHexError;
+	type Err = rustc_hex::FromHexError;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(HexLaneId(H256::from_str(s)?))
-    }
+	fn from_str(s: &str) -> Result<Self, Self::Err> {
+		Ok(HexLaneId(H256::from_str(s)?))
+	}
 }
 
 /// Nicer formatting for raw bytes vectors.
@@ -175,37 +175,37 @@ impl std::str::FromStr for HexLaneId {
 pub struct HexBytes(pub Vec<u8>);
 
 impl std::str::FromStr for HexBytes {
-    type Err = hex::FromHexError;
+	type Err = hex::FromHexError;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Self(hex::decode(s)?))
-    }
+	fn from_str(s: &str) -> Result<Self, Self::Err> {
+		Ok(Self(hex::decode(s)?))
+	}
 }
 
 impl std::fmt::Debug for HexBytes {
-    fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(fmt, "0x{self}")
-    }
+	fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
+		write!(fmt, "0x{self}")
+	}
 }
 
 impl std::fmt::Display for HexBytes {
-    fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(fmt, "{}", hex::encode(&self.0))
-    }
+	fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
+		write!(fmt, "{}", hex::encode(&self.0))
+	}
 }
 
 /// Prometheus metrics params.
 #[derive(Clone, Debug, PartialEq, StructOpt)]
 pub struct PrometheusParams {
-    /// Do not expose a Prometheus metric endpoint.
-    #[structopt(long)]
-    pub no_prometheus: bool,
-    /// Expose Prometheus endpoint at given interface.
-    #[structopt(long, default_value = "127.0.0.1")]
-    pub prometheus_host: String,
-    /// Expose Prometheus endpoint at given port.
-    #[structopt(long, default_value = "9616")]
-    pub prometheus_port: u16,
+	/// Do not expose a Prometheus metric endpoint.
+	#[structopt(long)]
+	pub no_prometheus: bool,
+	/// Expose Prometheus endpoint at given interface.
+	#[structopt(long, default_value = "127.0.0.1")]
+	pub prometheus_host: String,
+	/// Expose Prometheus endpoint at given port.
+	#[structopt(long, default_value = "9616")]
+	pub prometheus_port: u16,
 }
 
 /// Struct to get git commit info and build time.
@@ -213,95 +213,95 @@ pub struct PrometheusParams {
 struct SubstrateRelayBuildInfo;
 
 impl SubstrateRelayBuildInfo {
-    /// Get git commit in form `<short-sha-(clean|dirty)>`.
-    pub fn get_git_commit() -> String {
-        // on gitlab we use images without git installed, so we can't use `rbtag` there
-        // locally we don't have `CI_*` env variables, so we can't rely on them
-        // => we are using `CI_*` env variables or else `rbtag`
-        let maybe_sha_from_ci = option_env!("CI_COMMIT_SHORT_SHA");
-        maybe_sha_from_ci
-            .map(|short_sha| {
-                // we assume that on CI the copy is always clean
-                format!("{short_sha}-clean")
-            })
-            .unwrap_or_else(|| SubstrateRelayBuildInfo.get_build_commit().into())
-    }
+	/// Get git commit in form `<short-sha-(clean|dirty)>`.
+	pub fn get_git_commit() -> String {
+		// on gitlab we use images without git installed, so we can't use `rbtag` there
+		// locally we don't have `CI_*` env variables, so we can't rely on them
+		// => we are using `CI_*` env variables or else `rbtag`
+		let maybe_sha_from_ci = option_env!("CI_COMMIT_SHORT_SHA");
+		maybe_sha_from_ci
+			.map(|short_sha| {
+				// we assume that on CI the copy is always clean
+				format!("{short_sha}-clean")
+			})
+			.unwrap_or_else(|| SubstrateRelayBuildInfo.get_build_commit().into())
+	}
 }
 
 impl PrometheusParams {
-    /// Tries to convert CLI metrics params into metrics params, used by the relay.
-    pub fn into_metrics_params(self) -> anyhow::Result<relay_utils::metrics::MetricsParams> {
-        let metrics_address = if !self.no_prometheus {
-            Some(relay_utils::metrics::MetricsAddress {
-                host: self.prometheus_host,
-                port: self.prometheus_port,
-            })
-        } else {
-            None
-        };
+	/// Tries to convert CLI metrics params into metrics params, used by the relay.
+	pub fn into_metrics_params(self) -> anyhow::Result<relay_utils::metrics::MetricsParams> {
+		let metrics_address = if !self.no_prometheus {
+			Some(relay_utils::metrics::MetricsAddress {
+				host: self.prometheus_host,
+				port: self.prometheus_port,
+			})
+		} else {
+			None
+		};
 
-        let relay_version = option_env!("CARGO_PKG_VERSION").unwrap_or("unknown");
-        let relay_commit = SubstrateRelayBuildInfo::get_git_commit();
-        relay_utils::metrics::MetricsParams::new(
-            metrics_address,
-            relay_version.into(),
-            relay_commit,
-        )
-        .map_err(|e| anyhow::format_err!("{:?}", e))
-    }
+		let relay_version = option_env!("CARGO_PKG_VERSION").unwrap_or("unknown");
+		let relay_commit = SubstrateRelayBuildInfo::get_git_commit();
+		relay_utils::metrics::MetricsParams::new(
+			metrics_address,
+			relay_version.into(),
+			relay_commit,
+		)
+		.map_err(|e| anyhow::format_err!("{:?}", e))
+	}
 }
 
 /// Either explicit or maximal allowed value.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ExplicitOrMaximal<V> {
-    /// User has explicitly specified argument value.
-    Explicit(V),
-    /// Maximal allowed value for this argument.
-    Maximal,
+	/// User has explicitly specified argument value.
+	Explicit(V),
+	/// Maximal allowed value for this argument.
+	Maximal,
 }
 
 impl<V: std::str::FromStr> std::str::FromStr for ExplicitOrMaximal<V>
 where
-    V::Err: std::fmt::Debug,
+	V::Err: std::fmt::Debug,
 {
-    type Err = String;
+	type Err = String;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s.to_lowercase() == "max" {
-            return Ok(ExplicitOrMaximal::Maximal);
-        }
+	fn from_str(s: &str) -> Result<Self, Self::Err> {
+		if s.to_lowercase() == "max" {
+			return Ok(ExplicitOrMaximal::Maximal)
+		}
 
-        V::from_str(s)
-            .map(ExplicitOrMaximal::Explicit)
-            .map_err(|e| format!("Failed to parse '{e:?}'. Expected 'max' or explicit value"))
-    }
+		V::from_str(s)
+			.map(ExplicitOrMaximal::Explicit)
+			.map_err(|e| format!("Failed to parse '{e:?}'. Expected 'max' or explicit value"))
+	}
 }
 
 #[doc = "Runtime version params."]
 #[derive(StructOpt, Debug, PartialEq, Eq, Clone, Copy, EnumString, EnumVariantNames)]
 pub enum RuntimeVersionType {
-    /// Auto query version from chain
-    Auto,
-    /// Custom `spec_version` and `transaction_version`
-    Custom,
-    /// Read version from bundle dependencies directly.
-    Bundle,
+	/// Auto query version from chain
+	Auto,
+	/// Custom `spec_version` and `transaction_version`
+	Custom,
+	/// Read version from bundle dependencies directly.
+	Bundle,
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+	use super::*;
 
-    #[test]
-    fn hex_bytes_display_matches_from_str_for_clap() {
-        // given
-        let hex = HexBytes(vec![1, 2, 3, 4]);
-        let display = format!("{hex}");
+	#[test]
+	fn hex_bytes_display_matches_from_str_for_clap() {
+		// given
+		let hex = HexBytes(vec![1, 2, 3, 4]);
+		let display = format!("{hex}");
 
-        // when
-        let hex2: HexBytes = display.parse().unwrap();
+		// when
+		let hex2: HexBytes = display.parse().unwrap();
 
-        // then
-        assert_eq!(hex.0, hex2.0);
-    }
+		// then
+		assert_eq!(hex.0, hex2.0);
+	}
 }
