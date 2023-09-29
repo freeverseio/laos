@@ -47,18 +47,18 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
-      - name: Push Ownership Chain Docker images
+      - name: Push Ownership Node Docker images
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: ./ownership-chain.local.Dockerfile
+          file: ./ownership-node.local.Dockerfile
           push: true
           tags: freeverseio/laos-ownership-node:${{ github.sha }}
-      - name: Push Evolution Chain Docker images
+      - name: Push Evolution Node Docker images
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: ./evolution-chain.local.Dockerfile
+          file: ./evolution-node.local.Dockerfile
           push: true
           tags: freeverseio/laos-evolution-node:${{ github.sha }}
       - name: Push Bridge Docker images
