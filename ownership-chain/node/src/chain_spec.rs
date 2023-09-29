@@ -205,8 +205,8 @@ fn testnet_genesis(
 			..Default::default()
 		},
 		// Configure additional assets here
-		// For example, this configures asset "ALT1" & "ALT2" with owners, alice and bob, respectively
-		// assets: laos_runtime::AssetsConfig {
+		// For example, this configures asset "ALT1" & "ALT2" with owners, alice and bob,
+		// respectively assets: laos_runtime::AssetsConfig {
 		// 	assets: vec![
 		// 		(1, alice.into(), true, 10_000_000_0000),
 		// 		(2, bob.into(), true, 10_000_000_0000),
@@ -286,7 +286,8 @@ fn testnet_genesis(
 					// Derived from SS58 (42 prefix) address
 					// SS58: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY
 					// hex: 0xd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d
-					// Using the full hex key, truncating to the first 20 bytes (the first 40 hex chars)
+					// Using the full hex key, truncating to the first 20 bytes (the first 40 hex
+					// chars)
 					H160::from_str("d43593c715fdd31c61141abd04a99fd6822c8558")
 						.expect("internal H160 is valid; qed"),
 					fp_evm::GenesisAccount {
@@ -322,7 +323,8 @@ fn testnet_genesis(
 				);
 				map.insert(
 					// H160 address of dev account
-					// Private key : 0xb9d2ea9a615f3165812e8d44de0d24da9bbd164b65c4f0573e1ce2c8dbd9c8df
+					// Private key :
+					// 0xb9d2ea9a615f3165812e8d44de0d24da9bbd164b65c4f0573e1ce2c8dbd9c8df
 					H160::from_str("C0F0f4ab324C46e55D02D0033343B4Be8A55532d")
 						.expect("internal H160 is valid; qed"),
 					fp_evm::GenesisAccount {

@@ -340,11 +340,11 @@ fn check_function_modifier(
 	modifier: FunctionModifier,
 ) -> EvmResult {
 	if is_static && modifier != FunctionModifier::View {
-		return Err(revert("can't call non-static function in static context"));
+		return Err(revert("can't call non-static function in static context"))
 	}
 
 	if modifier != FunctionModifier::Payable && context.apparent_value > U256::zero() {
-		return Err(revert("function is not payable"));
+		return Err(revert("function is not payable"))
 	}
 
 	Ok(())

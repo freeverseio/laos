@@ -7,7 +7,7 @@ mod chains;
 mod cli;
 
 fn main() {
-    let command = cli::parse_args();
-    let run = command.run();
-    async_std::task::block_on(run);
+	let command = cli::parse_args();
+	let run = command.run();
+	async_std::task::block_on(run);
 }

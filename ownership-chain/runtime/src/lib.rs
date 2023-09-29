@@ -485,7 +485,8 @@ impl pallet_sudo::Config for Runtime {
 /// A struct responsible for converting an `AccountId` to an `H160` address.
 ///
 /// The `AccountIdToH160` struct provides a conversion from `AccountId`, typically used
-/// as a native identity in a blockchain, to an `H160` address, commonly used in Ethereum-like networks.
+/// as a native identity in a blockchain, to an `H160` address, commonly used in Ethereum-like
+/// networks.
 pub struct AccountIdToH160;
 impl Convert<AccountId, H160> for AccountIdToH160 {
 	fn convert(account_id: AccountId) -> H160 {
@@ -498,8 +499,8 @@ impl Convert<AccountId, H160> for AccountIdToH160 {
 
 /// A struct responsible for converting an `H160` address to an `AccountId`.
 ///
-/// The `H160ToAccountId` struct provides a conversion from `H160`, commonly used in Ethereum-like networks,
-/// to `AccountId`, typically used as a native identity in a blockchain.
+/// The `H160ToAccountId` struct provides a conversion from `H160`, commonly used in Ethereum-like
+/// networks, to `AccountId`, typically used as a native identity in a blockchain.
 pub struct H160ToAccountId;
 impl Convert<H160, AccountId> for H160ToAccountId {
 	fn convert(account_id: H160) -> AccountId {
@@ -510,7 +511,8 @@ impl Convert<H160, AccountId> for H160ToAccountId {
 }
 
 /// Represents a mapping between `AssetId` and `AccountId`.
-/// This struct provides functionalities to convert an `AssetId` (represented by `U256`) into an `AccountId`.
+/// This struct provides functionalities to convert an `AssetId` (represented by `U256`) into an
+/// `AccountId`.
 pub struct AssetIdToInitialOwner;
 impl Convert<U256, AccountId> for AssetIdToInitialOwner {
 	fn convert(asset_id: U256) -> AccountId {
@@ -534,7 +536,7 @@ impl<F: FindAuthor<u32>> FindAuthor<H160> for FindAuthorTruncated<F> {
 	{
 		if let Some(author_index) = F::find_author(digests) {
 			let authority_id = Aura::authorities()[author_index as usize].clone();
-			return Some(H160::from_slice(&authority_id.to_raw_vec()[4..24]));
+			return Some(H160::from_slice(&authority_id.to_raw_vec()[4..24]))
 		}
 		None
 	}
@@ -813,9 +815,8 @@ impl fp_self_contained::SelfContainedCall for RuntimeCall {
 		len: usize,
 	) -> Option<Result<(), TransactionValidityError>> {
 		match self {
-			RuntimeCall::Ethereum(call) => {
-				call.pre_dispatch_self_contained(info, dispatch_info, len)
-			},
+			RuntimeCall::Ethereum(call) =>
+				call.pre_dispatch_self_contained(info, dispatch_info, len),
 			_ => None,
 		}
 	}
@@ -825,11 +826,10 @@ impl fp_self_contained::SelfContainedCall for RuntimeCall {
 		info: Self::SignedInfo,
 	) -> Option<sp_runtime::DispatchResultWithInfo<PostDispatchInfoOf<Self>>> {
 		match self {
-			call @ RuntimeCall::Ethereum(pallet_ethereum::Call::transact { .. }) => {
+			call @ RuntimeCall::Ethereum(pallet_ethereum::Call::transact { .. }) =>
 				Some(call.dispatch(RuntimeOrigin::from(
 					pallet_ethereum::RawOrigin::EthereumTransaction(info),
-				)))
-			},
+				))),
 			_ => None,
 		}
 	}
