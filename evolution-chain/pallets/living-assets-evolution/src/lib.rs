@@ -79,7 +79,7 @@ pub mod pallet {
 		MintedWithExternalTokenURI {
 			collection_id: CollectionId,
 			slot: Slot,
-			to: AccountIdOf<T>,
+			to: SlotOwnerId,
 			token_uri: TokenUriOf<T>,
 			token_id: TokenId,
 		},
@@ -169,7 +169,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 			slot: Slot,
-			to: AccountIdOf<T>,
+			to: SlotOwnerId,
 			token_uri: TokenUriOf<T>,
 		) -> DispatchResult {
 			let who = ensure_signed(origin)?;
@@ -217,7 +217,7 @@ impl<T: Config> Pallet<T> {
 	///
 	/// Every slot is identified by a unique `token_id` where `token_id = concat(slot #,
 	/// owner_address)`
-	fn slot_and_owner_to_token_id(slot_and_owner: (Slot, AccountIdOf<T>)) -> TokenId {
+	fn slot_and_owner_to_token_id(slot_and_owner: (Slot, SlotOwnerId)) -> TokenId {
 		let (slot, owner) = slot_and_owner;
 
 		let mut bytes = [0u8; 32];
@@ -227,8 +227,7 @@ impl<T: Config> Pallet<T> {
 		// we also use the last 12 bytes of the slot, since the first 4 bytes are always 0
 		bytes[..12].copy_from_slice(&slot_bytes[4..]);
 
-		let h160 = T::AccountIdToH160::convert(owner);
-		let account_id_bytes = h160.as_fixed_bytes();
+		let account_id_bytes = owner.as_fixed_bytes();
 
 		bytes[12..].copy_from_slice(account_id_bytes);
 		TokenId::from(bytes)
