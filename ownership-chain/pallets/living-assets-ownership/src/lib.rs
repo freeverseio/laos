@@ -52,13 +52,13 @@ pub mod pallet {
 		/// is commonly used to represent Ethereum addresses.
 		type AccountIdToH160: Convert<Self::AccountId, H160>;
 
-		/// This associated type defines a conversion from an `H160` type back to the `AccountId` type,
-		/// which is internal to the implementing type (represented by `Self`). This conversion is
-		/// often necessary for mapping Ethereum addresses back to native account IDs.
+		/// This associated type defines a conversion from an `H160` type back to the `AccountId`
+		/// type, which is internal to the implementing type (represented by `Self`). This
+		/// conversion is often necessary for mapping Ethereum addresses back to native account IDs.
 		type H160ToAccountId: Convert<H160, Self::AccountId>;
 
-		/// Type alias for implementing the `AssetIdToInitialOwner` trait for a given account ID type.
-		/// This allows you to specify which account should initially own each new asset.
+		/// Type alias for implementing the `AssetIdToInitialOwner` trait for a given account ID
+		/// type. This allows you to specify which account should initially own each new asset.
 		type AssetIdToInitialOwner: Convert<U256, Self::AccountId>;
 	}
 
@@ -242,7 +242,8 @@ pub fn collection_id_to_address(collection_id: CollectionId) -> H160 {
 /// Converts an `H160` address into a `CollectionId` format.
 ///
 /// This function takes the given `H160` address, checks for the correct prefix, and extracts
-/// the `CollectionId` from it. If the prefix is incorrect, it returns a `CollectionError::InvalidPrefix` error.
+/// the `CollectionId` from it. If the prefix is incorrect, it returns a
+/// `CollectionError::InvalidPrefix` error.
 ///
 /// # Arguments
 ///
@@ -253,7 +254,7 @@ pub fn collection_id_to_address(collection_id: CollectionId) -> H160 {
 /// * A `Result` which is either the `CollectionId` or an error indicating the address is invalid.
 pub fn address_to_collection_id(address: H160) -> Result<CollectionId, CollectionError> {
 	if &address.0[0..12] != ASSET_PRECOMPILE_ADDRESS_PREFIX {
-		return Err(CollectionError::InvalidPrefix);
+		return Err(CollectionError::InvalidPrefix)
 	}
 	let id_bytes: [u8; 8] = address.0[12..].try_into().unwrap();
 	Ok(CollectionId::from_be_bytes(id_bytes))

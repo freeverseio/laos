@@ -21,8 +21,8 @@ pub type TokenId = U256;
 
 /// Slot type - 96-bit unsigned integer
 ///
-/// NOTE: `u128` is used since there is no native support for 96-bit integers in Rust and using `[u8;12]` is bad for UX
-/// Maybe in the future we can use a custom type for this
+/// NOTE: `u128` is used since there is no native support for 96-bit integers in Rust and using
+/// `[u8;12]` is bad for UX Maybe in the future we can use a custom type for this
 pub type Slot = u128;
 
 /// Max value of `Slot`, used for validation

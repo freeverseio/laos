@@ -285,7 +285,8 @@ mod helpers {
 	/// # Arguments
 	///
 	/// * `$name`: An identifier to name the precompile mock type.
-	/// * `$owner_of_collection`: A closure that takes `collection_id` and `asset_id` and returns a `Result<AccountId, &'static str>`.
+	/// * `$owner_of_collection`: A closure that takes `collection_id` and `asset_id` and returns a
+	///   `Result<AccountId, &'static str>`.
 	///
 	/// # Example
 	///
@@ -336,7 +337,8 @@ mod helpers {
 	///
 	/// This macro creates mock implementations of the `Erc721` trait,
 	/// allowing you to test how your code interacts with the precompiled contracts.
-	/// The mock type is named based on the provided identifier, and the implementation uses the provided expression.
+	/// The mock type is named based on the provided identifier, and the implementation uses the
+	/// provided expression.
 	///
 	/// # Arguments
 	///

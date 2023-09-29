@@ -21,5 +21,5 @@ use relay_laos_ownership_client::OwnershipParachain;
 use relay_substrate_client::SimpleRuntimeVersion;
 
 impl CliChain for OwnershipParachain {
-    const RUNTIME_VERSION: Option<SimpleRuntimeVersion> = None;
+	const RUNTIME_VERSION: Option<SimpleRuntimeVersion> = None;
 }

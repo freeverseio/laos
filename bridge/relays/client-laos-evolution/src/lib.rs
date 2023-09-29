@@ -20,14 +20,14 @@ use bp_laos_evolution::{AccountId, EVOCHAIN_SYNCED_HEADERS_GRANDPA_INFO_METHOD};
 use codec::{Compact, Decode, Encode};
 use laos_evolution_runtime as evochain_runtime;
 use relay_substrate_client::{
-    BalanceOf, Chain, ChainWithBalances, ChainWithGrandpa, ChainWithMessages,
-    ChainWithTransactions, Error as SubstrateError, NonceOf, SignParam, UnderlyingChainProvider,
-    UnsignedTransaction,
+	BalanceOf, Chain, ChainWithBalances, ChainWithGrandpa, ChainWithMessages,
+	ChainWithTransactions, Error as SubstrateError, NonceOf, SignParam, UnderlyingChainProvider,
+	UnsignedTransaction,
 };
 use sp_core::{storage::StorageKey, Pair};
 use sp_runtime::{
-    generic::{SignedBlock, SignedPayload},
-    traits::IdentifyAccount,
+	generic::{SignedBlock, SignedPayload},
+	traits::IdentifyAccount,
 };
 use std::time::Duration;
 
@@ -40,53 +40,53 @@ pub type RuntimeCall = evochain_runtime::RuntimeCall;
 pub struct Evochain;
 
 impl UnderlyingChainProvider for Evochain {
-    type Chain = bp_laos_evolution::Evochain;
+	type Chain = bp_laos_evolution::Evochain;
 }
 
 impl ChainWithMessages for Evochain {
-    // TODO (https://github.com/paritytech/parity-bridges-common/issues/1692): change the name
-    const WITH_CHAIN_RELAYERS_PALLET_NAME: Option<&'static str> = Some("BridgeRelayers");
-    const TO_CHAIN_MESSAGE_DETAILS_METHOD: &'static str =
-        bp_laos_evolution::TO_EVOCHAIN_MESSAGE_DETAILS_METHOD;
-    const FROM_CHAIN_MESSAGE_DETAILS_METHOD: &'static str =
-        bp_laos_evolution::FROM_EVOCHAIN_MESSAGE_DETAILS_METHOD;
+	// TODO (https://github.com/paritytech/parity-bridges-common/issues/1692): change the name
+	const WITH_CHAIN_RELAYERS_PALLET_NAME: Option<&'static str> = Some("BridgeRelayers");
+	const TO_CHAIN_MESSAGE_DETAILS_METHOD: &'static str =
+		bp_laos_evolution::TO_EVOCHAIN_MESSAGE_DETAILS_METHOD;
+	const FROM_CHAIN_MESSAGE_DETAILS_METHOD: &'static str =
+		bp_laos_evolution::FROM_EVOCHAIN_MESSAGE_DETAILS_METHOD;
 }
 
 impl Chain for Evochain {
-    const NAME: &'static str = "Evochain";
-    const BEST_FINALIZED_HEADER_ID_METHOD: &'static str =
-        bp_laos_evolution::BEST_FINALIZED_EVOCHAIN_HEADER_METHOD;
-    const AVERAGE_BLOCK_INTERVAL: Duration = Duration::from_secs(5);
+	const NAME: &'static str = "Evochain";
+	const BEST_FINALIZED_HEADER_ID_METHOD: &'static str =
+		bp_laos_evolution::BEST_FINALIZED_EVOCHAIN_HEADER_METHOD;
+	const AVERAGE_BLOCK_INTERVAL: Duration = Duration::from_secs(5);
 
-    type SignedBlock = SignedBlock<evochain_runtime::Block>;
-    type Call = evochain_runtime::RuntimeCall;
+	type SignedBlock = SignedBlock<evochain_runtime::Block>;
+	type Call = evochain_runtime::RuntimeCall;
 }
 
 impl ChainWithGrandpa for Evochain {
-    const SYNCED_HEADERS_GRANDPA_INFO_METHOD: &'static str =
-        EVOCHAIN_SYNCED_HEADERS_GRANDPA_INFO_METHOD;
+	const SYNCED_HEADERS_GRANDPA_INFO_METHOD: &'static str =
+		EVOCHAIN_SYNCED_HEADERS_GRANDPA_INFO_METHOD;
 
-    type KeyOwnerProof = sp_core::Void;
+	type KeyOwnerProof = sp_core::Void;
 }
 
 impl ChainWithBalances for Evochain {
-    fn account_info_storage_key(account_id: &Self::AccountId) -> StorageKey {
-        use frame_support::storage::generator::StorageMap;
-        StorageKey(
-            frame_system::Account::<evochain_runtime::Runtime>::storage_map_final_key(account_id),
-        )
-    }
+	fn account_info_storage_key(account_id: &Self::AccountId) -> StorageKey {
+		use frame_support::storage::generator::StorageMap;
+		StorageKey(frame_system::Account::<evochain_runtime::Runtime>::storage_map_final_key(
+			account_id,
+		))
+	}
 }
 
 impl ChainWithTransactions for Evochain {
-    type AccountKeyPair = sp_core::sr25519::Pair;
-    type SignedTransaction = evochain_runtime::UncheckedExtrinsic;
+	type AccountKeyPair = sp_core::sr25519::Pair;
+	type SignedTransaction = evochain_runtime::UncheckedExtrinsic;
 
-    fn sign_transaction(
-        param: SignParam<Self>,
-        unsigned: UnsignedTransaction<Self>,
-    ) -> Result<Self::SignedTransaction, SubstrateError> {
-        let raw_payload = SignedPayload::from_raw(
+	fn sign_transaction(
+		param: SignParam<Self>,
+		unsigned: UnsignedTransaction<Self>,
+	) -> Result<Self::SignedTransaction, SubstrateError> {
+		let raw_payload = SignedPayload::from_raw(
 			unsigned.call.clone(),
 			(
 				frame_system::CheckNonZeroSender::<evochain_runtime::Runtime>::new(),
@@ -109,47 +109,41 @@ impl ChainWithTransactions for Evochain {
 				(),
 			),
 		);
-        let signature = raw_payload.using_encoded(|payload| param.signer.sign(payload));
-        let signer: sp_runtime::MultiSigner = param.signer.public().into();
-        let (call, extra, _) = raw_payload.deconstruct();
+		let signature = raw_payload.using_encoded(|payload| param.signer.sign(payload));
+		let signer: sp_runtime::MultiSigner = param.signer.public().into();
+		let (call, extra, _) = raw_payload.deconstruct();
 
-        Ok(evochain_runtime::UncheckedExtrinsic::new_signed(
-            call.into_decoded()?,
-            signer.into_account().into(),
-            signature.into(),
-            extra,
-        ))
-    }
+		Ok(evochain_runtime::UncheckedExtrinsic::new_signed(
+			call.into_decoded()?,
+			signer.into_account().into(),
+			signature.into(),
+			extra,
+		))
+	}
 
-    fn is_signed(tx: &Self::SignedTransaction) -> bool {
-        tx.signature.is_some()
-    }
+	fn is_signed(tx: &Self::SignedTransaction) -> bool {
+		tx.signature.is_some()
+	}
 
-    fn is_signed_by(signer: &Self::AccountKeyPair, tx: &Self::SignedTransaction) -> bool {
-        tx.signature
-            .as_ref()
-            .map(|(address, _, _)| {
-                *address == evochain_runtime::Address::from(AccountId::from(signer.public().0))
-            })
-            .unwrap_or(false)
-    }
+	fn is_signed_by(signer: &Self::AccountKeyPair, tx: &Self::SignedTransaction) -> bool {
+		tx.signature
+			.as_ref()
+			.map(|(address, _, _)| {
+				*address == evochain_runtime::Address::from(AccountId::from(signer.public().0))
+			})
+			.unwrap_or(false)
+	}
 
-    fn parse_transaction(tx: Self::SignedTransaction) -> Option<UnsignedTransaction<Self>> {
-        let extra = &tx.signature.as_ref()?.2;
-        Some(
-            UnsignedTransaction::new(
-                tx.function.into(),
-                Compact::<NonceOf<Self>>::decode(&mut &extra.5.encode()[..])
-                    .ok()?
-                    .into(),
-            )
-            .tip(
-                Compact::<BalanceOf<Self>>::decode(&mut &extra.7.encode()[..])
-                    .ok()?
-                    .into(),
-            ),
-        )
-    }
+	fn parse_transaction(tx: Self::SignedTransaction) -> Option<UnsignedTransaction<Self>> {
+		let extra = &tx.signature.as_ref()?.2;
+		Some(
+			UnsignedTransaction::new(
+				tx.function.into(),
+				Compact::<NonceOf<Self>>::decode(&mut &extra.5.encode()[..]).ok()?.into(),
+			)
+			.tip(Compact::<BalanceOf<Self>>::decode(&mut &extra.7.encode()[..]).ok()?.into()),
+		)
+	}
 }
 
 /// Evochain signing params.
@@ -160,31 +154,31 @@ pub type SyncHeader = relay_substrate_client::SyncHeader<evochain_runtime::Heade
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use relay_substrate_client::TransactionEra;
+	use super::*;
+	use relay_substrate_client::TransactionEra;
 
-    #[test]
-    fn parse_transaction_works() {
-        let unsigned = UnsignedTransaction {
-            call: evochain_runtime::RuntimeCall::System(evochain_runtime::SystemCall::remark {
-                remark: b"Hello world!".to_vec(),
-            })
-            .into(),
-            nonce: 777,
-            tip: 888,
-            era: TransactionEra::immortal(),
-        };
-        let signed_transaction = Evochain::sign_transaction(
-            SignParam {
-                spec_version: 42,
-                transaction_version: 50000,
-                genesis_hash: [42u8; 32].into(),
-                signer: sp_core::sr25519::Pair::from_seed_slice(&[1u8; 32]).unwrap(),
-            },
-            unsigned.clone(),
-        )
-        .unwrap();
-        let parsed_transaction = Evochain::parse_transaction(signed_transaction).unwrap();
-        assert_eq!(parsed_transaction, unsigned);
-    }
+	#[test]
+	fn parse_transaction_works() {
+		let unsigned = UnsignedTransaction {
+			call: evochain_runtime::RuntimeCall::System(evochain_runtime::SystemCall::remark {
+				remark: b"Hello world!".to_vec(),
+			})
+			.into(),
+			nonce: 777,
+			tip: 888,
+			era: TransactionEra::immortal(),
+		};
+		let signed_transaction = Evochain::sign_transaction(
+			SignParam {
+				spec_version: 42,
+				transaction_version: 50000,
+				genesis_hash: [42u8; 32].into(),
+				signer: sp_core::sr25519::Pair::from_seed_slice(&[1u8; 32]).unwrap(),
+			},
+			unsigned.clone(),
+		)
+		.unwrap();
+		let parsed_transaction = Evochain::parse_transaction(signed_transaction).unwrap();
+		assert_eq!(parsed_transaction, unsigned);
+	}
 }

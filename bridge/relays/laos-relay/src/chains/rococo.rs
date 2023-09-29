@@ -5,5 +5,5 @@ use relay_rococo_client::Rococo;
 use relay_substrate_client::SimpleRuntimeVersion;
 
 impl CliChain for Rococo {
-    const RUNTIME_VERSION: Option<SimpleRuntimeVersion> = None;
+	const RUNTIME_VERSION: Option<SimpleRuntimeVersion> = None;
 }

@@ -60,7 +60,7 @@ where
 
 	fn is_precompile(&self, address: H160, _gas: u64) -> IsPrecompileResult {
 		if is_collection_address(address) {
-			return IsPrecompileResult::Answer { is_precompile: true, extra_cost: 0 };
+			return IsPrecompileResult::Answer { is_precompile: true, extra_cost: 0 }
 		}
 
 		IsPrecompileResult::Answer {

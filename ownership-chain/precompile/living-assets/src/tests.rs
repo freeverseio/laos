@@ -141,7 +141,8 @@ mod helpers {
 	/// # Arguments
 	///
 	/// * `$name`: An identifier to name the precompile mock type.
-	/// * `$create_collection_result`: An expression that evaluates to a `Result<CollectionId, &'static str>`.
+	/// * `$create_collection_result`: An expression that evaluates to a `Result<CollectionId,
+	///   &'static str>`.
 	/// * `$owner_of_collection_result`: An expression that evaluates to an `Option<AccountId>`.
 	///
 	/// # Example

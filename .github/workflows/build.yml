@@ -3,7 +3,7 @@ name: Build
 # Controls when the action will run.
 on:
   push:
-    branches: [main, dev]
+    branches: [main]
   pull_request:
     types: [opened, synchronize]
   workflow_dispatch:
@@ -47,13 +47,27 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
-      - name: Push Docker images
+      - name: Push Ownership Node Docker images
         uses: docker/build-push-action@v4
         with:
-          context: ./ownership-chain
-          file: ./local.Dockerfile
+          context: .
+          file: ./docker/ownership-node.local.Dockerfile
           push: true
-          tags: ${{ env.DOCKER_REPO }}:${{ github.sha }}
+          tags: freeverseio/laos-ownership-node:${{ github.sha }}
+      - name: Push Evolution Node Docker images
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./docker/evolution-node.local.Dockerfile
+          push: true
+          tags: freeverseio/laos-evolution-node:${{ github.sha }}
+      - name: Push Bridge Docker images
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./docker/bridge.local.Dockerfile
+          push: true
+          tags: freeverseio/laos-bridge:${{ github.sha }}
 
   lint:
     runs-on: 
@@ -65,9 +79,13 @@ jobs:
       - uses: ./.github/actions/cache
         with:
           cache-key: lint
+      - name: install nightly
+        run: |
+          rustup toolchain install nightly
+          rustup component add rustfmt --toolchain nightly-x86_64-unknown-linux-gnu
       - name: check format
         run: |
-          cargo fmt --all --check
+          cargo +nightly fmt --all --check
       - name: install clippy
         run: |
           rustup component add clippy

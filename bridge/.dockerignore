@@ -1,9 +1,0 @@
-.git
-**/target/
-**/*.txt
-**/*.md
-/docker/
-!/target/release/laos-relay
-
-# dotfiles in the repo root
-/.*

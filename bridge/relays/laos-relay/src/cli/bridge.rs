@@ -19,8 +19,8 @@ use pallet_bridge_parachains::{RelayBlockHash, RelayBlockHasher, RelayBlockNumbe
 use relay_substrate_client::{Chain, ChainWithTransactions, Parachain, RelayChain};
 use strum::{EnumString, EnumVariantNames};
 use substrate_relay_helper::{
-    finality::SubstrateFinalitySyncPipeline, messages::SubstrateMessageLane,
-    parachains::SubstrateParachainsPipeline,
+	finality::SubstrateFinalitySyncPipeline, messages::SubstrateMessageLane,
+	parachains::SubstrateParachainsPipeline,
 };
 
 /// Supported full bridges (headers + messages).
@@ -31,48 +31,48 @@ pub enum FullBridge {}
 /// Minimal bridge representation that can be used from the CLI.
 /// It connects a source chain to a target chain.
 pub trait CliBridgeBase: Sized {
-    /// The source chain.
-    type Source: Chain + CliChain;
-    /// The target chain.
-    type Target: ChainWithTransactions + CliChain;
+	/// The source chain.
+	type Source: Chain + CliChain;
+	/// The target chain.
+	type Target: ChainWithTransactions + CliChain;
 }
 
 /// Bridge representation that can be used from the CLI for relaying headers
 /// from a relay chain to a relay chain.
 pub trait RelayToRelayHeadersCliBridge: CliBridgeBase {
-    /// Finality proofs synchronization pipeline.
-    type Finality: SubstrateFinalitySyncPipeline<
-        SourceChain = Self::Source,
-        TargetChain = Self::Target,
-    >;
+	/// Finality proofs synchronization pipeline.
+	type Finality: SubstrateFinalitySyncPipeline<
+		SourceChain = Self::Source,
+		TargetChain = Self::Target,
+	>;
 }
 
 /// Bridge representation that can be used from the CLI for relaying headers
 /// from a parachain to a relay chain.
 pub trait ParachainToRelayHeadersCliBridge: CliBridgeBase
 where
-    Self::Source: Parachain,
+	Self::Source: Parachain,
 {
-    // The `CliBridgeBase` type represents the parachain in this situation.
-    // We need to add an extra type for the relay chain.
-    type SourceRelay: Chain<BlockNumber = RelayBlockNumber, Hash = RelayBlockHash, Hasher = RelayBlockHasher>
-        + CliChain
-        + RelayChain;
-    /// Finality proofs synchronization pipeline (source parachain -> target).
-    type ParachainFinality: SubstrateParachainsPipeline<
-        SourceRelayChain = Self::SourceRelay,
-        SourceParachain = Self::Source,
-        TargetChain = Self::Target,
-    >;
-    /// Finality proofs synchronization pipeline (source relay chain -> target).
-    type RelayFinality: SubstrateFinalitySyncPipeline<
-        SourceChain = Self::SourceRelay,
-        TargetChain = Self::Target,
-    >;
+	// The `CliBridgeBase` type represents the parachain in this situation.
+	// We need to add an extra type for the relay chain.
+	type SourceRelay: Chain<BlockNumber = RelayBlockNumber, Hash = RelayBlockHash, Hasher = RelayBlockHasher>
+		+ CliChain
+		+ RelayChain;
+	/// Finality proofs synchronization pipeline (source parachain -> target).
+	type ParachainFinality: SubstrateParachainsPipeline<
+		SourceRelayChain = Self::SourceRelay,
+		SourceParachain = Self::Source,
+		TargetChain = Self::Target,
+	>;
+	/// Finality proofs synchronization pipeline (source relay chain -> target).
+	type RelayFinality: SubstrateFinalitySyncPipeline<
+		SourceChain = Self::SourceRelay,
+		TargetChain = Self::Target,
+	>;
 }
 
 /// Bridge representation that can be used from the CLI for relaying messages.
 pub trait MessagesCliBridge: CliBridgeBase {
-    /// The Source -> Destination messages synchronization pipeline.
-    type MessagesLane: SubstrateMessageLane<SourceChain = Self::Source, TargetChain = Self::Target>;
+	/// The Source -> Destination messages synchronization pipeline.
+	type MessagesLane: SubstrateMessageLane<SourceChain = Self::Source, TargetChain = Self::Target>;
 }

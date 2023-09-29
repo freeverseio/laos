@@ -1,0 +1,5 @@
+doc
+**/target
+!./target/release/laos
+!./target/release/laos-evolution
+!./target/release/laos-relay

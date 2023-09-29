@@ -21,8 +21,8 @@ use structopt::StructOpt;
 use strum::{EnumString, EnumVariantNames, VariantNames};
 
 use crate::bridges::{
-    ownership_parachain_evochain::evochain_headers_to_ownership_parachain::EvochainToOwnershipParachainCliBridge,
-    rococo_evochain::rococo_headers_to_evochain::RococoToEvochainCliBridge,
+	ownership_parachain_evochain::evochain_headers_to_ownership_parachain::EvochainToOwnershipParachainCliBridge,
+	rococo_evochain::rococo_headers_to_evochain::RococoToEvochainCliBridge,
 };
 use relay_substrate_client::Client;
 use relay_utils::metrics::{GlobalMetrics, StandaloneMetric};
@@ -33,81 +33,80 @@ use crate::cli::{bridge::*, chain_schema::*, PrometheusParams};
 /// Start headers relayer process.
 #[derive(StructOpt)]
 pub struct RelayHeaders {
-    /// A bridge instance to relay headers for.
-    #[structopt(possible_values = RelayHeadersBridge::VARIANTS, case_insensitive = true)]
-    bridge: RelayHeadersBridge,
-    /// If passed, only mandatory headers (headers that are changing the GRANDPA authorities set)
-    /// are relayed.
-    #[structopt(long)]
-    only_mandatory_headers: bool,
-    #[structopt(flatten)]
-    source: SourceConnectionParams,
-    #[structopt(flatten)]
-    target: TargetConnectionParams,
-    #[structopt(flatten)]
-    target_sign: TargetSigningParams,
-    #[structopt(flatten)]
-    prometheus_params: PrometheusParams,
+	/// A bridge instance to relay headers for.
+	#[structopt(possible_values = RelayHeadersBridge::VARIANTS, case_insensitive = true)]
+	bridge: RelayHeadersBridge,
+	/// If passed, only mandatory headers (headers that are changing the GRANDPA authorities set)
+	/// are relayed.
+	#[structopt(long)]
+	only_mandatory_headers: bool,
+	#[structopt(flatten)]
+	source: SourceConnectionParams,
+	#[structopt(flatten)]
+	target: TargetConnectionParams,
+	#[structopt(flatten)]
+	target_sign: TargetSigningParams,
+	#[structopt(flatten)]
+	prometheus_params: PrometheusParams,
 }
 
 #[derive(Debug, EnumString, EnumVariantNames)]
 #[strum(serialize_all = "kebab_case")]
 /// Headers relay bridge.
 pub enum RelayHeadersBridge {
-    EvochainToOwnershipParachain,
-    RococoToEvochain,
+	EvochainToOwnershipParachain,
+	RococoToEvochain,
 }
 
 #[async_trait]
 trait HeadersRelayer: RelayToRelayHeadersCliBridge
 where
-    AccountIdOf<Self::Target>: From<<AccountKeyPairOf<Self::Target> as Pair>::Public>,
+	AccountIdOf<Self::Target>: From<<AccountKeyPairOf<Self::Target> as Pair>::Public>,
 {
-    /// Relay headers.
-    async fn relay_headers(data: RelayHeaders) -> anyhow::Result<()> {
-        let source_client = data.source.into_client::<Self::Source>().await?;
-        let target_client = data.target.into_client::<Self::Target>().await?;
-        let target_transactions_mortality = data.target_sign.target_transactions_mortality;
-        let target_sign = data.target_sign.to_keypair::<Self::Target>()?;
+	/// Relay headers.
+	async fn relay_headers(data: RelayHeaders) -> anyhow::Result<()> {
+		let source_client = data.source.into_client::<Self::Source>().await?;
+		let target_client = data.target.into_client::<Self::Target>().await?;
+		let target_transactions_mortality = data.target_sign.target_transactions_mortality;
+		let target_sign = data.target_sign.to_keypair::<Self::Target>()?;
 
-        let metrics_params: relay_utils::metrics::MetricsParams =
-            data.prometheus_params.into_metrics_params()?;
-        GlobalMetrics::new()?.register_and_spawn(&metrics_params.registry)?;
+		let metrics_params: relay_utils::metrics::MetricsParams =
+			data.prometheus_params.into_metrics_params()?;
+		GlobalMetrics::new()?.register_and_spawn(&metrics_params.registry)?;
 
-        let target_transactions_params = substrate_relay_helper::TransactionParams {
-            signer: target_sign,
-            mortality: target_transactions_mortality,
-        };
-        Self::Finality::start_relay_guards(
-            &target_client,
-            &target_transactions_params,
-            target_client.can_start_version_guard(),
-        )
-        .await?;
+		let target_transactions_params = substrate_relay_helper::TransactionParams {
+			signer: target_sign,
+			mortality: target_transactions_mortality,
+		};
+		Self::Finality::start_relay_guards(
+			&target_client,
+			&target_transactions_params,
+			target_client.can_start_version_guard(),
+		)
+		.await?;
 
-        substrate_relay_helper::finality::run::<Self::Finality>(
-            source_client,
-            target_client,
-            data.only_mandatory_headers,
-            target_transactions_params,
-            metrics_params,
-        )
-        .await
-    }
+		substrate_relay_helper::finality::run::<Self::Finality>(
+			source_client,
+			target_client,
+			data.only_mandatory_headers,
+			target_transactions_params,
+			metrics_params,
+		)
+		.await
+	}
 }
 
 impl HeadersRelayer for EvochainToOwnershipParachainCliBridge {}
 impl HeadersRelayer for RococoToEvochainCliBridge {}
 
 impl RelayHeaders {
-    /// Run the command.
-    pub async fn run(self) -> anyhow::Result<()> {
-        match self.bridge {
-            RelayHeadersBridge::EvochainToOwnershipParachain => {
-                EvochainToOwnershipParachainCliBridge::relay_headers(self)
-            }
-            RelayHeadersBridge::RococoToEvochain => RococoToEvochainCliBridge::relay_headers(self),
-        }
-        .await
-    }
+	/// Run the command.
+	pub async fn run(self) -> anyhow::Result<()> {
+		match self.bridge {
+			RelayHeadersBridge::EvochainToOwnershipParachain =>
+				EvochainToOwnershipParachainCliBridge::relay_headers(self),
+			RelayHeadersBridge::RococoToEvochain => RococoToEvochainCliBridge::relay_headers(self),
+		}
+		.await
+	}
 }

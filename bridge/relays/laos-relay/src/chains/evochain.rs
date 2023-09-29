@@ -22,7 +22,6 @@ use relay_laos_evolution_client::Evochain;
 use relay_substrate_client::SimpleRuntimeVersion;
 
 impl CliChain for Evochain {
-    const RUNTIME_VERSION: Option<SimpleRuntimeVersion> = Some(
-        SimpleRuntimeVersion::from_runtime_version(&evochain_runtime::VERSION),
-    );
+	const RUNTIME_VERSION: Option<SimpleRuntimeVersion> =
+		Some(SimpleRuntimeVersion::from_runtime_version(&evochain_runtime::VERSION));
 }
