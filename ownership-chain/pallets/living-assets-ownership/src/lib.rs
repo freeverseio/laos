@@ -18,7 +18,6 @@ pub mod pallet {
 		pallet_prelude::{OptionQuery, ValueQuery, *},
 		BoundedVec,
 	};
-	use frame_system::pallet_prelude::*;
 	use sp_core::{H160, U256};
 	use sp_runtime::traits::Convert;
 
@@ -139,18 +138,7 @@ pub mod pallet {
 	// These functions materialize as "extrinsics", which are often compared to transactions.
 	// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
 	#[pallet::call]
-	impl<T: Config> Pallet<T> {
-		#[pallet::call_index(0)]
-		#[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())] // TODO set proper weight
-		pub fn create_collection(origin: OriginFor<T>, base_uri: BaseURI<T>) -> DispatchResult {
-			let who = ensure_signed(origin)?;
-
-			match Self::do_create_collection(who, base_uri) {
-				Ok(_) => Ok(()),
-				Err(err) => Err(err.into()),
-			}
-		}
-	}
+	impl<T: Config> Pallet<T> {}
 
 	impl<T: Config> traits::CollectionManager for Pallet<T> {
 		type Error = Error<T>;
