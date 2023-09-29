@@ -246,3 +246,7 @@ evochain-primitives = { path = "./evolution-chain/primitives", default-features 
 # runtime
 laos-runtime = { path = "./ownership-chain/runtime" }
 laos-evolution-runtime = { path = "./evolution-chain/runtime", default-features = false }
+
+relay-laos-evolution-client = { path="./bridge/relays/client-laos-evolution" }
+relay-laos-ownership-client = { path="./bridge/relays/client-laos-ownership" }
+relay-rococo-client = { path = "./bridge/relays/client-rococo" }

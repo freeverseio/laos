@@ -21,9 +21,9 @@ signal-hook = "0.3.16"
 signal-hook-async-std = "0.2.2"
 strum = { version = "0.25.0", features = ["derive"] }
 
-relay-laos-evolution-client = { path="../client-laos-evolution" }
-relay-laos-ownership-client = { path="../client-laos-ownership" }
-relay-rococo-client = { path = "../client-rococo" }
+relay-laos-evolution-client = { workspace = true }
+relay-laos-ownership-client = { workspace = true }
+relay-rococo-client = { workspace = true }
 
 # Bridge dependencies
 bp-header-chain = { workspace = true }
