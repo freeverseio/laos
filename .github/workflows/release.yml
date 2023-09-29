@@ -29,5 +29,5 @@ jobs:
         with:
           context: .
           push: true
-          file: ./${{ matrix.docker_name }}-node.Dockerfile
-          tags: freeverseio/laos-${{ matrix.docker_name }}-node:${{ github.ref_name }}
+          file: ./${{ matrix.docker_name }}.Dockerfile
+          tags: freeverseio/laos-${{ matrix.docker_name }}:${{ github.ref_name }}
