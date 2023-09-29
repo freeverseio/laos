@@ -1,8 +1,5 @@
 [workspace.package]
-authors = ["Freverse <info@freeverse.io>"]
-edition = "2021"
 repository = "https://github.com/freeverseio/laos.git"
-license = "GPL-3.0-only"
 
 [workspace]
 resolver = "2"
