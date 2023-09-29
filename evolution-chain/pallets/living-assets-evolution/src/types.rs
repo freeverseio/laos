@@ -3,7 +3,7 @@
 use codec::{Decode, Encode};
 use frame_support::traits::Get;
 use scale_info::TypeInfo;
-use sp_core::U256;
+use sp_core::{U256, H160};
 use sp_runtime::BoundedVec;
 
 /// Collection id type
@@ -14,6 +14,9 @@ pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 
 /// Wrapper around `BoundedVec` for `tokenUri`
 pub type TokenUriOf<T> = BoundedVec<u8, <T as crate::Config>::MaxTokenUriLength>;
+
+/// OwnerId type
+pub type SlotOwnerId = H160;
 
 /// TokenId type
 /// every slot is identified by a unique `asset_id = concat(slot #, owner_address)`
