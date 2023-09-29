@@ -12,7 +12,6 @@ use precompile_utils::{
 use sp_core::H160;
 use sp_std::vec::Vec;
 
-type BaseURI = Vec<u8>;
 type AccountId = H160;
 type AddressMapping = pallet_evm::IdentityAddressMapping;
 

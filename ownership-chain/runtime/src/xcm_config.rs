@@ -138,11 +138,11 @@ impl ShouldExecute for DenyReserveTransferToRelayChain {
 				InitiateReserveWithdraw {
 					reserve: MultiLocation { parents: 1, interior: Here },
 					..
-				}
-				| DepositReserveAsset {
+				} |
+				DepositReserveAsset {
 					dest: MultiLocation { parents: 1, interior: Here }, ..
-				}
-				| TransferReserveAsset {
+				} |
+				TransferReserveAsset {
 					dest: MultiLocation { parents: 1, interior: Here }, ..
 				} => {
 					Err(ProcessMessageError::Unsupported) // Deny
@@ -254,9 +254,8 @@ where
 {
 	fn try_convert(o: RuntimeOrigin) -> Result<MultiLocation, RuntimeOrigin> {
 		o.try_with_caller(|caller| match caller.try_into() {
-			Ok(SystemRawOrigin::Signed(who)) => {
-				Ok(Junction::AccountKey20 { network: Network::get(), key: who.into() }.into())
-			},
+			Ok(SystemRawOrigin::Signed(who)) =>
+				Ok(Junction::AccountKey20 { network: Network::get(), key: who.into() }.into()),
 			Ok(other) => Err(other.into()),
 			Err(other) => Err(other),
 		})

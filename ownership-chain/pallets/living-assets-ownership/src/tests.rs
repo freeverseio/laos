@@ -1,8 +1,6 @@
 use crate::{
-	address_to_collection_id, collection_id_to_address, is_collection_address,
-	mock::*,
-	traits::{CollectionManager, Erc721},
-	AssetOwner, CollectionBaseURI, CollectionError, CollectionId, Event,
+	address_to_collection_id, collection_id_to_address, is_collection_address, mock::*,
+	traits::CollectionManager, AssetOwner, CollectionBaseURI, CollectionError, CollectionId, Event,
 };
 use core::str::FromStr;
 use frame_support::assert_ok;
@@ -11,7 +9,7 @@ type BaseURI = crate::BaseURIOf<Test>;
 type AccountId = <Test as frame_system::Config>::AccountId;
 
 const ALICE: [u8; 20] = [1u8; 20];
-const BOB: [u8; 20] = [0u8; 20];
+const BOB: [u8; 20] = [2u8; 20];
 
 /// Create a new collection with the given base URI.
 fn create_collection(who: AccountId, base_uri: Option<BaseURI>) -> CollectionId {
@@ -138,7 +136,7 @@ mod traits {
 		traits::{CollectionManager, Erc721},
 		Error, Event,
 	};
-	use frame_support::{assert_err, assert_noop, assert_ok, traits::fungibles::Create};
+	use frame_support::{assert_err, assert_noop, assert_ok};
 	use sp_core::{H160, U256};
 
 	#[test]
@@ -196,7 +194,7 @@ mod traits {
 		let asset_id = U256::from(
 			hex::decode("03C0F0f4ab324C46e55D02D0033343B4Be8A55532d").unwrap().as_slice(),
 		);
-		let sender = AccountId::from_str("0000000000000000000000003343b4be8a55532d").unwrap();
+		let sender = AccountId::from_str("c0f0f4ab324c46e55d02d0033343b4be8a55532d").unwrap();
 		let receiver = BOB.into();
 		new_test_ext().execute_with(|| {
 			CollectionBaseURI::<Test>::insert(1, BaseURI::default());
@@ -298,21 +296,27 @@ mod traits {
 	}
 
 	#[test]
-	fn sucessful_transfer_from_trait_should_work() {
+	fn successful_transfer_from_trait_should_work() {
 		let asset_id = U256::from(
 			hex::decode("03C0F0f4ab324C46e55D02D0033343B4Be8A55532d").unwrap().as_slice(),
 		);
-		let sender = AccountId::from_str("0000000000000000000000003343b4be8a55532d").unwrap();
+		let sender = AccountId::from_str("c0f0f4ab324c46e55d02d0033343b4be8a55532d").unwrap();
 		let receiver = BOB.into();
 		let collection_id = 1;
 		new_test_ext().execute_with(|| {
 			System::set_block_number(1);
 			CollectionBaseURI::<Test>::insert(collection_id, BaseURI::default());
 			assert!(AssetOwner::<Test>::get(collection_id, asset_id).is_none());
-			assert_eq!(LivingAssetsModule::owner_of(1, asset_id).unwrap(), sender);
-			assert_ok!(LivingAssetsModule::transfer_from(sender, 1, sender, receiver, asset_id,));
+			assert_eq!(LivingAssetsModule::owner_of(collection_id, asset_id).unwrap(), sender);
+			assert_ok!(LivingAssetsModule::transfer_from(
+				sender,
+				collection_id,
+				sender,
+				receiver,
+				asset_id,
+			));
 			assert_eq!(AssetOwner::<Test>::get(collection_id, asset_id).unwrap(), BOB.into());
-			assert_eq!(LivingAssetsModule::owner_of(1, asset_id).unwrap(), receiver);
+			assert_eq!(LivingAssetsModule::owner_of(collection_id, asset_id).unwrap(), receiver);
 			System::assert_last_event(
 				Event::AssetTransferred { collection_id, asset_id, to: BOB.into() }.into(),
 			);

@@ -40,6 +40,9 @@ pub mod pallet {
 		#[pallet::constant]
 		type BaseURILimit: Get<u32>;
 
+		#[pallet::constant]
+		type NullAddress: Get<AccountIdOf<Self>>;
+
 		/// Type alias for implementing the `AssetIdToInitialOwner` trait for a given account ID type.
 		/// This allows you to specify which account should initially own each new asset.
 		type AssetIdToInitialOwner: Convert<AssetId, Self::AccountId>;
@@ -177,7 +180,7 @@ pub mod pallet {
 			ensure!(origin == from, Error::NoPermission);
 			ensure!(asset_owner::<T>(collection_id, asset_id) == from, Error::NoPermission);
 			ensure!(from != to, Error::CannotTransferSelf);
-			// ensure!(to != AccountIdOf::<T>::default(), Error::TransferToNullAddress);
+			ensure!(to != T::NullAddress::get(), Error::TransferToNullAddress);
 
 			AssetOwner::<T>::set(collection_id, asset_id, Some(to.clone()));
 			Self::deposit_event(Event::AssetTransferred { collection_id, asset_id, to });
@@ -256,7 +259,7 @@ pub fn address_to_collection_id<Address: Into<[u8; 20]>>(
 ) -> Result<CollectionId, CollectionError> {
 	let address_bytes: [u8; 20] = address.into();
 	if &address_bytes[0..12] != ASSET_PRECOMPILE_ADDRESS_PREFIX {
-		return Err(CollectionError::InvalidPrefix);
+		return Err(CollectionError::InvalidPrefix)
 	}
 	let id_bytes: [u8; 8] = address_bytes[12..].try_into().unwrap();
 	Ok(CollectionId::from_be_bytes(id_bytes))

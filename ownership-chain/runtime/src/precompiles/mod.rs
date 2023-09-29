@@ -35,7 +35,7 @@ type LivingAssetsPrecompile = CollectionManagerPrecompile<
 	pallet_living_assets_ownership::Pallet<crate::Runtime>,
 >;
 
-type Erc721 = Erc721Precompile<pallet_living_assets_ownership::Pallet<crate::Runtime>>;
+type Erc721 = Erc721Precompile<AccountId, pallet_living_assets_ownership::Pallet<crate::Runtime>>;
 
 impl<Runtime> PrecompileSet for FrontierPrecompiles<Runtime>
 where
@@ -60,7 +60,7 @@ where
 
 	fn is_precompile(&self, address: H160, _gas: u64) -> IsPrecompileResult {
 		if is_collection_address(address) {
-			return IsPrecompileResult::Answer { is_precompile: true, extra_cost: 0 };
+			return IsPrecompileResult::Answer { is_precompile: true, extra_cost: 0 }
 		}
 
 		IsPrecompileResult::Answer {

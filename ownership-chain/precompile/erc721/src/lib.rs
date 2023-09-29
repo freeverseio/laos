@@ -1,6 +1,5 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
-use ownership_parachain_primitives::AccountId;
 use pallet_living_assets_ownership::{address_to_collection_id, CollectionId};
 use precompile_utils::{
 	keccak256, revert, succeed, Address, Bytes, EvmDataWriter, EvmResult, FunctionModifier, LogExt,
@@ -25,10 +24,11 @@ pub enum Action {
 }
 
 /// Wrapper for the precompile function.
-pub struct Erc721Precompile<AssetManager>(PhantomData<AssetManager>);
+pub struct Erc721Precompile<AccountId, AssetManager>(PhantomData<(AccountId, AssetManager)>);
 
-impl<AssetManager> Precompile for Erc721Precompile<AssetManager>
+impl<AccountId, AssetManager> Precompile for Erc721Precompile<AccountId, AssetManager>
 where
+	AccountId: Into<H160> + From<H160> + Into<[u8; 20]>,
 	AssetManager: pallet_living_assets_ownership::traits::Erc721<AccountId>,
 {
 	fn execute(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
@@ -52,8 +52,9 @@ where
 	}
 }
 
-impl<AssetManager> Erc721Precompile<AssetManager>
+impl<AccountId, AssetManager> Erc721Precompile<AccountId, AssetManager>
 where
+	AccountId: Into<H160> + From<H160> + Into<[u8; 20]>,
 	AssetManager: pallet_living_assets_ownership::traits::Erc721<AccountId>,
 {
 	fn owner_of(
@@ -65,10 +66,7 @@ where
 
 		let asset_id: U256 = input.read()?;
 
-		let owner: H160 = AssetManager::owner_of(collection_id, asset_id)
-			.map_err(|err| revert(err))?
-			.0
-			.into();
+		let owner: H160 = AssetManager::owner_of(collection_id, asset_id).map_err(revert)?.into();
 
 		Ok(succeed(EvmDataWriter::new().write(Address(owner)).build()))
 	}
@@ -82,7 +80,7 @@ where
 
 		let asset_id: U256 = input.read()?;
 
-		let uri = AssetManager::token_uri(collection_id, asset_id).map_err(|err| revert(err))?;
+		let uri = AssetManager::token_uri(collection_id, asset_id).map_err(revert)?;
 		Ok(succeed(EvmDataWriter::new().write(Bytes(uri)).build()))
 	}
 
@@ -106,7 +104,7 @@ where
 			to.0.into(),
 			asset_id,
 		)
-		.map_err(|err| revert(err))?;
+		.map_err(revert)?;
 
 		LogsBuilder::new(handle.context().address)
 			.log4(

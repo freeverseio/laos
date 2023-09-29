@@ -88,26 +88,17 @@ impl pallet_timestamp::Config for Runtime {
 	type WeightInfo = ();
 }
 
+parameter_types! {
+	pub NullAddress: AccountId = AccountId::zero();
+}
+
 impl pallet_living_assets_ownership::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type BaseURILimit = ConstU32<256>;
-	type AccountIdToH160 = MockAccountIdToH160;
-	type H160ToAccountId = MockH160ToAccountId;
+	type NullAddress = NullAddress;
 	type AssetIdToInitialOwner = MockAssetIdToInitialOwner;
 }
 
-pub struct MockAccountIdToH160;
-impl Convert<AccountId, H160> for MockAccountIdToH160 {
-	fn convert(account_id: AccountId) -> H160 {
-		account_id
-	}
-}
-pub struct MockH160ToAccountId;
-impl Convert<H160, AccountId> for MockH160ToAccountId {
-	fn convert(account_id: H160) -> AccountId {
-		account_id
-	}
-}
 pub struct MockAssetIdToInitialOwner;
 impl Convert<U256, AccountId> for MockAssetIdToInitialOwner {
 	fn convert(_asset_id: U256) -> AccountId {

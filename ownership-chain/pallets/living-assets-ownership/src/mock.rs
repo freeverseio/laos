@@ -47,9 +47,14 @@ impl frame_system::Config for Test {
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 
+frame_support::parameter_types! {
+	pub NullAddress: AccountId = [0u8; 20].into();
+}
+
 impl pallet_livingassets_ownership::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type BaseURILimit = ConstU32<256>;
+	type NullAddress = NullAddress;
 	type AssetIdToInitialOwner = MockAssetIdToInitialOwner;
 }
 

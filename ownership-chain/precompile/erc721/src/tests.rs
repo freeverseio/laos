@@ -2,7 +2,7 @@ use core::str::FromStr;
 
 use super::*;
 use frame_support::assert_ok;
-use pallet_living_assets_ownership::CollectionId;
+use pallet_living_assets_ownership::{AssetId, CollectionId};
 use precompile_utils::testing::create_mock_handle_from_input;
 use sp_core::{H160, U256};
 
@@ -30,6 +30,7 @@ fn owner_of_asset_should_return_an_address() {
 	let mut handle = create_mock_handle_from_input(owner_of_asset_4);
 	handle.code_address = H160::from_str("ffffffffffffffffffffffff0000000000000005").unwrap();
 	let result = Mock::execute(&mut handle);
+
 	assert!(result.is_ok());
 	assert_eq!(
 		result.unwrap(),
@@ -305,16 +306,16 @@ mod helpers {
 
 				fn owner_of(
 					collection_id: CollectionId,
-					asset_id: U256,
+					asset_id: AssetId,
 				) -> Result<AccountId, Self::Error> {
 					($owner_of_collection)(collection_id, asset_id)
 				}
 
 				fn token_uri(
-					collectio_id: CollectionId,
-					asset_id: U256,
+					collection_id: CollectionId,
+					asset_id: AssetId,
 				) -> Result<Vec<u8>, Self::Error> {
-					($token_uri)(collectio_id, asset_id)
+					($token_uri)(collection_id, asset_id)
 				}
 
 				fn transfer_from(
@@ -322,13 +323,13 @@ mod helpers {
 					collection_id: CollectionId,
 					from: AccountId,
 					to: AccountId,
-					asset_id: U256,
+					asset_id: AssetId,
 				) -> Result<(), Self::Error> {
 					($transfer_from)(origin, collection_id, from, to, asset_id)
 				}
 			}
 
-			type $name = Erc721Precompile<Erc721Mock>;
+			type $name = Erc721Precompile<AccountId, Erc721Mock>;
 		};
 	}
 
