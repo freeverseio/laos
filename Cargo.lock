@@ -7011,6 +7011,7 @@ dependencies = [
  "frame-support",
  "hex",
  "num_enum 0.5.11",
+ "ownership-parachain-primitives",
  "pallet-evm",
  "pallet-living-assets-ownership",
  "parity-scale-codec",

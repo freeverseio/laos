@@ -18,7 +18,6 @@ pub mod pallet {
 	use super::*;
 	use frame_support::pallet_prelude::{OptionQuery, ValueQuery, *};
 	use frame_system::pallet_prelude::*;
-	use sp_core::U256;
 	use sp_runtime::traits::Convert;
 
 	#[pallet::pallet]

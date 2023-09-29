@@ -24,6 +24,7 @@ sp-std = { workspace = true }
 
 # Local pallet
 pallet-living-assets-ownership = { workspace = true }
+ownership-parachain-primitives = { workspace = true }
 
 # Utils
 precompile-utils = { workspace = true }
@@ -52,4 +53,5 @@ std = [
 	"precompile-utils/std",
 	"parity-scale-codec/std",
 	"scale-info/std",
+	"ownership-parachain-primitives/std",
 ]

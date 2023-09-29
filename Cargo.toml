@@ -15,8 +15,6 @@ members = [
    "ownership-chain/primitives",
 ]
 
-resolver = "2"
-
 [workspace.dependencies]
 parity-scale-codec = { version = "3.2.2", default-features = false, features = ["derive"] }
 hex-literal = "0.4.1"

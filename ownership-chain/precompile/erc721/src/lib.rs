@@ -1,5 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
+use ownership_parachain_primitives::AccountId;
 use pallet_living_assets_ownership::{address_to_collection_id, CollectionId};
 use precompile_utils::{
 	keccak256, revert, succeed, Address, Bytes, EvmDataWriter, EvmResult, FunctionModifier, LogExt,
@@ -28,7 +29,7 @@ pub struct Erc721Precompile<AssetManager>(PhantomData<AssetManager>);
 
 impl<AssetManager> Precompile for Erc721Precompile<AssetManager>
 where
-	AssetManager: pallet_living_assets_ownership::traits::Erc721<Address>,
+	AssetManager: pallet_living_assets_ownership::traits::Erc721<AccountId>,
 {
 	fn execute(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
 		// collection id is encoded into the contract address
@@ -53,7 +54,7 @@ where
 
 impl<AssetManager> Erc721Precompile<AssetManager>
 where
-	AssetManager: pallet_living_assets_ownership::traits::Erc721<Address>,
+	AssetManager: pallet_living_assets_ownership::traits::Erc721<AccountId>,
 {
 	fn owner_of(
 		collection_id: CollectionId,
@@ -64,8 +65,12 @@ where
 
 		let asset_id: U256 = input.read()?;
 
-		let owner = AssetManager::owner_of(collection_id, asset_id).map_err(|err| revert(err))?;
-		Ok(succeed(EvmDataWriter::new().write(owner).build()))
+		let owner: H160 = AssetManager::owner_of(collection_id, asset_id)
+			.map_err(|err| revert(err))?
+			.0
+			.into();
+
+		Ok(succeed(EvmDataWriter::new().write(Address(owner)).build()))
 	}
 
 	fn token_uri(
@@ -97,8 +102,8 @@ where
 		AssetManager::transfer_from(
 			handle.context().caller.into(),
 			collection_id,
-			from,
-			to,
+			from.0.into(),
+			to.0.into(),
 			asset_id,
 		)
 		.map_err(|err| revert(err))?;

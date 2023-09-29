@@ -11,9 +11,9 @@ use pallet_evm_erc721::Erc721Precompile;
 use pallet_evm_living_assets_ownership::CollectionManagerPrecompile;
 use pallet_evm_precompile_modexp::Modexp;
 use pallet_evm_precompile_simple::{ECRecover, ECRecoverPublicKey, Identity, Ripemd160, Sha256};
-use pallet_living_assets_ownership::is_collection_address;
+use pallet_living_assets_ownership::{is_collection_address, BaseURIOf};
 
-use crate::AccountId;
+use crate::{AccountId, Runtime};
 
 pub struct FrontierPrecompiles<Runtime>(PhantomData<Runtime>);
 
@@ -32,6 +32,7 @@ where
 type LivingAssetsPrecompile = CollectionManagerPrecompile<
 	pallet_evm::IdentityAddressMapping,
 	AccountId,
+	BaseURIOf<Runtime>,
 	pallet_living_assets_ownership::Pallet<crate::Runtime>,
 >;
 

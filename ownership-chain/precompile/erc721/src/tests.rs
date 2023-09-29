@@ -300,7 +300,7 @@ mod helpers {
 		($name:ident, $owner_of_collection:expr, $token_uri:expr, $transfer_from:expr) => {
 			struct Erc721Mock;
 
-			impl pallet_living_assets_ownership::traits::Erc721 for Erc721Mock {
+			impl pallet_living_assets_ownership::traits::Erc721<AccountId> for Erc721Mock {
 				type Error = &'static str;
 
 				fn owner_of(

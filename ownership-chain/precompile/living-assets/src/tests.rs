@@ -156,12 +156,8 @@ mod helpers {
 
 			struct CollectionManagerMock;
 
-			impl
-				pallet_living_assets_ownership::traits::CollectionManager<
-					CollectionId,
-					AccountId,
-					BaseURI,
-				> for CollectionManagerMock
+			impl pallet_living_assets_ownership::traits::CollectionManager<AccountId, BaseURI>
+				for CollectionManagerMock
 			{
 				type Error = &'static str;
 
@@ -177,8 +173,12 @@ mod helpers {
 				}
 			}
 
-			type $name =
-				CollectionManagerPrecompile<AddressMapping, AccountId, CollectionManagerMock>;
+			type $name = CollectionManagerPrecompile<
+				AddressMapping,
+				AccountId,
+				BaseURI,
+				CollectionManagerMock,
+			>;
 		};
 	}
 

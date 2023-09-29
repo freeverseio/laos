@@ -3,7 +3,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
 use pallet_living_assets_ownership::{
-	collection_id_to_address, traits::CollectionManager, BaseURIOf, CollectionId,
+	collection_id_to_address, traits::CollectionManager, CollectionId,
 };
 use parity_scale_codec::Encode;
 use precompile_utils::{
@@ -25,22 +25,22 @@ pub enum Action {
 }
 
 /// Wrapper for the precompile function.
-pub struct CollectionManagerPrecompile<AddressMapping, AccountId, LivingAssets>(
-	PhantomData<(AddressMapping, AccountId, LivingAssets)>,
+pub struct CollectionManagerPrecompile<AddressMapping, AccountId, BaseURI, LivingAssets>(
+	PhantomData<(AddressMapping, AccountId, BaseURI, LivingAssets)>,
 )
 where
 	AddressMapping: pallet_evm::AddressMapping<AccountId>,
 	AccountId: Encode + Debug,
-	LivingAssets: pallet_living_assets_ownership::Config
-		+ CollectionManager<AccountId, BaseURIOf<LivingAssets>>;
+	BaseURI: TryFrom<Vec<u8>>,
+	LivingAssets: CollectionManager<AccountId, BaseURI>;
 
-impl<AddressMapping, AccountId, LivingAssets> Precompile
-	for CollectionManagerPrecompile<AddressMapping, AccountId, LivingAssets>
+impl<AddressMapping, AccountId, BaseURI, LivingAssets> Precompile
+	for CollectionManagerPrecompile<AddressMapping, AccountId, BaseURI, LivingAssets>
 where
 	AddressMapping: pallet_evm::AddressMapping<AccountId>,
 	AccountId: Encode + Debug,
-	LivingAssets: pallet_living_assets_ownership::Config
-		+ CollectionManager<AccountId, BaseURIOf<LivingAssets>>,
+	BaseURI: TryFrom<Vec<u8>>,
+	LivingAssets: CollectionManager<AccountId, BaseURI>,
 {
 	fn execute(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
 		let selector = handle.read_selector()?;

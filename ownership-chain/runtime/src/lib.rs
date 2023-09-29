@@ -480,33 +480,6 @@ impl pallet_sudo::Config for Runtime {
 	type WeightInfo = ();
 }
 
-/// A struct responsible for converting an `AccountId` to an `H160` address.
-///
-/// The `AccountIdToH160` struct provides a conversion from `AccountId`, typically used
-/// as a native identity in a blockchain, to an `H160` address, commonly used in Ethereum-like networks.
-pub struct AccountIdToH160;
-impl Convert<AccountId, H160> for AccountIdToH160 {
-	fn convert(account_id: AccountId) -> H160 {
-		let mut bytes = [0u8; 20];
-		let account_id_bytes: [u8; 32] = account_id.into();
-		bytes.copy_from_slice(&account_id_bytes[account_id_bytes.len() - 20..]);
-		H160::from(bytes)
-	}
-}
-
-/// A struct responsible for converting an `H160` address to an `AccountId`.
-///
-/// The `H160ToAccountId` struct provides a conversion from `H160`, commonly used in Ethereum-like networks,
-/// to `AccountId`, typically used as a native identity in a blockchain.
-pub struct H160ToAccountId;
-impl Convert<H160, AccountId> for H160ToAccountId {
-	fn convert(account_id: H160) -> AccountId {
-		let mut data = [0u8; 32];
-		data[12..].copy_from_slice(&account_id.0);
-		AccountId32::from(data)
-	}
-}
-
 /// Represents a mapping between `AssetId` and `AccountId`.
 /// This struct provides functionalities to convert an `AssetId` (represented by `U256`) into an `AccountId`.
 pub struct AssetIdToInitialOwner;
@@ -515,13 +488,12 @@ impl Convert<U256, AccountId> for AssetIdToInitialOwner {
 		let mut bytes = [0u8; 20];
 		let asset_id_bytes: [u8; 32] = asset_id.into();
 		bytes.copy_from_slice(&asset_id_bytes[asset_id_bytes.len() - 20..]);
-		let owner = H160::from(bytes);
-		H160ToAccountId::convert(owner)
+
+		bytes.into()
 	}
 }
 
 // Frontier
-
 impl pallet_evm_chain_id::Config for Runtime {}
 
 pub struct FindAuthorTruncated<F>(PhantomData<F>);
@@ -544,8 +516,7 @@ pub struct EVMDealWithFees<R>(PhantomData<R>);
 impl<R> OnUnbalanced<NegativeImbalance<R>> for EVMDealWithFees<R>
 where
 	R: pallet_balances::Config + pallet_collator_selection::Config + core::fmt::Debug,
-	AccountIdOf<R>:
-		From<polkadot_primitives::v5::AccountId> + Into<polkadot_primitives::v5::AccountId>,
+	AccountIdOf<R>: From<H160>,
 	<R as frame_system::Config>::RuntimeEvent: From<pallet_balances::Event<R>>,
 {
 	fn on_nonzero_unbalanced(amount: NegativeImbalance<R>) {

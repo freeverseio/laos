@@ -8,11 +8,14 @@ use bridge_runtime_common::CustomNetworkId;
 use core::{marker::PhantomData, ops::ControlFlow};
 use frame_support::{
 	log, match_types, parameter_types,
-	traits::{ConstU32, Currency, Everything, Nothing, OnUnbalanced, ProcessMessageError},
+	traits::{
+		ConstU32, Currency, Everything, Nothing, OnUnbalanced, OriginTrait, ProcessMessageError,
+	},
 };
-use frame_system::EnsureRoot;
+use frame_system::{EnsureRoot, RawOrigin as SystemRawOrigin};
 use pallet_xcm::XcmPassthrough;
 use polkadot_parachain::primitives::Sibling;
+use sp_runtime::traits::TryConvert;
 use xcm::latest::prelude::*;
 use xcm_builder::{
 	AccountId32Aliases, AccountKey20Aliases, AllowExplicitUnpaidExecutionFrom,
@@ -237,8 +240,32 @@ impl xcm_executor::Config for XcmConfig {
 	type Aliasers = Nothing;
 }
 
+pub struct SignedToAccountId20<RuntimeOrigin, AccountId, Network>(
+	PhantomData<(RuntimeOrigin, AccountId, Network)>,
+);
+impl<
+		RuntimeOrigin: OriginTrait + Clone,
+		AccountId: Into<[u8; 20]>,
+		Network: frame_support::traits::Get<Option<NetworkId>>,
+	> TryConvert<RuntimeOrigin, MultiLocation>
+	for SignedToAccountId20<RuntimeOrigin, AccountId, Network>
+where
+	RuntimeOrigin::PalletsOrigin: From<SystemRawOrigin<AccountId>>
+		+ TryInto<SystemRawOrigin<AccountId>, Error = RuntimeOrigin::PalletsOrigin>,
+{
+	fn try_convert(o: RuntimeOrigin) -> Result<MultiLocation, RuntimeOrigin> {
+		o.try_with_caller(|caller| match caller.try_into() {
+			Ok(SystemRawOrigin::Signed(who)) => {
+				Ok(Junction::AccountKey20 { network: Network::get(), key: who.into() }.into())
+			},
+			Ok(other) => Err(other.into()),
+			Err(other) => Err(other),
+		})
+	}
+}
+
 /// No local origins on this chain are allowed to dispatch XCM sends/executions.
-pub type LocalOriginToLocation = SignedToAccountId32<RuntimeOrigin, AccountId, RelayNetwork>;
+pub type LocalOriginToLocation = SignedToAccountId20<RuntimeOrigin, AccountId, RelayNetwork>;
 
 /// The means for routing XCM messages which are not for local execution into the right message
 /// queues.
