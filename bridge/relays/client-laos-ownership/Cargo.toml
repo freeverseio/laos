@@ -4,9 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-codec = { package = "parity-scale-codec", version = "3.1.5" }
-scale-info = { version = "2.9.0", features = ["derive"] }
-subxt = { version = "0.30.1", features = ["native"] }
+codec = { workspace = true }
+scale-info = { workspace = true }
+subxt = { workspace = true }
 
 bp-bridge-hub-cumulus = { workspace = true }
 bp-header-chain = { workspace = true }
@@ -17,5 +17,5 @@ sp-core = { workspace = true }
 sp-runtime = { workspace = true }
 sp-weights = { workspace = true }
 
-bp-laos-evolution = { path = "../../primitives/chain-laos-evolution" }
-bp-laos-ownership = { path = "../../primitives/chain-laos-ownership" }
+bp-laos-evolution = { workspace = true }
+bp-laos-ownership = { workspace = true }

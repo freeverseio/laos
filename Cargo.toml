@@ -42,6 +42,8 @@ proc-macro2 =  "1.0"
 quote = "1.0"
 syn = { version = "1.0" }
 static_assertions = "1.1"
+codec = { package = "parity-scale-codec", version = "3.1.5" }
+subxt = { version = "0.30.1", features = ["native"] }
 
 # Wasm builder
 substrate-wasm-builder = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
@@ -209,6 +211,7 @@ polkadot-service = { git = "https://github.com/paritytech/polkadot", branch = "r
 
 # Bridge dependencies
 bp-laos-evolution = { path="./bridge/primitives/chain-laos-evolution", default-features = false }
+bp-laos-ownership = { path = "./bridge/primitives/chain-laos-ownership" }
 bp-header-chain = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
 bp-runtime = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
 bridge-runtime-common = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }

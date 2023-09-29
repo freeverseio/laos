@@ -7,7 +7,7 @@ edition = "2021"
 codec = { package = "parity-scale-codec", version = "3.1.5" }
 
 # Laos Evolution Dependencies
-bp-laos-evolution = { path = "../../primitives/chain-laos-evolution" }
+bp-laos-evolution = { workspace = true }
 laos-evolution-runtime = { workspace = true }
 
 # Substrate Dependencies
