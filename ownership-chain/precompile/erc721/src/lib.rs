@@ -1,6 +1,5 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
-use frame_support::pallet_prelude::*;
 use pallet_living_assets_ownership::{address_to_collection_id, CollectionId};
 use precompile_utils::{
 	keccak256, revert, succeed, Address, Bytes, EvmDataWriter, EvmResult, FunctionModifier, LogExt,

@@ -31,8 +31,8 @@ fn create_new_collection_should_create_sequential_collections() {
 		// Iterate through the collections to be created
 		for i in 0..3 {
 			// Create the collection
-			assert_ok!(LivingAssetsModule::create_collection(
-				RuntimeOrigin::signed(ALICE),
+			assert_ok!(LivingAssetsModule::do_create_collection(
+				ALICE,
 				base_uri.clone()
 			));
 
@@ -47,8 +47,8 @@ fn should_set_base_uri_when_creating_new_collection() {
 	let base_uri = BaseURI::try_from("https://example.com/".as_bytes().to_vec()).unwrap();
 
 	new_test_ext().execute_with(|| {
-		assert_ok!(LivingAssetsModule::create_collection(
-			RuntimeOrigin::signed(ALICE),
+		assert_ok!(LivingAssetsModule::do_create_collection(
+			ALICE,
 			base_uri.clone()
 		));
 		assert_eq!(LivingAssetsModule::collection_base_uri(0).unwrap(), base_uri);
@@ -61,23 +61,23 @@ fn create_new_collections_should_emit_events_with_collection_id_consecutive() {
 		// Go past genesis block so events get deposited
 		System::set_block_number(1);
 
-		assert_ok!(LivingAssetsModule::create_collection(
-			RuntimeOrigin::signed(ALICE),
+		assert_ok!(LivingAssetsModule::do_create_collection(
+			ALICE,
 			BaseURI::default()
 		));
 		System::assert_last_event(Event::CollectionCreated { collection_id: 0, who: ALICE }.into());
-		assert_ok!(LivingAssetsModule::create_collection(
-			RuntimeOrigin::signed(ALICE),
+		assert_ok!(LivingAssetsModule::do_create_collection(
+			ALICE,
 			BaseURI::default()
 		));
 		System::assert_last_event(Event::CollectionCreated { collection_id: 1, who: ALICE }.into());
-		assert_ok!(LivingAssetsModule::create_collection(
-			RuntimeOrigin::signed(ALICE),
+		assert_ok!(LivingAssetsModule::do_create_collection(
+			ALICE,
 			BaseURI::default()
 		));
 		System::assert_last_event(Event::CollectionCreated { collection_id: 2, who: ALICE }.into());
-		assert_ok!(LivingAssetsModule::create_collection(
-			RuntimeOrigin::signed(ALICE),
+		assert_ok!(LivingAssetsModule::do_create_collection(
+			ALICE,
 			BaseURI::default()
 		));
 		System::assert_last_event(Event::CollectionCreated { collection_id: 3, who: ALICE }.into());
