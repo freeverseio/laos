@@ -51,21 +51,21 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: ./ownership-node.local.Dockerfile
+          file: ./docker/ownership-node.local.Dockerfile
           push: true
           tags: freeverseio/laos-ownership-node:${{ github.sha }}
       - name: Push Evolution Node Docker images
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: ./evolution-node.local.Dockerfile
+          file: ./docker/evolution-node.local.Dockerfile
           push: true
           tags: freeverseio/laos-evolution-node:${{ github.sha }}
       - name: Push Bridge Docker images
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: ./bridge.local.Dockerfile
+          file: ./docker/bridge.local.Dockerfile
           push: true
           tags: freeverseio/laos-bridge:${{ github.sha }}
 
