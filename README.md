@@ -20,7 +20,7 @@ Evolution Chain is engineered to provide dynamic capabilities to NFTs. It enable
 
 ### [Bridge](./bridge/)
 
-The Bridge module acts as a facilitator for seamless communication between the LAOS platform and other blockchain networks. It allows LAOS NFTs to be transferred across chains, expanding their utility and market reach. This interoperability is crucial for establishing LAOS as a versatile NFT platform.
+The Bridge module acts as the communication layer between the Ownership Chain and Evolution Chain, allowing for seamless data exchange and functionality integration.
 
 ## Additional Resources
 
