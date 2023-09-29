@@ -1381,17 +1381,6 @@ dependencies = [
 
 [[package]]
 name = "bstr"
-version = "0.2.17"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ba3569f383e8f1598449f1a423e72e99569137b47740b1da11ef19af3d5c3223"
-dependencies = [
- "lazy_static",
- "memchr",
- "regex-automata 0.1.10",
-]
-
-[[package]]
-name = "bstr"
 version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8042c26c77e5bd6897a7358e0abb3ec412ed126d826988135653fc669263899d"
@@ -1722,27 +1711,6 @@ checksum = "3538270d33cc669650c4b093848450d380def10c331d38c768e34cac80576e6e"
 dependencies = [
  "termcolor",
  "unicode-width",
-]
-
-[[package]]
-name = "color-print"
-version = "0.3.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f2a5e6504ed8648554968650feecea00557a3476bc040d0ffc33080e66b646d0"
-dependencies = [
- "color-print-proc-macro",
-]
-
-[[package]]
-name = "color-print-proc-macro"
-version = "0.3.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d51beaa537d73d2d1ff34ee70bc095f170420ab2ec5d687ecd3ec2b0d092514b"
-dependencies = [
- "nom",
- "proc-macro2 1.0.66",
- "quote 1.0.33",
- "syn 1.0.109",
 ]
 
 [[package]]
@@ -4825,7 +4793,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "759c97c1e17c55525b57192c06a267cda0ac5210b222d6b82189a2338fa1c13d"
 dependencies = [
  "aho-corasick",
- "bstr 1.6.1",
+ "bstr",
  "fnv",
  "log",
  "regex",
@@ -5924,7 +5892,6 @@ name = "laos"
 version = "0.1.0"
 dependencies = [
  "clap 4.4.1",
- "color-print",
  "cumulus-client-cli",
  "cumulus-client-consensus-aura",
  "cumulus-client-consensus-common",
@@ -5996,7 +5963,6 @@ dependencies = [
  "frame-benchmarking-cli",
  "frame-system",
  "futures",
- "hex-literal 0.4.1",
  "jsonrpsee 0.16.3",
  "laos-evolution-runtime",
  "pallet-transaction-payment",
@@ -6045,7 +6011,6 @@ dependencies = [
  "bp-rococo",
  "bp-runtime",
  "evochain-primitives",
- "fp-account",
  "frame-benchmarking",
  "frame-executive",
  "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
@@ -6092,7 +6057,6 @@ dependencies = [
  "bp-rococo",
  "bp-runtime",
  "bp-test-utils",
- "bridge-runtime-common",
  "evochain-primitives",
  "finality-grandpa",
  "futures",
@@ -6115,11 +6079,9 @@ dependencies = [
  "signal-hook",
  "signal-hook-async-std",
  "sp-core 21.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
- "sp-keyring",
  "structopt",
  "strum 0.25.0",
  "substrate-relay-helper",
- "tempfile",
 ]
 
 [[package]]
@@ -8397,7 +8359,6 @@ dependencies = [
 name = "pallet-living-assets-ownership"
 version = "0.0.1"
 dependencies = [
- "frame-benchmarking",
  "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
  "frame-system",
  "hex",
@@ -10668,7 +10629,6 @@ checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
 name = "precompile-utils"
 version = "0.4.3"
 dependencies = [
- "assert_matches",
  "evm",
  "fp-evm",
  "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
@@ -10680,12 +10640,10 @@ dependencies = [
  "parity-scale-codec",
  "precompile-utils-macro",
  "sha3",
- "similar-asserts",
  "sp-core 21.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
  "sp-io 23.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
  "sp-runtime 24.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
  "sp-std 8.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
- "xcm",
 ]
 
 [[package]]
@@ -11338,7 +11296,6 @@ dependencies = [
  "bp-laos-ownership",
  "bp-messages",
  "bp-polkadot-core",
- "bridge-runtime-common",
  "parity-scale-codec",
  "relay-substrate-client",
  "scale-info",
@@ -13581,26 +13538,6 @@ dependencies = [
  "num-traits",
  "paste",
  "wide",
-]
-
-[[package]]
-name = "similar"
-version = "2.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "420acb44afdae038210c99e69aae24109f32f15500aa708e81d46c9f29d55fcf"
-dependencies = [
- "bstr 0.2.17",
- "unicode-segmentation",
-]
-
-[[package]]
-name = "similar-asserts"
-version = "1.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e041bb827d1bfca18f213411d51b665309f1afb37a04a5d1464530e13779fc0f"
-dependencies = [
- "console",
- "similar",
 ]
 
 [[package]]

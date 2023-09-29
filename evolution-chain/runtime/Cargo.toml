@@ -52,7 +52,6 @@ frame-system-benchmarking = { default-features = false, optional = true , worksp
 
 # Local Dependencies
 pallet-living-assets-evolution = { default-features = false, path = "../pallets/living-assets-evolution" }
-fp-account = { workspace = true, default-features = false, features = ["serde"] }
 
 # Bridge dependencies
 pallet-bridge-grandpa = { workspace = true, default-features = false }
@@ -98,8 +97,6 @@ std = [
 	"sp-transaction-pool/std",
 	"sp-version/std",
 	"substrate-wasm-builder",
-	"fp-account/std",
-	"pallet-bridge-grandpa/std",
 	"bp-rococo/std",
 	"bp-runtime/std",
 	"bp-header-chain/std",

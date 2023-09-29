@@ -68,7 +68,6 @@ cumulus-client-service = { workspace = true }
 cumulus-primitives-core = { workspace = true }
 cumulus-primitives-parachain-inherent = { workspace = true }
 cumulus-relay-chain-interface = { workspace = true }
-color-print = { workspace = true }
 
 # Frontier
 fc-cli = { workspace = true }

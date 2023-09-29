@@ -31,7 +31,6 @@ bp-parachains = { workspace = true }
 bp-messages = { workspace = true }
 bp-runtime = { workspace = true }
 bp-rococo = { workspace = true }
-bridge-runtime-common = { workspace = true }
 pallet-bridge-parachains = { workspace = true }
 relay-substrate-client = { workspace = true }
 relay-utils = { workspace = true }
@@ -51,6 +50,4 @@ pallet-sudo = { workspace = true }
 [dev-dependencies]
 bp-test-utils = { workspace = true }
 hex-literal = "0.4"
-sp-keyring = { workspace = true }
-tempfile = "3.7"
 finality-grandpa = { version = "0.16.2" }

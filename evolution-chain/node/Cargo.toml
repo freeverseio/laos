@@ -19,7 +19,6 @@ name = "laos-evolution"
 [dependencies]
 clap = { version = "4.0.9", features = ["derive"] }
 futures = { version = "0.3.21", features = ["thread-pool"]}
-hex-literal = { version = "0.4.1" }
 serde_json = "1.0.104"
 
 sc-cli = { workspace = true }
