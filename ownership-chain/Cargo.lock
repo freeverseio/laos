@@ -4951,6 +4951,7 @@ dependencies = [
  "fc-rpc",
  "fc-rpc-core",
  "fc-storage",
+ "fp-account",
  "fp-dynamic-fee",
  "fp-evm",
  "fp-rpc",
@@ -6473,6 +6474,7 @@ dependencies = [
 name = "ownership-parachain-primitives"
 version = "0.1.0"
 dependencies = [
+ "fp-account",
  "frame-support",
  "frame-system",
  "sp-core",
@@ -7160,6 +7162,7 @@ dependencies = [
 name = "pallet-living-assets-ownership"
 version = "0.0.1"
 dependencies = [
+ "fp-account",
  "frame-benchmarking",
  "frame-support",
  "frame-system",

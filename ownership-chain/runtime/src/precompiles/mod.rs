@@ -30,7 +30,7 @@ where
 }
 
 type LivingAssetsPrecompile = CollectionManagerPrecompile<
-	pallet_evm::HashedAddressMapping<BlakeTwo256>,
+	pallet_evm::IdentityAddressMapping,
 	AccountId,
 	pallet_living_assets_ownership::Pallet<crate::Runtime>,
 >;

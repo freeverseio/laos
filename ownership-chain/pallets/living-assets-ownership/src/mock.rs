@@ -1,15 +1,16 @@
 use crate::{self as pallet_livingassets_ownership};
 use frame_support::traits::{ConstU16, ConstU64};
-use sp_core::{ConstU32, H160, H256, U256};
+use sp_core::{ConstU32, H256, U256};
 use sp_runtime::{
-	traits::{BlakeTwo256, Convert, IdentityLookup},
+	traits::{BlakeTwo256, Convert, IdentifyAccount, IdentityLookup, Verify},
 	BuildStorage,
 };
 use sp_std::{boxed::Box, prelude::*};
 
 type Block = frame_system::mocking::MockBlock<Test>;
 type Nonce = u32;
-type AccountId = u64;
+type Signature = fp_account::EthereumSignature;
+pub type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::AccountId;
 
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
@@ -49,31 +50,17 @@ impl frame_system::Config for Test {
 impl pallet_livingassets_ownership::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type BaseURILimit = ConstU32<256>;
-	type AccountIdToH160 = MockAccountIdToH160;
-	type H160ToAccountId = MockH160ToAccountId;
 	type AssetIdToInitialOwner = MockAssetIdToInitialOwner;
-}
-
-pub struct MockAccountIdToH160;
-impl Convert<AccountId, H160> for MockAccountIdToH160 {
-	fn convert(account_id: AccountId) -> H160 {
-		H160::from_low_u64_be(account_id)
-	}
-}
-pub struct MockH160ToAccountId;
-impl Convert<H160, AccountId> for MockH160ToAccountId {
-	fn convert(account_id: H160) -> AccountId {
-		H160::to_low_u64_be(&account_id)
-	}
 }
 
 pub struct MockAssetIdToInitialOwner;
 impl Convert<U256, AccountId> for MockAssetIdToInitialOwner {
 	fn convert(asset_id: U256) -> AccountId {
-		let mut first_eight_bytes = [0u8; 8];
+		// initial owner is the last 20 bytes of the asset id
+		let mut initial_owner = [0u8; 20];
 		let asset_id_bytes: [u8; 32] = asset_id.into();
-		first_eight_bytes.copy_from_slice(&asset_id_bytes[asset_id_bytes.len() - 8..]);
-		u64::from_be_bytes(first_eight_bytes).into()
+		initial_owner.copy_from_slice(&asset_id_bytes[12..]);
+		AccountId::from(initial_owner)
 	}
 }
 

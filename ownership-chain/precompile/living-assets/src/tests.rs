@@ -152,23 +152,27 @@ mod helpers {
 	#[macro_export]
 	macro_rules! impl_precompile_mock {
 		($name:ident, $create_collection_result:expr, $base_uri_result:expr) => {
+			type BaseURI = Vec<u8>;
+
 			struct CollectionManagerMock;
 
-			impl pallet_living_assets_ownership::traits::CollectionManager
-				for CollectionManagerMock
+			impl
+				pallet_living_assets_ownership::traits::CollectionManager<
+					CollectionId,
+					AccountId,
+					BaseURI,
+				> for CollectionManagerMock
 			{
 				type Error = &'static str;
-				type AccountId = AccountId;
-				type BaseURI = BaseURI;
 
 				fn create_collection(
 					owner: AccountId,
-					base_uri: Self::BaseURI,
+					base_uri: BaseURI,
 				) -> Result<CollectionId, Self::Error> {
 					($create_collection_result)(owner, base_uri)
 				}
 
-				fn base_uri(collection_id: CollectionId) -> Option<Self::BaseURI> {
+				fn base_uri(collection_id: CollectionId) -> Option<BaseURI> {
 					($base_uri_result)(collection_id)
 				}
 			}

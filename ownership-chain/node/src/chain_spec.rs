@@ -8,6 +8,14 @@ use sp_core::{sr25519, Pair, Public, H160, U256};
 use sp_runtime::traits::{IdentifyAccount, Verify};
 use std::{collections::BTreeMap, str::FromStr};
 
+// Development accounts
+const ALITH: &str = "f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
+const BALTATHAR: &str = "3Cd0A705a2DC65e5b1E1205896BaA2be8A07c6e0";
+const CHARLETH: &str = "798d4Ba9baf0064Ec19eB4F0a1a45785ae9D6DFc";
+const DOROTHY: &str = "773539d4Ac0e786233D90A233654ccEE26a613D9";
+const ETHAN: &str = "Ff64d3F6efE2317EE2807d223a0Bdc4c0c49dfDB";
+const FAITH: &str = "C0F0f4ab324C46e55D02D0033343B4Be8A55532d";
+
 /// Specialized `ChainSpec` for the normal parachain runtime.
 pub type ChainSpec = sc_service::GenericChainSpec<laos_runtime::RuntimeGenesisConfig, Extensions>;
 
@@ -79,31 +87,19 @@ pub fn development_config() -> ChainSpec {
 			testnet_genesis(
 				// initial collators.
 				vec![
-					(
-						get_account_id_from_seed::<sr25519::Public>("Alice"),
-						get_collator_keys_from_seed("Alice"),
-					),
-					(
-						get_account_id_from_seed::<sr25519::Public>("Bob"),
-						get_collator_keys_from_seed("Bob"),
-					),
+					(hex_literal::hex!(ALITH), get_collator_keys_from_seed("Alice")),
+					(hex_literal::hex!(BALTATHAR), get_collator_keys_from_seed("Bob")),
 				],
 				vec![
-					get_account_id_from_seed::<sr25519::Public>("Alice"),
-					get_account_id_from_seed::<sr25519::Public>("Bob"),
-					get_account_id_from_seed::<sr25519::Public>("Charlie"),
-					get_account_id_from_seed::<sr25519::Public>("Dave"),
-					get_account_id_from_seed::<sr25519::Public>("Eve"),
-					get_account_id_from_seed::<sr25519::Public>("Ferdie"),
-					get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
+					hex_literal::hex!(ALITH),
+					hex_literal::hex!(BALTATHAR),
+					hex_literal::hex!(CHARLETH),
+					hex_literal::hex!(DOROTHY),
+					hex_literal::hex!(ETHAN),
+					hex_literal::hex!(FAITH),
 				],
 				// Give Alice root privileges
-				Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
+				Some(hex_literal::hex!(ALITH)),
 				1000.into(),
 			)
 		},
@@ -136,28 +132,16 @@ pub fn local_testnet_config() -> ChainSpec {
 			testnet_genesis(
 				// initial collators.
 				vec![
-					(
-						get_account_id_from_seed::<sr25519::Public>("Alice"),
-						get_collator_keys_from_seed("Alice"),
-					),
-					(
-						get_account_id_from_seed::<sr25519::Public>("Bob"),
-						get_collator_keys_from_seed("Bob"),
-					),
+					(hex_literal::hex!(ALITH), get_collator_keys_from_seed("Alice")),
+					(hex_literal::hex!(BALTATHAR), get_collator_keys_from_seed("Bob")),
 				],
 				vec![
-					get_account_id_from_seed::<sr25519::Public>("Alice"),
-					get_account_id_from_seed::<sr25519::Public>("Bob"),
-					get_account_id_from_seed::<sr25519::Public>("Charlie"),
-					get_account_id_from_seed::<sr25519::Public>("Dave"),
-					get_account_id_from_seed::<sr25519::Public>("Eve"),
-					get_account_id_from_seed::<sr25519::Public>("Ferdie"),
-					get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
+					hex_literal::hex!(ALITH),
+					hex_literal::hex!(BALTATHAR),
+					hex_literal::hex!(CHARLETH),
+					hex_literal::hex!(DOROTHY),
+					hex_literal::hex!(ETHAN),
+					hex_literal::hex!(FAITH),
 				],
 				// Give Alice root privileges
 				Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
@@ -188,9 +172,6 @@ fn testnet_genesis(
 	root_key: Option<AccountId>,
 	id: ParaId,
 ) -> laos_runtime::RuntimeGenesisConfig {
-	// let alice = get_from_seed::<sr25519::Public>("Alice");
-	// let bob = get_from_seed::<sr25519::Public>("Bob");
-
 	// This is the simplest bytecode to revert without returning any data.
 	// We will pre-deploy it under all of our precompiles to ensure they can be called from
 	// within contracts.
@@ -204,32 +185,9 @@ fn testnet_genesis(
 				.to_vec(),
 			..Default::default()
 		},
-		// Configure additional assets here
-		// For example, this configures asset "ALT1" & "ALT2" with owners, alice and bob, respectively
-		// assets: laos_runtime::AssetsConfig {
-		// 	assets: vec![
-		// 		(1, alice.into(), true, 10_000_000_0000),
-		// 		(2, bob.into(), true, 10_000_000_0000),
-		// 	],
-		// 	// Genesis metadata: Vec<(id, name, symbol, decimals)>
-		// 	metadata: vec![
-		// 		(1, "asset-1".into(), "ALT1".into(), 10),
-		// 		(2, "asset-2".into(), "ALT2".into(), 10),
-		// 	],
-		// 	// Genesis accounts: Vec<(id, account_id, balance)>
-		// 	accounts: vec![(1, alice.into(), 50_000_000_0000), (2, bob.into(), 50_000_000_0000)],
-		// },
 		balances: laos_runtime::BalancesConfig {
 			balances: endowed_accounts.iter().cloned().map(|k| (k, 1 << 60)).collect(),
 		},
-		// council: laos_runtime::CouncilConfig {
-		// 	phantom: PhantomData,
-		// 	members: endowed_accounts
-		// 		.iter()
-		// 		.enumerate()
-		// 		.filter_map(|(idx, acc)| if idx % 2 == 0 { Some(acc.clone()) } else { None })
-		// 		.collect::<Vec<_>>(),
-		// },
 		parachain_info: laos_runtime::ParachainInfoConfig {
 			parachain_id: id,
 			..Default::default()

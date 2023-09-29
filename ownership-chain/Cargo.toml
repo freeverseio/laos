@@ -10,6 +10,8 @@ members = [
 	"primitives",
 ]
 
+resolver = "2"
+
 [workspace.dependencies]
 parity-scale-codec = { version = "3.2.2", default-features = false, features = ["derive"] }
 hex-literal = "0.4.1"
@@ -122,6 +124,7 @@ pallet-evm-precompile-simple = { git = "https://github.com/paritytech/frontier",
 fp-self-contained = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0", default-features = false }
 fp-rpc = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0", default-features = false }
 fp-evm = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0", default-features = false }
+fp-account = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0", default-features = false }
 
 # Frontier
 # (native)

@@ -81,6 +81,7 @@ fc-storage = { workspace = true }
 fp-rpc = { workspace = true, default-features = false }
 fp-evm = { workspace = true }
 fp-dynamic-fee = { workspace = true }
+fp-account = { workspace = true }
 
 [build-dependencies]
 substrate-build-script-utils = { workspace = true }

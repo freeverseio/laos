@@ -29,6 +29,7 @@ sp-runtime = { workspace = true }
 [dev-dependencies]
 serde = { workspace = true }
 hex = { workspace = true }
+fp-account = { workspace = true, features = ["std", "serde"] }
 
 [features]
 default = ["std"]

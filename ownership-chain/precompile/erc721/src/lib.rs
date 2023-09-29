@@ -1,6 +1,5 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
-use frame_support::pallet_prelude::*;
 use pallet_living_assets_ownership::{address_to_collection_id, CollectionId};
 use precompile_utils::{
 	keccak256, revert, succeed, Address, Bytes, EvmDataWriter, EvmResult, FunctionModifier, LogExt,
@@ -29,7 +28,7 @@ pub struct Erc721Precompile<AssetManager>(PhantomData<AssetManager>);
 
 impl<AssetManager> Precompile for Erc721Precompile<AssetManager>
 where
-	AssetManager: pallet_living_assets_ownership::traits::Erc721,
+	AssetManager: pallet_living_assets_ownership::traits::Erc721<Address>,
 {
 	fn execute(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
 		// collection id is encoded into the contract address
@@ -54,7 +53,7 @@ where
 
 impl<AssetManager> Erc721Precompile<AssetManager>
 where
-	AssetManager: pallet_living_assets_ownership::traits::Erc721,
+	AssetManager: pallet_living_assets_ownership::traits::Erc721<Address>,
 {
 	fn owner_of(
 		collection_id: CollectionId,
@@ -66,7 +65,7 @@ where
 		let asset_id: U256 = input.read()?;
 
 		let owner = AssetManager::owner_of(collection_id, asset_id).map_err(|err| revert(err))?;
-		Ok(succeed(EvmDataWriter::new().write(Address(owner)).build()))
+		Ok(succeed(EvmDataWriter::new().write(owner).build()))
 	}
 
 	fn token_uri(
@@ -89,20 +88,26 @@ where
 		// get input data
 		let mut input = handle.read_input()?;
 		input.expect_arguments(3)?;
-		let from: H160 = input.read::<Address>()?.into();
-		let to: H160 = input.read::<Address>()?.into();
-		let asset_id: U256 = input.read()?;
+		let from = input.read::<Address>()?;
+		let to = input.read::<Address>()?;
+		let asset_id: pallet_living_assets_ownership::AssetId = input.read()?;
 		let mut asset_id_big_endian = [0u8; 32];
 		asset_id.to_big_endian(&mut asset_id_big_endian);
 
-		AssetManager::transfer_from(handle.context().caller, collection_id, from, to, asset_id)
-			.map_err(|err| revert(err))?;
+		AssetManager::transfer_from(
+			handle.context().caller.into(),
+			collection_id,
+			from,
+			to,
+			asset_id,
+		)
+		.map_err(|err| revert(err))?;
 
 		LogsBuilder::new(handle.context().address)
 			.log4(
 				SELECTOR_LOG_TRANSFER_FROM,
-				from,
-				to,
+				from.0,
+				to.0,
 				H256::from_slice(asset_id_big_endian.as_slice()),
 				Vec::new(),
 			)

@@ -1,3 +1,5 @@
+use crate::NegativeImbalanceOf;
+
 use super::{
 	AccountId, AllPalletsWithSystem, Balances, ParachainSystem, PolkadotXcm, Runtime, RuntimeCall,
 	RuntimeEvent, RuntimeOrigin, WeightToFee, XcmpQueue,
@@ -6,23 +8,22 @@ use bridge_runtime_common::CustomNetworkId;
 use core::{marker::PhantomData, ops::ControlFlow};
 use frame_support::{
 	log, match_types, parameter_types,
-	traits::{ConstU32, Everything, Nothing, ProcessMessageError},
-	weights::Weight,
+	traits::{ConstU32, Currency, Everything, Nothing, OnUnbalanced, ProcessMessageError},
 };
 use frame_system::EnsureRoot;
 use pallet_xcm::XcmPassthrough;
 use polkadot_parachain::primitives::Sibling;
-use polkadot_runtime_common::impls::ToAuthor;
 use xcm::latest::prelude::*;
 use xcm_builder::{
-	AccountId32Aliases, AllowExplicitUnpaidExecutionFrom, AllowTopLevelPaidExecutionFrom,
-	CreateMatcher, CurrencyAdapter, EnsureXcmOrigin, FixedWeightBounds, IsConcrete, MatchXcm,
-	NativeAsset, ParentIsPreset, RelayChainAsNative, SiblingParachainAsNative,
-	SiblingParachainConvertsVia, SignedAccountId32AsNative, SignedToAccountId32,
-	SovereignSignedViaLocation, TakeWeightCredit, UsingComponents, WithComputedOrigin,
+	AccountId32Aliases, AccountKey20Aliases, AllowExplicitUnpaidExecutionFrom,
+	AllowTopLevelPaidExecutionFrom, CreateMatcher, CurrencyAdapter, EnsureXcmOrigin,
+	FixedWeightBounds, IsConcrete, MatchXcm, NativeAsset, ParentIsPreset, RelayChainAsNative,
+	SiblingParachainAsNative, SiblingParachainConvertsVia, SignedAccountId32AsNative,
+	SignedAccountKey20AsNative, SignedToAccountId32, SovereignSignedViaLocation, TakeRevenue,
+	TakeWeightCredit, UsingComponents, WithComputedOrigin,
 };
 use xcm_executor::{
-	traits::{Properties, ShouldExecute},
+	traits::{Properties, ShouldExecute, WeightTrader},
 	XcmExecutor,
 };
 
@@ -46,7 +47,7 @@ pub type LocationToAccountId = (
 	// Sibling parachain origins convert to AccountId via the `ParaId::into`.
 	SiblingParachainConvertsVia<Sibling, AccountId>,
 	// Straight up local `AccountId32` origins just alias directly to `AccountId`.
-	AccountId32Aliases<RelayNetwork, AccountId>,
+	AccountKey20Aliases<RelayNetwork, AccountId>,
 );
 
 /// Means for transacting assets on this chain.
@@ -79,7 +80,7 @@ pub type XcmOriginToTransactDispatchOrigin = (
 	SiblingParachainAsNative<cumulus_pallet_xcm::Origin, RuntimeOrigin>,
 	// Native signed account converter; this just converts an `AccountId32` origin into a normal
 	// `RuntimeOrigin::Signed` origin of the same 32-byte value.
-	SignedAccountId32AsNative<RelayNetwork, RuntimeOrigin>,
+	SignedAccountKey20AsNative<RelayNetwork, RuntimeOrigin>,
 	// Xcm origins can be represented natively under the Xcm pallet's Xcm origin.
 	XcmPassthrough<RuntimeOrigin>,
 );
@@ -189,6 +190,24 @@ pub type OnOwnershipParachainBlobDispatcher =
 /// XCM weigher type.
 pub type XcmWeigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
 
+/// Logic for sending fees to the sudo account. On every unbalanced change, the amount is
+/// transferred to the sudo account.
+/// TODO: temporary solution until we have a treasury.
+pub struct ToSudo<R>(PhantomData<R>);
+
+impl<R> OnUnbalanced<NegativeImbalanceOf<R>> for ToSudo<R>
+where
+	R: pallet_balances::Config + pallet_sudo::Config,
+	<R as frame_system::Config>::AccountId: From<AccountId>,
+	<R as frame_system::Config>::AccountId: Into<AccountId>,
+{
+	fn on_nonzero_unbalanced(amount: NegativeImbalanceOf<R>) {
+		if let Some(account) = <pallet_sudo::Pallet<R>>::key() {
+			<pallet_balances::Pallet<R>>::resolve_creating(&account, amount);
+		}
+	}
+}
+
 pub struct XcmConfig;
 impl xcm_executor::Config for XcmConfig {
 	type RuntimeCall = RuntimeCall;
@@ -201,8 +220,7 @@ impl xcm_executor::Config for XcmConfig {
 	type UniversalLocation = UniversalLocation;
 	type Barrier = Barrier;
 	type Weigher = XcmWeigher;
-	type Trader =
-		UsingComponents<WeightToFee, RelayLocation, AccountId, Balances, ToAuthor<Runtime>>;
+	type Trader = UsingComponents<WeightToFee, RelayLocation, AccountId, Balances, ToSudo<Runtime>>;
 	type ResponseHandler = PolkadotXcm;
 	type AssetTrap = PolkadotXcm;
 	type AssetClaims = PolkadotXcm;

@@ -95,7 +95,7 @@ pub type Signature = ownership_parachain_primitives::Signature;
 
 /// Some way of identifying an account on the chain. We intentionally make it equivalent
 /// to the public key of our transaction signing scheme.
-pub type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::AccountId;
+pub type AccountId = ownership_parachain_primitives::AccountId;
 
 /// Balance of an account.
 pub type Balance = ownership_parachain_primitives::Balance;
@@ -113,7 +113,7 @@ pub type BlockNumber = ownership_parachain_primitives::BlockNumber;
 pub type Nonce = ownership_parachain_primitives::Nonce;
 
 /// The address format for describing accounts.
-pub type Address = MultiAddress<AccountId, ()>;
+pub type Address = ownership_parachain_primitives::AccountId;
 
 /// Block header type as expected by this runtime.
 pub type Header = generic::Header<BlockNumber, ownership_parachain_primitives::Hasher>;
@@ -471,8 +471,6 @@ impl pallet_collator_selection::Config for Runtime {
 impl pallet_living_assets_ownership::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type BaseURILimit = ConstU32<2015>;
-	type AccountIdToH160 = AccountIdToH160;
-	type H160ToAccountId = H160ToAccountId;
 	type AssetIdToInitialOwner = AssetIdToInitialOwner;
 }
 
@@ -559,15 +557,15 @@ where
 
 pub struct EVMTransactionChargeHandler<OU>(PhantomData<OU>);
 
-type BalanceOf<R> = <<R as pallet_evm::Config>::Currency as Currency<AccountIdOf<R>>>::Balance;
+type BalanceOf<R> = <pallet_balances::Pallet<R> as Currency<AccountIdOf<R>>>::Balance;
 type PositiveImbalanceOf<R> =
-	<<R as pallet_evm::Config>::Currency as Currency<AccountIdOf<R>>>::PositiveImbalance;
+	<pallet_balances::Pallet<R> as Currency<AccountIdOf<R>>>::PositiveImbalance;
 type NegativeImbalanceOf<R> =
-	<<R as pallet_evm::Config>::Currency as Currency<AccountIdOf<R>>>::NegativeImbalance;
+	<pallet_balances::Pallet<R> as Currency<AccountIdOf<R>>>::NegativeImbalance;
 
 impl<R, OU> OnChargeEVMTransaction<R> for EVMTransactionChargeHandler<OU>
 where
-	R: pallet_evm::Config,
+	R: pallet_evm::Config + pallet_balances::Config,
 	PositiveImbalanceOf<R>: Imbalance<BalanceOf<R>, Opposite = NegativeImbalanceOf<R>>,
 	NegativeImbalanceOf<R>: Imbalance<BalanceOf<R>, Opposite = PositiveImbalanceOf<R>>,
 	OU: OnUnbalanced<NegativeImbalanceOf<R>>,
@@ -609,26 +607,26 @@ parameter_types! {
 const MAX_POV_SIZE: u64 = 5 * 1024 * 1024;
 
 impl pallet_evm::Config for Runtime {
-	type FeeCalculator = BaseFee;
-	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
-	type WeightPerGas = WeightPerGas;
-	type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
-	type CallOrigin = EnsureAddressTruncated;
-	type WithdrawOrigin = EnsureAddressTruncated;
-	type AddressMapping = HashedAddressMapping<BlakeTwo256>;
-	type Currency = Balances;
-	type RuntimeEvent = RuntimeEvent;
-	type PrecompilesType = FrontierPrecompiles<Self>;
-	type PrecompilesValue = PrecompilesValue;
-	type ChainId = EVMChainId;
+	type AddressMapping = pallet_evm::IdentityAddressMapping;
 	type BlockGasLimit = BlockGasLimit;
-	type Runner = pallet_evm::runner::stack::Runner<Self>;
+	type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
+	type CallOrigin = pallet_evm::EnsureAddressRoot<AccountId>;
+	type ChainId = EVMChainId;
+	type Currency = Balances;
+	type FeeCalculator = BaseFee;
+	type FindAuthor = FindAuthorTruncated<Aura>;
+	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
+	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
 	type OnChargeTransaction = EVMTransactionChargeHandler<EVMDealWithFees<Runtime>>;
 	type OnCreate = ();
-	type FindAuthor = FindAuthorTruncated<Aura>;
+	type PrecompilesType = FrontierPrecompiles<Self>;
+	type PrecompilesValue = PrecompilesValue;
+	type Runner = pallet_evm::runner::stack::Runner<Self>;
+	type RuntimeEvent = RuntimeEvent;
 	type Timestamp = Timestamp;
 	type WeightInfo = pallet_evm::weights::SubstrateWeight<Runtime>;
-	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
+	type WeightPerGas = WeightPerGas;
+	type WithdrawOrigin = pallet_evm::EnsureAddressNever<AccountId>;
 }
 
 parameter_types! {
