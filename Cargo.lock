@@ -1165,24 +1165,7 @@ dependencies = [
  "bp-header-chain",
  "bp-messages",
  "bp-runtime",
- "evochain-primitives 0.1.0",
- "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
- "frame-system",
- "sp-api 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
- "sp-core 21.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
- "sp-runtime 24.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
- "sp-std 8.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
-]
-
-[[package]]
-name = "bp-laos-evolution"
-version = "0.1.0"
-source = "git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0#255d93adc7bedaa3fb0fc6387b409b8bee9a4716"
-dependencies = [
- "bp-header-chain",
- "bp-messages",
- "bp-runtime",
- "evochain-primitives 0.1.0 (git+https://github.com/freeverseio/laos-evolution-node.git?branch=dev)",
+ "evochain-primitives",
  "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
  "frame-system",
  "sp-api 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
@@ -3677,17 +3660,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "evochain-primitives"
-version = "0.1.0"
-source = "git+https://github.com/freeverseio/laos-evolution-node.git?branch=dev#29f06d59dec02318989f6ee13cfe0ad0825a75ce"
-dependencies = [
- "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
- "frame-system",
- "sp-core 21.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
- "sp-runtime 24.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
-]
-
-[[package]]
 name = "exit-future"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6072,7 +6044,7 @@ dependencies = [
  "bp-header-chain",
  "bp-rococo",
  "bp-runtime",
- "evochain-primitives 0.1.0",
+ "evochain-primitives",
  "fp-account",
  "frame-benchmarking",
  "frame-executive",
@@ -6121,7 +6093,7 @@ dependencies = [
  "bp-runtime",
  "bp-test-utils",
  "bridge-runtime-common",
- "evochain-primitives 0.1.0",
+ "evochain-primitives",
  "finality-grandpa",
  "futures",
  "hex",
@@ -6155,7 +6127,7 @@ name = "laos-runtime"
 version = "0.1.0"
 dependencies = [
  "bp-header-chain",
- "bp-laos-evolution 0.1.0 (git+https://github.com/freeverseio/parity-bridges-common.git?branch=polkadot-v1.0.0)",
+ "bp-laos-evolution",
  "bp-runtime",
  "bridge-runtime-common",
  "cumulus-pallet-aura-ext",
@@ -11344,7 +11316,7 @@ checksum = "dbb5fb1acd8a1a18b3dd5be62d25485eb770e05afb408a9627d14d451bae12da"
 name = "relay-laos-evolution-client"
 version = "0.1.0"
 dependencies = [
- "bp-laos-evolution 0.1.0",
+ "bp-laos-evolution",
  "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
  "frame-system",
  "laos-evolution-runtime",
@@ -11362,7 +11334,7 @@ version = "0.1.0"
 dependencies = [
  "bp-bridge-hub-cumulus",
  "bp-header-chain",
- "bp-laos-evolution 0.1.0",
+ "bp-laos-evolution",
  "bp-laos-ownership",
  "bp-messages",
  "bp-polkadot-core",

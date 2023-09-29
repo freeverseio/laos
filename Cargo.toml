@@ -208,7 +208,7 @@ polkadot-cli = { git = "https://github.com/paritytech/polkadot", branch = "relea
 polkadot-service = { git = "https://github.com/paritytech/polkadot", branch = "release-v1.0.0" }
 
 # Bridge dependencies
-bp-laos-evolution = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
+bp-laos-evolution = { path="./bridge/primitives/chain-laos-evolution", default-features = false }
 bp-header-chain = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
 bp-runtime = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
 bridge-runtime-common = { git = "https://github.com/freeverseio/parity-bridges-common.git", branch = "polkadot-v1.0.0", default-features = false }
