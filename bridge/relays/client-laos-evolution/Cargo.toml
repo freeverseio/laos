@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-codec = { package = "parity-scale-codec", version = "3.1.5" }
+codec = { package = "parity-scale-codec", workspace = true }
 
 # Laos Evolution Dependencies
 bp-laos-evolution = { workspace = true }

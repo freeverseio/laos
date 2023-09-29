@@ -43,8 +43,8 @@ sp-io = { workspace = true }
 sp-timestamp = { workspace = true }
 sp-inherents = { workspace = true }
 sp-keyring = { workspace = true }
-frame-system = { workspace = true }
-pallet-transaction-payment = { default-features = false, workspace = true }
+frame-system = { workspace = true, features = ["std"] }
+pallet-transaction-payment = { workspace = true }
 
 # These dependencies are used for the node template's RPCs
 jsonrpsee = { version = "0.16.2", features = ["server"] }

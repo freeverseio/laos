@@ -7,11 +7,11 @@ edition = "2021"
 license = "GPL-3.0-or-later WITH Classpath-exception-2.0"
 
 [dependencies]
-bp-bridge-hub-cumulus = { workspace = true, default-features = false }
-bp-messages = { workspace = true, default-features = false }
-bp-polkadot-core = { workspace = true, default-features = false }
-bp-runtime = { workspace = true, default-features = false }
-bp-header-chain = { workspace = true, default-features = false }
+bp-bridge-hub-cumulus = { workspace = true }
+bp-messages = { workspace = true }
+bp-polkadot-core = { workspace = true }
+bp-runtime = { workspace = true }
+bp-header-chain = { workspace = true }
 
 # Ownership parachain Primitives
 ownership-parachain-primitives = { workspace = true }

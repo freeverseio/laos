@@ -16,9 +16,9 @@ sp-core = { workspace = true }
 sp-runtime = { workspace = true }
 sp-std = { workspace = true }
 
-bp-header-chain = { workspace = true, default-features = false }
-bp-messages = { workspace = true, default-features = false }
-bp-runtime = { workspace = true, default-features = false }
+bp-header-chain = { workspace = true }
+bp-messages = { workspace = true }
+bp-runtime = { workspace = true }
 
 [features]
 default = ["std"]

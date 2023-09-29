@@ -4,14 +4,14 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-codec = { workspace = true }
+codec = { workspace = true, package = "parity-scale-codec" }
 scale-info = { workspace = true }
 subxt = { workspace = true }
 
 bp-bridge-hub-cumulus = { workspace = true }
 bp-header-chain = { workspace = true }
 bp-messages = { workspace = true }
-bp-polkadot-core = { workspace = true, default-features = false }
+bp-polkadot-core = { workspace = true }
 relay-substrate-client = { workspace = true }
 sp-core = { workspace = true }
 sp-runtime = { workspace = true }
