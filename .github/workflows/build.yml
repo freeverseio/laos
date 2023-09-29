@@ -81,7 +81,7 @@ jobs:
           cache-key: lint
       - name: check format
         run: |
-          cargo fmt --all --check
+          cargo +nightly fmt --all --check
       - name: install clippy
         run: |
           rustup component add clippy
