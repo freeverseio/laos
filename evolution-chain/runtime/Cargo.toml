@@ -14,7 +14,7 @@ targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
 codec = { package = "parity-scale-codec", version = "3.2.2", default-features = false, features = ["derive"] }
-scale-info = { version = "2.5.0", default-features = false, features = ["derive"] }
+scale-info = { workspace = true, default-features = false, features = ["derive"] }
 
 frame-executive = { default-features = false, workspace = true }
 frame-support = { default-features = false, workspace = true }
@@ -51,7 +51,7 @@ frame-benchmarking = { default-features = false, optional = true , workspace = t
 frame-system-benchmarking = { default-features = false, optional = true , workspace = true }
 
 # Local Dependencies
-pallet-living-assets-evolution = { default-features = false, path = "../pallets/living-assets-evolution" }
+pallet-living-assets-evolution = { workspace = true, default-features = false }
 
 # Bridge dependencies
 pallet-bridge-grandpa = { workspace = true, default-features = false }

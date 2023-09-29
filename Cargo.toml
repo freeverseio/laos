@@ -42,7 +42,7 @@ proc-macro2 =  "1.0"
 quote = "1.0"
 syn = { version = "1.0" }
 static_assertions = "1.1"
-codec = { package = "parity-scale-codec", version = "3.1.5" }
+codec = { package = "parity-scale-codec", version = "3.2.2", default-features = false, features = ["derive"] }
 subxt = { version = "0.30.1", features = ["native"]}
 
 # Wasm builder
@@ -229,8 +229,10 @@ bp-test-utils = { git = "https://github.com/freeverseio/parity-bridges-common.gi
 
 # LAOS pallets
 pallet-living-assets-ownership = { path = "./ownership-chain/pallets/living-assets-ownership", default-features = false }
+pallet-living-assets-evolution = { path = "./evolution-chain/pallets/living-assets-evolution", default-features = false }
 pallet-evm-living-assets-ownership = { path = "./ownership-chain/precompile/living-assets", default-features = false }
 pallet-evm-erc721 = { path = "./ownership-chain/precompile/erc721", default-features = false }
+
 
 # Utils
 precompile-utils = { path = "./ownership-chain/precompile/utils", default-features = false }
