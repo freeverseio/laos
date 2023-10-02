@@ -15,7 +15,7 @@ pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 /// Wrapper around `BoundedVec` for `tokenUri`
 pub type TokenUriOf<T> = BoundedVec<u8, <T as crate::Config>::MaxTokenUriLength>;
 
-/// OwnerId type
+/// Slot OwnerId type
 pub type SlotOwnerId = H160;
 
 /// TokenId type
