@@ -1,5 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use frame_support::ensure;
 pub use pallet::*;
 #[cfg(test)]
 mod mock;
@@ -216,9 +217,7 @@ impl<T: Config> Pallet<T> {
 		owner: SlotOwnerId,
 	) -> Result<TokenId, Error<T>> {
 		// Check if slot is larger than 96 bits
-		if slot > MAX_U96 {
-			return Err(Error::<T>::SlotOverflow)
-		}
+		ensure!(slot <= MAX_U96, Error::<T>::SlotOverflow);
 
 		let mut bytes = [0u8; 32];
 
