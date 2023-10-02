@@ -122,32 +122,40 @@ fn slot_and_owner_should_fail_if_slot_is_greater_than_96_bits() {
 
 #[test]
 fn slot_and_owner_to_asset_id_works() {
-	let slot = 0_u128;
-	let owner = SlotOwnerId::from_str("0x0000000000000000000000000000000000000000").unwrap();
+    // Helper function to encapsulate the common logic of generating a token_id
+    // and comparing it to an expected value.
+    fn check_token_id(slot: u128, owner_hex: &str, expected_hex: &str) {
+        let owner = SlotOwnerId::from_str(owner_hex).unwrap();
+        let token_id = LivingAssets::slot_and_owner_to_token_id(slot, owner).unwrap();
+        assert_eq!(
+            format!("0x{:064x}", token_id),
+            expected_hex
+        );
+    }
 
-	let token_id = LivingAssets::slot_and_owner_to_token_id(slot, owner).unwrap();
-	assert_eq!(
-		format!("0x{:064x}", token_id),
-		"0x0000000000000000000000000000000000000000000000000000000000000000".to_string()
-	);
+    check_token_id(
+        0_u128,
+        "0x0000000000000000000000000000000000000000",
+        "0x0000000000000000000000000000000000000000000000000000000000000000"
+    );
 
-	let slot = 1_u128;
-	let owner = SlotOwnerId::from_str("0x0000000000000000000000000000000000000000").unwrap();
+    check_token_id(
+        1_u128,
+        "0x0000000000000000000000000000000000000000",
+        "0x0000000000000000000000010000000000000000000000000000000000000000"
+    );
 
-	let token_id = LivingAssets::slot_and_owner_to_token_id(slot, owner).unwrap();
-	assert_eq!(
-		format!("0x{:064x}", token_id),
-		"0x0000000000000000000000010000000000000000000000000000000000000000".to_string()
-	);
+    check_token_id(
+        1_u128,
+        "0xe00000000000000000000000000000000000000f",
+        "0x000000000000000000000001e00000000000000000000000000000000000000f"
+    );
 
-	let slot = 1_u128;
-	let owner = SlotOwnerId::from_str("0xe00000000000000000000000000000000000000f").unwrap();
-
-	let token_id = LivingAssets::slot_and_owner_to_token_id(slot, owner).unwrap();
-	assert_eq!(
-		format!("0x{:064x}", token_id),
-		"0x000000000000000000000001e00000000000000000000000000000000000000f".to_string()
-	);
+    check_token_id(
+         MAX_U96,
+        "0xe00000000000000000000000000000000000000f",
+        "0xffffffffffffffffffffffffe00000000000000000000000000000000000000f"
+    );
 }
 
 #[test]
