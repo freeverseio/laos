@@ -17,12 +17,6 @@ pub mod pallet {
 
 	use super::*;
 	use frame_support::pallet_prelude::{OptionQuery, ValueQuery, *};
-	use frame_system::pallet_prelude::*;
-	use frame_support::{
-		pallet_prelude::{OptionQuery, ValueQuery, *},
-		BoundedVec,
-	};
-	use sp_core::{H160, U256};
 	use sp_runtime::traits::Convert;
 
 	#[pallet::pallet]
@@ -49,8 +43,8 @@ pub mod pallet {
 		#[pallet::constant]
 		type NullAddress: Get<AccountIdOf<Self>>;
 
-		/// Type alias for implementing the `AssetIdToInitialOwner` trait for a given account ID type.
-		/// This allows you to specify which account should initially own each new asset.
+		/// Type alias for implementing the `AssetIdToInitialOwner` trait for a given account ID
+		/// type. This allows you to specify which account should initially own each new asset.
 		type AssetIdToInitialOwner: Convert<AssetId, Self::AccountId>;
 	}
 
@@ -240,7 +234,8 @@ pub fn collection_id_to_address<Address: From<[u8; 20]>>(collection_id: Collecti
 /// Converts an `Address` address into a `CollectionId` format.
 ///
 /// This function takes the given `Address` address, checks for the correct prefix, and extracts
-/// the `CollectionId` from it. If the prefix is incorrect, it returns a `CollectionError::InvalidPrefix` error.
+/// the `CollectionId` from it. If the prefix is incorrect, it returns a
+/// `CollectionError::InvalidPrefix` error.
 ///
 /// # Arguments
 ///

@@ -1,4 +1,4 @@
-//! Types used in LivingAssetsOwnership pallet.
+//! Types and type aliases used in LivingAssetsOwnership pallet.
 use crate::Config;
 use sp_core::U256;
 use sp_runtime::BoundedVec;

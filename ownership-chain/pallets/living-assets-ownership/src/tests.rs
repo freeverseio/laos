@@ -63,31 +63,19 @@ fn create_new_collections_should_emit_events_with_collection_id_consecutive() {
 		// Go past genesis block so events get deposited
 		System::set_block_number(1);
 
-		assert_ok!(LivingAssetsModule::create_collection(
-			RuntimeOrigin::signed(ALICE.into()),
-			BaseURI::default()
-		));
+		assert_ok!(LivingAssetsModule::create_collection(ALICE.into(), BaseURI::default()));
 		System::assert_last_event(
 			Event::CollectionCreated { collection_id: 0, who: ALICE.into() }.into(),
 		);
-		assert_ok!(LivingAssetsModule::create_collection(
-			RuntimeOrigin::signed(ALICE.into()),
-			BaseURI::default()
-		));
+		assert_ok!(LivingAssetsModule::create_collection(ALICE.into(), BaseURI::default()));
 		System::assert_last_event(
 			Event::CollectionCreated { collection_id: 1, who: ALICE.into() }.into(),
 		);
-		assert_ok!(LivingAssetsModule::create_collection(
-			RuntimeOrigin::signed(ALICE.into()),
-			BaseURI::default()
-		));
+		assert_ok!(LivingAssetsModule::create_collection(ALICE.into(), BaseURI::default()));
 		System::assert_last_event(
 			Event::CollectionCreated { collection_id: 2, who: ALICE.into() }.into(),
 		);
-		assert_ok!(LivingAssetsModule::create_collection(
-			RuntimeOrigin::signed(ALICE.into()),
-			BaseURI::default()
-		));
+		assert_ok!(LivingAssetsModule::create_collection(ALICE.into(), BaseURI::default()));
 		System::assert_last_event(
 			Event::CollectionCreated { collection_id: 3, who: ALICE.into() }.into(),
 		);
