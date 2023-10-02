@@ -188,7 +188,7 @@ pub mod pallet {
 			);
 
 			// compose asset_id	from slot and owner
-			let token_id = Self::slot_and_owner_to_token_id((slot, to.clone()))?;
+			let token_id = Self::slot_and_owner_to_token_id(slot, to.clone())?;
 
 			ensure!(
 				TokenURI::<T>::get(collection_id, token_id).is_none(),
@@ -217,10 +217,9 @@ impl<T: Config> Pallet<T> {
 	/// Every slot is identified by a unique `token_id` where `token_id = concat(slot #,
 	/// owner_address)`
 	fn slot_and_owner_to_token_id(
-		slot_and_owner: (Slot, SlotOwnerId),
+		slot: Slot,
+		owner: SlotOwnerId,
 	) -> Result<TokenId, pallet::Error<T>> {
-		let (slot, owner) = slot_and_owner;
-
 		// Check if slot is larger than 96 bits
 		if slot > MAX_U96 {
 			return Err(Error::<T>::SlotOverflow)

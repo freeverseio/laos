@@ -87,7 +87,7 @@ fn mint_with_external_uri_works() {
 			TokenId::from(buf)
 		};
 
-		let token_id = LivingAssets::slot_and_owner_to_token_id((slot, owner)).unwrap();
+		let token_id = LivingAssets::slot_and_owner_to_token_id(slot, owner).unwrap();
 
 		assert_eq!(token_id, expected_token_id);
 		assert_eq!(LivingAssets::token_uri(collection_id, token_id), Some(token_uri.clone()));
@@ -110,13 +110,13 @@ fn slot_and_owner_should_fail_if_slot_is_greater_than_96_bits() {
 	let slot = 1_u128 << 95;
 	let owner = SlotOwnerId::from_str("0x0000000000000000000000000000000000000000").unwrap();
 
-	let result = LivingAssets::slot_and_owner_to_token_id((slot, owner));
+	let result = LivingAssets::slot_and_owner_to_token_id(slot, owner);
 	assert_ok!(result);
 
 	let slot = 1_u128 << 96;
 	let owner = SlotOwnerId::from_str("0x0000000000000000000000000000000000000000").unwrap();
 
-	let result = LivingAssets::slot_and_owner_to_token_id((slot, owner));
+	let result = LivingAssets::slot_and_owner_to_token_id(slot, owner);
 	assert_err!(result, Error::<Test>::SlotOverflow);
 }
 
@@ -125,7 +125,7 @@ fn slot_and_owner_to_asset_id_works() {
 	let slot = 0_u128;
 	let owner = SlotOwnerId::from_str("0x0000000000000000000000000000000000000000").unwrap();
 
-	let token_id = LivingAssets::slot_and_owner_to_token_id((slot, owner)).unwrap();
+	let token_id = LivingAssets::slot_and_owner_to_token_id(slot, owner).unwrap();
 	assert_eq!(
 		format!("0x{:064x}", token_id),
 		"0x0000000000000000000000000000000000000000000000000000000000000000".to_string()
@@ -134,7 +134,7 @@ fn slot_and_owner_to_asset_id_works() {
 	let slot = 1_u128;
 	let owner = SlotOwnerId::from_str("0x0000000000000000000000000000000000000000").unwrap();
 
-	let token_id = LivingAssets::slot_and_owner_to_token_id((slot, owner)).unwrap();
+	let token_id = LivingAssets::slot_and_owner_to_token_id(slot, owner).unwrap();
 	assert_eq!(
 		format!("0x{:064x}", token_id),
 		"0x0000000000000000000000010000000000000000000000000000000000000000".to_string()
@@ -143,7 +143,7 @@ fn slot_and_owner_to_asset_id_works() {
 	let slot = 1_u128;
 	let owner = SlotOwnerId::from_str("0xe00000000000000000000000000000000000000f").unwrap();
 
-	let token_id = LivingAssets::slot_and_owner_to_token_id((slot, owner)).unwrap();
+	let token_id = LivingAssets::slot_and_owner_to_token_id(slot, owner).unwrap();
 	assert_eq!(
 		format!("0x{:064x}", token_id),
 		"0x000000000000000000000001e00000000000000000000000000000000000000f".to_string()
