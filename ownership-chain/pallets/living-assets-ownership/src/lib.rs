@@ -10,6 +10,7 @@ pub use pallet::*;
 pub use types::*;
 
 mod functions;
+mod migrations;
 pub mod traits;
 mod types;
 #[frame_support::pallet]
