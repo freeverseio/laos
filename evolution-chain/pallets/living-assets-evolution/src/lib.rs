@@ -1,5 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use frame_support::ensure;
 pub use pallet::*;
 #[cfg(test)]
 mod mock;
@@ -14,9 +15,6 @@ pub mod weights;
 
 use types::*;
 pub use weights::*;
-
-use sp_core::H160;
-use sp_runtime::traits::Convert;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -38,8 +36,6 @@ pub mod pallet {
 		type MaxTokenUriLength: Get<u32>;
 		/// Type representing the weight of this pallet
 		type WeightInfo: WeightInfo;
-		/// Converts [`AccountId`] to [`H160`]
-		type AccountIdToH160: Convert<AccountIdOf<Self>, H160>;
 	}
 
 	/// Collection counter
@@ -79,7 +75,7 @@ pub mod pallet {
 		MintedWithExternalTokenURI {
 			collection_id: CollectionId,
 			slot: Slot,
-			to: AccountIdOf<T>,
+			to: SlotOwnerId,
 			token_uri: TokenUriOf<T>,
 			token_id: TokenId,
 		},
@@ -87,6 +83,7 @@ pub mod pallet {
 
 	// Errors inform users that something went wrong.
 	#[pallet::error]
+	#[derive(PartialEq)]
 	pub enum Error<T> {
 		/// Collection does not exist
 		CollectionDoesNotExist,
@@ -94,6 +91,8 @@ pub mod pallet {
 		NoPermission,
 		/// [`Slot`] is already minted
 		AlreadyMinted,
+		/// [`Slot`] overflow
+		SlotOverflow,
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -169,7 +168,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 			slot: Slot,
-			to: AccountIdOf<T>,
+			to: SlotOwnerId,
 			token_uri: TokenUriOf<T>,
 		) -> DispatchResult {
 			let who = ensure_signed(origin)?;
@@ -185,16 +184,12 @@ pub mod pallet {
 			);
 
 			// compose asset_id	from slot and owner
-			let token_id = Self::slot_and_owner_to_token_id((slot, to.clone()));
+			let token_id = Self::slot_and_owner_to_token_id(slot, to.clone())?;
 
 			ensure!(
 				TokenURI::<T>::get(collection_id, token_id).is_none(),
 				Error::<T>::AlreadyMinted
 			);
-
-			// Slot must be 96 bits
-			// TODO: use a custom type for this https://github.com/freeverseio/laos-evolution-node/issues/77
-			ensure!(slot <= MAX_U96, ArithmeticError::Overflow);
 
 			TokenURI::<T>::insert(collection_id, token_id, token_uri.clone());
 
@@ -217,8 +212,9 @@ impl<T: Config> Pallet<T> {
 	///
 	/// Every slot is identified by a unique `token_id` where `token_id = concat(slot #,
 	/// owner_address)`
-	fn slot_and_owner_to_token_id(slot_and_owner: (Slot, AccountIdOf<T>)) -> TokenId {
-		let (slot, owner) = slot_and_owner;
+	fn slot_and_owner_to_token_id(slot: Slot, owner: SlotOwnerId) -> Result<TokenId, Error<T>> {
+		// Check if slot is larger than 96 bits
+		ensure!(slot <= MAX_U96, Error::<T>::SlotOverflow);
 
 		let mut bytes = [0u8; 32];
 
@@ -227,10 +223,10 @@ impl<T: Config> Pallet<T> {
 		// we also use the last 12 bytes of the slot, since the first 4 bytes are always 0
 		bytes[..12].copy_from_slice(&slot_bytes[4..]);
 
-		let h160 = T::AccountIdToH160::convert(owner);
-		let account_id_bytes = h160.as_fixed_bytes();
+		let account_id_bytes = owner.as_fixed_bytes();
 
 		bytes[12..].copy_from_slice(account_id_bytes);
-		TokenId::from(bytes)
+
+		Ok(TokenId::from(bytes))
 	}
 }
