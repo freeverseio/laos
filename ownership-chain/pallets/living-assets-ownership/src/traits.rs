@@ -25,7 +25,8 @@ where
 	///
 	/// # Returns
 	///
-	/// The base URI associated with the specified collection or `None` if the collection doesn't exist.
+	/// The base URI associated with the specified collection or `None` if the collection doesn't
+	/// exist.
 	fn base_uri(collection_id: CollectionId) -> Option<BaseURI>;
 
 	/// Creates a new collection and assigns it to the specified owner.
