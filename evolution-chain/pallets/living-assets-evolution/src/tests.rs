@@ -2,11 +2,10 @@ use core::str::FromStr;
 
 use crate::{
 	mock::*,
-	types::{Slot, SlotOwnerId, TokenId, TokenUriOf, MAX_U96},
+	types::{SlotOwnerId, TokenId, TokenUriOf, MAX_U96},
 	CollectionId, Error, Event,
 };
 use frame_support::{assert_err, assert_noop, assert_ok};
-use sp_runtime::traits::Convert;
 
 const ALICE: AccountId = 5;
 const BOB: AccountId = 6;

@@ -222,7 +222,7 @@ impl<T: Config> Pallet<T> {
 		let (slot, owner) = slot_and_owner;
 
 		// Check if slot is larger than 96 bits
-		if slot >= (1_u128 << 96) {
+		if slot > MAX_U96 {
 			return Err(Error::<T>::SlotOverflow)
 		}
 
