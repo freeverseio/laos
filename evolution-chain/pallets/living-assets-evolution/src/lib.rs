@@ -219,7 +219,7 @@ impl<T: Config> Pallet<T> {
 	fn slot_and_owner_to_token_id(
 		slot: Slot,
 		owner: SlotOwnerId,
-	) -> Result<TokenId, pallet::Error<T>> {
+	) -> Result<TokenId, Error<T>> {
 		// Check if slot is larger than 96 bits
 		if slot > MAX_U96 {
 			return Err(Error::<T>::SlotOverflow)
