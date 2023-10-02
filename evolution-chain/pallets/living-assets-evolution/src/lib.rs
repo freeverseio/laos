@@ -195,10 +195,6 @@ pub mod pallet {
 				Error::<T>::AlreadyMinted
 			);
 
-			// Slot must be 96 bits
-			// TODO: use a custom type for this https://github.com/freeverseio/laos-evolution-node/issues/77
-			ensure!(slot <= MAX_U96, ArithmeticError::Overflow);
-
 			TokenURI::<T>::insert(collection_id, token_id, token_uri.clone());
 
 			Self::deposit_event(Event::MintedWithExternalTokenURI {
