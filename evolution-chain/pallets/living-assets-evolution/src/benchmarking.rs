@@ -32,8 +32,8 @@ mod benchmarks {
 		let token_uri: TokenUriOf<T> =
 			vec![0; T::MaxTokenUriLength::get() as usize].try_into().unwrap();
 		let slot = 0;
-		let token_id = LivingAssetsEvo::<T>::slot_and_owner_to_token_id(slot, SlotOwnerId::default())
-			.unwrap();
+		let token_id =
+			LivingAssetsEvo::<T>::slot_and_owner_to_token_id(slot, SlotOwnerId::default()).unwrap();
 
 		#[extrinsic_call]
 		mint_with_external_uri(
