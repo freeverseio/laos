@@ -87,6 +87,7 @@ pub mod pallet {
 
 	// Errors inform users that something went wrong.
 	#[pallet::error]
+	#[derive(PartialEq)]
 	pub enum Error<T> {
 		/// Collection does not exist
 		CollectionDoesNotExist,
@@ -94,6 +95,8 @@ pub mod pallet {
 		NoPermission,
 		/// [`Slot`] is already minted
 		AlreadyMinted,
+		/// [`Slot`] overflow
+		SlotOverflow,
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -185,7 +188,7 @@ pub mod pallet {
 			);
 
 			// compose asset_id	from slot and owner
-			let token_id = Self::slot_and_owner_to_token_id((slot, to.clone()));
+			let token_id = Self::slot_and_owner_to_token_id((slot, to.clone()))?;
 
 			ensure!(
 				TokenURI::<T>::get(collection_id, token_id).is_none(),
@@ -217,8 +220,15 @@ impl<T: Config> Pallet<T> {
 	///
 	/// Every slot is identified by a unique `token_id` where `token_id = concat(slot #,
 	/// owner_address)`
-	fn slot_and_owner_to_token_id(slot_and_owner: (Slot, SlotOwnerId)) -> TokenId {
+	fn slot_and_owner_to_token_id(
+		slot_and_owner: (Slot, SlotOwnerId),
+	) -> Result<TokenId, pallet::Error<T>> {
 		let (slot, owner) = slot_and_owner;
+
+		// Check if slot is larger than 96 bits
+		if slot >= (1_u128 << 96) {
+			return Err(Error::<T>::SlotOverflow)
+		}
 
 		let mut bytes = [0u8; 32];
 
@@ -230,6 +240,7 @@ impl<T: Config> Pallet<T> {
 		let account_id_bytes = owner.as_fixed_bytes();
 
 		bytes[12..].copy_from_slice(account_id_bytes);
-		TokenId::from(bytes)
+
+		Ok(TokenId::from(bytes))
 	}
 }
