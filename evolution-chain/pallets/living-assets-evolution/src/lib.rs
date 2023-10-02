@@ -212,10 +212,7 @@ impl<T: Config> Pallet<T> {
 	///
 	/// Every slot is identified by a unique `token_id` where `token_id = concat(slot #,
 	/// owner_address)`
-	fn slot_and_owner_to_token_id(
-		slot: Slot,
-		owner: SlotOwnerId,
-	) -> Result<TokenId, Error<T>> {
+	fn slot_and_owner_to_token_id(slot: Slot, owner: SlotOwnerId) -> Result<TokenId, Error<T>> {
 		// Check if slot is larger than 96 bits
 		ensure!(slot <= MAX_U96, Error::<T>::SlotOverflow);
 
