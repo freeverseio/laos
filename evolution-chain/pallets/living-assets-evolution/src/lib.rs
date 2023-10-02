@@ -15,9 +15,6 @@ pub mod weights;
 use types::*;
 pub use weights::*;
 
-use sp_core::H160;
-use sp_runtime::traits::Convert;
-
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
@@ -38,8 +35,6 @@ pub mod pallet {
 		type MaxTokenUriLength: Get<u32>;
 		/// Type representing the weight of this pallet
 		type WeightInfo: WeightInfo;
-		/// Converts [`AccountId`] to [`H160`]
-		type AccountIdToH160: Convert<AccountIdOf<Self>, H160>;
 	}
 
 	/// Collection counter
