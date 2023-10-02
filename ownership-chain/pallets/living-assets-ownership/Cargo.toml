@@ -41,6 +41,7 @@ std = [
 	"scale-info/std",
 	"frame-support/std",
 	"frame-system/std",
+	"fp-account/std",
 	"sp-arithmetic/std",
 	"sp-core/std",
 	"sp-std/std",
