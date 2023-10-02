@@ -154,6 +154,10 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPalletsWithSystem,
+	(
+		pallet_collator_selection::migration::v1::MigrateToV1<Runtime>,
+		pallet_living_assets_ownership::migrations::v1::version_unchecked::MigrateV0ToV1<Runtime>,
+	),
 >;
 
 pub type Precompiles = FrontierPrecompiles<Runtime>;

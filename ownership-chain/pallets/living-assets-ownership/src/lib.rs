@@ -8,6 +8,7 @@ use parity_scale_codec::alloc::string::ToString;
 use sp_core::H160;
 use sp_std::vec::Vec;
 mod functions;
+pub mod migrations;
 pub mod traits;
 
 #[frame_support::pallet]
@@ -27,7 +28,11 @@ pub mod pallet {
 	/// Base URI type
 	pub type BaseURI<T> = BoundedVec<u8, <T as Config>::BaseURILimit>;
 
+	/// Define the current [`StorageVersion`] of the pallet.
+	const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
+
 	#[pallet::pallet]
+	#[pallet::storage_version(STORAGE_VERSION)]
 	pub struct Pallet<T>(_);
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
