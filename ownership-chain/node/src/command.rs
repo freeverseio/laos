@@ -2,7 +2,7 @@ use std::net::SocketAddr;
 
 use cumulus_primitives_core::ParaId;
 use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
-use laos_runtime::Block;
+use laos_ownership_runtime::Block;
 use log::{info, warn};
 use polkadot_service::RococoChainSpec;
 use sc_cli::{
@@ -244,7 +244,7 @@ pub fn run() -> Result<()> {
 		#[cfg(feature = "try-runtime")]
 		Some(Subcommand::TryRuntime(cmd)) => {
 			use crate::service::ParachainNativeExecutor;
-			use laos_runtime::MILLISECS_PER_BLOCK;
+			use laos_ownership_runtime::MILLISECS_PER_BLOCK;
 			use sc_executor::{sp_wasm_interface::ExtendedHostFunctions, NativeExecutionDispatch};
 			use try_runtime_cli::block_building_info::timestamp_with_aura_info;
 

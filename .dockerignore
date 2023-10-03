@@ -1,5 +1,5 @@
 doc
 **/target
-!./target/release/laos
+!./target/release/laos-ownership
 !./target/release/laos-evolution
 !./target/release/laos-relay

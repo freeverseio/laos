@@ -26,7 +26,7 @@ jobs:
           cache-key: build_and_push
       - name: Check
         run: |
-          SKIP_WASM_BUILD=1 cargo check --release
+          SKIP_WASM_BUILD=1 cargo check --release --features runtime-benchmarks --features try-runtime
 
   build_and_push:
     if: github.event_name == 'push'
