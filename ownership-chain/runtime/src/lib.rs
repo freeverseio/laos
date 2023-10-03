@@ -714,7 +714,7 @@ construct_runtime!(
 		LivingAssetsOwnership: pallet_living_assets_ownership = 41,
 
 		// Frontier
-		Ethereum: pallet_ethereum = 50,
+		LaosEthereum: pallet_ethereum = 50,
 		EVM: pallet_evm = 51,
 		EVMChainId: pallet_evm_chain_id = 52,
 		// DynamicFee: pallet_dynamic_fee = 43,
@@ -784,14 +784,14 @@ impl fp_self_contained::SelfContainedCall for RuntimeCall {
 
 	fn is_self_contained(&self) -> bool {
 		match self {
-			RuntimeCall::Ethereum(call) => call.is_self_contained(),
+			RuntimeCall::LaosEthereum(call) => call.is_self_contained(),
 			_ => false,
 		}
 	}
 
 	fn check_self_contained(&self) -> Option<Result<Self::SignedInfo, TransactionValidityError>> {
 		match self {
-			RuntimeCall::Ethereum(call) => call.check_self_contained(),
+			RuntimeCall::LaosEthereum(call) => call.check_self_contained(),
 			_ => None,
 		}
 	}
@@ -803,7 +803,7 @@ impl fp_self_contained::SelfContainedCall for RuntimeCall {
 		len: usize,
 	) -> Option<TransactionValidity> {
 		match self {
-			RuntimeCall::Ethereum(call) => call.validate_self_contained(info, dispatch_info, len),
+			RuntimeCall::LaosEthereum(call) => call.validate_self_contained(info, dispatch_info, len),
 			_ => None,
 		}
 	}
@@ -815,7 +815,7 @@ impl fp_self_contained::SelfContainedCall for RuntimeCall {
 		len: usize,
 	) -> Option<Result<(), TransactionValidityError>> {
 		match self {
-			RuntimeCall::Ethereum(call) =>
+			RuntimeCall::LaosEthereum(call) =>
 				call.pre_dispatch_self_contained(info, dispatch_info, len),
 			_ => None,
 		}
@@ -826,7 +826,7 @@ impl fp_self_contained::SelfContainedCall for RuntimeCall {
 		info: Self::SignedInfo,
 	) -> Option<sp_runtime::DispatchResultWithInfo<PostDispatchInfoOf<Self>>> {
 		match self {
-			call @ RuntimeCall::Ethereum(pallet_ethereum::Call::transact { .. }) =>
+			call @ RuntimeCall::LaosEthereum(pallet_ethereum::Call::transact { .. }) =>
 				Some(call.dispatch(RuntimeOrigin::from(
 					pallet_ethereum::RawOrigin::EthereumTransaction(info),
 				))),
@@ -1078,7 +1078,7 @@ impl_runtime_apis! {
 			xts: Vec<<Block as BlockT>::Extrinsic>,
 		) -> Vec<EthereumTransaction> {
 			xts.into_iter().filter_map(|xt| match xt.0.function {
-				RuntimeCall::Ethereum(transact { transaction }) => Some(transaction),
+				RuntimeCall::LaosEthereum(transact { transaction }) => Some(transaction),
 				_ => None
 			}).collect::<Vec<EthereumTransaction>>()
 		}
@@ -1095,8 +1095,8 @@ impl_runtime_apis! {
 			for ext in xts.into_iter() {
 				let _ = Executive::apply_extrinsic(ext);
 			}
-
-			Ethereum::on_finalize(System::block_number() + 1);
+			
+			LaosEthereum::on_finalize(System::block_number() + 1);
 
 			(
 				pallet_ethereum::CurrentBlock::<Runtime>::get(),
