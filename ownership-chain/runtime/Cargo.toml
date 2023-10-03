@@ -51,6 +51,7 @@ sp-session = { workspace = true }
 sp-std = { workspace = true }
 sp-transaction-pool = { workspace = true }
 sp-version = { workspace = true }
+sp-io = { workspace = true }
 
 pallet-living-assets-ownership = { workspace = true }
 pallet-evm-living-assets-ownership = { workspace = true }
@@ -149,6 +150,7 @@ std = [
 	"sp-std/std",
 	"sp-transaction-pool/std",
 	"sp-version/std",
+	"sp-io/std",
 	"xcm-builder/std",
 	"xcm-executor/std",
 	"xcm/std",
