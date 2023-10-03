@@ -253,7 +253,7 @@ ownership-parachain-primitives = { path = "./ownership-chain/primitives", defaul
 evochain-primitives = { path = "./evolution-chain/primitives", default-features = false }
 
 # runtime
-laos-runtime = { path = "./ownership-chain/runtime" }
+laos-ownership-runtime = { path = "./ownership-chain/runtime" }
 laos-evolution-runtime = { path = "./evolution-chain/runtime", default-features = false }
 
 relay-laos-evolution-client = { path="./bridge/relays/client-laos-evolution" }

@@ -1020,7 +1020,7 @@ pub mod api {
                                 Initialization,
                         }
                 }
-                pub mod laos_runtime {
+                pub mod laos_ownership_runtime {
                         use super::runtime_types;
                         #[derive(:: codec :: Decode, :: codec :: Encode, Clone, Debug, PartialEq)]
                         pub struct BridgeRejectObsoleteHeadersAndMessages;
@@ -1656,7 +1656,7 @@ pub mod api {
                                 pub enum Call {
                                         #[codec(index = 0)]
                                         set_keys {
-                                                keys: runtime_types::laos_runtime::SessionKeys,
+                                                keys: runtime_types::laos_ownership_runtime::SessionKeys,
                                                 proof: ::std::vec::Vec<::core::primitive::u8>,
                                         },
                                         #[codec(index = 1)]
@@ -1689,10 +1689,10 @@ pub mod api {
                                 #[derive(:: codec :: Decode, :: codec :: Encode, Clone, Debug, PartialEq)]
                                 pub enum Call {
                                         #[codec(index = 0)]
-                                        sudo { call: ::std::boxed::Box<runtime_types::laos_runtime::RuntimeCall> },
+                                        sudo { call: ::std::boxed::Box<runtime_types::laos_ownership_runtime::RuntimeCall> },
                                         #[codec(index = 1)]
                                         sudo_unchecked_weight {
-                                                call: ::std::boxed::Box<runtime_types::laos_runtime::RuntimeCall>,
+                                                call: ::std::boxed::Box<runtime_types::laos_ownership_runtime::RuntimeCall>,
                                                 weight: ::sp_weights::Weight,
                                         },
                                         #[codec(index = 2)]
@@ -1702,7 +1702,7 @@ pub mod api {
                                         #[codec(index = 3)]
                                         sudo_as {
                                                 who: ::subxt::utils::MultiAddress<::sp_core::crypto::AccountId32, ()>,
-                                                call: ::std::boxed::Box<runtime_types::laos_runtime::RuntimeCall>,
+                                                call: ::std::boxed::Box<runtime_types::laos_ownership_runtime::RuntimeCall>,
                                         },
                                 }
                                 #[derive(:: codec :: Decode, :: codec :: Encode, Clone, Debug, PartialEq)]
