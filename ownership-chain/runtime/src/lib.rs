@@ -622,7 +622,7 @@ impl pallet_evm::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type PrecompilesType = FrontierPrecompiles<Self>;
 	type PrecompilesValue = PrecompilesValue;
-	type ChainId = EVMChainId;
+	type ChainId = LaosEVMChainId;
 	type BlockGasLimit = BlockGasLimit;
 	type Runner = pallet_evm::runner::stack::Runner<Self>;
 	type OnChargeTransaction = EVMTransactionChargeHandler<EVMDealWithFees<Runtime>>;
@@ -711,12 +711,12 @@ construct_runtime!(
 		Sudo: pallet_sudo = 40,
 
 		// Local pallets
-		LivingAssetsOwnership: pallet_living_assets_ownership = 41,
+		LaosLivingAssetsOwnership: pallet_living_assets_ownership = 41,
 
 		// Frontier
 		LaosEthereum: pallet_ethereum = 50,
-		EVM: pallet_evm = 51,
-		EVMChainId: pallet_evm_chain_id = 52,
+		LaosEVM: pallet_evm = 51,
+		LaosEVMChainId: pallet_evm_chain_id = 52,
 		// DynamicFee: pallet_dynamic_fee = 43,
 		BaseFee: pallet_base_fee = 54,
 
@@ -947,7 +947,7 @@ impl_runtime_apis! {
 		}
 
 		fn account_basic(address: H160) -> EVMAccount {
-			let (account, _) = EVM::account_basic(&address);
+			let (account, _) = LaosEVM::account_basic(&address);
 			account
 		}
 
