@@ -29,7 +29,7 @@ pub mod pallet {
 	pub type BaseURI<T> = BoundedVec<u8, <T as Config>::BaseURILimit>;
 
 	/// Define the current [`StorageVersion`] of the pallet.
-	const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
+	const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
 
 	#[pallet::pallet]
 	#[pallet::storage_version(STORAGE_VERSION)]
