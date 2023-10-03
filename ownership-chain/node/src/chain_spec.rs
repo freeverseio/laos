@@ -9,7 +9,8 @@ use sp_runtime::traits::{IdentifyAccount, Verify};
 use std::{collections::BTreeMap, str::FromStr};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
-pub type ChainSpec = sc_service::GenericChainSpec<laos_ownership_runtime::RuntimeGenesisConfig, Extensions>;
+pub type ChainSpec =
+	sc_service::GenericChainSpec<laos_ownership_runtime::RuntimeGenesisConfig, Extensions>;
 
 /// The default XCM version to set in genesis config.
 const SAFE_XCM_VERSION: u32 = xcm::prelude::XCM_VERSION;
@@ -263,7 +264,10 @@ fn testnet_genesis(
 		sudo: laos_ownership_runtime::SudoConfig { key: root_key },
 		transaction_payment: Default::default(),
 		// EVM compatibility
-		evm_chain_id: laos_ownership_runtime::EVMChainIdConfig { chain_id: 1000, ..Default::default() },
+		evm_chain_id: laos_ownership_runtime::EVMChainIdConfig {
+			chain_id: 1000,
+			..Default::default()
+		},
 		evm: laos_ownership_runtime::EVMConfig {
 			accounts: {
 				let mut map: BTreeMap<_, _> = Precompiles::used_addresses()
