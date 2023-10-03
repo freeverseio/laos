@@ -611,7 +611,7 @@ parameter_types! {
 const MAX_POV_SIZE: u64 = 5 * 1024 * 1024;
 
 impl pallet_evm::Config for Runtime {
-	type FeeCalculator = BaseFee;
+	type FeeCalculator = LaosBaseFee;
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
 	type WeightPerGas = WeightPerGas;
 	type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
@@ -718,7 +718,7 @@ construct_runtime!(
 		LaosEVM: pallet_evm = 51,
 		LaosEVMChainId: pallet_evm_chain_id = 52,
 		// DynamicFee: pallet_dynamic_fee = 43,
-		BaseFee: pallet_base_fee = 54,
+		LaosBaseFee: pallet_base_fee = 54,
 
 		// Bridge
 		BridgeEvochainGrandpa: pallet_bridge_grandpa = 60,
