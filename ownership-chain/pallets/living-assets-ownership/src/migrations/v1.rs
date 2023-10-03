@@ -11,7 +11,7 @@ pub const LOG_TARGET: &str = "runtime::living_assets_ownership";
 // TODO: we should use `frame_support::migrations::VersionedMigration` when the following PR is
 // included in release. https://github.com/paritytech/polkadot-sdk/pull/1503
 pub mod version_unchecked {
-	use frame_support::{storage::migration::clear_storage_prefix, weights::Weight};
+	use frame_support::{storage::unhashed::clear_prefix, weights::Weight};
 
 	use super::*;
 
@@ -28,31 +28,28 @@ pub mod version_unchecked {
 
 			if Pallet::<T>::on_chain_storage_version() < 1 {
 				assert_eq!(<Pallet<T>>::name(), "LivingAssetsOwnership");
-				let res = clear_storage_prefix(
-					<Pallet<T>>::name().as_bytes(),
-					b"AssetOwner",
-					b"",
-					None,
-					None,
-				);
+				let storage_prefix = sp_io::hashing::twox_128(<Pallet<T>>::name().as_bytes());
+				let res = clear_prefix(&storage_prefix, None, None);
 
 				if res.unique == 0 {
 					log::error!(
 						target: LOG_TARGET,
-						"No storage entries are cleared from 'LivingAssetsOwnership_AssetOwner' storage prefix.",
+						"No storage entries are cleared from '{}' storage prefix.",
+						<Pallet<T>>::name()
 					);
 				}
 
 				log::info!(
 					target: LOG_TARGET,
-					"Cleared '{}' entries from 'LivingAssetsOwnership_AssetOwner' storage prefix",
-					res.unique
+					"Cleared '{}' entries from '{}' storage prefix",
+					res.unique, <Pallet<T>>::name()
 				);
 
 				if res.maybe_cursor.is_some() {
 					log::error!(
 						target: LOG_TARGET,
-						"Storage prefix 'LivingAssetsOwnership_AssetOwner' is not completely cleared."
+						"Storage prefix '{}' is not completely cleared.",
+						<Pallet<T>>::name()
 					);
 				}
 
