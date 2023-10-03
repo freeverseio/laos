@@ -803,7 +803,8 @@ impl fp_self_contained::SelfContainedCall for RuntimeCall {
 		len: usize,
 	) -> Option<TransactionValidity> {
 		match self {
-			RuntimeCall::LaosEthereum(call) => call.validate_self_contained(info, dispatch_info, len),
+			RuntimeCall::LaosEthereum(call) =>
+				call.validate_self_contained(info, dispatch_info, len),
 			_ => None,
 		}
 	}
@@ -1095,7 +1096,7 @@ impl_runtime_apis! {
 			for ext in xts.into_iter() {
 				let _ = Executive::apply_extrinsic(ext);
 			}
-			
+
 			LaosEthereum::on_finalize(System::block_number() + 1);
 
 			(
