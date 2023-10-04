@@ -19,7 +19,7 @@ jsonrpsee = { workspace = true, features = ["server"] }
 hex-literal = { workspace = true }
 
 # Local
-laos-ownership-runtime = { workspace = true }
+laos-ownership-runtime = { workspace = true, features = ["std"] }
 
 # Substrate
 frame-benchmarking = { workspace = true }

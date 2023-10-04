@@ -150,6 +150,7 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPalletsWithSystem,
+	pallet_collator_selection::migration::v1::MigrateToV1<Runtime>,
 >;
 
 pub type Precompiles = FrontierPrecompiles<Runtime>;
@@ -206,8 +207,10 @@ impl_opaque_keys! {
 
 #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
-	spec_name: create_runtime_str!("frontier-template"),
-	impl_name: create_runtime_str!("frontier-template"),
+	/// TODO: uncomment this if you want to make it work with polkadot-js
+	/// spec_name: create_runtime_str!("frontier-template"),
+	spec_name: create_runtime_str!("laos-parachain"),
+	impl_name: create_runtime_str!("laos-parachain"),
 	authoring_version: 1,
 	spec_version: 7,
 	impl_version: 0,
