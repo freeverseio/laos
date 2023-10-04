@@ -32,7 +32,7 @@ use std::time::Duration;
 
 pub use codegen_runtime::api::runtime_types;
 
-pub type RuntimeCall = runtime_types::laos_runtime::RuntimeCall;
+pub type RuntimeCall = runtime_types::laos_ownership_runtime::RuntimeCall;
 pub type SudoCall = runtime_types::pallet_sudo::pallet::Call;
 pub type BridgeGrandpaCall = runtime_types::pallet_bridge_grandpa::pallet::Call;
 

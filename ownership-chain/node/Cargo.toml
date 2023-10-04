@@ -1,5 +1,5 @@
 [package]
-name = "laos"
+name = "laos-ownership"
 version = "0.1.0"
 authors = ["Anonymous"]
 description = "A new Cumulus FRAME-based Substrate Node, ready for hacking together a parachain."
@@ -19,7 +19,7 @@ jsonrpsee = { workspace = true, features = ["server"] }
 hex-literal = { workspace = true }
 
 # Local
-laos-runtime = { workspace = true }
+laos-ownership-runtime = { workspace = true, features = ["std"] }
 
 # Substrate
 frame-benchmarking = { workspace = true }
@@ -88,7 +88,7 @@ substrate-build-script-utils = { workspace = true }
 [features]
 default = []
 runtime-benchmarks = [
-	"laos-runtime/runtime-benchmarks",
+	"laos-ownership-runtime/runtime-benchmarks",
 	"polkadot-cli/runtime-benchmarks",
 	"polkadot-service/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
@@ -99,7 +99,7 @@ runtime-benchmarks = [
 ]
 try-runtime = [
 	"try-runtime-cli/try-runtime",
-	"laos-runtime/try-runtime",
+	"laos-ownership-runtime/try-runtime",
 	"polkadot-cli/try-runtime",
 	"polkadot-service/try-runtime",
 	"sp-runtime/try-runtime",

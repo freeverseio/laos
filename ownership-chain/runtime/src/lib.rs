@@ -151,6 +151,7 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPalletsWithSystem,
+	pallet_collator_selection::migration::v1::MigrateToV1<Runtime>,
 >;
 
 pub type Precompiles = FrontierPrecompiles<Runtime>;
@@ -207,6 +208,8 @@ impl_opaque_keys! {
 
 #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
+	/// Uncomment this to make it work with polkadot-js/apps
+	/// spec_name: create_runtime_str!("frontier-template"),
 	spec_name: create_runtime_str!("laos-parachain"),
 	impl_name: create_runtime_str!("laos-parachain"),
 	authoring_version: 1,
@@ -243,9 +246,9 @@ pub const MICROUNIT: Balance = 1_000_000;
 pub const EXISTENTIAL_DEPOSIT: Balance = MILLIUNIT;
 
 /// Current approximation of the gas/s consumption considering
-/// EVM execution over compiled WASM (on 4.4Ghz CPU).
+/// LaosEVM execution over compiled WASM (on 4.4Ghz CPU).
 /// Given the 500ms Weight, from which 75% only are used for transactions,
-/// the total EVM execution gas limit is: GAS_PER_SECOND * 0.500 * 0.75 ~= 15_000_000.
+/// the total LaosEVM execution gas limit is: GAS_PER_SECOND * 0.500 * 0.75 ~= 15_000_000.
 /// Note: this value has been used in production by (and is copied from) the Moonbeam parachain.
 pub const GAS_PER_SECOND: u64 = 40_000_000;
 
@@ -514,7 +517,7 @@ impl<F: FindAuthor<u32>> FindAuthor<H160> for FindAuthorTruncated<F> {
 	}
 }
 
-/// Handles transaction fees from the EVM, depositing priority fee in a staking pot
+/// Handles transaction fees from the LaosEVM, depositing priority fee in a staking pot
 pub struct EVMDealWithFees<R>(PhantomData<R>);
 
 impl<R> OnUnbalanced<NegativeImbalance<R>> for EVMDealWithFees<R>
@@ -591,9 +594,9 @@ impl pallet_evm::Config for Runtime {
 	type BlockGasLimit = BlockGasLimit;
 	type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
 	type CallOrigin = pallet_evm::EnsureAddressRoot<AccountId>;
-	type ChainId = EVMChainId;
+	type ChainId = LaosEVMChainId;
 	type Currency = Balances;
-	type FeeCalculator = BaseFee;
+	type FeeCalculator = LaosBaseFee;
 	type FindAuthor = FindAuthorTruncated<Aura>;
 	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
@@ -687,14 +690,14 @@ construct_runtime!(
 		Sudo: pallet_sudo = 40,
 
 		// Local pallets
-		LivingAssetsOwnership: pallet_living_assets_ownership = 41,
+		LaosLivingAssetsOwnership: pallet_living_assets_ownership = 41,
 
 		// Frontier
-		Ethereum: pallet_ethereum = 50,
-		EVM: pallet_evm = 51,
-		EVMChainId: pallet_evm_chain_id = 52,
+		LaosEthereum: pallet_ethereum = 50,
+		LaosEVM: pallet_evm = 51,
+		LaosEVMChainId: pallet_evm_chain_id = 52,
 		// DynamicFee: pallet_dynamic_fee = 43,
-		BaseFee: pallet_base_fee = 54,
+		LaosBaseFee: pallet_base_fee = 54,
 
 		// Bridge
 		BridgeEvochainGrandpa: pallet_bridge_grandpa = 60,
@@ -760,14 +763,14 @@ impl fp_self_contained::SelfContainedCall for RuntimeCall {
 
 	fn is_self_contained(&self) -> bool {
 		match self {
-			RuntimeCall::Ethereum(call) => call.is_self_contained(),
+			RuntimeCall::LaosEthereum(call) => call.is_self_contained(),
 			_ => false,
 		}
 	}
 
 	fn check_self_contained(&self) -> Option<Result<Self::SignedInfo, TransactionValidityError>> {
 		match self {
-			RuntimeCall::Ethereum(call) => call.check_self_contained(),
+			RuntimeCall::LaosEthereum(call) => call.check_self_contained(),
 			_ => None,
 		}
 	}
@@ -779,7 +782,8 @@ impl fp_self_contained::SelfContainedCall for RuntimeCall {
 		len: usize,
 	) -> Option<TransactionValidity> {
 		match self {
-			RuntimeCall::Ethereum(call) => call.validate_self_contained(info, dispatch_info, len),
+			RuntimeCall::LaosEthereum(call) =>
+				call.validate_self_contained(info, dispatch_info, len),
 			_ => None,
 		}
 	}
@@ -791,7 +795,7 @@ impl fp_self_contained::SelfContainedCall for RuntimeCall {
 		len: usize,
 	) -> Option<Result<(), TransactionValidityError>> {
 		match self {
-			RuntimeCall::Ethereum(call) =>
+			RuntimeCall::LaosEthereum(call) =>
 				call.pre_dispatch_self_contained(info, dispatch_info, len),
 			_ => None,
 		}
@@ -802,7 +806,7 @@ impl fp_self_contained::SelfContainedCall for RuntimeCall {
 		info: Self::SignedInfo,
 	) -> Option<sp_runtime::DispatchResultWithInfo<PostDispatchInfoOf<Self>>> {
 		match self {
-			call @ RuntimeCall::Ethereum(pallet_ethereum::Call::transact { .. }) =>
+			call @ RuntimeCall::LaosEthereum(pallet_ethereum::Call::transact { .. }) =>
 				Some(call.dispatch(RuntimeOrigin::from(
 					pallet_ethereum::RawOrigin::EthereumTransaction(info),
 				))),
@@ -923,7 +927,7 @@ impl_runtime_apis! {
 		}
 
 		fn account_basic(address: H160) -> EVMAccount {
-			let (account, _) = EVM::account_basic(&address);
+			let (account, _) = LaosEVM::account_basic(&address);
 			account
 		}
 
@@ -1054,7 +1058,7 @@ impl_runtime_apis! {
 			xts: Vec<<Block as BlockT>::Extrinsic>,
 		) -> Vec<EthereumTransaction> {
 			xts.into_iter().filter_map(|xt| match xt.0.function {
-				RuntimeCall::Ethereum(transact { transaction }) => Some(transaction),
+				RuntimeCall::LaosEthereum(transact { transaction }) => Some(transaction),
 				_ => None
 			}).collect::<Vec<EthereumTransaction>>()
 		}
@@ -1072,7 +1076,7 @@ impl_runtime_apis! {
 				let _ = Executive::apply_extrinsic(ext);
 			}
 
-			Ethereum::on_finalize(System::block_number() + 1);
+			LaosEthereum::on_finalize(System::block_number() + 1);
 
 			(
 				pallet_ethereum::CurrentBlock::<Runtime>::get(),
