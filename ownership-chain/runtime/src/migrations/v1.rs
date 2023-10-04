@@ -12,10 +12,10 @@ pub mod version_unchecked {
 	#[cfg(feature = "try-runtime")]
 	use sp_std::vec::Vec;
 
-	/// Migrate from [`StorageVersion`] 0 to 1.
-	pub struct MigrateV0ToV1<T>(sp_std::marker::PhantomData<T>);
+	/// Migrate Sudo key
+	pub struct MigrateSudo<T>(sp_std::marker::PhantomData<T>);
 
-	impl<T> OnRuntimeUpgrade for MigrateV0ToV1<T>
+	impl<T> OnRuntimeUpgrade for MigrateSudo<T>
 	where
 		T: pallet_sudo::Config,
 	{
@@ -39,7 +39,7 @@ pub mod version_unchecked {
 			Ok(Vec::new())
 		}
 
-		/// Migrate from [`StorageVersion`] 0 to 1.
+		/// Migrate sudo key.
 		///
 		/// Simply remove old sudo key and insert new sudo key.
 		///

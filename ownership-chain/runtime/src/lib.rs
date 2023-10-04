@@ -160,7 +160,7 @@ type Migrations = (
 	RemovePallet<EVMName, RocksDbWeight>,
 	RemovePallet<EVMChainIdName, RocksDbWeight>,
 	RemovePallet<BaseFeeName, RocksDbWeight>,
-	migrations::v1::version_unchecked::MigrateV0ToV1<Runtime>,
+	migrations::v1::version_unchecked::MigrateSudo<Runtime>,
 );
 
 /// Executive: handles dispatch to the various modules.
