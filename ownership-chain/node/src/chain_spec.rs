@@ -1,7 +1,7 @@
 use cumulus_primitives_core::ParaId;
 use fp_evm::GenesisAccount;
 use hex_literal::hex;
-use laos_runtime::{AccountId, AuraId, Precompiles, EXISTENTIAL_DEPOSIT};
+use laos_ownership_runtime::{AccountId, AuraId, Precompiles, EXISTENTIAL_DEPOSIT};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
@@ -170,7 +170,7 @@ fn testnet_genesis(
 	endowed_accounts: Vec<AccountId>,
 	root_key: Option<AccountId>,
 	id: ParaId,
-) -> laos_runtime::RuntimeGenesisConfig {
+) -> laos_ownership_runtime::RuntimeGenesisConfig {
 	// This is the simplest bytecode to revert without returning any data.
 	// We will pre-deploy it under all of our precompiles to ensure they can be called from
 	// within contracts.
@@ -184,10 +184,10 @@ fn testnet_genesis(
 				.to_vec(),
 			..Default::default()
 		},
-		balances: laos_runtime::BalancesConfig {
+		balances: laos_ownership_runtime::BalancesConfig {
 			balances: endowed_accounts.iter().cloned().map(|k| (k, 1 << 60)).collect(),
 		},
-		parachain_info: laos_runtime::ParachainInfoConfig {
+		parachain_info: laos_ownership_runtime::ParachainInfoConfig {
 			parachain_id: id,
 			..Default::default()
 		},
