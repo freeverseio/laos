@@ -589,7 +589,18 @@ parameter_types! {
 const MAX_POV_SIZE: u64 = 5 * 1024 * 1024;
 
 impl pallet_evm::Config for Runtime {
-	type AddressMapping = pallet_evm::IdentityAddressMapping;
+	type FeeCalculator = LaosBaseFee;
+	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
+	type WeightPerGas = WeightPerGas;
+	type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
+	type CallOrigin = EnsureAddressTruncated;
+	type WithdrawOrigin = EnsureAddressTruncated;
+	type AddressMapping = HashedAddressMapping<BlakeTwo256>;
+	type Currency = Balances;
+	type RuntimeEvent = RuntimeEvent;
+	type PrecompilesType = FrontierPrecompiles<Self>;
+	type PrecompilesValue = PrecompilesValue;
+	type ChainId = LaosEVMChainId;
 	type BlockGasLimit = BlockGasLimit;
 	type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
 	type CallOrigin = pallet_evm::EnsureAddressRoot<AccountId>;
@@ -689,14 +700,14 @@ construct_runtime!(
 		Sudo: pallet_sudo = 40,
 
 		// Local pallets
-		LivingAssetsOwnership: pallet_living_assets_ownership = 41,
+		LaosLivingAssetsOwnership: pallet_living_assets_ownership = 41,
 
 		// Frontier
-		Ethereum: pallet_ethereum = 50,
-		EVM: pallet_evm = 51,
-		EVMChainId: pallet_evm_chain_id = 52,
+		LaosEthereum: pallet_ethereum = 50,
+		LaosEVM: pallet_evm = 51,
+		LaosEVMChainId: pallet_evm_chain_id = 52,
 		// DynamicFee: pallet_dynamic_fee = 43,
-		BaseFee: pallet_base_fee = 54,
+		LaosBaseFee: pallet_base_fee = 54,
 
 		// Bridge
 		BridgeEvochainGrandpa: pallet_bridge_grandpa = 60,
@@ -762,14 +773,14 @@ impl fp_self_contained::SelfContainedCall for RuntimeCall {
 
 	fn is_self_contained(&self) -> bool {
 		match self {
-			RuntimeCall::Ethereum(call) => call.is_self_contained(),
+			RuntimeCall::LaosEthereum(call) => call.is_self_contained(),
 			_ => false,
 		}
 	}
 
 	fn check_self_contained(&self) -> Option<Result<Self::SignedInfo, TransactionValidityError>> {
 		match self {
-			RuntimeCall::Ethereum(call) => call.check_self_contained(),
+			RuntimeCall::LaosEthereum(call) => call.check_self_contained(),
 			_ => None,
 		}
 	}
@@ -781,7 +792,8 @@ impl fp_self_contained::SelfContainedCall for RuntimeCall {
 		len: usize,
 	) -> Option<TransactionValidity> {
 		match self {
-			RuntimeCall::Ethereum(call) => call.validate_self_contained(info, dispatch_info, len),
+			RuntimeCall::LaosEthereum(call) =>
+				call.validate_self_contained(info, dispatch_info, len),
 			_ => None,
 		}
 	}
@@ -793,7 +805,7 @@ impl fp_self_contained::SelfContainedCall for RuntimeCall {
 		len: usize,
 	) -> Option<Result<(), TransactionValidityError>> {
 		match self {
-			RuntimeCall::Ethereum(call) =>
+			RuntimeCall::LaosEthereum(call) =>
 				call.pre_dispatch_self_contained(info, dispatch_info, len),
 			_ => None,
 		}
@@ -804,7 +816,7 @@ impl fp_self_contained::SelfContainedCall for RuntimeCall {
 		info: Self::SignedInfo,
 	) -> Option<sp_runtime::DispatchResultWithInfo<PostDispatchInfoOf<Self>>> {
 		match self {
-			call @ RuntimeCall::Ethereum(pallet_ethereum::Call::transact { .. }) =>
+			call @ RuntimeCall::LaosEthereum(pallet_ethereum::Call::transact { .. }) =>
 				Some(call.dispatch(RuntimeOrigin::from(
 					pallet_ethereum::RawOrigin::EthereumTransaction(info),
 				))),
@@ -925,7 +937,7 @@ impl_runtime_apis! {
 		}
 
 		fn account_basic(address: H160) -> EVMAccount {
-			let (account, _) = EVM::account_basic(&address);
+			let (account, _) = LaosEVM::account_basic(&address);
 			account
 		}
 
@@ -1056,7 +1068,7 @@ impl_runtime_apis! {
 			xts: Vec<<Block as BlockT>::Extrinsic>,
 		) -> Vec<EthereumTransaction> {
 			xts.into_iter().filter_map(|xt| match xt.0.function {
-				RuntimeCall::Ethereum(transact { transaction }) => Some(transaction),
+				RuntimeCall::LaosEthereum(transact { transaction }) => Some(transaction),
 				_ => None
 			}).collect::<Vec<EthereumTransaction>>()
 		}
@@ -1074,7 +1086,7 @@ impl_runtime_apis! {
 				let _ = Executive::apply_extrinsic(ext);
 			}
 
-			Ethereum::on_finalize(System::block_number() + 1);
+			LaosEthereum::on_finalize(System::block_number() + 1);
 
 			(
 				pallet_ethereum::CurrentBlock::<Runtime>::get(),
