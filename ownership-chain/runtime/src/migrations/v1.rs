@@ -2,38 +2,40 @@
 ///
 /// This migration is responsible for migrating accounts from AccountId32 to AccountId20.
 /// It only migrates [`pallet_sudo::Key`].
-use super::*;
-use frame_support::{
-	storage_alias,
-	traits::{Get, OnRuntimeUpgrade},
-};
-
-#[cfg(feature = "try-runtime")]
-use sp_std::vec::Vec;
-
-/// New sudo account that we control.
-const NEW_SUDO: &str = "47A4320be4B65BF73112E068dc637883490F5b04";
 
 /// Unchecked version migration logic.
 pub mod version_unchecked {
-	use bp_runtime::storage_value_key;
-	use cumulus_primitives_core::Junction::AccountId32;
 	use frame_support::{
-		storage::unhashed, traits::PalletInfoAccess, weights::Weight, StoragePrefixedMap,
+		storage::{storage_prefix, unhashed},
+		traits::{Get, OnRuntimeUpgrade, PalletInfoAccess},
 	};
-	use sp_io::{storage::clear_prefix, KillStorageResult};
-
-	use crate::{Runtime, Sudo};
-
-	use super::*;
+	#[cfg(feature = "try-runtime")]
+	use sp_std::vec::Vec;
 
 	/// Migrate from [`StorageVersion`] 0 to 1.
 	pub struct MigrateV0ToV1<T>(sp_std::marker::PhantomData<T>);
 
-	impl<T: Config> OnRuntimeUpgrade for MigrateV0ToV1<T> {
-		/// Return the existing storage key of the old format [`old::Key`].
+	impl<T> OnRuntimeUpgrade for MigrateV0ToV1<T>
+	where
+		T: pallet_sudo::Config,
+	{
+		/// This simply asserts that it's not possible to read the old sudo key, since it is
+		/// `AccountId32`.
 		#[cfg(feature = "try-runtime")]
-		fn pre_upgrade() -> Result<Vec<u8>, sp_runtime::TryRuntimeError> {}
+		fn pre_upgrade() -> Result<Vec<u8>, sp_runtime::TryRuntimeError> {
+			// make sure we can't read current sudo key
+			let raw_sudo_key = storage_prefix(
+				<pallet_sudo::Pallet<T> as PalletInfoAccess>::name().as_bytes(),
+				b"Key",
+			);
+			let maybe_sudo =
+				unhashed::get::<<T as frame_system::Config>::AccountId>(raw_sudo_key.as_ref());
+
+			frame_support::log::debug!("Old sudo key: {:?}", maybe_sudo);
+			assert!(maybe_sudo.is_none());
+
+			Ok(Vec::new())
+		}
 
 		/// Migrate from [`StorageVersion`] 0 to 1.
 		///
@@ -41,22 +43,42 @@ pub mod version_unchecked {
 		///
 		/// This function is called during the runtime upgrade process.
 		fn on_runtime_upgrade() -> frame_support::weights::Weight {
-			let raw_sudo_key =
-				storage_value_key(<pallet_sudo::Pallet<T> as PalletInfoAccess>::name(), "Key");
+			let raw_sudo_key = storage_prefix(
+				<pallet_sudo::Pallet<T> as PalletInfoAccess>::name().as_bytes(),
+				b"Key",
+			);
+
+			let new_sudo: [u8; 20] =
+				hex_literal::hex!("47A4320be4B65BF73112E068dc637883490F5b04").into();
 
 			// insert new sudo key
-			let new_sudo = hex_literal::hex!("DFc7E055C1435CC365A1369D4C2b9Ce10F8Ed201").into();
-
-			unhashed::put_raw(raw_sudo_key.into(), new_sudo);
+			unhashed::put_raw(raw_sudo_key.as_ref(), new_sudo.as_ref());
 
 			frame_support::log::debug!("Inserting new sudo key: {:?}", raw_sudo_key);
 
 			<T as frame_system::Config>::DbWeight::get().writes(1)
 		}
 
-		/// Post-upgrade migration step.
+		/// This checks that the new sudo key is set.
 		#[cfg(feature = "try-runtime")]
-		fn post_upgrade(state: Vec<u8>) -> Result<(), sp_runtime::TryRuntimeError> {
+		fn post_upgrade(_state: Vec<u8>) -> Result<(), sp_runtime::TryRuntimeError> {
+			// there should be new sudo key
+			let expected_sudo: [u8; 20] =
+				hex_literal::hex!("47A4320be4B65BF73112E068dc637883490F5b04").into();
+
+			let raw_sudo_key = storage_prefix(
+				<pallet_sudo::Pallet<T> as PalletInfoAccess>::name().as_bytes(),
+				b"Key",
+			);
+
+			let current_sudo = unhashed::get_raw(raw_sudo_key.as_ref()).ok_or(
+				sp_runtime::TryRuntimeError::Other(
+					"Sudo key wasn't set! THIS SHOULD NEVER HAPPEN!",
+				),
+			)?;
+
+			assert_eq!(current_sudo, expected_sudo.to_vec());
+
 			Ok(())
 		}
 	}
