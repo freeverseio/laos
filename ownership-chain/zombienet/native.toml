@@ -14,7 +14,7 @@ chain = "rococo-local"
 [[parachains]]
 id = 1000
 cumulus_based = true
-chain_spec_path = "./local-spec.json"
+chain_spec_path = "{{RAW_CHAIN_SPEC}}"
 
   [[parachains.collators]]
   name = "Alice"
