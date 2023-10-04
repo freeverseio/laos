@@ -150,7 +150,6 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPalletsWithSystem,
-	pallet_collator_selection::migration::v1::MigrateToV1<Runtime>,
 >;
 
 pub type Precompiles = FrontierPrecompiles<Runtime>;
@@ -207,10 +206,8 @@ impl_opaque_keys! {
 
 #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
-	/// TODO: uncomment this if you want to make it work with polkadot-js
-	/// spec_name: create_runtime_str!("frontier-template"),
-	spec_name: create_runtime_str!("laos-parachain"),
-	impl_name: create_runtime_str!("laos-parachain"),
+	spec_name: create_runtime_str!("frontier-template"),
+	impl_name: create_runtime_str!("frontier-template"),
 	authoring_version: 1,
 	spec_version: 7,
 	impl_version: 0,
@@ -245,9 +242,9 @@ pub const MICROUNIT: Balance = 1_000_000;
 pub const EXISTENTIAL_DEPOSIT: Balance = MILLIUNIT;
 
 /// Current approximation of the gas/s consumption considering
-/// EVM execution over compiled WASM (on 4.4Ghz CPU).
+/// LaosEVM execution over compiled WASM (on 4.4Ghz CPU).
 /// Given the 500ms Weight, from which 75% only are used for transactions,
-/// the total EVM execution gas limit is: GAS_PER_SECOND * 0.500 * 0.75 ~= 15_000_000.
+/// the total LaosEVM execution gas limit is: GAS_PER_SECOND * 0.500 * 0.75 ~= 15_000_000.
 /// Note: this value has been used in production by (and is copied from) the Moonbeam parachain.
 pub const GAS_PER_SECOND: u64 = 40_000_000;
 
@@ -516,7 +513,7 @@ impl<F: FindAuthor<u32>> FindAuthor<H160> for FindAuthorTruncated<F> {
 	}
 }
 
-/// Handles transaction fees from the EVM, depositing priority fee in a staking pot
+/// Handles transaction fees from the LaosEVM, depositing priority fee in a staking pot
 pub struct EVMDealWithFees<R>(PhantomData<R>);
 
 impl<R> OnUnbalanced<NegativeImbalance<R>> for EVMDealWithFees<R>
@@ -589,24 +586,13 @@ parameter_types! {
 const MAX_POV_SIZE: u64 = 5 * 1024 * 1024;
 
 impl pallet_evm::Config for Runtime {
-	type FeeCalculator = LaosBaseFee;
-	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
-	type WeightPerGas = WeightPerGas;
-	type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
-	type CallOrigin = EnsureAddressTruncated;
-	type WithdrawOrigin = EnsureAddressTruncated;
-	type AddressMapping = HashedAddressMapping<BlakeTwo256>;
-	type Currency = Balances;
-	type RuntimeEvent = RuntimeEvent;
-	type PrecompilesType = FrontierPrecompiles<Self>;
-	type PrecompilesValue = PrecompilesValue;
-	type ChainId = LaosEVMChainId;
+	type AddressMapping = pallet_evm::IdentityAddressMapping;
 	type BlockGasLimit = BlockGasLimit;
 	type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
 	type CallOrigin = pallet_evm::EnsureAddressRoot<AccountId>;
-	type ChainId = EVMChainId;
+	type ChainId = LaosEVMChainId;
 	type Currency = Balances;
-	type FeeCalculator = BaseFee;
+	type FeeCalculator = LaosBaseFee;
 	type FindAuthor = FindAuthorTruncated<Aura>;
 	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
