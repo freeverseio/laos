@@ -29,10 +29,12 @@ pub mod version_unchecked {
 				b"Key",
 			);
 			let maybe_sudo =
-				unhashed::get::<<T as frame_system::Config>::AccountId>(raw_sudo_key.as_ref());
+				unhashed::get_raw(raw_sudo_key.as_ref()).expect("Sudo key should be set!; qed");
 
 			frame_support::log::debug!("Old sudo key: {:?}", maybe_sudo);
-			assert!(maybe_sudo.is_none());
+
+			// old sudo key has length of 32
+			assert_eq!(maybe_sudo.len(), 32);
 
 			Ok(Vec::new())
 		}
@@ -42,6 +44,9 @@ pub mod version_unchecked {
 		/// Simply remove old sudo key and insert new sudo key.
 		///
 		/// This function is called during the runtime upgrade process.
+		///
+		/// NOTE: storage version of `pallet_sudo` can not be updated because it's an external
+		/// pallet, i.e we have to set `#[pallet::storage_version(VERSION)]` attribute.
 		fn on_runtime_upgrade() -> frame_support::weights::Weight {
 			let raw_sudo_key = storage_prefix(
 				<pallet_sudo::Pallet<T> as PalletInfoAccess>::name().as_bytes(),
@@ -54,9 +59,9 @@ pub mod version_unchecked {
 			// insert new sudo key
 			unhashed::put_raw(raw_sudo_key.as_ref(), new_sudo.as_ref());
 
-			frame_support::log::debug!("Inserting new sudo key: {:?}", raw_sudo_key);
+			frame_support::log::debug!("Inserting new sudo key: {:?}", new_sudo);
 
-			<T as frame_system::Config>::DbWeight::get().writes(1)
+			<T as frame_system::Config>::DbWeight::get().reads_writes(1, 1)
 		}
 
 		/// This checks that the new sudo key is set.
