@@ -87,12 +87,10 @@ pub fn development_config() -> ChainSpec {
 		move || {
 			testnet_genesis(
 				// initial collators.
-				vec![
-					(
-						hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").into(),
-						get_collator_keys_from_seed("Alice"),
-					),
-				],
+				vec![(
+					hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").into(),
+					get_collator_keys_from_seed("Alice"),
+				)],
 				endowed_accounts(),
 				// Give Alice root privileges
 				Some(hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").into()),
@@ -127,12 +125,10 @@ pub fn local_testnet_config() -> ChainSpec {
 		move || {
 			testnet_genesis(
 				// initial collators.
-				vec![
-					(
-						hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").into(),
-						get_collator_keys_from_seed("Alice"),
-					),
-				],
+				vec![(
+					hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").into(),
+					get_collator_keys_from_seed("Alice"),
+				)],
 				endowed_accounts(),
 				// Give Alice root privileges
 				Some(hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").into()),
