@@ -14,11 +14,10 @@ chain = "rococo-local"
 [[parachains]]
 id = 1000
 cumulus_based = true
-chain_spec_path = "{{RAW_CHAIN_SPEC}}"
+chain = "local-v"
 
   [[parachains.collators]]
   name = "Alice"
   ws_port = 9999
   command = "{{ZOMBIENET_PARACHAIN_COMMAND}}"
   validator = true
-
