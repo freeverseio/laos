@@ -34,12 +34,3 @@ export RAW_CHAIN_SPEC=<path-to-chain-spec>
 ```sh
 $ ./zombienet spawn native.toml -p native
 ```
-
-Once relaychain nodes are running, insert the following Aura keys for collator Bob via an RPC call:
-
-```sh
-author.insertKeys
-key_type: aura
-suri: //Bob
-publicKey: 0x8eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a48
-```
