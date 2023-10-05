@@ -92,10 +92,6 @@ pub fn development_config() -> ChainSpec {
 						hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").into(),
 						get_collator_keys_from_seed("Alice"),
 					),
-					(
-						hex!("3Cd0A705a2DC65e5b1E1205896BaA2be8A07c6e0").into(),
-						get_collator_keys_from_seed("Bob"),
-					),
 				],
 				endowed_accounts(),
 				// Give Alice root privileges
@@ -135,10 +131,6 @@ pub fn local_testnet_config() -> ChainSpec {
 					(
 						hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").into(),
 						get_collator_keys_from_seed("Alice"),
-					),
-					(
-						hex!("3Cd0A705a2DC65e5b1E1205896BaA2be8A07c6e0").into(),
-						get_collator_keys_from_seed("Bob"),
 					),
 				],
 				endowed_accounts(),
