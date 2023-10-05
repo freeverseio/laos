@@ -6,6 +6,7 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
+mod migrations;
 #[cfg(test)]
 mod tests;
 mod weights;
@@ -152,14 +153,14 @@ parameter_types! {
 	pub const EVMChainIdName: &'static str = "EVMChainId";
 	pub const BaseFeeName: &'static str = "BaseFee";
 }
-
-pub type Migrations = (
+type Migrations = (
 	pallet_collator_selection::migration::v1::MigrateToV1<Runtime>,
 	RemovePallet<LivingAssetsOwnershipName, RocksDbWeight>,
 	RemovePallet<EthereumName, RocksDbWeight>,
 	RemovePallet<EVMName, RocksDbWeight>,
 	RemovePallet<EVMChainIdName, RocksDbWeight>,
 	RemovePallet<BaseFeeName, RocksDbWeight>,
+	migrations::v1::version_unchecked::MigrateSudo<Runtime>,
 );
 
 /// Executive: handles dispatch to the various modules.
