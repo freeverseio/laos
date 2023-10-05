@@ -227,8 +227,8 @@ impl_opaque_keys! {
 #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
 	/// Uncomment this to make it work with polkadot-js/apps
-	/// spec_name: create_runtime_str!("frontier-template"),
-	spec_name: create_runtime_str!("laos-parachain"),
+	spec_name: create_runtime_str!("frontier-template"),
+	// spec_name: create_runtime_str!("laos-parachain"),
 	impl_name: create_runtime_str!("laos-parachain"),
 	authoring_version: 1,
 	spec_version: 7,
