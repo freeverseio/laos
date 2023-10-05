@@ -18,16 +18,13 @@ $ wget -O zombienet https://github.com/paritytech/zombienet/releases/download/v1
 
 **Start Zombienet**
 
-Before running the commands, set up the environment variables `ZOMBIENET_RELAYCHAIN_COMMAND`, `ZOMBIENET_PARACHAIN_COMMAND` and `RAW_CHAIN_SPEC` in your shell. 
-
-We need to explicitly pass `RAW_CHAIN_SPEC` to disable Zombienet from modifying the chain spec. This will be the work around until [this issue](https://github.com/freeverseio/laos/issues/25) is resolved.
+Before running the commands, set up the environment variables `ZOMBIENET_RELAYCHAIN_COMMAND` and `ZOMBIENET_PARACHAIN_COMMAND` in your shell. 
 
 For example:
 
 ```sh
 export ZOMBIENET_RELAYCHAIN_COMMAND=<path-to-relay-chain-executable>
 export ZOMBIENET_PARACHAIN_COMMAND=<path-to-parachain-executable>
-export RAW_CHAIN_SPEC=<path-to-chain-spec>
 ```
 
 
