@@ -32,10 +32,10 @@ type LivingAssetsPrecompile = CollectionManagerPrecompile<
 	pallet_evm::IdentityAddressMapping,
 	AccountId,
 	BaseURIOf<Runtime>,
-	pallet_living_assets_ownership::Pallet<crate::Runtime>,
+	pallet_living_assets_ownership::Pallet<Runtime>,
 >;
 
-type Erc721 = Erc721Precompile<AccountId, pallet_living_assets_ownership::Pallet<crate::Runtime>>;
+type Erc721 = Erc721Precompile<AccountId, pallet_living_assets_ownership::Pallet<Runtime>>;
 
 impl<Runtime> PrecompileSet for FrontierPrecompiles<Runtime>
 where

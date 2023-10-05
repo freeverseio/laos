@@ -251,7 +251,9 @@ pub fn address_to_collection_id<Address: Into<[u8; 20]>>(
 	if &address_bytes[0..12] != ASSET_PRECOMPILE_ADDRESS_PREFIX {
 		return Err(CollectionError::InvalidPrefix)
 	}
-	let id_bytes: [u8; 8] = address_bytes[12..].try_into().unwrap();
+	let mut id_bytes = [0u8; 8];
+	id_bytes.copy_from_slice(&address_bytes[12..]);
+
 	Ok(CollectionId::from_be_bytes(id_bytes))
 }
 

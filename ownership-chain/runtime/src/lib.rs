@@ -67,7 +67,7 @@ pub use sp_runtime::BuildStorage;
 
 // Cumulus imports
 //https://github.com/paritytech/cumulus/tree/master/parachains/common
-pub use parachains_common::impls::{AccountIdOf, DealWithFees};
+pub use parachains_common::impls::DealWithFees;
 
 // Polkadot imports
 use polkadot_runtime_common::{BlockHashCount, SlowAdjustingFeeUpdate};
@@ -553,7 +553,7 @@ pub struct EVMDealWithFees<R>(PhantomData<R>);
 impl<R> OnUnbalanced<NegativeImbalance<R>> for EVMDealWithFees<R>
 where
 	R: pallet_balances::Config + pallet_collator_selection::Config + core::fmt::Debug,
-	AccountIdOf<R>: From<H160>,
+	CurrencyAccountIdOf<R>: From<H160>,
 	<R as frame_system::Config>::RuntimeEvent: From<pallet_balances::Event<R>>,
 {
 	fn on_nonzero_unbalanced(amount: NegativeImbalance<R>) {
@@ -565,16 +565,16 @@ where
 
 pub struct EVMTransactionChargeHandler<OU>(PhantomData<OU>);
 
-type CurrencyAccountId<T> = <T as frame_system::Config>::AccountId;
+type CurrencyAccountIdOf<T> = <T as frame_system::Config>::AccountId;
 
 type BalanceOf<T> =
-	<<T as pallet_evm::Config>::Currency as Currency<CurrencyAccountId<T>>>::Balance;
+	<<T as pallet_evm::Config>::Currency as Currency<CurrencyAccountIdOf<T>>>::Balance;
 
 type PositiveImbalanceOf<T> =
-	<<T as pallet_evm::Config>::Currency as Currency<CurrencyAccountId<T>>>::PositiveImbalance;
+	<<T as pallet_evm::Config>::Currency as Currency<CurrencyAccountIdOf<T>>>::PositiveImbalance;
 
 type NegativeImbalanceOf<T> =
-	<<T as pallet_evm::Config>::Currency as Currency<CurrencyAccountId<T>>>::NegativeImbalance;
+	<<T as pallet_evm::Config>::Currency as Currency<CurrencyAccountIdOf<T>>>::NegativeImbalance;
 
 impl<R, OU> OnChargeEVMTransaction<R> for EVMTransactionChargeHandler<OU>
 where

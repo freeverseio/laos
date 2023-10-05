@@ -46,7 +46,7 @@ pub type LocationToAccountId = (
 	ParentIsPreset<AccountId>,
 	// Sibling parachain origins convert to AccountId via the `ParaId::into`.
 	SiblingParachainConvertsVia<Sibling, AccountId>,
-	// Straight up local `AccountId32` origins just alias directly to `AccountId`.
+	// Straight up local `AccountId20` origins just alias directly to `AccountId`.
 	AccountKey20Aliases<RelayNetwork, AccountId>,
 );
 
@@ -56,7 +56,7 @@ pub type LocalAssetTransactor = CurrencyAdapter<
 	Balances,
 	// Use this currency when it is a fungible asset matching the given location or name:
 	IsConcrete<RelayLocation>,
-	// Do a simple punn to convert an AccountId32 MultiLocation into a native chain account ID:
+	// Do a simple pun to convert an AccountId20 MultiLocation into a native chain account ID:
 	LocationToAccountId,
 	// Our chain's account ID type (we can't get away without mentioning it explicitly):
 	AccountId,
@@ -78,8 +78,8 @@ pub type XcmOriginToTransactDispatchOrigin = (
 	// Native converter for sibling Parachains; will convert to a `SiblingPara` origin when
 	// recognized.
 	SiblingParachainAsNative<cumulus_pallet_xcm::Origin, RuntimeOrigin>,
-	// Native signed account converter; this just converts an `AccountId32` origin into a normal
-	// `RuntimeOrigin::Signed` origin of the same 32-byte value.
+	// Native signed account converter; this just converts an `AccountId20` origin into a normal
+	// `RuntimeOrigin::Signed` origin of the same 20-byte value.
 	SignedAccountKey20AsNative<RelayNetwork, RuntimeOrigin>,
 	// Xcm origins can be represented natively under the Xcm pallet's Xcm origin.
 	XcmPassthrough<RuntimeOrigin>,
