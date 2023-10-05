@@ -56,7 +56,7 @@ use frame_system::EnsureRoot;
 use pallet_balances::NegativeImbalance;
 use pallet_xcm::{EnsureXcm, IsVoiceOfBody};
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
-pub use sp_runtime::{MultiAddress, Perbill, Permill};
+pub use sp_runtime::{Perbill, Permill};
 use xcm_config::{RelayLocation, XcmConfig, XcmOriginToTransactDispatchOrigin};
 
 pub use pallet_bridge_grandpa::Call as BridgeGrandpaCall;
