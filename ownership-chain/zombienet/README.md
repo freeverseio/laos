@@ -18,28 +18,16 @@ $ wget -O zombienet https://github.com/paritytech/zombienet/releases/download/v1
 
 **Start Zombienet**
 
-Before running the commands, set up the environment variables `ZOMBIENET_RELAYCHAIN_COMMAND`, `ZOMBIENET_PARACHAIN_COMMAND` and `RAW_CHAIN_SPEC` in your shell. 
-
-We need to explicitly pass `RAW_CHAIN_SPEC` to disable Zombienet from modifying the chain spec. This will be the work around until [this issue](https://github.com/freeverseio/laos/issues/25) is resolved.
+Before running the commands, set up the environment variables `ZOMBIENET_RELAYCHAIN_COMMAND` and `ZOMBIENET_PARACHAIN_COMMAND` in your shell. 
 
 For example:
 
 ```sh
 export ZOMBIENET_RELAYCHAIN_COMMAND=<path-to-relay-chain-executable>
 export ZOMBIENET_PARACHAIN_COMMAND=<path-to-parachain-executable>
-export RAW_CHAIN_SPEC=<path-to-chain-spec>
 ```
 
 
 ```sh
 $ ./zombienet spawn native.toml -p native
-```
-
-Once relaychain nodes are running, insert the following Aura keys for collator Bob via an RPC call:
-
-```sh
-author.insertKeys
-key_type: aura
-suri: //Bob
-publicKey: 0x8eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a48
 ```

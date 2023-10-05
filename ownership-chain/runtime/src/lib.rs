@@ -57,7 +57,7 @@ use frame_system::EnsureRoot;
 use pallet_balances::NegativeImbalance;
 use pallet_xcm::{EnsureXcm, IsVoiceOfBody};
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
-pub use sp_runtime::{MultiAddress, Perbill, Permill};
+pub use sp_runtime::{Perbill, Permill};
 use xcm_config::{RelayLocation, XcmConfig, XcmOriginToTransactDispatchOrigin};
 
 pub use pallet_bridge_grandpa::Call as BridgeGrandpaCall;
@@ -68,7 +68,7 @@ pub use sp_runtime::BuildStorage;
 
 // Cumulus imports
 //https://github.com/paritytech/cumulus/tree/master/parachains/common
-pub use parachains_common::impls::{AccountIdOf, DealWithFees};
+pub use parachains_common::impls::DealWithFees;
 
 // Polkadot imports
 use polkadot_runtime_common::{BlockHashCount, SlowAdjustingFeeUpdate};
@@ -225,12 +225,32 @@ impl_opaque_keys! {
 	}
 }
 
+/// `laos-parachain` is an original spec name of the parachain. `try-runtime` fails when
+/// `spec_name` does not match. So we use `laos-parachain` as a spec name to please CI.
+///
+/// See [this issue](https://github.com/freeverseio/laos/issues/30)
+#[cfg(feature = "try-runtime")]
 #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
-	/// Uncomment this to make it work with polkadot-js/apps
-	/// spec_name: create_runtime_str!("frontier-template"),
 	spec_name: create_runtime_str!("laos-parachain"),
 	impl_name: create_runtime_str!("laos-parachain"),
+	authoring_version: 1,
+	spec_version: 7,
+	impl_version: 0,
+	apis: RUNTIME_API_VERSIONS,
+	transaction_version: 1,
+	state_version: 1,
+};
+
+/// Polkadot.js explorer does not support `laos-parachain` as an ethereum chain, therefore we
+/// use `frontier-template` as a spec name to make explorer work.
+///
+/// See [this issue](https://github.com/freeverseio/laos/issues/30)
+#[cfg(not(feature = "try-runtime"))]
+#[sp_version::runtime_version]
+pub const VERSION: RuntimeVersion = RuntimeVersion {
+	spec_name: create_runtime_str!("frontier-template"),
+	impl_name: create_runtime_str!("frontier-template"),
 	authoring_version: 1,
 	spec_version: 7,
 	impl_version: 0,
@@ -542,7 +562,6 @@ pub struct EVMDealWithFees<R>(PhantomData<R>);
 impl<R> OnUnbalanced<NegativeImbalance<R>> for EVMDealWithFees<R>
 where
 	R: pallet_balances::Config + pallet_collator_selection::Config + core::fmt::Debug,
-	AccountIdOf<R>: From<H160>,
 	<R as frame_system::Config>::RuntimeEvent: From<pallet_balances::Event<R>>,
 {
 	fn on_nonzero_unbalanced(amount: NegativeImbalance<R>) {
@@ -554,16 +573,16 @@ where
 
 pub struct EVMTransactionChargeHandler<OU>(PhantomData<OU>);
 
-type CurrencyAccountId<T> = <T as frame_system::Config>::AccountId;
+type CurrencyAccountIdOf<T> = <T as frame_system::Config>::AccountId;
 
 type BalanceOf<T> =
-	<<T as pallet_evm::Config>::Currency as Currency<CurrencyAccountId<T>>>::Balance;
+	<<T as pallet_evm::Config>::Currency as Currency<CurrencyAccountIdOf<T>>>::Balance;
 
 type PositiveImbalanceOf<T> =
-	<<T as pallet_evm::Config>::Currency as Currency<CurrencyAccountId<T>>>::PositiveImbalance;
+	<<T as pallet_evm::Config>::Currency as Currency<CurrencyAccountIdOf<T>>>::PositiveImbalance;
 
 type NegativeImbalanceOf<T> =
-	<<T as pallet_evm::Config>::Currency as Currency<CurrencyAccountId<T>>>::NegativeImbalance;
+	<<T as pallet_evm::Config>::Currency as Currency<CurrencyAccountIdOf<T>>>::NegativeImbalance;
 
 impl<R, OU> OnChargeEVMTransaction<R> for EVMTransactionChargeHandler<OU>
 where

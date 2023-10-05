@@ -258,8 +258,3 @@ laos-evolution-runtime = { path = "./evolution-chain/runtime", default-features 
 relay-laos-evolution-client = { path="./bridge/relays/client-laos-evolution" }
 relay-laos-ownership-client = { path="./bridge/relays/client-laos-ownership" }
 relay-rococo-client = { path = "./bridge/relays/client-rococo" }
-
-# Clients
-laos-evolution = { path = "./evolution-chain/node", default-features = false }
-laos-ownership = { path = "./ownership-chain/node", default-features = false }
-laos-relay = { path = "./bridge/relays/laos-relay", default-features = false }
