@@ -16,6 +16,7 @@ pub mod pallet {
 	use super::*;
 	use frame_support::{
 		pallet_prelude::{OptionQuery, ValueQuery, *},
+		traits::tokens::nonfungibles_v2::*,
 		BoundedVec,
 	};
 	use sp_core::{H160, U256};
@@ -26,6 +27,9 @@ pub mod pallet {
 
 	/// Base URI type
 	pub type BaseURI<T> = BoundedVec<u8, <T as Config>::BaseURILimit>;
+
+	/// Account id type
+	pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
@@ -46,6 +50,13 @@ pub mod pallet {
 		/// (which takes up 33 characters).
 		#[pallet::constant]
 		type BaseURILimit: Get<u32>;
+
+		/// Collection config
+		type CollectionConfig: CollectionConfig;
+
+		/// NonFungibles provider
+		type NonFungibles: Create<AccountIdOf<Self>, Self::CollectionConfig>
+			+ Inspect<AccountIdOf<Self>, CollectionId = CollectionId>;
 
 		/// This associated type defines a conversion from the `AccountId` type, which is internal
 		/// to the implementing type (represented by `Self`), to an `H160` type. The `H160` type
