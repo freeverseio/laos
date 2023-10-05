@@ -22,8 +22,3 @@ chain_spec_path = "{{RAW_CHAIN_SPEC}}"
   command = "{{ZOMBIENET_PARACHAIN_COMMAND}}"
   validator = true
 
-  [[parachains.collators]]
-  name = "Bob"
-  ws_port = 9998
-  command = "{{ZOMBIENET_PARACHAIN_COMMAND}}"
-  validator = true
