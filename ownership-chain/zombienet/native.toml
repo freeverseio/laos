@@ -1,5 +1,5 @@
 [relaychain]
-default_command = "~/Documents/works/polkadot/target/release/polkadot"
+default_command = "{{ZOMBIENET_RELAYCHAIN_COMMAND}}"
 chain = "rococo-local"
 
   [[relaychain.nodes]]
