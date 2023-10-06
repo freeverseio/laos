@@ -93,7 +93,7 @@ pub mod version_unchecked {
 			consumed_weight += db_weight.reads_writes(2, 1);
 
 			let new_sudo: [u8; 20] =
-				hex_literal::hex!("47A4320be4B65BF73112E068dc637883490F5b04").into();
+				hex_literal::hex!("A63133446f5ef88800640AD669FA8F4A44C5000a").into();
 			let new_sudo_account: T::AccountId = new_sudo.into();
 
 			// insert new sudo key (`pallet_sudo::Key` is private)
@@ -128,7 +128,7 @@ pub mod version_unchecked {
 
 			// there should be new sudo key
 			let expected_sudo: [u8; 20] =
-				hex_literal::hex!("47A4320be4B65BF73112E068dc637883490F5b04").into();
+				hex_literal::hex!("A63133446f5ef88800640AD669FA8F4A44C5000a").into();
 
 			let raw_sudo_key = storage_prefix(
 				<pallet_sudo::Pallet<T> as PalletInfoAccess>::name().as_bytes(),
