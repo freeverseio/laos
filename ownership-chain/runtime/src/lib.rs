@@ -648,7 +648,7 @@ impl pallet_evm::Config for Runtime {
 	type CallOrigin = pallet_evm::EnsureAddressRoot<AccountId>;
 	type ChainId = EVMChainId;
 	type Currency = Balances;
-	type FeeCalculator = LaosBaseFee;
+	type FeeCalculator = BaseFee;
 	type FindAuthor = CustomFindAuthor<pallet_session::FindAccountFromAuthorIndex<Self, Aura>>;
 	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
@@ -749,7 +749,7 @@ construct_runtime!(
 		EVM: pallet_evm = 51,
 		EVMChainId: pallet_evm_chain_id = 52,
 		// DynamicFee: pallet_dynamic_fee = 43,
-		LaosBaseFee: pallet_base_fee = 54,
+		BaseFee: pallet_base_fee = 54,
 
 		// Bridge
 		BridgeEvochainGrandpa: pallet_bridge_grandpa = 60,
