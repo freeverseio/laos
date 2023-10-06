@@ -10,7 +10,7 @@ jobs:
       - name: ChatGTP explain code
         uses: cirolini/chatgpt-github-actions@v1.3
         with:
-          openai_api_key: "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"
+          openai_api_key: "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"
           github_token: "ciaociao"
           github_pr_id: ${{ github.event.number }}
           # openai_engine: "text-davinci-002" #optional
