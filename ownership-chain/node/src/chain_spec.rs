@@ -208,11 +208,11 @@ fn testnet_genesis(
 		sudo: laos_ownership_runtime::SudoConfig { key: root_key },
 		transaction_payment: Default::default(),
 		// EVM compatibility
-		laos_evm_chain_id: laos_ownership_runtime::LaosEVMChainIdConfig {
+		evm_chain_id: laos_ownership_runtime::EVMChainIdConfig {
 			chain_id: 1000,
 			..Default::default()
 		},
-		laos_evm: laos_ownership_runtime::LaosEVMConfig {
+		evm: laos_ownership_runtime::EVMConfig {
 			accounts: {
 				let mut map: BTreeMap<_, _> = Precompiles::used_addresses()
 					.iter()
