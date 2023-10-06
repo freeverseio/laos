@@ -24,11 +24,12 @@ pub enum Action {
 }
 
 /// Wrapper for the precompile function.
-pub struct Erc721Precompile<AssetManager>(PhantomData<AssetManager>);
+pub struct Erc721Precompile<AccountId, AssetManager>(PhantomData<(AccountId, AssetManager)>);
 
-impl<AssetManager> Precompile for Erc721Precompile<AssetManager>
+impl<AccountId, AssetManager> Precompile for Erc721Precompile<AccountId, AssetManager>
 where
-	AssetManager: pallet_living_assets_ownership::traits::Erc721,
+	AccountId: Into<H160> + From<H160> + Into<[u8; 20]>,
+	AssetManager: pallet_living_assets_ownership::traits::Erc721<AccountId>,
 {
 	fn execute(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
 		// collection id is encoded into the contract address
@@ -51,9 +52,10 @@ where
 	}
 }
 
-impl<AssetManager> Erc721Precompile<AssetManager>
+impl<AccountId, AssetManager> Erc721Precompile<AccountId, AssetManager>
 where
-	AssetManager: pallet_living_assets_ownership::traits::Erc721,
+	AccountId: Into<H160> + From<H160> + Into<[u8; 20]>,
+	AssetManager: pallet_living_assets_ownership::traits::Erc721<AccountId>,
 {
 	fn owner_of(
 		collection_id: CollectionId,
@@ -64,7 +66,8 @@ where
 
 		let asset_id: U256 = input.read()?;
 
-		let owner = AssetManager::owner_of(collection_id, asset_id).map_err(|err| revert(err))?;
+		let owner: H160 = AssetManager::owner_of(collection_id, asset_id).map_err(revert)?.into();
+
 		Ok(succeed(EvmDataWriter::new().write(Address(owner)).build()))
 	}
 
@@ -77,7 +80,7 @@ where
 
 		let asset_id: U256 = input.read()?;
 
-		let uri = AssetManager::token_uri(collection_id, asset_id).map_err(|err| revert(err))?;
+		let uri = AssetManager::token_uri(collection_id, asset_id).map_err(revert)?;
 		Ok(succeed(EvmDataWriter::new().write(Bytes(uri)).build()))
 	}
 
@@ -88,20 +91,26 @@ where
 		// get input data
 		let mut input = handle.read_input()?;
 		input.expect_arguments(3)?;
-		let from: H160 = input.read::<Address>()?.into();
-		let to: H160 = input.read::<Address>()?.into();
-		let asset_id: U256 = input.read()?;
+		let from = input.read::<Address>()?;
+		let to = input.read::<Address>()?;
+		let asset_id: pallet_living_assets_ownership::AssetId = input.read()?;
 		let mut asset_id_big_endian = [0u8; 32];
 		asset_id.to_big_endian(&mut asset_id_big_endian);
 
-		AssetManager::transfer_from(handle.context().caller, collection_id, from, to, asset_id)
-			.map_err(|err| revert(err))?;
+		AssetManager::transfer_from(
+			handle.context().caller.into(),
+			collection_id,
+			from.0.into(),
+			to.0.into(),
+			asset_id,
+		)
+		.map_err(revert)?;
 
 		LogsBuilder::new(handle.context().address)
 			.log4(
 				SELECTOR_LOG_TRANSFER_FROM,
-				from,
-				to,
+				from.0,
+				to.0,
 				H256::from_slice(asset_id_big_endian.as_slice()),
 				Vec::new(),
 			)

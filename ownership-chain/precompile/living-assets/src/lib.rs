@@ -25,20 +25,22 @@ pub enum Action {
 }
 
 /// Wrapper for the precompile function.
-pub struct CollectionManagerPrecompile<AddressMapping, AccountId, LivingAssets>(
-	PhantomData<(AddressMapping, AccountId, LivingAssets)>,
+pub struct CollectionManagerPrecompile<AddressMapping, AccountId, BaseURI, LivingAssets>(
+	PhantomData<(AddressMapping, AccountId, BaseURI, LivingAssets)>,
 )
 where
 	AddressMapping: pallet_evm::AddressMapping<AccountId>,
 	AccountId: Encode + Debug,
-	LivingAssets: CollectionManager;
+	BaseURI: TryFrom<Vec<u8>>,
+	LivingAssets: CollectionManager<AccountId, BaseURI>;
 
-impl<AddressMapping, AccountId, LivingAssets> Precompile
-	for CollectionManagerPrecompile<AddressMapping, AccountId, LivingAssets>
+impl<AddressMapping, AccountId, BaseURI, LivingAssets> Precompile
+	for CollectionManagerPrecompile<AddressMapping, AccountId, BaseURI, LivingAssets>
 where
 	AddressMapping: pallet_evm::AddressMapping<AccountId>,
 	AccountId: Encode + Debug,
-	LivingAssets: CollectionManager<AccountId = AccountId>,
+	BaseURI: TryFrom<Vec<u8>>,
+	LivingAssets: CollectionManager<AccountId, BaseURI>,
 {
 	fn execute(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
 		let selector = handle.read_selector()?;

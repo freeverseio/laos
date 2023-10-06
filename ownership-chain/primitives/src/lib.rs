@@ -8,7 +8,7 @@ use frame_system::limits;
 use sp_core::Hasher as HasherT;
 use sp_runtime::{
 	traits::{BlakeTwo256, IdentifyAccount, Verify},
-	MultiSignature, MultiSigner, Perbill,
+	Perbill,
 };
 
 /// Maximal weight of single OwnershipParachain block.
@@ -34,15 +34,12 @@ pub type Hasher = BlakeTwo256;
 /// The header type used by Ownership chain.
 pub type Header = sp_runtime::generic::Header<BlockNumber, Hasher>;
 
-/// Alias to 512-bit hash when used in the context of a transaction signature on the chain.
-pub type Signature = MultiSignature;
+/// Signature type used by Ownership chain.
+pub type Signature = fp_account::EthereumSignature;
 
 /// Some way of identifying an account on the chain. We intentionally make it equivalent
 /// to the public key of our transaction signing scheme.
 pub type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::AccountId;
-
-/// Public key of the chain account that may be used to verify signatures.
-pub type AccountSigner = MultiSigner;
 
 /// Balance of an account.
 pub type Balance = u128;

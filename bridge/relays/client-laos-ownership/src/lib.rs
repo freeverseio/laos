@@ -18,14 +18,16 @@
 
 pub mod codegen_runtime;
 
+use bp_laos_ownership::Signature;
 use bp_polkadot_core::SuffixedCommonSignedExtensionExt;
+use bp_runtime::{EncodedOrDecodedCall, StorageMapKeyProvider};
 use codec::Encode;
 use relay_substrate_client::{
 	Chain, ChainWithBalances, ChainWithMessages, ChainWithTransactions, Error as SubstrateError,
 	SignParam, UnderlyingChainProvider, UnsignedTransaction,
 };
-use sp_core::{storage::StorageKey, Pair};
-use sp_runtime::{generic::SignedPayload, traits::IdentifyAccount};
+use sp_core::{ecdsa, storage::StorageKey, Pair};
+use sp_runtime::generic::SignedPayload;
 use std::time::Duration;
 
 pub use codegen_runtime::api::runtime_types;
@@ -55,9 +57,38 @@ impl Chain for OwnershipParachain {
 	type Call = RuntimeCall;
 }
 
+/// Provides a storage key for account data.
+///
+/// We need to use this approach when we don't have access to the runtime.
+/// The equivalent command to invoke in case full `Runtime` is known is this:
+/// `let key = frame_system::Account::<Runtime>::storage_map_final_key(&account_id);`
+///
+/// NOTE: this is a custom impl for `AccountId = AccountId20`
+/// source: [`bp_polkadot_core::AccountInfoStorageMapKeyProvider`]
+pub struct AccountInfoStorageMapKeyProvider;
+
+impl StorageMapKeyProvider for AccountInfoStorageMapKeyProvider {
+	const MAP_NAME: &'static str = "Account";
+	type Hasher = frame_support::Blake2_128Concat;
+	type Key = bp_laos_ownership::AccountId;
+	// This should actually be `AccountInfo`, but we don't use this property in order to decode the
+	// data. So we use `Vec<u8>` as if we would work with encoded data.
+	type Value = Vec<u8>;
+}
+
+impl AccountInfoStorageMapKeyProvider {
+	/// Name of the system pallet.
+	const PALLET_NAME: &'static str = "System";
+
+	/// Return storage key for given account data.
+	pub fn final_key(id: &bp_laos_ownership::AccountId) -> StorageKey {
+		<Self as StorageMapKeyProvider>::final_key(Self::PALLET_NAME, id)
+	}
+}
+
 impl ChainWithBalances for OwnershipParachain {
 	fn account_info_storage_key(account_id: &Self::AccountId) -> StorageKey {
-		bp_polkadot_core::AccountInfoStorageMapKeyProvider::final_key(account_id)
+		AccountInfoStorageMapKeyProvider::final_key(account_id)
 	}
 }
 
@@ -71,9 +102,13 @@ impl ChainWithMessages for OwnershipParachain {
 }
 
 impl ChainWithTransactions for OwnershipParachain {
-	type AccountKeyPair = sp_core::sr25519::Pair;
-	type SignedTransaction =
-		bp_polkadot_core::UncheckedExtrinsic<Self::Call, bp_laos_ownership::SignedExtension>;
+	type AccountKeyPair = ecdsa::Pair;
+	type SignedTransaction = fp_self_contained::UncheckedExtrinsic<
+		bp_laos_ownership::AccountId,
+		EncodedOrDecodedCall<Self::Call>,
+		Signature,
+		bp_laos_ownership::SignedExtension,
+	>;
 
 	fn sign_transaction(
 		param: SignParam<Self>,
@@ -93,31 +128,33 @@ impl ChainWithTransactions for OwnershipParachain {
 		)?;
 
 		let signature = raw_payload.using_encoded(|payload| param.signer.sign(payload));
-		let signer: sp_runtime::MultiSigner = param.signer.public().into();
+		let signer = param.signer.public();
 		let (call, extra, _) = raw_payload.deconstruct();
 
 		Ok(Self::SignedTransaction::new_signed(
 			call,
-			signer.into_account().into(),
-			signature.into(),
+			signer.into(),
+			Signature::new(signature),
 			extra,
 		))
 	}
 
 	fn is_signed(tx: &Self::SignedTransaction) -> bool {
-		tx.signature.is_some()
+		// this is because [`fp_self_contained::UncheckedExtrinsic`] is a wrapper around
+		// [`sp_runtime::generic::UncheckedExtrinsic`] and we need to check the inner
+		tx.0.signature.is_some()
 	}
 
 	fn is_signed_by(signer: &Self::AccountKeyPair, tx: &Self::SignedTransaction) -> bool {
-		tx.signature
+		tx.0.signature
 			.as_ref()
-			.map(|(address, _, _)| *address == Address::Id(signer.public().into()))
+			.map(|(address, _, _)| *address == signer.public().into())
 			.unwrap_or(false)
 	}
 
 	fn parse_transaction(tx: Self::SignedTransaction) -> Option<UnsignedTransaction<Self>> {
-		let extra = &tx.signature.as_ref()?.2;
-		Some(UnsignedTransaction::new(tx.function, extra.nonce()).tip(extra.tip()))
+		let extra = &tx.0.signature.as_ref()?.2;
+		Some(UnsignedTransaction::new(tx.0.function, extra.nonce()).tip(extra.tip()))
 	}
 }
 

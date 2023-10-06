@@ -3,29 +3,21 @@
 /// Edit this file to define custom logic or remove it if it is not needed.
 /// Learn more about FRAME and the core library of Substrate FRAME pallets:
 /// <https://docs.substrate.io/reference/frame-pallets/>
-pub use pallet::*;
 use parity_scale_codec::alloc::string::ToString;
-use sp_core::H160;
 use sp_std::vec::Vec;
+
+pub use pallet::*;
+pub use types::*;
+
 mod functions;
 pub mod traits;
-
+mod types;
 #[frame_support::pallet]
 pub mod pallet {
 
 	use super::*;
-	use frame_support::{
-		pallet_prelude::{OptionQuery, ValueQuery, *},
-		BoundedVec,
-	};
-	use sp_core::{H160, U256};
+	use frame_support::pallet_prelude::{OptionQuery, ValueQuery, *};
 	use sp_runtime::traits::Convert;
-
-	/// Collection id type
-	pub type CollectionId = u64;
-
-	/// Base URI type
-	pub type BaseURI<T> = BoundedVec<u8, <T as Config>::BaseURILimit>;
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
@@ -42,24 +34,18 @@ pub mod pallet {
 		/// However it seems the max supported length in browsers is 2,048 characters.
 		///
 		/// The base should be capped at 2,015 characters in length. This ensures room for
-		/// the token URI formation, where it combines `BaseURILimit`, a `'/'`, and a `tokenID`
+		/// the token URI formation, where it combines `BaseURILimit`, a `'/'`, and a `AssetId`
 		/// (which takes up 33 characters).
 		#[pallet::constant]
 		type BaseURILimit: Get<u32>;
 
-		/// This associated type defines a conversion from the `AccountId` type, which is internal
-		/// to the implementing type (represented by `Self`), to an `H160` type. The `H160` type
-		/// is commonly used to represent Ethereum addresses.
-		type AccountIdToH160: Convert<Self::AccountId, H160>;
-
-		/// This associated type defines a conversion from an `H160` type back to the `AccountId`
-		/// type, which is internal to the implementing type (represented by `Self`). This
-		/// conversion is often necessary for mapping Ethereum addresses back to native account IDs.
-		type H160ToAccountId: Convert<H160, Self::AccountId>;
+		/// Simply a null address in EVM.
+		#[pallet::constant]
+		type NullAddress: Get<AccountIdOf<Self>>;
 
 		/// Type alias for implementing the `AssetIdToInitialOwner` trait for a given account ID
 		/// type. This allows you to specify which account should initially own each new asset.
-		type AssetIdToInitialOwner: Convert<U256, Self::AccountId>;
+		type AssetIdToInitialOwner: Convert<AssetId, Self::AccountId>;
 	}
 
 	/// Collection counter
@@ -71,7 +57,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn collection_base_uri)]
 	pub(super) type CollectionBaseURI<T: Config> =
-		StorageMap<_, Blake2_128Concat, CollectionId, BaseURI<T>, OptionQuery>;
+		StorageMap<_, Blake2_128Concat, CollectionId, BaseURIOf<T>, OptionQuery>;
 
 	/// Asset owner
 	#[pallet::storage]
@@ -80,12 +66,12 @@ pub mod pallet {
 		Blake2_128Concat,
 		CollectionId,
 		Blake2_128Concat,
-		U256,
-		T::AccountId,
+		AssetId,
+		AccountIdOf<T>,
 		OptionQuery,
 	>;
 
-	fn asset_owner<T: Config>(collection_id: CollectionId, asset_id: U256) -> T::AccountId {
+	fn asset_owner<T: Config>(collection_id: CollectionId, asset_id: AssetId) -> AccountIdOf<T> {
 		AssetOwner::<T>::get(collection_id, asset_id)
 			.unwrap_or_else(|| T::AssetIdToInitialOwner::convert(asset_id))
 	}
@@ -96,10 +82,10 @@ pub mod pallet {
 	pub enum Event<T: Config> {
 		/// Collection created
 		/// parameters. [collection_id, who]
-		CollectionCreated { collection_id: CollectionId, who: T::AccountId },
+		CollectionCreated { collection_id: CollectionId, who: AccountIdOf<T> },
 		/// Asset transferred to `who`
 		/// parameters. [collection_id, asset_id, who]
-		AssetTransferred { collection_id: CollectionId, asset_id: U256, to: T::AccountId },
+		AssetTransferred { collection_id: CollectionId, asset_id: AssetId, to: AccountIdOf<T> },
 	}
 
 	// Errors inform users that something went wrong.
@@ -140,55 +126,61 @@ pub mod pallet {
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {}
 
-	impl<T: Config> traits::CollectionManager for Pallet<T> {
+	impl<T: Config> traits::CollectionManager<AccountIdOf<T>, BaseURIOf<T>> for Pallet<T> {
 		type Error = Error<T>;
-		type AccountId = T::AccountId;
-		type BaseURI = BaseURI<T>;
 
-		fn base_uri(collection_id: CollectionId) -> Option<Self::BaseURI> {
+		fn base_uri(collection_id: CollectionId) -> Option<BaseURIOf<T>> {
 			CollectionBaseURI::<T>::get(collection_id)
 		}
 
 		fn create_collection(
-			owner: T::AccountId,
-			base_uri: Self::BaseURI,
+			owner: AccountIdOf<T>,
+			base_uri: BaseURIOf<T>,
 		) -> Result<CollectionId, Self::Error> {
 			Self::do_create_collection(owner, base_uri)
 		}
 	}
 
-	impl<T: Config> traits::Erc721 for Pallet<T> {
+	impl<T: Config> traits::Erc721<AccountIdOf<T>> for Pallet<T> {
 		type Error = Error<T>;
 
-		fn owner_of(collection_id: CollectionId, asset_id: U256) -> Result<H160, Self::Error> {
-			Pallet::<T>::collection_base_uri(collection_id).ok_or(Error::CollectionDoesNotExist)?;
-			Ok(T::AccountIdToH160::convert(asset_owner::<T>(collection_id, asset_id)))
+		fn owner_of(
+			collection_id: CollectionId,
+			asset_id: AssetId,
+		) -> Result<AccountIdOf<T>, Self::Error> {
+			ensure!(
+				Pallet::<T>::collection_base_uri(collection_id).is_some(),
+				Error::CollectionDoesNotExist
+			);
+			Ok(asset_owner::<T>(collection_id, asset_id))
 		}
 
 		fn transfer_from(
-			origin: H160,
+			origin: AccountIdOf<T>,
 			collection_id: CollectionId,
-			from: H160,
-			to: H160,
-			asset_id: U256,
+			from: AccountIdOf<T>,
+			to: AccountIdOf<T>,
+			asset_id: AssetId,
 		) -> Result<(), Self::Error> {
-			Pallet::<T>::collection_base_uri(collection_id).ok_or(Error::CollectionDoesNotExist)?;
-			ensure!(origin == from, Error::NoPermission);
 			ensure!(
-				T::AccountIdToH160::convert(asset_owner::<T>(collection_id, asset_id)) == from,
-				Error::NoPermission
+				Pallet::<T>::collection_base_uri(collection_id).is_some(),
+				Error::CollectionDoesNotExist
 			);
+			ensure!(origin == from, Error::NoPermission);
+			ensure!(asset_owner::<T>(collection_id, asset_id) == from, Error::NoPermission);
 			ensure!(from != to, Error::CannotTransferSelf);
-			ensure!(to != H160::zero(), Error::TransferToNullAddress);
+			ensure!(to != T::NullAddress::get(), Error::TransferToNullAddress);
 
-			let to = T::H160ToAccountId::convert(to.clone());
 			AssetOwner::<T>::set(collection_id, asset_id, Some(to.clone()));
 			Self::deposit_event(Event::AssetTransferred { collection_id, asset_id, to });
 
 			Ok(())
 		}
 
-		fn token_uri(collection_id: CollectionId, asset_id: U256) -> Result<Vec<u8>, Self::Error> {
+		fn token_uri(
+			collection_id: CollectionId,
+			asset_id: AssetId,
+		) -> Result<Vec<u8>, Self::Error> {
 			let base_uri = Pallet::<T>::collection_base_uri(collection_id)
 				.ok_or(Error::CollectionDoesNotExist)?;
 
@@ -218,10 +210,10 @@ pub enum CollectionError {
 	InvalidPrefix,
 }
 
-/// Converts a `CollectionId` into an `H160` address format.
+/// Converts a `CollectionId` into an `Address`.
 ///
 /// This function takes the given `CollectionId`, which is assumed to be a `u64`,
-/// and maps it into an `H160` address, prepending it with the `ASSET_PRECOMPILE_ADDRESS_PREFIX`.
+/// and maps it into an `Address` address, prepending it with the `ASSET_PRECOMPILE_ADDRESS_PREFIX`.
 ///
 /// # Arguments
 ///
@@ -229,51 +221,56 @@ pub enum CollectionError {
 ///
 /// # Returns
 ///
-/// * An `H160` representation of the collection ID.
-pub fn collection_id_to_address(collection_id: CollectionId) -> H160 {
+/// * An `Address` representation of the collection ID.
+pub fn collection_id_to_address<Address: From<[u8; 20]>>(collection_id: CollectionId) -> Address {
 	let mut bytes = [0u8; 20];
 	bytes[12..20].copy_from_slice(&collection_id.to_be_bytes());
 	for (i, byte) in ASSET_PRECOMPILE_ADDRESS_PREFIX.iter().enumerate() {
 		bytes[i] = *byte;
 	}
-	H160(bytes)
+	Address::from(bytes)
 }
 
-/// Converts an `H160` address into a `CollectionId` format.
+/// Converts an `Address` address into a `CollectionId` format.
 ///
-/// This function takes the given `H160` address, checks for the correct prefix, and extracts
+/// This function takes the given `Address` address, checks for the correct prefix, and extracts
 /// the `CollectionId` from it. If the prefix is incorrect, it returns a
 /// `CollectionError::InvalidPrefix` error.
 ///
 /// # Arguments
 ///
-/// * `address`: The `H160` address to be converted.
+/// * `address`: The `Address` address to be converted.
 ///
 /// # Returns
 ///
 /// * A `Result` which is either the `CollectionId` or an error indicating the address is invalid.
-pub fn address_to_collection_id(address: H160) -> Result<CollectionId, CollectionError> {
-	if &address.0[0..12] != ASSET_PRECOMPILE_ADDRESS_PREFIX {
+pub fn address_to_collection_id<Address: Into<[u8; 20]>>(
+	address: Address,
+) -> Result<CollectionId, CollectionError> {
+	let address_bytes: [u8; 20] = address.into();
+	if &address_bytes[0..12] != ASSET_PRECOMPILE_ADDRESS_PREFIX {
 		return Err(CollectionError::InvalidPrefix)
 	}
-	let id_bytes: [u8; 8] = address.0[12..].try_into().unwrap();
+	let mut id_bytes = [0u8; 8];
+	id_bytes.copy_from_slice(&address_bytes[12..]);
+
 	Ok(CollectionId::from_be_bytes(id_bytes))
 }
 
-/// Checks if a given `H160` address is a collection address.
+/// Checks if a given `Address` address is a collection address.
 ///
-/// This function examines the prefix of the given `H160` address to determine if it is a
+/// This function examines the prefix of the given `Address` address to determine if it is a
 /// collection address, based on the `ASSET_PRECOMPILE_ADDRESS_PREFIX`.
 ///
 /// # Arguments
 ///
-/// * `address`: The `H160` address to be checked.
+/// * `address`: The `Address` address to be checked.
 ///
 /// # Returns
 ///
 /// * A boolean indicating if the address is a collection address.
-pub fn is_collection_address(address: H160) -> bool {
-	&address.to_fixed_bytes()[0..12] == ASSET_PRECOMPILE_ADDRESS_PREFIX
+pub fn is_collection_address<Address: Into<[u8; 20]>>(address: Address) -> bool {
+	&address.into()[0..12] == ASSET_PRECOMPILE_ADDRESS_PREFIX
 }
 
 #[cfg(test)]

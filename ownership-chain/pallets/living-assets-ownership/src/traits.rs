@@ -1,5 +1,4 @@
-use crate::CollectionId;
-use sp_core::{H160, U256};
+use crate::{types::AssetId, CollectionId};
 use sp_std::vec::Vec;
 
 /// The `CollectionManager` trait provides an interface for managing collections in a decentralized
@@ -12,10 +11,11 @@ use sp_std::vec::Vec;
 ///
 /// - `owner_of_collection`: Retrieve the owner of a specified collection.
 /// - `create_collection`: Create a new collection and assign it to an owner.
-pub trait CollectionManager {
+pub trait CollectionManager<AccountId, BaseURI>
+where
+	BaseURI: TryFrom<Vec<u8>>,
+{
 	type Error: AsRef<[u8]> + PartialEq;
-	type AccountId;
-	type BaseURI: TryFrom<Vec<u8>>;
 
 	/// Retrieves the base uri of the specified collection.
 	///
@@ -27,7 +27,7 @@ pub trait CollectionManager {
 	///
 	/// The base URI associated with the specified collection or `None` if the collection doesn't
 	/// exist.
-	fn base_uri(collection_id: CollectionId) -> Option<Self::BaseURI>;
+	fn base_uri(collection_id: CollectionId) -> Option<BaseURI>;
 
 	/// Creates a new collection and assigns it to the specified owner.
 	///
@@ -38,10 +38,7 @@ pub trait CollectionManager {
 	/// # Returns
 	///
 	/// A result containing the `collection_id` of the newly created collection or an error.
-	fn create_collection(
-		owner: Self::AccountId,
-		base_uri: Self::BaseURI,
-	) -> Result<CollectionId, Self::Error>;
+	fn create_collection(owner: AccountId, base_uri: BaseURI) -> Result<CollectionId, Self::Error>;
 }
 
 /// The `Erc721` trait provides an interface for handling ERC721 tokens in a blockchain environment.
@@ -53,7 +50,7 @@ pub trait CollectionManager {
 ///
 /// - `owner_of`: Retrieve the owner of a specific asset within a collection.
 /// - `token_uri`: Retrieve the URI associated with a specific asset within a collection.
-pub trait Erc721 {
+pub trait Erc721<AccountId> {
 	type Error: AsRef<[u8]> + PartialEq;
 
 	/// Retrieves the owner of a specific asset within the specified collection.
@@ -66,7 +63,7 @@ pub trait Erc721 {
 	/// # Returns
 	///
 	/// The Ethereum address (`H160`) of the asset's owner or an error.
-	fn owner_of(collection_id: CollectionId, asset_id: U256) -> Result<H160, Self::Error>;
+	fn owner_of(collection_id: CollectionId, asset_id: AssetId) -> Result<AccountId, Self::Error>;
 
 	/// Retrieves the URI associated with a specific asset within the specified collection.
 	///
@@ -81,7 +78,7 @@ pub trait Erc721 {
 	/// # Returns
 	///
 	/// A `Vec<u8>` representing the URI of the asset or an error if retrieval fails.
-	fn token_uri(collection_id: CollectionId, asset_id: U256) -> Result<Vec<u8>, Self::Error>;
+	fn token_uri(collection_id: CollectionId, asset_id: AssetId) -> Result<Vec<u8>, Self::Error>;
 
 	/// Transfers the ownership of a asset from one address to another address
 	///
@@ -93,10 +90,10 @@ pub trait Erc721 {
 	/// * `to` - The new owner.
 	/// * `asset_id` - The unique identifier for the asset within the collection.
 	fn transfer_from(
-		origin: H160,
+		origin: AccountId,
 		collection_id: CollectionId,
-		from: H160,
-		to: H160,
-		asset_id: U256,
+		from: AccountId,
+		to: AccountId,
+		asset_id: AssetId,
 	) -> Result<(), Self::Error>;
 }

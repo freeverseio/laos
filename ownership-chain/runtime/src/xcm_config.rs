@@ -6,20 +6,21 @@ use bridge_runtime_common::CustomNetworkId;
 use core::{marker::PhantomData, ops::ControlFlow};
 use frame_support::{
 	log, match_types, parameter_types,
-	traits::{ConstU32, Everything, Nothing, ProcessMessageError},
-	weights::Weight,
+	traits::{
+		ConstU32, Currency, Everything, Nothing, OnUnbalanced, OriginTrait, ProcessMessageError,
+	},
 };
-use frame_system::EnsureRoot;
+use frame_system::{EnsureRoot, RawOrigin as SystemRawOrigin};
 use pallet_xcm::XcmPassthrough;
 use polkadot_parachain::primitives::Sibling;
-use polkadot_runtime_common::impls::ToAuthor;
+use sp_runtime::traits::TryConvert;
 use xcm::latest::prelude::*;
 use xcm_builder::{
-	AccountId32Aliases, AllowExplicitUnpaidExecutionFrom, AllowTopLevelPaidExecutionFrom,
+	AccountKey20Aliases, AllowExplicitUnpaidExecutionFrom, AllowTopLevelPaidExecutionFrom,
 	CreateMatcher, CurrencyAdapter, EnsureXcmOrigin, FixedWeightBounds, IsConcrete, MatchXcm,
 	NativeAsset, ParentIsPreset, RelayChainAsNative, SiblingParachainAsNative,
-	SiblingParachainConvertsVia, SignedAccountId32AsNative, SignedToAccountId32,
-	SovereignSignedViaLocation, TakeWeightCredit, UsingComponents, WithComputedOrigin,
+	SiblingParachainConvertsVia, SignedAccountKey20AsNative, SovereignSignedViaLocation,
+	TakeWeightCredit, UsingComponents, WithComputedOrigin,
 };
 use xcm_executor::{
 	traits::{Properties, ShouldExecute},
@@ -45,8 +46,8 @@ pub type LocationToAccountId = (
 	ParentIsPreset<AccountId>,
 	// Sibling parachain origins convert to AccountId via the `ParaId::into`.
 	SiblingParachainConvertsVia<Sibling, AccountId>,
-	// Straight up local `AccountId32` origins just alias directly to `AccountId`.
-	AccountId32Aliases<RelayNetwork, AccountId>,
+	// Straight up local `AccountId20` origins just alias directly to `AccountId`.
+	AccountKey20Aliases<RelayNetwork, AccountId>,
 );
 
 /// Means for transacting assets on this chain.
@@ -55,7 +56,7 @@ pub type LocalAssetTransactor = CurrencyAdapter<
 	Balances,
 	// Use this currency when it is a fungible asset matching the given location or name:
 	IsConcrete<RelayLocation>,
-	// Do a simple punn to convert an AccountId32 MultiLocation into a native chain account ID:
+	// Do a simple pun to convert an AccountId20 MultiLocation into a native chain account ID:
 	LocationToAccountId,
 	// Our chain's account ID type (we can't get away without mentioning it explicitly):
 	AccountId,
@@ -77,9 +78,9 @@ pub type XcmOriginToTransactDispatchOrigin = (
 	// Native converter for sibling Parachains; will convert to a `SiblingPara` origin when
 	// recognized.
 	SiblingParachainAsNative<cumulus_pallet_xcm::Origin, RuntimeOrigin>,
-	// Native signed account converter; this just converts an `AccountId32` origin into a normal
-	// `RuntimeOrigin::Signed` origin of the same 32-byte value.
-	SignedAccountId32AsNative<RelayNetwork, RuntimeOrigin>,
+	// Native signed account converter; this just converts an `AccountId20` origin into a normal
+	// `RuntimeOrigin::Signed` origin of the same 20-byte value.
+	SignedAccountKey20AsNative<RelayNetwork, RuntimeOrigin>,
 	// Xcm origins can be represented natively under the Xcm pallet's Xcm origin.
 	XcmPassthrough<RuntimeOrigin>,
 );
@@ -189,6 +190,26 @@ pub type OnOwnershipParachainBlobDispatcher =
 /// XCM weigher type.
 pub type XcmWeigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
 
+/// Logic for sending fees to the sudo account. On every unbalanced change, the amount is
+/// transferred to the sudo account.
+/// TODO: temporary solution until we have a treasury.
+pub struct ToSudo<R>(PhantomData<R>);
+
+type NegativeImbalanceOfBalances<T> = pallet_balances::NegativeImbalance<T>;
+
+impl<R> OnUnbalanced<NegativeImbalanceOfBalances<R>> for ToSudo<R>
+where
+	R: pallet_balances::Config + pallet_sudo::Config,
+	<R as frame_system::Config>::AccountId: From<AccountId>,
+	<R as frame_system::Config>::AccountId: Into<AccountId>,
+{
+	fn on_nonzero_unbalanced(amount: NegativeImbalanceOfBalances<R>) {
+		if let Some(account) = <pallet_sudo::Pallet<R>>::key() {
+			<pallet_balances::Pallet<R>>::resolve_creating(&account, amount);
+		}
+	}
+}
+
 pub struct XcmConfig;
 impl xcm_executor::Config for XcmConfig {
 	type RuntimeCall = RuntimeCall;
@@ -201,8 +222,7 @@ impl xcm_executor::Config for XcmConfig {
 	type UniversalLocation = UniversalLocation;
 	type Barrier = Barrier;
 	type Weigher = XcmWeigher;
-	type Trader =
-		UsingComponents<WeightToFee, RelayLocation, AccountId, Balances, ToAuthor<Runtime>>;
+	type Trader = UsingComponents<WeightToFee, RelayLocation, AccountId, Balances, ToSudo<Runtime>>;
 	type ResponseHandler = PolkadotXcm;
 	type AssetTrap = PolkadotXcm;
 	type AssetClaims = PolkadotXcm;
@@ -219,8 +239,31 @@ impl xcm_executor::Config for XcmConfig {
 	type Aliasers = Nothing;
 }
 
+pub struct SignedToAccountId20<RuntimeOrigin, AccountId, Network>(
+	PhantomData<(RuntimeOrigin, AccountId, Network)>,
+);
+impl<
+		RuntimeOrigin: OriginTrait + Clone,
+		AccountId: Into<[u8; 20]>,
+		Network: frame_support::traits::Get<Option<NetworkId>>,
+	> TryConvert<RuntimeOrigin, MultiLocation>
+	for SignedToAccountId20<RuntimeOrigin, AccountId, Network>
+where
+	RuntimeOrigin::PalletsOrigin: From<SystemRawOrigin<AccountId>>
+		+ TryInto<SystemRawOrigin<AccountId>, Error = RuntimeOrigin::PalletsOrigin>,
+{
+	fn try_convert(o: RuntimeOrigin) -> Result<MultiLocation, RuntimeOrigin> {
+		o.try_with_caller(|caller| match caller.try_into() {
+			Ok(SystemRawOrigin::Signed(who)) =>
+				Ok(Junction::AccountKey20 { network: Network::get(), key: who.into() }.into()),
+			Ok(other) => Err(other.into()),
+			Err(other) => Err(other),
+		})
+	}
+}
+
 /// No local origins on this chain are allowed to dispatch XCM sends/executions.
-pub type LocalOriginToLocation = SignedToAccountId32<RuntimeOrigin, AccountId, RelayNetwork>;
+pub type LocalOriginToLocation = SignedToAccountId20<RuntimeOrigin, AccountId, RelayNetwork>;
 
 /// The means for routing XCM messages which are not for local execution into the right message
 /// queues.

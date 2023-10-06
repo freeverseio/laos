@@ -12,7 +12,6 @@ use precompile_utils::{
 use sp_core::H160;
 use sp_std::vec::Vec;
 
-type BaseURI = Vec<u8>;
 type AccountId = H160;
 type AddressMapping = pallet_evm::IdentityAddressMapping;
 
@@ -153,29 +152,33 @@ mod helpers {
 	#[macro_export]
 	macro_rules! impl_precompile_mock {
 		($name:ident, $create_collection_result:expr, $base_uri_result:expr) => {
+			type BaseURI = Vec<u8>;
+
 			struct CollectionManagerMock;
 
-			impl pallet_living_assets_ownership::traits::CollectionManager
+			impl pallet_living_assets_ownership::traits::CollectionManager<AccountId, BaseURI>
 				for CollectionManagerMock
 			{
 				type Error = &'static str;
-				type AccountId = AccountId;
-				type BaseURI = BaseURI;
 
 				fn create_collection(
 					owner: AccountId,
-					base_uri: Self::BaseURI,
+					base_uri: BaseURI,
 				) -> Result<CollectionId, Self::Error> {
 					($create_collection_result)(owner, base_uri)
 				}
 
-				fn base_uri(collection_id: CollectionId) -> Option<Self::BaseURI> {
+				fn base_uri(collection_id: CollectionId) -> Option<BaseURI> {
 					($base_uri_result)(collection_id)
 				}
 			}
 
-			type $name =
-				CollectionManagerPrecompile<AddressMapping, AccountId, CollectionManagerMock>;
+			type $name = CollectionManagerPrecompile<
+				AddressMapping,
+				AccountId,
+				BaseURI,
+				CollectionManagerMock,
+			>;
 		};
 	}
 
