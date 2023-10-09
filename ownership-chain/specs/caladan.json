@@ -1,19 +1,19 @@
 {
-  "name": "Local Testnet",
-  "id": "local_testnet",
-  "chainType": "Local",
+  "name": "Caladan Ownership Chain",
+  "id": "caladan_ownership_chain",
+  "chainType": "Live",
   "bootNodes": [
     "/ip4/127.0.0.1/tcp/30333/p2p/12D3KooWEi5CUGgTXBeUS3vAdVHYxT7u17TEeqBDJkN4xWRrkVLh"
   ],
   "telemetryEndpoints": null,
-  "protocolId": "template-local",
+  "protocolId": "caladan_ownership_chain",
   "properties": {
     "tokenSymbol": "UNIT",
     "tokenDecimals": 18,
     "ss58Format": 42
   },
   "relay_chain": "rococo-local",
-  "para_id": 1000,
+  "para_id": 2668,
   "codeSubstitutes": {},
   "genesis": {
     "runtime": {
