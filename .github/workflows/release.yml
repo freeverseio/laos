@@ -13,10 +13,16 @@ jobs:
       labels: ubuntu-16-cores
     strategy:
       matrix:
-        docker_name: ['evolution-node', 'ownership-node', 'bridge']
+        docker_name: ['evolution-node.local', 'ownership-node.local', 'bridge.local']
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup
+      - uses: ./.github/actions/cache
+        with:
+          cache-key: build_and_push
+      - name: Build
+        run: |
+          cargo build --release
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2.1.0
