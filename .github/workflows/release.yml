@@ -11,9 +11,6 @@ jobs:
     runs-on: 
       group: laos
       labels: ubuntu-16-cores
-    strategy:
-      matrix:
-        docker_name: ['evolution-node.local', 'ownership-node.local', 'bridge.local']
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup
@@ -30,10 +27,26 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
-      - name: Build and push images
+      - name: push image ownership node
         uses: docker/build-push-action@v4
         with:
           context: .
           push: true
-          file: ./docker/${{ matrix.docker_name }}.Dockerfile
-          tags: freeverseio/laos-${{ matrix.docker_name }}:${{ github.ref_name }}
+          file: ./docker/ownership-node.local.Dockerfile
+          tags: freeverseio/laos-ownership-node:${{ github.ref_name }}
+      
+      - name: push image evolution node
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          file: ./docker/evolution-node.local.Dockerfile
+          tags: freeverseio/laos-evolution-node:${{ github.ref_name }}
+
+      - name: push image bridge
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          file: ./docker/bridge.local.Dockerfile
+          tags: freeverseio/laos-bridge:${{ github.ref_name }}
