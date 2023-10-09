@@ -14,7 +14,7 @@ chain = "rococo-local"
 [[parachains]]
 id = 1000
 cumulus_based = true
-chain = "local-v"
+chain = "local"
 
   [[parachains.collators]]
   name = "Alice"

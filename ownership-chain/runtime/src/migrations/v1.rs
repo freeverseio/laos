@@ -25,10 +25,10 @@ pub mod version_unchecked {
 	use super::*;
 	use frame_support::{
 		storage::{storage_prefix, unhashed},
-		traits::{Get, OnRuntimeUpgrade, PalletInfoAccess},
+		traits::{Currency, Get, OnRuntimeUpgrade, PalletInfoAccess},
 	};
 	use frame_system::AccountInfo;
-	use sp_runtime::AccountId32;
+	use sp_runtime::{traits::Saturating, AccountId32};
 	#[cfg(feature = "try-runtime")]
 	use sp_std::vec::Vec;
 
@@ -93,7 +93,7 @@ pub mod version_unchecked {
 			consumed_weight += db_weight.reads_writes(2, 1);
 
 			let new_sudo: [u8; 20] =
-				hex_literal::hex!("A63133446f5ef88800640AD669FA8F4A44C5000a").into();
+				hex_literal::hex!("47A4320be4B65BF73112E068dc637883490F5b04").into();
 			let new_sudo_account: T::AccountId = new_sudo.into();
 
 			// insert new sudo key (`pallet_sudo::Key` is private)
@@ -102,15 +102,14 @@ pub mod version_unchecked {
 
 			consumed_weight += db_weight.writes(1);
 
-			// only copy the balance related fields
-			// `nonce`, `consumers`, etc. should be set to default
-			let sudo_account_info = AccountInfo::<T::Nonce, T::AccountData> {
-				data: old_sudo_balance,
-				..Default::default()
-			};
-
 			// fund new sudo account
-			frame_system::Account::<T>::insert(new_sudo_account, sudo_account_info);
+			<pallet_balances::Pallet<T> as Currency<T::AccountId>>::make_free_balance_be(
+				&new_sudo_account,
+				<T as pallet_balances::Config>::ExistentialDeposit::get()
+					.saturating_mul(1_000_000_u32.into()),
+			);
+
+			// frame_system::Account::<T>::insert(new_sudo_account, sudo_account_info);
 			consumed_weight += db_weight.writes(1);
 
 			consumed_weight
@@ -128,7 +127,7 @@ pub mod version_unchecked {
 
 			// there should be new sudo key
 			let expected_sudo: [u8; 20] =
-				hex_literal::hex!("A63133446f5ef88800640AD669FA8F4A44C5000a").into();
+				hex_literal::hex!("47A4320be4B65BF73112E068dc637883490F5b04").into();
 
 			let raw_sudo_key = storage_prefix(
 				<pallet_sudo::Pallet<T> as PalletInfoAccess>::name().as_bytes(),
@@ -148,7 +147,7 @@ pub mod version_unchecked {
 			let old_sudo_new_balance = old::Account::<T>::get(&old_sudo);
 
 			// new sudo account is funded with the same balance as old sudo account
-			assert_eq!(new_sudo_balance.data, old_sudo_balance);
+			// assert_eq!(new_sudo_balance.data, old_sudo_balance);
 			// sudo account is removed from old storage
 			assert_eq!(old_sudo_new_balance.data, Default::default());
 
