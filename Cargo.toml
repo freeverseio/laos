@@ -244,7 +244,6 @@ pallet-living-assets-evolution = { path = "./evolution-chain/pallets/living-asse
 pallet-evm-living-assets-ownership = { path = "./ownership-chain/precompile/living-assets", default-features = false }
 pallet-evm-erc721 = { path = "./ownership-chain/precompile/erc721", default-features = false }
 
-
 # Utils
 precompile-utils = { path = "./ownership-chain/precompile/utils", default-features = false }
 precompile-utils-macro = { path = "./ownership-chain/precompile/utils/macro", default-features = false }
@@ -254,7 +253,7 @@ ownership-parachain-primitives = { path = "./ownership-chain/primitives", defaul
 evochain-primitives = { path = "./evolution-chain/primitives", default-features = false }
 
 # runtime
-laos-ownership-runtime = { path = "./ownership-chain/runtime" }
+laos-ownership-runtime = { path = "./ownership-chain/runtime", default-features = false }
 laos-evolution-runtime = { path = "./evolution-chain/runtime", default-features = false }
 
 relay-laos-evolution-client = { path="./bridge/relays/client-laos-evolution" }

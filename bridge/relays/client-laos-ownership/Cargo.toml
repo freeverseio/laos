@@ -12,6 +12,9 @@ bp-bridge-hub-cumulus = { workspace = true }
 bp-header-chain = { workspace = true }
 bp-messages = { workspace = true }
 bp-polkadot-core = { workspace = true }
+bp-runtime = { workspace = true }
+frame-support = { workspace = true }
+fp-self-contained = { workspace = true }
 relay-substrate-client = { workspace = true }
 sp-core = { workspace = true }
 sp-runtime = { workspace = true }

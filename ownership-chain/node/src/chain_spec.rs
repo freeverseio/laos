@@ -1,12 +1,30 @@
 use cumulus_primitives_core::ParaId;
 use fp_evm::GenesisAccount;
-use laos_ownership_runtime::{AccountId, AuraId, Precompiles, Signature, EXISTENTIAL_DEPOSIT};
+use hex_literal::hex;
+use laos_ownership_runtime::{AccountId, AuraId, Precompiles, EXISTENTIAL_DEPOSIT};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
-use sp_core::{sr25519, Pair, Public, H160, U256};
-use sp_runtime::traits::{IdentifyAccount, Verify};
+use sp_core::{Pair, Public, H160, U256};
 use std::{collections::BTreeMap, str::FromStr};
+
+/// List of endowed accounts.
+fn endowed_accounts() -> Vec<AccountId> {
+	vec![
+		// ALITH
+		hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").into(),
+		// BALTATHAR
+		hex!("3Cd0A705a2DC65e5b1E1205896BaA2be8A07c6e0").into(),
+		// CHARLETH
+		hex!("798d4Ba9baf0064Ec19eB4F0a1a45785ae9D6DFc").into(),
+		// DOROTHY
+		hex!("773539d4Ac0e786233D90A233654ccEE26a613D9").into(),
+		// ETHAN
+		hex!("Ff64d3F6efE2317EE2807d223a0Bdc4c0c49dfDB").into(),
+		// FAITH
+		hex!("C0F0f4ab324C46e55D02D0033343B4Be8A55532d").into(),
+	]
+}
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
 pub type ChainSpec =
@@ -39,21 +57,11 @@ impl Extensions {
 	}
 }
 
-type AccountPublic = <Signature as Verify>::Signer;
-
 /// Generate collator keys from seed.
 ///
 /// This function's return type must always match the session keys of the chain in tuple format.
 pub fn get_collator_keys_from_seed(seed: &str) -> AuraId {
 	get_from_seed::<AuraId>(seed)
-}
-
-/// Helper function to generate an account ID from seed
-pub fn get_account_id_from_seed<TPublic: Public>(seed: &str) -> AccountId
-where
-	AccountPublic: From<<TPublic::Pair as Pair>::Public>,
-{
-	AccountPublic::from(get_from_seed::<TPublic>(seed)).into_account()
 }
 
 /// Generate the session keys from individual elements.
@@ -67,7 +75,7 @@ pub fn development_config() -> ChainSpec {
 	// Give your base currency a unit name and decimal places
 	let mut properties = sc_chain_spec::Properties::new();
 	properties.insert("tokenSymbol".into(), "UNIT".into());
-	properties.insert("tokenDecimals".into(), 12.into());
+	properties.insert("tokenDecimals".into(), 18.into());
 	properties.insert("ss58Format".into(), 42.into());
 
 	ChainSpec::from_genesis(
@@ -79,32 +87,13 @@ pub fn development_config() -> ChainSpec {
 		move || {
 			testnet_genesis(
 				// initial collators.
-				vec![
-					(
-						get_account_id_from_seed::<sr25519::Public>("Alice"),
-						get_collator_keys_from_seed("Alice"),
-					),
-					(
-						get_account_id_from_seed::<sr25519::Public>("Bob"),
-						get_collator_keys_from_seed("Bob"),
-					),
-				],
-				vec![
-					get_account_id_from_seed::<sr25519::Public>("Alice"),
-					get_account_id_from_seed::<sr25519::Public>("Bob"),
-					get_account_id_from_seed::<sr25519::Public>("Charlie"),
-					get_account_id_from_seed::<sr25519::Public>("Dave"),
-					get_account_id_from_seed::<sr25519::Public>("Eve"),
-					get_account_id_from_seed::<sr25519::Public>("Ferdie"),
-					get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
-				],
+				vec![(
+					hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").into(),
+					get_collator_keys_from_seed("Alice"),
+				)],
+				endowed_accounts(),
 				// Give Alice root privileges
-				Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
+				Some(hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").into()),
 				1000.into(),
 			)
 		},
@@ -124,7 +113,7 @@ pub fn local_testnet_config() -> ChainSpec {
 	// Give your base currency a unit name and decimal places
 	let mut properties = sc_chain_spec::Properties::new();
 	properties.insert("tokenSymbol".into(), "UNIT".into());
-	properties.insert("tokenDecimals".into(), 12.into());
+	properties.insert("tokenDecimals".into(), 18.into());
 	properties.insert("ss58Format".into(), 42.into());
 
 	ChainSpec::from_genesis(
@@ -136,32 +125,13 @@ pub fn local_testnet_config() -> ChainSpec {
 		move || {
 			testnet_genesis(
 				// initial collators.
-				vec![
-					(
-						get_account_id_from_seed::<sr25519::Public>("Alice"),
-						get_collator_keys_from_seed("Alice"),
-					),
-					(
-						get_account_id_from_seed::<sr25519::Public>("Bob"),
-						get_collator_keys_from_seed("Bob"),
-					),
-				],
-				vec![
-					get_account_id_from_seed::<sr25519::Public>("Alice"),
-					get_account_id_from_seed::<sr25519::Public>("Bob"),
-					get_account_id_from_seed::<sr25519::Public>("Charlie"),
-					get_account_id_from_seed::<sr25519::Public>("Dave"),
-					get_account_id_from_seed::<sr25519::Public>("Eve"),
-					get_account_id_from_seed::<sr25519::Public>("Ferdie"),
-					get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
-				],
+				vec![(
+					hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").into(),
+					get_collator_keys_from_seed("Alice"),
+				)],
+				endowed_accounts(),
 				// Give Alice root privileges
-				Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
+				Some(hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").into()),
 				1000.into(),
 			)
 		},
@@ -189,9 +159,6 @@ fn testnet_genesis(
 	root_key: Option<AccountId>,
 	id: ParaId,
 ) -> laos_ownership_runtime::RuntimeGenesisConfig {
-	// let alice = get_from_seed::<sr25519::Public>("Alice");
-	// let bob = get_from_seed::<sr25519::Public>("Bob");
-
 	// This is the simplest bytecode to revert without returning any data.
 	// We will pre-deploy it under all of our precompiles to ensure they can be called from
 	// within contracts.
@@ -205,32 +172,9 @@ fn testnet_genesis(
 				.to_vec(),
 			..Default::default()
 		},
-		// Configure additional assets here
-		// For example, this configures asset "ALT1" & "ALT2" with owners, alice and bob,
-		// respectively assets: laos_ownership_runtime::AssetsConfig {
-		// 	assets: vec![
-		// 		(1, alice.into(), true, 10_000_000_0000),
-		// 		(2, bob.into(), true, 10_000_000_0000),
-		// 	],
-		// 	// Genesis metadata: Vec<(id, name, symbol, decimals)>
-		// 	metadata: vec![
-		// 		(1, "asset-1".into(), "ALT1".into(), 10),
-		// 		(2, "asset-2".into(), "ALT2".into(), 10),
-		// 	],
-		// 	// Genesis accounts: Vec<(id, account_id, balance)>
-		// 	accounts: vec![(1, alice.into(), 50_000_000_0000), (2, bob.into(), 50_000_000_0000)],
-		// },
 		balances: laos_ownership_runtime::BalancesConfig {
 			balances: endowed_accounts.iter().cloned().map(|k| (k, 1 << 60)).collect(),
 		},
-		// council: laos_ownership_runtime::CouncilConfig {
-		// 	phantom: PhantomData,
-		// 	members: endowed_accounts
-		// 		.iter()
-		// 		.enumerate()
-		// 		.filter_map(|(idx, acc)| if idx % 2 == 0 { Some(acc.clone()) } else { None })
-		// 		.collect::<Vec<_>>(),
-		// },
 		parachain_info: laos_ownership_runtime::ParachainInfoConfig {
 			parachain_id: id,
 			..Default::default()
@@ -245,7 +189,7 @@ fn testnet_genesis(
 				.into_iter()
 				.map(|(acc, aura)| {
 					(
-						acc.clone(),                 // account id
+						acc,                         // account id
 						acc,                         // validator id
 						template_session_keys(aura), // session keys
 					)
@@ -264,11 +208,11 @@ fn testnet_genesis(
 		sudo: laos_ownership_runtime::SudoConfig { key: root_key },
 		transaction_payment: Default::default(),
 		// EVM compatibility
-		laos_evm_chain_id: laos_ownership_runtime::LaosEVMChainIdConfig {
+		evm_chain_id: laos_ownership_runtime::EVMChainIdConfig {
 			chain_id: 1000,
 			..Default::default()
 		},
-		laos_evm: laos_ownership_runtime::LaosEVMConfig {
+		evm: laos_ownership_runtime::EVMConfig {
 			accounts: {
 				let mut map: BTreeMap<_, _> = Precompiles::used_addresses()
 					.iter()

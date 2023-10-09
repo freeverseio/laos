@@ -6,6 +6,7 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
+mod migrations;
 #[cfg(test)]
 mod tests;
 mod weights;
@@ -26,11 +27,11 @@ use sp_core::{
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{
-		AccountIdLookup, BlakeTwo256, Block as BlockT, Convert, DispatchInfoOf, Dispatchable, Get,
-		IdentifyAccount, PostDispatchInfoOf, UniqueSaturatedInto, Verify,
+		BlakeTwo256, Block as BlockT, Convert, DispatchInfoOf, Dispatchable, Get, IdentityLookup,
+		PostDispatchInfoOf, UniqueSaturatedInto,
 	},
 	transaction_validity::{TransactionSource, TransactionValidity, TransactionValidityError},
-	AccountId32, ApplyExtrinsicResult, ConsensusEngineId,
+	ApplyExtrinsicResult, ConsensusEngineId,
 };
 
 use sp_std::prelude::*;
@@ -56,7 +57,7 @@ use frame_system::EnsureRoot;
 use pallet_balances::NegativeImbalance;
 use pallet_xcm::{EnsureXcm, IsVoiceOfBody};
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
-pub use sp_runtime::{MultiAddress, Perbill, Permill};
+pub use sp_runtime::{Perbill, Permill};
 use xcm_config::{RelayLocation, XcmConfig, XcmOriginToTransactDispatchOrigin};
 
 pub use pallet_bridge_grandpa::Call as BridgeGrandpaCall;
@@ -67,7 +68,7 @@ pub use sp_runtime::BuildStorage;
 
 // Cumulus imports
 //https://github.com/paritytech/cumulus/tree/master/parachains/common
-pub use parachains_common::impls::{AccountIdOf, DealWithFees};
+pub use parachains_common::impls::DealWithFees;
 
 // Polkadot imports
 use polkadot_runtime_common::{BlockHashCount, SlowAdjustingFeeUpdate};
@@ -82,8 +83,7 @@ use xcm_executor::XcmExecutor;
 use fp_rpc::TransactionStatus;
 use pallet_ethereum::{Call::transact, PostLogContent, Transaction as EthereumTransaction};
 use pallet_evm::{
-	Account as EVMAccount, EVMCurrencyAdapter, EnsureAddressTruncated, FeeCalculator,
-	HashedAddressMapping, OnChargeEVMTransaction, Runner,
+	Account as EVMAccount, EVMCurrencyAdapter, FeeCalculator, OnChargeEVMTransaction, Runner,
 };
 
 mod precompiles;
@@ -97,7 +97,7 @@ pub type Signature = ownership_parachain_primitives::Signature;
 
 /// Some way of identifying an account on the chain. We intentionally make it equivalent
 /// to the public key of our transaction signing scheme.
-pub type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::AccountId;
+pub type AccountId = ownership_parachain_primitives::AccountId;
 
 /// Balance of an account.
 pub type Balance = ownership_parachain_primitives::Balance;
@@ -113,9 +113,6 @@ pub type BlockNumber = ownership_parachain_primitives::BlockNumber;
 
 /// The type for storing how many extrinsics an account has signed.
 pub type Nonce = ownership_parachain_primitives::Nonce;
-
-/// The address format for describing accounts.
-pub type Address = MultiAddress<AccountId, ()>;
 
 /// Block header type as expected by this runtime.
 pub type Header = generic::Header<BlockNumber, ownership_parachain_primitives::Hasher>;
@@ -143,7 +140,7 @@ pub type SignedExtra = (
 
 /// Unchecked extrinsic type as expected by this runtime.
 pub type UncheckedExtrinsic =
-	fp_self_contained::UncheckedExtrinsic<Address, RuntimeCall, Signature, SignedExtra>;
+	fp_self_contained::UncheckedExtrinsic<AccountId, RuntimeCall, Signature, SignedExtra>;
 
 /// Extrinsic type that has already been checked.
 pub type CheckedExtrinsic =
@@ -156,14 +153,14 @@ parameter_types! {
 	pub const EVMChainIdName: &'static str = "EVMChainId";
 	pub const BaseFeeName: &'static str = "BaseFee";
 }
-
-pub type Migrations = (
+type Migrations = (
 	pallet_collator_selection::migration::v1::MigrateToV1<Runtime>,
 	RemovePallet<LivingAssetsOwnershipName, RocksDbWeight>,
 	RemovePallet<EthereumName, RocksDbWeight>,
 	RemovePallet<EVMName, RocksDbWeight>,
 	RemovePallet<EVMChainIdName, RocksDbWeight>,
 	RemovePallet<BaseFeeName, RocksDbWeight>,
+	migrations::v1::version_unchecked::MigrateSudo<Runtime>,
 );
 
 /// Executive: handles dispatch to the various modules.
@@ -228,10 +225,32 @@ impl_opaque_keys! {
 	}
 }
 
+/// `laos-parachain` is an original spec name of the parachain. `try-runtime` fails when
+/// `spec_name` does not match. So we use `laos-parachain` as a spec name to please CI.
+///
+/// See [this issue](https://github.com/freeverseio/laos/issues/30)
+#[cfg(feature = "try-runtime")]
 #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("laos-parachain"),
 	impl_name: create_runtime_str!("laos-parachain"),
+	authoring_version: 1,
+	spec_version: 7,
+	impl_version: 0,
+	apis: RUNTIME_API_VERSIONS,
+	transaction_version: 1,
+	state_version: 1,
+};
+
+/// Polkadot.js explorer does not support `laos-parachain` as an ethereum chain, therefore we
+/// use `frontier-template` as a spec name to make explorer work.
+///
+/// See [this issue](https://github.com/freeverseio/laos/issues/30)
+#[cfg(not(feature = "try-runtime"))]
+#[sp_version::runtime_version]
+pub const VERSION: RuntimeVersion = RuntimeVersion {
+	spec_name: create_runtime_str!("frontier-template"),
+	impl_name: create_runtime_str!("frontier-template"),
 	authoring_version: 1,
 	spec_version: 7,
 	impl_version: 0,
@@ -300,7 +319,7 @@ impl frame_system::Config for Runtime {
 	/// The aggregated dispatch type that is available for extrinsics.
 	type RuntimeCall = RuntimeCall;
 	/// The lookup mechanism to get account ID from whatever is passed in dispatchers.
-	type Lookup = AccountIdLookup<AccountId, ()>;
+	type Lookup = IdentityLookup<AccountId>;
 	/// The block type
 	type Block = Block;
 	/// The type for hashing blocks and tries.
@@ -488,11 +507,15 @@ impl pallet_collator_selection::Config for Runtime {
 	type MinEligibleCollators = ConstU32<4>;
 }
 
+parameter_types! {
+	/// Null address
+	pub NullAddress: AccountId = [0u8; 20].into();
+}
+
 impl pallet_living_assets_ownership::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type BaseURILimit = ConstU32<2015>;
-	type AccountIdToH160 = AccountIdToH160;
-	type H160ToAccountId = H160ToAccountId;
+	type NullAddress = NullAddress;
 	type AssetIdToInitialOwner = AssetIdToInitialOwner;
 }
 
@@ -500,34 +523,6 @@ impl pallet_sudo::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeCall = RuntimeCall;
 	type WeightInfo = ();
-}
-
-/// A struct responsible for converting an `AccountId` to an `H160` address.
-///
-/// The `AccountIdToH160` struct provides a conversion from `AccountId`, typically used
-/// as a native identity in a blockchain, to an `H160` address, commonly used in Ethereum-like
-/// networks.
-pub struct AccountIdToH160;
-impl Convert<AccountId, H160> for AccountIdToH160 {
-	fn convert(account_id: AccountId) -> H160 {
-		let mut bytes = [0u8; 20];
-		let account_id_bytes: [u8; 32] = account_id.into();
-		bytes.copy_from_slice(&account_id_bytes[account_id_bytes.len() - 20..]);
-		H160::from(bytes)
-	}
-}
-
-/// A struct responsible for converting an `H160` address to an `AccountId`.
-///
-/// The `H160ToAccountId` struct provides a conversion from `H160`, commonly used in Ethereum-like
-/// networks, to `AccountId`, typically used as a native identity in a blockchain.
-pub struct H160ToAccountId;
-impl Convert<H160, AccountId> for H160ToAccountId {
-	fn convert(account_id: H160) -> AccountId {
-		let mut data = [0u8; 32];
-		data[12..].copy_from_slice(&account_id.0);
-		AccountId32::from(data)
-	}
 }
 
 /// Represents a mapping between `AssetId` and `AccountId`.
@@ -539,13 +534,12 @@ impl Convert<U256, AccountId> for AssetIdToInitialOwner {
 		let mut bytes = [0u8; 20];
 		let asset_id_bytes: [u8; 32] = asset_id.into();
 		bytes.copy_from_slice(&asset_id_bytes[asset_id_bytes.len() - 20..]);
-		let owner = H160::from(bytes);
-		H160ToAccountId::convert(owner)
+
+		bytes.into()
 	}
 }
 
 // Frontier
-
 impl pallet_evm_chain_id::Config for Runtime {}
 
 pub struct FindAuthorTruncated<F>(PhantomData<F>);
@@ -568,8 +562,6 @@ pub struct EVMDealWithFees<R>(PhantomData<R>);
 impl<R> OnUnbalanced<NegativeImbalance<R>> for EVMDealWithFees<R>
 where
 	R: pallet_balances::Config + pallet_collator_selection::Config + core::fmt::Debug,
-	AccountIdOf<R>:
-		From<polkadot_primitives::v5::AccountId> + Into<polkadot_primitives::v5::AccountId>,
 	<R as frame_system::Config>::RuntimeEvent: From<pallet_balances::Event<R>>,
 {
 	fn on_nonzero_unbalanced(amount: NegativeImbalance<R>) {
@@ -581,15 +573,20 @@ where
 
 pub struct EVMTransactionChargeHandler<OU>(PhantomData<OU>);
 
-type BalanceOf<R> = <<R as pallet_evm::Config>::Currency as Currency<AccountIdOf<R>>>::Balance;
-type PositiveImbalanceOf<R> =
-	<<R as pallet_evm::Config>::Currency as Currency<AccountIdOf<R>>>::PositiveImbalance;
-type NegativeImbalanceOf<R> =
-	<<R as pallet_evm::Config>::Currency as Currency<AccountIdOf<R>>>::NegativeImbalance;
+type CurrencyAccountIdOf<T> = <T as frame_system::Config>::AccountId;
+
+type BalanceOf<T> =
+	<<T as pallet_evm::Config>::Currency as Currency<CurrencyAccountIdOf<T>>>::Balance;
+
+type PositiveImbalanceOf<T> =
+	<<T as pallet_evm::Config>::Currency as Currency<CurrencyAccountIdOf<T>>>::PositiveImbalance;
+
+type NegativeImbalanceOf<T> =
+	<<T as pallet_evm::Config>::Currency as Currency<CurrencyAccountIdOf<T>>>::NegativeImbalance;
 
 impl<R, OU> OnChargeEVMTransaction<R> for EVMTransactionChargeHandler<OU>
 where
-	R: pallet_evm::Config,
+	R: pallet_evm::Config + pallet_balances::Config,
 	PositiveImbalanceOf<R>: Imbalance<BalanceOf<R>, Opposite = NegativeImbalanceOf<R>>,
 	NegativeImbalanceOf<R>: Imbalance<BalanceOf<R>, Opposite = PositiveImbalanceOf<R>>,
 	OU: OnUnbalanced<NegativeImbalanceOf<R>>,
@@ -630,27 +627,41 @@ parameter_types! {
 
 const MAX_POV_SIZE: u64 = 5 * 1024 * 1024;
 
+pub struct CustomFindAuthor<Inner>(sp_std::marker::PhantomData<Inner>);
+
+impl<Inner> frame_support::traits::FindAuthor<sp_core::H160> for CustomFindAuthor<Inner>
+where
+	Inner: frame_support::traits::FindAuthor<AccountId>,
+{
+	fn find_author<'a, I>(digests: I) -> Option<sp_core::H160>
+	where
+		I: 'a + IntoIterator<Item = (frame_support::ConsensusEngineId, &'a [u8])>,
+	{
+		Inner::find_author(digests).map(Into::into)
+	}
+}
+
 impl pallet_evm::Config for Runtime {
-	type FeeCalculator = LaosBaseFee;
-	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
-	type WeightPerGas = WeightPerGas;
-	type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
-	type CallOrigin = EnsureAddressTruncated;
-	type WithdrawOrigin = EnsureAddressTruncated;
-	type AddressMapping = HashedAddressMapping<BlakeTwo256>;
-	type Currency = Balances;
-	type RuntimeEvent = RuntimeEvent;
-	type PrecompilesType = FrontierPrecompiles<Self>;
-	type PrecompilesValue = PrecompilesValue;
-	type ChainId = LaosEVMChainId;
+	type AddressMapping = pallet_evm::IdentityAddressMapping;
 	type BlockGasLimit = BlockGasLimit;
-	type Runner = pallet_evm::runner::stack::Runner<Self>;
+	type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
+	type CallOrigin = pallet_evm::EnsureAddressRoot<AccountId>;
+	type ChainId = EVMChainId;
+	type Currency = Balances;
+	type FeeCalculator = BaseFee;
+	type FindAuthor = CustomFindAuthor<pallet_session::FindAccountFromAuthorIndex<Self, Aura>>;
+	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
+	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
 	type OnChargeTransaction = EVMTransactionChargeHandler<EVMDealWithFees<Runtime>>;
 	type OnCreate = ();
-	type FindAuthor = FindAuthorTruncated<Aura>;
+	type PrecompilesType = FrontierPrecompiles<Self>;
+	type PrecompilesValue = PrecompilesValue;
+	type Runner = pallet_evm::runner::stack::Runner<Self>;
+	type RuntimeEvent = RuntimeEvent;
 	type Timestamp = Timestamp;
 	type WeightInfo = pallet_evm::weights::SubstrateWeight<Runtime>;
-	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
+	type WeightPerGas = WeightPerGas;
+	type WithdrawOrigin = pallet_evm::EnsureAddressNever<AccountId>;
 }
 
 parameter_types! {
@@ -702,7 +713,7 @@ impl pallet_bridge_grandpa::Config for Runtime {
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
-	pub enum Runtime
+	pub struct Runtime
 	{
 		// System support stuff.
 		System: frame_system = 0,
@@ -734,11 +745,11 @@ construct_runtime!(
 		LaosLivingAssetsOwnership: pallet_living_assets_ownership = 41,
 
 		// Frontier
-		LaosEthereum: pallet_ethereum = 50,
-		LaosEVM: pallet_evm = 51,
-		LaosEVMChainId: pallet_evm_chain_id = 52,
+		Ethereum: pallet_ethereum = 50,
+		EVM: pallet_evm = 51,
+		EVMChainId: pallet_evm_chain_id = 52,
 		// DynamicFee: pallet_dynamic_fee = 43,
-		LaosBaseFee: pallet_base_fee = 54,
+		BaseFee: pallet_base_fee = 54,
 
 		// Bridge
 		BridgeEvochainGrandpa: pallet_bridge_grandpa = 60,
@@ -804,14 +815,14 @@ impl fp_self_contained::SelfContainedCall for RuntimeCall {
 
 	fn is_self_contained(&self) -> bool {
 		match self {
-			RuntimeCall::LaosEthereum(call) => call.is_self_contained(),
+			RuntimeCall::Ethereum(call) => call.is_self_contained(),
 			_ => false,
 		}
 	}
 
 	fn check_self_contained(&self) -> Option<Result<Self::SignedInfo, TransactionValidityError>> {
 		match self {
-			RuntimeCall::LaosEthereum(call) => call.check_self_contained(),
+			RuntimeCall::Ethereum(call) => call.check_self_contained(),
 			_ => None,
 		}
 	}
@@ -823,8 +834,7 @@ impl fp_self_contained::SelfContainedCall for RuntimeCall {
 		len: usize,
 	) -> Option<TransactionValidity> {
 		match self {
-			RuntimeCall::LaosEthereum(call) =>
-				call.validate_self_contained(info, dispatch_info, len),
+			RuntimeCall::Ethereum(call) => call.validate_self_contained(info, dispatch_info, len),
 			_ => None,
 		}
 	}
@@ -836,7 +846,7 @@ impl fp_self_contained::SelfContainedCall for RuntimeCall {
 		len: usize,
 	) -> Option<Result<(), TransactionValidityError>> {
 		match self {
-			RuntimeCall::LaosEthereum(call) =>
+			RuntimeCall::Ethereum(call) =>
 				call.pre_dispatch_self_contained(info, dispatch_info, len),
 			_ => None,
 		}
@@ -847,7 +857,7 @@ impl fp_self_contained::SelfContainedCall for RuntimeCall {
 		info: Self::SignedInfo,
 	) -> Option<sp_runtime::DispatchResultWithInfo<PostDispatchInfoOf<Self>>> {
 		match self {
-			call @ RuntimeCall::LaosEthereum(pallet_ethereum::Call::transact { .. }) =>
+			call @ RuntimeCall::Ethereum(pallet_ethereum::Call::transact { .. }) =>
 				Some(call.dispatch(RuntimeOrigin::from(
 					pallet_ethereum::RawOrigin::EthereumTransaction(info),
 				))),
@@ -968,7 +978,7 @@ impl_runtime_apis! {
 		}
 
 		fn account_basic(address: H160) -> EVMAccount {
-			let (account, _) = LaosEVM::account_basic(&address);
+			let (account, _) = EVM::account_basic(&address);
 			account
 		}
 
@@ -1099,7 +1109,7 @@ impl_runtime_apis! {
 			xts: Vec<<Block as BlockT>::Extrinsic>,
 		) -> Vec<EthereumTransaction> {
 			xts.into_iter().filter_map(|xt| match xt.0.function {
-				RuntimeCall::LaosEthereum(transact { transaction }) => Some(transaction),
+				RuntimeCall::Ethereum(transact { transaction }) => Some(transaction),
 				_ => None
 			}).collect::<Vec<EthereumTransaction>>()
 		}
@@ -1117,7 +1127,7 @@ impl_runtime_apis! {
 				let _ = Executive::apply_extrinsic(ext);
 			}
 
-			LaosEthereum::on_finalize(System::block_number() + 1);
+			Ethereum::on_finalize(System::block_number() + 1);
 
 			(
 				pallet_ethereum::CurrentBlock::<Runtime>::get(),
