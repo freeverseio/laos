@@ -40,9 +40,7 @@ use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
 use frame_support::{
-	construct_runtime,
-	migrations::RemovePallet,
-	parameter_types,
+	construct_runtime, parameter_types,
 	traits::{
 		ConstBool, ConstU32, ConstU64, ConstU8, Currency, EitherOfDiverse, Everything, FindAuthor,
 		Hooks, Imbalance, OnUnbalanced,
@@ -146,20 +144,8 @@ pub type UncheckedExtrinsic =
 pub type CheckedExtrinsic =
 	fp_self_contained::CheckedExtrinsic<AccountId, RuntimeCall, SignedExtra, H160>;
 
-parameter_types! {
-	pub const LivingAssetsOwnershipName: &'static str = "LivingAssetsOwnership";
-	pub const EthereumName: &'static str = "Ethereum";
-	pub const EVMName: &'static str = "EVM";
-	pub const EVMChainIdName: &'static str = "EVMChainId";
-	pub const BaseFeeName: &'static str = "BaseFee";
-}
 type Migrations = (
 	pallet_collator_selection::migration::v1::MigrateToV1<Runtime>,
-	RemovePallet<LivingAssetsOwnershipName, RocksDbWeight>,
-	RemovePallet<EthereumName, RocksDbWeight>,
-	RemovePallet<EVMName, RocksDbWeight>,
-	RemovePallet<EVMChainIdName, RocksDbWeight>,
-	RemovePallet<BaseFeeName, RocksDbWeight>,
 	migrations::v1::version_unchecked::MigrateSudo<Runtime>,
 );
 
