@@ -2,7 +2,11 @@
   "name": "Caladan Ownership Chain",
   "id": "caladan_ownership_chain",
   "chainType": "Live",
-  "bootNodes": [],
+  "bootNodes": [
+    "/ip4/161.35.247.80/tcp/30334/p2p/12D3KooWAdo7EjVZdXYvAvCdknkWw4zCXztQ7bKYbba7ghXFjBd9",
+    "/ip4/159.223.242.228/tcp/30334/p2p/12D3KooWHohgChQbQ2uXFr5fpmWruVZECCUx7AQBQnTBEsfgqmG3",
+    "/ip4/143.244.199.17/tcp/30334/p2p/12D3KooWRrZq5P3M2YUHDypxLkPpqJgyga9auxRQ9iUrU1CgnLr1"
+  ],
   "telemetryEndpoints": null,
   "protocolId": "caladan_ownership_chain",
   "properties": {
