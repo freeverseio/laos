@@ -24,6 +24,9 @@ Here, we will use `SS58 Address` as `AuraId` in the chain spec.
 
 Use `Polkadot.js` to get `AccountId20` from the above mnemonic seed.
 
+![AccountId20](https://github.com/freeverseio/laos/assets/137785454/c832f9ab-065a-4189-8754-fddb749d83ba)
+
+
 And now replace all mentions of the following `AccountId20` in the `caladan-spec.json` file `0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac` with the new `AccountId20` that you generated.
 
 The resulting json would look like this, if we used the account generated above.
@@ -81,6 +84,7 @@ This will start the new parachain but it won't produce blocks yet. You will firs
 
 Once the parachain is started, you will need to insert the Aura keys. You can do this by connecting to the parachain in `Polkadot.js` and in the `RPC` tab.
 
+![Insert aura keys](https://github.com/freeverseio/laos/assets/137785454/b029ddbd-217c-4d9e-95bf-f963ef0b95aa)
 
 ## Register parachain on relay chain
 
@@ -90,13 +94,20 @@ There are two ways to register a parachain on the relay chain. Both require you 
 
 This creates a `para_id`. Since the parachain above uses `para_id: 2001`, we need to generate `ParaId` twice to get the `2001` id of the parachain.
 
+![Reserve ParaId](https://github.com/freeverseio/laos/assets/137785454/fe4cd39c-d50d-495e-84e7-83dca1a28f34)
 
 After this, you need to create the parathread:
 
-Once this extrinsic is included in a block, you will see that parathread is onboarding:
+![Create parathread](https://github.com/freeverseio/laos/assets/137785454/e2ef14a0-59a2-445b-b3e9-22b848043ba5)
 
-And when the parathread is onboarded, you will need to dispatch this call with the genesis artifacts that you generated above:
+Once this extrinsic is included in a block, you will see that parathread is onboarding.
+
+And when the parathread is onboarded, you will need to dispatch this sudo call with the genesis artifacts that you generated above:
+
+![Schedule upgrade](https://github.com/freeverseio/laos/assets/137785454/bc5ca670-29d4-451f-b9d8-2ce72196a432)
 
 ### 2. Use `paraSudoWrapper.sudoScheduleParaInitialize` to register parachain
 
 This one is more straightforward and you only need one sudo extrinsic to register the parachain.
+
+![SudoScheduleParaInitialize](https://github.com/freeverseio/laos/assets/137785454/52814c9e-4754-4ef3-8084-1c667a381a54)
