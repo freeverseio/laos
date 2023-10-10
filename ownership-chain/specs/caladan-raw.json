@@ -10,7 +10,7 @@
     "tokenSymbol": "CLD"
   },
   "relay_chain": "rococo_freeverse",
-  "para_id": 2001,
+  "para_id": 2900,
   "codeSubstitutes": {},
   "genesis": {
     "raw": {
