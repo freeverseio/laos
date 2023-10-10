@@ -94,7 +94,7 @@ pub fn development_config() -> ChainSpec {
 				endowed_accounts(),
 				// Give Alice root privileges
 				Some(hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").into()),
-				1000.into(),
+				2001.into(),
 			)
 		},
 		Vec::new(),
@@ -104,7 +104,7 @@ pub fn development_config() -> ChainSpec {
 		None,
 		Extensions {
 			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
-			para_id: 1000,
+			para_id: 2001,
 		},
 	)
 }
@@ -132,7 +132,7 @@ pub fn local_testnet_config() -> ChainSpec {
 				endowed_accounts(),
 				// Give Alice root privileges
 				Some(hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").into()),
-				1000.into(),
+				2001.into(),
 			)
 		},
 		// Bootnodes
@@ -148,7 +148,7 @@ pub fn local_testnet_config() -> ChainSpec {
 		// Extensions
 		Extensions {
 			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
-			para_id: 1000,
+			para_id: 2001,
 		},
 	)
 }
@@ -209,7 +209,7 @@ fn testnet_genesis(
 		transaction_payment: Default::default(),
 		// EVM compatibility
 		evm_chain_id: laos_ownership_runtime::EVMChainIdConfig {
-			chain_id: 1000,
+			chain_id: 667,
 			..Default::default()
 		},
 		evm: laos_ownership_runtime::EVMConfig {
