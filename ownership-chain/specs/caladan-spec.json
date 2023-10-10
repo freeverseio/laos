@@ -23,12 +23,7 @@
       },
       "balances": {
         "balances": [
-          ["0x045c57B46DEDE60001623105d351c7941C90149e", 1152921504606846976],
-          ["0x3cd0a705a2dc65e5b1e1205896baa2be8a07c6e0", 1152921504606846976],
-          ["0x798d4ba9baf0064ec19eb4f0a1a45785ae9d6dfc", 1152921504606846976],
-          ["0x773539d4ac0e786233d90a233654ccee26a613d9", 1152921504606846976],
-          ["0xff64d3f6efe2317ee2807d223a0bdc4c0c49dfdb", 1152921504606846976],
-          ["0xc0f0f4ab324c46e55d02d0033343b4be8a55532d", 1152921504606846976]
+          ["0x045c57B46DEDE60001623105d351c7941C90149e", 115292150460684697600000000]
         ]
       },
       "transactionPayment": {
@@ -110,24 +105,6 @@
             "balance": "0xd3c21bcecceda1000000",
             "storage": {},
             "code": [0]
-          },
-          "0x6be02d1d3665660d22ff9624b7be0551ee1ac91b": {
-            "nonce": "0x0",
-            "balance": "0xffffffffffffffffffffffffffffffff",
-            "storage": {},
-            "code": []
-          },
-          "0xc0f0f4ab324c46e55d02d0033343b4be8a55532d": {
-            "nonce": "0x0",
-            "balance": "0xef000000000000000000000000000",
-            "storage": {},
-            "code": []
-          },
-          "0xd43593c715fdd31c61141abd04a99fd6822c8558": {
-            "nonce": "0x0",
-            "balance": "0xffffffffffffffffffffffffffffffff",
-            "storage": {},
-            "code": []
           }
         }
       },
