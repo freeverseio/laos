@@ -2,9 +2,7 @@
   "name": "Caladan Ownership Chain",
   "id": "caladan_ownership_chain",
   "chainType": "Live",
-  "bootNodes": [
-    "/ip4/127.0.0.1/tcp/30333/p2p/12D3KooWJvuxnCTCbx8x48HAg6Ld3agkh5qtzsbKk1ao76XpHJuG"
-  ],
+  "bootNodes": [],
   "telemetryEndpoints": null,
   "protocolId": "caladan_ownership_chain",
   "properties": {
