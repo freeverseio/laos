@@ -204,28 +204,10 @@ impl_opaque_keys! {
 	}
 }
 
-/// `laos-parachain` is an original spec name of the parachain. `try-runtime` fails when
-/// `spec_name` does not match. So we use `laos-parachain` as a spec name to please CI.
-///
-/// See [this issue](https://github.com/freeverseio/laos/issues/30)
-#[cfg(feature = "try-runtime")]
-#[sp_version::runtime_version]
-pub const VERSION: RuntimeVersion = RuntimeVersion {
-	spec_name: create_runtime_str!("laos-parachain"),
-	impl_name: create_runtime_str!("laos-parachain"),
-	authoring_version: 1,
-	spec_version: 7,
-	impl_version: 0,
-	apis: RUNTIME_API_VERSIONS,
-	transaction_version: 1,
-	state_version: 1,
-};
-
 /// Polkadot.js explorer does not support `laos-parachain` as an ethereum chain, therefore we
 /// use `frontier-template` as a spec name to make explorer work.
 ///
 /// See [this issue](https://github.com/freeverseio/laos/issues/30)
-#[cfg(not(feature = "try-runtime"))]
 #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("frontier-template"),
