@@ -1,24 +1,25 @@
-name: ChatGPT Review
+name: ChatGPT Code Review
 
 on:
   pull_request:
     types: [opened, synchronize]
 
 jobs:
-  hello_world_job:
+  code_review_job:
     runs-on: ubuntu-latest
-    name: ChatGPT explain code
+    name: ChatGPT Review Job
     steps:
       - uses: anc95/ChatGPT-CodeReview@main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          # Optional
+          # Optional parameters
           LANGUAGE: English
           OPENAI_API_ENDPOINT: https://api.openai.com/v1
-          MODEL: gpt-3.5-turbo # https://platform.openai.com/docs/models
-          PROMPT: "Please conduct a thorough review of the following Pull Request. Highlight any coding standards violations, logical errors, or areas for improvement. If the Pull Request adheres to all guidelines and best practices, simply respond with 'No suggestions, the PR is good.'"
-          top_p: 1 # https://platform.openai.com/docs/api-reference/chat/create#chat/create-top_p
-          temperature: 0.2 # https://platform.openai.com/docs/api-reference/chat/create#chat/create-temperature
+          MODEL: gpt-3.5-turbo
+          PROMPT: "Please conduct a thorough review of the following Pull Request. Highlight only any coding standards violations, logical errors, or areas for improvement. If the Pull Request adheres to all guidelines and best practices, simply respond with 'No suggestions, the PR is good.'"
+          # Configuration for OpenAI API request
+          top_p: 1  # Determines the portion of the probability mass to sample from - https://platform.openai.com/docs/api-reference/chat/create#chat/create-top_p
+          temperature: 0.2  # Controls randomness of the output - https://platform.openai.com/docs/api-reference/chat/create#chat/create-temperature
           max_tokens: 2000
-          MAX_PATCH_LENGTH: 5000 # if the patch/diff length is large than MAX_PATCH_LENGTH, will be ignored and won't review. By default, with no MAX_PATCH_LENGTH set, there is also no limit for the patch/diff length.
+          MAX_PATCH_LENGTH: 5000  # Ignored and won't review if the patch/diff length is larger than this value
