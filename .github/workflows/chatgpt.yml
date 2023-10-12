@@ -17,7 +17,7 @@ jobs:
           LANGUAGE: English
           OPENAI_API_ENDPOINT: https://api.openai.com/v1
           MODEL: gpt-3.5-turbo
-          PROMPT: "Please conduct a thorough review of the following Pull Request. Highlight only important coding standards violations, logical errors, or areas for improvement. If the Pull Request adheres to all guidelines and best practices, simply respond with 'No suggestions, the PR is good.'"
+          PROMPT: "Please highlight only important coding standards violations, logical errors, or areas for improvement of the Pull Request. If the Pull Request adheres to all guidelines and best practices, simply respond with 'No suggestions, the PR is good.'"
           # Configuration for OpenAI API request
           top_p: 1  # Determines the portion of the probability mass to sample from - https://platform.openai.com/docs/api-reference/chat/create#chat/create-top_p
           temperature: 0.2  # Controls randomness of the output - https://platform.openai.com/docs/api-reference/chat/create#chat/create-temperature
