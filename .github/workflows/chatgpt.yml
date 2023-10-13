@@ -2,12 +2,13 @@ name: ChatGPT
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, synchronize, ready_for_review]
 
 jobs:
   review:
+    if: ${{ !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
-    name: Review
+    name: review
     steps:
       - uses: anc95/ChatGPT-CodeReview@v1.0.11
         env:
