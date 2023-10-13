@@ -61,3 +61,20 @@ frame_support::parameter_types! {
 	pub BlockWeights: limits::BlockWeights =
 		limits::BlockWeights::with_sensible_defaults(MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO);
 }
+
+/// Primitives to work with NFTs.
+pub mod nfts {
+	use super::*;
+
+	/// Collection id to use for NFTs.
+	pub type CollectionId = u64;
+
+	/// Asset id to use for NFTs.
+	pub type AssetId = sp_core::U256;
+
+	/// Collection configuration type.
+	pub type CollectionConfig = pallet_nfts::CollectionConfig<Balance, BlockNumber, CollectionId>;
+
+	/// Item configuration type.
+	pub type ItemConfig = pallet_nfts::ItemConfig;
+}

@@ -35,6 +35,7 @@ frame-try-runtime = { workspace = true, optional = true }
 pallet-aura = { workspace = true }
 pallet-authorship = { workspace = true }
 pallet-balances = { workspace = true }
+pallet-nfts = { workspace = true }
 pallet-session = { workspace = true }
 pallet-sudo = { workspace = true }
 pallet-timestamp = { workspace = true }
@@ -130,6 +131,7 @@ std = [
 	"pallet-session/std",
 	"pallet-sudo/std",
 	"pallet-living-assets-ownership/std",
+	"pallet-nfts/std",
 	"pallet-timestamp/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-transaction-payment/std",
@@ -197,6 +199,7 @@ runtime-benchmarks = [
 	"cumulus-pallet-parachain-system/runtime-benchmarks",
 	"pallet-ethereum/runtime-benchmarks",
 	"pallet-evm/runtime-benchmarks",
+	"pallet-nfts/runtime-benchmarks",
 	"pallet-sudo/runtime-benchmarks",
 	"polkadot-parachain/runtime-benchmarks",
 	"polkadot-primitives/runtime-benchmarks",

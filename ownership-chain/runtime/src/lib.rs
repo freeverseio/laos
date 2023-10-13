@@ -11,12 +11,14 @@ mod migrations;
 mod tests;
 mod weights;
 pub mod xcm_config;
+use pallet_evm_erc721::AssetIdToInitialOwner;
+use pallet_nfts::PalletFeatures;
 use parity_scale_codec as codec;
 
 use codec::{Decode, Encode};
 use core::marker::PhantomData;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
-use ownership_parachain_primitives::{MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO};
+use ownership_parachain_primitives::{nfts::*, MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO};
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
 use sp_core::{
@@ -44,8 +46,8 @@ use frame_support::{
 	migrations::RemovePallet,
 	parameter_types,
 	traits::{
-		ConstBool, ConstU32, ConstU64, ConstU8, Currency, EitherOfDiverse, Everything, FindAuthor,
-		Hooks, Imbalance, OnUnbalanced,
+		AsEnsureOriginWithArg, ConstBool, ConstU32, ConstU64, ConstU8, Currency, EitherOfDiverse,
+		Everything, FindAuthor, Hooks, Imbalance, OnUnbalanced,
 	},
 	weights::{
 		constants::WEIGHT_REF_TIME_PER_SECOND, ConstantMultiplier, Weight, WeightToFeeCoefficient,
@@ -53,7 +55,7 @@ use frame_support::{
 	},
 	PalletId,
 };
-use frame_system::EnsureRoot;
+use frame_system::{EnsureRoot, EnsureSigned};
 use pallet_balances::NegativeImbalance;
 use pallet_xcm::{EnsureXcm, IsVoiceOfBody};
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
@@ -90,7 +92,7 @@ mod precompiles;
 use precompiles::FrontierPrecompiles;
 
 /// Import the living assets ownership pallet.
-pub use pallet_living_assets_ownership;
+// pub use pallet_living_assets_ownership;
 
 /// Alias to 512-bit hash when used in the context of a transaction signature on the chain.
 pub type Signature = ownership_parachain_primitives::Signature;
@@ -512,31 +514,17 @@ parameter_types! {
 	pub NullAddress: AccountId = [0u8; 20].into();
 }
 
-impl pallet_living_assets_ownership::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type BaseURILimit = ConstU32<2015>;
-	type NullAddress = NullAddress;
-	type AssetIdToInitialOwner = AssetIdToInitialOwner;
-}
+// impl pallet_living_assets_ownership::Config for Runtime {
+// 	type RuntimeEvent = RuntimeEvent;
+// 	type BaseURILimit = ConstU32<2015>;
+// 	type NullAddress = NullAddress;
+// 	type AssetIdToInitialOwner = AssetIdToInitialOwner;
+// }
 
 impl pallet_sudo::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeCall = RuntimeCall;
 	type WeightInfo = ();
-}
-
-/// Represents a mapping between `AssetId` and `AccountId`.
-/// This struct provides functionalities to convert an `AssetId` (represented by `U256`) into an
-/// `AccountId`.
-pub struct AssetIdToInitialOwner;
-impl Convert<U256, AccountId> for AssetIdToInitialOwner {
-	fn convert(asset_id: U256) -> AccountId {
-		let mut bytes = [0u8; 20];
-		let asset_id_bytes: [u8; 32] = asset_id.into();
-		bytes.copy_from_slice(&asset_id_bytes[asset_id_bytes.len() - 20..]);
-
-		bytes.into()
-	}
 }
 
 // Frontier
@@ -711,6 +699,51 @@ impl pallet_bridge_grandpa::Config for Runtime {
 	type WeightInfo = pallet_bridge_grandpa::weights::BridgeWeight<Runtime>;
 }
 
+parameter_types! {
+	pub const CollectionDeposit: Balance = 100;
+	pub const ItemDeposit: Balance = 1;
+	pub const ApprovalsLimit: u32 = 20;
+	pub const ItemAttributesApprovalsLimit: u32 = 20;
+	pub const MaxTips: u32 = 10;
+	pub const MaxDeadlineDuration: BlockNumber = 12 * 30 * DAYS;
+	pub Features: PalletFeatures = PalletFeatures::all_enabled();
+	pub const MaxAttributesPerCall: u32 = 10;
+	pub const AssetDeposit: Balance = 100;
+	pub const ApprovalDeposit: Balance = 1;
+	pub const StringLimit: u32 = 50;
+	pub const MetadataDepositBase: Balance = 10;
+	pub const MetadataDepositPerByte: Balance = 1;
+}
+
+impl pallet_nfts::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type CollectionId = CollectionId;
+	type ItemId = AssetId;
+	type Currency = Balances;
+	type ForceOrigin = frame_system::EnsureRoot<AccountId>;
+	type CollectionDeposit = CollectionDeposit;
+	type ItemDeposit = ItemDeposit;
+	type MetadataDepositBase = MetadataDepositBase;
+	type AttributeDepositBase = MetadataDepositBase;
+	type DepositPerByte = MetadataDepositPerByte;
+	type StringLimit = ConstU32<256>;
+	type KeyLimit = ConstU32<64>;
+	type ValueLimit = ConstU32<256>;
+	type ApprovalsLimit = ApprovalsLimit;
+	type ItemAttributesApprovalsLimit = ItemAttributesApprovalsLimit;
+	type MaxTips = MaxTips;
+	type MaxDeadlineDuration = MaxDeadlineDuration;
+	type MaxAttributesPerCall = MaxAttributesPerCall;
+	type Features = Features;
+	type OffchainSignature = Signature;
+	type OffchainPublic = <Signature as sp_runtime::traits::Verify>::Signer;
+	type WeightInfo = pallet_nfts::weights::SubstrateWeight<Runtime>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type Helper = ();
+	type CreateOrigin = AsEnsureOriginWithArg<EnsureSigned<AccountId>>;
+	type Locker = ();
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub struct Runtime
@@ -724,6 +757,7 @@ construct_runtime!(
 		// Monetary stuff.
 		Balances: pallet_balances = 10,
 		TransactionPayment: pallet_transaction_payment = 11,
+		Nfts: pallet_nfts::{Pallet, Storage, Event<T>} = 12,
 
 		// Collator support. The order of these 4 are important and shall not change.
 		Authorship: pallet_authorship = 20,
@@ -742,7 +776,7 @@ construct_runtime!(
 		Sudo: pallet_sudo = 40,
 
 		// Local pallets
-		LaosLivingAssetsOwnership: pallet_living_assets_ownership = 41,
+		// LaosLivingAssetsOwnership: pallet_living_assets_ownership = 41,
 
 		// Frontier
 		Ethereum: pallet_ethereum = 50,

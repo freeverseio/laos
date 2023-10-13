@@ -2,16 +2,17 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
-use pallet_living_assets_ownership::{
-	collection_id_to_address, traits::CollectionManager, CollectionId,
-};
+use frame_support::traits::tokens::nonfungibles_v2::{Create, Mutate};
+use ownership_parachain_primitives::nfts::*;
+use pallet_living_assets_ownership::collection_id_to_address;
+use pallet_nfts::{CollectionSettings, ItemSettings, MintSettings};
 use parity_scale_codec::Encode;
 use precompile_utils::{
-	keccak256, revert, succeed, Address, Bytes, EvmDataWriter, EvmResult, FunctionModifier, LogExt,
-	LogsBuilder, PrecompileHandleExt,
+	keccak256, revert_dispatch_error, succeed, Address, Bytes, EvmDataWriter, EvmResult,
+	FunctionModifier, LogExt, LogsBuilder, PrecompileHandleExt,
 };
-use sp_runtime::SaturatedConversion;
 
+use sp_core::U256;
 use sp_std::{fmt::Debug, marker::PhantomData, vec::Vec};
 
 /// Solidity selector of the CreateCollection log, which is the Keccak of the Log signature.
@@ -25,22 +26,30 @@ pub enum Action {
 }
 
 /// Wrapper for the precompile function.
-pub struct CollectionManagerPrecompile<AddressMapping, AccountId, BaseURI, LivingAssets>(
-	PhantomData<(AddressMapping, AccountId, BaseURI, LivingAssets)>,
-)
+pub struct CollectionManagerPrecompile<
+	AddressMapping,
+	AccountId,
+	CollectionId,
+	ItemId,
+	CollectionManager,
+>(PhantomData<(AddressMapping, AccountId, CollectionId, ItemId, CollectionManager)>)
 where
 	AddressMapping: pallet_evm::AddressMapping<AccountId>,
 	AccountId: Encode + Debug,
-	BaseURI: TryFrom<Vec<u8>>,
-	LivingAssets: CollectionManager<AccountId, BaseURI>;
+	CollectionId: From<u64> + Into<u64>,
+	ItemId: From<U256> + Into<U256>,
+	CollectionManager: Create<AccountId, CollectionConfig, CollectionId = CollectionId, ItemId = ItemId>
+		+ Mutate<AccountId, ItemConfig>;
 
-impl<AddressMapping, AccountId, BaseURI, LivingAssets> Precompile
-	for CollectionManagerPrecompile<AddressMapping, AccountId, BaseURI, LivingAssets>
+impl<AddressMapping, AccountId, CollectionId, ItemId, CollectionManager> Precompile
+	for CollectionManagerPrecompile<AddressMapping, AccountId, CollectionId, ItemId, CollectionManager>
 where
 	AddressMapping: pallet_evm::AddressMapping<AccountId>,
 	AccountId: Encode + Debug,
-	BaseURI: TryFrom<Vec<u8>>,
-	LivingAssets: CollectionManager<AccountId, BaseURI>,
+	CollectionId: From<u64> + Into<u64>,
+	ItemId: From<U256> + Into<U256>,
+	CollectionManager: Create<AccountId, CollectionConfig, CollectionId = CollectionId, ItemId = ItemId>
+		+ Mutate<AccountId, ItemConfig>,
 {
 	fn execute(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
 		let selector = handle.read_selector()?;
@@ -55,31 +64,53 @@ where
 				input.expect_arguments(1)?;
 
 				let base_uri_bytes: Vec<u8> = match input.read::<Bytes>() {
-					Ok(bytes) => bytes.into(),
+					Ok(bytes) => bytes.0,
 					Err(e) => return Err(e),
-				};
-
-				let base_uri = match base_uri_bytes.try_into() {
-					Ok(value) => value,
-					Err(_) => return Err(revert("base_uri too long")),
 				};
 
 				let caller = handle.context().caller;
 				let owner = AddressMapping::into_account_id(caller);
 
-				match LivingAssets::create_collection(owner, base_uri) {
-					Ok(collection_id) => {
-						let collection_address = collection_id_to_address(
-							collection_id.saturated_into::<CollectionId>(),
-						);
-
-						LogsBuilder::new(handle.context().address)
-							.log2(SELECTOR_LOG_CREATE_COLLECTION, collection_address, Vec::new())
-							.record(handle)?;
-
-						Ok(succeed(EvmDataWriter::new().write(Address(collection_address)).build()))
+				// Customize the collection config as we need.
+				let config = CollectionConfig {
+					settings: CollectionSettings::all_enabled(),
+					max_supply: None,
+					mint_settings: MintSettings {
+						mint_type: pallet_nfts::MintType::Public,
+						price: None,
+						start_block: None,
+						end_block: None,
+						default_item_settings: ItemSettings::all_enabled(),
 					},
-					Err(err) => Err(revert(err)),
+				};
+
+				match CollectionManager::create_collection(&owner, &owner, &config) {
+					Ok(collection_id) => {
+						match CollectionManager::set_collection_attribute(
+							&collection_id,
+							b"baseURI",
+							&base_uri_bytes,
+						) {
+							Ok(_) => {
+								let collection_address =
+									collection_id_to_address(collection_id.into());
+
+								LogsBuilder::new(handle.context().address)
+									.log2(
+										SELECTOR_LOG_CREATE_COLLECTION,
+										collection_address,
+										Vec::new(),
+									)
+									.record(handle)?;
+
+								Ok(succeed(
+									EvmDataWriter::new().write(Address(collection_address)).build(),
+								))
+							},
+							Err(err) => Err(revert_dispatch_error(err)),
+						}
+					},
+					Err(err) => Err(revert_dispatch_error(err)),
 				}
 			},
 		}

@@ -6074,6 +6074,7 @@ dependencies = [
  "pallet-evm-precompile-modexp",
  "pallet-evm-precompile-simple",
  "pallet-living-assets-ownership",
+ "pallet-nfts",
  "pallet-session",
  "pallet-sudo",
  "pallet-timestamp",
@@ -7649,6 +7650,7 @@ dependencies = [
  "fp-account",
  "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
  "frame-system",
+ "pallet-nfts",
  "sp-core 21.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
  "sp-runtime 24.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
 ]
@@ -8205,8 +8207,10 @@ dependencies = [
  "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
  "hex",
  "num_enum 0.5.11",
+ "ownership-parachain-primitives",
  "pallet-evm",
  "pallet-living-assets-ownership",
+ "pallet-nfts",
  "parity-scale-codec",
  "precompile-utils",
  "precompile-utils-macro",
@@ -8429,6 +8433,24 @@ dependencies = [
  "log",
  "parity-scale-codec",
  "scale-info",
+ "sp-io 23.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
+ "sp-runtime 24.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
+ "sp-std 8.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
+]
+
+[[package]]
+name = "pallet-nfts"
+version = "4.0.0-dev"
+source = "git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0#948fbd2fd1233dc26dbb9f9bbc1d2cca2c03945d"
+dependencies = [
+ "enumflags2",
+ "frame-benchmarking",
+ "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
+ "frame-system",
+ "log",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core 21.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
  "sp-io 23.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
  "sp-runtime 24.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
  "sp-std 8.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
