@@ -16,10 +16,12 @@ members = [
    "evolution-chain/primitives",
   	"bridge/relays/*",
 	"bridge/primitives/*",
+   "frontier-chain/runtime",
 ]
 
 [workspace.dependencies]
 parity-scale-codec = { version = "3.2.2", default-features = false, features = ["derive"] }
+scale-codec = { package = "parity-scale-codec", version = "3.2.2", default-features = false, features = ["derive"] }
 hex-literal = "0.4.1"
 hex = { version = "0.4.3", default-features = false }
 scale-info = { version = "2.7.0", default-features = false, features = ["derive"] }
@@ -151,6 +153,9 @@ pallet-ethereum = { git = "https://github.com/paritytech/frontier", branch = "po
 pallet-evm-chain-id = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0", default-features = false }
 pallet-evm-precompile-modexp = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0", default-features = false }
 pallet-evm-precompile-simple = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0", default-features = false }
+pallet-hotfix-sufficients = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0", default-features = false }
+pallet-evm-precompile-sha3fips = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0", default-features = false }
+pallet-dynamic-fee = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0", default-features = false }
 fp-self-contained = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0", default-features = false }
 fp-rpc = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0", default-features = false }
 fp-evm = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0", default-features = false }
