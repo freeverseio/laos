@@ -1,0 +1,22 @@
+name: ChatGPT
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    name: Review
+    steps:
+      - uses: anc95/ChatGPT-CodeReview@v1.0.11
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_API_ENDPOINT: https://api.openai.com/v1
+          MODEL: gpt-4
+          PROMPT: "Please highlight only the most important logical errors, or areas for improvement of the Pull Request. If the Pull Request adheres to all guidelines and best practices, simply respond with 'No suggestions, the PR is good.'"
+          top_p: 1  # Determines the portion of the probability mass to sample from - https://platform.openai.com/docs/api-reference/chat/create#chat/create-top_p
+          temperature: 0.2  # Controls randomness of the output - https://platform.openai.com/docs/api-reference/chat/create#chat/create-temperature
+          max_tokens: 2000
+          MAX_PATCH_LENGTH: 5000  # Ignored and won't review if the patch/diff length is larger than this value
