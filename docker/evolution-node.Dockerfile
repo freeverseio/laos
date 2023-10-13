@@ -5,7 +5,7 @@ WORKDIR /laos
 COPY . /laos
 
 RUN rustup target add wasm32-unknown-unknown --toolchain nightly 
-RUN cargo build --locked --release
+RUN cargo build --locked --release -p laos-evolution
 
 # This is the 2nd stage: a very small image where we copy the laos binary."
 FROM docker.io/library/ubuntu:22.04

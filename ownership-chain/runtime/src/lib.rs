@@ -6,7 +6,6 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
-mod migrations;
 #[cfg(test)]
 mod tests;
 mod weights;
@@ -42,9 +41,7 @@ use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
 use frame_support::{
-	construct_runtime,
-	migrations::RemovePallet,
-	parameter_types,
+	construct_runtime, parameter_types,
 	traits::{
 		AsEnsureOriginWithArg, ConstBool, ConstU32, ConstU64, ConstU8, Currency, EitherOfDiverse,
 		Everything, FindAuthor, Hooks, Imbalance, OnUnbalanced,
@@ -148,23 +145,6 @@ pub type UncheckedExtrinsic =
 pub type CheckedExtrinsic =
 	fp_self_contained::CheckedExtrinsic<AccountId, RuntimeCall, SignedExtra, H160>;
 
-parameter_types! {
-	pub const LivingAssetsOwnershipName: &'static str = "LivingAssetsOwnership";
-	pub const EthereumName: &'static str = "Ethereum";
-	pub const EVMName: &'static str = "EVM";
-	pub const EVMChainIdName: &'static str = "EVMChainId";
-	pub const BaseFeeName: &'static str = "BaseFee";
-}
-type Migrations = (
-	pallet_collator_selection::migration::v1::MigrateToV1<Runtime>,
-	RemovePallet<LivingAssetsOwnershipName, RocksDbWeight>,
-	RemovePallet<EthereumName, RocksDbWeight>,
-	RemovePallet<EVMName, RocksDbWeight>,
-	RemovePallet<EVMChainIdName, RocksDbWeight>,
-	RemovePallet<BaseFeeName, RocksDbWeight>,
-	migrations::v1::version_unchecked::MigrateSudo<Runtime>,
-);
-
 /// Executive: handles dispatch to the various modules.
 pub type Executive = frame_executive::Executive<
 	Runtime,
@@ -172,7 +152,6 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPalletsWithSystem,
-	Migrations,
 >;
 
 pub type Precompiles = FrontierPrecompiles<Runtime>;
@@ -227,28 +206,10 @@ impl_opaque_keys! {
 	}
 }
 
-/// `laos-parachain` is an original spec name of the parachain. `try-runtime` fails when
-/// `spec_name` does not match. So we use `laos-parachain` as a spec name to please CI.
-///
-/// See [this issue](https://github.com/freeverseio/laos/issues/30)
-#[cfg(feature = "try-runtime")]
-#[sp_version::runtime_version]
-pub const VERSION: RuntimeVersion = RuntimeVersion {
-	spec_name: create_runtime_str!("laos-parachain"),
-	impl_name: create_runtime_str!("laos-parachain"),
-	authoring_version: 1,
-	spec_version: 7,
-	impl_version: 0,
-	apis: RUNTIME_API_VERSIONS,
-	transaction_version: 1,
-	state_version: 1,
-};
-
 /// Polkadot.js explorer does not support `laos-parachain` as an ethereum chain, therefore we
 /// use `frontier-template` as a spec name to make explorer work.
 ///
 /// See [this issue](https://github.com/freeverseio/laos/issues/30)
-#[cfg(not(feature = "try-runtime"))]
 #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("frontier-template"),

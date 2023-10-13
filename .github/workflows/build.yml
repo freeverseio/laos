@@ -119,4 +119,4 @@ jobs:
           cargo build --release --package laos-ownership --features=try-runtime
       - name: Try Runtime
         run: |
-          RUST_LOG=try-runtime ./target/release/laos-ownership try-runtime --runtime ./target/release/wbuild/laos-ownership-runtime/laos_ownership_runtime.wasm on-runtime-upgrade --checks=pre-and-post live --uri ws://143.198.251.52:9944
+          RUST_LOG=try-runtime ./target/release/laos-ownership try-runtime --runtime ./target/release/wbuild/laos-ownership-runtime/laos_ownership_runtime.wasm on-runtime-upgrade --checks=pre-and-post live --uri ws://161.35.247.178:9944

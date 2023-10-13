@@ -4,7 +4,7 @@ FROM docker.io/paritytech/ci-linux:production as builder
 WORKDIR /laos
 COPY . /laos
 
-RUN SKIP_WASM_BUILD=1 cargo build --release
+RUN SKIP_WASM_BUILD=1 cargo build --release -p laos-relay
 
 # This is the 2nd stage: a very small image where we copy the laos binary."
 FROM docker.io/debian:bullseye-slim
