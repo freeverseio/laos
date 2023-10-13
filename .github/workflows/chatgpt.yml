@@ -13,8 +13,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          # Optional parameters
-          LANGUAGE: English
           OPENAI_API_ENDPOINT: https://api.openai.com/v1
           MODEL: gpt-4
           PROMPT: "Please highlight only the most important logical errors, or areas for improvement of the Pull Request. If the Pull Request adheres to all guidelines and best practices, simply respond with 'No suggestions, the PR is good.'"
