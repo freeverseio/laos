@@ -16,7 +16,6 @@ jobs:
           OPENAI_API_ENDPOINT: https://api.openai.com/v1
           MODEL: gpt-4
           PROMPT: "Please highlight only the most important logical errors, or areas for improvement of the Pull Request. If the Pull Request adheres to all guidelines and best practices, simply respond with 'No suggestions, the PR is good.'"
-          # Configuration for OpenAI API request
           top_p: 1  # Determines the portion of the probability mass to sample from - https://platform.openai.com/docs/api-reference/chat/create#chat/create-top_p
           temperature: 0.2  # Controls randomness of the output - https://platform.openai.com/docs/api-reference/chat/create#chat/create-temperature
           max_tokens: 2000
