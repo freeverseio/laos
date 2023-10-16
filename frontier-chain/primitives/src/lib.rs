@@ -3,13 +3,13 @@
 #![warn(missing_docs)]
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use fp_account::EthereumSignature;
 use frame_support::weights::{constants::WEIGHT_REF_TIME_PER_MILLIS, IdentityFee, Weight};
 use sp_core::Hasher as HasherT;
 use sp_runtime::{
 	traits::{BlakeTwo256, IdentifyAccount, Verify},
 	Perbill,
 };
-use fp_account::EthereumSignature;
 
 /// We allow for 2000ms of compute with a 6 second average block time.
 pub const WEIGHT_MILLISECS_PER_BLOCK: u64 = 2000;
