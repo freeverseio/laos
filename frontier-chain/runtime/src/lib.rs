@@ -51,6 +51,11 @@ use pallet_evm::{
 	IdentityAddressMapping, Runner,
 };
 
+use frontier_primitives::{
+	AccountId, Address, BlockNumber, Hash, Header, Nonce, Signature, MAXIMUM_BLOCK_LENGTH,
+	MAXIMUM_BLOCK_WEIGHT, SLOT_DURATION, WEIGHT_MILLISECS_PER_BLOCK,
+};
+
 // A few exports that help ease life for downstream crates.
 pub use frame_system::Call as SystemCall;
 pub use pallet_balances::Call as BalancesCall;
@@ -80,7 +85,7 @@ pub mod opaque {
 	pub use sp_runtime::OpaqueExtrinsic as UncheckedExtrinsic;
 
 	/// Opaque block type.
-	pub type Block = generic::Block<frontier_primitives::Header, UncheckedExtrinsic>;
+	pub type Block = generic::Block<Header, UncheckedExtrinsic>;
 	/// Opaque block identifier type.
 	pub type BlockId = generic::BlockId<Block>;
 
@@ -114,11 +119,11 @@ const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 
 parameter_types! {
 	pub const Version: RuntimeVersion = VERSION;
-	pub const BlockHashCount: frontier_primitives::BlockNumber = 256;
+	pub const BlockHashCount: BlockNumber = 256;
 	pub BlockWeights: frame_system::limits::BlockWeights = frame_system::limits::BlockWeights
-		::with_sensible_defaults(frontier_primitives::MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO);
+		::with_sensible_defaults(MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO);
 	pub BlockLength: frame_system::limits::BlockLength = frame_system::limits::BlockLength
-		::max_with_normal_ratio(frontier_primitives::MAXIMUM_BLOCK_LENGTH, NORMAL_DISPATCH_RATIO);
+		::max_with_normal_ratio(MAXIMUM_BLOCK_LENGTH, NORMAL_DISPATCH_RATIO);
 	pub const SS58Prefix: u8 = 42;
 }
 
@@ -138,15 +143,15 @@ impl frame_system::Config for Runtime {
 	/// The aggregated dispatch type that is available for extrinsics.
 	type RuntimeCall = RuntimeCall;
 	/// The index type for storing how many extrinsics an account has signed.
-	type Nonce = frontier_primitives::Nonce;
+	type Nonce = Nonce;
 	/// The type for hashing blocks and tries.
-	type Hash = frontier_primitives::Hash;
+	type Hash = Hash;
 	/// The hashing algorithm used.
 	type Hashing = BlakeTwo256;
 	/// The identifier used to distinguish between accounts.
-	type AccountId = frontier_primitives::AccountId;
+	type AccountId = AccountId;
 	/// The lookup mechanism to get account ID from whatever is passed in dispatchers.
-	type Lookup = IdentityLookup<frontier_primitives::AccountId>;
+	type Lookup = IdentityLookup<AccountId>;
 	/// The block type.
 	type Block = Block;
 	/// Maximum number of block number to block hash mappings to keep (oldest pruned first).
@@ -197,7 +202,7 @@ impl pallet_grandpa::Config for Runtime {
 }
 
 parameter_types! {
-	pub const MinimumPeriod: u64 = frontier_primitives::SLOT_DURATION / 2;
+	pub const MinimumPeriod: u64 = SLOT_DURATION / 2;
 	pub storage EnableManualSeal: bool = false;
 }
 
@@ -284,7 +289,7 @@ parameter_types! {
 	pub BlockGasLimit: U256 = U256::from(BLOCK_GAS_LIMIT);
 	pub const GasLimitPovSizeRatio: u64 = BLOCK_GAS_LIMIT.saturating_div(MAX_POV_SIZE);
 	pub PrecompilesValue: FrontierPrecompiles<Runtime> = FrontierPrecompiles::<_>::new();
-	pub WeightPerGas: Weight = Weight::from_parts(weight_per_gas(BLOCK_GAS_LIMIT, NORMAL_DISPATCH_RATIO, frontier_primitives::WEIGHT_MILLISECS_PER_BLOCK), 0);
+	pub WeightPerGas: Weight = Weight::from_parts(weight_per_gas(BLOCK_GAS_LIMIT, NORMAL_DISPATCH_RATIO, WEIGHT_MILLISECS_PER_BLOCK), 0);
 }
 
 impl pallet_evm::Config for Runtime {
@@ -404,7 +409,7 @@ impl fp_rpc::ConvertTransaction<opaque::UncheckedExtrinsic> for TransactionConve
 }
 
 /// Block type as expected by this runtime.
-pub type Block = generic::Block<frontier_primitives::Header, UncheckedExtrinsic>;
+pub type Block = generic::Block<Header, UncheckedExtrinsic>;
 /// A Block signed with a Justification
 pub type SignedBlock = generic::SignedBlock<Block>;
 /// BlockId type as expected by this runtime.
@@ -421,19 +426,11 @@ pub type SignedExtra = (
 	pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
 );
 /// Unchecked extrinsic type as expected by this runtime.
-pub type UncheckedExtrinsic = fp_self_contained::UncheckedExtrinsic<
-	frontier_primitives::Address,
-	RuntimeCall,
-	frontier_primitives::Signature,
-	SignedExtra,
->;
+pub type UncheckedExtrinsic =
+	fp_self_contained::UncheckedExtrinsic<Address, RuntimeCall, Signature, SignedExtra>;
 /// Extrinsic type that has already been checked.
-pub type CheckedExtrinsic = fp_self_contained::CheckedExtrinsic<
-	frontier_primitives::AccountId,
-	RuntimeCall,
-	SignedExtra,
-	H160,
->;
+pub type CheckedExtrinsic =
+	fp_self_contained::CheckedExtrinsic<AccountId, RuntimeCall, SignedExtra, H160>;
 /// The payload being signed in transactions.
 pub type SignedPayload = generic::SignedPayload<RuntimeCall, SignedExtra>;
 /// Executive: handles dispatch to the various modules.
@@ -593,8 +590,8 @@ impl_runtime_apis! {
 		}
 	}
 
-	impl frame_system_rpc_runtime_api::AccountNonceApi<Block, frontier_primitives::AccountId, frontier_primitives::Nonce> for Runtime {
-		fn account_nonce(account: frontier_primitives::AccountId) -> frontier_primitives::Nonce {
+	impl frame_system_rpc_runtime_api::AccountNonceApi<Block, AccountId, Nonce> for Runtime {
+		fn account_nonce(account: AccountId) -> Nonce {
 			System::account_nonce(account)
 		}
 	}
