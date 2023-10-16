@@ -1,11 +1,11 @@
-use core::str::FromStr;
-
 use crate::{
 	mock::*,
-	types::{SlotOwnerId, TokenId, TokenUriOf, MAX_U96},
+	traits::*,
+	types::{TokenId, TokenUriOf, MAX_U96},
 	CollectionId, Error, Event,
 };
-use frame_support::{assert_err, assert_noop, assert_ok};
+use codec::Encode;
+use frame_support::{assert_noop, assert_ok};
 
 const ALICE: AccountId = 5;
 const BOB: AccountId = 6;
@@ -13,7 +13,7 @@ const BOB: AccountId = 6;
 /// Utility function to create a collection and return its ID
 fn create_collection(owner: u64) -> CollectionId {
 	let collection_id = LivingAssets::collection_counter();
-	assert_ok!(LivingAssets::create_collection(RuntimeOrigin::signed(owner), owner));
+	assert_ok!(LivingAssets::create_collection(owner));
 	collection_id
 }
 
@@ -30,11 +30,11 @@ fn create_collection_works() {
 	new_test_ext().execute_with(|| {
 		let collection_id: CollectionId = 0;
 		assert_eq!(LivingAssets::collection_owner(collection_id), None);
-		assert_ok!(LivingAssets::create_collection(RuntimeOrigin::signed(1), ALICE));
+		assert_ok!(LivingAssets::create_collection(ALICE));
 		assert_eq!(LivingAssets::collection_owner(collection_id), Some(ALICE));
 		let collection_id: CollectionId = 1;
 		assert_eq!(LivingAssets::collection_owner(collection_id), None);
-		assert_ok!(LivingAssets::create_collection(RuntimeOrigin::signed(1), BOB));
+		assert_ok!(LivingAssets::create_collection(BOB));
 		assert_eq!(LivingAssets::collection_owner(collection_id), Some(BOB));
 	});
 }
@@ -43,7 +43,7 @@ fn create_collection_works() {
 fn counter_of_collection_increases() {
 	new_test_ext().execute_with(|| {
 		assert_eq!(LivingAssets::collection_counter(), 0);
-		assert_ok!(LivingAssets::create_collection(RuntimeOrigin::signed(1), ALICE));
+		assert_ok!(LivingAssets::create_collection(ALICE));
 		assert_eq!(LivingAssets::collection_counter(), 1);
 	})
 }
@@ -69,10 +69,10 @@ fn mint_with_external_uri_works() {
 		let token_uri: TokenUriOf<Test> =
 			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
 		let slot = 0;
-		let owner = SlotOwnerId::from_str("0x0000000000000000000000000000000000000001").unwrap();
+		let owner = 1;
 
 		assert_ok!(LivingAssets::mint_with_external_uri(
-			RuntimeOrigin::signed(1),
+			1,
 			collection_id,
 			slot,
 			owner,
@@ -82,7 +82,9 @@ fn mint_with_external_uri_works() {
 		let expected_token_id = {
 			let mut buf = [0u8; 32];
 			buf[..12].copy_from_slice(&slot.to_be_bytes()[4..]);
-			buf[12..].copy_from_slice(owner.as_fixed_bytes());
+			let mut owner_bytes = owner.encode();
+			owner_bytes.reverse();
+			buf[24..].copy_from_slice(&owner_bytes[..]);
 
 			TokenId::from(buf)
 		};
@@ -107,17 +109,18 @@ fn mint_with_external_uri_works() {
 
 #[test]
 fn slot_and_owner_should_fail_if_slot_is_greater_than_96_bits() {
-	let slot = 1_u128 << 95;
-	let owner = SlotOwnerId::from_str("0x0000000000000000000000000000000000000000").unwrap();
+	new_test_ext().execute_with(|| {
+		let slot = 1_u128 << 95;
+		let owner = 0;
 
-	let result = LivingAssets::slot_and_owner_to_token_id(slot, owner);
-	assert_ok!(result);
+		assert_ok!(LivingAssets::slot_and_owner_to_token_id(slot, owner));
 
-	let slot = 1_u128 << 96;
-	let owner = SlotOwnerId::from_str("0x0000000000000000000000000000000000000000").unwrap();
-
-	let result = LivingAssets::slot_and_owner_to_token_id(slot, owner);
-	assert_err!(result, Error::<Test>::SlotOverflow);
+		let slot = 1_u128 << 96;
+		assert_noop!(
+			LivingAssets::slot_and_owner_to_token_id(slot, owner),
+			Error::<Test>::TokenIdConversionFailed
+		);
+	});
 }
 
 #[test]
@@ -125,33 +128,33 @@ fn slot_and_owner_to_asset_id_works() {
 	// Helper function to encapsulate the common logic of generating a token_id
 	// and comparing it to an expected value.
 	fn check_token_id(slot: u128, owner_hex: &str, expected_hex: &str) {
-		let owner = SlotOwnerId::from_str(owner_hex).unwrap();
+		let owner = u64::from_str_radix(owner_hex, 16).unwrap();
 		let token_id = LivingAssets::slot_and_owner_to_token_id(slot, owner).unwrap();
 		assert_eq!(format!("0x{:064x}", token_id), expected_hex);
 	}
 
 	check_token_id(
 		0_u128,
-		"0x0000000000000000000000000000000000000000",
+		"0000000000000000",
 		"0x0000000000000000000000000000000000000000000000000000000000000000",
 	);
 
 	check_token_id(
 		1_u128,
-		"0x0000000000000000000000000000000000000000",
+		"0000000000000000",
 		"0x0000000000000000000000010000000000000000000000000000000000000000",
 	);
 
 	check_token_id(
 		1_u128,
-		"0xe00000000000000000000000000000000000000f",
-		"0x000000000000000000000001e00000000000000000000000000000000000000f",
+		"e00000000000000f",
+		"0x000000000000000000000001000000000000000000000000e00000000000000f",
 	);
 
 	check_token_id(
 		MAX_U96,
-		"0xe00000000000000000000000000000000000000f",
-		"0xffffffffffffffffffffffffe00000000000000000000000000000000000000f",
+		"e00000000000000f",
+		"0xffffffffffffffffffffffff000000000000000000000000e00000000000000f",
 	);
 }
 
@@ -161,16 +164,9 @@ fn mint_with_external_uri_non_owner() {
 		let collection_id = create_collection(1);
 		let token_uri: TokenUriOf<Test> =
 			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
-		let to = SlotOwnerId::from_str("0x0000000000000000000000000000000000000001").unwrap();
 
 		assert_noop!(
-			LivingAssets::mint_with_external_uri(
-				RuntimeOrigin::signed(2),
-				collection_id,
-				0,
-				to,
-				token_uri.clone()
-			),
+			LivingAssets::mint_with_external_uri(2, collection_id, 0, 1, token_uri.clone()),
 			Error::<Test>::NoPermission
 		);
 	});
@@ -185,16 +181,10 @@ fn mint_with_external_uri_collection_does_not_exist() {
 		let token_uri: TokenUriOf<Test> =
 			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
 
-		let to = SlotOwnerId::from_str("0x0000000000000000000000000000000000000001").unwrap();
+		let to = 1;
 
 		assert_noop!(
-			LivingAssets::mint_with_external_uri(
-				RuntimeOrigin::signed(1),
-				collection_id,
-				0,
-				to,
-				token_uri.clone()
-			),
+			LivingAssets::mint_with_external_uri(1, collection_id, 0, to, token_uri.clone()),
 			Error::<Test>::CollectionDoesNotExist
 		);
 	});
@@ -206,11 +196,11 @@ fn mint_with_external_uri_asset_already_minted() {
 		let collection_id = LivingAssets::collection_counter();
 		let token_uri: TokenUriOf<Test> =
 			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
-		let to = SlotOwnerId::from_str("0x0000000000000000000000000000000000000001").unwrap();
+		let to = 1;
 
-		assert_ok!(LivingAssets::create_collection(RuntimeOrigin::signed(1), ALICE));
+		assert_ok!(LivingAssets::create_collection(ALICE));
 		assert_ok!(LivingAssets::mint_with_external_uri(
-			RuntimeOrigin::signed(ALICE),
+			ALICE,
 			collection_id,
 			0,
 			to,
@@ -218,13 +208,7 @@ fn mint_with_external_uri_asset_already_minted() {
 		));
 
 		assert_noop!(
-			LivingAssets::mint_with_external_uri(
-				RuntimeOrigin::signed(ALICE),
-				collection_id,
-				0,
-				to,
-				token_uri.clone()
-			),
+			LivingAssets::mint_with_external_uri(ALICE, collection_id, 0, to, token_uri.clone()),
 			Error::<Test>::AlreadyMinted
 		);
 	});
@@ -236,17 +220,17 @@ fn slot_overflow() {
 		let collection_id = create_collection(1);
 		let token_uri: TokenUriOf<Test> =
 			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
-		let to = SlotOwnerId::from_str("0x0000000000000000000000000000000000000001").unwrap();
+		let to = 1;
 
 		assert_noop!(
 			LivingAssets::mint_with_external_uri(
-				RuntimeOrigin::signed(1),
+				1,
 				collection_id,
 				MAX_U96 + 1, // pass a value greater than 2^96 - 1
 				to,
 				token_uri.clone()
 			),
-			Error::<Test>::SlotOverflow
+			Error::<Test>::TokenIdConversionFailed
 		);
 	});
 }

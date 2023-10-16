@@ -11,13 +11,13 @@ members = [
    "ownership-chain/pallets/*",
    "ownership-chain/primitives",
    "evolution-chain/node",
-   "evolution-chain/pallets/living-assets-evolution",
    "evolution-chain/runtime",
    "evolution-chain/primitives",
   	"bridge/relays/*",
 	"bridge/primitives/*",
    "frontier-chain/runtime",
    "frontier-chain/node",
+   "frontier-chain/pallets/*",
 ]
 
 [workspace.dependencies]
@@ -248,7 +248,7 @@ bp-test-utils = { git = "https://github.com/freeverseio/parity-bridges-common.gi
 
 # LAOS pallets
 pallet-living-assets-ownership = { path = "./ownership-chain/pallets/living-assets-ownership", default-features = false }
-pallet-living-assets-evolution = { path = "./evolution-chain/pallets/living-assets-evolution", default-features = false }
+pallet-living-assets-evolution = { path = "./frontier-chain/pallets/living-assets-evolution", default-features = false }
 pallet-evm-living-assets-ownership = { path = "./ownership-chain/precompile/living-assets", default-features = false }
 pallet-evm-erc721 = { path = "./ownership-chain/precompile/erc721", default-features = false }
 

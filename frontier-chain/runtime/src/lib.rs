@@ -392,6 +392,17 @@ impl pallet_hotfix_sufficients::Config for Runtime {
 	type WeightInfo = pallet_hotfix_sufficients::weights::SubstrateWeight<Self>;
 }
 
+parameter_types! {
+	/// Max length of the `TokenUri`
+	pub const MaxTokenUriLength: u32 = 512;
+}
+
+/// Configure the pallet-living-assets-evolution in pallets/living-assets-evolution.
+impl pallet_living_assets_evolution::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type MaxTokenUriLength = MaxTokenUriLength;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime {
@@ -408,6 +419,9 @@ construct_runtime!(
 		DynamicFee: pallet_dynamic_fee,
 		BaseFee: pallet_base_fee,
 		HotfixSufficients: pallet_hotfix_sufficients,
+
+		// Own pallets
+		LivingAssetsEvolution: pallet_living_assets_evolution,
 	}
 );
 

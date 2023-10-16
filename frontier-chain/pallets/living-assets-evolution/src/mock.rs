@@ -69,7 +69,6 @@ impl Convert<AccountId, H160> for MockAccountIdToH160 {
 
 impl pallet_living_assets_evolution::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = ();
 	type MaxTokenUriLength = MaxTokenUriLength;
 }
 
