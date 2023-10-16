@@ -17,6 +17,7 @@ members = [
   	"bridge/relays/*",
 	"bridge/primitives/*",
    "frontier-chain/runtime",
+   "frontier-chain/node",
 ]
 
 [workspace.dependencies]
@@ -79,6 +80,7 @@ sp-externalities = { git = "https://github.com/paritytech/substrate", branch = "
 sp-consensus-grandpa = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
 sp-keyring = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
 sp-weights = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
+sp-state-machine = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
 
 # (native)
 sp-blockchain = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
@@ -93,6 +95,7 @@ sc-client-db = { git = "https://github.com/paritytech/substrate", branch = "polk
 sc-consensus = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
 sc-consensus-aura = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
 sc-consensus-babe = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
+sc-consensus-manual-seal = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
 sc-executor = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
 sc-network = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
 sc-network-sync = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
@@ -138,6 +141,7 @@ pallet-transaction-payment-rpc-runtime-api = { git = "https://github.com/parityt
 frame-benchmarking = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
 frame-system-benchmarking = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
 frame-try-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
+prometheus-endpoint = { package = "substrate-prometheus-endpoint", git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
 
 # EVM & Ethereum
 # (wasm)
@@ -259,6 +263,7 @@ evochain-primitives = { path = "./evolution-chain/primitives", default-features 
 # runtime
 laos-ownership-runtime = { path = "./ownership-chain/runtime", default-features = false }
 laos-evolution-runtime = { path = "./evolution-chain/runtime", default-features = false }
+frontier-template-runtime = { path = "./frontier-chain/runtime", default-features = false }
 
 relay-laos-evolution-client = { path="./bridge/relays/client-laos-evolution" }
 relay-laos-ownership-client = { path="./bridge/relays/client-laos-ownership" }

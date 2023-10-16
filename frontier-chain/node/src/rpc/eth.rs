@@ -94,9 +94,9 @@ where
 	EC: EthConfig<B, C>,
 {
 	use fc_rpc::{
-		pending::AuraConsensusDataProvider, Eth, EthApiServer, EthDevSigner, EthFilter,
+		Eth, EthApiServer, EthDevSigner, EthFilter,
 		EthFilterApiServer, EthPubSub, EthPubSubApiServer, EthSigner, Net, NetApiServer, Web3,
-		Web3ApiServer,
+		Web3ApiServer, 
 	};
 	#[cfg(feature = "txpool")]
 	use fc_rpc::{TxPool, TxPoolApiServer};
@@ -119,7 +119,7 @@ where
 		fee_history_cache_limit,
 		execute_gas_limit_multiplier,
 		forced_parent_hashes,
-		pending_create_inherent_data_providers,
+		pending_create_inherent_data_providers: _,
 	} = deps;
 
 	let mut signers = Vec::new();
@@ -143,8 +143,6 @@ where
 			fee_history_cache_limit,
 			execute_gas_limit_multiplier,
 			forced_parent_hashes,
-			pending_create_inherent_data_providers,
-			Some(Box::new(AuraConsensusDataProvider::new(client.clone()))),
 		)
 		.replace_config::<EC>()
 		.into_rpc(),
