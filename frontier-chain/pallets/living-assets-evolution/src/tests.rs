@@ -118,7 +118,7 @@ fn slot_and_owner_should_fail_if_slot_is_greater_than_96_bits() {
 		let slot = 1_u128 << 96;
 		assert_noop!(
 			LivingAssets::slot_and_owner_to_token_id(slot, owner),
-			Error::<Test>::TokenIdConversionFailed
+			Error::<Test>::SlotOverflow
 		);
 	});
 }
@@ -230,7 +230,7 @@ fn slot_overflow() {
 				to,
 				token_uri.clone()
 			),
-			Error::<Test>::TokenIdConversionFailed
+			Error::<Test>::SlotOverflow
 		);
 	});
 }
