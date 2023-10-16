@@ -20,8 +20,8 @@ use sp_core::{
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{
-		BlakeTwo256, Block as BlockT, DispatchInfoOf, Dispatchable, Get, 
-		IdentityLookup, NumberFor, One, PostDispatchInfoOf, UniqueSaturatedInto,
+		BlakeTwo256, Block as BlockT, DispatchInfoOf, Dispatchable, Get, IdentityLookup, NumberFor,
+		One, PostDispatchInfoOf, UniqueSaturatedInto,
 	},
 	transaction_validity::{TransactionSource, TransactionValidity, TransactionValidityError},
 	ApplyExtrinsicResult, ConsensusEngineId, Perbill, Permill,
@@ -421,11 +421,19 @@ pub type SignedExtra = (
 	pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
 );
 /// Unchecked extrinsic type as expected by this runtime.
-pub type UncheckedExtrinsic =
-	fp_self_contained::UncheckedExtrinsic<frontier_primitives::Address, RuntimeCall, frontier_primitives::Signature, SignedExtra>;
+pub type UncheckedExtrinsic = fp_self_contained::UncheckedExtrinsic<
+	frontier_primitives::Address,
+	RuntimeCall,
+	frontier_primitives::Signature,
+	SignedExtra,
+>;
 /// Extrinsic type that has already been checked.
-pub type CheckedExtrinsic =
-	fp_self_contained::CheckedExtrinsic<frontier_primitives::AccountId, RuntimeCall, SignedExtra, H160>;
+pub type CheckedExtrinsic = fp_self_contained::CheckedExtrinsic<
+	frontier_primitives::AccountId,
+	RuntimeCall,
+	SignedExtra,
+	H160,
+>;
 /// The payload being signed in transactions.
 pub type SignedPayload = generic::SignedPayload<RuntimeCall, SignedExtra>;
 /// Executive: handles dispatch to the various modules.

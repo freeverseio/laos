@@ -18,8 +18,8 @@ use sp_core::U256;
 use sp_runtime::traits::BlakeTwo256;
 use sp_trie::PrefixedMemoryDB;
 // Runtime
-use frontier_template_runtime::{opaque::Block, TransactionConverter};
 use frontier_primitives::Hash;
+use frontier_template_runtime::{opaque::Block, TransactionConverter};
 
 use crate::{
 	cli::Sealing,
