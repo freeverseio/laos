@@ -4590,6 +4590,7 @@ dependencies = [
  "frame-benchmarking-cli",
  "frame-system",
  "frame-system-rpc-runtime-api",
+ "frontier-primitives",
  "frontier-template-runtime",
  "futures",
  "hex-literal 0.4.1",

@@ -13,8 +13,9 @@ use sp_runtime::traits::{IdentifyAccount, Verify};
 use sp_state_machine::BasicExternalities;
 // Frontier
 use frontier_template_runtime::{
-	AccountId, Balance, EnableManualSeal, RuntimeGenesisConfig, SS58Prefix, Signature, WASM_BINARY,
+	Balance, EnableManualSeal, RuntimeGenesisConfig, SS58Prefix, WASM_BINARY,
 };
+use frontier_primitives::{AccountId, Signature};
 
 // The URL for the telemetry server.
 // const STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";

@@ -3,7 +3,8 @@ use sc_executor::{NativeElseWasmExecutor, NativeExecutionDispatch, NativeVersion
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_runtime::traits::BlakeTwo256;
 // Local
-use frontier_template_runtime::{opaque::Block, AccountId, Balance, Nonce};
+use frontier_template_runtime::{opaque::Block, Balance};
+use frontier_primitives::{AccountId, Nonce};
 
 use crate::eth::EthCompatRuntimeApiCollection;
 
