@@ -372,7 +372,6 @@ parameter_types! {
 /// Configure the pallet-living-assets-evolution in pallets/living-assets-evolution.
 impl pallet_living_assets_evolution::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = pallet_living_assets_evolution::weights::SubstrateWeight<Self>;
 	type MaxTokenUriLength = MaxTokenUriLength;
 }
 

@@ -1,9 +1,5 @@
 //! Types used in the pallet
-
-use codec::{Decode, Encode};
-use frame_support::traits::Get;
-use scale_info::TypeInfo;
-use sp_core::{H160, U256};
+use sp_core::U256;
 use sp_runtime::BoundedVec;
 
 /// Collection id type
@@ -14,9 +10,6 @@ pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 
 /// Wrapper around `BoundedVec` for `tokenUri`
 pub type TokenUriOf<T> = BoundedVec<u8, <T as crate::Config>::MaxTokenUriLength>;
-
-/// Slot OwnerId type
-pub type SlotOwnerId = H160;
 
 /// TokenId type
 /// every slot is identified by a unique `asset_id = concat(slot #, owner_address)`
@@ -30,13 +23,3 @@ pub type Slot = u128;
 
 /// Max value of `Slot`, used for validation
 pub const MAX_U96: Slot = (1 << 96) - 1;
-
-/// Asset metadata
-#[derive(Encode, Decode, Clone, PartialEq, Eq, sp_core::RuntimeDebug, TypeInfo)]
-pub enum AssetMetadata<MaxTokenUriLength: Get<u32>> {
-	/// Explicit token URI
-	External {
-		/// Token URI
-		token_uri: BoundedVec<u8, MaxTokenUriLength>,
-	},
-}
