@@ -525,7 +525,6 @@ mod benches {
 		[pallet_timestamp, Timestamp]
 		[pallet_sudo, Sudo]
 		[pallet_evm, EVM]
-		[pallet_living_assets_evolution, LivingAssetsEvolution]
 	);
 }
 
