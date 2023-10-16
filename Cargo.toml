@@ -260,6 +260,7 @@ precompile-utils-macro = { path = "./ownership-chain/precompile/utils/macro", de
 # Primitives
 ownership-parachain-primitives = { path = "./ownership-chain/primitives", default-features = false }
 evochain-primitives = { path = "./evolution-chain/primitives", default-features = false }
+frontier-primitives = { path = "./frontier-chain/primitives", default-features = false }
 
 # runtime
 laos-ownership-runtime = { path = "./ownership-chain/runtime", default-features = false }
