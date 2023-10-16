@@ -18,6 +18,7 @@ members = [
 	"bridge/primitives/*",
    "frontier-chain/runtime",
    "frontier-chain/node",
+   "frontier-chain/primitives",
 ]
 
 [workspace.dependencies]
