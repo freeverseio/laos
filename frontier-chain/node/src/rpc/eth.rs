@@ -94,9 +94,8 @@ where
 	EC: EthConfig<B, C>,
 {
 	use fc_rpc::{
-		Eth, EthApiServer, EthDevSigner, EthFilter,
-		EthFilterApiServer, EthPubSub, EthPubSubApiServer, EthSigner, Net, NetApiServer, Web3,
-		Web3ApiServer, 
+		Eth, EthApiServer, EthDevSigner, EthFilter, EthFilterApiServer, EthPubSub,
+		EthPubSubApiServer, EthSigner, Net, NetApiServer, Web3, Web3ApiServer,
 	};
 	#[cfg(feature = "txpool")]
 	use fc_rpc::{TxPool, TxPoolApiServer};

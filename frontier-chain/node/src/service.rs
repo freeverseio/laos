@@ -106,9 +106,7 @@ where
 	let client = Arc::new(client);
 
 	let telemetry = telemetry.map(|(worker, telemetry)| {
-		task_manager
-			.spawn_handle()
-			.spawn("telemetry", None, worker.run());
+		task_manager.spawn_handle().spawn("telemetry", None, worker.run());
 		telemetry
 	});
 
@@ -147,7 +145,7 @@ where
 			))
 			.unwrap_or_else(|err| panic!("failed creating sql backend: {:?}", err));
 			FrontierBackend::Sql(backend)
-		}
+		},
 	};
 
 	let (import_queue, block_import) = build_import_queue(
@@ -175,13 +173,7 @@ where
 		select_chain,
 		import_queue,
 		transaction_pool,
-		other: (
-			telemetry,
-			block_import,
-			grandpa_link,
-			frontier_backend,
-			overrides,
-		),
+		other: (telemetry, block_import, grandpa_link, frontier_backend, overrides),
 	})
 }
 
@@ -304,11 +296,8 @@ where
 		other: (mut telemetry, block_import, grandpa_link, frontier_backend, overrides),
 	} = new_partial(&config, &eth_config, build_import_queue)?;
 
-	let FrontierPartialComponents {
-		filter_pool,
-		fee_history_cache,
-		fee_history_cache_limit,
-	} = new_frontier_partial(&eth_config)?;
+	let FrontierPartialComponents { filter_pool, fee_history_cache, fee_history_cache_limit } =
+		new_frontier_partial(&eth_config)?;
 
 	let mut net_config = sc_network::config::FullNetworkConfiguration::new(&config.network);
 	let grandpa_protocol_name = sc_consensus_grandpa::protocol_standard_name(
@@ -375,8 +364,9 @@ where
 
 	// Sinks for pubsub notifications.
 	// Everytime a new subscription is created, a new mpsc channel is added to the sink pool.
-	// The MappingSyncWorker sends through the channel on block import and the subscription emits a notification to the subscriber on receiving a message through this channel.
-	// This way we avoid race conditions when using native substrate block import notification stream.
+	// The MappingSyncWorker sends through the channel on block import and the subscription emits a
+	// notification to the subscriber on receiving a message through this channel. This way we avoid
+	// race conditions when using native substrate block import notification stream.
 	let pubsub_notification_sinks: fc_mapping_sync::EthereumBlockNotificationSinks<
 		fc_mapping_sync::EthereumBlockNotification<Block>,
 	> = Default::default();
@@ -450,11 +440,7 @@ where
 				client: client.clone(),
 				pool: pool.clone(),
 				deny_unsafe,
-				command_sink: if sealing.is_some() {
-					Some(command_sink.clone())
-				} else {
-					None
-				},
+				command_sink: if sealing.is_some() { Some(command_sink.clone()) } else { None },
 				eth: eth_deps,
 			};
 			crate::rpc::create_full(
@@ -513,7 +499,7 @@ where
 
 			network_starter.start_network();
 			log::info!("Manual Seal Ready");
-			return Ok(task_manager);
+			return Ok(task_manager)
 		}
 
 		let proposer_factory = sc_basic_authorship::ProposerFactory::new(
@@ -565,11 +551,7 @@ where
 	if enable_grandpa {
 		// if the node isn't actively participating in consensus then it doesn't
 		// need a keystore, regardless of which protocol we use below.
-		let keystore = if role.is_authority() {
-			Some(keystore_container.keystore())
-		} else {
-			None
-		};
+		let keystore = if role.is_authority() { Some(keystore_container.keystore()) } else { None };
 
 		let grandpa_config = sc_consensus_grandpa::Config {
 			// FIXME #1578 make this available through chainspec
@@ -733,17 +715,11 @@ pub fn new_chain_ops(
 	ServiceError,
 > {
 	config.keystore = sc_service::config::KeystoreConfig::InMemory;
-	let PartialComponents {
-		client,
-		backend,
-		import_queue,
-		task_manager,
-		other,
-		..
-	} = new_partial::<frontier_template_runtime::RuntimeApi, TemplateRuntimeExecutor, _>(
-		config,
-		eth_config,
-		build_aura_grandpa_import_queue,
-	)?;
+	let PartialComponents { client, backend, import_queue, task_manager, other, .. } =
+		new_partial::<frontier_template_runtime::RuntimeApi, TemplateRuntimeExecutor, _>(
+			config,
+			eth_config,
+			build_aura_grandpa_import_queue,
+		)?;
 	Ok((client, backend, import_queue, task_manager, other.3))
 }

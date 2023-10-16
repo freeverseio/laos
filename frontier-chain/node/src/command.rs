@@ -61,11 +61,10 @@ impl SubstrateCli for Cli {
 			"dev" => {
 				let enable_manual_seal = self.sealing.map(|_| true);
 				Box::new(chain_spec::development_config(enable_manual_seal))
-			}
+			},
 			"" | "local" => Box::new(chain_spec::local_testnet_config()),
-			path => Box::new(chain_spec::ChainSpec::from_json_file(
-				std::path::PathBuf::from(path),
-			)?),
+			path =>
+				Box::new(chain_spec::ChainSpec::from_json_file(std::path::PathBuf::from(path))?),
 		})
 	}
 }
@@ -79,7 +78,7 @@ pub fn run() -> sc_cli::Result<()> {
 		Some(Subcommand::BuildSpec(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			runner.sync_run(|config| cmd.run(config.chain_spec, config.network))
-		}
+		},
 		Some(Subcommand::CheckBlock(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			runner.async_run(|mut config| {
@@ -87,7 +86,7 @@ pub fn run() -> sc_cli::Result<()> {
 					service::new_chain_ops(&mut config, &cli.eth)?;
 				Ok((cmd.run(client, import_queue), task_manager))
 			})
-		}
+		},
 		Some(Subcommand::ExportBlocks(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			runner.async_run(|mut config| {
@@ -95,7 +94,7 @@ pub fn run() -> sc_cli::Result<()> {
 					service::new_chain_ops(&mut config, &cli.eth)?;
 				Ok((cmd.run(client, config.database), task_manager))
 			})
-		}
+		},
 		Some(Subcommand::ExportState(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			runner.async_run(|mut config| {
@@ -103,7 +102,7 @@ pub fn run() -> sc_cli::Result<()> {
 					service::new_chain_ops(&mut config, &cli.eth)?;
 				Ok((cmd.run(client, config.chain_spec), task_manager))
 			})
-		}
+		},
 		Some(Subcommand::ImportBlocks(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			runner.async_run(|mut config| {
@@ -111,7 +110,7 @@ pub fn run() -> sc_cli::Result<()> {
 					service::new_chain_ops(&mut config, &cli.eth)?;
 				Ok((cmd.run(client, import_queue), task_manager))
 			})
-		}
+		},
 		Some(Subcommand::PurgeChain(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			runner.sync_run(|config| {
@@ -127,38 +126,34 @@ pub fn run() -> sc_cli::Result<()> {
 							DatabaseSource::ParityDb { .. } => DatabaseSource::ParityDb {
 								path: frontier_database_dir(&db_config_dir, "paritydb"),
 							},
-							_ => {
-								return Err(format!(
-									"Cannot purge `{:?}` database",
-									config.database
-								)
-								.into())
-							}
+							_ =>
+								return Err(
+									format!("Cannot purge `{:?}` database", config.database).into()
+								),
 						};
 						cmd.run(frontier_database_config)?;
-					}
+					},
 					crate::eth::BackendType::Sql => {
 						let db_path = db_config_dir.join("sql");
 						match std::fs::remove_dir_all(&db_path) {
 							Ok(_) => {
 								println!("{:?} removed.", &db_path);
-							}
+							},
 							Err(ref err) if err.kind() == std::io::ErrorKind::NotFound => {
 								eprintln!("{:?} did not exist.", &db_path);
-							}
-							Err(err) => {
+							},
+							Err(err) =>
 								return Err(format!(
 									"Cannot purge `{:?}` database: {:?}",
 									db_path, err,
 								)
-								.into())
-							}
+								.into()),
 						};
-					}
+					},
 				};
 				cmd.run(config.database)
 			})
-		}
+		},
 		Some(Subcommand::Revert(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			runner.async_run(|mut config| {
@@ -170,7 +165,7 @@ pub fn run() -> sc_cli::Result<()> {
 				});
 				Ok((cmd.run(client, backend, Some(aux_revert)), task_manager))
 			})
-		}
+		},
 		#[cfg(feature = "runtime-benchmarks")]
 		Some(Subcommand::Benchmark(cmd)) => {
 			use crate::benchmarking::{
@@ -197,13 +192,7 @@ pub fn run() -> sc_cli::Result<()> {
 				BenchmarkCmd::Overhead(cmd) => runner.sync_run(|mut config| {
 					let (client, _, _, _, _) = service::new_chain_ops(&mut config, &cli.eth)?;
 					let ext_builder = RemarkBuilder::new(client.clone());
-					cmd.run(
-						config,
-						client,
-						inherent_benchmark_data()?,
-						Vec::new(),
-						&ext_builder,
-					)
+					cmd.run(config, client, inherent_benchmark_data()?, Vec::new(), &ext_builder)
 				}),
 				BenchmarkCmd::Extrinsic(cmd) => runner.sync_run(|mut config| {
 					let (client, _, _, _, _) = service::new_chain_ops(&mut config, &cli.eth)?;
@@ -219,11 +208,10 @@ pub fn run() -> sc_cli::Result<()> {
 
 					cmd.run(client, inherent_benchmark_data()?, Vec::new(), &ext_factory)
 				}),
-				BenchmarkCmd::Machine(cmd) => {
-					runner.sync_run(|config| cmd.run(&config, SUBSTRATE_REFERENCE_HARDWARE.clone()))
-				}
+				BenchmarkCmd::Machine(cmd) =>
+					runner.sync_run(|config| cmd.run(&config, SUBSTRATE_REFERENCE_HARDWARE.clone())),
 			}
-		}
+		},
 		#[cfg(not(feature = "runtime-benchmarks"))]
 		Some(Subcommand::Benchmark) => Err("Benchmarking wasn't enabled when building the node. \
 			You can enable it with `--features runtime-benchmarks`."
@@ -239,14 +227,12 @@ pub fn run() -> sc_cli::Result<()> {
 				};
 				cmd.run(client, frontier_backend)
 			})
-		}
+		},
 		None => {
 			let runner = cli.create_runner(&cli.run)?;
 			runner.run_node_until_exit(|config| async move {
-				service::build_full(config, cli.eth, cli.sealing)
-					.map_err(Into::into)
-					.await
+				service::build_full(config, cli.eth, cli.sealing).map_err(Into::into).await
 			})
-		}
+		},
 	}
 }
