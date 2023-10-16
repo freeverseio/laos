@@ -51,7 +51,7 @@ use pallet_evm::{
 	IdentityAddressMapping, Runner,
 };
 
-use frontier_primitives::{
+pub use frontier_primitives::{
 	AccountId, Address, BlockNumber, Hash, Header, Nonce, Signature, MAXIMUM_BLOCK_LENGTH,
 	MAXIMUM_BLOCK_WEIGHT, SLOT_DURATION, WEIGHT_MILLISECS_PER_BLOCK,
 };

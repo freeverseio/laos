@@ -80,9 +80,6 @@ fp-evm = { workspace = true, features = ["default"] }
 fp-rpc = { workspace = true, features = ["default"] }
 frontier-template-runtime = { workspace = true, features = ["std"] }
 
-# Primitive types
-frontier-primitives = { workspace = true }
-
 [build-dependencies]
 substrate-build-script-utils = { workspace = true }
 

@@ -12,9 +12,8 @@ use sp_core::{storage::Storage, Pair, Public, H160, U256};
 use sp_runtime::traits::{IdentifyAccount, Verify};
 use sp_state_machine::BasicExternalities;
 // Frontier
-use frontier_primitives::{AccountId, Signature};
 use frontier_template_runtime::{
-	Balance, EnableManualSeal, RuntimeGenesisConfig, SS58Prefix, WASM_BINARY,
+	AccountId, Balance, EnableManualSeal, RuntimeGenesisConfig, SS58Prefix, Signature, WASM_BINARY,
 };
 
 // The URL for the telemetry server.

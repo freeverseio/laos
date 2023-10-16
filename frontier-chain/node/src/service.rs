@@ -18,8 +18,7 @@ use sp_core::U256;
 use sp_runtime::traits::BlakeTwo256;
 use sp_trie::PrefixedMemoryDB;
 // Runtime
-use frontier_primitives::Hash;
-use frontier_template_runtime::{opaque::Block, TransactionConverter};
+use frontier_template_runtime::{opaque::Block, Hash, TransactionConverter};
 
 use crate::{
 	cli::Sealing,
@@ -636,7 +635,7 @@ where
 			inherent_data: &mut sp_inherents::InherentData,
 		) -> Result<(), sp_inherents::Error> {
 			TIMESTAMP.with(|x| {
-				*x.borrow_mut() += frontier_primitives::SLOT_DURATION;
+				*x.borrow_mut() += frontier_template_runtime::SLOT_DURATION;
 				inherent_data.put_data(sp_timestamp::INHERENT_IDENTIFIER, &*x.borrow())
 			})
 		}
