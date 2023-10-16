@@ -6144,7 +6144,6 @@ dependencies = [
  "pallet-balances",
  "pallet-bridge-grandpa",
  "pallet-grandpa",
- "pallet-living-assets-evolution",
  "pallet-sudo",
  "pallet-timestamp",
  "pallet-transaction-payment",
