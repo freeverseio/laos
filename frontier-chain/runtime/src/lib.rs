@@ -67,9 +67,6 @@ pub type AccountIndex = u32;
 /// Balance of an account.
 pub type Balance = u128;
 
-/// Index of a transaction in the chain.
-pub type Nonce = u32;
-
 /// Digest item type.
 pub type DigestItem = generic::DigestItem;
 
@@ -141,7 +138,7 @@ impl frame_system::Config for Runtime {
 	/// The aggregated dispatch type that is available for extrinsics.
 	type RuntimeCall = RuntimeCall;
 	/// The index type for storing how many extrinsics an account has signed.
-	type Nonce = Nonce;
+	type Nonce = frontier_primitives::Nonce;
 	/// The type for hashing blocks and tries.
 	type Hash = frontier_primitives::Hash;
 	/// The hashing algorithm used.
@@ -588,8 +585,8 @@ impl_runtime_apis! {
 		}
 	}
 
-	impl frame_system_rpc_runtime_api::AccountNonceApi<Block, frontier_primitives::AccountId, Nonce> for Runtime {
-		fn account_nonce(account: frontier_primitives::AccountId) -> Nonce {
+	impl frame_system_rpc_runtime_api::AccountNonceApi<Block, frontier_primitives::AccountId, frontier_primitives::Nonce> for Runtime {
+		fn account_nonce(account: frontier_primitives::AccountId) -> frontier_primitives::Nonce {
 			System::account_nonce(account)
 		}
 	}
