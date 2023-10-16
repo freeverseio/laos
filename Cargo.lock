@@ -4653,6 +4653,7 @@ dependencies = [
  "pallet-evm-precompile-simple",
  "pallet-grandpa",
  "pallet-hotfix-sufficients",
+ "pallet-living-assets-evolution",
  "pallet-sudo",
  "pallet-timestamp",
  "pallet-transaction-payment",

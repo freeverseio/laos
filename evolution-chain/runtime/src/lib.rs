@@ -271,18 +271,6 @@ impl pallet_sudo::Config for Runtime {
 	type WeightInfo = pallet_sudo::weights::SubstrateWeight<Runtime>;
 }
 
-parameter_types! {
-	/// Max length of the `TokenUri`
-	pub const MaxTokenUriLength: u32 = 512;
-}
-
-/// Configure the pallet-living-assets-evolution in pallets/living-assets-evolution.
-impl pallet_living_assets_evolution::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = pallet_living_assets_evolution::weights::SubstrateWeight<Runtime>;
-	type MaxTokenUriLength = MaxTokenUriLength;
-}
-
 impl pallet_bridge_grandpa::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type BridgedChain = bp_rococo::Rococo;
@@ -301,9 +289,6 @@ construct_runtime!(
 		Balances: pallet_balances,
 		TransactionPayment: pallet_transaction_payment,
 		Sudo: pallet_sudo,
-
-		// Include the custom logic from the pallet-living-assets-evolution in the runtime.
-		LivingAssetsEvolution: pallet_living_assets_evolution,
 
 		BridgeRococoGrandpa: pallet_bridge_grandpa,
 	}
