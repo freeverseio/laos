@@ -59,6 +59,9 @@ pallet-hotfix-sufficients = { workspace = true }
 # Primitive types
 frontier-primitives = { workspace = true }
 
+# Local pallets
+pallet-living-assets-evolution = { workspace = true }
+
 [build-dependencies]
 substrate-wasm-builder = { workspace = true, optional = true }
 
@@ -111,6 +114,7 @@ std = [
 	"pallet-evm-precompile-simple/std",
 	"pallet-hotfix-sufficients/std",
 	"frontier-primitives/std",
+	"pallet-living-assets-evolution/std",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
@@ -123,4 +127,5 @@ runtime-benchmarks = [
 	"pallet-ethereum/runtime-benchmarks",
 	"pallet-evm/runtime-benchmarks",
 	"pallet-hotfix-sufficients/runtime-benchmarks",
+	"pallet-living-assets-evolution/runtime-benchmarks",
 ]

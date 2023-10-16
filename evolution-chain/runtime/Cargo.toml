@@ -50,9 +50,6 @@ evochain-primitives = { workspace = true }
 frame-benchmarking = { optional = true , workspace = true }
 frame-system-benchmarking = { optional = true , workspace = true }
 
-# Local Dependencies
-pallet-living-assets-evolution = { workspace = true }
-
 # Bridge dependencies
 pallet-bridge-grandpa = { workspace = true }
 bp-header-chain = { workspace = true }
@@ -80,7 +77,6 @@ std = [
 	"pallet-balances/std",
 	"pallet-grandpa/std",
 	"pallet-sudo/std",
-	"pallet-living-assets-evolution/std",
 	"pallet-timestamp/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-transaction-payment/std",
@@ -110,7 +106,6 @@ runtime-benchmarks = [
 	"pallet-balances/runtime-benchmarks",
 	"pallet-grandpa/runtime-benchmarks",
 	"pallet-sudo/runtime-benchmarks",
-	"pallet-living-assets-evolution/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
 	"pallet-bridge-grandpa/runtime-benchmarks",
@@ -124,7 +119,6 @@ try-runtime = [
 	"pallet-balances/try-runtime",
 	"pallet-grandpa/try-runtime",
 	"pallet-sudo/try-runtime",
-	"pallet-living-assets-evolution/try-runtime",
 	"pallet-timestamp/try-runtime",
 	"pallet-transaction-payment/try-runtime",
 	"sp-runtime/try-runtime",
