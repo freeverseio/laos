@@ -1,5 +1,5 @@
 [package]
-name = "frontier-template-node"
+name = "laos-evolution"
 version = "0.0.0"
 license = "Unlicense"
 build = "build.rs"
@@ -78,7 +78,7 @@ fp-account = { workspace = true }
 fp-dynamic-fee = { workspace = true, features = ["default"] }
 fp-evm = { workspace = true, features = ["default"] }
 fp-rpc = { workspace = true, features = ["default"] }
-frontier-template-runtime = { workspace = true, features = ["std"] }
+laos-evolution-runtime = { workspace = true, features = ["std"] }
 
 [build-dependencies]
 substrate-build-script-utils = { workspace = true }
@@ -102,13 +102,13 @@ sql = [
 	"fc-db/sql",
 	"fc-mapping-sync/sql",
 ]
-with-rocksdb-weights = ["frontier-template-runtime/with-rocksdb-weights"]
-with-paritydb-weights = ["frontier-template-runtime/with-paritydb-weights"]
+with-rocksdb-weights = ["laos-evolution-runtime/with-rocksdb-weights"]
+with-paritydb-weights = ["laos-evolution-runtime/with-paritydb-weights"]
 txpool = ["fc-rpc/txpool"]
 rpc-binary-search-estimate = ["fc-rpc/rpc-binary-search-estimate"]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
 	"frame-benchmarking-cli/runtime-benchmarks",
 	"sc-service/runtime-benchmarks",
-	"frontier-template-runtime/runtime-benchmarks",
+	"laos-evolution-runtime/runtime-benchmarks",
 ]

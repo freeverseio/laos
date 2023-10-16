@@ -18,7 +18,7 @@ use sp_core::U256;
 use sp_runtime::traits::BlakeTwo256;
 use sp_trie::PrefixedMemoryDB;
 // Runtime
-use frontier_template_runtime::{opaque::Block, Hash, TransactionConverter};
+use laos_evolution_runtime::{opaque::Block, Hash, TransactionConverter};
 
 use crate::{
 	cli::Sealing,
@@ -635,7 +635,7 @@ where
 			inherent_data: &mut sp_inherents::InherentData,
 		) -> Result<(), sp_inherents::Error> {
 			TIMESTAMP.with(|x| {
-				*x.borrow_mut() += frontier_template_runtime::SLOT_DURATION;
+				*x.borrow_mut() += laos_evolution_runtime::SLOT_DURATION;
 				inherent_data.put_data(sp_timestamp::INHERENT_IDENTIFIER, &*x.borrow())
 			})
 		}
@@ -695,7 +695,7 @@ pub async fn build_full(
 	eth_config: EthConfiguration,
 	sealing: Option<Sealing>,
 ) -> Result<TaskManager, ServiceError> {
-	new_full::<frontier_template_runtime::RuntimeApi, TemplateRuntimeExecutor>(
+	new_full::<laos_evolution_runtime::RuntimeApi, TemplateRuntimeExecutor>(
 		config, eth_config, sealing,
 	)
 	.await
@@ -716,7 +716,7 @@ pub fn new_chain_ops(
 > {
 	config.keystore = sc_service::config::KeystoreConfig::InMemory;
 	let PartialComponents { client, backend, import_queue, task_manager, other, .. } =
-		new_partial::<frontier_template_runtime::RuntimeApi, TemplateRuntimeExecutor, _>(
+		new_partial::<laos_evolution_runtime::RuntimeApi, TemplateRuntimeExecutor, _>(
 			config,
 			eth_config,
 			build_aura_grandpa_import_queue,
