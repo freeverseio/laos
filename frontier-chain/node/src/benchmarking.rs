@@ -30,7 +30,8 @@ use sp_inherents::{InherentData, InherentDataProvider};
 use sp_runtime::{generic::Era, OpaqueExtrinsic, SaturatedConversion};
 // Frontier
 use fp_account::AccountId20;
-use frontier_template_runtime::{self as runtime, AccountId, Balance, BalancesCall, SystemCall};
+use frontier_template_runtime::{self as runtime, Balance, BalancesCall, SystemCall};
+use frontier_primitives::AccountId;
 
 use crate::client::Client;
 
@@ -160,7 +161,7 @@ pub fn create_benchmark_extrinsic(
 	runtime::UncheckedExtrinsic::new_signed(
 		call,
 		AccountId20::from(sender.public()),
-		runtime::Signature::new(signature),
+		frontier_primitives::Signature::new(signature),
 		extra,
 	)
 }
