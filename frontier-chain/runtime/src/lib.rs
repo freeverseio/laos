@@ -20,8 +20,8 @@ use sp_core::{
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{
-		BlakeTwo256, Block as BlockT, DispatchInfoOf, Dispatchable, Get, IdentifyAccount,
-		IdentityLookup, NumberFor, One, PostDispatchInfoOf, UniqueSaturatedInto, Verify,
+		BlakeTwo256, Block as BlockT, DispatchInfoOf, Dispatchable, Get, 
+		IdentityLookup, NumberFor, One, PostDispatchInfoOf, UniqueSaturatedInto,
 	},
 	transaction_validity::{TransactionSource, TransactionValidity, TransactionValidityError},
 	ApplyExtrinsicResult, ConsensusEngineId, Perbill, Permill,
@@ -36,14 +36,13 @@ use frame_support::weights::constants::RocksDbWeight as RuntimeDbWeight;
 use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{ConstBool, ConstU32, ConstU8, FindAuthor, OnFinalize, OnTimestampSet},
-	weights::{constants::WEIGHT_REF_TIME_PER_MILLIS, IdentityFee, Weight},
+	weights::{IdentityFee, Weight},
 };
 use pallet_grandpa::{
 	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };
 use pallet_transaction_payment::{ConstFeeMultiplier, CurrencyAdapter};
 // Frontier
-use fp_account::EthereumSignature;
 use fp_evm::weight_per_gas;
 use fp_rpc::TransactionStatus;
 use pallet_ethereum::{Call::transact, PostLogContent, Transaction as EthereumTransaction};
@@ -61,16 +60,6 @@ use pallet_transaction_payment::Multiplier;
 mod precompiles;
 use precompiles::FrontierPrecompiles;
 
-/// Type of block number.
-pub type BlockNumber = u32;
-
-/// Alias to 512-bit hash when used in the context of a transaction signature on the chain.
-pub type Signature = EthereumSignature;
-
-/// Some way of identifying an account on the chain. We intentionally make it equivalent
-/// to the public key of our transaction signing scheme.
-pub type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::AccountId;
-
 /// The type for looking up accounts. We don't expect more than 4 billion of them, but you
 /// never know...
 pub type AccountIndex = u32;
@@ -80,9 +69,6 @@ pub type Balance = u128;
 
 /// Index of a transaction in the chain.
 pub type Nonce = u32;
-
-/// A hash of some data used by the chain.
-pub type Hash = H256;
 
 /// Digest item type.
 pub type DigestItem = generic::DigestItem;
@@ -96,10 +82,8 @@ pub mod opaque {
 
 	pub use sp_runtime::OpaqueExtrinsic as UncheckedExtrinsic;
 
-	/// Opaque block header type.
-	pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
 	/// Opaque block type.
-	pub type Block = generic::Block<Header, UncheckedExtrinsic>;
+	pub type Block = generic::Block<frontier_primitives::Header, UncheckedExtrinsic>;
 	/// Opaque block identifier type.
 	pub type BlockId = generic::BlockId<Block>;
 
@@ -123,15 +107,6 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	state_version: 1,
 };
 
-pub const MILLISECS_PER_BLOCK: u64 = 6000;
-
-pub const SLOT_DURATION: u64 = MILLISECS_PER_BLOCK;
-
-// Time is measured by number of blocks.
-pub const MINUTES: BlockNumber = 60_000 / (MILLISECS_PER_BLOCK as BlockNumber);
-pub const HOURS: BlockNumber = MINUTES * 60;
-pub const DAYS: BlockNumber = HOURS * 24;
-
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
 pub fn native_version() -> sp_version::NativeVersion {
@@ -139,19 +114,14 @@ pub fn native_version() -> sp_version::NativeVersion {
 }
 
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
-/// We allow for 2000ms of compute with a 6 second average block time.
-pub const WEIGHT_MILLISECS_PER_BLOCK: u64 = 2000;
-pub const MAXIMUM_BLOCK_WEIGHT: Weight =
-	Weight::from_parts(WEIGHT_MILLISECS_PER_BLOCK * WEIGHT_REF_TIME_PER_MILLIS, u64::MAX);
-pub const MAXIMUM_BLOCK_LENGTH: u32 = 5 * 1024 * 1024;
 
 parameter_types! {
 	pub const Version: RuntimeVersion = VERSION;
-	pub const BlockHashCount: BlockNumber = 256;
+	pub const BlockHashCount: frontier_primitives::BlockNumber = 256;
 	pub BlockWeights: frame_system::limits::BlockWeights = frame_system::limits::BlockWeights
-		::with_sensible_defaults(MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO);
+		::with_sensible_defaults(frontier_primitives::MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO);
 	pub BlockLength: frame_system::limits::BlockLength = frame_system::limits::BlockLength
-		::max_with_normal_ratio(MAXIMUM_BLOCK_LENGTH, NORMAL_DISPATCH_RATIO);
+		::max_with_normal_ratio(frontier_primitives::MAXIMUM_BLOCK_LENGTH, NORMAL_DISPATCH_RATIO);
 	pub const SS58Prefix: u8 = 42;
 }
 
@@ -173,13 +143,13 @@ impl frame_system::Config for Runtime {
 	/// The index type for storing how many extrinsics an account has signed.
 	type Nonce = Nonce;
 	/// The type for hashing blocks and tries.
-	type Hash = Hash;
+	type Hash = frontier_primitives::Hash;
 	/// The hashing algorithm used.
 	type Hashing = BlakeTwo256;
 	/// The identifier used to distinguish between accounts.
-	type AccountId = AccountId;
+	type AccountId = frontier_primitives::AccountId;
 	/// The lookup mechanism to get account ID from whatever is passed in dispatchers.
-	type Lookup = IdentityLookup<AccountId>;
+	type Lookup = IdentityLookup<frontier_primitives::AccountId>;
 	/// The block type.
 	type Block = Block;
 	/// Maximum number of block number to block hash mappings to keep (oldest pruned first).
@@ -230,7 +200,7 @@ impl pallet_grandpa::Config for Runtime {
 }
 
 parameter_types! {
-	pub const MinimumPeriod: u64 = SLOT_DURATION / 2;
+	pub const MinimumPeriod: u64 = frontier_primitives::SLOT_DURATION / 2;
 	pub storage EnableManualSeal: bool = false;
 }
 
@@ -317,7 +287,7 @@ parameter_types! {
 	pub BlockGasLimit: U256 = U256::from(BLOCK_GAS_LIMIT);
 	pub const GasLimitPovSizeRatio: u64 = BLOCK_GAS_LIMIT.saturating_div(MAX_POV_SIZE);
 	pub PrecompilesValue: FrontierPrecompiles<Runtime> = FrontierPrecompiles::<_>::new();
-	pub WeightPerGas: Weight = Weight::from_parts(weight_per_gas(BLOCK_GAS_LIMIT, NORMAL_DISPATCH_RATIO, WEIGHT_MILLISECS_PER_BLOCK), 0);
+	pub WeightPerGas: Weight = Weight::from_parts(weight_per_gas(BLOCK_GAS_LIMIT, NORMAL_DISPATCH_RATIO, frontier_primitives::WEIGHT_MILLISECS_PER_BLOCK), 0);
 }
 
 impl pallet_evm::Config for Runtime {
@@ -436,12 +406,8 @@ impl fp_rpc::ConvertTransaction<opaque::UncheckedExtrinsic> for TransactionConve
 	}
 }
 
-/// The address format for describing accounts.
-pub type Address = AccountId;
-/// Block header type as expected by this runtime.
-pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
 /// Block type as expected by this runtime.
-pub type Block = generic::Block<Header, UncheckedExtrinsic>;
+pub type Block = generic::Block<frontier_primitives::Header, UncheckedExtrinsic>;
 /// A Block signed with a Justification
 pub type SignedBlock = generic::SignedBlock<Block>;
 /// BlockId type as expected by this runtime.
@@ -459,10 +425,10 @@ pub type SignedExtra = (
 );
 /// Unchecked extrinsic type as expected by this runtime.
 pub type UncheckedExtrinsic =
-	fp_self_contained::UncheckedExtrinsic<Address, RuntimeCall, Signature, SignedExtra>;
+	fp_self_contained::UncheckedExtrinsic<frontier_primitives::Address, RuntimeCall, frontier_primitives::Signature, SignedExtra>;
 /// Extrinsic type that has already been checked.
 pub type CheckedExtrinsic =
-	fp_self_contained::CheckedExtrinsic<AccountId, RuntimeCall, SignedExtra, H160>;
+	fp_self_contained::CheckedExtrinsic<frontier_primitives::AccountId, RuntimeCall, SignedExtra, H160>;
 /// The payload being signed in transactions.
 pub type SignedPayload = generic::SignedPayload<RuntimeCall, SignedExtra>;
 /// Executive: handles dispatch to the various modules.
@@ -622,8 +588,8 @@ impl_runtime_apis! {
 		}
 	}
 
-	impl frame_system_rpc_runtime_api::AccountNonceApi<Block, AccountId, Nonce> for Runtime {
-		fn account_nonce(account: AccountId) -> Nonce {
+	impl frame_system_rpc_runtime_api::AccountNonceApi<Block, frontier_primitives::AccountId, Nonce> for Runtime {
+		fn account_nonce(account: frontier_primitives::AccountId) -> Nonce {
 			System::account_nonce(account)
 		}
 	}
