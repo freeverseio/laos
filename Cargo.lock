@@ -4559,6 +4559,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "frontier-primitives"
+version = "0.1.0"
+dependencies = [
+ "fp-account",
+ "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
+ "frame-system",
+ "sp-core 21.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
+ "sp-runtime 24.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
+]
+
+[[package]]
 name = "frontier-template-node"
 version = "0.0.0"
 dependencies = [
@@ -4631,7 +4642,6 @@ dependencies = [
 name = "frontier-template-runtime"
 version = "0.0.0"
 dependencies = [
- "fp-account",
  "fp-evm",
  "fp-rpc",
  "fp-self-contained",
@@ -4641,6 +4651,7 @@ dependencies = [
  "frame-system",
  "frame-system-benchmarking",
  "frame-system-rpc-runtime-api",
+ "frontier-primitives",
  "pallet-aura",
  "pallet-balances",
  "pallet-base-fee",
