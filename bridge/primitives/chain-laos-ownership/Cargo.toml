@@ -14,7 +14,7 @@ bp-runtime = { workspace = true }
 bp-header-chain = { workspace = true }
 
 # Ownership parachain Primitives
-ownership-parachain-primitives = { workspace = true }
+ownership-parachain-primitives = { workspace = true, features = ["std"] }
 
 frame-support = { workspace = true }
 frame-system = { workspace = true }
