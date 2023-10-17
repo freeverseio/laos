@@ -14,7 +14,8 @@ use sp_state_machine::BasicExternalities;
 // Frontier
 use fp_evm::GenesisAccount;
 use frontier_template_runtime::{
-	AccountId, Balance, EnableManualSeal, RuntimeGenesisConfig, Precompiles, SS58Prefix, Signature, WASM_BINARY,
+	AccountId, Balance, EnableManualSeal, Precompiles, RuntimeGenesisConfig, SS58Prefix, Signature,
+	WASM_BINARY,
 };
 
 // The URL for the telemetry server.
@@ -221,19 +222,19 @@ fn testnet_genesis(
 		evm: EVMConfig {
 			accounts: {
 				let mut map: BTreeMap<_, _> = Precompiles::used_addresses()
-				.iter()
-				.map(|&address| {
-					(
-						address,
-						GenesisAccount {
-							nonce: Default::default(),
-							balance: Default::default(),
-							storage: Default::default(),
-							code: revert_bytecode.clone(),
-						},
-					)
-				})
-				.collect();
+					.iter()
+					.map(|&address| {
+						(
+							address,
+							GenesisAccount {
+								nonce: Default::default(),
+								balance: Default::default(),
+								storage: Default::default(),
+								code: revert_bytecode.clone(),
+							},
+						)
+					})
+					.collect();
 
 				map.insert(
 					// H160 address of Alice dev account
