@@ -5,7 +5,7 @@ use frame_support::{
 };
 use sp_core::{H160, H256};
 use sp_runtime::{
-	traits::{BlakeTwo256, Convert, IdentityLookup},
+	traits::{BlakeTwo256, IdentityLookup},
 	BuildStorage,
 };
 
@@ -20,7 +20,8 @@ frame_support::construct_runtime!(
 	}
 );
 
-pub type AccountId = u64;
+pub type AccountId = H160;
+
 impl frame_system::Config for Test {
 	type BaseCallFilter = frame_support::traits::Everything;
 	type BlockWeights = ();
@@ -49,22 +50,6 @@ impl frame_system::Config for Test {
 
 parameter_types! {
 	pub const MaxTokenUriLength: u32 = 512;
-}
-
-/// A struct responsible for converting an `AccountId` to an `H160` address.
-///
-/// The `AccountIdToH160` struct provides a conversion from `AccountId`, typically used
-/// as a native identity in a blockchain, to an `H160` address, commonly used in Ethereum-like
-/// networks.
-pub struct MockAccountIdToH160;
-impl Convert<AccountId, H160> for MockAccountIdToH160 {
-	fn convert(account_id: AccountId) -> H160 {
-		let mut bytes = [0u8; 20];
-		let account_id_bytes = account_id.to_be_bytes();
-
-		bytes[0..8].copy_from_slice(&account_id_bytes);
-		H160::from(bytes)
-	}
 }
 
 impl pallet_living_assets_evolution::Config for Test {

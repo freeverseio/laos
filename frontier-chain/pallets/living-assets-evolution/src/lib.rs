@@ -87,10 +87,14 @@ pub mod pallet {
 		NoPermission,
 		/// [`Slot`] is already minted
 		AlreadyMinted,
-		/// [`Slot`] overflow occured
+		/// [`TokenId`] conversion error
 		///
-		/// This happens when [`Slot`] is larger than 96 bits
-		SlotOverflow,
+		/// This happens when conversion from [`Slot`] and [`AccountId`] to [`TokenId`] fails
+		///
+		/// For example:
+		/// - `Slot` is larger than 96 bits
+		/// - `AccountId` is not 20 bytes long (i.e when system `AccountId` type changes)
+		TokenIdConversionFailed,
 	}
 
 	#[pallet::call]
@@ -105,7 +109,7 @@ impl<T: Config> Pallet<T> {
 	/// owner_address)`
 	fn slot_and_owner_to_token_id(slot: Slot, owner: AccountIdOf<T>) -> Result<TokenId, Error<T>> {
 		// Check if slot is larger than 96 bits
-		ensure!(slot <= MAX_U96, Error::<T>::SlotOverflow);
+		ensure!(slot <= MAX_U96, Error::<T>::TokenIdConversionFailed);
 
 		let mut bytes = [0u8; 32];
 
@@ -114,10 +118,11 @@ impl<T: Config> Pallet<T> {
 		// we also use the last 12 bytes of the slot, since the first 4 bytes are always 0
 		bytes[..12].copy_from_slice(&slot_bytes[4..]);
 
-		let mut owner_bytes = owner.encode();
-		owner_bytes.reverse();
+		let owner_bytes = owner.encode();
+		// sanity check, ensure that the owner is 20 bytes long
+		ensure!(owner_bytes.len() == 20, Error::<T>::TokenIdConversionFailed);
 
-		bytes[32 - owner_bytes.len()..].copy_from_slice(&owner_bytes[..]);
+		bytes[12..].copy_from_slice(&owner_bytes[..]);
 
 		Ok(TokenId::from(bytes))
 	}
