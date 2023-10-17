@@ -70,4 +70,4 @@ fn hash(a: u64) -> H160 {
 mod mock;
 
 #[cfg(test)]
-mod test;
+mod tests;

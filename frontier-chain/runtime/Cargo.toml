@@ -52,7 +52,6 @@ pallet-ethereum = { workspace = true }
 pallet-evm = { workspace = true }
 pallet-evm-chain-id = { workspace = true }
 pallet-evm-precompile-modexp = { workspace = true }
-pallet-evm-precompile-sha3fips = { workspace = true }
 pallet-evm-precompile-simple = { workspace = true }
 pallet-hotfix-sufficients = { workspace = true }
 
@@ -113,7 +112,6 @@ std = [
 	"pallet-evm/std",
 	"pallet-evm-chain-id/std",
 	"pallet-evm-precompile-modexp/std",
-	"pallet-evm-precompile-sha3fips/std",
 	"pallet-evm-precompile-simple/std",
 	"pallet-hotfix-sufficients/std",
 	"frontier-primitives/std",

@@ -4661,7 +4661,6 @@ dependencies = [
  "pallet-evm-chain-id",
  "pallet-evm-living-assets-evolution",
  "pallet-evm-precompile-modexp",
- "pallet-evm-precompile-sha3fips",
  "pallet-evm-precompile-simple",
  "pallet-grandpa",
  "pallet-hotfix-sufficients",
@@ -8531,15 +8530,6 @@ source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.0.0#b520
 dependencies = [
  "fp-evm",
  "num",
-]
-
-[[package]]
-name = "pallet-evm-precompile-sha3fips"
-version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.0.0#b520b749eb90df15177144dbece3fbd3622a2b19"
-dependencies = [
- "fp-evm",
- "tiny-keccak",
 ]
 
 [[package]]
