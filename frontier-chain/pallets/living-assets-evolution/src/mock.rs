@@ -52,8 +52,17 @@ parameter_types! {
 	pub const MaxTokenUriLength: u32 = 512;
 }
 
+pub struct AccountIdToH160;
+
+impl sp_runtime::traits::Convert<AccountId, H160> for AccountIdToH160 {
+	fn convert(account_id: AccountId) -> H160 {
+		account_id
+	}
+}
+
 impl pallet_living_assets_evolution::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
+	type AccountIdToH160 = AccountIdToH160;
 	type MaxTokenUriLength = MaxTokenUriLength;
 }
 

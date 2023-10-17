@@ -2,6 +2,7 @@ use core::str::FromStr;
 
 use crate::{
 	mock::*,
+	slot_and_owner_to_token_id,
 	traits::*,
 	types::{TokenId, TokenUriOf, MAX_U96},
 	CollectionId, Error, Event,
@@ -101,7 +102,7 @@ fn mint_with_external_uri_works() {
 			TokenId::from(buf)
 		};
 
-		let token_id = LivingAssets::slot_and_owner_to_token_id(slot, owner).unwrap();
+		let token_id = slot_and_owner_to_token_id(slot, owner).unwrap();
 
 		assert_eq!(token_id, expected_token_id);
 		assert_eq!(LivingAssets::token_uri(collection_id, token_id), Some(token_uri.clone()));
@@ -125,13 +126,10 @@ fn slot_and_owner_should_fail_if_slot_is_greater_than_96_bits() {
 		let slot = 1_u128 << 95;
 		let owner = H160::zero();
 
-		assert_ok!(LivingAssets::slot_and_owner_to_token_id(slot, owner));
+		assert!(slot_and_owner_to_token_id(slot, owner).is_some());
 
 		let slot = 1_u128 << 96;
-		assert_noop!(
-			LivingAssets::slot_and_owner_to_token_id(slot, owner),
-			Error::<Test>::TokenIdConversionFailed
-		);
+		assert_eq!(slot_and_owner_to_token_id(slot, owner), None);
 	});
 }
 #[test]
@@ -140,7 +138,7 @@ fn slot_and_owner_to_asset_id_works() {
 	// and comparing it to an expected value.
 	fn check_token_id(slot: u128, owner_hex: &str, expected_hex: &str) {
 		let owner = AccountId::from_str(owner_hex).unwrap();
-		let token_id = LivingAssets::slot_and_owner_to_token_id(slot, owner).unwrap();
+		let token_id = slot_and_owner_to_token_id(slot, owner).unwrap();
 		assert_eq!(format!("0x{:064x}", token_id), expected_hex);
 	}
 
@@ -255,7 +253,7 @@ fn slot_overflow() {
 				test_account,
 				token_uri.clone()
 			),
-			Error::<Test>::TokenIdConversionFailed
+			Error::<Test>::SlotOverflow
 		);
 	});
 }

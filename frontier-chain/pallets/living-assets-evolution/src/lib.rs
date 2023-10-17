@@ -12,7 +12,11 @@ mod traits;
 mod types;
 
 use frame_support::pallet_prelude::*;
-use sp_runtime::{traits::One, ArithmeticError, DispatchError};
+use sp_core::H160;
+use sp_runtime::{
+	traits::{Convert, One},
+	ArithmeticError, DispatchError,
+};
 
 use traits::LivingAssetsEvolution;
 use types::*;
@@ -29,6 +33,8 @@ pub mod pallet {
 	pub trait Config: frame_system::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
+		/// Converts `Self::AccountId` to `H160`
+		type AccountIdToH160: Convert<Self::AccountId, H160>;
 		/// Limit for the length of `token_uri`
 		#[pallet::constant]
 		type MaxTokenUriLength: Get<u32>;
@@ -87,45 +93,12 @@ pub mod pallet {
 		NoPermission,
 		/// [`Slot`] is already minted
 		AlreadyMinted,
-		/// [`TokenId`] conversion error
-		///
-		/// This happens when conversion from [`Slot`] and [`AccountId`] to [`TokenId`] fails
-		///
-		/// For example:
-		/// - `Slot` is larger than 96 bits
-		/// - `AccountId` is not 20 bytes long (i.e when system `AccountId` type changes)
-		TokenIdConversionFailed,
+		/// This happens when `Slot` is larger than 96 bits
+		SlotOverflow,
 	}
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {}
-}
-
-impl<T: Config> Pallet<T> {
-	// Utility functions
-	/// A struct responsible for converting `Slot` and `AccountId` to `TokenId`
-	///
-	/// Every slot is identified by a unique `token_id` where `token_id = concat(slot #,
-	/// owner_address)`
-	fn slot_and_owner_to_token_id(slot: Slot, owner: AccountIdOf<T>) -> Result<TokenId, Error<T>> {
-		// Check if slot is larger than 96 bits
-		ensure!(slot <= MAX_U96, Error::<T>::TokenIdConversionFailed);
-
-		let mut bytes = [0u8; 32];
-
-		let slot_bytes = slot.to_be_bytes();
-
-		// we also use the last 12 bytes of the slot, since the first 4 bytes are always 0
-		bytes[..12].copy_from_slice(&slot_bytes[4..]);
-
-		let owner_bytes = owner.encode();
-		// sanity check, ensure that the owner is 20 bytes long
-		ensure!(owner_bytes.len() == 20, Error::<T>::TokenIdConversionFailed);
-
-		bytes[12..].copy_from_slice(&owner_bytes[..]);
-
-		Ok(TokenId::from(bytes))
-	}
 }
 
 impl<T: Config> LivingAssetsEvolution<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T> {
@@ -158,8 +131,10 @@ impl<T: Config> LivingAssetsEvolution<AccountIdOf<T>, TokenUriOf<T>> for Pallet<
 		);
 		ensure!(CollectionOwner::<T>::get(collection_id) == Some(who), Error::<T>::NoPermission);
 
+		let to_as_h160 = T::AccountIdToH160::convert(to.clone());
 		// compose asset_id	from slot and owner
-		let token_id = Self::slot_and_owner_to_token_id(slot, to.clone())?;
+		let token_id =
+			slot_and_owner_to_token_id(slot, to_as_h160).ok_or(Error::<T>::SlotOverflow)?;
 
 		ensure!(TokenURI::<T>::get(collection_id, token_id).is_none(), Error::<T>::AlreadyMinted);
 
@@ -175,4 +150,27 @@ impl<T: Config> LivingAssetsEvolution<AccountIdOf<T>, TokenUriOf<T>> for Pallet<
 
 		Ok(token_id)
 	}
+}
+
+/// Converts `Slot` and `H160` to `TokenId`
+///
+/// Every slot is identified by a unique `token_id` where `token_id = concat(slot #,
+/// owner_address)`
+///
+/// Returns `None` if `Slot` is larger than 96 bits
+fn slot_and_owner_to_token_id(slot: Slot, owner: H160) -> Option<TokenId> {
+	// Check if slot is larger than 96 bits
+	if slot > MAX_U96 {
+		return None
+	}
+
+	let mut bytes = [0u8; 32];
+
+	let slot_bytes = slot.to_be_bytes();
+
+	// we also use the last 12 bytes of the slot, since the first 4 bytes are always 0
+	bytes[..12].copy_from_slice(&slot_bytes[4..]);
+	bytes[12..].copy_from_slice(&owner.0);
+
+	Some(TokenId::from(bytes))
 }
