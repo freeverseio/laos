@@ -4659,6 +4659,7 @@ dependencies = [
  "pallet-ethereum",
  "pallet-evm",
  "pallet-evm-chain-id",
+ "pallet-evm-living-assets-evolution",
  "pallet-evm-precompile-modexp",
  "pallet-evm-precompile-sha3fips",
  "pallet-evm-precompile-simple",
@@ -8471,6 +8472,27 @@ dependencies = [
  "ownership-parachain-primitives",
  "pallet-evm",
  "pallet-living-assets-ownership",
+ "parity-scale-codec",
+ "precompile-utils",
+ "precompile-utils-macro",
+ "scale-info",
+ "sp-arithmetic 16.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
+ "sp-core 21.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
+ "sp-runtime 24.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
+ "sp-std 8.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
+]
+
+[[package]]
+name = "pallet-evm-living-assets-evolution"
+version = "2.0.0-dev"
+dependencies = [
+ "evm",
+ "fp-evm",
+ "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v1.0.0)",
+ "hex",
+ "num_enum 0.5.11",
+ "pallet-evm",
+ "pallet-living-assets-evolution",
  "parity-scale-codec",
  "precompile-utils",
  "precompile-utils-macro",

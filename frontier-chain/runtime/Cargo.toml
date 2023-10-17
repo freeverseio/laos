@@ -62,6 +62,9 @@ frontier-primitives = { workspace = true }
 # Local pallets
 pallet-living-assets-evolution = { workspace = true }
 
+# Precompiles
+pallet-evm-living-assets-evolution = { workspace = true }
+
 [build-dependencies]
 substrate-wasm-builder = { workspace = true, optional = true }
 

@@ -8,8 +8,8 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
-mod traits;
-mod types;
+pub mod traits;
+pub mod types;
 
 use frame_support::pallet_prelude::*;
 use sp_core::H160;
@@ -18,8 +18,8 @@ use sp_runtime::{
 	ArithmeticError, DispatchError,
 };
 
-use traits::LivingAssetsEvolution;
-use types::*;
+pub use traits::LivingAssetsEvolution;
+pub use types::*;
 
 #[frame_support::pallet]
 pub mod pallet {
