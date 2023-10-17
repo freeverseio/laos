@@ -8,7 +8,7 @@ codec = { package = "parity-scale-codec", workspace = true }
 
 # Laos Evolution Dependencies
 bp-laos-evolution = { workspace = true }
-laos-evolution-runtime = { workspace = true }
+laos-evolution-runtime = { workspace = true, features = ["std"] }
 
 # Substrate Dependencies
 frame-support = { workspace = true }
