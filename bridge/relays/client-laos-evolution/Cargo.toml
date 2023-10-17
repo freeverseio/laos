@@ -7,7 +7,7 @@ edition = "2021"
 codec = { package = "parity-scale-codec", workspace = true }
 
 # Laos Evolution Dependencies
-bp-laos-evolution = { workspace = true }
+bp-laos-evolution = { workspace = true, features = ["std"] }
 laos-evolution-runtime = { workspace = true, features = ["std"] }
 
 # Substrate Dependencies
