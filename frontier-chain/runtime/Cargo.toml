@@ -116,6 +116,7 @@ std = [
 	"pallet-hotfix-sufficients/std",
 	"frontier-primitives/std",
 	"pallet-living-assets-evolution/std",
+	"pallet-evm-living-assets-evolution/std",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",

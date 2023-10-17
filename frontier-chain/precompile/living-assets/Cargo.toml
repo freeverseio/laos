@@ -1,8 +1,6 @@
 [package]
 name = "pallet-evm-living-assets-evolution"
 version = "2.0.0-dev"
-authors = ["Parity Technologies <admin@parity.io>", "Drew Stone <drew@commonwealth.im>"]
-license = "Apache-2.0"
 description = "Living assets evolution precompile"
 repository = "https://github.com/freeverseio/pallet-livingassets-ownership"
 edition = "2021"
