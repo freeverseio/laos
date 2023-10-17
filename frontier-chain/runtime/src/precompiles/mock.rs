@@ -1,6 +1,6 @@
 use frame_support::{
 	construct_runtime, parameter_types,
-	traits::{ConstU32, ConstU64, FindAuthor},
+	traits::{ConstU64, FindAuthor},
 	weights::Weight,
 };
 use pallet_evm::{
@@ -15,18 +15,18 @@ use sp_runtime::{
 };
 use sp_std::{boxed::Box, prelude::*, str::FromStr};
 
-use super::FrontierPrecompiles;
+use super::LaosEvolutionPrecompiles;
 
 type Block = frame_system::mocking::MockBlock<Runtime>;
 type AccountId = H160;
 
 // Configure a mock runtime to test the pallet.
 construct_runtime!(
-	pub enum Runtime {
+	pub struct Runtime {
 		System: frame_system,
 		Balances: pallet_balances,
 		Timestamp: pallet_timestamp,
-		LivingassetsOwnership: pallet_living_assets_ownership,
+		LivingAssetsEvolution: pallet_living_assets_evolution,
 		EVM: pallet_evm,
 	}
 );
@@ -94,13 +94,13 @@ parameter_types! {
 
 pub struct AccountIdToH160;
 
-impl sp_runtime::traits::Convert<AccountId, H160> for AccountIdToH160 {
+impl Convert<AccountId, H160> for AccountIdToH160 {
 	fn convert(account_id: AccountId) -> H160 {
 		account_id
 	}
 }
 
-impl pallet_living_assets_evolution::Config for Test {
+impl pallet_living_assets_evolution::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type AccountIdToH160 = AccountIdToH160;
 	type MaxTokenUriLength = MaxTokenUriLength;
@@ -130,7 +130,7 @@ parameter_types! {
 	pub BlockGasLimit: U256 = U256::from(BLOCK_GAS_LIMIT);
 	pub const GasLimitPovSizeRatio: u64 = BLOCK_GAS_LIMIT.saturating_div(MAX_POV_SIZE);
 	pub WeightPerGas: Weight = Weight::from_parts(20_000, 0);
-	pub PrecompilesValue: FrontierPrecompiles<Runtime> = FrontierPrecompiles::<_>::new();
+	pub PrecompilesValue: LaosEvolutionPrecompiles<Runtime> = LaosEvolutionPrecompiles::<_>::new();
 }
 
 impl pallet_evm::Config for Runtime {
@@ -143,7 +143,7 @@ impl pallet_evm::Config for Runtime {
 	type AddressMapping = IdentityAddressMapping;
 	type Currency = Balances;
 	type RuntimeEvent = RuntimeEvent;
-	type PrecompilesType = FrontierPrecompiles<Self>;
+	type PrecompilesType = LaosEvolutionPrecompiles<Self>;
 	type PrecompilesValue = PrecompilesValue;
 	type ChainId = ();
 	type BlockGasLimit = BlockGasLimit;
