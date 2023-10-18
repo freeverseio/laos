@@ -1,5 +1,5 @@
 [package]
-name = "pallet-evm-living-assets-evolution"
+name = "pallet-evm-laos-evolution"
 version = "2.0.0-dev"
 description = "Living assets evolution precompile"
 repository = "https://github.com/freeverseio/pallet-livingassets-ownership"
