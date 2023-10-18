@@ -22,4 +22,5 @@ std = [
 	"frame-system/std",
 	"sp-core/std",
 	"sp-runtime/std",
+	"fp-account/std",
 ]
