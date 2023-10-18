@@ -33,6 +33,7 @@ use fp_evm::{
 
 use pallet_evm::Log;
 use sp_core::{H160, H256, U256};
+use sp_runtime::DispatchError;
 use sp_std::{vec, vec::Vec};
 
 mod data;
@@ -323,6 +324,19 @@ pub fn revert(output: impl AsRef<[u8]>) -> PrecompileFailure {
 	PrecompileFailure::Revert {
 		exit_status: ExitRevert::Reverted,
 		output: output.as_ref().to_owned(),
+	}
+}
+
+/// Reverts [DispatchError](sp_runtime::DispatchError) by converting it to a readable message.
+#[must_use]
+pub fn revert_dispatch_error(error: DispatchError) -> PrecompileFailure {
+	match error {
+		DispatchError::Arithmetic(_) => revert("arithmetic overflow/underflow"),
+		DispatchError::BadOrigin => revert("bad origin"),
+		DispatchError::CannotLookup => revert("cannot lookup"),
+		DispatchError::Module(m) => revert(m.error),
+		DispatchError::Other(msg) => revert(msg.as_bytes()),
+		_ => revert("unknown error"),
 	}
 }
 

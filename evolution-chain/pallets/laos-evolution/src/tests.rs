@@ -3,7 +3,7 @@ use core::str::FromStr;
 use crate::{
 	mock::*,
 	slot_and_owner_to_token_id,
-	traits::*,
+	traits::LaosEvolution as _,
 	types::{TokenId, TokenUriOf, MAX_U96},
 	CollectionId, Error, Event,
 };
@@ -17,8 +17,8 @@ const BOB: &str = "0x0000000000000000000000000000000000000006";
 /// Utility function to create a collection and return its ID
 fn create_collection(owner: &str) -> CollectionId {
 	let owner = AccountId::from_str(owner).unwrap();
-	let collection_id = LivingAssets::collection_counter();
-	assert_ok!(LivingAssets::create_collection(owner));
+	let collection_id = LaosEvolution::collection_counter();
+	assert_ok!(LaosEvolution::create_collection(owner));
 	collection_id
 }
 
@@ -26,7 +26,7 @@ fn create_collection(owner: &str) -> CollectionId {
 fn owner_of_inexistent_collection() {
 	new_test_ext().execute_with(|| {
 		let collection_id: CollectionId = 0;
-		assert_eq!(LivingAssets::collection_owner(collection_id), None);
+		assert_eq!(LaosEvolution::collection_owner(collection_id), None);
 	});
 }
 
@@ -34,17 +34,17 @@ fn owner_of_inexistent_collection() {
 fn create_collection_works() {
 	new_test_ext().execute_with(|| {
 		let collection_id: CollectionId = 0;
-		assert_eq!(LivingAssets::collection_owner(collection_id), None);
+		assert_eq!(LaosEvolution::collection_owner(collection_id), None);
 		create_collection(ALICE);
 		assert_eq!(
-			LivingAssets::collection_owner(collection_id),
+			LaosEvolution::collection_owner(collection_id),
 			Some(AccountId::from_str(ALICE).unwrap())
 		);
 		let collection_id: CollectionId = 1;
-		assert_eq!(LivingAssets::collection_owner(collection_id), None);
+		assert_eq!(LaosEvolution::collection_owner(collection_id), None);
 		create_collection(BOB);
 		assert_eq!(
-			LivingAssets::collection_owner(collection_id),
+			LaosEvolution::collection_owner(collection_id),
 			Some(AccountId::from_str(BOB).unwrap())
 		);
 	});
@@ -53,9 +53,9 @@ fn create_collection_works() {
 #[test]
 fn counter_of_collection_increases() {
 	new_test_ext().execute_with(|| {
-		assert_eq!(LivingAssets::collection_counter(), 0);
+		assert_eq!(LaosEvolution::collection_counter(), 0);
 		create_collection(ALICE);
-		assert_eq!(LivingAssets::collection_counter(), 1);
+		assert_eq!(LaosEvolution::collection_counter(), 1);
 	})
 }
 
@@ -85,7 +85,7 @@ fn mint_with_external_uri_works() {
 		let slot = 0;
 		let owner = AccountId::from_str(ALICE).unwrap();
 
-		assert_ok!(LivingAssets::mint_with_external_uri(
+		assert_ok!(LaosEvolution::mint_with_external_uri(
 			owner,
 			collection_id,
 			slot,
@@ -105,7 +105,7 @@ fn mint_with_external_uri_works() {
 		let token_id = slot_and_owner_to_token_id(slot, owner).unwrap();
 
 		assert_eq!(token_id, expected_token_id);
-		assert_eq!(LivingAssets::token_uri(collection_id, token_id), Some(token_uri.clone()));
+		assert_eq!(LaosEvolution::token_uri(collection_id, token_id), Some(token_uri.clone()));
 
 		System::assert_has_event(
 			Event::MintedWithExternalTokenURI {
@@ -175,7 +175,7 @@ fn mint_with_external_uri_non_owner() {
 			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
 
 		assert_noop!(
-			LivingAssets::mint_with_external_uri(
+			LaosEvolution::mint_with_external_uri(
 				AccountId::from_str(BOB).unwrap(),
 				collection_id,
 				0,
@@ -191,7 +191,7 @@ fn mint_with_external_uri_non_owner() {
 fn mint_with_external_uri_collection_does_not_exist() {
 	new_test_ext().execute_with(|| {
 		// simply use the collection counter as collection id, do not create the collection
-		let collection_id = LivingAssets::collection_counter();
+		let collection_id = LaosEvolution::collection_counter();
 
 		let token_uri: TokenUriOf<Test> =
 			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
@@ -199,7 +199,7 @@ fn mint_with_external_uri_collection_does_not_exist() {
 		let test_account = AccountId::from_str(ALICE).unwrap();
 
 		assert_noop!(
-			LivingAssets::mint_with_external_uri(
+			LaosEvolution::mint_with_external_uri(
 				test_account,
 				collection_id,
 				0,
@@ -214,14 +214,14 @@ fn mint_with_external_uri_collection_does_not_exist() {
 #[test]
 fn mint_with_external_uri_asset_already_minted() {
 	new_test_ext().execute_with(|| {
-		let collection_id = LivingAssets::collection_counter();
+		let collection_id = LaosEvolution::collection_counter();
 		let token_uri: TokenUriOf<Test> =
 			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
 		let owner = AccountId::from_str(ALICE).unwrap();
 		let to = AccountId::from_str("0x0000000000000000000000000000000000000001").unwrap();
 
 		create_collection(ALICE);
-		assert_ok!(LivingAssets::mint_with_external_uri(
+		assert_ok!(LaosEvolution::mint_with_external_uri(
 			owner,
 			collection_id,
 			0,
@@ -230,7 +230,7 @@ fn mint_with_external_uri_asset_already_minted() {
 		));
 
 		assert_noop!(
-			LivingAssets::mint_with_external_uri(owner, collection_id, 0, to, token_uri.clone()),
+			LaosEvolution::mint_with_external_uri(owner, collection_id, 0, to, token_uri.clone()),
 			Error::<Test>::AlreadyMinted
 		);
 	});
@@ -246,7 +246,7 @@ fn slot_overflow() {
 			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
 
 		assert_noop!(
-			LivingAssets::mint_with_external_uri(
+			LaosEvolution::mint_with_external_uri(
 				test_account,
 				collection_id,
 				MAX_U96 + 1, // pass a value greater than 2^96 - 1

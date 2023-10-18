@@ -3,8 +3,8 @@
 use crate::types::{CollectionId, Slot, TokenId};
 use sp_runtime::DispatchError;
 
-/// `LivingAssetsEvolution` trait for managing collections and tokens
-pub trait LivingAssetsEvolution<AccountId, TokenUri> {
+/// `LivingEvolution` trait for managing collections and tokens
+pub trait LaosEvolution<AccountId, TokenUri> {
 	/// Creates new collection
 	fn create_collection(owner: AccountId) -> Result<CollectionId, DispatchError>;
 

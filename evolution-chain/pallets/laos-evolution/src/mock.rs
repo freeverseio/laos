@@ -1,4 +1,4 @@
-use crate as pallet_living_assets_evolution;
+use crate as pallet_laos_evolution;
 use frame_support::{
 	parameter_types,
 	traits::{ConstU16, ConstU64},
@@ -16,7 +16,7 @@ frame_support::construct_runtime!(
 	pub enum Test
 	{
 		System: frame_system,
-		LivingAssets: pallet_living_assets_evolution,
+		LaosEvolution: pallet_laos_evolution,
 	}
 );
 
@@ -60,7 +60,7 @@ impl sp_runtime::traits::Convert<AccountId, H160> for AccountIdToH160 {
 	}
 }
 
-impl pallet_living_assets_evolution::Config for Test {
+impl pallet_laos_evolution::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type AccountIdToH160 = AccountIdToH160;
 	type MaxTokenUriLength = MaxTokenUriLength;

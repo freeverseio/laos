@@ -8,8 +8,8 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
-mod traits;
-mod types;
+pub mod traits;
+pub mod types;
 
 use frame_support::pallet_prelude::*;
 use sp_core::H160;
@@ -18,8 +18,8 @@ use sp_runtime::{
 	ArithmeticError, DispatchError,
 };
 
-use traits::LivingAssetsEvolution;
-use types::*;
+pub use traits::LaosEvolution;
+pub use types::*;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -101,7 +101,7 @@ pub mod pallet {
 	impl<T: Config> Pallet<T> {}
 }
 
-impl<T: Config> LivingAssetsEvolution<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T> {
+impl<T: Config> LaosEvolution<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T> {
 	fn create_collection(owner: AccountIdOf<T>) -> Result<CollectionId, DispatchError> {
 		let collection_id = Self::collection_counter();
 

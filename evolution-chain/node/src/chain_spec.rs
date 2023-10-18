@@ -12,8 +12,10 @@ use sp_core::{storage::Storage, Pair, Public, H160, U256};
 use sp_runtime::traits::{IdentifyAccount, Verify};
 use sp_state_machine::BasicExternalities;
 // Frontier
+use fp_evm::GenesisAccount;
 use laos_evolution_runtime::{
-	AccountId, Balance, EnableManualSeal, RuntimeGenesisConfig, SS58Prefix, Signature, WASM_BINARY,
+	AccountId, Balance, EnableManualSeal, Precompiles, RuntimeGenesisConfig, SS58Prefix, Signature,
+	WASM_BINARY,
 };
 
 // The URL for the telemetry server.
@@ -182,6 +184,12 @@ fn testnet_genesis(
 		SystemConfig,
 	};
 
+	// This is the simplest bytecode to revert without returning any data.
+	// We will pre-deploy it under all of our precompiles to ensure they can be called from
+	// within contracts.
+	// (PUSH1 0x00 PUSH1 0x00 REVERT)
+	let revert_bytecode = vec![0x60, 0x00, 0x60, 0x00, 0xFD];
+
 	RuntimeGenesisConfig {
 		// System
 		system: SystemConfig {
@@ -213,7 +221,21 @@ fn testnet_genesis(
 		evm_chain_id: EVMChainIdConfig { chain_id, ..Default::default() },
 		evm: EVMConfig {
 			accounts: {
-				let mut map = BTreeMap::new();
+				let mut map: BTreeMap<_, _> = Precompiles::used_addresses()
+					.iter()
+					.map(|&address| {
+						(
+							address,
+							GenesisAccount {
+								nonce: Default::default(),
+								balance: Default::default(),
+								storage: Default::default(),
+								code: revert_bytecode.clone(),
+							},
+						)
+					})
+					.collect();
+
 				map.insert(
 					// H160 address of Alice dev account
 					// Derived from SS58 (42 prefix) address
