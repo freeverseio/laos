@@ -171,7 +171,7 @@ mod tests {
 				spec_version: 42,
 				transaction_version: 50000,
 				genesis_hash: [42u8; 32].into(),
-				signer: ecdsa::Pair::from_seed_slice(&[1u8; 20]).unwrap(),
+				signer: ecdsa::Pair::from_seed_slice(&[1u8; 32]).unwrap(),
 			},
 			unsigned.clone(),
 		)

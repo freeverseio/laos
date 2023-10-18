@@ -7,19 +7,20 @@ edition = "2021"
 codec = { package = "parity-scale-codec", workspace = true }
 
 # Laos Evolution dependencies
-bp-laos-evolution = { workspace = true }
-laos-evolution-runtime = { workspace = true }
+bp-laos-evolution = { workspace = true, features = ["std"] }
+laos-evolution-runtime = { workspace = true, features = ["std", "with-rocksdb-weights"] }
 
 # Bridge dependencies
 bp-runtime = { workspace = true }
 relay-common = { workspace = true }
+relay-substrate-client = { workspace = true }
+relay-utils = { workspace = true }
 
 # Substrate dependencies
 fp-self-contained = { workspace = true }
 frame-support = { workspace = true }
-frame-system = { workspace = true }
+frame-system = { workspace = true, features = ["std"] }
 pallet-transaction-payment = { workspace = true }
 sp-core = { workspace = true }
 sp-runtime = { workspace = true }
-relay-substrate-client = { workspace = true }
-relay-utils = { workspace = true }
+
