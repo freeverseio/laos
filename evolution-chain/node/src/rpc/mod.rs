@@ -21,7 +21,7 @@ use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_inherents::CreateInherentDataProviders;
 use sp_runtime::traits::Block as BlockT;
 // Runtime
-use frontier_template_runtime::{opaque::Block, AccountId, Balance, Hash, Nonce};
+use laos_evolution_runtime::{opaque::Block, AccountId, Balance, Hash, Nonce};
 
 mod eth;
 pub use self::eth::{create_eth, overrides_handle, EthDeps};

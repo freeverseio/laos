@@ -3,24 +3,24 @@
 #![warn(missing_docs)]
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use frame_support::weights::{constants::WEIGHT_REF_TIME_PER_SECOND, IdentityFee, Weight};
-use frame_system::limits;
+use fp_account::EthereumSignature;
+use frame_support::weights::{constants::WEIGHT_REF_TIME_PER_MILLIS, IdentityFee, Weight};
 use sp_core::Hasher as HasherT;
 use sp_runtime::{
 	traits::{BlakeTwo256, IdentifyAccount, Verify},
-	MultiSignature, MultiSigner, Perbill,
+	Perbill,
 };
 
-/// Maximum weight of single Evochain block.
-///
-/// This represents 0.5 seconds of compute assuming a target block time of six seconds.
-///
-/// Max PoV size is set to max value, since it isn't important for relay/standalone chains.
+/// We allow for 2000ms of compute with a 6 second average block time.
+pub const WEIGHT_MILLISECS_PER_BLOCK: u64 = 2000;
+/// Maximum weight of a block.
 pub const MAXIMUM_BLOCK_WEIGHT: Weight =
-	Weight::from_parts(WEIGHT_REF_TIME_PER_SECOND.saturating_div(2), u64::MAX);
+	Weight::from_parts(WEIGHT_MILLISECS_PER_BLOCK * WEIGHT_REF_TIME_PER_MILLIS, u64::MAX);
 
 /// Represents the portion of a block that will be used by Normal extrinsics.
 pub const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
+/// Represents the maximum length of a block.
+pub const MAXIMUM_BLOCK_LENGTH: u32 = 5 * 1024 * 1024;
 
 /// Re-export `time_units` to make usage easier.
 pub use time_units::*;
@@ -55,20 +55,17 @@ pub type Hasher = BlakeTwo256;
 pub type Header = sp_runtime::generic::Header<BlockNumber, Hasher>;
 
 /// Alias to 512-bit hash when used in the context of a transaction signature on the chain.
-pub type Signature = MultiSignature;
+pub type Signature = EthereumSignature;
 
 /// Some way of identifying an account on the chain. We intentionally make it equivalent
 /// to the public key of our transaction signing scheme.
 pub type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::AccountId;
 
 /// The address format for describing accounts.
-pub type Address = sp_runtime::MultiAddress<AccountId, ()>;
-
-/// Public key of the chain account that may be used to verify signatures.
-pub type AccountSigner = MultiSigner;
+pub type Address = AccountId;
 
 /// Balance of an account.
-pub type Balance = u64;
+pub type Balance = u128;
 
 /// Nonce of a transaction in the chain.
 pub type Nonce = u32;
@@ -78,9 +75,9 @@ pub type WeightToFee = IdentityFee<Balance>;
 
 frame_support::parameter_types! {
 	/// Size limit of the Evochain blocks.
-	pub BlockLength: limits::BlockLength =
-		limits::BlockLength::max_with_normal_ratio(2 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
+	pub BlockLength: frame_system::limits::BlockLength = frame_system::limits::BlockLength
+		::max_with_normal_ratio(MAXIMUM_BLOCK_LENGTH, NORMAL_DISPATCH_RATIO);
 	/// Weight limit of the Evochain blocks.
-	pub BlockWeights: limits::BlockWeights =
-		limits::BlockWeights::with_sensible_defaults(MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO);
+	pub BlockWeights: frame_system::limits::BlockWeights = frame_system::limits::BlockWeights
+		::with_sensible_defaults(MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO);
 }

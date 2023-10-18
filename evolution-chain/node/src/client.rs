@@ -3,7 +3,7 @@ use sc_executor::{NativeElseWasmExecutor, NativeExecutionDispatch, NativeVersion
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_runtime::traits::BlakeTwo256;
 // Local
-use frontier_template_runtime::{opaque::Block, AccountId, Balance, Nonce};
+use laos_evolution_runtime::{opaque::Block, AccountId, Balance, Nonce};
 
 use crate::eth::EthCompatRuntimeApiCollection;
 
@@ -13,7 +13,7 @@ pub type FullBackend = sc_service::TFullBackend<Block>;
 pub type FullClient<RuntimeApi, Executor> =
 	sc_service::TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>;
 
-pub type Client = FullClient<frontier_template_runtime::RuntimeApi, TemplateRuntimeExecutor>;
+pub type Client = FullClient<laos_evolution_runtime::RuntimeApi, TemplateRuntimeExecutor>;
 
 /// Only enable the benchmarking host functions when we actually want to benchmark.
 #[cfg(feature = "runtime-benchmarks")]
@@ -27,11 +27,11 @@ impl NativeExecutionDispatch for TemplateRuntimeExecutor {
 	type ExtendHostFunctions = HostFunctions;
 
 	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
-		frontier_template_runtime::api::dispatch(method, data)
+		laos_evolution_runtime::api::dispatch(method, data)
 	}
 
 	fn native_version() -> NativeVersion {
-		frontier_template_runtime::native_version()
+		laos_evolution_runtime::native_version()
 	}
 }
 
