@@ -24,7 +24,7 @@ where
 		Self(Default::default())
 	}
 	pub fn used_addresses() -> [H160; 7] {
-		[hash(1), hash(2), hash(3), hash(4), hash(5), hash(1025), hash(1026)]
+		[hash(1), hash(2), hash(3), hash(4), hash(5), hash(1025), hash(1027)]
 	}
 }
 
@@ -49,7 +49,7 @@ where
 			a if a == hash(5) => Some(Modexp::execute(handle)),
 			// Non-Frontier specific nor Ethereum precompiles :
 			a if a == hash(1025) => Some(ECRecoverPublicKey::execute(handle)),
-			a if a == hash(1026) => Some(LivingAssetsEvolution::execute(handle)),
+			a if a == hash(1027) => Some(LivingAssetsEvolution::execute(handle)),
 			_ => None,
 		}
 	}
