@@ -17,7 +17,7 @@ type AddressMapping = pallet_evm::IdentityAddressMapping;
 
 #[test]
 fn check_selectors() {
-	assert_eq!(Action::CreateCollection as u32, 0x647F1A9C);
+	assert_eq!(Action::CreateCollection as u32, 0x2069E953);
 }
 
 #[test]
@@ -32,7 +32,9 @@ fn check_log_selectors() {
 fn failing_create_collection_should_return_error() {
 	impl_precompile_mock_simple!(Mock, Err(DispatchError::Other("this is an error")));
 
-	let input = EvmDataWriter::new_with_selector(Action::CreateCollection).build();
+	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
+		.write(Address(H160([1u8; 20])))
+		.build();
 
 	let mut handle = create_mock_handle_from_input(input);
 
@@ -47,7 +49,9 @@ fn failing_create_collection_should_return_error() {
 fn create_collection_should_return_collection_id() {
 	impl_precompile_mock_simple!(Mock, Ok(0));
 
-	let input = EvmDataWriter::new_with_selector(Action::CreateCollection).build();
+	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
+		.write(Address(H160([1u8; 20])))
+		.build();
 	let mut handle = create_mock_handle_from_input(input);
 
 	let result = Mock::execute(&mut handle);
@@ -58,7 +62,9 @@ fn create_collection_should_return_collection_id() {
 fn create_collection_should_generate_log() {
 	impl_precompile_mock_simple!(Mock, Ok(0));
 
-	let input = EvmDataWriter::new_with_selector(Action::CreateCollection).build();
+	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
+		.write(Address(H160([1u8; 20])))
+		.build();
 	let mut handle = create_mock_handle_from_input(input);
 
 	let result = Mock::execute(&mut handle);
@@ -76,7 +82,9 @@ fn create_collection_should_generate_log() {
 fn create_collection_on_mock_with_nonzero_value_fails() {
 	impl_precompile_mock_simple!(Mock, Ok(5));
 
-	let input = EvmDataWriter::new_with_selector(Action::CreateCollection).build();
+	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
+		.write(Address(H160([1u8; 20])))
+		.build();
 	let mut handle = create_mock_handle(input, 0, 1, H160::zero());
 
 	let result = Mock::execute(&mut handle);
@@ -94,7 +102,9 @@ fn create_collection_assign_collection_to_caller() {
 		}  // Closure for create_collection result
 	);
 
-	let input = EvmDataWriter::new_with_selector(Action::CreateCollection).build();
+	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
+		.write(Address(H160::from_low_u64_be(0x1234)))
+		.build();
 
 	let mut handle = create_mock_handle(input, 0, 0, H160::from_low_u64_be(0x1234));
 	let result = Mock::execute(&mut handle);
@@ -140,27 +150,27 @@ mod helpers {
 
 			struct LivingAssetsEvolutionMock;
 
-			impl pallet_living_assets_evolution::traits::LivingAssetsEvolution<AccountId, TokenUri>
+			impl pallet_laos_evolution::traits::LivingAssetsEvolution<AccountId, TokenUri>
 				for LivingAssetsEvolutionMock
 			{
 				fn create_collection(
 					owner: AccountId,
-				) -> Result<pallet_living_assets_evolution::types::CollectionId, DispatchError> {
+				) -> Result<pallet_laos_evolution::types::CollectionId, DispatchError> {
 					($create_collection_result)(owner)
 				}
 
 				fn mint_with_external_uri(
 					_who: AccountId,
-					_collection_id: pallet_living_assets_evolution::types::CollectionId,
-					_slot: pallet_living_assets_evolution::types::Slot,
+					_collection_id: pallet_laos_evolution::types::CollectionId,
+					_slot: pallet_laos_evolution::types::Slot,
 					_to: AccountId,
 					_token_uri: TokenUri,
-				) -> Result<pallet_living_assets_evolution::types::TokenId, DispatchError> {
+				) -> Result<pallet_laos_evolution::types::TokenId, DispatchError> {
 					unimplemented!()
 				}
 			}
 
-			type $name = LivingAssetsEvolutionPrecompile<
+			type $name = LaosEvolutionPrecompile<
 				AddressMapping,
 				AccountId,
 				TokenUri,

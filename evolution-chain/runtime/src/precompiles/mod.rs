@@ -6,10 +6,10 @@ use pallet_evm::{
 use sp_core::H160;
 use sp_std::marker::PhantomData;
 
-use pallet_evm_living_assets_evolution::LivingAssetsEvolutionPrecompile;
+use pallet_evm_laos_evolution::LaosEvolutionPrecompile;
 use pallet_evm_precompile_modexp::Modexp;
 use pallet_evm_precompile_simple::{ECRecover, ECRecoverPublicKey, Identity, Ripemd160, Sha256};
-use pallet_living_assets_evolution::TokenUriOf;
+use pallet_laos_evolution::TokenUriOf;
 
 use crate::{AccountId, Runtime};
 
@@ -28,16 +28,16 @@ where
 	}
 }
 
-type LivingAssetsEvolution = LivingAssetsEvolutionPrecompile<
+type LivingAssetsEvolution = LaosEvolutionPrecompile<
 	pallet_evm::IdentityAddressMapping,
 	AccountId,
 	TokenUriOf<Runtime>,
-	pallet_living_assets_evolution::Pallet<Runtime>,
+	pallet_laos_evolution::Pallet<Runtime>,
 >;
 
 impl<Runtime> PrecompileSet for LaosEvolutionPrecompiles<Runtime>
 where
-	Runtime: pallet_evm::Config + pallet_living_assets_evolution::Config,
+	Runtime: pallet_evm::Config + pallet_laos_evolution::Config,
 {
 	fn execute(&self, handle: &mut impl PrecompileHandle) -> Option<PrecompileResult> {
 		match handle.code_address() {

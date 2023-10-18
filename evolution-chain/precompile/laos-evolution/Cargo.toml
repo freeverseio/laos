@@ -25,7 +25,7 @@ sp-runtime = { workspace = true }
 sp-std = { workspace = true }
 
 # Local pallet
-pallet-living-assets-evolution = { workspace = true }
+pallet-laos-evolution = { workspace = true }
 
 # Utils
 precompile-utils = { workspace = true }
@@ -47,7 +47,7 @@ std = [
 	"sp-core/std",
 	"sp-runtime/std",
 	"sp-std/std",
-	"pallet-living-assets-evolution/std",
+	"pallet-laos-evolution/std",
 	"num_enum/std",
 	"frame-support/std",
 	"sp-arithmetic/std",

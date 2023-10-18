@@ -56,10 +56,13 @@ pallet-evm-precompile-simple = { workspace = true }
 pallet-hotfix-sufficients = { workspace = true }
 
 # Local pallets
-pallet-living-assets-evolution = { workspace = true }
+pallet-laos-evolution = { workspace = true }
 
 # Precompiles
 pallet-evm-laos-evolution = { workspace = true }
+
+# Primitives
+evochain-primitives = { workspace = true }
 
 [build-dependencies]
 substrate-wasm-builder = { workspace = true, optional = true }
@@ -111,8 +114,9 @@ std = [
 	"pallet-evm-precompile-modexp/std",
 	"pallet-evm-precompile-simple/std",
 	"pallet-hotfix-sufficients/std",
-	"pallet-living-assets-evolution/std",
+	"pallet-laos-evolution/std",
 	"pallet-evm-laos-evolution/std",
+	"evochain-primitives/std",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
@@ -125,5 +129,5 @@ runtime-benchmarks = [
 	"pallet-ethereum/runtime-benchmarks",
 	"pallet-evm/runtime-benchmarks",
 	"pallet-hotfix-sufficients/runtime-benchmarks",
-	"pallet-living-assets-evolution/runtime-benchmarks",
+	"pallet-laos-evolution/runtime-benchmarks",
 ]

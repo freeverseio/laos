@@ -26,7 +26,7 @@ construct_runtime!(
 		System: frame_system,
 		Balances: pallet_balances,
 		Timestamp: pallet_timestamp,
-		LivingAssetsEvolution: pallet_living_assets_evolution,
+		LivingAssetsEvolution: pallet_laos_evolution,
 		EVM: pallet_evm,
 	}
 );
@@ -100,7 +100,7 @@ impl Convert<AccountId, H160> for AccountIdToH160 {
 	}
 }
 
-impl pallet_living_assets_evolution::Config for Runtime {
+impl pallet_laos_evolution::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type AccountIdToH160 = AccountIdToH160;
 	type MaxTokenUriLength = MaxTokenUriLength;

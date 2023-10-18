@@ -51,7 +51,7 @@ use pallet_evm::{
 	IdentityAddressMapping, Runner,
 };
 
-pub use frontier_primitives::{
+pub use evochain_primitives::{
 	AccountId, Address, BlockNumber, Hash, Header, Nonce, Signature, MAXIMUM_BLOCK_LENGTH,
 	MAXIMUM_BLOCK_WEIGHT, SLOT_DURATION, WEIGHT_MILLISECS_PER_BLOCK,
 };
@@ -382,7 +382,7 @@ impl sp_runtime::traits::Convert<AccountId, H160> for AccountIdToH160 {
 }
 
 /// Configure the pallet-living-assets-evolution in pallets/living-assets-evolution.
-impl pallet_living_assets_evolution::Config for Runtime {
+impl pallet_laos_evolution::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type AccountIdToH160 = AccountIdToH160;
 	type MaxTokenUriLength = MaxTokenUriLength;
@@ -406,7 +406,7 @@ construct_runtime!(
 		HotfixSufficients: pallet_hotfix_sufficients,
 
 		// Local pallets
-		LivingAssetsEvolution: pallet_living_assets_evolution,
+		LivingAssetsEvolution: pallet_laos_evolution,
 	}
 );
 

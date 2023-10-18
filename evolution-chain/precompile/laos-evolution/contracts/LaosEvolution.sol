@@ -9,10 +9,10 @@ interface LivingAssets {
     /// @notice Event emitted when a new collection is created
     /// @param collectionId Id of the newly created ERC721 collection
     /// @param owner Owner of the newly created ERC721 collection
-    event CreateCollection(uint256 collectionId, address indexed owner);
+    event NewCollection(uint64 collectionId, address indexed owner);
 
     /// @notice Creates a new collection
     /// @dev Call this function to create a new collection
     /// @return address of the ERC721 collection
-    function createCollection() external returns (address);
+    function createCollection(address owner) external returns (address);
 }
