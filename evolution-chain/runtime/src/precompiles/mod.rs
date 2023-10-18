@@ -28,7 +28,7 @@ where
 	}
 }
 
-type LivingAssetsEvolution = LaosEvolutionPrecompile<
+type LaosEvolution = LaosEvolutionPrecompile<
 	pallet_evm::IdentityAddressMapping,
 	AccountId,
 	TokenUriOf<Runtime>,
@@ -49,7 +49,7 @@ where
 			a if a == hash(5) => Some(Modexp::execute(handle)),
 			// Non-Frontier specific nor Ethereum precompiles :
 			a if a == hash(1025) => Some(ECRecoverPublicKey::execute(handle)),
-			a if a == hash(1027) => Some(LivingAssetsEvolution::execute(handle)),
+			a if a == hash(1027) => Some(LaosEvolution::execute(handle)),
 			_ => None,
 		}
 	}

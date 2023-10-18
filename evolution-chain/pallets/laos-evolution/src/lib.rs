@@ -18,7 +18,7 @@ use sp_runtime::{
 	ArithmeticError, DispatchError,
 };
 
-pub use traits::LivingAssetsEvolution;
+pub use traits::LaosEvolution;
 pub use types::*;
 
 #[frame_support::pallet]
@@ -101,7 +101,7 @@ pub mod pallet {
 	impl<T: Config> Pallet<T> {}
 }
 
-impl<T: Config> LivingAssetsEvolution<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T> {
+impl<T: Config> LaosEvolution<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T> {
 	fn create_collection(owner: AccountIdOf<T>) -> Result<CollectionId, DispatchError> {
 		let collection_id = Self::collection_counter();
 

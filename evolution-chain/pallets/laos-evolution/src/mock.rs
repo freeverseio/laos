@@ -16,7 +16,7 @@ frame_support::construct_runtime!(
 	pub enum Test
 	{
 		System: frame_system,
-		LivingAssets: pallet_laos_evolution,
+		LaosEvolution: pallet_laos_evolution,
 	}
 );
 

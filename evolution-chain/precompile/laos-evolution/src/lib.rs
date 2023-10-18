@@ -2,7 +2,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
-use pallet_laos_evolution::traits::LivingAssetsEvolution as LivingAssetsEvolutionT;
+use pallet_laos_evolution::traits::LaosEvolution as LaosEvolutionT;
 use parity_scale_codec::Encode;
 use precompile_utils::{
 	keccak256, revert_dispatch_error, succeed, Address, EvmDataWriter, EvmResult, FunctionModifier,
@@ -24,22 +24,22 @@ pub enum Action {
 }
 
 /// Wrapper for the precompile function.
-pub struct LaosEvolutionPrecompile<AddressMapping, AccountId, TokenUri, LivingAssetsEvolution>(
-	PhantomData<(AddressMapping, AccountId, TokenUri, LivingAssetsEvolution)>,
+pub struct LaosEvolutionPrecompile<AddressMapping, AccountId, TokenUri, LaosEvolution>(
+	PhantomData<(AddressMapping, AccountId, TokenUri, LaosEvolution)>,
 )
 where
 	AddressMapping: pallet_evm::AddressMapping<AccountId>,
 	AccountId: Encode + Debug,
 	TokenUri: TryFrom<Vec<u8>>,
-	LivingAssetsEvolution: LivingAssetsEvolutionT<AccountId, TokenUri>;
+	LaosEvolution: LaosEvolutionT<AccountId, TokenUri>;
 
-impl<AddressMapping, AccountId, TokenUri, LivingAssetsEvolution> Precompile
-	for LaosEvolutionPrecompile<AddressMapping, AccountId, TokenUri, LivingAssetsEvolution>
+impl<AddressMapping, AccountId, TokenUri, LaosEvolution> Precompile
+	for LaosEvolutionPrecompile<AddressMapping, AccountId, TokenUri, LaosEvolution>
 where
 	AddressMapping: pallet_evm::AddressMapping<AccountId>,
 	AccountId: From<H160> + Into<H160> + Encode + Debug,
 	TokenUri: TryFrom<Vec<u8>>,
-	LivingAssetsEvolution: LivingAssetsEvolutionT<AccountId, TokenUri>,
+	LaosEvolution: LaosEvolutionT<AccountId, TokenUri>,
 {
 	fn execute(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
 		let selector = handle.read_selector()?;
@@ -56,7 +56,7 @@ where
 
 				let owner = input.read::<Address>()?.0;
 
-				match LivingAssetsEvolution::create_collection(owner.into()) {
+				match LaosEvolution::create_collection(owner.into()) {
 					Ok(collection_id) => {
 						LogsBuilder::new(handle.context().address)
 							.log3(

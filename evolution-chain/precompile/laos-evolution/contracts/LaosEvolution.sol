@@ -2,17 +2,17 @@
 pragma solidity >=0.8.3;
 
 /// @title Pallet Collection Manager Interface
-/// @author Freeverse team
+/// @author LAOS Team
 /// @notice This interface allows Solidity contracts to interact with pallet-living-assets
-/// @custom:address 0x0000000000000000000000000000000000000402
+/// @custom:address 0x0000000000000000000000000000000000000403
 interface LivingAssets {
     /// @notice Event emitted when a new collection is created
-    /// @param collectionId Id of the newly created ERC721 collection
-    /// @param owner Owner of the newly created ERC721 collection
+    /// @param collectionId Id of the newly created collection
+    /// @param owner Owner of the newly created collection
     event NewCollection(uint64 collectionId, address indexed owner);
 
     /// @notice Creates a new collection
     /// @dev Call this function to create a new collection
-    /// @return address of the ERC721 collection
-    function createCollection(address owner) external returns (address);
+    /// @return collectionId id of the newly created collection
+    function createCollection(address owner) external returns (uint64);
 }

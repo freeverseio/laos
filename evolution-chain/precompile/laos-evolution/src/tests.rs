@@ -148,10 +148,10 @@ mod helpers {
 			use sp_runtime::DispatchError;
 			type TokenUri = Vec<u8>;
 
-			struct LivingAssetsEvolutionMock;
+			struct LaosEvolutionMock;
 
-			impl pallet_laos_evolution::traits::LivingAssetsEvolution<AccountId, TokenUri>
-				for LivingAssetsEvolutionMock
+			impl pallet_laos_evolution::traits::LaosEvolution<AccountId, TokenUri>
+				for LaosEvolutionMock
 			{
 				fn create_collection(
 					owner: AccountId,
@@ -170,12 +170,8 @@ mod helpers {
 				}
 			}
 
-			type $name = LaosEvolutionPrecompile<
-				AddressMapping,
-				AccountId,
-				TokenUri,
-				LivingAssetsEvolutionMock,
-			>;
+			type $name =
+				LaosEvolutionPrecompile<AddressMapping, AccountId, TokenUri, LaosEvolutionMock>;
 		};
 	}
 

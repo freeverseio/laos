@@ -26,7 +26,7 @@ construct_runtime!(
 		System: frame_system,
 		Balances: pallet_balances,
 		Timestamp: pallet_timestamp,
-		LivingAssetsEvolution: pallet_laos_evolution,
+		LaosEvolution: pallet_laos_evolution,
 		EVM: pallet_evm,
 	}
 );

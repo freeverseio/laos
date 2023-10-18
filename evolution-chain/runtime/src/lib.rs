@@ -381,7 +381,6 @@ impl sp_runtime::traits::Convert<AccountId, H160> for AccountIdToH160 {
 	}
 }
 
-/// Configure the pallet-living-assets-evolution in pallets/living-assets-evolution.
 impl pallet_laos_evolution::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type AccountIdToH160 = AccountIdToH160;
@@ -406,7 +405,7 @@ construct_runtime!(
 		HotfixSufficients: pallet_hotfix_sufficients,
 
 		// Local pallets
-		LivingAssetsEvolution: pallet_laos_evolution,
+		LaosEvolution: pallet_laos_evolution,
 	}
 );
 
