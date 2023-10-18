@@ -14,13 +14,13 @@ interface LaosEvolution {
     /// @notice Creates a new collection
     /// @dev Call this function to create a new collection
     /// @param owner the owner of the newly created collection
-    /// @return collectionId the id of the newly created collection
+    /// @return the id of the newly created collection
     function createCollection(address owner) external returns (uint64);
 
     /// @notice Owner of the collection
     /// @dev Call this function to get the owner of a collection
     /// @param collectionId the id of the collection
-    /// @return owner the owner of the collection
+    /// @return the owner of the collection
     function ownerOfCollection(
         uint64 collectionId
     ) external view returns (address);
