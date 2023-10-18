@@ -57,14 +57,13 @@ jobs:
           file: ./docker/evolution-node.local.Dockerfile
           push: true
           tags: freeverseio/laos-evolution-node:${{ github.sha }}
-      # TODO: Uncomment when bridge compilation works
-      # - name: Push Bridge Docker images
-      #   uses: docker/build-push-action@v4
-      #   with:
-      #     context: .
-      #     file: ./docker/bridge.local.Dockerfile
-      #     push: true
-      #     tags: freeverseio/laos-bridge:${{ github.sha }}
+      - name: Push Bridge Docker images
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./docker/bridge.local.Dockerfile
+          push: true
+          tags: freeverseio/laos-bridge:${{ github.sha }}
 
   lint:
     runs-on: 

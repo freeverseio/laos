@@ -64,6 +64,13 @@ pallet-evm-laos-evolution = { workspace = true }
 # Primitives
 evochain-primitives = { workspace = true }
 
+# Bridge
+bp-header-chain = { workspace = true }
+bp-rococo = { workspace = true }
+bp-runtime = { workspace = true }
+
+pallet-bridge-grandpa = { workspace = true }
+
 [build-dependencies]
 substrate-wasm-builder = { workspace = true, optional = true }
 
@@ -117,9 +124,15 @@ std = [
 	"pallet-laos-evolution/std",
 	"pallet-evm-laos-evolution/std",
 	"evochain-primitives/std",
+	# Bridge
+	"bp-header-chain/std",
+	"bp-rococo/std",
+	"bp-runtime/std",
+	"pallet-bridge-grandpa/std",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
+	"frame-support/runtime-benchmarks",
 	"frame-system-benchmarking/runtime-benchmarks",
 	"frame-system/runtime-benchmarks",
 	"pallet-balances/runtime-benchmarks",
@@ -130,4 +143,6 @@ runtime-benchmarks = [
 	"pallet-evm/runtime-benchmarks",
 	"pallet-hotfix-sufficients/runtime-benchmarks",
 	"pallet-laos-evolution/runtime-benchmarks",
+	"pallet-bridge-grandpa/runtime-benchmarks",
+	"sp-runtime/runtime-benchmarks",
 ]
