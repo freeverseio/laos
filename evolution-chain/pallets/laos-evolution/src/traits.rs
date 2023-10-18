@@ -16,4 +16,6 @@ pub trait LaosEvolution<AccountId, TokenUri> {
 		to: AccountId,
 		token_uri: TokenUri,
 	) -> Result<TokenId, DispatchError>;
+
+	fn collection_owner(collection_id: CollectionId) -> Option<AccountId>;
 }

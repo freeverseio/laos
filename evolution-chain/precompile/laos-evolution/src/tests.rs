@@ -24,13 +24,13 @@ fn check_selectors() {
 fn check_log_selectors() {
 	assert_eq!(
 		hex::encode(SELECTOR_LOG_CREATE_COLLECTION),
-		"0bc7b5823efec35847638ca709f87eb1588b66d062d448e6fb9eb715b103cbb8"
+		"24bd5bca0f4bcaa33b6d7cdeccc866571a33ea388c225b6f8386bd009e8a7d5d"
 	);
 }
 
 #[test]
 fn failing_create_collection_should_return_error() {
-	impl_precompile_mock_simple!(Mock, Err(DispatchError::Other("this is an error")));
+	impl_precompile_mock_simple!(Mock, Err(DispatchError::Other("this is an error")), None);
 
 	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
 		.write(Address(H160([1u8; 20])))
@@ -47,7 +47,7 @@ fn failing_create_collection_should_return_error() {
 
 #[test]
 fn create_collection_should_return_collection_id() {
-	impl_precompile_mock_simple!(Mock, Ok(0));
+	impl_precompile_mock_simple!(Mock, Ok(0), None);
 
 	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
 		.write(Address(H160([1u8; 20])))
@@ -60,7 +60,7 @@ fn create_collection_should_return_collection_id() {
 
 #[test]
 fn create_collection_should_generate_log() {
-	impl_precompile_mock_simple!(Mock, Ok(0));
+	impl_precompile_mock_simple!(Mock, Ok(0), None);
 
 	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
 		.write(Address(H160([1u8; 20])))
@@ -80,7 +80,7 @@ fn create_collection_should_generate_log() {
 
 #[test]
 fn create_collection_on_mock_with_nonzero_value_fails() {
-	impl_precompile_mock_simple!(Mock, Ok(5));
+	impl_precompile_mock_simple!(Mock, Ok(5), None);
 
 	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
 		.write(Address(H160([1u8; 20])))
@@ -99,7 +99,8 @@ fn create_collection_assign_collection_to_caller() {
 		|owner| {
 			assert_eq!(owner, H160::from_low_u64_be(0x1234));
 			Ok(0)
-		}  // Closure for create_collection result
+		}, // Closure for create_collection result
+		|_| { None }  // Closure for collection_owner result
 	);
 
 	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
@@ -113,7 +114,7 @@ fn create_collection_assign_collection_to_caller() {
 
 #[test]
 fn call_unexistent_selector_should_fail() {
-	impl_precompile_mock_simple!(Mock, Ok(0));
+	impl_precompile_mock_simple!(Mock, Ok(0), None);
 
 	let nonexistent_selector =
 		hex::decode("fb24ae530000000000000000000000000000000000000000000000000000000000000000")
@@ -144,7 +145,8 @@ mod helpers {
 	/// ```
 	#[macro_export]
 	macro_rules! impl_precompile_mock {
-		($name:ident, $create_collection_result:expr) => {
+		($name:ident, $create_collection_result:expr, $collection_owner_result:expr) => {
+			use pallet_living_assets_evolution::types::*;
 			use sp_runtime::DispatchError;
 			type TokenUri = Vec<u8>;
 
@@ -153,20 +155,22 @@ mod helpers {
 			impl pallet_laos_evolution::traits::LaosEvolution<AccountId, TokenUri>
 				for LaosEvolutionMock
 			{
-				fn create_collection(
-					owner: AccountId,
-				) -> Result<pallet_laos_evolution::types::CollectionId, DispatchError> {
+				fn create_collection(owner: AccountId) -> Result<CollectionId, DispatchError> {
 					($create_collection_result)(owner)
 				}
 
 				fn mint_with_external_uri(
 					_who: AccountId,
-					_collection_id: pallet_laos_evolution::types::CollectionId,
-					_slot: pallet_laos_evolution::types::Slot,
+					_collection_id: CollectionId,
+					_slot: Slot,
 					_to: AccountId,
 					_token_uri: TokenUri,
-				) -> Result<pallet_laos_evolution::types::TokenId, DispatchError> {
+				) -> Result<TokenId, DispatchError> {
 					unimplemented!()
+				}
+
+				fn collection_owner(collection_id: CollectionId) -> Option<AccountId> {
+					($collection_owner_result)(collection_id)
 				}
 			}
 
@@ -193,8 +197,10 @@ mod helpers {
 	/// ```
 	#[macro_export]
 	macro_rules! impl_precompile_mock_simple {
-		($name:ident, $create_collection_result:expr) => {
-			impl_precompile_mock!($name, |_owner| { $create_collection_result });
+		($name:ident, $create_collection_result:expr, $collection_owner_result:expr) => {
+			impl_precompile_mock!($name, |_owner| { $create_collection_result }, |_collection_id| {
+				$collection_owner_result
+			})
 		};
 	}
 }
