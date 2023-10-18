@@ -262,19 +262,12 @@ fn slot_overflow() {
 fn collection_owner_works() {
 	new_test_ext().execute_with(|| {
 		// non-existent collection
-		assert_eq!(
-			<LivingAssets as LivingAssetsEvolution<AccountId, TokenUriOf<Test>>>::collection_owner(
-				0_u64
-			),
-			None
-		);
+		assert_eq!(LaosEvolution::collection_owner(0_u64), None);
 
 		create_collection(ALICE);
 
 		assert_eq!(
-			<LivingAssets as LivingAssetsEvolution<AccountId, TokenUriOf<Test>>>::collection_owner(
-				0_u64
-			),
+			LaosEvolution::collection_owner(0_u64),
 			Some(AccountId::from_str(ALICE).unwrap())
 		);
 	})
