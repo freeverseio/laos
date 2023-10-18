@@ -8,20 +8,22 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
-#[cfg(feature = "runtime-benchmarks")]
-mod benchmarking;
+mod traits;
 mod types;
-pub mod weights;
 
+use frame_support::pallet_prelude::*;
+use sp_core::H160;
+use sp_runtime::{
+	traits::{Convert, One},
+	ArithmeticError, DispatchError,
+};
+
+use traits::LivingAssetsEvolution;
 use types::*;
-pub use weights::*;
 
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use frame_support::{pallet_prelude::*, sp_runtime::traits::One};
-	use frame_system::pallet_prelude::*;
-	use sp_runtime::ArithmeticError;
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
@@ -31,11 +33,11 @@ pub mod pallet {
 	pub trait Config: frame_system::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
+		/// Converts `Self::AccountId` to `H160`
+		type AccountIdToH160: Convert<Self::AccountId, H160>;
 		/// Limit for the length of `token_uri`
 		#[pallet::constant]
 		type MaxTokenUriLength: Get<u32>;
-		/// Type representing the weight of this pallet
-		type WeightInfo: WeightInfo;
 	}
 
 	/// Collection counter
@@ -75,7 +77,7 @@ pub mod pallet {
 		MintedWithExternalTokenURI {
 			collection_id: CollectionId,
 			slot: Slot,
-			to: SlotOwnerId,
+			to: AccountIdOf<T>,
 			token_uri: TokenUriOf<T>,
 			token_id: TokenId,
 		},
@@ -91,142 +93,84 @@ pub mod pallet {
 		NoPermission,
 		/// [`Slot`] is already minted
 		AlreadyMinted,
-		/// [`Slot`] overflow
+		/// This happens when `Slot` is larger than 96 bits
 		SlotOverflow,
 	}
 
-	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
-	// These functions materialize as "extrinsics", which are often compared to transactions.
-	// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
 	#[pallet::call]
-	impl<T: Config> Pallet<T> {
-		/// The `create_collection` extrinsic allows users to create a new collection.
-		///
-		/// # Parameters
-		///
-		/// - `origin`: The origin account sending the extrinsic.
-		/// - `owner`: The account that will be set as the owner of the new collection.
-		///
-		/// # Storage Changes
-		///
-		/// - [`CollectionOwner`](`CollectionOwner`): Inserts a new mapping from the generated
-		///   `collection_id` to the `owner` account.
-		/// - [`CollectionCounter`](`CollectionCounter`): Updates the counter for the next available
-		///   `collection_id`.
-		///
-		/// # Events
-		///
-		/// Emits a [`CollectionCreated`](`Event::<T>::CollectionCreated`) event upon successful
-		/// execution.
-		///
-		/// # Errors
-		///
-		/// - Returns [`Overflow`](`ArithmeticError::<T>::Overflow`) if incrementing the
-		///   `collection_id` counter would result in an overflow.
-		#[pallet::call_index(0)]
-		#[pallet::weight(T::WeightInfo::create_collection())]
-		pub fn create_collection(origin: OriginFor<T>, owner: T::AccountId) -> DispatchResult {
-			ensure_signed(origin)?;
+	impl<T: Config> Pallet<T> {}
+}
 
-			let collection_id = Self::collection_counter();
+impl<T: Config> LivingAssetsEvolution<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T> {
+	fn create_collection(owner: AccountIdOf<T>) -> Result<CollectionId, DispatchError> {
+		let collection_id = Self::collection_counter();
 
-			CollectionOwner::<T>::insert(collection_id, owner.clone());
+		CollectionOwner::<T>::insert(collection_id, owner.clone());
 
-			// Attempt to increment the collection counter by 1. If this operation
-			// would result in an overflow, return early with an error
-			let counter = collection_id.checked_add(One::one()).ok_or(ArithmeticError::Overflow)?;
-			CollectionCounter::<T>::put(counter);
+		// Attempt to increment the collection counter by 1. If this operation
+		// would result in an overflow, return early with an error
+		let counter = collection_id.checked_add(One::one()).ok_or(ArithmeticError::Overflow)?;
+		CollectionCounter::<T>::put(counter);
 
-			// Emit an event.
-			Self::deposit_event(Event::CollectionCreated { collection_id, owner });
+		// Emit an event.
+		Self::deposit_event(Event::CollectionCreated { collection_id, owner });
 
-			// Return a successful DispatchResult
-			Ok(())
-		}
+		Ok(collection_id)
+	}
 
-		/// Mint new asset with external URI
-		///
-		/// This function performs the minting of a new asset with setting its external URI.
-		///
-		/// NOTE: This function will panic if the `slot` has a value greater than `2^96 - 1`
-		/// This will be fixed in the future https://github.com/freeverseio/laos-evolution-node/issues/77
-		///
-		/// # Errors
-		///
-		///  This function returns a dispatch error in the following cases:
-		///
-		/// * [`NoPermission`](`Error::<T>::NoPermission`) - if the caller is not the owner of the
-		///   collection
-		/// * [`CollectionDoesNotExist`](`Error::<T>::CollectionDoesNotExist`) - if the collection
-		///   does not exist
-		/// * [`AlreadyMinted`](`Error::<T>::AlreadyMinted`) - if the asset is already minted
-		/// * [`Overflow`](`ArithmeticError::<T>::Overflow`) - if the `slot` is greater than `2^96 -
-		///   1`
-		#[pallet::call_index(1)]
-		#[pallet::weight(T::WeightInfo::mint_with_external_uri())]
-		pub fn mint_with_external_uri(
-			origin: OriginFor<T>,
-			collection_id: CollectionId,
-			slot: Slot,
-			to: SlotOwnerId,
-			token_uri: TokenUriOf<T>,
-		) -> DispatchResult {
-			let who = ensure_signed(origin)?;
+	fn mint_with_external_uri(
+		who: AccountIdOf<T>,
+		collection_id: CollectionId,
+		slot: Slot,
+		to: AccountIdOf<T>,
+		token_uri: TokenUriOf<T>,
+	) -> Result<TokenId, DispatchError> {
+		ensure!(
+			CollectionOwner::<T>::contains_key(collection_id),
+			Error::<T>::CollectionDoesNotExist
+		);
+		ensure!(CollectionOwner::<T>::get(collection_id) == Some(who), Error::<T>::NoPermission);
 
-			ensure!(
-				CollectionOwner::<T>::contains_key(collection_id),
-				Error::<T>::CollectionDoesNotExist
-			);
+		let to_as_h160 = T::AccountIdToH160::convert(to.clone());
+		// compose asset_id	from slot and owner
+		let token_id =
+			slot_and_owner_to_token_id(slot, to_as_h160).ok_or(Error::<T>::SlotOverflow)?;
 
-			ensure!(
-				CollectionOwner::<T>::get(collection_id) == Some(who),
-				Error::<T>::NoPermission
-			);
+		ensure!(TokenURI::<T>::get(collection_id, token_id).is_none(), Error::<T>::AlreadyMinted);
 
-			// compose asset_id	from slot and owner
-			let token_id = Self::slot_and_owner_to_token_id(slot, to.clone())?;
+		TokenURI::<T>::insert(collection_id, token_id, token_uri.clone());
 
-			ensure!(
-				TokenURI::<T>::get(collection_id, token_id).is_none(),
-				Error::<T>::AlreadyMinted
-			);
+		Self::deposit_event(Event::MintedWithExternalTokenURI {
+			collection_id,
+			slot,
+			to,
+			token_id,
+			token_uri,
+		});
 
-			TokenURI::<T>::insert(collection_id, token_id, token_uri.clone());
-
-			Self::deposit_event(Event::MintedWithExternalTokenURI {
-				collection_id,
-				slot,
-				to,
-				token_id,
-				token_uri,
-			});
-
-			Ok(())
-		}
+		Ok(token_id)
 	}
 }
 
-impl<T: Config> Pallet<T> {
-	// Utility functions
-	/// A struct responsible for converting `Slot` and `AccountId` to `TokenId`
-	///
-	/// Every slot is identified by a unique `token_id` where `token_id = concat(slot #,
-	/// owner_address)`
-	fn slot_and_owner_to_token_id(slot: Slot, owner: SlotOwnerId) -> Result<TokenId, Error<T>> {
-		// Check if slot is larger than 96 bits
-		ensure!(slot <= MAX_U96, Error::<T>::SlotOverflow);
-
-		let mut bytes = [0u8; 32];
-
-		let slot_bytes = slot.to_be_bytes();
-
-		// we also use the last 12 bytes of the slot, since the first 4 bytes are always 0
-		bytes[..12].copy_from_slice(&slot_bytes[4..]);
-
-		let account_id_bytes = owner.as_fixed_bytes();
-
-		bytes[12..].copy_from_slice(account_id_bytes);
-
-		Ok(TokenId::from(bytes))
+/// Converts `Slot` and `H160` to `TokenId`
+///
+/// Every slot is identified by a unique `token_id` where `token_id = concat(slot #,
+/// owner_address)`
+///
+/// Returns `None` if `Slot` is larger than 96 bits
+fn slot_and_owner_to_token_id(slot: Slot, owner: H160) -> Option<TokenId> {
+	// Check if slot is larger than 96 bits
+	if slot > MAX_U96 {
+		return None
 	}
+
+	let mut bytes = [0u8; 32];
+
+	let slot_bytes = slot.to_be_bytes();
+
+	// we also use the last 12 bytes of the slot, since the first 4 bytes are always 0
+	bytes[..12].copy_from_slice(&slot_bytes[4..]);
+	bytes[12..].copy_from_slice(&owner.0);
+
+	Some(TokenId::from(bytes))
 }

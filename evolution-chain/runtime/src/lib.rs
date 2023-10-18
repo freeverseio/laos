@@ -369,10 +369,19 @@ parameter_types! {
 	pub const MaxTokenUriLength: u32 = 512;
 }
 
+/// Converts [`AccountId`] to [`H160`]
+pub struct AccountIdToH160;
+
+impl sp_runtime::traits::Convert<AccountId, H160> for AccountIdToH160 {
+	fn convert(account_id: AccountId) -> H160 {
+		H160(account_id.0)
+	}
+}
+
 /// Configure the pallet-living-assets-evolution in pallets/living-assets-evolution.
 impl pallet_living_assets_evolution::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = pallet_living_assets_evolution::weights::SubstrateWeight<Self>;
+	type AccountIdToH160 = AccountIdToH160;
 	type MaxTokenUriLength = MaxTokenUriLength;
 }
 
@@ -526,7 +535,6 @@ mod benches {
 		[pallet_timestamp, Timestamp]
 		[pallet_sudo, Sudo]
 		[pallet_evm, EVM]
-		[pallet_living_assets_evolution, LivingAssetsEvolution]
 	);
 }
 
