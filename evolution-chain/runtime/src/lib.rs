@@ -1,4 +1,4 @@
-//! The LAOS Evolution Chain runtime. This can be compiled with `#[no_std]`, ready for Wasm.
+//! The Substrate Node Template runtime. This can be compiled with `#[no_std]`, ready for Wasm.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 // `construct_runtime!` does a lot of recursion and requires us to increase the limit to 256.
@@ -51,7 +51,7 @@ use pallet_evm::{
 	IdentityAddressMapping, Runner,
 };
 
-pub use evochain_primitives::{
+pub use frontier_primitives::{
 	AccountId, Address, BlockNumber, Hash, Header, Nonce, Signature, MAXIMUM_BLOCK_LENGTH,
 	MAXIMUM_BLOCK_WEIGHT, SLOT_DURATION, WEIGHT_MILLISECS_PER_BLOCK,
 };
@@ -63,7 +63,7 @@ pub use pallet_timestamp::Call as TimestampCall;
 use pallet_transaction_payment::Multiplier;
 
 mod precompiles;
-use precompiles::FrontierPrecompiles;
+use precompiles::LaosEvolutionPrecompiles;
 
 /// The type for looking up accounts. We don't expect more than 4 billion of them, but you
 /// never know...
@@ -74,6 +74,9 @@ pub type Balance = u128;
 
 /// Digest item type.
 pub type DigestItem = generic::DigestItem;
+
+/// Precompiles
+pub type Precompiles = LaosEvolutionPrecompiles<Runtime>;
 
 /// Opaque types. These are used by the CLI to instantiate machinery that don't need to know
 /// the specifics of the runtime. They can then be made to be agnostic over specific formats
@@ -97,10 +100,6 @@ pub mod opaque {
 	}
 }
 
-/// Polkadot.js explorer does not support `laos-parachain` as an ethereum chain, therefore we
-/// use `frontier-template` as a spec name to make explorer work.
-///
-/// See [this issue](https://github.com/freeverseio/laos/issues/30)
 #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("frontier-template"),
@@ -292,7 +291,7 @@ const MAX_POV_SIZE: u64 = 5 * 1024 * 1024;
 parameter_types! {
 	pub BlockGasLimit: U256 = U256::from(BLOCK_GAS_LIMIT);
 	pub const GasLimitPovSizeRatio: u64 = BLOCK_GAS_LIMIT.saturating_div(MAX_POV_SIZE);
-	pub PrecompilesValue: FrontierPrecompiles<Runtime> = FrontierPrecompiles::<_>::new();
+	pub PrecompilesValue: LaosEvolutionPrecompiles<Runtime> = LaosEvolutionPrecompiles::<_>::new();
 	pub WeightPerGas: Weight = Weight::from_parts(weight_per_gas(BLOCK_GAS_LIMIT, NORMAL_DISPATCH_RATIO, WEIGHT_MILLISECS_PER_BLOCK), 0);
 }
 
@@ -306,7 +305,7 @@ impl pallet_evm::Config for Runtime {
 	type AddressMapping = IdentityAddressMapping;
 	type Currency = Balances;
 	type RuntimeEvent = RuntimeEvent;
-	type PrecompilesType = FrontierPrecompiles<Self>;
+	type PrecompilesType = LaosEvolutionPrecompiles<Self>;
 	type PrecompilesValue = PrecompilesValue;
 	type ChainId = EVMChainId;
 	type BlockGasLimit = BlockGasLimit;
@@ -391,7 +390,7 @@ impl pallet_living_assets_evolution::Config for Runtime {
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
-	pub struct Runtime {
+	pub enum Runtime {
 		System: frame_system,
 		Timestamp: pallet_timestamp,
 		Aura: pallet_aura,

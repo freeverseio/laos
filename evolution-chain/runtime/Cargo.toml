@@ -1,5 +1,5 @@
 [package]
-name = "laos-evolution-runtime"
+name = "frontier-template-runtime"
 version = "0.0.0"
 license = "Unlicense"
 description = "A fresh FRAME-based Substrate runtime, ready for hacking."
@@ -52,15 +52,17 @@ pallet-ethereum = { workspace = true }
 pallet-evm = { workspace = true }
 pallet-evm-chain-id = { workspace = true }
 pallet-evm-precompile-modexp = { workspace = true }
-pallet-evm-precompile-sha3fips = { workspace = true }
 pallet-evm-precompile-simple = { workspace = true }
 pallet-hotfix-sufficients = { workspace = true }
 
 # Primitive types
-evochain-primitives = { workspace = true }
+frontier-primitives = { workspace = true }
 
 # Local pallets
 pallet-living-assets-evolution = { workspace = true }
+
+# Precompiles
+pallet-evm-living-assets-evolution = { workspace = true }
 
 [build-dependencies]
 substrate-wasm-builder = { workspace = true, optional = true }
@@ -110,11 +112,11 @@ std = [
 	"pallet-evm/std",
 	"pallet-evm-chain-id/std",
 	"pallet-evm-precompile-modexp/std",
-	"pallet-evm-precompile-sha3fips/std",
 	"pallet-evm-precompile-simple/std",
 	"pallet-hotfix-sufficients/std",
-	"evochain-primitives/std",
+	"frontier-primitives/std",
 	"pallet-living-assets-evolution/std",
+	"pallet-evm-living-assets-evolution/std",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
