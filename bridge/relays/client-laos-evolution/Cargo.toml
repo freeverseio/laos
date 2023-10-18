@@ -6,11 +6,16 @@ edition = "2021"
 [dependencies]
 codec = { package = "parity-scale-codec", workspace = true }
 
-# Laos Evolution Dependencies
+# Laos Evolution dependencies
 bp-laos-evolution = { workspace = true }
 laos-evolution-runtime = { workspace = true }
 
-# Substrate Dependencies
+# Bridge dependencies
+bp-runtime = { workspace = true }
+relay-common = { workspace = true }
+
+# Substrate dependencies
+fp-self-contained = { workspace = true }
 frame-support = { workspace = true }
 frame-system = { workspace = true }
 pallet-transaction-payment = { workspace = true }
