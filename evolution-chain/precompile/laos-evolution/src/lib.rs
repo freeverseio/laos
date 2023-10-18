@@ -21,7 +21,7 @@ pub enum Action {
 	/// Create collection
 	CreateCollection = "createCollection(address)",
 	/// Get owner of the collection
-	OwnerOf = "ownerOf(uint64)",
+	OwnerOfCollection = "OwnerOfCollection(uint64)",
 }
 
 /// Wrapper for the precompile function.
@@ -47,7 +47,7 @@ where
 
 		handle.check_function_modifier(match selector {
 			Action::CreateCollection => FunctionModifier::NonPayable,
-			Action::OwnerOf => FunctionModifier::View,
+			Action::OwnerOfCollection => FunctionModifier::View,
 		})?;
 
 		match selector {
@@ -74,7 +74,7 @@ where
 					Err(err) => Err(revert_dispatch_error(err)),
 				}
 			},
-			Action::OwnerOf => {
+			Action::OwnerOfCollection => {
 				let mut input = handle.read_input()?;
 				input.expect_arguments(1)?;
 

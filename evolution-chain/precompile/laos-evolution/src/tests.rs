@@ -9,7 +9,7 @@ use precompile_utils::{
 	revert, succeed,
 	testing::{create_mock_handle, create_mock_handle_from_input},
 };
-use sp_core::H160;
+use sp_core::{H160, U256};
 use sp_std::vec::Vec;
 
 type AccountId = H160;
@@ -124,6 +124,33 @@ fn call_unexistent_selector_should_fail() {
 	assert_eq!(result.unwrap_err(), revert("unknown selector"));
 }
 
+#[test]
+fn call_owner_of_non_existent_collection() {
+	impl_precompile_mock_simple!(Mock, Ok(0), None);
+
+	let input = EvmDataWriter::new_with_selector(Action::OwnerOfCollection)
+		.write(U256::from(0))
+		.build();
+	let mut handle = create_mock_handle_from_input(input);
+	let result = Mock::execute(&mut handle);
+	assert_eq!(result.unwrap_err(), revert("collection does not exist"));
+}
+
+#[test]
+fn call_owner_of_collection_works() {
+	impl_precompile_mock_simple!(Mock, Ok(0), Some(H160::from_low_u64_be(0x1234)));
+
+	let owner = H160::from_low_u64_be(0x1234);
+
+	let input = EvmDataWriter::new_with_selector(Action::OwnerOfCollection)
+		.write(Address(owner))
+		.build();
+
+	let mut handle = create_mock_handle_from_input(input);
+	let result = Mock::execute(&mut handle).unwrap();
+	assert_eq!(result, succeed(EvmDataWriter::new().write(Address(owner.into())).build()));
+}
+
 mod helpers {
 	/// Macro to define a precompile mock for testing.
 	///
@@ -136,17 +163,17 @@ mod helpers {
 	/// * `$name`: An identifier to name the precompile mock type.
 	/// * `$create_collection_result`: An expression that evaluates to a `Result<CollectionId,
 	///   &'static str>`.
-	/// * `$owner_of_collection_result`: An expression that evaluates to an `Option<AccountId>`.
+	/// * `$collection_owner_result`: An expression that evaluates to an `Option<AccountId>`.
 	///
 	/// # Example
 	///
 	/// ```
-	/// impl_precompile_mock_simple!(Mock, Ok(0), Some(BaseURI::new());
+	/// impl_precompile_mock_simple!(Mock, Ok(0), Some(H160::zero()));
 	/// ```
 	#[macro_export]
 	macro_rules! impl_precompile_mock {
 		($name:ident, $create_collection_result:expr, $collection_owner_result:expr) => {
-			use pallet_living_assets_evolution::types::*;
+			use pallet_laos_evolution::types::*;
 			use sp_runtime::DispatchError;
 			type TokenUri = Vec<u8>;
 
