@@ -20,7 +20,7 @@ pub mod codegen_runtime;
 
 use bp_laos_ownership::Signature;
 use bp_polkadot_core::SuffixedCommonSignedExtensionExt;
-use bp_runtime::{EncodedOrDecodedCall, StorageMapKeyProvider};
+use bp_runtime::EncodedOrDecodedCall;
 use codec::Encode;
 use relay_substrate_client::{
 	Chain, ChainWithBalances, ChainWithMessages, ChainWithTransactions, Error as SubstrateError,
@@ -57,38 +57,9 @@ impl Chain for OwnershipParachain {
 	type Call = RuntimeCall;
 }
 
-/// Provides a storage key for account data.
-///
-/// We need to use this approach when we don't have access to the runtime.
-/// The equivalent command to invoke in case full `Runtime` is known is this:
-/// `let key = frame_system::Account::<Runtime>::storage_map_final_key(&account_id);`
-///
-/// NOTE: this is a custom impl for `AccountId = AccountId20`
-/// source: [`bp_polkadot_core::AccountInfoStorageMapKeyProvider`]
-pub struct AccountInfoStorageMapKeyProvider;
-
-impl StorageMapKeyProvider for AccountInfoStorageMapKeyProvider {
-	const MAP_NAME: &'static str = "Account";
-	type Hasher = frame_support::Blake2_128Concat;
-	type Key = bp_laos_ownership::AccountId;
-	// This should actually be `AccountInfo`, but we don't use this property in order to decode the
-	// data. So we use `Vec<u8>` as if we would work with encoded data.
-	type Value = Vec<u8>;
-}
-
-impl AccountInfoStorageMapKeyProvider {
-	/// Name of the system pallet.
-	const PALLET_NAME: &'static str = "System";
-
-	/// Return storage key for given account data.
-	pub fn final_key(id: &bp_laos_ownership::AccountId) -> StorageKey {
-		<Self as StorageMapKeyProvider>::final_key(Self::PALLET_NAME, id)
-	}
-}
-
 impl ChainWithBalances for OwnershipParachain {
 	fn account_info_storage_key(account_id: &Self::AccountId) -> StorageKey {
-		AccountInfoStorageMapKeyProvider::final_key(account_id)
+		relay_common::AccountInfoStorageMapKeyProvider::<Self::AccountId>::final_key(account_id)
 	}
 }
 

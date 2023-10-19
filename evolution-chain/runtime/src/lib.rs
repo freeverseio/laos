@@ -59,7 +59,9 @@ pub use evochain_primitives::{
 // A few exports that help ease life for downstream crates.
 pub use frame_system::Call as SystemCall;
 pub use pallet_balances::Call as BalancesCall;
+pub use pallet_bridge_grandpa::Call as BridgeRococoGrandpaCall;
 pub use pallet_timestamp::Call as TimestampCall;
+
 use pallet_transaction_payment::Multiplier;
 
 mod precompiles;
@@ -387,6 +389,14 @@ impl pallet_laos_evolution::Config for Runtime {
 	type MaxTokenUriLength = MaxTokenUriLength;
 }
 
+impl pallet_bridge_grandpa::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type BridgedChain = bp_rococo::Rococo;
+	type MaxFreeMandatoryHeadersPerBlock = ConstU32<4>;
+	type HeadersToKeep = ConstU32<{ bp_rococo::DAYS }>;
+	type WeightInfo = pallet_bridge_grandpa::weights::BridgeWeight<Runtime>;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime {
@@ -406,6 +416,9 @@ construct_runtime!(
 
 		// Local pallets
 		LaosEvolution: pallet_laos_evolution,
+
+		// Bridge pallets
+		BridgeRococoGrandpa: pallet_bridge_grandpa,
 	}
 );
 
@@ -619,6 +632,17 @@ impl_runtime_apis! {
 	impl frame_system_rpc_runtime_api::AccountNonceApi<Block, AccountId, Nonce> for Runtime {
 		fn account_nonce(account: AccountId) -> Nonce {
 			System::account_nonce(account)
+		}
+	}
+
+	impl bp_rococo::RococoFinalityApi<Block> for Runtime {
+		fn best_finalized() -> Option<bp_runtime::HeaderId<bp_rococo::Hash, bp_rococo::BlockNumber>> {
+			BridgeRococoGrandpa::best_finalized()
+		}
+
+		fn synced_headers_grandpa_info(
+		) -> Vec<bp_header_chain::StoredHeaderGrandpaInfo<bp_rococo::Header>> {
+			BridgeRococoGrandpa::synced_headers_grandpa_info()
 		}
 	}
 
