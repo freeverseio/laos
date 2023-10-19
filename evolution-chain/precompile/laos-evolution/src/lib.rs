@@ -21,7 +21,7 @@ pub enum Action {
 	/// Create collection
 	CreateCollection = "createCollection(address)",
 	/// Get owner of the collection
-	OwnerOfCollection = "OwnerOfCollection(uint64)",
+	OwnerOfCollection = "ownerOfCollection(uint64)",
 }
 
 /// Wrapper for the precompile function.
