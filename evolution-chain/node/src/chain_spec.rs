@@ -15,7 +15,7 @@ use sp_state_machine::BasicExternalities;
 use fp_evm::GenesisAccount;
 use laos_evolution_runtime::{
 	AccountId, Balance, EnableManualSeal, Precompiles, RuntimeGenesisConfig, SS58Prefix, Signature,
-	WASM_BINARY, EVM_CHAIN_ID,
+	EVM_CHAIN_ID, WASM_BINARY,
 };
 
 // The URL for the telemetry server.
@@ -109,7 +109,6 @@ pub fn development_config(enable_manual_seal: Option<bool>) -> DevChainSpec {
 					vec![authority_keys_from_seed("Alice")],
 					// Ethereum chain ID
 					EVM_CHAIN_ID,
-					
 				),
 				enable_manual_seal,
 			}
