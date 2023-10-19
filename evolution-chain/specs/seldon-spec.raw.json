@@ -2,7 +2,10 @@
   "name": "Seldon Evolution Chain",
   "id": "seldon_evolution_chain",
   "chainType": "Live",
-  "bootNodes": [],
+  "bootNodes": [
+    "/ip4/206.189.240.44/tcp/30333/p2p/12D3KooWHRZEzXAcKRJvYum1zeMFE9FExXbc69Nrk333pX7wcdJt",
+    "/ip4/159.223.241.11/tcp/30333/p2p/12D3KooWRc6Updq4bjWR2gX1ramQdNHNEqFYDoBjFwGdL9or5QKC"
+  ],
   "telemetryEndpoints": null,
   "protocolId": "seldon_evolution_chain",
   "properties": null,
