@@ -1,6 +1,6 @@
 {
-  "name": "Local Testnet",
-  "id": "local_testnet",
+  "name": "Seldon Evolution Chain",
+  "id": "seldon_evolution_chain",
   "chainType": "Live",
   "bootNodes": [],
   "telemetryEndpoints": null,
@@ -14,7 +14,8 @@
       },
       "aura": {
         "authorities": [
-          "5HQmMyrZQgxzM8tprXxRrV6C68WHemm47ZnbxQfnrTQDrS9Y"
+          "5HQmMyrZQgxzM8tprXxRrV6C68WHemm47ZnbxQfnrTQDrS9Y",
+          "5HW7hXEsd3HkXzNCABoFngPku55zhgiBd6qye3tC91yEoES7"
         ]
       },
       "grandpa": {
@@ -24,7 +25,7 @@
             1
           ],
           [
-            "5GoNkf6WdbxCFnPdAnYYQyCjAKPJgLNxXwPjwTh6DGg6gN3E",
+            "5GNzZ41CpGFnAUeDkgWyFjBDsoVJGDLDWrrC9LN8PgTQJmbY",
             1
           ]
         ]
@@ -33,27 +34,7 @@
         "balances": [
           [
             "0x045c57B46DEDE60001623105d351c7941C90149e",
-            1000000000000000000000000
-          ],
-          [
-            "0x3cd0a705a2dc65e5b1e1205896baa2be8a07c6e0",
-            1000000000000000000000000
-          ],
-          [
-            "0x798d4ba9baf0064ec19eb4f0a1a45785ae9d6dfc",
-            1000000000000000000000000
-          ],
-          [
-            "0x773539d4ac0e786233d90a233654ccee26a613d9",
-            1000000000000000000000000
-          ],
-          [
-            "0xff64d3f6efe2317ee2807d223a0bdc4c0c49dfdb",
-            1000000000000000000000000
-          ],
-          [
-            "0xc0f0f4ab324c46e55d02d0033343b4be8a55532d",
-            1000000000000000000000000
+            1000000000000000000000000000
           ]
         ]
       },
