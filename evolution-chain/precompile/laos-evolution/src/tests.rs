@@ -23,9 +23,15 @@ fn check_selectors() {
 #[test]
 fn check_log_selectors() {
 	assert_eq!(
-		hex::encode(SELECTOR_LOG_CREATE_COLLECTION),
-		"24bd5bca0f4bcaa33b6d7cdeccc866571a33ea388c225b6f8386bd009e8a7d5d"
+		hex::encode(SELECTOR_LOG_NEW_COLLECTION),
+		"6eb24fd767a7bcfa417f3fe25a2cb245d2ae52293d3c4a8f8c6450a09795d289"
 	);
+}
+
+#[test]
+fn function_selectors() {
+	assert_eq!(Action::CreateCollection as u32, 0x2069E953);
+	assert_eq!(Action::OwnerOfCollection as u32, 0xFB34AE53);
 }
 
 #[test]
@@ -73,7 +79,7 @@ fn create_collection_should_generate_log() {
 	assert_eq!(logs.len(), 1);
 	assert_eq!(logs[0].address, H160::zero());
 	assert_eq!(logs[0].topics.len(), 3);
-	assert_eq!(logs[0].topics[0], SELECTOR_LOG_CREATE_COLLECTION.into());
+	assert_eq!(logs[0].topics[0], SELECTOR_LOG_NEW_COLLECTION.into());
 	assert_eq!(logs[0].topics[1], H256::from_low_u64_be(0));
 	assert_eq!(logs[0].data, Vec::<u8>::new());
 }

@@ -13,7 +13,7 @@ use sp_core::{H160, H256};
 use sp_std::{fmt::Debug, marker::PhantomData, vec::Vec};
 
 /// Solidity selector of the CreateCollection log, which is the Keccak of the Log signature.
-pub const SELECTOR_LOG_CREATE_COLLECTION: [u8; 32] = keccak256!("CreateCollection(uint64,address)");
+pub const SELECTOR_LOG_NEW_COLLECTION: [u8; 32] = keccak256!("NewCollection(uint64,address)");
 
 #[precompile_utils_macro::generate_function_selector]
 #[derive(Debug, PartialEq)]
@@ -62,7 +62,7 @@ where
 					Ok(collection_id) => {
 						LogsBuilder::new(handle.context().address)
 							.log3(
-								SELECTOR_LOG_CREATE_COLLECTION,
+								SELECTOR_LOG_NEW_COLLECTION,
 								H256::from_low_u64_be(collection_id.to_be()),
 								owner,
 								Vec::new(),
