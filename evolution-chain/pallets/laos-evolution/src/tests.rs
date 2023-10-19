@@ -7,8 +7,8 @@ use crate::{
 	types::{TokenId, TokenUriOf, MAX_U96},
 	CollectionId, Error, Event,
 };
-use parity_scale_codec::Encode;
 use frame_support::{assert_noop, assert_ok};
+use parity_scale_codec::Encode;
 use sp_core::H160;
 
 const ALICE: &str = "0x0000000000000000000000000000000000000005";
