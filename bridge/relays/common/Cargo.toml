@@ -6,14 +6,14 @@ edition = "2021"
 license = "GPL-3.0-or-later WITH Classpath-exception-2.0"
 
 [dependencies]
-codec = { workspace = true, package = "parity-scale-codec", features = ["derive"] }
+parity-scale-codec = { workspace = true, features = ["derive"] }
 
 # Bridge dependencies
 bp-polkadot-core = { workspace = true }
 bp-runtime = { workspace = true }
 
 # Substrate Dependencies
-frame-support = { workspace = true, package = "frame-support", features = ["std"] }
+frame-support = { workspace = true, features = ["std"] }
 sp-core = { workspace = true }
 sp-std = { workspace = true }
 sp-runtime = { workspace = true }

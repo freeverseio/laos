@@ -17,8 +17,8 @@
 //! Deal with CLI args of substrate-to-substrate relay.
 
 use async_std::prelude::*;
-use codec::{Decode, Encode};
 use futures::{select, FutureExt};
+use parity_scale_codec::{Decode, Encode};
 use rbtag::BuildInfo;
 use signal_hook::consts::*;
 use signal_hook_async_std::Signals;

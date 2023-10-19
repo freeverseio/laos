@@ -1,8 +1,8 @@
 //! Common types used in the bridge clients and relays.
 
 use bp_runtime::StorageMapKeyProvider;
-use codec::FullCodec;
 use sp_core::storage::StorageKey;
+use sp_runtime::codec::FullCodec;
 
 /// Provides a storage key for account data.
 ///

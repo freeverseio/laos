@@ -13,7 +13,7 @@ build = "build.rs"
 clap = { workspace = true, features = ["derive"] }
 futures = { workspace = true }
 log = { workspace = true }
-parity-scale-codec = { workspace = true }
+parity-scale-codec = { workspace = true, features = ["derive"] }
 serde = { workspace = true, features = ["derive"] }
 jsonrpsee = { workspace = true, features = ["server"] }
 hex-literal = { workspace = true }
