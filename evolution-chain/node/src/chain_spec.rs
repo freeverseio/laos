@@ -108,7 +108,7 @@ pub fn development_config(enable_manual_seal: Option<bool>) -> DevChainSpec {
 					// Initial PoA authorities
 					vec![authority_keys_from_seed("Alice")],
 					// Ethereum chain ID
-					SS58Prefix::get() as u64,
+					6671,
 				),
 				enable_manual_seal,
 			}
@@ -153,7 +153,7 @@ pub fn local_testnet_config() -> ChainSpec {
 					AccountId::from(hex!("C0F0f4ab324C46e55D02D0033343B4Be8A55532d")), // Faith
 				],
 				vec![authority_keys_from_seed("Alice"), authority_keys_from_seed("Bob")],
-				42,
+				6671,
 			)
 		},
 		// Bootnodes
