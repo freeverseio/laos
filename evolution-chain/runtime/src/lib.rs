@@ -122,6 +122,9 @@ pub fn native_version() -> sp_version::NativeVersion {
 
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 
+/// The chain id of the EVM
+pub const EVM_CHAIN_ID: u64 = 6671;
+
 parameter_types! {
 	pub const Version: RuntimeVersion = VERSION;
 	pub const BlockHashCount: BlockNumber = 256;
