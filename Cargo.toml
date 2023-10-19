@@ -10,7 +10,7 @@ members = [
    "ownership-chain/precompile/*",
    "ownership-chain/pallets/*",
    "ownership-chain/primitives",
-# 	"bridge/relays/*",
+ 	"bridge/relays/*",
 	"bridge/primitives/*",
    "evolution-chain/runtime",
    "evolution-chain/node",
@@ -267,3 +267,4 @@ laos-evolution-runtime = { path = "./evolution-chain/runtime", default-features 
 relay-laos-evolution-client = { path="./bridge/relays/client-laos-evolution" }
 relay-laos-ownership-client = { path="./bridge/relays/client-laos-ownership" }
 relay-rococo-client = { path = "./bridge/relays/client-rococo" }
+relay-common = { path = "./bridge/relays/common" }
