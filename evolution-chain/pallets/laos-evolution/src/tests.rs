@@ -7,7 +7,7 @@ use crate::{
 	types::{TokenId, TokenUriOf, MAX_U96},
 	CollectionId, Error, Event,
 };
-use codec::Encode;
+use parity_scale_codec::Encode;
 use frame_support::{assert_noop, assert_ok};
 use sp_core::H160;
 

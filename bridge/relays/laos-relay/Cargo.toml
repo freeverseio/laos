@@ -8,7 +8,7 @@ authors = ["Freeverse"]
 anyhow = { workspace = true }
 async-std =  { workspace = true }
 async-trait = { workspace = true }
-codec = { workspace = true, package = "parity-scale-codec" }
+parity-scale-codec = { workspace = true, features = ["derive"] }
 futures = { workspace = true }
 hex = { workspace = true }
 log = { workspace = true }

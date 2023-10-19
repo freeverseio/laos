@@ -15,7 +15,7 @@
 // along with Parity Bridges Common.  If not, see <http://www.gnu.org/licenses/>.
 
 use async_trait::async_trait;
-use codec::Encode;
+use parity_scale_codec::Encode;
 
 use crate::{
 	bridges::{

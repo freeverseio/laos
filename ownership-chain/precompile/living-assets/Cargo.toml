@@ -8,9 +8,7 @@ repository = "https://github.com/freeverseio/pallet-livingassets-ownership"
 edition = "2021"
 
 [dependencies]
-parity-scale-codec = { workspace = true, features = [
-	"derive",
-] }
+parity-scale-codec = { workspace = true, features = ["derive"] }
 scale-info = { workspace = true, features = [
 	"derive",
 ] }

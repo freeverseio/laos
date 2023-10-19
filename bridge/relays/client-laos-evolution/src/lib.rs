@@ -18,8 +18,8 @@
 
 use bp_laos_evolution::{Signature, EVOCHAIN_SYNCED_HEADERS_GRANDPA_INFO_METHOD};
 use bp_runtime::EncodedOrDecodedCall;
-use codec::{Compact, Decode, Encode};
 use laos_evolution_runtime as evochain_runtime;
+use parity_scale_codec::{Compact, Decode, Encode};
 use relay_substrate_client::{
 	BalanceOf, Chain, ChainWithBalances, ChainWithGrandpa, ChainWithMessages,
 	ChainWithTransactions, Error as SubstrateError, NonceOf, SignParam, UnderlyingChainProvider,
@@ -136,7 +136,7 @@ impl ChainWithTransactions for Evochain {
 		let extra = &tx.0.signature.as_ref()?.2;
 		Some(
 			UnsignedTransaction::new(
-				tx.0.function.into(),
+				tx.0.function,
 				Compact::<NonceOf<Self>>::decode(&mut &extra.5.encode()[..]).ok()?.into(),
 			)
 			.tip(Compact::<BalanceOf<Self>>::decode(&mut &extra.7.encode()[..]).ok()?.into()),
