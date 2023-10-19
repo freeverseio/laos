@@ -5,22 +5,23 @@ use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
 use pallet_laos_evolution::traits::LaosEvolution as LaosEvolutionT;
 use parity_scale_codec::Encode;
 use precompile_utils::{
-	keccak256, revert_dispatch_error, succeed, Address, EvmDataWriter, EvmResult, FunctionModifier,
-	LogExt, LogsBuilder, PrecompileHandleExt,
+	keccak256, revert, revert_dispatch_error, succeed, Address, EvmDataWriter, EvmResult,
+	FunctionModifier, LogExt, LogsBuilder, PrecompileHandleExt,
 };
 
 use sp_core::{H160, H256};
 use sp_std::{fmt::Debug, marker::PhantomData, vec::Vec};
 
 /// Solidity selector of the CreateCollection log, which is the Keccak of the Log signature.
-pub const SELECTOR_LOG_CREATE_COLLECTION: [u8; 32] =
-	keccak256!("CreateCollection(uint256,address)");
+pub const SELECTOR_LOG_NEW_COLLECTION: [u8; 32] = keccak256!("NewCollection(uint64,address)");
 
 #[precompile_utils_macro::generate_function_selector]
 #[derive(Debug, PartialEq)]
 pub enum Action {
 	/// Create collection
 	CreateCollection = "createCollection(address)",
+	/// Get owner of the collection
+	OwnerOfCollection = "ownerOfCollection(uint64)",
 }
 
 /// Wrapper for the precompile function.
@@ -46,6 +47,7 @@ where
 
 		handle.check_function_modifier(match selector {
 			Action::CreateCollection => FunctionModifier::NonPayable,
+			Action::OwnerOfCollection => FunctionModifier::View,
 		})?;
 
 		match selector {
@@ -60,7 +62,7 @@ where
 					Ok(collection_id) => {
 						LogsBuilder::new(handle.context().address)
 							.log3(
-								SELECTOR_LOG_CREATE_COLLECTION,
+								SELECTOR_LOG_NEW_COLLECTION,
 								H256::from_low_u64_be(collection_id.to_be()),
 								owner,
 								Vec::new(),
@@ -70,6 +72,18 @@ where
 						Ok(succeed(EvmDataWriter::new().write(collection_id).build()))
 					},
 					Err(err) => Err(revert_dispatch_error(err)),
+				}
+			},
+			Action::OwnerOfCollection => {
+				let mut input = handle.read_input()?;
+				input.expect_arguments(1)?;
+
+				let collection_id = input.read::<u64>()?;
+
+				if let Some(owner) = LaosEvolution::collection_owner(collection_id) {
+					Ok(succeed(EvmDataWriter::new().write(Address(owner.into())).build()))
+				} else {
+					Err(revert("collection does not exist"))
 				}
 			},
 		}

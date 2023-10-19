@@ -9,7 +9,7 @@ use precompile_utils::{
 	revert, succeed,
 	testing::{create_mock_handle, create_mock_handle_from_input},
 };
-use sp_core::H160;
+use sp_core::{H160, U256};
 use sp_std::vec::Vec;
 
 type AccountId = H160;
@@ -23,14 +23,20 @@ fn check_selectors() {
 #[test]
 fn check_log_selectors() {
 	assert_eq!(
-		hex::encode(SELECTOR_LOG_CREATE_COLLECTION),
-		"0bc7b5823efec35847638ca709f87eb1588b66d062d448e6fb9eb715b103cbb8"
+		hex::encode(SELECTOR_LOG_NEW_COLLECTION),
+		"6eb24fd767a7bcfa417f3fe25a2cb245d2ae52293d3c4a8f8c6450a09795d289"
 	);
 }
 
 #[test]
+fn function_selectors() {
+	assert_eq!(Action::CreateCollection as u32, 0x2069E953);
+	assert_eq!(Action::OwnerOfCollection as u32, 0xFB34AE53);
+}
+
+#[test]
 fn failing_create_collection_should_return_error() {
-	impl_precompile_mock_simple!(Mock, Err(DispatchError::Other("this is an error")));
+	impl_precompile_mock_simple!(Mock, Err(DispatchError::Other("this is an error")), None);
 
 	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
 		.write(Address(H160([1u8; 20])))
@@ -47,7 +53,7 @@ fn failing_create_collection_should_return_error() {
 
 #[test]
 fn create_collection_should_return_collection_id() {
-	impl_precompile_mock_simple!(Mock, Ok(0));
+	impl_precompile_mock_simple!(Mock, Ok(0), None);
 
 	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
 		.write(Address(H160([1u8; 20])))
@@ -60,7 +66,7 @@ fn create_collection_should_return_collection_id() {
 
 #[test]
 fn create_collection_should_generate_log() {
-	impl_precompile_mock_simple!(Mock, Ok(0));
+	impl_precompile_mock_simple!(Mock, Ok(0), None);
 
 	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
 		.write(Address(H160([1u8; 20])))
@@ -73,14 +79,14 @@ fn create_collection_should_generate_log() {
 	assert_eq!(logs.len(), 1);
 	assert_eq!(logs[0].address, H160::zero());
 	assert_eq!(logs[0].topics.len(), 3);
-	assert_eq!(logs[0].topics[0], SELECTOR_LOG_CREATE_COLLECTION.into());
+	assert_eq!(logs[0].topics[0], SELECTOR_LOG_NEW_COLLECTION.into());
 	assert_eq!(logs[0].topics[1], H256::from_low_u64_be(0));
 	assert_eq!(logs[0].data, Vec::<u8>::new());
 }
 
 #[test]
 fn create_collection_on_mock_with_nonzero_value_fails() {
-	impl_precompile_mock_simple!(Mock, Ok(5));
+	impl_precompile_mock_simple!(Mock, Ok(5), None);
 
 	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
 		.write(Address(H160([1u8; 20])))
@@ -99,7 +105,8 @@ fn create_collection_assign_collection_to_caller() {
 		|owner| {
 			assert_eq!(owner, H160::from_low_u64_be(0x1234));
 			Ok(0)
-		}  // Closure for create_collection result
+		}, // Closure for create_collection result
+		|_| { None }  // Closure for collection_owner result
 	);
 
 	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
@@ -113,7 +120,7 @@ fn create_collection_assign_collection_to_caller() {
 
 #[test]
 fn call_unexistent_selector_should_fail() {
-	impl_precompile_mock_simple!(Mock, Ok(0));
+	impl_precompile_mock_simple!(Mock, Ok(0), None);
 
 	let nonexistent_selector =
 		hex::decode("fb24ae530000000000000000000000000000000000000000000000000000000000000000")
@@ -121,6 +128,33 @@ fn call_unexistent_selector_should_fail() {
 	let mut handle = create_mock_handle_from_input(nonexistent_selector);
 	let result = Mock::execute(&mut handle);
 	assert_eq!(result.unwrap_err(), revert("unknown selector"));
+}
+
+#[test]
+fn call_owner_of_non_existent_collection() {
+	impl_precompile_mock_simple!(Mock, Ok(0), None);
+
+	let input = EvmDataWriter::new_with_selector(Action::OwnerOfCollection)
+		.write(U256::from(0))
+		.build();
+	let mut handle = create_mock_handle_from_input(input);
+	let result = Mock::execute(&mut handle);
+	assert_eq!(result.unwrap_err(), revert("collection does not exist"));
+}
+
+#[test]
+fn call_owner_of_collection_works() {
+	impl_precompile_mock_simple!(Mock, Ok(0), Some(H160::from_low_u64_be(0x1234)));
+
+	let owner = H160::from_low_u64_be(0x1234);
+
+	let input = EvmDataWriter::new_with_selector(Action::OwnerOfCollection)
+		.write(Address(owner))
+		.build();
+
+	let mut handle = create_mock_handle_from_input(input);
+	let result = Mock::execute(&mut handle).unwrap();
+	assert_eq!(result, succeed(EvmDataWriter::new().write(Address(owner.into())).build()));
 }
 
 mod helpers {
@@ -135,16 +169,17 @@ mod helpers {
 	/// * `$name`: An identifier to name the precompile mock type.
 	/// * `$create_collection_result`: An expression that evaluates to a `Result<CollectionId,
 	///   &'static str>`.
-	/// * `$owner_of_collection_result`: An expression that evaluates to an `Option<AccountId>`.
+	/// * `$collection_owner_result`: An expression that evaluates to an `Option<AccountId>`.
 	///
 	/// # Example
 	///
 	/// ```
-	/// impl_precompile_mock_simple!(Mock, Ok(0), Some(BaseURI::new());
+	/// impl_precompile_mock_simple!(Mock, Ok(0), Some(H160::zero()));
 	/// ```
 	#[macro_export]
 	macro_rules! impl_precompile_mock {
-		($name:ident, $create_collection_result:expr) => {
+		($name:ident, $create_collection_result:expr, $collection_owner_result:expr) => {
+			use pallet_laos_evolution::types::*;
 			use sp_runtime::DispatchError;
 			type TokenUri = Vec<u8>;
 
@@ -153,20 +188,22 @@ mod helpers {
 			impl pallet_laos_evolution::traits::LaosEvolution<AccountId, TokenUri>
 				for LaosEvolutionMock
 			{
-				fn create_collection(
-					owner: AccountId,
-				) -> Result<pallet_laos_evolution::types::CollectionId, DispatchError> {
+				fn create_collection(owner: AccountId) -> Result<CollectionId, DispatchError> {
 					($create_collection_result)(owner)
 				}
 
 				fn mint_with_external_uri(
 					_who: AccountId,
-					_collection_id: pallet_laos_evolution::types::CollectionId,
-					_slot: pallet_laos_evolution::types::Slot,
+					_collection_id: CollectionId,
+					_slot: Slot,
 					_to: AccountId,
 					_token_uri: TokenUri,
-				) -> Result<pallet_laos_evolution::types::TokenId, DispatchError> {
+				) -> Result<TokenId, DispatchError> {
 					unimplemented!()
+				}
+
+				fn collection_owner(collection_id: CollectionId) -> Option<AccountId> {
+					($collection_owner_result)(collection_id)
 				}
 			}
 
@@ -193,8 +230,10 @@ mod helpers {
 	/// ```
 	#[macro_export]
 	macro_rules! impl_precompile_mock_simple {
-		($name:ident, $create_collection_result:expr) => {
-			impl_precompile_mock!($name, |_owner| { $create_collection_result });
+		($name:ident, $create_collection_result:expr, $collection_owner_result:expr) => {
+			impl_precompile_mock!($name, |_owner| { $create_collection_result }, |_collection_id| {
+				$collection_owner_result
+			})
 		};
 	}
 }

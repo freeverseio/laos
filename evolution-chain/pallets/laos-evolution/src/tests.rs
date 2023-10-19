@@ -257,3 +257,18 @@ fn slot_overflow() {
 		);
 	});
 }
+
+#[test]
+fn collection_owner_works() {
+	new_test_ext().execute_with(|| {
+		// non-existent collection
+		assert_eq!(LaosEvolution::collection_owner(0_u64), None);
+
+		create_collection(ALICE);
+
+		assert_eq!(
+			LaosEvolution::collection_owner(0_u64),
+			Some(AccountId::from_str(ALICE).unwrap())
+		);
+	})
+}
