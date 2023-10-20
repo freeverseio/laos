@@ -39,17 +39,17 @@ interface LaosEvolution {
         uint64 collectionId
     ) external view returns (address);
 
-    /// @notice Mint a new asset
-    /// @dev Call this function to mint a new asset
+    /// @notice Mint a new token
+    /// @dev Call this function to mint a new token
     /// @param collectionId the id of the collection
-    /// @param slot the slot of the asset
-    /// @param to the owner of the newly minted asset
-    /// @param tokenURI the tokenURI of the newly minted asset
-    /// @return the id of the newly minted asset
+    /// @param slot the slot of the token
+    /// @param to the owner of the newly minted token
+    /// @param tokenURI the tokenURI of the newly minted token
+    /// @return the id of the newly minted token
     function mint(
         uint64 collectionId,
         uint96 slot,
         address to,
         string calldata tokenURI
-    ) external returns (uint64);
+    ) external returns (uint256);
 }
