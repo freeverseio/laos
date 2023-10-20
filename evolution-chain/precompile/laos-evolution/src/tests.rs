@@ -37,7 +37,7 @@ fn function_selectors() {
 
 #[test]
 fn failing_create_collection_should_return_error() {
-	impl_precompile_mock_simple!(Mock, Err(DispatchError::Other("this is an error")), None);
+	impl_precompile_mock_simple!(Mock, Err(DispatchError::Other("this is an error")), None, None);
 
 	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
 		.write(Address(H160([1u8; 20])))
@@ -54,7 +54,7 @@ fn failing_create_collection_should_return_error() {
 
 #[test]
 fn create_collection_should_return_collection_id() {
-	impl_precompile_mock_simple!(Mock, Ok(0), None);
+	impl_precompile_mock_simple!(Mock, Ok(0), None, None);
 
 	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
 		.write(Address(H160([1u8; 20])))
@@ -67,7 +67,7 @@ fn create_collection_should_return_collection_id() {
 
 #[test]
 fn create_collection_should_generate_log() {
-	impl_precompile_mock_simple!(Mock, Ok(0), None);
+	impl_precompile_mock_simple!(Mock, Ok(0), None, None);
 
 	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
 		.write(Address(H160([1u8; 20])))
@@ -87,7 +87,7 @@ fn create_collection_should_generate_log() {
 
 #[test]
 fn create_collection_on_mock_with_nonzero_value_fails() {
-	impl_precompile_mock_simple!(Mock, Ok(5), None);
+	impl_precompile_mock_simple!(Mock, Ok(5), None, None);
 
 	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
 		.write(Address(H160([1u8; 20])))
@@ -107,7 +107,8 @@ fn create_collection_assign_collection_to_caller() {
 			assert_eq!(owner, H160::from_low_u64_be(0x1234));
 			Ok(0)
 		}, // Closure for create_collection result
-		|_| { None }  // Closure for collection_owner result
+		|_| { None }, // Closure for collection_owner result
+		|_, _| { None } // Closure for token_uri result
 	);
 
 	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
@@ -121,7 +122,7 @@ fn create_collection_assign_collection_to_caller() {
 
 #[test]
 fn call_unexistent_selector_should_fail() {
-	impl_precompile_mock_simple!(Mock, Ok(0), None);
+	impl_precompile_mock_simple!(Mock, Ok(0), None, None);
 
 	let nonexistent_selector =
 		hex::decode("fb24ae530000000000000000000000000000000000000000000000000000000000000000")
@@ -133,7 +134,7 @@ fn call_unexistent_selector_should_fail() {
 
 #[test]
 fn call_owner_of_non_existent_collection() {
-	impl_precompile_mock_simple!(Mock, Ok(0), None);
+	impl_precompile_mock_simple!(Mock, Ok(0), None, None);
 
 	let input = EvmDataWriter::new_with_selector(Action::OwnerOfCollection)
 		.write(U256::from(0))
@@ -145,7 +146,7 @@ fn call_owner_of_non_existent_collection() {
 
 #[test]
 fn call_owner_of_collection_works() {
-	impl_precompile_mock_simple!(Mock, Ok(0), Some(H160::from_low_u64_be(0x1234)));
+	impl_precompile_mock_simple!(Mock, Ok(0), Some(H160::from_low_u64_be(0x1234)), None);
 
 	let owner = H160::from_low_u64_be(0x1234);
 
@@ -156,6 +157,20 @@ fn call_owner_of_collection_works() {
 	let mut handle = create_mock_handle_from_input(input);
 	let result = Mock::execute(&mut handle).unwrap();
 	assert_eq!(result, succeed(EvmDataWriter::new().write(Address(owner.into())).build()));
+}
+
+#[test]
+fn token_uri_returns_error_when_collection_does_not_exist() {
+	impl_precompile_mock_simple!(Mock, Ok(0), None, None);
+
+	let input = EvmDataWriter::new_with_selector(Action::TokenURI)
+		.write(U256::from(0))
+		.write(U256::from(0))
+		.build();
+
+	let mut handle = create_mock_handle_from_input(input);
+	let result = Mock::execute(&mut handle);
+	assert_eq!(result.unwrap_err(), revert("collection does not exist"));
 }
 
 mod helpers {
@@ -179,7 +194,7 @@ mod helpers {
 	/// ```
 	#[macro_export]
 	macro_rules! impl_precompile_mock {
-		($name:ident, $create_collection_result:expr, $collection_owner_result:expr) => {
+		($name:ident, $create_collection_result:expr, $collection_owner_result:expr, $token_uri_result:expr ) => {
 			use pallet_laos_evolution::types::*;
 			use sp_runtime::DispatchError;
 			type TokenUri = Vec<u8>;
@@ -211,7 +226,7 @@ mod helpers {
 					_collection_id: CollectionId,
 					_token_id: TokenId,
 				) -> Option<TokenUri> {
-					unimplemented!()
+					($token_uri_result)(_collection_id, _token_id)
 				}
 			}
 
@@ -238,10 +253,10 @@ mod helpers {
 	/// ```
 	#[macro_export]
 	macro_rules! impl_precompile_mock_simple {
-		($name:ident, $create_collection_result:expr, $collection_owner_result:expr) => {
+		($name:ident, $create_collection_result:expr, $collection_owner_result:expr, $token_uri_result:expr) => {
 			impl_precompile_mock!($name, |_owner| { $create_collection_result }, |_collection_id| {
-				$collection_owner_result
-			})
+				$collection_owner_result }, | _collection_id, _token_id | { $token_uri_result }
+			)
 		};
 	}
 }
