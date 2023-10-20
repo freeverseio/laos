@@ -164,8 +164,8 @@ fn token_uri_returns_nothing_when_source_token_uri_is_none() {
 	impl_precompile_mock_simple!(Mock, Ok(0), None, None);
 
 	let input = EvmDataWriter::new_with_selector(Action::TokenURI)
-		.write(U256::from(0))
-		.write(U256::from(0))
+		.write(0_u64)
+		.write(TokenId::from(0))
 		.build();
 
 	let mut handle = create_mock_handle_from_input(input);

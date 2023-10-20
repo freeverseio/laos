@@ -285,7 +285,7 @@ fn token_uri_of_unexistent_collection_returns_none() {
 fn token_uri_of_unexistent_token_returns_none() {
 	new_test_ext().execute_with(|| {
 		let collection_id = create_collection(ALICE);
-		let tocken_id: U256 = 0_u64.into();
+		let tocken_id: TokenId = 0_u64.into();
 		assert_eq!(LaosEvolution::token_uri(collection_id, tocken_id), None);
 	});
 }
