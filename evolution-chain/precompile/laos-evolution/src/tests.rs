@@ -32,6 +32,7 @@ fn check_log_selectors() {
 fn function_selectors() {
 	assert_eq!(Action::CreateCollection as u32, 0x2069E953);
 	assert_eq!(Action::OwnerOfCollection as u32, 0xFB34AE53);
+	assert_eq!(Action::TokenURI as u32, 0xC8A3F102);
 }
 
 #[test]
