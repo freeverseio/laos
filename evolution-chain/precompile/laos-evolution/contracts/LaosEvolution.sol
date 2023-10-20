@@ -24,4 +24,18 @@ interface LaosEvolution {
     function ownerOfCollection(
         uint64 collectionId
     ) external view returns (address);
+
+    /// @notice Mint a new asset
+    /// @dev Call this function to mint a new asset
+    /// @param collectionId the id of the collection
+    /// @param slot the slot of the asset
+    /// @param to the owner of the newly minted asset
+    /// @param tokenURI the tokenURI of the newly minted asset
+    /// @return the id of the newly minted asset
+    function mint(
+        uint64 collectionId,
+        uint96 slot,
+        address to,
+        string calldata tokenURI
+    ) external returns (uint64);
 }
