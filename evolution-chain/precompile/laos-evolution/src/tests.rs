@@ -32,11 +32,17 @@ fn check_log_selectors() {
 fn function_selectors() {
 	assert_eq!(Action::CreateCollection as u32, 0x2069E953);
 	assert_eq!(Action::OwnerOfCollection as u32, 0xFB34AE53);
+	assert_eq!(Action::Mint as u32, 0x3B8EF7A4);
 }
 
 #[test]
 fn failing_create_collection_should_return_error() {
-	impl_precompile_mock_simple!(Mock, Err(DispatchError::Other("this is an error")), None);
+	impl_precompile_mock_simple!(
+		Mock,
+		Err(DispatchError::Other("this is an error")),
+		None,
+		Ok(0.into())
+	);
 
 	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
 		.write(Address(H160([1u8; 20])))
@@ -53,7 +59,7 @@ fn failing_create_collection_should_return_error() {
 
 #[test]
 fn create_collection_should_return_collection_id() {
-	impl_precompile_mock_simple!(Mock, Ok(0), None);
+	impl_precompile_mock_simple!(Mock, Ok(0), None, Ok(0.into()));
 
 	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
 		.write(Address(H160([1u8; 20])))
@@ -66,7 +72,7 @@ fn create_collection_should_return_collection_id() {
 
 #[test]
 fn create_collection_should_generate_log() {
-	impl_precompile_mock_simple!(Mock, Ok(0), None);
+	impl_precompile_mock_simple!(Mock, Ok(0), None, Ok(0.into()));
 
 	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
 		.write(Address(H160([1u8; 20])))
@@ -86,7 +92,7 @@ fn create_collection_should_generate_log() {
 
 #[test]
 fn create_collection_on_mock_with_nonzero_value_fails() {
-	impl_precompile_mock_simple!(Mock, Ok(5), None);
+	impl_precompile_mock_simple!(Mock, Ok(5), None, Ok(0.into()));
 
 	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
 		.write(Address(H160([1u8; 20])))
@@ -106,7 +112,8 @@ fn create_collection_assign_collection_to_caller() {
 			assert_eq!(owner, H160::from_low_u64_be(0x1234));
 			Ok(0)
 		}, // Closure for create_collection result
-		|_| { None }  // Closure for collection_owner result
+		|_| { None }, // Closure for collection_owner result
+		|_, _, _, _, _| { Ok(0.into()) }  // Closure for mint result
 	);
 
 	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
@@ -120,7 +127,7 @@ fn create_collection_assign_collection_to_caller() {
 
 #[test]
 fn call_unexistent_selector_should_fail() {
-	impl_precompile_mock_simple!(Mock, Ok(0), None);
+	impl_precompile_mock_simple!(Mock, Ok(0), None, Ok(0.into()));
 
 	let nonexistent_selector =
 		hex::decode("fb24ae530000000000000000000000000000000000000000000000000000000000000000")
@@ -132,7 +139,7 @@ fn call_unexistent_selector_should_fail() {
 
 #[test]
 fn call_owner_of_non_existent_collection() {
-	impl_precompile_mock_simple!(Mock, Ok(0), None);
+	impl_precompile_mock_simple!(Mock, Ok(0), None, Ok(0.into()));
 
 	let input = EvmDataWriter::new_with_selector(Action::OwnerOfCollection)
 		.write(U256::from(0))
@@ -144,7 +151,7 @@ fn call_owner_of_non_existent_collection() {
 
 #[test]
 fn call_owner_of_collection_works() {
-	impl_precompile_mock_simple!(Mock, Ok(0), Some(H160::from_low_u64_be(0x1234)));
+	impl_precompile_mock_simple!(Mock, Ok(0), Some(H160::from_low_u64_be(0x1234)), Ok(0.into()));
 
 	let owner = H160::from_low_u64_be(0x1234);
 
@@ -155,6 +162,49 @@ fn call_owner_of_collection_works() {
 	let mut handle = create_mock_handle_from_input(input);
 	let result = Mock::execute(&mut handle).unwrap();
 	assert_eq!(result, succeed(EvmDataWriter::new().write(Address(owner.into())).build()));
+}
+
+#[test]
+fn mint_works() {
+	impl_precompile_mock_simple!(Mock, Ok(0), Some(H160::from_low_u64_be(0x1234)), Ok(1.into()));
+
+	let to = H160::from_low_u64_be(1);
+
+	let input = EvmDataWriter::new_with_selector(Action::Mint)
+		.write(U256::from(0))
+		.write(U256::from(1))
+		.write(Address(to))
+		.write(Bytes([1u8; 20].to_vec()))
+		.build();
+
+	let mut handle = create_mock_handle_from_input(input);
+	let result = Mock::execute(&mut handle).unwrap();
+
+	assert_eq!(result, succeed(EvmDataWriter::new().write(H256::from_low_u64_be(1)).build()));
+}
+
+#[test]
+fn failing_mint_should_return_error() {
+	impl_precompile_mock_simple!(
+		Mock,
+		Ok(0),
+		Some(H160::from_low_u64_be(0x1234)),
+		Err(DispatchError::Other("this is error"))
+	);
+
+	let to = H160::from_low_u64_be(1);
+
+	let input = EvmDataWriter::new_with_selector(Action::Mint)
+		.write(U256::from(0))
+		.write(U256::from(1))
+		.write(Address(to))
+		.write(Bytes([1u8; 20].to_vec()))
+		.build();
+
+	let mut handle = create_mock_handle_from_input(input);
+	let result = Mock::execute(&mut handle).unwrap_err();
+
+	assert_eq!(result, revert("this is error"));
 }
 
 mod helpers {
@@ -178,7 +228,7 @@ mod helpers {
 	/// ```
 	#[macro_export]
 	macro_rules! impl_precompile_mock {
-		($name:ident, $create_collection_result:expr, $collection_owner_result:expr) => {
+		($name:ident, $create_collection_result:expr, $collection_owner_result:expr, $mint_result:expr) => {
 			use pallet_laos_evolution::types::*;
 			use sp_runtime::DispatchError;
 			type TokenUri = Vec<u8>;
@@ -193,13 +243,13 @@ mod helpers {
 				}
 
 				fn mint_with_external_uri(
-					_who: AccountId,
-					_collection_id: CollectionId,
-					_slot: Slot,
-					_to: AccountId,
-					_token_uri: TokenUri,
+					who: AccountId,
+					collection_id: CollectionId,
+					slot: Slot,
+					to: AccountId,
+					token_uri: TokenUri,
 				) -> Result<TokenId, DispatchError> {
-					unimplemented!()
+					($mint_result)(who, collection_id, slot, to, token_uri)
 				}
 
 				fn collection_owner(collection_id: CollectionId) -> Option<AccountId> {
@@ -230,10 +280,13 @@ mod helpers {
 	/// ```
 	#[macro_export]
 	macro_rules! impl_precompile_mock_simple {
-		($name:ident, $create_collection_result:expr, $collection_owner_result:expr) => {
-			impl_precompile_mock!($name, |_owner| { $create_collection_result }, |_collection_id| {
-				$collection_owner_result
-			})
+		($name:ident, $create_collection_result:expr, $collection_owner_result:expr, $mint_result:expr) => {
+			impl_precompile_mock!(
+				$name,
+				|_owner| { $create_collection_result },
+				|_collection_id| { $collection_owner_result },
+				|_who, _collection_id, _slot, _to, _token_uri| { $mint_result }
+			);
 		};
 	}
 }
