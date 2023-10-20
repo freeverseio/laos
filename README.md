@@ -22,6 +22,18 @@ Evolution Chain is engineered to provide dynamic capabilities to NFTs. It enable
 
 The Bridge module acts as the communication layer between the Ownership Chain and Evolution Chain, allowing for seamless data exchange and functionality integration.
 
+### Testing Networks
+
+#### Caladan Ownership chain: 
+* Substrate endpoint: wss://caladan.gorengine.com/own
+* EVM endpoint: https://caladan.gorengine.com/own
+* EVM blockexplorer: https://caladan.gorengine.com 
+
+#### Seldon Ownership chain: 
+* Substrate endpoint: wss://seldon.gorengine.com/own
+* EVM endpoint: https://seldon.gorengine.com/own
+* EVM blockexplorer: https://seldon.gorengine.com 
+
 ## Additional Resources
 
 - **Whitepaper**: For an in-depth understanding, refer to our [whitepaper](https://github.com/freeverseio/laos-whitepaper/blob/main/laos.pdf).
