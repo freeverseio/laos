@@ -160,7 +160,7 @@ fn call_owner_of_collection_works() {
 }
 
 #[test]
-fn token_uri_returns_error_when_collection_does_not_exist() {
+fn token_uri_returns_nothing_when_collection_does_not_exist() {
 	impl_precompile_mock_simple!(Mock, Ok(0), None, None);
 
 	let input = EvmDataWriter::new_with_selector(Action::TokenURI)
@@ -170,7 +170,7 @@ fn token_uri_returns_error_when_collection_does_not_exist() {
 
 	let mut handle = create_mock_handle_from_input(input);
 	let result = Mock::execute(&mut handle);
-	assert_eq!(result.unwrap_err(), revert("collection does not exist"));
+	assert_eq!(result.unwrap(), succeed(EvmDataWriter::new().write(Bytes(Vec::new())).build()));
 }
 
 mod helpers {

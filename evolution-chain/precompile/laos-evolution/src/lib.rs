@@ -2,10 +2,10 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
-use pallet_laos_evolution::traits::LaosEvolution as LaosEvolutionT;
+use pallet_laos_evolution::{traits::LaosEvolution as LaosEvolutionT, TokenId};
 use parity_scale_codec::Encode;
 use precompile_utils::{
-	keccak256, revert, revert_dispatch_error, succeed, Address, EvmDataWriter, EvmResult,
+	keccak256, revert, revert_dispatch_error, succeed, Address, Bytes, EvmDataWriter, EvmResult,
 	FunctionModifier, LogExt, LogsBuilder, PrecompileHandleExt,
 };
 
@@ -41,7 +41,7 @@ impl<AddressMapping, AccountId, TokenUri, LaosEvolution> Precompile
 where
 	AddressMapping: pallet_evm::AddressMapping<AccountId>,
 	AccountId: From<H160> + Into<H160> + Encode + Debug,
-	TokenUri: TryFrom<Vec<u8>>,
+	TokenUri: TryFrom<Vec<u8>> + Into<Vec<u8>>,
 	LaosEvolution: LaosEvolutionT<AccountId, TokenUri>,
 {
 	fn execute(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
@@ -90,8 +90,18 @@ where
 				}
 			},
 			Action::TokenURI => {
-				unimplemented!()
-			},
+				let mut input = handle.read_input()?;
+				input.expect_arguments(2)?;
+
+				let collection_id = input.read::<u64>()?;
+				let token_id = input.read::<TokenId>()?;
+
+				if let Some(token_uri) = LaosEvolution::token_uri(collection_id, token_id) {
+					Ok(succeed(EvmDataWriter::new().write(Bytes(token_uri.into())).build()))
+				} else {
+					Ok(succeed(EvmDataWriter::new().write(Bytes(Vec::new())).build()))
+				}
+			}
 		}
 	}
 }
