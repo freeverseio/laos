@@ -25,13 +25,13 @@ The Bridge module acts as the communication layer between the Ownership Chain an
 ### Testing Networks
 
 #### Caladan Ownership chain: 
-* Substrate rpc: wss://caladan.gorengine.com/own
-* EVM rpc: https://caladan.gorengine.com/own
+* Substrate endpoint: wss://caladan.gorengine.com/own
+* EVM endpoint: https://caladan.gorengine.com/own
 * EVM blockexplorer: https://caladan.gorengine.com 
 
 #### Seldon Ownership chain: 
-* Substrate rpc: wss://seldon.gorengine.com/own
-* EVM rpc: https://seldon.gorengine.com/own
+* Substrate endpoint: wss://seldon.gorengine.com/own
+* EVM endpoint: https://seldon.gorengine.com/own
 * EVM blockexplorer: https://seldon.gorengine.com 
 
 ## Additional Resources
