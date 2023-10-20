@@ -11,6 +11,20 @@ interface LaosEvolution {
     /// @param owner the owner of the newly created collection
     event NewCollection(uint64 collectionId, address indexed owner);
 
+    /// @notice Emitted when `tokenId` token is transferred from `from` to `to`.
+    /// @notice When the token is minted, the `from` address is 0x0 and
+    /// @notice when the token is burned, the `to` address is 0x0
+    /// @param from the previous owner of the token
+    /// @param to the new owner of the token
+    /// @param collectionId the id of the collection
+    /// @param tokenId the id of the newly minted token
+    event Transfer(
+        address indexed from,
+        address indexed to,
+        uint64 indexed collectionId,
+        uint256 tokenId
+    );
+
     /// @notice Creates a new collection
     /// @dev Call this function to create a new collection
     /// @param owner the owner of the newly created collection
