@@ -22,6 +22,8 @@ pub enum Action {
 	CreateCollection = "createCollection(address)",
 	/// Get owner of the collection
 	OwnerOfCollection = "ownerOfCollection(uint64)",
+	/// Get tokenURI of the token in collection
+	TokenURI = "tokenURI(uint64,uint256)",
 }
 
 /// Wrapper for the precompile function.
@@ -48,6 +50,7 @@ where
 		handle.check_function_modifier(match selector {
 			Action::CreateCollection => FunctionModifier::NonPayable,
 			Action::OwnerOfCollection => FunctionModifier::View,
+			Action::TokenURI => FunctionModifier::View,
 		})?;
 
 		match selector {
@@ -85,6 +88,9 @@ where
 				} else {
 					Err(revert("collection does not exist"))
 				}
+			},
+			Action::TokenURI => {
+				unimplemented!()
 			},
 		}
 	}

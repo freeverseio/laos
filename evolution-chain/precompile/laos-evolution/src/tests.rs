@@ -205,6 +205,13 @@ mod helpers {
 				fn collection_owner(collection_id: CollectionId) -> Option<AccountId> {
 					($collection_owner_result)(collection_id)
 				}
+
+				fn token_uri(
+					_collection_id: CollectionId,
+					_token_id: TokenId,
+				) -> Option<TokenUri> {
+					unimplemented!()
+				}
 			}
 
 			type $name =
