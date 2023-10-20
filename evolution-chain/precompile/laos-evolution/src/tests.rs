@@ -160,7 +160,7 @@ fn call_owner_of_collection_works() {
 }
 
 #[test]
-fn token_uri_returns_nothing_when_collection_does_not_exist() {
+fn token_uri_returns_nothing_when_source_token_uri_is_none() {
 	impl_precompile_mock_simple!(Mock, Ok(0), None, None);
 
 	let input = EvmDataWriter::new_with_selector(Action::TokenURI)
