@@ -188,6 +188,20 @@ fn token_uri_returns_nothing_when_source_token_uri_is_none() {
 }
 
 #[test]
+fn token_uri_returns_the_result_from_source() {
+	impl_precompile_mock_simple!(Mock, Ok(0), None, Ok(0.into()), Some(vec![1_u8, 10]));
+
+	let input = EvmDataWriter::new_with_selector(Action::TokenURI)
+		.write(0_u64)
+		.write(TokenId::from(0))
+		.build();
+
+	let mut handle = create_mock_handle_from_input(input);
+	let result = Mock::execute(&mut handle);
+	assert_eq!(result.unwrap(), succeed(EvmDataWriter::new().write(Bytes(vec![1_u8, 10])).build()));
+}
+
+#[test]
 fn mint_works() {
 	impl_precompile_mock_simple!(
 		Mock,
