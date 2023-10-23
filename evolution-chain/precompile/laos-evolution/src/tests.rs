@@ -115,8 +115,8 @@ fn create_collection_assign_collection_to_caller() {
 			Ok(0)
 		}, // Closure for create_collection result
 		|_| { None }, // Closure for collection_owner result
-		|_, _, _, _, _| { Ok(0.into()) },  // Closure for mint result
-		|_, _| { None } // Closure for token_uri result
+		|_, _, _, _, _| { Ok(0.into()) }, // Closure for mint result
+		|_, _| { None }  // Closure for token_uri result
 	);
 
 	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
@@ -154,7 +154,13 @@ fn call_owner_of_non_existent_collection() {
 
 #[test]
 fn call_owner_of_collection_works() {
-	impl_precompile_mock_simple!(Mock, Ok(0), Some(H160::from_low_u64_be(0x1234)), Ok(0.into()), None);
+	impl_precompile_mock_simple!(
+		Mock,
+		Ok(0),
+		Some(H160::from_low_u64_be(0x1234)),
+		Ok(0.into()),
+		None
+	);
 
 	let owner = H160::from_low_u64_be(0x1234);
 
@@ -183,7 +189,13 @@ fn token_uri_returns_nothing_when_source_token_uri_is_none() {
 
 #[test]
 fn mint_works() {
-	impl_precompile_mock_simple!(Mock, Ok(0), Some(H160::from_low_u64_be(0x1234)), Ok(1.into()), None);
+	impl_precompile_mock_simple!(
+		Mock,
+		Ok(0),
+		Some(H160::from_low_u64_be(0x1234)),
+		Ok(1.into()),
+		None
+	);
 
 	let to = H160::from_low_u64_be(1);
 
@@ -274,10 +286,7 @@ mod helpers {
 					($collection_owner_result)(collection_id)
 				}
 
-				fn token_uri(
-					_collection_id: CollectionId,
-					_token_id: TokenId,
-				) -> Option<TokenUri> {
+				fn token_uri(_collection_id: CollectionId, _token_id: TokenId) -> Option<TokenUri> {
 					($token_uri_result)(_collection_id, _token_id)
 				}
 			}
@@ -311,7 +320,7 @@ mod helpers {
 				|_owner| { $create_collection_result },
 				|_collection_id| { $collection_owner_result },
 				|_who, _collection_id, _slot, _to, _token_uri| { $mint_result },
-				| _collection_id, _token_id | { $token_uri_result }
+				|_collection_id, _token_id| { $token_uri_result }
 			);
 		};
 	}

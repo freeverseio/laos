@@ -100,7 +100,7 @@ where
 				} else {
 					Ok(succeed(EvmDataWriter::new().write(Bytes(Vec::new())).build()))
 				}
-			}
+			},
 			Action::Mint => {
 				let caller = context.caller;
 
