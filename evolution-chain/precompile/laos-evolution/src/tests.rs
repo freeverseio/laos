@@ -26,13 +26,17 @@ fn check_log_selectors() {
 		hex::encode(SELECTOR_LOG_NEW_COLLECTION),
 		"6eb24fd767a7bcfa417f3fe25a2cb245d2ae52293d3c4a8f8c6450a09795d289"
 	);
+	assert_eq!(
+		hex::encode(SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI),
+		"e7cd937c6c8e9d8316a3f190b7c68fd1b5df77145952da131c29122b85e0b317"
+	);
 }
 
 #[test]
 fn function_selectors() {
 	assert_eq!(Action::CreateCollection as u32, 0x2069E953);
 	assert_eq!(Action::OwnerOfCollection as u32, 0xFB34AE53);
-	assert_eq!(Action::Mint as u32, 0x3B8EF7A4);
+	assert_eq!(Action::Mint as u32, 0xEAD3F711);
 }
 
 #[test]

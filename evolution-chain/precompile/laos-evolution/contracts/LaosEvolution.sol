@@ -11,17 +11,18 @@ interface LaosEvolution {
     /// @param owner the owner of the newly created collection
     event NewCollection(uint64 collectionId, address indexed owner);
 
-    /// @notice Emitted when `tokenId` token is transferred from `from` to `to`.
-    /// @notice When the token is minted, the `from` address is 0x0 and
-    /// @notice when the token is burned, the `to` address is 0x0
-    /// @param from the previous owner of the token
-    /// @param to the new owner of the token
+    /// @notice Emitted when a new token is minted
+    /// @dev Id of the token is concatenation of `slot` and `to`
     /// @param collectionId the id of the collection
-    /// @param tokenId the id of the newly minted token
-    event Transfer(
-        address indexed from,
+    /// @param slot the slot of the token
+    /// @param to the initial owner of the newly minted token
+    /// @param tokenURI the URI of the newly minted token
+    /// @param tokenId the resulting id of the newly minted token
+    event MintedWithExternalTokenURI(
+        uint64 collectionId,
+        uint96 slot,
         address indexed to,
-        uint64 indexed collectionId,
+        string tokenURI,
         uint256 tokenId
     );
 
@@ -40,13 +41,13 @@ interface LaosEvolution {
     ) external view returns (address);
 
     /// @notice Mint a new token
-    /// @dev Call this function to mint a new token
+    /// @dev Call this function to mint a new token, the caller must be the owner of the collection
     /// @param collectionId the id of the collection
     /// @param slot the slot of the token
     /// @param to the owner of the newly minted token
     /// @param tokenURI the tokenURI of the newly minted token
     /// @return the id of the newly minted token
-    function mint(
+    function mintWithExternalUri(
         uint64 collectionId,
         uint96 slot,
         address to,

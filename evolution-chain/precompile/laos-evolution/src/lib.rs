@@ -15,7 +15,8 @@ use sp_std::{fmt::Debug, marker::PhantomData, vec::Vec};
 /// Solidity selector of the CreateCollection log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_NEW_COLLECTION: [u8; 32] = keccak256!("NewCollection(uint64,address)");
 /// Solidity selector of the Transfer log, which is the Keccak of the Log signature.
-pub const SELECTOR_LOG_TRANSFER: [u8; 32] = keccak256!("Transfer(address,address,uint64,uint256)");
+pub const SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
+	keccak256!("MintedWithExternalTokenURI(uint64,uint96,address,string,uint256)");
 
 #[precompile_utils_macro::generate_function_selector]
 #[derive(Debug, PartialEq)]
@@ -25,7 +26,7 @@ pub enum Action {
 	/// Get owner of the collection
 	OwnerOfCollection = "ownerOfCollection(uint64)",
 	/// Mint token
-	Mint = "mint(uint64,uint96,address,string)",
+	Mint = "mintWithExternalUri(uint64,uint96,address,string)",
 }
 
 /// Wrapper for the precompile function.
@@ -112,7 +113,7 @@ where
 						Log {
 							address: context.address,
 							topics: sp_std::vec![
-								H256(SELECTOR_LOG_TRANSFER),
+								H256(SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI),
 								H256::from(H160::zero()),
 								H256::from(to),
 								H256::from_low_u64_be(collection_id),
