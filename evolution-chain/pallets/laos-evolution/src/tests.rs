@@ -289,3 +289,25 @@ fn token_uri_of_unexistent_token_returns_none() {
 		assert_eq!(LaosEvolution::token_uri(collection_id, tocken_id), None);
 	});
 }
+
+#[test]
+fn token_uri_returns_token_uri() {
+	new_test_ext().execute_with(|| {
+		let collection_id = create_collection(ALICE);
+		let token_uri: TokenUriOf<Test> =
+			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
+		let owner = AccountId::from_str(ALICE).unwrap();
+
+		assert_ok!(LaosEvolution::mint_with_external_uri(
+			owner,
+			collection_id,
+			0,
+			owner,
+			token_uri.clone()
+		));
+
+		let token_id = slot_and_owner_to_token_id(0, owner).unwrap();
+
+		assert_eq!(LaosEvolution::token_uri(collection_id, token_id), Some(token_uri));
+	});
+}
