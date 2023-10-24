@@ -9,7 +9,7 @@ use crate::{
 };
 use frame_support::{assert_noop, assert_ok};
 use parity_scale_codec::Encode;
-use sp_core::H160;
+use sp_core::{H160, U256};
 
 const ALICE: &str = "0x0000000000000000000000000000000000000005";
 const BOB: &str = "0x0000000000000000000000000000000000000006";
@@ -271,4 +271,38 @@ fn collection_owner_works() {
 			Some(AccountId::from_str(ALICE).unwrap())
 		);
 	})
+}
+
+#[test]
+fn token_uri_of_unexistent_collection_returns_none() {
+	new_test_ext().execute_with(|| {
+		let tocken_id: U256 = 0_u64.into();
+		assert_eq!(LaosEvolution::token_uri(0_u64, tocken_id), None);
+	});
+}
+
+#[test]
+fn token_uri_of_unexistent_token_returns_none() {
+	new_test_ext().execute_with(|| {
+		let collection_id = create_collection(ALICE);
+		let tocken_id: TokenId = 0_u64.into();
+		assert_eq!(LaosEvolution::token_uri(collection_id, tocken_id), None);
+	});
+}
+
+#[test]
+fn token_uri_of_existent_token_returns_correct_token_uri() {
+	new_test_ext().execute_with(|| {
+		let who = AccountId::from_str(ALICE).unwrap();
+		let collection_id = create_collection(ALICE);
+		let slot = 1;
+		let to = AccountId::from_str(BOB).unwrap();
+		let token_uri: TokenUriOf<Test> =
+			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
+		let token_id =
+			LaosEvolution::mint_with_external_uri(who, collection_id, slot, to, token_uri.clone())
+				.unwrap();
+
+		assert_eq!(LaosEvolution::token_uri(collection_id, token_id), Some(token_uri));
+	});
 }

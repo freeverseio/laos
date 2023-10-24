@@ -36,9 +36,14 @@ interface LaosEvolution {
     /// @dev Call this function to get the owner of a collection
     /// @param collectionId the id of the collection
     /// @return the owner of the collection
-    function ownerOfCollection(
-        uint64 collectionId
-    ) external view returns (address);
+    function ownerOfCollection(uint64 collectionId) external view returns (address);
+
+    /// @notice Provides a distinct Uniform Resource Identifier (URI) for a given token within a specified collection.
+    /// @dev Implementations must follow the ERC-721 standard for token URIs, which should point to a JSON file conforming to the "ERC721 Metadata JSON Schema".
+    /// @param collectionId The unique identifier of the collection to which the token belongs.
+    /// @param tokenId The unique identifier of the token within the specified collection.
+    /// @return A string representing the URI of the specified token.
+    function tokenURI(uint64 collectionId, uint256 tokenId) external view returns (string memory);
 
     /// @notice Mint a new token
     /// @dev Call this function to mint a new token, the caller must be the owner of the collection

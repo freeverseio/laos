@@ -2,7 +2,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 use fp_evm::{Log, Precompile, PrecompileHandle, PrecompileOutput};
-use pallet_laos_evolution::{traits::LaosEvolution as LaosEvolutionT, Slot};
+use pallet_laos_evolution::{traits::LaosEvolution as LaosEvolutionT, Slot, TokenId};
 use parity_scale_codec::Encode;
 use precompile_utils::{
 	keccak256, revert, revert_dispatch_error, succeed, Address, Bytes, EvmDataWriter, EvmResult,
@@ -25,6 +25,8 @@ pub enum Action {
 	CreateCollection = "createCollection(address)",
 	/// Get owner of the collection
 	OwnerOfCollection = "ownerOfCollection(uint64)",
+	/// Get tokenURI of the token in collection
+	TokenURI = "tokenURI(uint64,uint256)",
 	/// Mint token
 	Mint = "mintWithExternalUri(uint64,uint96,address,string)",
 }
@@ -44,7 +46,7 @@ impl<AddressMapping, AccountId, TokenUri, LaosEvolution>
 where
 	AddressMapping: pallet_evm::AddressMapping<AccountId>,
 	AccountId: From<H160> + Into<H160> + Encode + Debug,
-	TokenUri: TryFrom<Vec<u8>>,
+	TokenUri: TryFrom<Vec<u8>> + Into<Vec<u8>>,
 	LaosEvolution: LaosEvolutionT<AccountId, TokenUri>,
 {
 	fn inner_execute(
@@ -85,6 +87,19 @@ where
 					Ok(succeed(EvmDataWriter::new().write(Address(owner.into())).build()))
 				} else {
 					Err(revert("collection does not exist"))
+				}
+			},
+			Action::TokenURI => {
+				let mut input = handle.read_input()?;
+				input.expect_arguments(2)?;
+
+				let collection_id = input.read::<u64>()?;
+				let token_id = input.read::<TokenId>()?;
+
+				if let Some(token_uri) = LaosEvolution::token_uri(collection_id, token_id) {
+					Ok(succeed(EvmDataWriter::new().write(Bytes(token_uri.into())).build()))
+				} else {
+					Err(revert("asset does not exist"))
 				}
 			},
 			Action::Mint => {
@@ -137,7 +152,7 @@ impl<AddressMapping, AccountId, TokenUri, LaosEvolution> Precompile
 where
 	AddressMapping: pallet_evm::AddressMapping<AccountId>,
 	AccountId: From<H160> + Into<H160> + Encode + Debug,
-	TokenUri: TryFrom<Vec<u8>>,
+	TokenUri: TryFrom<Vec<u8>> + Into<Vec<u8>>,
 	LaosEvolution: LaosEvolutionT<AccountId, TokenUri>,
 {
 	fn execute(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
@@ -147,6 +162,7 @@ where
 			Action::CreateCollection => FunctionModifier::NonPayable,
 			Action::Mint => FunctionModifier::NonPayable,
 			Action::OwnerOfCollection => FunctionModifier::View,
+			Action::TokenURI => FunctionModifier::View,
 		})?;
 
 		Self::inner_execute(handle, &selector)

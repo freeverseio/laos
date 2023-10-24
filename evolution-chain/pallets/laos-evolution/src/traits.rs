@@ -19,4 +19,7 @@ pub trait LaosEvolution<AccountId, TokenUri> {
 
 	/// Get owner of the collection
 	fn collection_owner(collection_id: CollectionId) -> Option<AccountId>;
+
+	/// Get token URI of a token in a collection
+	fn token_uri(collection_id: CollectionId, token_id: TokenId) -> Option<TokenUri>;
 }

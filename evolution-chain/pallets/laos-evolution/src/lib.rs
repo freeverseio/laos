@@ -154,6 +154,10 @@ impl<T: Config> LaosEvolution<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T> {
 	fn collection_owner(collection_id: CollectionId) -> Option<AccountIdOf<T>> {
 		CollectionOwner::<T>::get(collection_id)
 	}
+
+	fn token_uri(collection_id: CollectionId, token_id: TokenId) -> Option<TokenUriOf<T>> {
+		TokenURI::<T>::get(collection_id, token_id)
+	}
 }
 
 /// Converts `Slot` and `H160` to `TokenId`
