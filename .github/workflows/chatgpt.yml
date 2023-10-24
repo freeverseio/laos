@@ -1,15 +1,24 @@
 name: ChatGPT
 
 on:
-  workflow_dispatch:
-
+  pull_request:
+    types: 
+      - opened
+      - synchronize
 jobs:
   review:
-    if: ${{ !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
-    name: review
     steps:
-      - uses: anc95/ChatGPT-CodeReview@v1.0.11
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Check if Draft
+        id: check
+        run: echo "::set-output name=is_draft::${{ github.event.pull_request.draft }}"
+      
+      - name: Run if Draft
+        if: steps.check.outputs.is_draft == 'true'
+        uses: anc95/ChatGPT-CodeReview@v1.0.11
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
