@@ -188,7 +188,7 @@ fn token_uri_returns_nothing_when_source_token_uri_is_none() {
 
 	let mut handle = create_mock_handle_from_input(input);
 	let result = Mock::execute(&mut handle);
-	assert_eq!(result.unwrap(), succeed(EvmDataWriter::new().write(Bytes(Vec::new())).build()));
+	assert_eq!(result.unwrap_err(), revert("asset does not exist"));
 }
 
 #[test]

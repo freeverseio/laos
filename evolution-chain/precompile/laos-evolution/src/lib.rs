@@ -99,7 +99,7 @@ where
 				if let Some(token_uri) = LaosEvolution::token_uri(collection_id, token_id) {
 					Ok(succeed(EvmDataWriter::new().write(Bytes(token_uri.into())).build()))
 				} else {
-					Ok(succeed(EvmDataWriter::new().write(Bytes(Vec::new())).build()))
+					Err(revert("asset does not exist"))
 				}
 			},
 			Action::Mint => {
