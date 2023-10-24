@@ -41,7 +41,7 @@ jobs:
           echo "is_draft=${{ github.event.pull_request.draft }}" >> $GITHUB_ENV
 
       - name: Run if Draft, Correct User, and AutoReview
-        if: env.is_draft == 'false' && env.is_in_group == 'true' && env.is_autoreview == 'true'
+        if: env.is_draft == 'true' && env.is_in_group == 'true' && env.is_autoreview == 'true'
         uses: gvasilei/AutoReviewer@0.4
         env:
           NODE_OPTIONS: '--experimental-fetch'
