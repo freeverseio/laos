@@ -149,30 +149,30 @@ ethereum = { version = "0.14.0", default-features = false }
 
 # Frontier
 # (wasm)
-pallet-base-fee = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0", default-features = false }
-pallet-evm = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0", default-features = false }
-pallet-ethereum = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0", default-features = false }
-pallet-evm-chain-id = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0", default-features = false }
-pallet-evm-precompile-modexp = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0", default-features = false }
-pallet-evm-precompile-simple = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0", default-features = false }
-pallet-hotfix-sufficients = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0", default-features = false }
-pallet-evm-precompile-sha3fips = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0", default-features = false }
-pallet-dynamic-fee = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0", default-features = false }
-fp-self-contained = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0", default-features = false }
-fp-rpc = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0", default-features = false }
-fp-evm = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0", default-features = false }
-fp-account = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0", default-features = false }
+pallet-base-fee = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
+pallet-evm = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
+pallet-ethereum = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
+pallet-evm-chain-id = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
+pallet-evm-precompile-modexp = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
+pallet-evm-precompile-simple = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
+pallet-hotfix-sufficients = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
+pallet-evm-precompile-sha3fips = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
+pallet-dynamic-fee = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
+fp-self-contained = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
+fp-rpc = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
+fp-evm = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
+fp-account = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
 
 # Frontier
 # (native)
-fc-cli = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0" }
-fc-rpc = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0", features = [ "rpc-binary-search-estimate" ] }
-fc-rpc-core = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0" }
-fc-mapping-sync = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0" }
-fc-db = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0" }
-fc-consensus = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0" }
-fc-storage = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0" }
-fp-dynamic-fee = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0" }
+fc-cli = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0" }
+fc-rpc = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", features = [ "rpc-binary-search-estimate" ] }
+fc-rpc-core = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0" }
+fc-mapping-sync = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0" }
+fc-db = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0" }
+fc-consensus = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0" }
+fc-storage = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0" }
+fp-dynamic-fee = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0" }
 
 # Cumulus
 # (wasm)
