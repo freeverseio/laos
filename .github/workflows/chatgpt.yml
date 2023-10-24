@@ -5,27 +5,24 @@ on:
     types: 
       - opened
       - synchronize
+  workflow_dispatch:
+  
 jobs:
   review:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Check if Draft
         id: check
-        run: echo "::set-output name=is_draft::${{ github.event.pull_request.draft }}"
+        run: echo "is_draft::${{ github.event.pull_request.draft }}" >> $GITHUB_OUTPUT
       
       - name: Run if Draft
         if: steps.check.outputs.is_draft == 'true'
-        uses: anc95/ChatGPT-CodeReview@v1.0.11
-        env:
+        uses: adshao/chatgpt-code-review-action@v0.2.5
+        with:
+          OPENAI_TOKEN: ${{ secrets.OPENAI_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          OPENAI_API_ENDPOINT: https://api.openai.com/v1
-          MODEL: gpt-4
-          PROMPT: "Please highlight only the most important logical errors, or areas for improvement of the Pull Request. If the Pull Request adheres to all guidelines and best practices, simply respond with 'No suggestions, the PR is good.'"
-          top_p: 1  # Determines the portion of the probability mass to sample from - https://platform.openai.com/docs/api-reference/chat/create#chat/create-top_p
-          temperature: 0.2  # Controls randomness of the output - https://platform.openai.com/docs/api-reference/chat/create#chat/create-temperature
-          max_tokens: 2000
-          MAX_PATCH_LENGTH: 5000  # Ignored and won't review if the patch/diff length is larger than this value
+          FULL_REVIEW_COMMENT: 'chatgpt'
+          REVIEW_COMMENT_PREFIX: 'chatgpt:'
