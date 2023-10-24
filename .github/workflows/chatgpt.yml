@@ -15,30 +15,44 @@ jobs:
 
       - name: Check Conditions
         id: check
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # Fetch the latest commit message associated with this PR
-          LATEST_COMMIT_MESSAGE=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-            https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/commits | \
-            jq -r '.[-1].commit.message')
-          echo "Latest Commit Message: $LATEST_COMMIT_MESSAGE"
-          # Fetch the PR creator
-          PRCREATOR=$(curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }} | jq -r .user.login)
+        uses: actions/github-script@v3
+        with:
+          script: |
+            // Fetch the latest commit message associated with this PR
+            const commits = await github.pulls.listCommits({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+            const latestCommitMessage = commits.data[commits.data.length - 1].commit.message;
+            console.log(`Latest Commit Message: ${latestCommitMessage}`);
 
-          # Check if the PR creator is in the group
-          IS_IN_GROUP=$(curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/orgs/freeverseio/teams/ziggy/members/$PRCREATOR)
-          if [ "$IS_IN_GROUP" != "null" ]; then
-            echo "Commenter is in the group."
-            echo "is_in_group=true" >> $GITHUB_ENV
-          else
-            echo "Commenter is not in the group."
-            echo "is_in_group=false" >> $GITHUB_ENV
-          fi
-          
-          # Check if the latest commit message contains [autoreview]
-          echo "is_autoreview=$(if [[ "$LATEST_COMMIT_MESSAGE" == *"[autoreview]"* ]]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_ENV
-          echo "is_draft=${{ github.event.pull_request.draft }}" >> $GITHUB_ENV
+            // Fetch the PR creator
+            const pr = await github.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+            const prCreator = pr.data.user.login;
+
+            // Check if the PR creator is in the group
+            const isInGroup = await github.teams.getMembershipInOrg({
+              org: 'freeverseio',
+              team_slug: 'ziggy',
+              username: prCreator,
+            });
+            console.log(`Commenter is ${isInGroup.status === 200 ? '' : 'not '}in the group.`);
+
+            // Check if the latest commit message contains [autoreview]
+            const isAutoReview = latestCommitMessage.includes('[autoreview]');
+            console.log(`is_autoreview=${isAutoReview}`);
+
+            // Set outputs
+            return {
+              is_in_group: isInGroup.status === 200,
+              is_autoreview: isAutoReview,
+              is_draft: pr.data.draft,
+            };
 
       - name: Run if Draft, Correct User, and AutoReview
         if: env.is_draft == 'true' && env.is_in_group == 'true' && env.is_autoreview == 'true'
