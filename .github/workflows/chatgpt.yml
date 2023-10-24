@@ -5,7 +5,11 @@ on:
     types:
       - opened
       - synchronize
+  issue_comment:
+    types:
+      - created
   workflow_dispatch:
+
 jobs:
   review:
     runs-on: ubuntu-latest
@@ -18,14 +22,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Fetch the latest commit message associated with this PR
-          LATEST_COMMIT_MESSAGE=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-            https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/commits | \
-            jq -r '.[-1].commit.message')
-          echo "Latest Commit Message: $LATEST_COMMIT_MESSAGE"
+          # Determine if this is a PR or an issue comment event
+          IS_PR_EVENT=${{ github.event_name == 'pull_request' }}
+          IS_COMMENT_EVENT=${{ github.event_name == 'issue_comment' }}
+          
           # Fetch the PR creator
           PRCREATOR=$(curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }} | jq -r .user.login)
-
+          
           # Check if the PR creator is in the group
           IS_IN_GROUP=$(curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/orgs/freeverseio/teams/ziggy/members/$PRCREATOR)
           if [ "$IS_IN_GROUP" != "null" ]; then
@@ -36,8 +39,14 @@ jobs:
             echo "is_in_group=false" >> $GITHUB_ENV
           fi
           
-          # Check if the latest commit message contains [autoreview]
-          echo "is_autoreview=$(if [[ "$LATEST_COMMIT_MESSAGE" == *"[autoreview]"* ]]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_ENV
+          # Check if the comment contains [autoreview] (if this is a comment event)
+          if [[ "$IS_COMMENT_EVENT" == "true" ]]; then
+            COMMENT_BODY="${{ github.event.comment.body }}"
+            echo "is_autoreview=$(if [[ "$COMMENT_BODY" == *"[autoreview]"* ]]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_ENV
+          else
+            echo "is_autoreview=false" >> $GITHUB_ENV
+          fi
+          
           echo "is_draft=${{ github.event.pull_request.draft }}" >> $GITHUB_ENV
 
       - name: Run if Draft, Correct User, and AutoReview
