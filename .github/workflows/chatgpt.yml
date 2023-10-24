@@ -16,7 +16,7 @@ jobs:
 
       - name: Check if Draft
         id: check
-        run: echo "is_draft::${{ github.event.pull_request.draft }}" >> $GITHUB_OUTPUT
+        run: echo "is_draft=${{ github.event.pull_request.draft }}" >> $GITHUB_OUTPUT
       
       - name: Run if Draft
         if: steps.check.outputs.is_draft == 'true'
