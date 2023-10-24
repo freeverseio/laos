@@ -1,13 +1,10 @@
-name: ChatGPT
-
 on:
   pull_request:
-    types: 
+    types:
       - opened
       - synchronize
   workflow_dispatch:
-  
-    
+
 jobs:
   review:
     runs-on: ubuntu-latest
@@ -15,12 +12,15 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Check if Draft
+      - name: Check Conditions
         id: check
-        run: echo "is_draft=${{ github.event.pull_request.draft }}" >> $GITHUB_OUTPUT
-      
-      - name: Run if Draft
-        if: steps.check.outputs.is_draft == 'true'
+        run: |
+          echo "is_correct_user=$(if [[ "${{ github.event.pull_request.user.login }}" == "specific-user" ]]; then echo 'true'; else echo 'false'; fi)"
+          echo "is_autoreview=$(if [[ "${{ github.event.pull_request.title }}" == *"[autoreview]"* ]]; then echo 'true'; else echo 'false'; fi)"
+          echo "is_draft=${{ github.event.pull_request.draft }}" >> $GITHUB_OUTPUT
+
+      - name: Run if Draft, Correct User, and AutoReview
+        if: steps.check.outputs.is_draft == 'true' && steps.check.outputs.is_correct_user == 'true' && steps.check.outputs.is_autoreview == 'true'
         uses: gvasilei/AutoReviewer@0.4
         env:
           NODE_OPTIONS: '--experimental-fetch'
