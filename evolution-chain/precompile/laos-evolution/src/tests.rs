@@ -318,7 +318,7 @@ mod helpers {
 	///
 	/// This macro creates mock implementations of the `CollectionManager` trait,
 	/// allowing you to test how your code interacts with the precompiled contracts.
-	/// The mock type is named `Mock`, and the implementation uses the provided ehttps://meet.google.com/ntw-cgcg-fjfxpressions.
+	/// The mock type is named `Mock`, and the implementation uses the provided expressions.
 	///
 	/// # Arguments
 	///
