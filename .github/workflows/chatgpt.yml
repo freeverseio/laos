@@ -9,6 +9,7 @@ on:
   
 jobs:
   review:
+    if: ${{ contains( github.event.label.name, 'AutoReview') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -20,9 +21,10 @@ jobs:
       
       - name: Run if Draft
         if: steps.check.outputs.is_draft == 'true'
-        uses: adshao/chatgpt-code-review-action@v0.2.5
+        uses: gvasilei/AutoReviewer@0.4
+        env:
+          NODE_OPTIONS: '--experimental-fetch'
         with:
-          OPENAI_TOKEN: ${{ secrets.OPENAI_API_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          FULL_REVIEW_COMMENT: 'chatgpt'
-          REVIEW_COMMENT_PREFIX: 'chatgpt:'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+          model_name: gpt-4
