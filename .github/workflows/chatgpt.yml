@@ -17,36 +17,23 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Determine if this is a draft PR
-          PR_INFO=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+          # Fetch the pull request details using the GitHub API
+          PR_DETAILS=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
             https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.issue.number }})
-          IS_DRAFT=$(echo "$PR_INFO" | jq -r '.draft')
-          PRCREATOR=$(echo "$PR_INFO" | jq -r '.user.login')
 
-          # Exit early if this is not a draft PR
-          if [[ "$IS_DRAFT" != "true" ]]; then
-            echo "This is not a draft PR."
-            echo "is_draft=false" >> $GITHUB_ENV
-            echo "is_in_group=false" >> $GITHUB_ENV
-            echo "is_autoreview=false" >> $GITHUB_ENV
-            exit 0
-          fi
-
-          echo "is_draft=true" >> $GITHUB_ENV
-
-          # Check if the PR creator is in the group
-          IS_IN_GROUP=$(curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/orgs/freeverseio/teams/ziggy/members/$PRCREATOR)
-          if [ "$IS_IN_GROUP" != "null" ]; then
-            echo "Commenter is in the group."
-            echo "is_in_group=true" >> $GITHUB_ENV
-          else
-            echo "Commenter is not in the group."
-            echo "is_in_group=false" >> $GITHUB_ENV
-          fi
+          # Check if the PR is a draft
+          IS_DRAFT=$(echo "$PR_DETAILS" | jq -r '.draft')
+          echo "is_draft=$IS_DRAFT" >> $GITHUB_ENV
 
           # Check if the comment contains [autoreview]
           COMMENT_BODY="${{ github.event.comment.body }}"
           echo "is_autoreview=$(if [[ "$COMMENT_BODY" == *"[autoreview]"* ]]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_ENV
+
+          # Check if the commenter is in the specified group
+          COMMENTER="${{ github.event.comment.user.login }}"
+          IS_IN_GROUP=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+            https://api.github.com/orgs/freeverseio/teams/ziggy/members/$COMMENTER)
+          echo "is_in_group=$(if [[ "$IS_IN_GROUP" != "null" ]]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_ENV
 
       - name: Run if Draft, Correct User, and AutoReview
         if: env.is_draft == 'true' && env.is_in_group == 'true' && env.is_autoreview == 'true'
