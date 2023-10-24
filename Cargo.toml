@@ -8,7 +8,7 @@ members = [
 #   "ownership-chain/node",
 #   "ownership-chain/runtime",
 #   "ownership-chain/precompile/*",
-#   "ownership-chain/pallets/*",
+   "ownership-chain/pallets/*",
 #   "ownership-chain/primitives",
 #   "bridge/relays/*",
 #	 "bridge/primitives/*",

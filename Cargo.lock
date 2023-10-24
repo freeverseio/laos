@@ -1512,6 +1512,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 
 [[package]]
+name = "hex-literal"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6fe2267d4ed49bc07b63801559be28c718ea06c4738b7a03c94df7386d2cde46"
+
+[[package]]
 name = "hmac"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2109,6 +2115,25 @@ dependencies = [
  "frame-system",
  "parity-scale-codec",
  "scale-info",
+ "sp-core 21.0.0 (git+https://github.com/paritytech/polkadot-sdk?tag=polkadot-v1.2.0)",
+ "sp-io 23.0.0 (git+https://github.com/paritytech/polkadot-sdk?tag=polkadot-v1.2.0)",
+ "sp-runtime 24.0.0 (git+https://github.com/paritytech/polkadot-sdk?tag=polkadot-v1.2.0)",
+ "sp-std 8.0.0 (git+https://github.com/paritytech/polkadot-sdk?tag=polkadot-v1.2.0)",
+]
+
+[[package]]
+name = "pallet-living-assets-ownership"
+version = "0.0.1"
+dependencies = [
+ "fp-account",
+ "frame-support",
+ "frame-system",
+ "hex",
+ "hex-literal",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-arithmetic 16.0.0 (git+https://github.com/paritytech/polkadot-sdk?tag=polkadot-v1.2.0)",
  "sp-core 21.0.0 (git+https://github.com/paritytech/polkadot-sdk?tag=polkadot-v1.2.0)",
  "sp-io 23.0.0 (git+https://github.com/paritytech/polkadot-sdk?tag=polkadot-v1.2.0)",
  "sp-runtime 24.0.0 (git+https://github.com/paritytech/polkadot-sdk?tag=polkadot-v1.2.0)",
