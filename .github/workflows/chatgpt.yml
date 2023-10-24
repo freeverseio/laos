@@ -20,12 +20,10 @@ jobs:
       
       - name: Run if Draft
         if: steps.check.outputs.is_draft == 'true'
-        uses: cirolini/chatgpt-github-actions@v1.3
+        uses: magnificode-ltd/chatgpt-code-reviewer@v0.0.8
         with:
-          openai_api_key: ${{ secrets.OPENAI_API_KEY }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          github_pr_id: ${{ github.event.number }}
-          openai_engine: "text-davinci-002" #optional
-          openai_temperature: 0.5 #optional
-          openai_max_tokens: 2048 #optional
-          mode: file # file or patch 
+          model: gpt-4
+        # max_tokens: 4096
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
