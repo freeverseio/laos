@@ -1,3 +1,5 @@
+name: ChatGPT
+
 on:
   pull_request:
     types:
@@ -15,8 +17,8 @@ jobs:
       - name: Check Conditions
         id: check
         run: |
-          echo "is_correct_user=$(if [[ "${{ github.event.pull_request.user.login }}" == "specific-user" ]]; then echo 'true'; else echo 'false'; fi)"
-          echo "is_autoreview=$(if [[ "${{ github.event.pull_request.title }}" == *"[autoreview]"* ]]; then echo 'true'; else echo 'false'; fi)"
+          echo "is_correct_user=$(if [[ "${{ github.event.pull_request.user.login }}" == "ccubu" ]]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_OUTPUT
+          echo "is_autoreview=$(if [[ "${{ github.event.pull_request.title }}" == *"[autoreview]"* ]]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_OUTPUT
           echo "is_draft=${{ github.event.pull_request.draft }}" >> $GITHUB_OUTPUT
 
       - name: Run if Draft, Correct User, and AutoReview
