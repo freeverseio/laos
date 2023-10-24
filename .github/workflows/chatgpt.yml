@@ -14,15 +14,30 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
+      - name: Check if commenter is in group
+        id: check-group
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PRCREATOR=$(curl -s -H "Authorization: token $GH_TOKEN" https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.user.login }} | jq -r .user.login)
+          IS_IN_GROUP=$(curl -s -H "Authorization: token $GH_TOKEN" https://api.github.com/orgs/freeverseio/teams/ziggy/members/$PRCREATOR)
+          if [ "$IS_IN_GROUP" != "null" ]; then
+            echo "Commenter is in the group."
+            echo "is_in_group=true" >> $GITHUB_OUTPUT
+
+          else
+            echo "Commenter is not in the group."
+            echo "is_in_group=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Check Conditions
         id: check
         run: |
-          echo "is_correct_user=$(if [[ "${{ github.event.pull_request.user.login }}" == "ccubu" ]]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_OUTPUT
           echo "is_autoreview=$(if [[ "${{ github.event.pull_request.title }}" == *"[autoreview]"* ]]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_OUTPUT
           echo "is_draft=${{ github.event.pull_request.draft }}" >> $GITHUB_OUTPUT
 
       - name: Run if Draft, Correct User, and AutoReview
-        if: steps.check.outputs.is_draft == 'true' && steps.check.outputs.is_correct_user == 'true' && steps.check.outputs.is_autoreview == 'true'
+        if: steps.check.outputs.is_draft == 'true' && steps.check-group.outputs.is_in_group == 'true' && steps.check.outputs.is_autoreview == 'true'
         uses: gvasilei/AutoReviewer@0.4
         env:
           NODE_OPTIONS: '--experimental-fetch'
