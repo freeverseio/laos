@@ -296,9 +296,12 @@ fn token_uri_of_existent_token_returns_correct_token_uri() {
 		let who = AccountId::from_str(ALICE).unwrap();
 		let collection_id = create_collection(ALICE);
 		let slot = 1;
-		let to =  AccountId::from_str(BOB).unwrap();
-		let token_uri: TokenUriOf<Test> = vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
-		let token_id = LaosEvolution::mint_with_external_uri(who, collection_id, slot, to, token_uri.clone()).unwrap();
+		let to = AccountId::from_str(BOB).unwrap();
+		let token_uri: TokenUriOf<Test> =
+			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
+		let token_id =
+			LaosEvolution::mint_with_external_uri(who, collection_id, slot, to, token_uri.clone())
+				.unwrap();
 
 		assert_eq!(LaosEvolution::token_uri(collection_id, token_id), Some(token_uri));
 	});
