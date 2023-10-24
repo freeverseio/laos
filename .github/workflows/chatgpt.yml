@@ -1,11 +1,11 @@
 name: ChatGPT
 
 on:
-  pull_request:
+  issue_comment:
     types:
-      - opened
-      - synchronize
+      - created
   workflow_dispatch:
+  
 jobs:
   review:
     runs-on: ubuntu-latest
@@ -18,13 +18,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Fetch the latest commit message associated with this PR
-          LATEST_COMMIT_MESSAGE=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-            https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/commits | \
-            jq -r '.[-1].commit.message')
-          echo "Latest Commit Message: $LATEST_COMMIT_MESSAGE"
-          # Fetch the PR creator
-          PRCREATOR=$(curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }} | jq -r .user.login)
+          # Determine if this is a draft PR
+          PR_INFO=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+            https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.issue.number }})
+          IS_DRAFT=$(echo "$PR_INFO" | jq -r '.draft')
+          PRCREATOR=$(echo "$PR_INFO" | jq -r '.user.login')
+
+          # Exit early if this is not a draft PR
+          if [[ "$IS_DRAFT" != "true" ]]; then
+            echo "This is not a draft PR."
+            echo "is_draft=false" >> $GITHUB_ENV
+            echo "is_in_group=false" >> $GITHUB_ENV
+            echo "is_autoreview=false" >> $GITHUB_ENV
+            exit 0
+          fi
+
+          echo "is_draft=true" >> $GITHUB_ENV
 
           # Check if the PR creator is in the group
           IS_IN_GROUP=$(curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/orgs/freeverseio/teams/ziggy/members/$PRCREATOR)
@@ -35,10 +44,10 @@ jobs:
             echo "Commenter is not in the group."
             echo "is_in_group=false" >> $GITHUB_ENV
           fi
-          
-          # Check if the latest commit message contains [autoreview]
-          echo "is_autoreview=$(if [[ "$LATEST_COMMIT_MESSAGE" == *"[autoreview]"* ]]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_ENV
-          echo "is_draft=${{ github.event.pull_request.draft }}" >> $GITHUB_ENV
+
+          # Check if the comment contains [autoreview]
+          COMMENT_BODY="${{ github.event.comment.body }}"
+          echo "is_autoreview=$(if [[ "$COMMENT_BODY" == *"[autoreview]"* ]]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_ENV
 
       - name: Run if Draft, Correct User, and AutoReview
         if: env.is_draft == 'true' && env.is_in_group == 'true' && env.is_autoreview == 'true'
