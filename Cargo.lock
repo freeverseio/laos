@@ -2107,6 +2107,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "624a8340c38c1b80fd549087862da4ba43e08858af025b236e509b6649fc13d5"
 
 [[package]]
+name = "ownership-parachain-primitives"
+version = "0.1.0"
+dependencies = [
+ "fp-account",
+ "frame-support",
+ "frame-system",
+ "sp-core 21.0.0 (git+https://github.com/paritytech/polkadot-sdk?tag=polkadot-v1.2.0)",
+ "sp-runtime 24.0.0 (git+https://github.com/paritytech/polkadot-sdk?tag=polkadot-v1.2.0)",
+]
+
+[[package]]
 name = "pallet-laos-evolution"
 version = "4.0.0-dev"
 dependencies = [

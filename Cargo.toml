@@ -9,7 +9,7 @@ members = [
 #   "ownership-chain/runtime",
 #   "ownership-chain/precompile/*",
    "ownership-chain/pallets/*",
-#   "ownership-chain/primitives",
+   "ownership-chain/primitives",
 #   "bridge/relays/*",
 #	 "bridge/primitives/*",
 #   "evolution-chain/runtime",
