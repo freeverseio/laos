@@ -12,7 +12,7 @@ members = [
    "ownership-chain/primitives",
 #   "bridge/relays/*",
 #	 "bridge/primitives/*",
-#   "evolution-chain/runtime",
+   "evolution-chain/runtime",
 #   "evolution-chain/node",
    "evolution-chain/pallets/*",
    "evolution-chain/primitives",

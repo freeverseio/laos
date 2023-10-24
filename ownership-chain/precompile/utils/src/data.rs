@@ -109,7 +109,7 @@ impl<'a> EvmDataReader<'a> {
 		let mut buffer = [0u8; 4];
 		buffer.copy_from_slice(&input[0..4]);
 		let selector = T::try_from_primitive(u32::from_be_bytes(buffer)).map_err(|_| {
-			frame_support::log::trace!(
+			sp_tracing::trace!(
 				target: "precompile-utils",
 				"Failed to match function selector for {}",
 				type_name::<T>()
