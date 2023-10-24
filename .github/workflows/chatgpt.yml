@@ -1,14 +1,15 @@
 name: ChatGPT
 
 on:
-  issue_comment:
-    types: [created, edited]
+  pull_request:
+    types: 
+      - opened
+      - synchronize
   workflow_dispatch:
   
     
 jobs:
   review:
-    if: github.event.comment.user.login == 'ccubu' && startsWith(github.event.comment.body, 'chatgpt')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
