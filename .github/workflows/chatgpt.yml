@@ -1,16 +1,14 @@
 name: ChatGPT
 
 on:
-  pull_request:
-    types: 
-      - opened
-      - synchronize
+  issue_comment:
+    types: [created, edited]
   workflow_dispatch:
   
     
 jobs:
   review:
-    if: ${{ contains( github.event.labels.*.name, 'AutoReview') }}
+    if: github.event.comment.user.login == 'ccubu' && startsWith(github.event.comment.body, 'chatgpt')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
