@@ -19,7 +19,7 @@ jobs:
         run: |
           # Check if the comment contains [autoreview]
           COMMENT_BODY="${{ github.event.comment.body }}"
-          echo "is_autoreview=$(if [[ "$COMMENT_BODY" == *"[autoreview]"* ]]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_ENV
+          echo "is_gpt_review=$(if [[ "$COMMENT_BODY" == *"[gpt review]"* ]]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_ENV
 
           # Check if the commenter is in the specified group
           COMMENTER="${{ github.event.comment.user.login }}"
