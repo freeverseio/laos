@@ -17,14 +17,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Fetch the pull request details using the GitHub API
-          PR_DETAILS=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-            https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.issue.number }})
-
-          # Check if the PR is a draft
-          IS_DRAFT=$(echo "$PR_DETAILS" | jq -r '.draft')
-          echo "is_draft=$IS_DRAFT" >> $GITHUB_ENV
-
           # Check if the comment contains [autoreview]
           COMMENT_BODY="${{ github.event.comment.body }}"
           echo "is_autoreview=$(if [[ "$COMMENT_BODY" == *"[autoreview]"* ]]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_ENV
@@ -35,8 +27,8 @@ jobs:
             https://api.github.com/orgs/freeverseio/teams/ziggy/members/$COMMENTER)
           echo "is_in_group=$(if [[ "$IS_IN_GROUP" != "null" ]]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_ENV
 
-      - name: Run if Draft, Correct User, and AutoReview
-        if: env.is_draft == 'true' && env.is_in_group == 'true' && env.is_autoreview == 'true'
+      - name: Run if Correct User, and AutoReview
+        if: env.is_in_group == 'true' && env.is_autoreview == 'true'
         uses: gvasilei/AutoReviewer@0.4
         env:
           NODE_OPTIONS: '--experimental-fetch'
