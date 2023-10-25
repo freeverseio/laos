@@ -31,8 +31,8 @@ The Bridge module acts as the communication layer between the Ownership Chain an
 
 #### Seldon Evolution chain: 
 * Polkadot.js explorer: [wss://seldon.gorengine.com/evo](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Fseldon.gorengine.com%2Fevo#/explorer)
-* EVM endpoint: https://seldon.gorengine.com/own
-* EVM blockexplorer: https://seldon.gorengine.com 
+* EVM endpoint: https://seldon.gorengine.com/evo
+* EVM blockexplorer: https://seldon.gorengine.com
 
 ## Additional Resources
 
