@@ -1,11 +1,10 @@
 name: ChatGPT
 
 on:
-  pull_request:
+  issue_comment:
     types:
-      - opened
-      - synchronize
-  workflow_dispatch:
+      - created
+  
 jobs:
   review:
     runs-on: ubuntu-latest
@@ -18,30 +17,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Fetch the latest commit message associated with this PR
-          LATEST_COMMIT_MESSAGE=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-            https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/commits | \
-            jq -r '.[-1].commit.message')
-          echo "Latest Commit Message: $LATEST_COMMIT_MESSAGE"
-          # Fetch the PR creator
-          PRCREATOR=$(curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }} | jq -r .user.login)
+          # Check if the comment contains [gpt review]
+          COMMENT_BODY="${{ github.event.comment.body }}"
+          echo "is_gpt_review=$(if [[ "$COMMENT_BODY" == *"[gpt review]"* ]]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_ENV
 
-          # Check if the PR creator is in the group
-          IS_IN_GROUP=$(curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/orgs/freeverseio/teams/ziggy/members/$PRCREATOR)
-          if [ "$IS_IN_GROUP" != "null" ]; then
-            echo "Commenter is in the group."
-            echo "is_in_group=true" >> $GITHUB_ENV
-          else
-            echo "Commenter is not in the group."
-            echo "is_in_group=false" >> $GITHUB_ENV
-          fi
-          
-          # Check if the latest commit message contains [autoreview]
-          echo "is_autoreview=$(if [[ "$LATEST_COMMIT_MESSAGE" == *"[autoreview]"* ]]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_ENV
-          echo "is_draft=${{ github.event.pull_request.draft }}" >> $GITHUB_ENV
+          # Check if the commenter is in the specified group
+          COMMENTER="${{ github.event.comment.user.login }}"
+          IS_IN_GROUP=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+            https://api.github.com/orgs/freeverseio/teams/ziggy/members/$COMMENTER)
+          echo "is_in_group=$(if [[ "$IS_IN_GROUP" != "null" ]]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_ENV
 
-      - name: Run if Draft, Correct User, and AutoReview
-        if: env.is_draft == 'true' && env.is_in_group == 'true' && env.is_autoreview == 'true'
+      - name: Review if Correct User, and Gpt Review
+        if: env.is_in_group == 'true' && env.is_gpt_review == 'true'
         uses: gvasilei/AutoReviewer@0.4
         env:
           NODE_OPTIONS: '--experimental-fetch'
