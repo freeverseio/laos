@@ -56,7 +56,6 @@ pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 pub use sp_runtime::{Perbill, Permill};
 use xcm_config::{RelayLocation, XcmConfig, XcmOriginToTransactDispatchOrigin};
 
-pub use pallet_bridge_grandpa::Call as BridgeGrandpaCall;
 pub use pallet_xcm::Call as XcmCall;
 
 #[cfg(any(feature = "std", test))]
@@ -1137,17 +1136,6 @@ impl_runtime_apis! {
 	impl cumulus_primitives_core::CollectCollationInfo<Block> for Runtime {
 		fn collect_collation_info(header: &<Block as BlockT>::Header) -> cumulus_primitives_core::CollationInfo {
 			ParachainSystem::collect_collation_info(header)
-		}
-	}
-
-	impl bp_laos_evolution::EvochainFinalityApi<Block> for Runtime {
-		fn best_finalized() -> Option<bp_runtime::HeaderId<bp_laos_evolution::Hash, bp_laos_evolution::BlockNumber>> {
-			BridgeEvochainGrandpa::best_finalized()
-		}
-
-		fn synced_headers_grandpa_info(
-		) -> Vec<bp_header_chain::StoredHeaderGrandpaInfo<bp_laos_evolution::Header>> {
-			BridgeEvochainGrandpa::synced_headers_grandpa_info()
 		}
 	}
 
