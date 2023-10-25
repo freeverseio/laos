@@ -17,7 +17,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Check if the comment contains [autoreview]
+          # Check if the comment contains [gpt review]
           COMMENT_BODY="${{ github.event.comment.body }}"
           echo "is_gpt_review=$(if [[ "$COMMENT_BODY" == *"[gpt review]"* ]]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_ENV
 
@@ -27,8 +27,8 @@ jobs:
             https://api.github.com/orgs/freeverseio/teams/ziggy/members/$COMMENTER)
           echo "is_in_group=$(if [[ "$IS_IN_GROUP" != "null" ]]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_ENV
 
-      - name: Run if Correct User, and AutoReview
-        if: env.is_in_group == 'true' && env.is_autoreview == 'true'
+      - name: Review if Correct User, and Gpt Review
+        if: env.is_in_group == 'true' && env.is_gpt_review == 'true'
         uses: gvasilei/AutoReviewer@0.4
         env:
           NODE_OPTIONS: '--experimental-fetch'
