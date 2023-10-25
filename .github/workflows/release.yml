@@ -35,29 +35,6 @@ jobs:
           file: ./docker/ownership-node.local.Dockerfile
           tags: freeverseio/laos-ownership-node:${{ github.ref_name }}
       
-      - name: push image evolution node
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          push: true
-          file: ./docker/evolution-node.local.Dockerfile
-          tags: freeverseio/laos-evolution-node:${{ github.ref_name }}
-
-      - name: push image bridge
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          push: true
-          file: ./docker/bridge.local.Dockerfile
-          tags: freeverseio/laos-bridge:${{ github.ref_name }}
-
-      - name: Upload Evolution Wasm Binaries
-        run: |
-            echo "Uploading evolution wasm binary for release ${{ github.ref_name }}"
-            gh release upload ${{ github.ref_name }} ./target/release/wbuild/laos-evolution-runtime/laos_evolution_runtime.compact.compressed.wasm
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Upload Ownership Wasm Binaries
         run: |
             echo "Uploading ownership wasm binary for release ${{ github.ref_name }}"
