@@ -56,61 +56,6 @@ describeWithFrontierWs("Frontier RPC (Subscription)", (context) => {
 		expect(subscriptionId).not.empty;
 	}).timeout(20000);
 
-	step("should emit events on create collection", async function (done) {
-		subscription = context.web3.eth.subscribe("logs", {}, function (error, result) {});
-
-		await new Promise<void>((resolve) => {
-			subscription.on("connected", function (d: any) {
-				resolve();
-			});
-		});
-
-		await createAndFinalizeBlock(context.web3);
-
-		const contract = new context.web3.eth.Contract(LAOS_EVOLUTION_ABI, PRECOMPILE_ADDRESS, {
-			from: GENESIS_ACCOUNT,
-			gasPrice: "0x3B9ACA00",
-		});
-
-		const tx_data = contract.methods.createCollection(GENESIS_ACCOUNT).encodeABI();
-
-		// Set the storage and create a block
-		const tx1 = await context.web3.eth.accounts.signTransaction(
-			{
-				from: GENESIS_ACCOUNT,
-				to: PRECOMPILE_ADDRESS,
-				data: tx_data,
-				value: "0x00",
-				gasPrice: "0x3B9ACA00",
-				gas: "0x500000",
-			},
-			GENESIS_ACCOUNT_PRIVATE_KEY
-		);
-		await customRequest(context.web3, "eth_sendRawTransaction", [tx1.rawTransaction]);
-
-		let data = null;
-		let dataResolve = null;
-		let dataPromise = new Promise((resolve) => {
-			dataResolve = resolve;
-		});
-		subscription.on("data", function (d: any) {
-			data = d;
-			logsGenerated += 1;
-			dataResolve();
-		});
-
-		await createAndFinalizeBlock(context.web3);
-		await dataPromise;
-
-		subscription.unsubscribe();
-
-		expect(data.topics).to.include(NEW_COLLECTION_SELECTOR);
-		expect(data.topics).to.include("0x" + "00".repeat(12) + "47a4320be4b65bf73112e068dc637883490f5b04");
-		expect(data.address).to.equal(PRECOMPILE_ADDRESS);
-
-		done();
-	}).timeout(20000);
-
 	step("should get newHeads stream", async function (done) {
 		subscription = context.web3.eth.subscribe("newBlockHeaders", function (error, result) {});
 		let data = null;
@@ -134,7 +79,7 @@ describeWithFrontierWs("Frontier RPC (Subscription)", (context) => {
 			logsBloom:
 				"0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
 			miner: "0x0000000000000000000000000000000000000000",
-			number: 4,
+			number: 2,
 			receiptsRoot: "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
 			sha3Uncles: "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347",
 			transactionsRoot: "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
@@ -214,13 +159,16 @@ describeWithFrontierWs("Frontier RPC (Subscription)", (context) => {
 			"logs",
 			{
 				address: [
-					"0x47A4320be4B65BF73112E068dc637883490F5b04",
-					"0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac",
-					"0x3Cd0A705a2DC65e5b1E1205896BaA2be8A07c6e0",
-					"0x798d4Ba9baf0064Ec19eB4F0a1a45785ae9D6DFc",
+					"0xF8cef78E923919054037a1D03662bBD884fF4edf",
+					"0x42e2EE7Ba8975c473157634Ac2AF4098190fc741",
+					"0x5c4242beB94dE30b922f57241f1D02f36e906915",
+					"0xC2Bf5F29a4384b1aB0C063e1c666f02121B6084a",
 				],
 			},
-			function (error, result) {}
+			function (error, result) {
+				console.log("error", error);
+				console.log("res", result);
+			}
 		);
 
 		await new Promise<void>((resolve) => {
@@ -236,6 +184,7 @@ describeWithFrontierWs("Frontier RPC (Subscription)", (context) => {
 			dataResolve = resolve;
 		});
 		subscription.on("data", function (d: any) {
+			console.log("data", d);
 			data = d;
 			logsGenerated += 1;
 			dataResolve();
@@ -247,13 +196,13 @@ describeWithFrontierWs("Frontier RPC (Subscription)", (context) => {
 		subscription.unsubscribe();
 		expect(data).to.not.be.null;
 		done();
-	}).timeout(40000);
+	}).timeout(20000);
 
 	step("should subscribe to logs by topic", async function (done) {
 		subscription = context.web3.eth.subscribe(
 			"logs",
 			{
-				topics: [NEW_COLLECTION_SELECTOR],
+				topics: ["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"],
 			},
 			function (error, result) {}
 		);
@@ -290,7 +239,7 @@ describeWithFrontierWs("Frontier RPC (Subscription)", (context) => {
 			"logs",
 			{
 				fromBlock: "0x0",
-				topics: [NEW_COLLECTION_SELECTOR],
+				topics: ["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"],
 			},
 			function (error, result) {}
 		);
@@ -313,7 +262,7 @@ describeWithFrontierWs("Frontier RPC (Subscription)", (context) => {
 			"logs",
 			{
 				fromBlock: "0x0",
-				address: GENESIS_ACCOUNT,
+				address: ["0x42e2EE7Ba8975c473157634Ac2AF4098190fc741"],
 			},
 			function (error, result) {}
 		);
@@ -329,15 +278,15 @@ describeWithFrontierWs("Frontier RPC (Subscription)", (context) => {
 
 		expect(data).to.not.be.empty;
 		done();
-	}).timeout(40000);
+	}).timeout(20000);
 
 	step("should get past events #3: by address + topic", async function (done) {
 		subscription = context.web3.eth.subscribe(
 			"logs",
 			{
 				fromBlock: "0x0",
-				topics: [NEW_COLLECTION_SELECTOR],
-				address: GENESIS_ACCOUNT,
+				topics: ["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"],
+				address: ["0xC2Bf5F29a4384b1aB0C063e1c666f02121B6084a"],
 			},
 			function (error, result) {}
 		);
@@ -353,19 +302,20 @@ describeWithFrontierWs("Frontier RPC (Subscription)", (context) => {
 
 		expect(data).to.not.be.empty;
 		done();
-	}).timeout(40000);
+	}).timeout(20000);
 
 	step("should get past events #4: multiple addresses", async function (done) {
 		subscription = context.web3.eth.subscribe(
 			"logs",
 			{
 				fromBlock: "0x0",
-				topics: [NEW_COLLECTION_SELECTOR],
+				topics: ["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"],
 				address: [
-					"0x47A4320be4B65BF73112E068dc637883490F5b04",
-					"0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac",
-					"0x3Cd0A705a2DC65e5b1E1205896BaA2be8A07c6e0",
-					"0x798d4Ba9baf0064Ec19eB4F0a1a45785ae9D6DFc",
+					"0xe573BCA813c741229ffB2488F7856C6cAa841041",
+					"0xF8cef78E923919054037a1D03662bBD884fF4edf",
+					"0x42e2EE7Ba8975c473157634Ac2AF4098190fc741",
+					"0x5c4242beB94dE30b922f57241f1D02f36e906915",
+					"0xC2Bf5F29a4384b1aB0C063e1c666f02121B6084a",
 				],
 			},
 			function (error, result) {}
@@ -382,7 +332,7 @@ describeWithFrontierWs("Frontier RPC (Subscription)", (context) => {
 
 		expect(data).to.not.be.empty;
 		done();
-	}).timeout(40000);
+	}).timeout(20000);
 
 	step("should support topic wildcards", async function (done) {
 		subscription = context.web3.eth.subscribe(
@@ -585,6 +535,61 @@ describeWithFrontierWs("Frontier RPC (Subscription)", (context) => {
 
 		subscription.unsubscribe();
 		expect(data).to.not.be.null;
+		done();
+	}).timeout(20000);
+
+	step("should emit events on create collection", async function (done) {
+		subscription = context.web3.eth.subscribe("logs", {}, function (error, result) {});
+
+		await new Promise<void>((resolve) => {
+			subscription.on("connected", function (d: any) {
+				resolve();
+			});
+		});
+
+		await createAndFinalizeBlock(context.web3);
+
+		const contract = new context.web3.eth.Contract(LAOS_EVOLUTION_ABI, PRECOMPILE_ADDRESS, {
+			from: GENESIS_ACCOUNT,
+			gasPrice: "0x3B9ACA00",
+		});
+
+		const tx_data = contract.methods.createCollection(GENESIS_ACCOUNT).encodeABI();
+
+		// Set the storage and create a block
+		const tx1 = await context.web3.eth.accounts.signTransaction(
+			{
+				from: GENESIS_ACCOUNT,
+				to: PRECOMPILE_ADDRESS,
+				data: tx_data,
+				value: "0x00",
+				gasPrice: "0x3B9ACA00",
+				gas: "0x500000",
+			},
+			GENESIS_ACCOUNT_PRIVATE_KEY
+		);
+		await customRequest(context.web3, "eth_sendRawTransaction", [tx1.rawTransaction]);
+
+		let data = null;
+		let dataResolve = null;
+		let dataPromise = new Promise((resolve) => {
+			dataResolve = resolve;
+		});
+		subscription.on("data", function (d: any) {
+			data = d;
+			logsGenerated += 1;
+			dataResolve();
+		});
+
+		await createAndFinalizeBlock(context.web3);
+		await dataPromise;
+
+		subscription.unsubscribe();
+
+		expect(data.topics).to.include(NEW_COLLECTION_SELECTOR);
+		expect(data.topics).to.include("0x" + "00".repeat(12) + "47a4320be4b65bf73112e068dc637883490f5b04");
+		expect(data.address).to.equal(PRECOMPILE_ADDRESS);
+
 		done();
 	}).timeout(20000);
 });
