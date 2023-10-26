@@ -7,12 +7,12 @@ use sp_core::H160;
 use sp_std::marker::PhantomData;
 
 use pallet_evm_erc721::Erc721Precompile;
-use pallet_evm_living_assets_ownership::CollectionManagerPrecompile;
 use pallet_evm_laos_evolution::LaosEvolutionPrecompile;
+use pallet_evm_living_assets_ownership::CollectionManagerPrecompile;
 use pallet_evm_precompile_modexp::Modexp;
 use pallet_evm_precompile_simple::{ECRecover, ECRecoverPublicKey, Identity, Ripemd160, Sha256};
-use pallet_living_assets_ownership::{is_collection_address, BaseURIOf};
 use pallet_laos_evolution::TokenUriOf;
+use pallet_living_assets_ownership::{is_collection_address, BaseURIOf};
 
 use crate::{AccountId, Runtime};
 
