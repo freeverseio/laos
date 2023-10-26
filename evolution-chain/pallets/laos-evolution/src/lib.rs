@@ -158,6 +158,39 @@ impl<T: Config> LaosEvolution<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T> {
 	fn token_uri(collection_id: CollectionId, token_id: TokenId) -> Option<TokenUriOf<T>> {
 		TokenURI::<T>::get(collection_id, token_id)
 	}
+
+	fn evolve_with_external_uri(
+		who: AccountIdOf<T>,
+		collection_id: CollectionId,
+		token_id: TokenId,
+		token_uri: TokenUriOf<T>,
+	) -> Result<(), DispatchError> {
+		ensure!(
+			CollectionOwner::<T>::contains_key(collection_id),
+			Error::<T>::CollectionDoesNotExist
+		);
+		// ensure!(CollectionOwner::<T>::get(collection_id) == Some(who), Error::<T>::NoPermission);
+
+		// let to_as_h160 = T::AccountIdToH160::convert(to.clone());
+		// // compose asset_id	from slot and owner
+		// let token_id =
+		// 	slot_and_owner_to_token_id(slot, to_as_h160).ok_or(Error::<T>::SlotOverflow)?;
+
+		// ensure!(TokenURI::<T>::get(collection_id, token_id).is_none(),
+		// Error::<T>::AlreadyMinted);
+
+		// TokenURI::<T>::insert(collection_id, token_id, token_uri.clone());
+
+		// Self::deposit_event(Event::MintedWithExternalTokenURI {
+		// 	collection_id,
+		// 	slot,
+		// 	to,
+		// 	token_id,
+		// 	token_uri,
+		// });
+
+		Ok(())
+	}
 }
 
 /// Converts `Slot` and `H160` to `TokenId`

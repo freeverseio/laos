@@ -306,3 +306,26 @@ fn token_uri_of_existent_token_returns_correct_token_uri() {
 		assert_eq!(LaosEvolution::token_uri(collection_id, token_id), Some(token_uri));
 	});
 }
+
+#[test]
+// collectionId does not exist
+fn evolve_with_external_uri_with_unexistent_collection_id_should_fail() {
+	new_test_ext().execute_with(|| {
+		let who = AccountId::from_str(ALICE).unwrap();
+		let collection_id = LaosEvolution::collection_counter();
+		let slot = 0;
+		let owner = AccountId::from_str(ALICE).unwrap();
+		let token_id = slot_and_owner_to_token_id(slot, owner).unwrap();
+		let new_token_uri: TokenUriOf<Test> =
+			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
+
+		assert_noop!(
+			LaosEvolution::evolve_with_external_uri(who, collection_id, token_id, new_token_uri),
+			Error::<Test>::CollectionDoesNotExist
+		);
+	});
+}
+// msg.sender != collectionOwner,
+// asset is not already created
+// tokenURI.length > 1 KB
+// event is emitted
