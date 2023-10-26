@@ -93,7 +93,6 @@ pallet-evm-precompile-modexp = { workspace = true }
 pallet-evm-precompile-simple = { workspace = true }
 
 [dev-dependencies]
-bridge-runtime-common = { workspace = true, features = ["integrity-test"] }
 static_assertions = { workspace = true }
 
 [features]
