@@ -8,9 +8,11 @@ use sp_std::marker::PhantomData;
 
 use pallet_evm_erc721::Erc721Precompile;
 use pallet_evm_living_assets_ownership::CollectionManagerPrecompile;
+use pallet_evm_laos_evolution::LaosEvolutionPrecompile;
 use pallet_evm_precompile_modexp::Modexp;
 use pallet_evm_precompile_simple::{ECRecover, ECRecoverPublicKey, Identity, Ripemd160, Sha256};
 use pallet_living_assets_ownership::{is_collection_address, BaseURIOf};
+use pallet_laos_evolution::TokenUriOf;
 
 use crate::{AccountId, Runtime};
 
@@ -23,8 +25,8 @@ where
 	pub fn new() -> Self {
 		Self(Default::default())
 	}
-	pub fn used_addresses() -> [H160; 7] {
-		[hash(1), hash(2), hash(3), hash(4), hash(5), hash(1025), hash(1026)]
+	pub fn used_addresses() -> [H160; 8] {
+		[hash(1), hash(2), hash(3), hash(4), hash(5), hash(1025), hash(1026), hash(1027)]
 	}
 }
 
@@ -36,6 +38,13 @@ type LivingAssetsPrecompile = CollectionManagerPrecompile<
 >;
 
 type Erc721 = Erc721Precompile<AccountId, pallet_living_assets_ownership::Pallet<Runtime>>;
+
+type LaosEvolution = LaosEvolutionPrecompile<
+	pallet_evm::IdentityAddressMapping,
+	AccountId,
+	TokenUriOf<Runtime>,
+	pallet_laos_evolution::Pallet<Runtime>,
+>;
 
 impl<Runtime> PrecompileSet for FrontierPrecompiles<Runtime>
 where
@@ -53,6 +62,7 @@ where
 			// a if a == hash(1024) => Some(Sha3FIPS256::execute(handle)),
 			a if a == hash(1025) => Some(ECRecoverPublicKey::execute(handle)),
 			a if a == hash(1026) => Some(LivingAssetsPrecompile::execute(handle)),
+			a if a == hash(1027) => Some(LaosEvolution::execute(handle)),
 			a if is_collection_address(a) => Some(Erc721::execute(handle)),
 			_ => None,
 		}

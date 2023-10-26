@@ -6216,6 +6216,7 @@ dependencies = [
  "pallet-evm",
  "pallet-evm-chain-id",
  "pallet-evm-erc721",
+ "pallet-evm-laos-evolution",
  "pallet-evm-living-assets-ownership",
  "pallet-evm-precompile-modexp",
  "pallet-evm-precompile-simple",

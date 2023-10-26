@@ -57,6 +57,7 @@ pallet-living-assets-ownership = { workspace = true }
 pallet-laos-evolution = { workspace = true }
 pallet-evm-living-assets-ownership = { workspace = true }
 pallet-evm-erc721 = { workspace = true }
+pallet-evm-laos-evolution = { workspace = true }
 
 # Polkadot
 pallet-xcm = { workspace = true }
