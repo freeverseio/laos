@@ -19,7 +19,7 @@ jobs:
           COMMENTER="${{ github.event.comment.user.login }}"
           echo "COMMENTER=$COMMENTER" >> $GITHUB_ENV
           echo "Commenter is $COMMENTER"
-      - name: Run if Correct User
+      - name: Run if Commenter
         if: env.COMMENTER != ''
         uses: Codium-ai/pr-agent@v0.8
         env:
