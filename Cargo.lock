@@ -6219,6 +6219,7 @@ dependencies = [
  "pallet-evm-living-assets-ownership",
  "pallet-evm-precompile-modexp",
  "pallet-evm-precompile-simple",
+ "pallet-laos-evolution",
  "pallet-living-assets-ownership",
  "pallet-session",
  "pallet-sudo",

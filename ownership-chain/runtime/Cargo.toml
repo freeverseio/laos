@@ -54,6 +54,7 @@ sp-transaction-pool = { workspace = true }
 sp-version = { workspace = true }
 
 pallet-living-assets-ownership = { workspace = true }
+pallet-laos-evolution = { workspace = true }
 pallet-evm-living-assets-ownership = { workspace = true }
 pallet-evm-erc721 = { workspace = true }
 
