@@ -6710,6 +6710,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-evm-laos-evolution"
+version = "2.0.0-dev"
+dependencies = [
+ "evm",
+ "fp-evm",
+ "frame-support",
+ "hex",
+ "num_enum 0.5.11",
+ "pallet-evm",
+ "pallet-laos-evolution",
+ "parity-scale-codec",
+ "precompile-utils",
+ "precompile-utils-macro",
+ "scale-info",
+ "sp-arithmetic",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-evm-living-assets-ownership"
 version = "2.0.0-dev"
 dependencies = [
@@ -6840,6 +6861,21 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-keyring",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-laos-evolution"
+version = "4.0.0-dev"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
  "sp-runtime",
  "sp-std",
 ]
