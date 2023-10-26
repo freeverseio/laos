@@ -47,7 +47,8 @@ fn failing_create_collection_should_return_error() {
 		Err(DispatchError::Other("this is an error")),
 		None,
 		Ok(0.into()),
-		None
+		None,
+		Ok(())
 	);
 
 	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
@@ -65,7 +66,7 @@ fn failing_create_collection_should_return_error() {
 
 #[test]
 fn create_collection_should_return_collection_id() {
-	impl_precompile_mock_simple!(Mock, Ok(0), None, Ok(0.into()), None);
+	impl_precompile_mock_simple!(Mock, Ok(0), None, Ok(0.into()), None, Ok(()));
 
 	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
 		.write(Address(H160([1u8; 20])))
@@ -78,7 +79,7 @@ fn create_collection_should_return_collection_id() {
 
 #[test]
 fn create_collection_should_generate_log() {
-	impl_precompile_mock_simple!(Mock, Ok(0), None, Ok(0.into()), None);
+	impl_precompile_mock_simple!(Mock, Ok(0), None, Ok(0.into()), None, Ok(()));
 
 	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
 		.write(Address(H160([1u8; 20])))
@@ -98,7 +99,7 @@ fn create_collection_should_generate_log() {
 
 #[test]
 fn create_collection_on_mock_with_nonzero_value_fails() {
-	impl_precompile_mock_simple!(Mock, Ok(5), None, Ok(0.into()), None);
+	impl_precompile_mock_simple!(Mock, Ok(5), None, Ok(0.into()), None, Ok(()));
 
 	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
 		.write(Address(H160([1u8; 20])))
@@ -120,7 +121,8 @@ fn create_collection_assign_collection_to_caller() {
 		}, // Closure for create_collection result
 		|_| { None }, // Closure for collection_owner result
 		|_, _, _, _, _| { Ok(0.into()) }, // Closure for mint result
-		|_, _| { None }  // Closure for token_uri result
+		|_, _| { None }, // Closure for token_uri result
+		|_, _, _, _| { Ok(()) }  // Closure for evolve result
 	);
 
 	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
@@ -134,7 +136,7 @@ fn create_collection_assign_collection_to_caller() {
 
 #[test]
 fn call_unexistent_selector_should_fail() {
-	impl_precompile_mock_simple!(Mock, Ok(0), None, Ok(0.into()), None);
+	impl_precompile_mock_simple!(Mock, Ok(0), None, Ok(0.into()), None, Ok(()));
 
 	let nonexistent_selector =
 		hex::decode("fb24ae530000000000000000000000000000000000000000000000000000000000000000")
@@ -146,7 +148,7 @@ fn call_unexistent_selector_should_fail() {
 
 #[test]
 fn call_owner_of_non_existent_collection() {
-	impl_precompile_mock_simple!(Mock, Ok(0), None, Ok(0.into()), None);
+	impl_precompile_mock_simple!(Mock, Ok(0), None, Ok(0.into()), None, Ok(()));
 
 	let input = EvmDataWriter::new_with_selector(Action::OwnerOfCollection)
 		.write(U256::from(0))
@@ -163,7 +165,8 @@ fn call_owner_of_collection_works() {
 		Ok(0),
 		Some(H160::from_low_u64_be(0x1234)),
 		Ok(0.into()),
-		None
+		None,
+		Ok(())
 	);
 
 	let owner = H160::from_low_u64_be(0x1234);
@@ -179,7 +182,7 @@ fn call_owner_of_collection_works() {
 
 #[test]
 fn token_uri_returns_nothing_when_source_token_uri_is_none() {
-	impl_precompile_mock_simple!(Mock, Ok(0), None, Ok(0.into()), None);
+	impl_precompile_mock_simple!(Mock, Ok(0), None, Ok(0.into()), None, Ok(()));
 
 	let input = EvmDataWriter::new_with_selector(Action::TokenURI)
 		.write(0_u64)
@@ -193,7 +196,7 @@ fn token_uri_returns_nothing_when_source_token_uri_is_none() {
 
 #[test]
 fn token_uri_returns_the_result_from_source() {
-	impl_precompile_mock_simple!(Mock, Ok(0), None, Ok(0.into()), Some(vec![1_u8, 10]));
+	impl_precompile_mock_simple!(Mock, Ok(0), None, Ok(0.into()), Some(vec![1_u8, 10]), Ok(()));
 
 	let input = EvmDataWriter::new_with_selector(Action::TokenURI)
 		.write(0_u64)
@@ -212,7 +215,8 @@ fn mint_works() {
 		Ok(0),
 		Some(H160::from_low_u64_be(0x1234)),
 		Ok(1.into()),
-		None
+		None,
+		Ok(())
 	);
 
 	let to = H160::from_low_u64_be(1);
@@ -237,7 +241,8 @@ fn failing_mint_should_return_error() {
 		Ok(0),
 		Some(H160::from_low_u64_be(0x1234)),
 		Err(DispatchError::Other("this is error")),
-		None
+		None,
+		Ok(())
 	);
 
 	let to = H160::from_low_u64_be(1);
@@ -246,6 +251,74 @@ fn failing_mint_should_return_error() {
 		.write(U256::from(0))
 		.write(U256::from(1))
 		.write(Address(to))
+		.write(Bytes([1u8; 20].to_vec()))
+		.build();
+
+	let mut handle = create_mock_handle_from_input(input);
+	let result = Mock::execute(&mut handle).unwrap_err();
+
+	assert_eq!(result, revert("this is error"));
+}
+
+#[test]
+fn evolve_works() {
+	impl_precompile_mock_simple!(
+		Mock,
+		Ok(0),
+		Some(H160::from_low_u64_be(0x1234)),
+		Ok(1.into()),
+		None,
+		Ok(())
+	);
+
+	let input = EvmDataWriter::new_with_selector(Action::Evolve)
+		.write(U256::from(0))
+		.write(U256::from(1))
+		.write(Bytes([1u8; 20].to_vec()))
+		.build();
+
+	let mut handle = create_mock_handle_from_input(input);
+	let result = Mock::execute(&mut handle).unwrap();
+
+	assert_eq!(result, succeed(EvmDataWriter::new().build()));
+}
+
+#[test]
+fn evolve_should_generate_log() {
+	impl_precompile_mock_simple!(Mock, Ok(0), None, Ok(0.into()), None, Ok(()));
+
+	let input = EvmDataWriter::new_with_selector(Action::Evolve)
+		.write(U256::from(0))
+		.write(U256::from(1))
+		.write(Bytes([1u8; 20].to_vec()))
+		.build();
+	let mut handle = create_mock_handle_from_input(input);
+
+	let result = Mock::execute(&mut handle);
+	assert!(result.is_ok());
+	let logs = handle.logs;
+	assert_eq!(logs.len(), 1);
+	assert_eq!(logs[0].address, H160::zero());
+	assert_eq!(logs[0].topics.len(), 4);
+	assert_eq!(logs[0].topics[0], SELECTOR_LOG_NEW_COLLECTION.into());
+	assert_eq!(logs[0].topics[1], H256::from_low_u64_be(0));
+	assert_eq!(logs[0].data, Vec::<u8>::new());
+}
+
+#[test]
+fn evolve_failing_should_return_error() {
+	impl_precompile_mock_simple!(
+		Mock,
+		Ok(0),
+		Some(H160::from_low_u64_be(0x1234)),
+		Ok(1.into()),
+		None,
+		Err(DispatchError::Other("this is error"))
+	);
+
+	let input = EvmDataWriter::new_with_selector(Action::Evolve)
+		.write(U256::from(0))
+		.write(U256::from(1))
 		.write(Bytes([1u8; 20].to_vec()))
 		.build();
 
@@ -276,7 +349,7 @@ mod helpers {
 	/// ```
 	#[macro_export]
 	macro_rules! impl_precompile_mock {
-		($name:ident, $create_collection_result:expr, $collection_owner_result:expr, $mint_result:expr, $token_uri_result:expr ) => {
+		($name:ident, $create_collection_result:expr, $collection_owner_result:expr, $mint_result:expr, $token_uri_result:expr, $evolve_result:expr ) => {
 			use pallet_laos_evolution::types::*;
 			use sp_runtime::DispatchError;
 			type TokenUri = Vec<u8>;
@@ -307,6 +380,15 @@ mod helpers {
 				fn token_uri(_collection_id: CollectionId, _token_id: TokenId) -> Option<TokenUri> {
 					($token_uri_result)(_collection_id, _token_id)
 				}
+
+				fn evolve_with_external_uri(
+					who: AccountId,
+					collection_id: CollectionId,
+					token_id: TokenId,
+					token_uri: TokenUri,
+				) -> Result<(), DispatchError> {
+					($evolve_result)(who, collection_id, token_id, token_uri)
+				}
 			}
 
 			type $name =
@@ -332,13 +414,14 @@ mod helpers {
 	/// ```
 	#[macro_export]
 	macro_rules! impl_precompile_mock_simple {
-		($name:ident, $create_collection_result:expr, $collection_owner_result:expr, $mint_result:expr, $token_uri_result:expr) => {
+		($name:ident, $create_collection_result:expr, $collection_owner_result:expr, $mint_result:expr, $token_uri_result:expr, $evolve_result:expr) => {
 			impl_precompile_mock!(
 				$name,
 				|_owner| { $create_collection_result },
 				|_collection_id| { $collection_owner_result },
 				|_who, _collection_id, _slot, _to, _token_uri| { $mint_result },
-				|_collection_id, _token_id| { $token_uri_result }
+				|_collection_id, _token_id| { $token_uri_result },
+				|_who, _collection_id, _token_id, _token_uri| { $evolve_result }
 			);
 		};
 	}

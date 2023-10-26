@@ -58,4 +58,15 @@ interface LaosEvolution {
         address to,
         string calldata tokenURI
     ) external returns (uint256);
+
+    /// @notice Evolve an existing token
+    /// @dev Call this function to evolve an existing token, the caller must be the owner of the collection
+    /// @param collectionId the id of the collection
+    /// @param tokenId the id of the token
+    /// @param tokenURI the new tokenURI of the token
+    function evolveWithExternalUri(
+        uint64 collectionId,
+        uint256 tokenId,
+        string calldata tokenURI
+    ) external returns (uint256);
 }
