@@ -155,8 +155,10 @@ where
 				let collection_id = input.read::<u64>()?;
 				let token_id = input.read::<TokenId>()?;
 				let token_uri_raw = input.read::<Bytes>()?.0;
-				let token_uri =
-					token_uri_raw.try_into().map_err(|_| revert("invalid token uri length"))?;
+				let token_uri = token_uri_raw
+					.clone()
+					.try_into()
+					.map_err(|_| revert("invalid token uri length"))?;
 
 				match LaosEvolution::evolve_with_external_uri(
 					caller.into(),
@@ -174,6 +176,7 @@ where
 								H256(SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI),
 								H256(token_id_bytes),
 								H256::from_low_u64_be(collection_id),
+								H256::from_slice(token_uri_raw.as_slice()),
 							],
 							data: Vec::new(),
 						}
