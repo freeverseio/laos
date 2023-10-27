@@ -167,18 +167,16 @@ where
 					token_uri,
 				) {
 					Ok(()) => {
-						let mut token_id_bytes = [0u8; 32];
-						token_id.to_big_endian(&mut token_id_bytes);
-
 						Log {
 							address: context.address,
-							topics: sp_std::vec![
-								H256(SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI),
-								H256(token_id_bytes),
-								H256::from_low_u64_be(collection_id),
-								H256::from_slice(token_uri_raw.as_slice()),
-							],
-							data: Vec::new(),
+							topics: sp_std::vec![H256(
+								SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI
+							),],
+							data: EvmDataWriter::new()
+								.write(token_id)
+								.write(collection_id)
+								.write(token_uri_raw)
+								.build(),
 						}
 						.record(handle)?;
 
