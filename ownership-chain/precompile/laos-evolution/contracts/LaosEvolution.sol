@@ -27,9 +27,9 @@ interface LaosEvolution {
     );
 
     /// @notice Emitted when a token metadata is updated
-    /// @param tokenId the resulting id of the newly minted token
+    /// @param tokenId the id for which the metadata has changed
     /// @param collectionId the id of the collection
-    /// @param tokenURI the URI of the newly evolved token
+    /// @param tokenURI the new URI of the token
     event MetadataUpdate(
         uint256 tokenId,
         uint64 collectionId,
@@ -69,7 +69,7 @@ interface LaosEvolution {
         string calldata tokenURI
     ) external returns (uint256);
 
-    /// @notice Evolve an existing token
+    /// @notice Changes the tokenURI of an existing token
     /// @dev Call this function to evolve an existing token, the caller must be the owner of the collection
     /// @param collectionId the id of the collection
     /// @param tokenId the id of the token
