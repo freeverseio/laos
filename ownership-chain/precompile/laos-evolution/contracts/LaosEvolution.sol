@@ -62,7 +62,7 @@ interface LaosEvolution {
     /// @param to the owner of the newly minted token
     /// @param tokenURI the tokenURI of the newly minted token
     /// @return the id of the newly minted token
-    function mintWithExternalUri(
+    function mintWithExternalURI(
         uint64 collectionId,
         uint96 slot,
         address to,
@@ -74,7 +74,7 @@ interface LaosEvolution {
     /// @param collectionId the id of the collection
     /// @param tokenId the id of the token
     /// @param tokenURI the new tokenURI of the token
-    function evolveWithExternalUri(
+    function evolveWithExternalURI(
         uint64 collectionId,
         uint256 tokenId,
         string calldata tokenURI

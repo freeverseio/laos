@@ -30,9 +30,9 @@ pub enum Action {
 	/// Get tokenURI of the token in collection
 	TokenURI = "tokenURI(uint64,uint256)",
 	/// Mint token
-	Mint = "mintWithExternalUri(uint64,uint96,address,string)",
+	Mint = "mintWithExternalURI(uint64,uint96,address,string)",
 	/// Evolve token
-	Evolve = "evolveWithExternalUri(uint64,uint256,string)",
+	Evolve = "evolveWithExternalURI(uint64,uint256,string)",
 }
 
 /// Wrapper for the precompile function.
