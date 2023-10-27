@@ -3,6 +3,8 @@
 //TODO: remove this and fix clippy issues
 #![allow(clippy::redundant_closure_call)]
 
+use core::str::FromStr;
+
 use super::*;
 use frame_support::assert_ok;
 use precompile_utils::{
@@ -78,7 +80,7 @@ fn create_collection_should_return_collection_id() {
 
 #[test]
 fn create_collection_should_generate_log() {
-	impl_precompile_mock_simple!(Mock, Ok(0), None, Ok(0.into()), None);
+	impl_precompile_mock_simple!(Mock, Ok(123), None, Ok(0.into()), None);
 
 	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
 		.write(Address(H160([1u8; 20])))
@@ -90,10 +92,20 @@ fn create_collection_should_generate_log() {
 	let logs = handle.logs;
 	assert_eq!(logs.len(), 1);
 	assert_eq!(logs[0].address, H160::zero());
-	assert_eq!(logs[0].topics.len(), 3);
+	assert_eq!(logs[0].topics.len(), 2);
 	assert_eq!(logs[0].topics[0], SELECTOR_LOG_NEW_COLLECTION.into());
-	assert_eq!(logs[0].topics[1], H256::from_low_u64_be(0));
-	assert_eq!(logs[0].data, Vec::<u8>::new());
+	assert_eq!(
+		logs[0].topics[1],
+		H256::from_str("0x0000000000000000000000000101010101010101010101010101010101010101")
+			.unwrap()
+	);
+	assert_eq!(
+		logs[0].data,
+		vec![
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 123
+		]
+	);
 }
 
 #[test]
