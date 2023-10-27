@@ -27,7 +27,7 @@ interface LaosEvolution {
     );
 
     /// @notice Emitted when a token metadata is updated
-    /// @param tokenId the id for which the metadata has changed
+    /// @param tokenId the id of the token for which the metadata has changed
     /// @param collectionId the id of the collection
     /// @param tokenURI the new URI of the token
     event MetadataUpdate(
