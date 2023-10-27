@@ -285,7 +285,7 @@ fn evolve_works() {
 
 #[test]
 fn evolve_should_generate_log() {
-	impl_precompile_mock_simple!(Mock, Ok(0), None, Ok(0.into()), None, Ok(())); // TODO refactor me
+	impl_precompile_mock_simple!(Mock, Ok(0), None, Ok(0.into()), None, Ok(()));
 
 	let collection_id = 0;
 	let token_id = 1;
