@@ -83,11 +83,7 @@ pub mod pallet {
 		},
 		/// Asset evolved
 		/// [collection_id, token_uri, token_id]
-		EvolvedWithExternalTokenURI {
-			collection_id: CollectionId,
-			token_uri: TokenUriOf<T>,
-			token_id: TokenId,
-		},
+		MetadataUpdate { token_id: TokenId, collection_id: CollectionId, token_uri: TokenUriOf<T> },
 	}
 
 	// Errors inform users that something went wrong.
@@ -186,11 +182,7 @@ impl<T: Config> LaosEvolution<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T> {
 
 		TokenURI::<T>::insert(collection_id, token_id, token_uri.clone());
 
-		Self::deposit_event(Event::EvolvedWithExternalTokenURI {
-			collection_id,
-			token_id,
-			token_uri,
-		});
+		Self::deposit_event(Event::MetadataUpdate { token_id, collection_id, token_uri });
 
 		Ok(())
 	}
