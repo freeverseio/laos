@@ -285,12 +285,16 @@ fn evolve_works() {
 
 #[test]
 fn evolve_should_generate_log() {
-	impl_precompile_mock_simple!(Mock, Ok(0), None, Ok(0.into()), None, Ok(()));
+	impl_precompile_mock_simple!(Mock, Ok(0), None, Ok(0.into()), None, Ok(())); // TODO refactor me
+
+	let collection_id = 0;
+	let token_id = 1;
+	let token_uri = Bytes([1u8; 20].to_vec());
 
 	let input = EvmDataWriter::new_with_selector(Action::Evolve)
-		.write(U256::from(0))
-		.write(U256::from(1))
-		.write(Bytes([1u8; 20].to_vec()))
+		.write(U256::from(collection_id))
+		.write(U256::from(token_id))
+		.write(token_uri.clone())
 		.build();
 	let mut handle = create_mock_handle_from_input(input);
 
@@ -299,9 +303,10 @@ fn evolve_should_generate_log() {
 	let logs = handle.logs;
 	assert_eq!(logs.len(), 1);
 	assert_eq!(logs[0].address, H160::zero());
-	assert_eq!(logs[0].topics.len(), 4);
-	assert_eq!(logs[0].topics[0], SELECTOR_LOG_NEW_COLLECTION.into());
-	assert_eq!(logs[0].topics[1], H256::from_low_u64_be(0));
+	assert_eq!(logs[0].topics.len(), 3);
+	assert_eq!(logs[0].topics[0], SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI.into());
+	assert_eq!(logs[0].topics[1], H256::from_low_u64_be(token_id));
+	assert_eq!(logs[0].topics[2], H256::from_low_u64_be(collection_id));
 	assert_eq!(logs[0].data, Vec::<u8>::new());
 }
 

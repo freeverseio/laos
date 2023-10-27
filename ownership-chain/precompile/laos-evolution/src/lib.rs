@@ -172,9 +172,8 @@ where
 							address: context.address,
 							topics: sp_std::vec![
 								H256(SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI),
+								H256(token_id_bytes),
 								H256::from_low_u64_be(collection_id),
-								H256(token_id_bytes),
-								H256(token_id_bytes),
 							],
 							data: Vec::new(),
 						}

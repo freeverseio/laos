@@ -26,6 +26,14 @@ interface LaosEvolution {
         uint256 tokenId
     );
 
+    /// @notice Emitted when a token metadata is updated
+    /// @param tokenId the resulting id of the newly minted token
+    /// @param collectionId the id of the collection
+    event MetadataUpdate(
+        uint256 tokenId
+        uint64 collectionId,
+    );
+
     /// @notice Creates a new collection
     /// @dev Call this function to create a new collection
     /// @param owner the owner of the newly created collection
