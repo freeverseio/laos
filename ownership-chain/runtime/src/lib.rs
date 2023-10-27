@@ -479,6 +479,26 @@ impl pallet_living_assets_ownership::Config for Runtime {
 	type AssetIdToInitialOwner = AssetIdToInitialOwner;
 }
 
+parameter_types! {
+	/// Max length of the `TokenUri`
+	pub const MaxTokenUriLength: u32 = 512;
+}
+
+/// Converts [`AccountId`] to [`H160`]
+pub struct AccountIdToH160;
+
+impl sp_runtime::traits::Convert<AccountId, H160> for AccountIdToH160 {
+	fn convert(account_id: AccountId) -> H160 {
+		H160(account_id.0)
+	}
+}
+
+impl pallet_laos_evolution::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type AccountIdToH160 = AccountIdToH160;
+	type MaxTokenUriLength = MaxTokenUriLength;
+}
+
 impl pallet_sudo::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeCall = RuntimeCall;
@@ -703,6 +723,7 @@ construct_runtime!(
 
 		// Local pallets
 		LaosLivingAssetsOwnership: pallet_living_assets_ownership = 41,
+		LaosEvolution: pallet_laos_evolution = 42,
 
 		// Frontier
 		Ethereum: pallet_ethereum = 50,
