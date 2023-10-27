@@ -1,14 +1,12 @@
 use super::{
-	AccountId, AllPalletsWithSystem, Balances, ParachainSystem, PolkadotXcm, Runtime, RuntimeCall,
-	RuntimeEvent, RuntimeOrigin, WeightToFee, XcmpQueue,
+	AccountId, AllPalletsWithSystem, Balances, ParachainInfo, ParachainSystem, PolkadotXcm,
+	Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin, WeightToFee, XcmpQueue,
 };
-use bridge_runtime_common::CustomNetworkId;
-use core::{marker::PhantomData, ops::ControlFlow};
+use core::marker::PhantomData;
 use frame_support::{
-	log, match_types, parameter_types,
-	traits::{
-		ConstU32, Currency, Everything, Nothing, OnUnbalanced, OriginTrait, ProcessMessageError,
-	},
+	match_types, parameter_types,
+	traits::{ConstU32, Currency, Everything, Nothing, OnUnbalanced, OriginTrait},
+	weights::Weight,
 };
 use frame_system::{EnsureRoot, RawOrigin as SystemRawOrigin};
 use pallet_xcm::XcmPassthrough;
@@ -17,25 +15,19 @@ use sp_runtime::traits::TryConvert;
 use xcm::latest::prelude::*;
 use xcm_builder::{
 	AccountKey20Aliases, AllowExplicitUnpaidExecutionFrom, AllowTopLevelPaidExecutionFrom,
-	CreateMatcher, CurrencyAdapter, EnsureXcmOrigin, FixedWeightBounds, IsConcrete, MatchXcm,
-	NativeAsset, ParentIsPreset, RelayChainAsNative, SiblingParachainAsNative,
-	SiblingParachainConvertsVia, SignedAccountKey20AsNative, SovereignSignedViaLocation,
-	TakeWeightCredit, UsingComponents, WithComputedOrigin,
+	CurrencyAdapter, DenyReserveTransferToRelayChain, DenyThenTry, EnsureXcmOrigin,
+	FixedWeightBounds, IsConcrete, NativeAsset, ParentIsPreset, RelayChainAsNative,
+	SiblingParachainAsNative, SiblingParachainConvertsVia, SignedAccountKey20AsNative,
+	SovereignSignedViaLocation, TakeWeightCredit, TrailingSetTopicAsId, UsingComponents,
+	WithComputedOrigin, WithUniqueTopic,
 };
-use xcm_executor::{
-	traits::{Properties, ShouldExecute},
-	XcmExecutor,
-};
+use xcm_executor::XcmExecutor;
 
 parameter_types! {
 	pub const RelayLocation: MultiLocation = MultiLocation::parent();
-	pub const RelayNetwork: NetworkId = CustomNetworkId::Rococo.as_network_id();
-	pub RelayOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into();
-	pub UniversalLocation: InteriorMultiLocation = ThisNetwork::get().into();
-	/// The Evochain network ID.
-	pub const EvochainNetwork: NetworkId = CustomNetworkId::Evochain.as_network_id();
-	/// The RialtoParachain network ID.
-	pub const ThisNetwork: NetworkId = CustomNetworkId::OwnershipParachain.as_network_id();
+	pub const RelayNetwork: Option<NetworkId> = None;
+	pub RelayChainOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into();
+	pub UniversalLocation: InteriorMultiLocation = Parachain(ParachainInfo::parachain_id().into()).into();
 }
 
 /// Type for specifying how a `MultiLocation` can be converted into an `AccountId`. This is used
@@ -74,7 +66,7 @@ pub type XcmOriginToTransactDispatchOrigin = (
 	SovereignSignedViaLocation<LocationToAccountId, RuntimeOrigin>,
 	// Native converter for Relay-chain (Parent) location; will convert to a `Relay` origin when
 	// recognized.
-	RelayChainAsNative<RelayOrigin, RuntimeOrigin>,
+	RelayChainAsNative<RelayChainOrigin, RuntimeOrigin>,
 	// Native converter for sibling Parachains; will convert to a `SiblingPara` origin when
 	// recognized.
 	SiblingParachainAsNative<cumulus_pallet_xcm::Origin, RuntimeOrigin>,
@@ -99,116 +91,23 @@ match_types! {
 	};
 }
 
-//TODO: move DenyThenTry to polkadot's xcm module.
-/// Deny executing the xcm message if it matches any of the Deny filter regardless of anything else.
-/// If it passes the Deny, and matches one of the Allow cases then it is let through.
-pub struct DenyThenTry<Deny, Allow>(PhantomData<Deny>, PhantomData<Allow>)
-where
-	Deny: ShouldExecute,
-	Allow: ShouldExecute;
-
-impl<Deny, Allow> ShouldExecute for DenyThenTry<Deny, Allow>
-where
-	Deny: ShouldExecute,
-	Allow: ShouldExecute,
-{
-	fn should_execute<RuntimeCall>(
-		origin: &MultiLocation,
-		instructions: &mut [Instruction<RuntimeCall>],
-		max_weight: Weight,
-		properties: &mut Properties,
-	) -> Result<(), ProcessMessageError> {
-		Deny::should_execute(origin, instructions, max_weight, properties)?;
-		Allow::should_execute(origin, instructions, max_weight, properties)
-	}
-}
-
-// See issue <https://github.com/paritytech/polkadot/issues/5233>
-pub struct DenyReserveTransferToRelayChain;
-impl ShouldExecute for DenyReserveTransferToRelayChain {
-	fn should_execute<RuntimeCall>(
-		origin: &MultiLocation,
-		instructions: &mut [Instruction<RuntimeCall>],
-		_max_weight: Weight,
-		_properties: &mut Properties,
-	) -> Result<(), ProcessMessageError> {
-		instructions.matcher().match_next_inst_while(
-			|_| true,
-			|inst| match inst {
-				InitiateReserveWithdraw {
-					reserve: MultiLocation { parents: 1, interior: Here },
-					..
-				} |
-				DepositReserveAsset {
-					dest: MultiLocation { parents: 1, interior: Here }, ..
-				} |
-				TransferReserveAsset {
-					dest: MultiLocation { parents: 1, interior: Here }, ..
-				} => {
-					Err(ProcessMessageError::Unsupported) // Deny
-				},
-				// An unexpected reserve transfer has arrived from the Relay Chain. Generally,
-				// `IsReserve` should not allow this, but we just log it here.
-				ReserveAssetDeposited { .. }
-					if matches!(origin, MultiLocation { parents: 1, interior: Here }) =>
-				{
-					log::warn!(
-						target: "xcm::barrier",
-						"Unexpected ReserveAssetDeposited from the Relay Chain",
-					);
-					Ok(ControlFlow::Continue(()))
-				},
-				_ => Ok(ControlFlow::Continue(())),
-			},
-		)?;
-
-		// Permit everything else
-		Ok(())
-	}
-}
-
-pub type Barrier = DenyThenTry<
-	DenyReserveTransferToRelayChain,
-	(
-		TakeWeightCredit,
-		WithComputedOrigin<
-			(
-				AllowTopLevelPaidExecutionFrom<Everything>,
-				AllowExplicitUnpaidExecutionFrom<ParentOrParentsExecutivePlurality>,
-				// ^^^ Parent and its exec plurality get free execution
-			),
-			UniversalLocation,
-			ConstU32<8>,
-		>,
-	),
+pub type Barrier = TrailingSetTopicAsId<
+	DenyThenTry<
+		DenyReserveTransferToRelayChain,
+		(
+			TakeWeightCredit,
+			WithComputedOrigin<
+				(
+					AllowTopLevelPaidExecutionFrom<Everything>,
+					AllowExplicitUnpaidExecutionFrom<ParentOrParentsExecutivePlurality>,
+					// ^^^ Parent and its exec plurality get free execution
+				),
+				UniversalLocation,
+				ConstU32<8>,
+			>,
+		),
+	>,
 >;
-
-/// Dispatches received XCM messages from other chain.
-pub type OnOwnershipParachainBlobDispatcher =
-	xcm_builder::BridgeBlobDispatcher<XcmRouter, UniversalLocation, ()>;
-
-/// XCM weigher type.
-pub type XcmWeigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
-
-/// Logic for sending fees to the sudo account. On every unbalanced change, the amount is
-/// transferred to the sudo account.
-/// TODO: temporary solution until we have a treasury.
-pub struct ToSudo<R>(PhantomData<R>);
-
-type NegativeImbalanceOfBalances<T> = pallet_balances::NegativeImbalance<T>;
-
-impl<R> OnUnbalanced<NegativeImbalanceOfBalances<R>> for ToSudo<R>
-where
-	R: pallet_balances::Config + pallet_sudo::Config,
-	<R as frame_system::Config>::AccountId: From<AccountId>,
-	<R as frame_system::Config>::AccountId: Into<AccountId>,
-{
-	fn on_nonzero_unbalanced(amount: NegativeImbalanceOfBalances<R>) {
-		if let Some(account) = <pallet_sudo::Pallet<R>>::key() {
-			<pallet_balances::Pallet<R>>::resolve_creating(&account, amount);
-		}
-	}
-}
 
 pub struct XcmConfig;
 impl xcm_executor::Config for XcmConfig {
@@ -218,10 +117,10 @@ impl xcm_executor::Config for XcmConfig {
 	type AssetTransactor = LocalAssetTransactor;
 	type OriginConverter = XcmOriginToTransactDispatchOrigin;
 	type IsReserve = NativeAsset;
-	type IsTeleporter = NativeAsset;
+	type IsTeleporter = (); // Teleporting is disabled.
 	type UniversalLocation = UniversalLocation;
 	type Barrier = Barrier;
-	type Weigher = XcmWeigher;
+	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
 	type Trader = UsingComponents<WeightToFee, RelayLocation, AccountId, Balances, ToSudo<Runtime>>;
 	type ResponseHandler = PolkadotXcm;
 	type AssetTrap = PolkadotXcm;
@@ -239,40 +138,17 @@ impl xcm_executor::Config for XcmConfig {
 	type Aliasers = Nothing;
 }
 
-pub struct SignedToAccountId20<RuntimeOrigin, AccountId, Network>(
-	PhantomData<(RuntimeOrigin, AccountId, Network)>,
-);
-impl<
-		RuntimeOrigin: OriginTrait + Clone,
-		AccountId: Into<[u8; 20]>,
-		Network: frame_support::traits::Get<Option<NetworkId>>,
-	> TryConvert<RuntimeOrigin, MultiLocation>
-	for SignedToAccountId20<RuntimeOrigin, AccountId, Network>
-where
-	RuntimeOrigin::PalletsOrigin: From<SystemRawOrigin<AccountId>>
-		+ TryInto<SystemRawOrigin<AccountId>, Error = RuntimeOrigin::PalletsOrigin>,
-{
-	fn try_convert(o: RuntimeOrigin) -> Result<MultiLocation, RuntimeOrigin> {
-		o.try_with_caller(|caller| match caller.try_into() {
-			Ok(SystemRawOrigin::Signed(who)) =>
-				Ok(Junction::AccountKey20 { network: Network::get(), key: who.into() }.into()),
-			Ok(other) => Err(other.into()),
-			Err(other) => Err(other),
-		})
-	}
-}
-
 /// No local origins on this chain are allowed to dispatch XCM sends/executions.
 pub type LocalOriginToLocation = SignedToAccountId20<RuntimeOrigin, AccountId, RelayNetwork>;
 
 /// The means for routing XCM messages which are not for local execution into the right message
 /// queues.
-pub type XcmRouter = (
+pub type XcmRouter = WithUniqueTopic<(
 	// Two routers - use UMP to communicate with the relay chain:
 	cumulus_primitives_utility::ParentAsUmp<ParachainSystem, (), ()>,
 	// ..and XCMP to communicate with the sibling chains.
 	XcmpQueue,
-);
+)>;
 
 #[cfg(feature = "runtime-benchmarks")]
 parameter_types! {
@@ -314,4 +190,47 @@ impl pallet_xcm::Config for Runtime {
 impl cumulus_pallet_xcm::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type XcmExecutor = XcmExecutor<XcmConfig>;
+}
+
+pub struct SignedToAccountId20<RuntimeOrigin, AccountId, Network>(
+	PhantomData<(RuntimeOrigin, AccountId, Network)>,
+);
+impl<
+		RuntimeOrigin: OriginTrait + Clone,
+		AccountId: Into<[u8; 20]>,
+		Network: frame_support::traits::Get<Option<NetworkId>>,
+	> TryConvert<RuntimeOrigin, MultiLocation>
+	for SignedToAccountId20<RuntimeOrigin, AccountId, Network>
+where
+	RuntimeOrigin::PalletsOrigin: From<SystemRawOrigin<AccountId>>
+		+ TryInto<SystemRawOrigin<AccountId>, Error = RuntimeOrigin::PalletsOrigin>,
+{
+	fn try_convert(o: RuntimeOrigin) -> Result<MultiLocation, RuntimeOrigin> {
+		o.try_with_caller(|caller| match caller.try_into() {
+			Ok(SystemRawOrigin::Signed(who)) =>
+				Ok(Junction::AccountKey20 { network: Network::get(), key: who.into() }.into()),
+			Ok(other) => Err(other.into()),
+			Err(other) => Err(other),
+		})
+	}
+}
+
+/// Logic for sending fees to the sudo account. On every unbalanced change, the amount is
+/// transferred to the sudo account.
+/// TODO: temporary solution until we have a treasury.
+pub struct ToSudo<R>(PhantomData<R>);
+
+type NegativeImbalanceOfBalances<T> = pallet_balances::NegativeImbalance<T>;
+
+impl<R> OnUnbalanced<NegativeImbalanceOfBalances<R>> for ToSudo<R>
+where
+	R: pallet_balances::Config + pallet_sudo::Config,
+	<R as frame_system::Config>::AccountId: From<AccountId>,
+	<R as frame_system::Config>::AccountId: Into<AccountId>,
+{
+	fn on_nonzero_unbalanced(amount: NegativeImbalanceOfBalances<R>) {
+		if let Some(account) = <pallet_sudo::Pallet<R>>::key() {
+			<pallet_balances::Pallet<R>>::resolve_creating(&account, amount);
+		}
+	}
 }

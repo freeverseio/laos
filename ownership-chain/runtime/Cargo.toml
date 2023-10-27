@@ -94,15 +94,7 @@ pallet-evm-chain-id = { workspace = true }
 pallet-evm-precompile-modexp = { workspace = true }
 pallet-evm-precompile-simple = { workspace = true }
 
-# Bridge dependencies
-bp-header-chain = { workspace = true }
-bp-laos-evolution = { workspace = true }
-bp-runtime = { workspace = true }
-bridge-runtime-common = { workspace = true }
-pallet-bridge-grandpa = { workspace = true }
-
 [dev-dependencies]
-bridge-runtime-common = { workspace = true, features = ["integrity-test"] }
 static_assertions = { workspace = true }
 
 [features]
@@ -175,11 +167,6 @@ std = [
 	"frame-try-runtime",
 	"pallet-evm-living-assets-ownership/std",
 	# Bridge deps,
-	"bp-laos-evolution/std",
-	"bp-header-chain/std",
-	"bp-runtime/std",
-	"bridge-runtime-common/std",
-	"pallet-bridge-grandpa/std",
 	"ownership-parachain-primitives/std",
 	"hex/std",
 ]
@@ -207,8 +194,6 @@ runtime-benchmarks = [
 	"polkadot-primitives/runtime-benchmarks",
 	"polkadot-runtime-common/runtime-benchmarks",
 	"xcm-executor/runtime-benchmarks",
-	"bridge-runtime-common/runtime-benchmarks",
-	"pallet-bridge-grandpa/runtime-benchmarks",
 ]
 
 try-runtime = [
@@ -240,5 +225,4 @@ try-runtime = [
 	"frame-support/try-runtime",
 	"polkadot-runtime-common/try-runtime",
 	"sp-runtime/try-runtime",
-	"pallet-bridge-grandpa/try-runtime",
 ]
