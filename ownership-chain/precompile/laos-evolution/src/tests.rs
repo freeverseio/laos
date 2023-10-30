@@ -32,6 +32,10 @@ fn check_log_selectors() {
 		hex::encode(SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI),
 		"e7cd937c6c8e9d8316a3f190b7c68fd1b5df77145952da131c29122b85e0b317"
 	);
+	assert_eq!(
+		hex::encode(SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI),
+		"09a20653c78577ad8badd62a293acce201428ba7a56159acaed6130a1c7d4e70"
+	);
 }
 
 #[test]
@@ -40,7 +44,7 @@ fn function_selectors() {
 	assert_eq!(Action::OwnerOfCollection as u32, 0xFB34AE53);
 	assert_eq!(Action::TokenURI as u32, 0xC8A3F102);
 	assert_eq!(Action::Mint as u32, 0xD4AF5BBB);
-	assert_eq!(Action::Evolve as u32, 0xEF2629F);
+	assert_eq!(Action::Evolve as u32, 0x0EF2629F);
 }
 
 #[test]
