@@ -108,7 +108,7 @@ fn mint_with_external_uri_works() {
 		assert_eq!(LaosEvolution::token_uri(collection_id, token_id), Some(token_uri.clone()));
 
 		System::assert_has_event(
-			Event::MintedWithExternalTokenURI {
+			Event::MintedWithExternalURI {
 				collection_id,
 				slot,
 				to: owner,
@@ -398,8 +398,12 @@ fn evolve_with_external_uri_happy_path() {
 		// token uri is updated and event is emitted
 		assert_eq!(LaosEvolution::token_uri(collection_id, token_id), Some(new_token_uri.clone()));
 		System::assert_has_event(
-			Event::MetadataUpdate { token_id, collection_id, token_uri: new_token_uri.clone() }
-				.into(),
+			Event::EvolvedWithExternalURI {
+				token_id,
+				collection_id,
+				token_uri: new_token_uri.clone(),
+			}
+			.into(),
 		);
 	});
 }

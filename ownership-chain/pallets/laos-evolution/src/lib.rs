@@ -74,7 +74,7 @@ pub mod pallet {
 		CollectionCreated { collection_id: CollectionId, owner: AccountIdOf<T> },
 		/// Asset minted
 		/// [collection_id, slot, to, token_uri]
-		MintedWithExternalTokenURI {
+		MintedWithExternalURI {
 			collection_id: CollectionId,
 			slot: Slot,
 			to: AccountIdOf<T>,
@@ -83,7 +83,11 @@ pub mod pallet {
 		},
 		/// Asset evolved
 		/// [collection_id, token_uri, token_id]
-		MetadataUpdate { token_id: TokenId, collection_id: CollectionId, token_uri: TokenUriOf<T> },
+		EvolvedWithExternalURI {
+			collection_id: CollectionId,
+			token_id: TokenId,
+			token_uri: TokenUriOf<T>,
+		},
 	}
 
 	// Errors inform users that something went wrong.
@@ -145,7 +149,7 @@ impl<T: Config> LaosEvolution<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T> {
 
 		TokenURI::<T>::insert(collection_id, token_id, token_uri.clone());
 
-		Self::deposit_event(Event::MintedWithExternalTokenURI {
+		Self::deposit_event(Event::MintedWithExternalURI {
 			collection_id,
 			slot,
 			to,
@@ -182,7 +186,7 @@ impl<T: Config> LaosEvolution<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T> {
 
 		TokenURI::<T>::insert(collection_id, token_id, token_uri.clone());
 
-		Self::deposit_event(Event::MetadataUpdate { token_id, collection_id, token_uri });
+		Self::deposit_event(Event::EvolvedWithExternalURI { collection_id, token_id, token_uri });
 
 		Ok(())
 	}

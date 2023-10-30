@@ -16,9 +16,9 @@ use sp_std::{fmt::Debug, marker::PhantomData, vec::Vec};
 pub const SELECTOR_LOG_NEW_COLLECTION: [u8; 32] = keccak256!("NewCollection(uint64,address)");
 /// Solidity selector of the Transfer log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
-	keccak256!("MintedWithExternalTokenURI(uint64,uint96,address,string,uint256)");
-pub const SELECTOR_LOG_METADATA_UPDATE: [u8; 32] =
-	keccak256!("MetadataUpdate(uint256,uint64,string)");
+	keccak256!("MintedWithExternalURI(uint64,uint96,address,string,uint256)");
+pub const SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
+	keccak256!("EvolvedWithExternalURI(uint256,uint64,string)");
 
 #[precompile_utils_macro::generate_function_selector]
 #[derive(Debug, PartialEq)]
@@ -171,7 +171,7 @@ where
 
 						LogsBuilder::new(context.address)
 							.log2(
-								SELECTOR_LOG_METADATA_UPDATE,
+								SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI,
 								token_id_bytes,
 								EvmDataWriter::new()
 									.write(collection_id)

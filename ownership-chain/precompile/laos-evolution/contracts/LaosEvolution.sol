@@ -18,7 +18,7 @@ interface LaosEvolution {
     /// @param to the initial owner of the newly minted token
     /// @param tokenURI the URI of the newly minted token
     /// @param tokenId the resulting id of the newly minted token
-    event MintedWithExternalTokenURI(
+    event MintedWithExternalURI(
         uint64 collectionId,
         uint96 slot,
         address indexed to,
@@ -30,9 +30,9 @@ interface LaosEvolution {
     /// @param tokenId the id of the token for which the metadata has changed
     /// @param collectionId the id of the collection
     /// @param tokenURI the new URI of the token
-    event MetadataUpdate(
-        uint256 indexed tokenId,
+    event EvolvedWithExternalURI(
         uint64 collectionId,
+        uint256 indexed tokenId,
         string tokenURI
     );
 

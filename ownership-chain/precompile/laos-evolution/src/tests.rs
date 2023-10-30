@@ -30,11 +30,11 @@ fn check_log_selectors() {
 	);
 	assert_eq!(
 		hex::encode(SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI),
-		"e7cd937c6c8e9d8316a3f190b7c68fd1b5df77145952da131c29122b85e0b317"
+		"4b3b5da28a351f8bb73b960d7c80b2cef3e3570cb03448234dee173942c74786"
 	);
 	assert_eq!(
-		hex::encode(SELECTOR_LOG_METADATA_UPDATE),
-		"09a20653c78577ad8badd62a293acce201428ba7a56159acaed6130a1c7d4e70"
+		hex::encode(SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI),
+		"568b059e9377ea804907ac57dc8d56446b17dbf9f4b30dfe1935b9c8815ae7e1"
 	);
 }
 
@@ -324,7 +324,7 @@ mod evolve {
 		assert_eq!(logs.len(), 1);
 		assert_eq!(logs[0].address, H160::zero());
 		assert_eq!(logs[0].topics.len(), 2);
-		assert_eq!(logs[0].topics[0], SELECTOR_LOG_METADATA_UPDATE.into());
+		assert_eq!(logs[0].topics[0], SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI.into());
 		assert_eq!(
 			logs[0].data,
 			vec![
