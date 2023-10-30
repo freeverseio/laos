@@ -11,7 +11,7 @@ use precompile_utils::{
 	revert, succeed,
 	testing::{create_mock_handle, create_mock_handle_from_input},
 };
-use sp_core::{H160, U256};
+use sp_core::{H160, H256, U256};
 use sp_std::vec::Vec;
 
 type AccountId = H160;
@@ -105,6 +105,54 @@ fn create_collection_should_generate_log() {
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 			0, 0, 123
 		]
+	);
+}
+
+#[test]
+fn mint_with_external_uri_should_generate_log() {
+	impl_precompile_mock_simple!(
+		Mock,
+		Ok(0),
+		None,
+		Ok(U256::from_str("0x010203").unwrap()), // return token id
+		None
+	);
+
+	let input = EvmDataWriter::new_with_selector(Action::Mint)
+		.write(U256::from(123)) // collection_id
+		.write(U256::from(9)) // slot
+		.write(Address(H160([1u8; 20]))) // to
+		.write(Bytes("ciao".into())) // token_uri
+		.build();
+	let mut handle = create_mock_handle_from_input(input);
+
+	let result = Mock::execute(&mut handle);
+	assert!(result.is_ok());
+	let logs = handle.logs;
+	assert_eq!(logs.len(), 1);
+	assert_eq!(logs[0].address, H160::zero());
+	assert_eq!(logs[0].topics.len(), 2);
+	assert_eq!(logs[0].topics[0], SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI.into());
+	assert_eq!(
+		logs[0].topics[1],
+		H256::from_str("0x0000000000000000000000000101010101010101010101010101010101010101")
+			.unwrap()
+	);
+	assert_eq!(
+		logs[0].data,
+		vec![
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 123, // collection id
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 9, // slot
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, 1, 2, 3, // token id
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 4, // token uri length
+			99, 105, 97, 111, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, 0
+		] // token uri
 	);
 }
 
