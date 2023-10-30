@@ -2,7 +2,7 @@ export const GENESIS_ACCOUNT = "0x47A4320be4B65BF73112E068dc637883490F5b04";
 export const GENESIS_ACCOUNT_PRIVATE_KEY = "0x6bbc7ab7ead5f3400bf1a6917502801d21b8082fb4087321514b741dfa44b01c";
 export const GENESIS_ACCOUNT_BALANCE = "340282366920938463463374607431768210955";
 
-export const NODE_BINARY_NAME = "laos-evolution";
+export const NODE_BINARY_NAME = "laos-ownership";
 
 export const RUNTIME_SPEC_NAME = "frontier-template";
 export const RUNTIME_SPEC_VERSION = 1;

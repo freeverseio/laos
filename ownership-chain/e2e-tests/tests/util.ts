@@ -13,8 +13,8 @@ export const FRONTIER_LOG = process.env.FRONTIER_LOG || "info";
 export const FRONTIER_BUILD = process.env.FRONTIER_BUILD || "release";
 export const FRONTIER_BACKEND_TYPE = process.env.FRONTIER_BACKEND_TYPE || "key-value";
 
-export const BINARY_PATH = `../../target/${FRONTIER_BUILD}/${NODE_BINARY_NAME}`;
-export const SPAWNING_TIME = 60000;
+export const BINARY_PATH = `../../../../binaries/zombienet-linux-x64.v1.3.65`;
+export const SPAWNING_TIME = 30000;
 
 require("events").EventEmitter.prototype._maxListeners = 100;
 
@@ -72,19 +72,23 @@ export async function startFrontierNode(provider?: string): Promise<{
 
 	const cmd = BINARY_PATH;
 	const args = [
-		`--chain=dev`,
-		`--validator`, // Required by manual sealing to author the blocks
-		`--execution=Native`, // Faster execution using native
-		`--no-telemetry`,
-		`--no-prometheus`,
-		`--sealing=Manual`,
-		`--no-grandpa`,
-		`--force-authoring`,
-		`-lrpc=trace`,
-		`--port=${PORT}`,
-		`--rpc-port=${RPC_PORT}`,
-		`--frontier-backend-type=${FRONTIER_BACKEND_TYPE}`,
-		`--tmp`,
+		`spawn`,
+		`/home/carla/dev/fv/laos/ownership-chain/zombienet/native.toml`,
+		`-p`,
+		`native`
+		// `--chain=dev`,
+		// `--validator`, // Required by manual sealing to author the blocks
+		// `--execution=Native`, // Faster execution using native
+		// `--no-telemetry`,
+		// `--no-prometheus`,
+		// // `--sealing=Manual`,
+		// `--no-grandpa`,
+		// `--force-authoring`,
+		// `-lrpc=trace`,
+		// `--port=${PORT}`,
+		// `--rpc-port=${RPC_PORT}`,
+		// // `--frontier-backend-type=${FRONTIER_BACKEND_TYPE}`,
+		// `--tmp`,
 	];
 	const binary = spawn(cmd, args);
 
