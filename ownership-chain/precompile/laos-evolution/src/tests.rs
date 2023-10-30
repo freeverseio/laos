@@ -40,7 +40,7 @@ fn function_selectors() {
 	assert_eq!(Action::OwnerOfCollection as u32, 0xFB34AE53);
 	assert_eq!(Action::TokenURI as u32, 0xC8A3F102);
 	assert_eq!(Action::Mint as u32, 0xD4AF5BBB);
-	assert_eq!(Action::Evolve as u32, 0xA28FB3FF);
+	assert_eq!(Action::Evolve as u32, 0xEF2629F);
 }
 
 #[test]
