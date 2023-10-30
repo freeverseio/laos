@@ -297,7 +297,7 @@ fn evolve_works() {
 	let mut handle = create_mock_handle_from_input(input);
 	let result = Mock::execute(&mut handle).unwrap();
 
-	assert_eq!(result, succeed(EvmDataWriter::new().build()));
+	assert_eq!(result, succeed(EvmDataWriter::new().write(H256::from_low_u64_be(1)).build()));
 }
 
 #[test]

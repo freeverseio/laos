@@ -180,7 +180,7 @@ where
 							)
 							.record(handle)?;
 
-						Ok(succeed(EvmDataWriter::new().build()))
+						Ok(succeed(EvmDataWriter::new().write(token_id).build()))
 					},
 					Err(err) => Err(revert_dispatch_error(err)),
 				}
