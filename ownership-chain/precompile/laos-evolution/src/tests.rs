@@ -277,78 +277,113 @@ fn failing_mint_should_return_error() {
 	assert_eq!(result, revert("this is error"));
 }
 
-#[test]
-fn evolve_works() {
-	impl_precompile_mock_simple!(
-		Mock,
-		Ok(0),
-		Some(H160::from_low_u64_be(0x1234)),
-		Ok(1.into()),
-		None,
-		Ok(())
-	);
+mod evolve {
+	use super::*;
 
-	let input = EvmDataWriter::new_with_selector(Action::Evolve)
-		.write(U256::from(0))
-		.write(U256::from(1))
-		.write(Bytes([1u8; 20].to_vec()))
-		.build();
+	#[test]
+	fn happy_path() {
+		impl_precompile_mock_simple!(
+			Mock,
+			Ok(0),
+			Some(H160::from_low_u64_be(0x1234)),
+			Ok(1.into()),
+			None,
+			Ok(())
+		);
 
-	let mut handle = create_mock_handle_from_input(input);
-	let result = Mock::execute(&mut handle).unwrap();
+		let input = EvmDataWriter::new_with_selector(Action::Evolve)
+			.write(U256::from(0))
+			.write(U256::from(1))
+			.write(Bytes([1u8; 20].to_vec()))
+			.build();
 
-	assert_eq!(result, succeed(EvmDataWriter::new().write(H256::from_low_u64_be(1)).build()));
-}
+		let mut handle = create_mock_handle_from_input(input);
+		let result = Mock::execute(&mut handle).unwrap();
 
-#[test]
-fn evolve_should_generate_log() {
-	impl_precompile_mock_simple!(Mock, Ok(0), None, Ok(0.into()), None, Ok(()));
+		assert_eq!(result, succeed(EvmDataWriter::new().write(H256::from_low_u64_be(1)).build()));
+	}
 
-	let collection_id = 0;
-	let token_id = 1;
-	let token_uri = Bytes([1u8; 20].to_vec());
+	#[test]
+	fn when_succeeds_should_generate_log() {
+		impl_precompile_mock_simple!(Mock, Ok(0), None, Ok(0.into()), None, Ok(()));
 
-	let input = EvmDataWriter::new_with_selector(Action::Evolve)
-		.write(U256::from(collection_id))
-		.write(U256::from(token_id))
-		.write(token_uri.clone())
-		.build();
-	let mut handle = create_mock_handle_from_input(input);
+		let collection_id = 2;
+		let token_id = 1;
+		let token_uri = Bytes([1u8; 20].to_vec());
 
-	let result = Mock::execute(&mut handle);
-	assert!(result.is_ok());
-	let logs = handle.logs;
-	assert_eq!(logs.len(), 1);
-	assert_eq!(logs[0].address, H160::zero());
-	assert_eq!(logs[0].topics.len(), 2);
-	assert_eq!(logs[0].topics[0], SELECTOR_LOG_METADATA_UPDATE.into());
-	assert_eq!(
-		logs[0].data,
-		EvmDataWriter::new().write(U256::from(collection_id)).write(token_uri.0).build()
-	);
-}
+		let input = EvmDataWriter::new_with_selector(Action::Evolve)
+			.write(U256::from(collection_id))
+			.write(U256::from(token_id))
+			.write(token_uri.clone())
+			.build();
+		let mut handle = create_mock_handle_from_input(input);
 
-#[test]
-fn evolve_failing_should_return_error() {
-	impl_precompile_mock_simple!(
-		Mock,
-		Ok(0),
-		Some(H160::from_low_u64_be(0x1234)),
-		Ok(1.into()),
-		None,
-		Err(DispatchError::Other("this is error"))
-	);
+		let result = Mock::execute(&mut handle);
+		assert!(result.is_ok());
+		let logs = handle.logs;
+		assert_eq!(logs.len(), 1);
+		assert_eq!(logs[0].address, H160::zero());
+		assert_eq!(logs[0].topics.len(), 2);
+		assert_eq!(logs[0].topics[0], SELECTOR_LOG_METADATA_UPDATE.into());
+		assert_eq!(
+			logs[0].data,
+			vec![
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 2, // collection_id
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 64, // offset
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 20, // lenght of token_uri
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				1 // token_uri
+			]
+		);
+	}
 
-	let input = EvmDataWriter::new_with_selector(Action::Evolve)
-		.write(U256::from(0))
-		.write(U256::from(1))
-		.write(Bytes([1u8; 20].to_vec()))
-		.build();
+	#[test]
+	fn when_fails_should_return_error() {
+		impl_precompile_mock_simple!(
+			Mock,
+			Ok(0),
+			Some(H160::from_low_u64_be(0x1234)),
+			Ok(1.into()),
+			None,
+			Err(DispatchError::Other("this is error"))
+		);
 
-	let mut handle = create_mock_handle_from_input(input);
-	let result = Mock::execute(&mut handle).unwrap_err();
+		let input = EvmDataWriter::new_with_selector(Action::Evolve)
+			.write(U256::from(0))
+			.write(U256::from(1))
+			.write(Bytes([1u8; 20].to_vec()))
+			.build();
 
-	assert_eq!(result, revert("this is error"));
+		let mut handle = create_mock_handle_from_input(input);
+		let result = Mock::execute(&mut handle).unwrap_err();
+
+		assert_eq!(result, revert("this is error"));
+	}
 }
 
 mod helpers {
