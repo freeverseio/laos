@@ -123,9 +123,6 @@ where
 					token_uri,
 				) {
 					Ok(token_id) => {
-						let mut token_id_bytes = [0u8; 32];
-						token_id.to_big_endian(&mut token_id_bytes);
-
 						LogsBuilder::new(context.address)
 							.log2(
 								SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI,
