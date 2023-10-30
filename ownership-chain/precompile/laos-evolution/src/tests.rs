@@ -17,6 +17,8 @@ use sp_std::vec::Vec;
 type AccountId = H160;
 type AddressMapping = pallet_evm::IdentityAddressMapping;
 
+const ALICE: &str = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
+
 #[test]
 fn check_selectors() {
 	assert_eq!(Action::CreateCollection as u32, 0x2069E953);
@@ -83,7 +85,7 @@ fn create_collection_should_generate_log() {
 	impl_precompile_mock_simple!(Mock, Ok(123), None, Ok(0.into()), None);
 
 	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
-		.write(Address(H160([1u8; 20])))
+		.write(Address(H160::from_str(ALICE).unwrap()))
 		.build();
 	let mut handle = create_mock_handle_from_input(input);
 
@@ -96,7 +98,7 @@ fn create_collection_should_generate_log() {
 	assert_eq!(logs[0].topics[0], SELECTOR_LOG_NEW_COLLECTION.into());
 	assert_eq!(
 		logs[0].topics[1],
-		H256::from_str("0x0000000000000000000000000101010101010101010101010101010101010101")
+		H256::from_str("0x000000000000000000000000f24ff3a9cf04c71dbc94d0b566f7a27b94566cac")
 			.unwrap()
 	);
 	assert_eq!(
@@ -121,7 +123,7 @@ fn mint_with_external_uri_should_generate_log() {
 	let input = EvmDataWriter::new_with_selector(Action::Mint)
 		.write(U256::from(123)) // collection_id
 		.write(U256::from(9)) // slot
-		.write(Address(H160([1u8; 20]))) // to
+		.write(Address(H160::from_str(ALICE).unwrap())) // to
 		.write(Bytes("ciao".into())) // token_uri
 		.build();
 	let mut handle = create_mock_handle_from_input(input);
@@ -135,7 +137,7 @@ fn mint_with_external_uri_should_generate_log() {
 	assert_eq!(logs[0].topics[0], SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI.into());
 	assert_eq!(
 		logs[0].topics[1],
-		H256::from_str("0x0000000000000000000000000101010101010101010101010101010101010101")
+		H256::from_str("0x000000000000000000000000f24ff3a9cf04c71dbc94d0b566f7a27b94566cac")
 			.unwrap()
 	);
 	assert_eq!(
