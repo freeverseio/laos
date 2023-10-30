@@ -106,6 +106,7 @@ fn create_collection_should_generate_log() {
 			0, 0, 123
 		]
 	);
+<<<<<<< HEAD:evolution-chain/precompile/laos-evolution/src/tests.rs
 }
 
 #[test]
@@ -154,6 +155,8 @@ fn mint_with_external_uri_should_generate_log() {
 			0, 0, 0, 0, 0
 		] // token uri
 	);
+=======
+>>>>>>> main:ownership-chain/precompile/laos-evolution/src/tests.rs
 }
 
 #[test]

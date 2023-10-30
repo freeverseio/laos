@@ -56,7 +56,6 @@ pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 pub use sp_runtime::{Perbill, Permill};
 use xcm_config::{RelayLocation, XcmConfig, XcmOriginToTransactDispatchOrigin};
 
-pub use pallet_bridge_grandpa::Call as BridgeGrandpaCall;
 pub use pallet_xcm::Call as XcmCall;
 
 #[cfg(any(feature = "std", test))]
@@ -479,6 +478,26 @@ impl pallet_living_assets_ownership::Config for Runtime {
 	type AssetIdToInitialOwner = AssetIdToInitialOwner;
 }
 
+parameter_types! {
+	/// Max length of the `TokenUri`
+	pub const MaxTokenUriLength: u32 = 512;
+}
+
+/// Converts [`AccountId`] to [`H160`]
+pub struct AccountIdToH160;
+
+impl sp_runtime::traits::Convert<AccountId, H160> for AccountIdToH160 {
+	fn convert(account_id: AccountId) -> H160 {
+		H160(account_id.0)
+	}
+}
+
+impl pallet_laos_evolution::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type AccountIdToH160 = AccountIdToH160;
+	type MaxTokenUriLength = MaxTokenUriLength;
+}
+
 impl pallet_sudo::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeCall = RuntimeCall;
@@ -660,17 +679,6 @@ impl pallet_base_fee::Config for Runtime {
 	type DefaultElasticity = DefaultElasticity;
 }
 
-// Bridge pallets
-pub type EvochainGrandpaInstance = ();
-
-impl pallet_bridge_grandpa::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type BridgedChain = bp_laos_evolution::Evochain;
-	type MaxFreeMandatoryHeadersPerBlock = ConstU32<4>;
-	type HeadersToKeep = ConstU32<{ bp_laos_evolution::DAYS }>;
-	type WeightInfo = pallet_bridge_grandpa::weights::BridgeWeight<Runtime>;
-}
-
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub struct Runtime
@@ -703,6 +711,7 @@ construct_runtime!(
 
 		// Local pallets
 		LaosLivingAssetsOwnership: pallet_living_assets_ownership = 41,
+		LaosEvolution: pallet_laos_evolution = 42,
 
 		// Frontier
 		Ethereum: pallet_ethereum = 50,
@@ -710,9 +719,6 @@ construct_runtime!(
 		EVMChainId: pallet_evm_chain_id = 52,
 		// DynamicFee: pallet_dynamic_fee = 43,
 		BaseFee: pallet_base_fee = 54,
-
-		// Bridge
-		BridgeEvochainGrandpa: pallet_bridge_grandpa = 60,
 	}
 );
 
@@ -1151,17 +1157,6 @@ impl_runtime_apis! {
 	impl cumulus_primitives_core::CollectCollationInfo<Block> for Runtime {
 		fn collect_collation_info(header: &<Block as BlockT>::Header) -> cumulus_primitives_core::CollationInfo {
 			ParachainSystem::collect_collation_info(header)
-		}
-	}
-
-	impl bp_laos_evolution::EvochainFinalityApi<Block> for Runtime {
-		fn best_finalized() -> Option<bp_runtime::HeaderId<bp_laos_evolution::Hash, bp_laos_evolution::BlockNumber>> {
-			BridgeEvochainGrandpa::best_finalized()
-		}
-
-		fn synced_headers_grandpa_info(
-		) -> Vec<bp_header_chain::StoredHeaderGrandpaInfo<bp_laos_evolution::Header>> {
-			BridgeEvochainGrandpa::synced_headers_grandpa_info()
 		}
 	}
 
