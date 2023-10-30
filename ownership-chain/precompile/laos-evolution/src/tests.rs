@@ -33,7 +33,7 @@ fn check_log_selectors() {
 		"e7cd937c6c8e9d8316a3f190b7c68fd1b5df77145952da131c29122b85e0b317"
 	);
 	assert_eq!(
-		hex::encode(SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI),
+		hex::encode(SELECTOR_LOG_METADATA_UPDATE),
 		"09a20653c78577ad8badd62a293acce201428ba7a56159acaed6130a1c7d4e70"
 	);
 }
@@ -320,15 +320,11 @@ fn evolve_should_generate_log() {
 	let logs = handle.logs;
 	assert_eq!(logs.len(), 1);
 	assert_eq!(logs[0].address, H160::zero());
-	assert_eq!(logs[0].topics.len(), 1);
-	assert_eq!(logs[0].topics[0], SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI.into());
+	assert_eq!(logs[0].topics.len(), 2);
+	assert_eq!(logs[0].topics[0], SELECTOR_LOG_METADATA_UPDATE.into());
 	assert_eq!(
 		logs[0].data,
-		EvmDataWriter::new()
-			.write(U256::from(token_id))
-			.write(U256::from(collection_id))
-			.write(token_uri.0)
-			.build()
+		EvmDataWriter::new().write(U256::from(collection_id)).write(token_uri.0).build()
 	);
 }
 

@@ -17,7 +17,7 @@ pub const SELECTOR_LOG_NEW_COLLECTION: [u8; 32] = keccak256!("NewCollection(uint
 /// Solidity selector of the Transfer log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
 	keccak256!("MintedWithExternalTokenURI(uint64,uint96,address,string,uint256)");
-pub const SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
+pub const SELECTOR_LOG_METADATA_UPDATE: [u8; 32] =
 	keccak256!("MetadataUpdate(uint256,uint64,string)");
 
 #[precompile_utils_macro::generate_function_selector]
@@ -166,18 +166,19 @@ where
 					token_uri,
 				) {
 					Ok(()) => {
-						Log {
-							address: context.address,
-							topics: sp_std::vec![H256(
-								SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI
-							),],
-							data: EvmDataWriter::new()
-								.write(token_id)
-								.write(collection_id)
-								.write(token_uri_raw)
-								.build(),
-						}
-						.record(handle)?;
+						let mut token_id_bytes = [0u8; 32];
+						token_id.to_big_endian(&mut token_id_bytes);
+
+						LogsBuilder::new(context.address)
+							.log2(
+								SELECTOR_LOG_METADATA_UPDATE,
+								token_id_bytes,
+								EvmDataWriter::new()
+									.write(collection_id)
+									.write(token_uri_raw)
+									.build(),
+							)
+							.record(handle)?;
 
 						Ok(succeed(EvmDataWriter::new().build()))
 					},
