@@ -130,7 +130,7 @@ where
 								EvmDataWriter::new()
 									.write(collection_id)
 									.write(slot)
-									.write(Bytes(token_uri_raw))
+									.write(token_uri_raw)
 									.write(token_id)
 									.build(),
 							)
