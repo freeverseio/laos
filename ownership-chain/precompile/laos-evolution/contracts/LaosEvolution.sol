@@ -31,7 +31,7 @@ interface LaosEvolution {
     /// @param collectionId the id of the collection
     /// @param tokenURI the new URI of the token
     event MetadataUpdate(
-        uint256 tokenId,
+        uint256 indexed tokenId,
         uint64 collectionId,
         string tokenURI
     );

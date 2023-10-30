@@ -32,7 +32,7 @@ pub enum Action {
 	/// Mint token
 	Mint = "mintWithExternalURI(uint64,uint96,address,string)",
 	/// Evolve token
-	Evolve = "evolveWithExternalURI(uint64,uint256,string)",
+	Evolve = "metadataUpdate(uint256,uint64,string)",
 }
 
 /// Wrapper for the precompile function.
