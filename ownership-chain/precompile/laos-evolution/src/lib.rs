@@ -69,11 +69,10 @@ where
 				match LaosEvolution::create_collection(owner.into()) {
 					Ok(collection_id) => {
 						LogsBuilder::new(context.address)
-							.log3(
+							.log2(
 								SELECTOR_LOG_NEW_COLLECTION,
-								H256::from_low_u64_be(collection_id.to_be()),
 								owner,
-								Vec::new(),
+								EvmDataWriter::new().write(collection_id).build(),
 							)
 							.record(handle)?;
 
