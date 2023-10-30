@@ -175,7 +175,7 @@ where
 								token_id_bytes,
 								EvmDataWriter::new()
 									.write(collection_id)
-									.write(token_uri_raw)
+									.write(Bytes(token_uri_raw))
 									.build(),
 							)
 							.record(handle)?;
