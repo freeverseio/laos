@@ -15,7 +15,7 @@ describeWithExistingNode("Frontier RPC (Web3Api)", (context) => {
     step("should remote sha3", async function () {
         const data = context.web3.utils.stringToHex("hello");
         const hash = await customRequest(context.web3, "web3_sha3", [data]);
-        const localHash = context.web3.utils.sha3("hello");
+        const localHash = context.web3.utils.sha3("helloa");
         expect(hash.result).to.be.equal(localHash);
     });
 });
