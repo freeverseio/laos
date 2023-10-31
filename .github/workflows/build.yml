@@ -120,11 +120,13 @@ jobs:
       run: |
         wget https://github.com/paritytech/polkadot/releases/download/v0.9.42/polkadot
         chmod +x ./polkadot
+      working-directory: ./ownership-chain
 
     - name: Copy zombienet binary
       run: |
         wget https://github.com/paritytech/zombienet/releases/download/v1.3.55/zombienet-linux-x64
         chmod +x ./zombienet-linux-x64
+      working-directory: ./ownership-chain
         
     - name: Run zombienet
       run: |
