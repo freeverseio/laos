@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { step } from "mocha-steps";
 
-import { RUNTIME_SPEC_NAME, RUNTIME_SPEC_VERSION, RUNTIME_IMPL_VERSION } from "./config";
+import { RUNTIME_SPEC_NAME, RUNTIME_SPEC_VERSION, RUNTIME_IMPL_VERSION, CHAIN_ID } from "./config";
 import { describeWithExistingNode, customRequest } from "./util";
 
 describeWithExistingNode("Frontier RPC (Web3Api)", (context) => {
@@ -17,5 +17,10 @@ describeWithExistingNode("Frontier RPC (Web3Api)", (context) => {
         const hash = await customRequest(context.web3, "web3_sha3", [data]);
         const localHash = context.web3.utils.sha3("hello");
         expect(hash.result).to.be.equal(localHash);
+    });
+
+    step("should get chain id", async function () {
+        const chainId = await context.web3.eth.getChainId();
+        expect(chainId).to.be.equal(CHAIN_ID);
     });
 });
