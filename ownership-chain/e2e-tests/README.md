@@ -13,11 +13,11 @@ cargo build --release -p laos-ownership
 ## Installation
 
 ```bash
-yarn install
+npm install
 ```
 
 ## Run the tests
 
 ```bash
-yarn run build && yarn run test
+npm run build && npm run test
 ```
