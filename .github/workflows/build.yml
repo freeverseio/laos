@@ -137,13 +137,8 @@ jobs:
 
     - name: Wait for ZombieNet
       run: |
-        timeout 5m bash -c '
-        until $(curl --output /dev/null --silent --head --fail http://localhost:9999); 
-        do 
-          printf "."; 
-          sleep 5; 
-        done' || true
-      
+        timeout 22 sh -c 'until nc -z $0 $1; do echo -n .; sleep 1; done' localhost 9999
+
     - name: Use Node.js 18
       uses: actions/setup-node@v3
       with:
