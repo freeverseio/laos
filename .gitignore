@@ -16,3 +16,8 @@
 .DS_Store
 .idea
 .vscode
+
+# js tests
+node_modules/
+frontier-test-tmp
+build/
