@@ -130,5 +130,16 @@ jobs:
       run: |
         export ZOMBIENET_RELAYCHAIN_COMMAND=./polkadot
         export ZOMBIENET_PARACHAIN_COMMAND=./target/release/laos-ownership
-        ./zombienet-linux-x64 spawn ./zombienet/native.toml -p native &
+        ./zombienet-linux-x64 spawn ./ownership-chain/zombienet/native.toml -p native
         echo "Zombienet started"
+
+    #   - name: Use Node.js 18
+    #   uses: actions/setup-node@v3
+    #   with:
+    #     node-version: 18
+    # - name: Install functional tests typescript
+    #   run: cd ts-tests && npm install
+    # - name: Check functional tests format
+    #   run: cd ts-tests && npm run fmt-check
+    # - name: Run functional tests
+    #   run: cd ts-tests && npm run build && npm run test
