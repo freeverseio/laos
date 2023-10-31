@@ -16,7 +16,9 @@ use sp_std::{fmt::Debug, marker::PhantomData, vec::Vec};
 pub const SELECTOR_LOG_NEW_COLLECTION: [u8; 32] = keccak256!("NewCollection(uint64,address)");
 /// Solidity selector of the Transfer log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
-	keccak256!("MintedWithExternalTokenURI(uint64,uint96,address,string,uint256)");
+	keccak256!("MintedWithExternalURI(uint64,uint96,address,string,uint256)");
+pub const SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
+	keccak256!("EvolvedWithExternalURI(uint256,uint64,string)");
 
 #[precompile_utils_macro::generate_function_selector]
 #[derive(Debug, PartialEq)]
@@ -28,7 +30,9 @@ pub enum Action {
 	/// Get tokenURI of the token in collection
 	TokenURI = "tokenURI(uint64,uint256)",
 	/// Mint token
-	Mint = "mintWithExternalUri(uint64,uint96,address,string)",
+	Mint = "mintWithExternalURI(uint64,uint96,address,string)",
+	/// Evolve token
+	Evolve = "evolveWithExternalURI(uint64,uint256,string)",
 }
 
 /// Wrapper for the precompile function.
@@ -141,6 +145,45 @@ where
 					Err(err) => Err(revert_dispatch_error(err)),
 				}
 			},
+			Action::Evolve => {
+				let caller = context.caller;
+
+				input.expect_arguments(4)?;
+
+				let collection_id = input.read::<u64>()?;
+				let token_id = input.read::<TokenId>()?;
+				let token_uri_raw = input.read::<Bytes>()?.0;
+				let token_uri = token_uri_raw
+					.clone()
+					.try_into()
+					.map_err(|_| revert("invalid token uri length"))?;
+
+				match LaosEvolution::evolve_with_external_uri(
+					caller.into(),
+					collection_id,
+					token_id,
+					token_uri,
+				) {
+					Ok(()) => {
+						let mut token_id_bytes = [0u8; 32];
+						token_id.to_big_endian(&mut token_id_bytes);
+
+						LogsBuilder::new(context.address)
+							.log2(
+								SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI,
+								token_id_bytes,
+								EvmDataWriter::new()
+									.write(collection_id)
+									.write(Bytes(token_uri_raw))
+									.build(),
+							)
+							.record(handle)?;
+
+						Ok(succeed(EvmDataWriter::new().write(token_id).build()))
+					},
+					Err(err) => Err(revert_dispatch_error(err)),
+				}
+			},
 		}
 	}
 }
@@ -161,6 +204,7 @@ where
 			Action::Mint => FunctionModifier::NonPayable,
 			Action::OwnerOfCollection => FunctionModifier::View,
 			Action::TokenURI => FunctionModifier::View,
+			Action::Evolve => FunctionModifier::NonPayable,
 		})?;
 
 		Self::inner_execute(handle, &selector)
