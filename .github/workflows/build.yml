@@ -106,3 +106,27 @@ jobs:
       - name: Try Runtime
         run: |
           RUST_LOG=try-runtime ./target/release/laos-ownership try-runtime --runtime ./target/release/wbuild/laos-ownership-runtime/laos_ownership_runtime.wasm on-runtime-upgrade --checks=pre-and-post live --uri ws://161.35.247.178:9944
+  
+  e2e-tests:
+    runs-on: 
+      group: laos
+      labels: ubuntu-16-cores
+    steps:
+    - uses: actions/checkout@v3
+    - uses: ./.github/actions/setup
+    - uses: ./.github/actions/cache
+
+    - name: Copy polkadot relay chain binary
+      run: |
+        wget https://github.com/paritytech/polkadot/releases/download/v0.9.42/polkadot
+        chmod +x ./polkadot
+
+    - name: Copy and config zombinet testing binary
+      run: |
+        wget https://github.com/paritytech/zombienet/releases/download/v1.3.55/zombienet-linux-x64
+        chmod +x ./zombienet-linux-x64
+        export ZOMBIENET_RELAYCHAIN_COMMAND=./polkadot
+        export ZOMBIENET_PARACHAIN_COMMAND=./target/release/laos-ownership
+        ./zombienet-linux-x64 spawn ./zombienet/native.toml -p native &
+        echo "ZombieNet started"
+      background: true  # This runs ZombieNet in the background
