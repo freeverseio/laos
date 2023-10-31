@@ -135,7 +135,7 @@ jobs:
         ./zombienet-linux-x64 spawn ./ownership-chain/zombienet/native.toml -p native &
         echo "Zombienet started"
 
-    - name: Wait for ZombieNet
+    - name: Wait for Zombienet
       run: |
         timeout 22 sh -c 'until nc -z $0 $1; do echo -n .; sleep 1; done' localhost 9999
 
