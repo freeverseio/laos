@@ -121,12 +121,14 @@ jobs:
         wget https://github.com/paritytech/polkadot/releases/download/v0.9.42/polkadot
         chmod +x ./polkadot
 
-    - name: Copy and config zombinet testing binary
+    - name: Copy zombienet binary
       run: |
         wget https://github.com/paritytech/zombienet/releases/download/v1.3.55/zombienet-linux-x64
         chmod +x ./zombienet-linux-x64
+        
+    - name: Run zombienet
+      run: |
         export ZOMBIENET_RELAYCHAIN_COMMAND=./polkadot
         export ZOMBIENET_PARACHAIN_COMMAND=./target/release/laos-ownership
         ./zombienet-linux-x64 spawn ./zombienet/native.toml -p native &
-        echo "ZombieNet started"
-      background: true  # This runs ZombieNet in the background
+        echo "Zombienet started"
