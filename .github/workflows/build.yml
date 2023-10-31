@@ -115,18 +115,18 @@ jobs:
     - uses: actions/checkout@v3
     - uses: ./.github/actions/setup
     - uses: ./.github/actions/cache
+      with:
+        cache-key: build_and_push
 
     - name: Copy polkadot relay chain binary
       run: |
         wget https://github.com/paritytech/polkadot/releases/download/v0.9.42/polkadot
         chmod +x ./polkadot
-      working-directory: ./ownership-chain
 
     - name: Copy zombienet binary
       run: |
         wget https://github.com/paritytech/zombienet/releases/download/v1.3.55/zombienet-linux-x64
         chmod +x ./zombienet-linux-x64
-      working-directory: ./ownership-chain
         
     - name: Run zombienet
       run: |
@@ -134,7 +134,6 @@ jobs:
         export ZOMBIENET_PARACHAIN_COMMAND=./target/release/laos-ownership
         ./zombienet-linux-x64 spawn ./zombienet/native.toml -p native
         echo "Zombienet started"
-      working-directory: ./ownership-chain
 
     - name: Use Node.js 18
       uses: actions/setup-node@v3
