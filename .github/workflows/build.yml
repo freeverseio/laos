@@ -135,6 +135,15 @@ jobs:
         ./zombienet-linux-x64 spawn ./ownership-chain/zombienet/native.toml -p native &
         echo "Zombienet started"
 
+    - name: Wait for ZombieNet
+      run: |
+        timeout 5m bash -c '
+        until $(curl --output /dev/null --silent --head --fail http://localhost:9999); 
+        do 
+          printf "."; 
+          sleep 5; 
+        done' || true
+      
     - name: Use Node.js 18
       uses: actions/setup-node@v3
       with:
