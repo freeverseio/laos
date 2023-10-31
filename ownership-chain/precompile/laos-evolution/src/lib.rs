@@ -1,7 +1,7 @@
 //! LAOS precompile module.
 
 #![cfg_attr(not(feature = "std"), no_std)]
-use fp_evm::{Log, Precompile, PrecompileHandle, PrecompileOutput};
+use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
 use pallet_laos_evolution::{traits::LaosEvolution as LaosEvolutionT, Slot, TokenId};
 use parity_scale_codec::Encode;
 use precompile_utils::{
@@ -9,7 +9,7 @@ use precompile_utils::{
 	FunctionModifier, LogExt, LogsBuilder, PrecompileHandleExt,
 };
 
-use sp_core::{H160, H256};
+use sp_core::H160;
 use sp_std::{fmt::Debug, marker::PhantomData, vec::Vec};
 
 /// Solidity selector of the CreateCollection log, which is the Keccak of the Log signature.
@@ -110,8 +110,10 @@ where
 				let slot = input.read::<Slot>()?;
 				let to = input.read::<Address>()?.0;
 				let token_uri_raw = input.read::<Bytes>()?.0;
-				let token_uri =
-					token_uri_raw.try_into().map_err(|_| revert("invalid token uri length"))?;
+				let token_uri = token_uri_raw
+					.clone()
+					.try_into()
+					.map_err(|_| revert("invalid token uri length"))?;
 
 				match LaosEvolution::mint_with_external_uri(
 					caller.into(),
@@ -121,21 +123,18 @@ where
 					token_uri,
 				) {
 					Ok(token_id) => {
-						let mut token_id_bytes = [0u8; 32];
-						token_id.to_big_endian(&mut token_id_bytes);
-
-						Log {
-							address: context.address,
-							topics: sp_std::vec![
-								H256(SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI),
-								H256::from(H160::zero()),
-								H256::from(to),
-								H256::from_low_u64_be(collection_id),
-								H256(token_id_bytes),
-							],
-							data: Vec::new(),
-						}
-						.record(handle)?;
+						LogsBuilder::new(context.address)
+							.log2(
+								SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI,
+								to,
+								EvmDataWriter::new()
+									.write(collection_id)
+									.write(slot)
+									.write(Bytes(token_uri_raw))
+									.write(token_id)
+									.build(),
+							)
+							.record(handle)?;
 
 						Ok(succeed(EvmDataWriter::new().write(token_id).build()))
 					},
