@@ -6,7 +6,7 @@ import { JsonRpcResponse } from "web3-core-helpers";
 import { CHAIN_ID, NODE_BINARY_NAME } from "./config";
 
 export const PORT = 19931;
-export const RPC_PORT = 19932;
+export const RPC_PORT = 9999;
 
 export const DISPLAY_LOG = process.env.FRONTIER_LOG || false;
 export const FRONTIER_LOG = process.env.FRONTIER_LOG || "info";
@@ -70,72 +70,72 @@ export async function startFrontierNode(provider?: string): Promise<{
 		web3 = new Web3(`http://127.0.0.1:${RPC_PORT}`);
 	}
 
-	const cmd = BINARY_PATH;
-	const args = [
-		`spawn`,
-		`/home/carla/dev/fv/laos/ownership-chain/zombienet/native.toml`,
-		`-p`,
-		`native`
-		// `--chain=dev`,
-		// `--validator`, // Required by manual sealing to author the blocks
-		// `--execution=Native`, // Faster execution using native
-		// `--no-telemetry`,
-		// `--no-prometheus`,
-		// // `--sealing=Manual`,
-		// `--no-grandpa`,
-		// `--force-authoring`,
-		// `-lrpc=trace`,
-		// `--port=${PORT}`,
-		// `--rpc-port=${RPC_PORT}`,
-		// // `--frontier-backend-type=${FRONTIER_BACKEND_TYPE}`,
-		// `--tmp`,
-	];
-	const binary = spawn(cmd, args);
+	// const cmd = BINARY_PATH;
+	// const args = [
+	// 	`spawn`,
+	// 	`/home/carla/dev/fv/laos/ownership-chain/zombienet/native.toml`,
+	// 	`-p`,
+	// 	`native`
+	// 	// `--chain=dev`,
+	// 	// `--validator`, // Required by manual sealing to author the blocks
+	// 	// `--execution=Native`, // Faster execution using native
+	// 	// `--no-telemetry`,
+	// 	// `--no-prometheus`,
+	// 	// // `--sealing=Manual`,
+	// 	// `--no-grandpa`,
+	// 	// `--force-authoring`,
+	// 	// `-lrpc=trace`,
+	// 	// `--port=${PORT}`,
+	// 	// `--rpc-port=${RPC_PORT}`,
+	// 	// // `--frontier-backend-type=${FRONTIER_BACKEND_TYPE}`,
+	// 	// `--tmp`,
+	// ];
+	// const binary = spawn(cmd, args);
 
-	binary.on("error", (err) => {
-		if ((err as any).errno == "ENOENT") {
-			console.error(
-				`\x1b[31mMissing Frontier binary (${BINARY_PATH}).\nPlease compile the Frontier project:\ncargo build\x1b[0m`
-			);
-		} else {
-			console.error(err);
-		}
-		process.exit(1);
-	});
+	// binary.on("error", (err) => {
+	// 	if ((err as any).errno == "ENOENT") {
+	// 		console.error(
+	// 			`\x1b[31mMissing Frontier binary (${BINARY_PATH}).\nPlease compile the Frontier project:\ncargo build\x1b[0m`
+	// 		);
+	// 	} else {
+	// 		console.error(err);
+	// 	}
+	// 	process.exit(1);
+	// });
 
-	const binaryLogs = [];
-	await new Promise<void>((resolve) => {
-		const timer = setTimeout(() => {
-			console.error(`\x1b[31m Failed to start Frontier Template Node.\x1b[0m`);
-			console.error(`Command: ${cmd} ${args.join(" ")}`);
-			console.error(`Logs:`);
-			console.error(binaryLogs.map((chunk) => chunk.toString()).join("\n"));
-			process.exit(1);
-		}, SPAWNING_TIME - 2000);
+	// const binaryLogs = [];
+	// await new Promise<void>((resolve) => {
+	// 	const timer = setTimeout(() => {
+	// 		console.error(`\x1b[31m Failed to start Frontier Template Node.\x1b[0m`);
+	// 		console.error(`Command: ${cmd} ${args.join(" ")}`);
+	// 		console.error(`Logs:`);
+	// 		console.error(binaryLogs.map((chunk) => chunk.toString()).join("\n"));
+	// 		process.exit(1);
+	// 	}, SPAWNING_TIME - 2000);
 
-		const onData = async (chunk) => {
-			if (DISPLAY_LOG) {
-				console.log(chunk.toString());
-			}
-			binaryLogs.push(chunk);
-			if (chunk.toString().match(/Manual Seal Ready/)) {
-				if (!provider || provider == "http") {
-					// This is needed as the EVM runtime needs to warmup with a first call
-					await web3.eth.getChainId();
-				}
+	// 	const onData = async (chunk) => {
+	// 		if (DISPLAY_LOG) {
+	// 			console.log(chunk.toString());
+	// 		}
+	// 		binaryLogs.push(chunk);
+	// 		if (chunk.toString().match(/Manual Seal Ready/)) {
+	// 			if (!provider || provider == "http") {
+	// 				// This is needed as the EVM runtime needs to warmup with a first call
+	// 				await web3.eth.getChainId();
+	// 			}
 
-				clearTimeout(timer);
-				if (!DISPLAY_LOG) {
-					binary.stderr.off("data", onData);
-					binary.stdout.off("data", onData);
-				}
-				// console.log(`\x1b[31m Starting RPC\x1b[0m`);
-				resolve();
-			}
-		};
-		binary.stderr.on("data", onData);
-		binary.stdout.on("data", onData);
-	});
+	// 			clearTimeout(timer);
+	// 			if (!DISPLAY_LOG) {
+	// 				binary.stderr.off("data", onData);
+	// 				binary.stdout.off("data", onData);
+	// 			}
+	// 			// console.log(`\x1b[31m Starting RPC\x1b[0m`);
+	// 			resolve();
+	// 		}
+	// 	};
+	// 	binary.stderr.on("data", onData);
+	// 	binary.stdout.on("data", onData);
+	// });
 
 	if (provider == "ws") {
 		web3 = new Web3(`ws://127.0.0.1:${RPC_PORT}`);
@@ -146,7 +146,7 @@ export async function startFrontierNode(provider?: string): Promise<{
 		name: "frontier-dev",
 	});
 
-	return { web3, binary, ethersjs };
+	return { web3, binary: null, ethersjs };
 }
 
 export function describeWithFrontier(title: string, cb: (context: { web3: Web3 }) => void, provider?: string) {
