@@ -7,7 +7,7 @@ It is written in typescript, using Mocha/Chai as Test framework.
 ## Build the node for tests
 
 ```bash
-cargo build --release -p laos-evolution
+cargo build --release -p laos-ownership
 ```
 
 ## Installation
