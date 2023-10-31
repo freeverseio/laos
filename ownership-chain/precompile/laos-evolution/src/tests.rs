@@ -123,7 +123,8 @@ fn mint_with_external_uri_should_generate_log() {
 		Ok(0),
 		None,
 		Ok(U256::from_str("0x010203").unwrap()), // return token id
-		None
+		None,
+		Ok(())
 	);
 
 	let input = EvmDataWriter::new_with_selector(Action::Mint)
