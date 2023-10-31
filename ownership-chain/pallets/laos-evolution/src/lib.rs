@@ -74,12 +74,19 @@ pub mod pallet {
 		CollectionCreated { collection_id: CollectionId, owner: AccountIdOf<T> },
 		/// Asset minted
 		/// [collection_id, slot, to, token_uri]
-		MintedWithExternalTokenURI {
+		MintedWithExternalURI {
 			collection_id: CollectionId,
 			slot: Slot,
 			to: AccountIdOf<T>,
 			token_uri: TokenUriOf<T>,
 			token_id: TokenId,
+		},
+		/// Asset evolved
+		/// [collection_id, token_uri, token_id]
+		EvolvedWithExternalURI {
+			collection_id: CollectionId,
+			token_id: TokenId,
+			token_uri: TokenUriOf<T>,
 		},
 	}
 
@@ -95,6 +102,8 @@ pub mod pallet {
 		AlreadyMinted,
 		/// This happens when `Slot` is larger than 96 bits
 		SlotOverflow,
+		/// Asset does not exist
+		AssetDoesNotExist,
 	}
 
 	#[pallet::call]
@@ -140,7 +149,7 @@ impl<T: Config> LaosEvolution<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T> {
 
 		TokenURI::<T>::insert(collection_id, token_id, token_uri.clone());
 
-		Self::deposit_event(Event::MintedWithExternalTokenURI {
+		Self::deposit_event(Event::MintedWithExternalURI {
 			collection_id,
 			slot,
 			to,
@@ -157,6 +166,29 @@ impl<T: Config> LaosEvolution<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T> {
 
 	fn token_uri(collection_id: CollectionId, token_id: TokenId) -> Option<TokenUriOf<T>> {
 		TokenURI::<T>::get(collection_id, token_id)
+	}
+
+	fn evolve_with_external_uri(
+		who: AccountIdOf<T>,
+		collection_id: CollectionId,
+		token_id: TokenId,
+		token_uri: TokenUriOf<T>,
+	) -> Result<(), DispatchError> {
+		ensure!(
+			CollectionOwner::<T>::contains_key(collection_id),
+			Error::<T>::CollectionDoesNotExist
+		);
+		ensure!(CollectionOwner::<T>::get(collection_id) == Some(who), Error::<T>::NoPermission);
+		ensure!(
+			TokenURI::<T>::contains_key(collection_id, token_id),
+			Error::<T>::AssetDoesNotExist
+		);
+
+		TokenURI::<T>::insert(collection_id, token_id, token_uri.clone());
+
+		Self::deposit_event(Event::EvolvedWithExternalURI { collection_id, token_id, token_uri });
+
+		Ok(())
 	}
 }
 
