@@ -31,7 +31,7 @@ export async function customRequest(web3: Web3, method: string, params: any[]) {
 	});
 }
 
-export function describeWithExistingNode(title: string, cb: (context: { web3: Web3 }) => void, provider?: string) {
+export function describeWithExistingNode(title: string, cb: (context: { web3: Web3, ethersjs: ethers.JsonRpcProvider }) => void, provider?: string) {
 	describe(title, () => {
 		let context: {
 			web3: Web3;
