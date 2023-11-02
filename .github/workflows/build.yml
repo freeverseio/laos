@@ -119,8 +119,8 @@ jobs:
         cache-key: build_and_push
    
     - name: Build
-        run: |
-          cargo build --release -p laos-ownership
+      run: |
+        cargo build --release 
 
     - name: Copy polkadot relay chain binary
       run: |
