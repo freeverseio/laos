@@ -120,7 +120,7 @@ jobs:
    
     - name: Build
         run: |
-          cargo build --release
+          cargo build --release -p laos-ownership
 
     - name: Copy polkadot relay chain binary
       run: |
