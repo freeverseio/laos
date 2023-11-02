@@ -360,16 +360,8 @@
       }
     }
   },
-  "aura": { "authorities": [
-    "5HW7hXEsd3HkXzNCABoFngPku55zhgiBd6qye3tC91yEoES7"
+  "nimbus": { "authorities": [
+    "5HQmMyrZQgxzM8tprXxRrV6C68WHemm47ZnbxQfnrTQDrS9Y"
   ]
- },
- "grandpa": {
-  "authorities": [
-    [
-      "5GNzZ41CpGFnAUeDkgWyFjBDsoVJGDLDWrrC9LN8PgTQJmbY",
-      1
-    ]
-  ]
-}
+ }
 }
