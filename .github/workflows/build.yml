@@ -117,6 +117,10 @@ jobs:
     - uses: ./.github/actions/cache
       with:
         cache-key: build_and_push
+   
+    - name: Build
+      run: |
+        cargo build --release 
 
     - name: Copy polkadot relay chain binary
       run: |
