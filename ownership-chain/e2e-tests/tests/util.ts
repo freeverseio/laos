@@ -31,7 +31,7 @@ export async function customRequest(web3: Web3, method: string, params: any[]) {
 	});
 }
 
-export function describeWithExistingNode(title: string, cb: (context: { web3: Web3, ethersjs: ethers.JsonRpcProvider }) => void, provider?: string) {
+export function describeWithExistingNode(title: string, cb: (context: { web3: Web3 }) => void, provider?: string) {
 	describe(title, () => {
 		let context: {
 			web3: Web3;
@@ -45,11 +45,6 @@ export function describeWithExistingNode(title: string, cb: (context: { web3: We
 		if (provider == "ws") {
 			context.web3 = new Web3(`ws://127.0.0.1:${RPC_PORT}`);
 		}
-
-		context.ethersjs = new ethers.JsonRpcProvider(`http://127.0.0.1:${RPC_PORT}`, {
-			chainId: CHAIN_ID,
-			name: "frontier-dev",
-		});
 
 		cb(context);
 	});

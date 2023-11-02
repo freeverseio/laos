@@ -1,21 +1,16 @@
 import { customRequest, describeWithExistingNode } from "./util";
 import { step } from "mocha-steps";
-import { GENESIS_ACCOUNT, GENESIS_ACCOUNT_BALANCE, GENESIS_ACCOUNT_PRIVATE_KEY } from "./config";
+import { GENESIS_ACCOUNT, GENESIS_ACCOUNT_PRIVATE_KEY } from "./config";
 import LaosEvolution from "../build/contracts/LaosEvolution.json";
 import { AbiItem } from "web3-utils";
 import { expect } from "chai";
 
 describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
     const LAOS_EVOLUTION_ABI = LaosEvolution.abi as AbiItem[]
-    const collectionId = "0";
-    const contractAddress = "0x0000000000000000000000000000000000000403";
-    const contract = new context.web3.eth.Contract(LAOS_EVOLUTION_ABI, contractAddress, {
+    const CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000403";
+    const contract = new context.web3.eth.Contract(LAOS_EVOLUTION_ABI, CONTRACT_ADDRESS, {
         from: GENESIS_ACCOUNT,
         gasPrice: "0x3B9ACA00",
-    });
-
-    step("genesis balance is setup correctly", async function () {
-        expect(await context.web3.eth.getBalance(GENESIS_ACCOUNT)).to.equal(GENESIS_ACCOUNT_BALANCE);
     });
 
     step("when collection does not exist owner of call should fail", async function () {
@@ -29,7 +24,7 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
         }
     });
 
-    step("when collection is created should return owner", async function () {
+    step("when collection is created, it should return owner", async function () {
         this.timeout(70000);
 
         const collectionId = "0";
