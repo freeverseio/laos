@@ -28,7 +28,7 @@
             1298074214633706907132624082305024
           ],
           [
-            "0x3cd0a705a2dc65e5b1e1205896baa2be8a07c6e0",
+            "0x045c57b46dede60001623105d351c7941c90149e",
             1298074214633706907132624082305024
           ],
           [
@@ -47,7 +47,7 @@
       "parachainStaking": {
         "candidates": [
           [
-            "0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac",
+            "0x045c57b46dede60001623105d351c7941c90149e",
             2000000000000000000000000
           ],
           [
@@ -84,12 +84,8 @@
       "authorMapping": {
         "mappings": [
           [
-            "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
-            "0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac"
-          ],
-          [
-            "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
-            "0x3cd0a705a2dc65e5b1e1205896baa2be8a07c6e0"
+            "5HQmMyrZQgxzM8tprXxRrV6C68WHemm47ZnbxQfnrTQDrS9Y",
+            "0x045c57b46dede60001623105d351c7941c90149e"
           ]
         ]
       },
@@ -543,7 +539,7 @@
       "democracy": {},
       "councilCollective": {
         "members": [
-          "0x3cd0a705a2dc65e5b1e1205896baa2be8a07c6e0",
+          "0x045c57b46dede60001623105d351c7941c90149e",
           "0x798d4ba9baf0064ec19eb4f0a1a45785ae9d6dfc",
           "0x773539d4ac0e786233d90a233654ccee26a613d9"
         ]
@@ -551,12 +547,12 @@
       "techCommitteeCollective": {
         "members": [
           "0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac",
-          "0x3cd0a705a2dc65e5b1e1205896baa2be8a07c6e0"
+          "0x045c57b46dede60001623105d351c7941c90149e"
         ]
       },
       "treasuryCouncilCollective": {
         "members": [
-          "0x3cd0a705a2dc65e5b1e1205896baa2be8a07c6e0",
+          "0x045c57b46dede60001623105d351c7941c90149e",
           "0x798d4ba9baf0064ec19eb4f0a1a45785ae9d6dfc",
           "0x773539d4ac0e786233d90a233654ccee26a613d9"
         ]
@@ -564,7 +560,7 @@
       "openTechCommitteeCollective": {
         "members": [
           "0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac",
-          "0x3cd0a705a2dc65e5b1e1205896baa2be8a07c6e0"
+          "0x045c57b46dede60001623105d351c7941c90149e"
         ]
       },
       "treasury": {},
