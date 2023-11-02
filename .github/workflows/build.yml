@@ -50,20 +50,6 @@ jobs:
           file: ./docker/ownership-node.local.Dockerfile
           push: true
           tags: freeverseio/laos-ownership-node:${{ github.sha }}
-      - name: Push Evolution Node Docker images
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: ./docker/evolution-node.local.Dockerfile
-          push: true
-          tags: freeverseio/laos-evolution-node:${{ github.sha }}
-      - name: Push Bridge Docker images
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: ./docker/bridge.local.Dockerfile
-          push: true
-          tags: freeverseio/laos-bridge:${{ github.sha }}
 
   lint:
     runs-on: 
@@ -120,3 +106,51 @@ jobs:
       - name: Try Runtime
         run: |
           RUST_LOG=try-runtime ./target/release/laos-ownership try-runtime --runtime ./target/release/wbuild/laos-ownership-runtime/laos_ownership_runtime.wasm on-runtime-upgrade --checks=pre-and-post live --uri ws://161.35.247.178:9944
+  
+  e2e-tests:
+    runs-on: 
+      group: laos
+      labels: ubuntu-16-cores
+    steps:
+    - uses: actions/checkout@v3
+    - uses: ./.github/actions/setup
+    - uses: ./.github/actions/cache
+      with:
+        cache-key: build_and_push
+
+    - name: Copy polkadot relay chain binary
+      run: |
+        wget https://github.com/paritytech/polkadot/releases/download/v0.9.42/polkadot
+        chmod +x ./polkadot
+
+    - name: Copy zombienet binary
+      run: |
+        wget https://github.com/paritytech/zombienet/releases/download/v1.3.55/zombienet-linux-x64
+        chmod +x ./zombienet-linux-x64
+        
+    - name: Run zombienet
+      run: |
+        export ZOMBIENET_RELAYCHAIN_COMMAND=./polkadot
+        export ZOMBIENET_PARACHAIN_COMMAND=./target/release/laos-ownership
+        ./zombienet-linux-x64 spawn ./ownership-chain/zombienet/native.toml -p native &
+        echo "Zombienet started"
+
+    - name: Wait for zombienet
+      run: |
+        timeout 22 sh -c 'until nc -z $0 $1; do echo -n .; sleep 1; done' localhost 9999
+
+    - name: Use Node.js 18
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+
+    - name: Install dependencies
+      run: |
+        npm install
+      working-directory: ./ownership-chain/e2e-tests
+
+    - name: Run tests
+      run: |
+        npm run test
+      working-directory: ./ownership-chain/e2e-tests
+

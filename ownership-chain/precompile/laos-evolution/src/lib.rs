@@ -1,7 +1,7 @@
 //! LAOS precompile module.
 
 #![cfg_attr(not(feature = "std"), no_std)]
-use fp_evm::{Log, Precompile, PrecompileHandle, PrecompileOutput};
+use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
 use pallet_laos_evolution::{traits::LaosEvolution as LaosEvolutionT, Slot, TokenId};
 use parity_scale_codec::Encode;
 use precompile_utils::{
@@ -9,14 +9,16 @@ use precompile_utils::{
 	FunctionModifier, LogExt, LogsBuilder, PrecompileHandleExt,
 };
 
-use sp_core::{H160, H256};
+use sp_core::H160;
 use sp_std::{fmt::Debug, marker::PhantomData, vec::Vec};
 
 /// Solidity selector of the CreateCollection log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_NEW_COLLECTION: [u8; 32] = keccak256!("NewCollection(uint64,address)");
 /// Solidity selector of the Transfer log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
-	keccak256!("MintedWithExternalTokenURI(uint64,uint96,address,string,uint256)");
+	keccak256!("MintedWithExternalURI(uint64,uint96,address,string,uint256)");
+pub const SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
+	keccak256!("EvolvedWithExternalURI(uint256,uint64,string)");
 
 #[precompile_utils_macro::generate_function_selector]
 #[derive(Debug, PartialEq)]
@@ -28,7 +30,9 @@ pub enum Action {
 	/// Get tokenURI of the token in collection
 	TokenURI = "tokenURI(uint64,uint256)",
 	/// Mint token
-	Mint = "mintWithExternalUri(uint64,uint96,address,string)",
+	Mint = "mintWithExternalURI(uint64,uint96,address,string)",
+	/// Evolve token
+	Evolve = "evolveWithExternalURI(uint64,uint256,string)",
 }
 
 /// Wrapper for the precompile function.
@@ -65,11 +69,10 @@ where
 				match LaosEvolution::create_collection(owner.into()) {
 					Ok(collection_id) => {
 						LogsBuilder::new(context.address)
-							.log3(
+							.log2(
 								SELECTOR_LOG_NEW_COLLECTION,
-								H256::from_low_u64_be(collection_id.to_be()),
 								owner,
-								Vec::new(),
+								EvmDataWriter::new().write(collection_id).build(),
 							)
 							.record(handle)?;
 
@@ -111,8 +114,10 @@ where
 				let slot = input.read::<Slot>()?;
 				let to = input.read::<Address>()?.0;
 				let token_uri_raw = input.read::<Bytes>()?.0;
-				let token_uri =
-					token_uri_raw.try_into().map_err(|_| revert("invalid token uri length"))?;
+				let token_uri = token_uri_raw
+					.clone()
+					.try_into()
+					.map_err(|_| revert("invalid token uri length"))?;
 
 				match LaosEvolution::mint_with_external_uri(
 					caller.into(),
@@ -122,21 +127,57 @@ where
 					token_uri,
 				) {
 					Ok(token_id) => {
+						LogsBuilder::new(context.address)
+							.log2(
+								SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI,
+								to,
+								EvmDataWriter::new()
+									.write(collection_id)
+									.write(slot)
+									.write(Bytes(token_uri_raw))
+									.write(token_id)
+									.build(),
+							)
+							.record(handle)?;
+
+						Ok(succeed(EvmDataWriter::new().write(token_id).build()))
+					},
+					Err(err) => Err(revert_dispatch_error(err)),
+				}
+			},
+			Action::Evolve => {
+				let caller = context.caller;
+
+				input.expect_arguments(4)?;
+
+				let collection_id = input.read::<u64>()?;
+				let token_id = input.read::<TokenId>()?;
+				let token_uri_raw = input.read::<Bytes>()?.0;
+				let token_uri = token_uri_raw
+					.clone()
+					.try_into()
+					.map_err(|_| revert("invalid token uri length"))?;
+
+				match LaosEvolution::evolve_with_external_uri(
+					caller.into(),
+					collection_id,
+					token_id,
+					token_uri,
+				) {
+					Ok(()) => {
 						let mut token_id_bytes = [0u8; 32];
 						token_id.to_big_endian(&mut token_id_bytes);
 
-						Log {
-							address: context.address,
-							topics: sp_std::vec![
-								H256(SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI),
-								H256::from(H160::zero()),
-								H256::from(to),
-								H256::from_low_u64_be(collection_id),
-								H256(token_id_bytes),
-							],
-							data: Vec::new(),
-						}
-						.record(handle)?;
+						LogsBuilder::new(context.address)
+							.log2(
+								SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI,
+								token_id_bytes,
+								EvmDataWriter::new()
+									.write(collection_id)
+									.write(Bytes(token_uri_raw))
+									.build(),
+							)
+							.record(handle)?;
 
 						Ok(succeed(EvmDataWriter::new().write(token_id).build()))
 					},
@@ -163,6 +204,7 @@ where
 			Action::Mint => FunctionModifier::NonPayable,
 			Action::OwnerOfCollection => FunctionModifier::View,
 			Action::TokenURI => FunctionModifier::View,
+			Action::Evolve => FunctionModifier::NonPayable,
 		})?;
 
 		Self::inner_execute(handle, &selector)

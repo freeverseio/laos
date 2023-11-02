@@ -1,9 +1,8 @@
 name: ChatGPT
 
 on:
+  pull_request:
   issue_comment:
-    types:
-      - created
   
 jobs:
   review:
@@ -17,22 +16,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Check if the comment contains [gpt review]
-          COMMENT_BODY="${{ github.event.comment.body }}"
-          echo "is_gpt_review=$(if [[ "$COMMENT_BODY" == *"[gpt review]"* ]]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_ENV
-
-          # Check if the commenter is in the specified group
           COMMENTER="${{ github.event.comment.user.login }}"
-          IS_IN_GROUP=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-            https://api.github.com/orgs/freeverseio/teams/ziggy/members/$COMMENTER)
-          echo "is_in_group=$(if [[ "$IS_IN_GROUP" != "null" ]]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_ENV
-
-      - name: Review if Correct User, and Gpt Review
-        if: env.is_in_group == 'true' && env.is_gpt_review == 'true'
-        uses: gvasilei/AutoReviewer@0.4
+          echo "COMMENTER=$COMMENTER" >> $GITHUB_ENV
+          echo "Commenter is $COMMENTER"
+      - name: Run if Commenter
+        if: env.COMMENTER != ''
+        uses: Codium-ai/pr-agent@v0.8
         env:
-          NODE_OPTIONS: '--experimental-fetch'
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          openai_api_key: ${{ secrets.OPENAI_API_KEY }}
-          model_name: gpt-4
+          OPENAI_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_DESCRIPTION.PUBLISH_LABELS: false
+          PR_DESCRIPTION.PUBLISH_DESCRIPTION_AS_COMMENT: false

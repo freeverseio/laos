@@ -18,12 +18,22 @@ interface LaosEvolution {
     /// @param to the initial owner of the newly minted token
     /// @param tokenURI the URI of the newly minted token
     /// @param tokenId the resulting id of the newly minted token
-    event MintedWithExternalTokenURI(
+    event MintedWithExternalURI(
         uint64 collectionId,
         uint96 slot,
         address indexed to,
         string tokenURI,
         uint256 tokenId
+    );
+
+    /// @notice Emitted when a token metadata is updated
+    /// @param tokenId the id of the token for which the metadata has changed
+    /// @param collectionId the id of the collection
+    /// @param tokenURI the new URI of the token
+    event EvolvedWithExternalURI(
+        uint64 collectionId,
+        uint256 indexed tokenId,
+        string tokenURI
     );
 
     /// @notice Creates a new collection
@@ -52,10 +62,21 @@ interface LaosEvolution {
     /// @param to the owner of the newly minted token
     /// @param tokenURI the tokenURI of the newly minted token
     /// @return the id of the newly minted token
-    function mintWithExternalUri(
+    function mintWithExternalURI(
         uint64 collectionId,
         uint96 slot,
         address to,
+        string calldata tokenURI
+    ) external returns (uint256);
+
+    /// @notice Changes the tokenURI of an existing token
+    /// @dev Call this function to evolve an existing token, the caller must be the owner of the collection
+    /// @param collectionId the id of the collection
+    /// @param tokenId the id of the token
+    /// @param tokenURI the new tokenURI of the token
+    function evolveWithExternalURI(
+        uint64 collectionId,
+        uint256 tokenId,
         string calldata tokenURI
     ) external returns (uint256);
 }
