@@ -1,18 +1,16 @@
 {
-    "name": "Moonbeam Local Testnet",
-    "id": "moonbeam_local",
-    "chainType": "Local",
-    "bootNodes": [
-      "/ip4/127.0.0.1/tcp/30333/p2p/12D3KooWHC94nZzc2iWykocwL3seo2n2bm5EhF4gUkKMkq5GM4jn"
-    ],
+    "name": "Moonbeam Freeverse Testnet",
+    "id": "moonbeam_freeverse",
+    "chainType": "Live",
+    "bootNodes": [],
     "telemetryEndpoints": null,
-    "protocolId": null,
+    "protocolId": "moonbeam_freeverse",
     "properties": {
       "SS58Prefix": 1284,
       "tokenDecimals": 18,
       "tokenSymbol": "GLMR"
     },
-    "relayChain": "polkadot-local",
+    "relayChain": "rococo_freeverse",
     "paraId": 1000,
     "codeSubstitutes": {},
     "genesis": {
@@ -26,20 +24,8 @@
         "balances": {
           "balances": [
             [
-              "0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac",
-              1298074214633706907132624082305024
-            ],
-            [
-              "0x3cd0a705a2dc65e5b1e1205896baa2be8a07c6e0",
-              1298074214633706907132624082305024
-            ],
-            [
-              "0x798d4ba9baf0064ec19eb4f0a1a45785ae9d6dfc",
-              1298074214633706907132624082305024
-            ],
-            [
-              "0x773539d4ac0e786233d90a233654ccee26a613d9",
-              1298074214633706907132624082305024
+              "0xbEC56fDDd0836A4Ae234fD9aC5495E1e9E94462F",
+              12980742146337069071326240823050240
             ]
           ]
         },
@@ -49,11 +35,7 @@
         "parachainStaking": {
           "candidates": [
             [
-              "0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac",
-              2000000000000000000000000
-            ],
-            [
-              "0x3cd0a705a2dc65e5b1e1205896baa2be8a07c6e0",
+              "0xbEC56fDDd0836A4Ae234fD9aC5495E1e9E94462F",
               2000000000000000000000000
             ]
           ],
@@ -86,12 +68,8 @@
         "authorMapping": {
           "mappings": [
             [
-              "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
-              "0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac"
-            ],
-            [
-              "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
-              "0x3cd0a705a2dc65e5b1e1205896baa2be8a07c6e0"
+              "5HW7hXEsd3HkXzNCABoFngPku55zhgiBd6qye3tC91yEoES7",
+              "0xbEC56fDDd0836A4Ae234fD9aC5495E1e9E94462F"
             ]
           ]
         },
@@ -545,28 +523,22 @@
         "democracy": {},
         "councilCollective": {
           "members": [
-            "0x3cd0a705a2dc65e5b1e1205896baa2be8a07c6e0",
-            "0x798d4ba9baf0064ec19eb4f0a1a45785ae9d6dfc",
-            "0x773539d4ac0e786233d90a233654ccee26a613d9"
+            "0xbEC56fDDd0836A4Ae234fD9aC5495E1e9E94462F"
           ]
         },
         "techCommitteeCollective": {
           "members": [
-            "0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac",
-            "0x3cd0a705a2dc65e5b1e1205896baa2be8a07c6e0"
+            "0xbEC56fDDd0836A4Ae234fD9aC5495E1e9E94462F"
           ]
         },
         "treasuryCouncilCollective": {
           "members": [
-            "0x3cd0a705a2dc65e5b1e1205896baa2be8a07c6e0",
-            "0x798d4ba9baf0064ec19eb4f0a1a45785ae9d6dfc",
-            "0x773539d4ac0e786233d90a233654ccee26a613d9"
+            "0xbEC56fDDd0836A4Ae234fD9aC5495E1e9E94462F"
           ]
         },
         "openTechCommitteeCollective": {
           "members": [
-            "0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac",
-            "0x3cd0a705a2dc65e5b1e1205896baa2be8a07c6e0"
+            "0xbEC56fDDd0836A4Ae234fD9aC5495E1e9E94462F"
           ]
         },
         "treasury": {},
