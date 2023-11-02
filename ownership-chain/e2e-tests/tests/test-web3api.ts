@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { step } from "mocha-steps";
 
-import { RUNTIME_SPEC_NAME, RUNTIME_SPEC_VERSION, RUNTIME_IMPL_VERSION, CHAIN_ID } from "./config";
+import { RUNTIME_SPEC_NAME, RUNTIME_SPEC_VERSION, RUNTIME_IMPL_VERSION, CHAIN_ID, GENESIS_ACCOUNT, GENESIS_ACCOUNT_BALANCE } from "./config";
 import { describeWithExistingNode, customRequest } from "./util";
 
 describeWithExistingNode("Frontier RPC (Web3Api)", (context) => {
@@ -22,5 +22,9 @@ describeWithExistingNode("Frontier RPC (Web3Api)", (context) => {
     step("should get chain id", async function () {
         const chainId = await context.web3.eth.getChainId();
         expect(chainId).to.be.equal(CHAIN_ID);
+    });
+
+    step("genesis balance is setup correctly", async function () {
+        expect(await context.web3.eth.getBalance(GENESIS_ACCOUNT)).to.equal(GENESIS_ACCOUNT_BALANCE);
     });
 });
