@@ -359,5 +359,17 @@
         "safeXcmVersion": 3
       }
     }
-  }
+  },
+  "aura": { "authorities": [
+    "5HW7hXEsd3HkXzNCABoFngPku55zhgiBd6qye3tC91yEoES7"
+  ]
+ },
+ "grandpa": {
+  "authorities": [
+    [
+      "5GNzZ41CpGFnAUeDkgWyFjBDsoVJGDLDWrrC9LN8PgTQJmbY",
+      1
+    ]
+  ]
+}
 }
