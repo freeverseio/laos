@@ -5,7 +5,7 @@ import { expect } from "chai";
 import Contract from "web3-eth-contract";
 import BN from "bn.js";
 
-describeWithExistingNode("Frontier RPC (Evolve Assets)", (context) => {
+describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
 
     let contract: Contract;
     let nonce: number;
@@ -121,7 +121,7 @@ describeWithExistingNode("Frontier RPC (Evolve Assets)", (context) => {
         const evolvingResult = await contract.methods.evolveWithExternalURI(collectionId, tokenIdDecimal, newTokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS, nonce: nonce++ });
         expect(evolvingResult.status).to.be.eq(true);
 
-        const got = await contract.methods.tokenURI(collectionId, tokenId).call();
+        const got = await contract.methods.tokenURI(collectionId, tokenIdDecimal).call();
         expect(got).to.be.eq(newTokenURI);
     });
 
