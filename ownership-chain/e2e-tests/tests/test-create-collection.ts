@@ -6,10 +6,10 @@ import Contract from "web3-eth-contract";
 
 
 describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
-    
+
     let contract: Contract;
     let nonce: number;
-    
+
     beforeEach(async function () {
         contract = new context.web3.eth.Contract(LAOS_EVOLUTION_ABI, CONTRACT_ADDRESS, {
             from: GENESIS_ACCOUNT,
@@ -17,13 +17,14 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
         });
 
         nonce = await context.web3.eth.getTransactionCount(GENESIS_ACCOUNT);
-        await context.web3.eth.accounts.wallet.add(GENESIS_ACCOUNT_PRIVATE_KEY);
+        context.web3.eth.accounts.wallet.add(GENESIS_ACCOUNT_PRIVATE_KEY);
     });
 
     step("when collection does not exist owner of call should fail", async function () {
         const collectionId = "0";
         try {
             await contract.methods.ownerOfCollection(collectionId).call();
+            expect.fail("Expected error was not thrown"); // Ensure an error is thrown
         } catch (error) {
             expect(error.message).to.be.eq(
                 "Returned error: VM Exception while processing transaction: revert"
@@ -35,17 +36,17 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
         this.timeout(70000);
 
         const collectionId = "0";
-        
+
         const result = await contract.methods.createCollection(GENESIS_ACCOUNT).send({ from: GENESIS_ACCOUNT, gas: GAS, nonce: nonce++ });
         expect(result.status).to.be.eq(true);
-        
+
         const owner = await contract.methods.ownerOfCollection(collectionId).call();
         expect(owner).to.be.eq(GENESIS_ACCOUNT);
     });
-    
+
     step("when collection is created event is emitted", async function () {
         this.timeout(70000);
-        
+
         const collectionId = "1";
 
         const result = await contract.methods.createCollection(GENESIS_ACCOUNT).send({ from: GENESIS_ACCOUNT, gas: GAS, nonce: nonce++ });
