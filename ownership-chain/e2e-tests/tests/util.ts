@@ -46,11 +46,6 @@ export function describeWithExistingNode(title: string, cb: (context: { web3: We
 			context.web3 = new Web3(`ws://127.0.0.1:${RPC_PORT}`);
 		}
 
-		context.ethersjs = new ethers.JsonRpcProvider(`http://127.0.0.1:${RPC_PORT}`, {
-			chainId: CHAIN_ID,
-			name: "frontier-dev",
-		});
-
 		cb(context);
 	});
 }
