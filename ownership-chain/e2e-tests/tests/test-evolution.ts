@@ -128,17 +128,15 @@ describeWithExistingNode("Frontier RPC (Evolve Assets)", (context) => {
         const to = GENESIS_ACCOUNT;
         const tokenURI = "https://example.com";
         const newTokenURI = "https://new_example.com";
+        const tokenId = slotAndOwnerToTokenId(slot, to);
 
         const mintingResult = await contract.methods.mintWithExternalURI(collectionId, slot, to, tokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS, nonce: nonce++ });
         expect(mintingResult.status).to.be.eq(true);
-        const tokenId = slotAndOwnerToTokenId(slot, to);
 
         const evolvingResult = await contract.methods.evolveWithExternalURI(collectionId, tokenId, newTokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS, nonce: nonce++ });
         expect(evolvingResult.status).to.be.eq(true);
 
         expect(Object.keys(evolvingResult.events).length).to.be.eq(1);
-
-        console.log(evolvingResult.events)
 
         // data returned within the event
         expect(evolvingResult.events.EvolvedWithExternalURI.returnValues.collectionId).to.be.eq(collectionId);
