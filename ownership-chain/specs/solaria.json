@@ -12,7 +12,7 @@
     "tokenSymbol": "SOL"
   },
   "relay_chain": "rococo",
-  "para_id": 4316,
+  "para_id": 4318,
   "codeSubstitutes": {},
   "genesis": {
     "runtime": {
@@ -21,7 +21,7 @@
       },
       "parachainSystem": {},
       "parachainInfo": {
-        "parachainId": 4316
+        "parachainId": 4318
       },
       "balances": {
         "balances": [
