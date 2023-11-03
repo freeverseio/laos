@@ -147,7 +147,7 @@ jobs:
 
     - name: Wait for zombienet
       run: |
-        timeout 22 sh -c 'until nc -z $0 $1; do echo -n .; sleep 1; done' localhost 9999
+        timeout 36 sh -c 'until nc -z $0 $1; do echo -n .; sleep 1; done' localhost 9999
 
     - name: Use Node.js 18
       uses: actions/setup-node@v3
