@@ -1,14 +1,15 @@
 {
-  "name": "Solaria Ownership chain",
-  "id": "solaria_ownership_chain",
+  "name": "Solaria Laos Testnet",
+  "id": "solaria_laos_testnet",
   "chainType": "Live",
-  "bootNodes": [],
+  "bootNodes": [
+  ],
   "telemetryEndpoints": null,
-  "protocolId": "solaria_ownership_chain",
+  "protocolId": "solaria-laos-testnet",
   "properties": {
     "ss58Format": 42,
     "tokenDecimals": 18,
-    "tokenSymbol": "SOLA"
+    "tokenSymbol": "SOL"
   },
   "relay_chain": "rococo",
   "para_id": 4316,
@@ -25,7 +26,7 @@
       "balances": {
         "balances": [
           [
-            "0xA63133446f5ef88800640AD669FA8F4A44C5000a",
+            "0x045c57B46DEDE60001623105d351c7941C90149e",
             11529215046068469760
           ]
         ]
@@ -35,7 +36,7 @@
       },
       "collatorSelection": {
         "invulnerables": [
-          "0xA63133446f5ef88800640AD669FA8F4A44C5000a"
+          "0x045c57B46DEDE60001623105d351c7941C90149e"
         ],
         "candidacyBond": 16000000000,
         "desiredCandidates": 0
@@ -43,8 +44,8 @@
       "session": {
         "keys": [
           [
-            "0xA63133446f5ef88800640AD669FA8F4A44C5000a",
-            "0xA63133446f5ef88800640AD669FA8F4A44C5000a",
+            "0x045c57B46DEDE60001623105d351c7941C90149e",
+            "0x045c57B46DEDE60001623105d351c7941C90149e",
             {
               "aura": "5HQmMyrZQgxzM8tprXxRrV6C68WHemm47ZnbxQfnrTQDrS9Y"
             }
@@ -59,7 +60,7 @@
         "safeXcmVersion": 3
       },
       "sudo": {
-        "key": "0xA63133446f5ef88800640AD669FA8F4A44C5000a"
+        "key": "0x045c57B46DEDE60001623105d351c7941C90149e"
       },
       "ethereum": {},
       "evm": {
@@ -171,7 +172,7 @@
         }
       },
       "evmChainId": {
-        "chainId": 667
+        "chainId": 6679
       },
       "baseFee": {
         "baseFeePerGas": "0x3b9aca00",
