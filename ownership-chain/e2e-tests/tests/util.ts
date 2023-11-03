@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 import Web3 from "web3";
 import { JsonRpcResponse } from "web3-core-helpers";
 
-import { CHAIN_ID } from "./config";
+import BN from "bn.js";
 
 export const RPC_PORT = 9999;
 
@@ -50,3 +50,25 @@ export function describeWithExistingNode(title: string, cb: (context: { web3: We
 	});
 }
 
+const MAX_U96 = new BN('79228162514264337593543950336');  // 2^96 - 1
+
+export function slotAndOwnerToTokenId(slot: string, owner: string): string | null {
+
+	const slotBN: BN = new BN(slot);
+	const ownerBytes: Uint8Array = Uint8Array.from(Buffer.from(owner.slice(2), 'hex'));  // Remove the '0x' prefix and convert hex to bytes
+
+	if (slotBN.gt(MAX_U96) || ownerBytes.length != 20){
+		return null;
+	}
+
+	// Convert slot to big-endian byte array
+	const slotBytes = slotBN.toArray('be', 16);  // 16 bytes (128 bits)
+	
+	// We also use the last 12 bytes of the slot, since the first 4 bytes are always 0
+	let bytes = new Uint8Array(32);
+	bytes.set(slotBytes.slice(-12), 0);  // slice from the right to ensure we get the least significant bytes
+	bytes.set(ownerBytes, 12);
+
+	const tokenIdHex = Buffer.from(bytes).toString('hex'); // Convert Uint8Array to hexadecimal string
+	return new BN(tokenIdHex, 16).toString(10); // Convert hexadecimal to decimal string
+} 
