@@ -69,6 +69,5 @@ export function slotAndOwnerToTokenId(slot: string, owner: string): string | nul
 	bytes.set(slotBytes.slice(-12), 0);  // slice from the right to ensure we get the least significant bytes
 	bytes.set(ownerBytes, 12);
 
-	const tokenIdHex = Buffer.from(bytes).toString('hex'); // Convert Uint8Array to hexadecimal string
-	return new BN(tokenIdHex, 16).toString(10); // Convert hexadecimal to decimal string
+	return Buffer.from(bytes).toString('hex'); // Convert Uint8Array to hexadecimal string
 } 

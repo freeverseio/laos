@@ -64,7 +64,9 @@ describeWithExistingNode("Frontier RPC (Evolve Assets)", (context) => {
         const to = GENESIS_ACCOUNT;
 
         const tokenId = slotAndOwnerToTokenId(slot, to);
-        expect(tokenId).to.be.eq("2563001357829637001682277476112176020532353127213");
+        expect(tokenId).to.be.eq("000000000000000000000001c0f0f4ab324c46e55d02d0033343b4be8a55532d");
+        const tokenIdDecimal = new BN(tokenId, 16).toString(10);
+        expect(tokenIdDecimal).to.be.eq("2563001357829637001682277476112176020532353127213");
     });
 
     step("when asset is minted it should emit an event", async function () {
@@ -86,7 +88,8 @@ describeWithExistingNode("Frontier RPC (Evolve Assets)", (context) => {
         expect(result.events.MintedWithExternalURI.returnValues.to).to.be.eq(to);
         expect(result.events.MintedWithExternalURI.returnValues.tokenURI).to.be.eq(tokenURI);
         const tokenId = slotAndOwnerToTokenId(slot, to);
-        expect(result.events.MintedWithExternalURI.returnValues.tokenId).to.be.eq(tokenId);
+        const tokenIdDecimal = new BN(tokenId, 16).toString(10);
+        expect(result.events.MintedWithExternalURI.returnValues.tokenId).to.be.eq(tokenIdDecimal);
 
         // event topics
         expect(result.events.MintedWithExternalURI.raw.topics.length).to.be.eq(2);
@@ -97,7 +100,7 @@ describeWithExistingNode("Frontier RPC (Evolve Assets)", (context) => {
         expect(result.events.MintedWithExternalURI.raw.data).to.be.eq(
             context.web3.eth.abi.encodeParameters(
                 ["uint64", "uint96", "string", "uint256"],
-                [collectionId, slot, tokenURI, tokenId]
+                [collectionId, slot, tokenURI, tokenIdDecimal]
             )
         );
     });
@@ -109,12 +112,13 @@ describeWithExistingNode("Frontier RPC (Evolve Assets)", (context) => {
         const to = GENESIS_ACCOUNT;
         const tokenURI = "https://example.com";
         const newTokenURI = "https://new_example.com";
+        const tokenId = slotAndOwnerToTokenId(slot, to);
+        const tokenIdDecimal = new BN(tokenId, 16).toString(10);
 
         const mintingResult = await contract.methods.mintWithExternalURI(collectionId, slot, to, tokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS, nonce: nonce++ });
         expect(mintingResult.status).to.be.eq(true);
-        const tokenId = mintingResult.events.MintedWithExternalURI.returnValues.tokenId;
 
-        const evolvingResult = await contract.methods.evolveWithExternalURI(collectionId, tokenId, newTokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS, nonce: nonce++ });
+        const evolvingResult = await contract.methods.evolveWithExternalURI(collectionId, tokenIdDecimal, newTokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS, nonce: nonce++ });
         expect(evolvingResult.status).to.be.eq(true);
 
         const got = await contract.methods.tokenURI(collectionId, tokenId).call();
@@ -129,20 +133,20 @@ describeWithExistingNode("Frontier RPC (Evolve Assets)", (context) => {
         const tokenURI = "https://example.com";
         const newTokenURI = "https://new_example.com";
         const tokenId = slotAndOwnerToTokenId(slot, to);
+        const tokenIdDecimal = new BN(tokenId, 16).toString(10);
 
         const mintingResult = await contract.methods.mintWithExternalURI(collectionId, slot, to, tokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS, nonce: nonce++ });
         expect(mintingResult.status).to.be.eq(true);
 
-        const evolvingResult = await contract.methods.evolveWithExternalURI(collectionId, tokenId, newTokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS, nonce: nonce++ });
+        const evolvingResult = await contract.methods.evolveWithExternalURI(collectionId, tokenIdDecimal, newTokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS, nonce: nonce++ });
         expect(evolvingResult.status).to.be.eq(true);
 
         expect(Object.keys(evolvingResult.events).length).to.be.eq(1);
 
         // data returned within the event
         expect(evolvingResult.events.EvolvedWithExternalURI.returnValues.collectionId).to.be.eq(collectionId);
-        expect(evolvingResult.events.EvolvedWithExternalURI.returnValues.tokenId).to.be.eq(tokenId);
+        expect(evolvingResult.events.EvolvedWithExternalURI.returnValues.tokenId).to.be.eq(tokenIdDecimal);
         expect(evolvingResult.events.EvolvedWithExternalURI.returnValues.tokenURI).to.be.eq(newTokenURI);
-        expect(evolvingResult.events.EvolvedWithExternalURI.returnValues.tokenId).to.be.eq(tokenId);
 
         // event topics
         expect(evolvingResult.events.EvolvedWithExternalURI.raw.topics.length).to.be.eq(2);
