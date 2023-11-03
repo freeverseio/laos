@@ -157,7 +157,7 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
         expect(evolvingResult.events.EvolvedWithExternalURI.raw.data).to.be.eq(
             context.web3.eth.abi.encodeParameters(
                 ["uint64", "string"],
-                [collectionId, tokenURI]
+                [collectionId, newTokenURI]
             )
         );
     });
