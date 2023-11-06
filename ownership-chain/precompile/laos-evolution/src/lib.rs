@@ -10,6 +10,7 @@ use precompile_utils::{
 };
 
 use sp_core::H160;
+use sp_runtime::DispatchError;
 use sp_std::{fmt::Debug, marker::PhantomData, vec::Vec};
 
 /// Solidity selector of the CreateCollection log, which is the Keccak of the Log signature.
@@ -18,7 +19,7 @@ pub const SELECTOR_LOG_NEW_COLLECTION: [u8; 32] = keccak256!("NewCollection(uint
 pub const SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
 	keccak256!("MintedWithExternalURI(uint64,uint96,address,string,uint256)");
 pub const SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
-	keccak256!("EvolvedWithExternalURI(uint256,uint64,string)");
+	keccak256!("EvolvedWithExternalURI(uint64,uint256,string)");
 
 #[precompile_utils_macro::generate_function_selector]
 #[derive(Debug, PartialEq)]
@@ -89,7 +90,7 @@ where
 				if let Some(owner) = LaosEvolution::collection_owner(collection_id) {
 					Ok(succeed(EvmDataWriter::new().write(Address(owner.into())).build()))
 				} else {
-					Err(revert("collection does not exist"))
+					Err(revert_dispatch_error(DispatchError::Other("collection does not exist")))
 				}
 			},
 			Action::TokenURI => {
