@@ -1,11 +1,13 @@
 import LaosEvolution from "../build/contracts/LaosEvolution.json";
 import { AbiItem } from "web3-utils";
+import BN from "bn.js";
+
 
 // Node config
-export const NODE_BINARY_NAME = "laos-ownership";
 export const RUNTIME_SPEC_NAME = "frontier-template";
 export const RUNTIME_SPEC_VERSION = 7;
 export const RUNTIME_IMPL_VERSION = 0;
+export const RPC_PORT = 9999;
 
 // Chain config
 export const CHAIN_ID = 667;
@@ -23,3 +25,4 @@ export const SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI = "0x4b3b5da28a351f8bb7
 export const SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI = "0x95c167d04a267f10e6b3f373c7a336dc65cf459caf048854dc32a2d37ab1607c";
 
 
+export const MAX_U96 = new BN('79228162514264337593543950336');  // 2^96 - 1

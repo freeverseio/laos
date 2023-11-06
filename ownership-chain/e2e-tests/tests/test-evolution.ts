@@ -6,7 +6,6 @@ import Contract from "web3-eth-contract";
 import BN from "bn.js";
 
 describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
-
     let contract: Contract;
     let nonce: number;
     let collectionId: number = 0;
@@ -65,7 +64,7 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
 
         const tokenId = slotAndOwnerToTokenId(slot, to);
         expect(tokenId).to.be.eq("000000000000000000000001c0f0f4ab324c46e55d02d0033343b4be8a55532d");
-        const tokenIdDecimal = new BN(tokenId, 16).toString(10);
+        const tokenIdDecimal = new BN(tokenId, 16, "be").toString(10);
         expect(tokenIdDecimal).to.be.eq("2563001357829637001682277476112176020532353127213");
     });
 
@@ -88,7 +87,7 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
         expect(result.events.MintedWithExternalURI.returnValues.to).to.be.eq(to);
         expect(result.events.MintedWithExternalURI.returnValues.tokenURI).to.be.eq(tokenURI);
         const tokenId = slotAndOwnerToTokenId(slot, to);
-        const tokenIdDecimal = new BN(tokenId, 16).toString(10);
+        const tokenIdDecimal = new BN(tokenId, 16, "be").toString(10);
         expect(result.events.MintedWithExternalURI.returnValues.tokenId).to.be.eq(tokenIdDecimal);
 
         // event topics
@@ -113,7 +112,7 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
         const tokenURI = "https://example.com";
         const newTokenURI = "https://new_example.com";
         const tokenId = slotAndOwnerToTokenId(slot, to);
-        const tokenIdDecimal = new BN(tokenId, 16).toString(10);
+        const tokenIdDecimal = new BN(tokenId, 16, "be").toString(10);
 
         const mintingResult = await contract.methods.mintWithExternalURI(collectionId, slot, to, tokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS, nonce: nonce++ });
         expect(mintingResult.status).to.be.eq(true);
@@ -133,7 +132,7 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
         const tokenURI = "https://example.com";
         const newTokenURI = "https://new_example.com";
         const tokenId = slotAndOwnerToTokenId(slot, to);
-        const tokenIdDecimal = new BN(tokenId, 16).toString(10);
+        const tokenIdDecimal = new BN(tokenId, 16, "be").toString(10);
 
         const mintingResult = await contract.methods.mintWithExternalURI(collectionId, slot, to, tokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS, nonce: nonce++ });
         expect(mintingResult.status).to.be.eq(true);

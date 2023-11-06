@@ -10,6 +10,7 @@ use precompile_utils::{
 };
 
 use sp_core::H160;
+use sp_runtime::DispatchError;
 use sp_std::{fmt::Debug, marker::PhantomData, vec::Vec};
 
 /// Solidity selector of the CreateCollection log, which is the Keccak of the Log signature.
@@ -89,7 +90,7 @@ where
 				if let Some(owner) = LaosEvolution::collection_owner(collection_id) {
 					Ok(succeed(EvmDataWriter::new().write(Address(owner.into())).build()))
 				} else {
-					Err(revert("collection does not exist"))
+					Err(revert_dispatch_error(DispatchError::Other("collection does not exist")))
 				}
 			},
 			Action::TokenURI => {

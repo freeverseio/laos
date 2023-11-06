@@ -1,10 +1,8 @@
 import { ethers } from "ethers";
 import Web3 from "web3";
 import { JsonRpcResponse } from "web3-core-helpers";
-
+import { MAX_U96, RPC_PORT } from "./config";
 import BN from "bn.js";
-
-export const RPC_PORT = 9999;
 
 require("events").EventEmitter.prototype._maxListeners = 100;
 
@@ -50,8 +48,12 @@ export function describeWithExistingNode(title: string, cb: (context: { web3: We
 	});
 }
 
-const MAX_U96 = new BN('79228162514264337593543950336');  // 2^96 - 1
-
+/**
+ * Converts a slot and owner address to a token ID.
+ * @param slot The slot number.
+ * @param owner The owner address.
+ * @returns The token ID, or null if the slot is larger than 96 bits or the owner address is not 20 bytes.
+ */
 export function slotAndOwnerToTokenId(slot: string, owner: string): string | null {
 
 	const slotBN: BN = new BN(slot);

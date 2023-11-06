@@ -6,7 +6,6 @@ import Contract from "web3-eth-contract";
 
 
 describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
-
     let contract: Contract;
     let nonce: number;
 
