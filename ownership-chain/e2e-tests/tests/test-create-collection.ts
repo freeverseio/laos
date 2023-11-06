@@ -47,7 +47,7 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
         expect(result.status).to.be.eq(true);
 
         expect(Object.keys(result.events).length).to.be.eq(1);
-        expect(!isNaN(result.events.NewCollection.returnValues.collectionId)).to.be.eq(true);
+        expect(result.events.NewCollection.returnValues.collectionId).to.be.NaN;
         expect(result.events.NewCollection.returnValues.owner).to.be.eq(GENESIS_ACCOUNT);
 
         // event topics
