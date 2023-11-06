@@ -18,15 +18,19 @@ $ wget -O zombienet https://github.com/paritytech/zombienet/releases/download/v1
 
 **Start Zombienet**
 
-Before running the commands, set up the environment variables `ZOMBIENET_RELAYCHAIN_COMMAND` and `ZOMBIENET_PARACHAIN_COMMAND` in your shell. 
+This will launch a local Rococo relay chain with two parachains: Ownership Chain and Astar. By default, it comes with established hrmp channel between two parachains and is ready for XCM.
+
+Before running the commands, set up the environment variables `ZOMBIENET_RELAYCHAIN_COMMAND` and `ZOMBIENET_OWNCHAIN_COMMAND`, `ZOMBIENET_ASTAR_COMMAND` in your shell. 
+
+This will launch a local Rococo relay chain with two parachains: Ownership Chain and Astar. By default, it comes with established hrmp channel between two parachains and is ready for XCM.
 
 For example:
 
 ```sh
 export ZOMBIENET_RELAYCHAIN_COMMAND=<path-to-relay-chain-executable>
-export ZOMBIENET_PARACHAIN_COMMAND=<path-to-parachain-executable>
+export ZOMBIENET_OWNCHAIN_COMMAND=<path-to-parachain-executable>
+export ZOMBIENET_ASTAR_COMMAND=<path-to-astar-executable>
 ```
-
 
 ```sh
 $ ./zombienet spawn native.toml -p native
