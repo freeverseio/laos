@@ -17,7 +17,7 @@ cumulus_based = true
 chain = "local-v"
 
   [[parachains.collators]]
-  name = "Alice"
+  name = "ownership"
   ws_port = 9999
   command = "{{ZOMBIENET_OWNCHAIN_COMMAND}}"
   validator = true
@@ -28,7 +28,7 @@ cumulus_based = true
 chain = "astar-dev"
 
   [[parachains.collators]]
-  name = "Alice"
+  name = "astar"
   ws_port = 9998
   command = "{{ZOMBIENET_ASTAR_COMMAND}}"
   validator = true
