@@ -10,7 +10,6 @@ on:
 
 jobs:
   check:
-    if: github.event_name == 'pull_request'
     runs-on: 
       group: laos
       labels: ubuntu-16-cores
@@ -22,10 +21,9 @@ jobs:
           cache-key: build_and_push
       - name: Check
         run: |
-          SKIP_WASM_BUILD=1 cargo check --release --features runtime-benchmarks --features try-runtime
+          cargo check --all-targets --release --features runtime-benchmarks --features try-runtime
 
   build_and_push:
-    if: github.event_name == 'push'
     runs-on: 
       group: laos
       labels: ubuntu-16-cores
@@ -126,7 +124,12 @@ jobs:
       run: |
         wget https://github.com/paritytech/polkadot/releases/download/v0.9.42/polkadot
         chmod +x ./polkadot
-
+    - name: Copy Astar parachain binary
+      run: |
+        wget https://github.com/AstarNetwork/Astar/releases/download/v5.23.0/astar-collator-v5.23.0-ubuntu-x86_64.tar.gz
+        tar xf astar-collator-v5.23.0-ubuntu-x86_64.tar.gz
+        chmod +x ./astar-collator
+        
     - name: Copy zombienet binary
       run: |
         wget https://github.com/paritytech/zombienet/releases/download/v1.3.55/zombienet-linux-x64
@@ -135,13 +138,14 @@ jobs:
     - name: Run zombienet
       run: |
         export ZOMBIENET_RELAYCHAIN_COMMAND=./polkadot
-        export ZOMBIENET_PARACHAIN_COMMAND=./target/release/laos-ownership
+        export ZOMBIENET_OWNCHAIN_COMMAND=./target/release/laos-ownership
+        export ZOMBIENET_ASTAR_COMMAND=./astar-collator
         ./zombienet-linux-x64 spawn ./ownership-chain/zombienet/native.toml -p native &
         echo "Zombienet started"
 
     - name: Wait for zombienet
       run: |
-        timeout 22 sh -c 'until nc -z $0 $1; do echo -n .; sleep 1; done' localhost 9999
+        timeout 36 sh -c 'until nc -z $0 $1; do echo -n .; sleep 1; done' localhost 9999
 
     - name: Use Node.js 18
       uses: actions/setup-node@v3
