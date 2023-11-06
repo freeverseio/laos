@@ -36,7 +36,7 @@ fn check_log_selectors() {
 	);
 	assert_eq!(
 		hex::encode(SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI),
-		"568b059e9377ea804907ac57dc8d56446b17dbf9f4b30dfe1935b9c8815ae7e1"
+		"95c167d04a267f10e6b3f373c7a336dc65cf459caf048854dc32a2d37ab1607c"
 	);
 }
 
