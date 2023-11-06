@@ -10,7 +10,6 @@ on:
 
 jobs:
   check:
-    if: github.event_name == 'pull_request'
     runs-on: 
       group: laos
       labels: ubuntu-16-cores
@@ -22,10 +21,9 @@ jobs:
           cache-key: build_and_push
       - name: Check
         run: |
-          SKIP_WASM_BUILD=1 cargo check --release --features runtime-benchmarks --features try-runtime
+          cargo check --all-targets --release --features runtime-benchmarks --features try-runtime
 
   build_and_push:
-    if: github.event_name == 'push'
     runs-on: 
       group: laos
       labels: ubuntu-16-cores
