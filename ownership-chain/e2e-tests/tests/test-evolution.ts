@@ -28,7 +28,6 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
     });
 
     step("when collection does not exist token uri should fail", async function () {
-
         const tokenId = "0";
 
         try {
