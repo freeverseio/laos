@@ -8,7 +8,7 @@ import BN from "bn.js";
 describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
     let contract: Contract;
     let nonce: number;
-    let collectionId: number = 0;
+    let collectionId: number;
 
     beforeEach(async function () {
         this.timeout(70000);

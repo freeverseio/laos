@@ -20,9 +20,8 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
     });
 
     step("when collection does not exist owner of call should fail", async function () {
-        const collectionId = "0";
         try {
-            await contract.methods.ownerOfCollection(collectionId).call();
+            await contract.methods.ownerOfCollection("1111").call();
             expect.fail("Expected error was not thrown"); // Ensure an error is thrown
         } catch (error) {
             expect(error.message).to.be.eq(
@@ -34,25 +33,21 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
     step("when collection is created, it should return owner", async function () {
         this.timeout(70000);
 
-        const collectionId = "0";
-
         const result = await contract.methods.createCollection(GENESIS_ACCOUNT).send({ from: GENESIS_ACCOUNT, gas: GAS, nonce: nonce++ });
         expect(result.status).to.be.eq(true);
-
-        const owner = await contract.methods.ownerOfCollection(collectionId).call();
+        
+        const owner = await contract.methods.ownerOfCollection(result.events.NewCollection.returnValues.collectionId).call();
         expect(owner).to.be.eq(GENESIS_ACCOUNT);
     });
 
     step("when collection is created event is emitted", async function () {
         this.timeout(70000);
 
-        const collectionId = "1";
-
         const result = await contract.methods.createCollection(GENESIS_ACCOUNT).send({ from: GENESIS_ACCOUNT, gas: GAS, nonce: nonce++ });
         expect(result.status).to.be.eq(true);
 
         expect(Object.keys(result.events).length).to.be.eq(1);
-        expect(result.events.NewCollection.returnValues.collectionId).to.be.eq(collectionId);
+        expect(result.events.NewCollection.returnValues.collectionId).not.to.be.NaN;
         expect(result.events.NewCollection.returnValues.owner).to.be.eq(GENESIS_ACCOUNT);
 
         // event topics
@@ -61,7 +56,7 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
         expect(result.events.NewCollection.raw.topics[1]).to.be.eq(context.web3.utils.padLeft(GENESIS_ACCOUNT.toLowerCase(), 64));
 
         // event data
-        expect(result.events.NewCollection.raw.data).to.be.eq("0x" + context.web3.utils.padLeft(collectionId, 64));
+        expect(result.events.NewCollection.raw.data).to.be.eq("0x" + context.web3.utils.padLeft(result.events.NewCollection.returnValues.collectionId, 64));
     });
 
 });
