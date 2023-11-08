@@ -3,8 +3,9 @@ import { u8aToHex } from "@polkadot/util";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { BN } from "bn.js";
 import { expect } from "chai";
+import { step } from "mocha-steps";
 import { OWNCHAIN_SUDO_PRIVATE_KEY } from "./config";
-import { describeWithExistingSubstrateNodes } from "./util";
+import { describeWithExistingSubstrateNodes, waitForEvents } from "./util";
 
 describeWithExistingSubstrateNodes("XCM tests", (context) => {
 	let ownchainSudo = null;
@@ -38,7 +39,7 @@ describeWithExistingSubstrateNodes("XCM tests", (context) => {
 		console.log(`Sovereign account of Astar in Ownership Chain: ${ASTAR_IN_OWNCHAIN}`);
 	});
 
-	it("should be able to transfer a CLDN token from Astar sovereign account", async function () {
+	step("should be able to transfer a CLDN token from Astar sovereign account", async function () {
 		// Simply a `dummy` string converted to H160
 		let dummyAccount = "0x64756d6d79000000000000000000000000000000";
 
@@ -51,7 +52,7 @@ describeWithExistingSubstrateNodes("XCM tests", (context) => {
 			WithdrawAsset: [
 				{
 					id: { Concrete: { parents: 1, interior: { Here: null } } },
-					fun: { Fungible: new BN("10000000000000000000") },
+					fun: { Fungible: new BN("2000000000000000000") },
 				},
 			],
 		};
@@ -60,7 +61,7 @@ describeWithExistingSubstrateNodes("XCM tests", (context) => {
 			BuyExecution: [
 				{
 					id: { Concrete: { parents: 1, interior: { Here: null } } },
-					fun: { Fungible: new BN("10000000000000000000") },
+					fun: { Fungible: new BN("2000000000000000000") },
 				},
 				{
 					Unlimited: null,
@@ -70,11 +71,9 @@ describeWithExistingSubstrateNodes("XCM tests", (context) => {
 
 		const instr3 = {
 			Transact: {
-				originKind: "SovereignAccount",
+				originType: { SovereignAccount: null },
 				requireWeightAtMost: 4_000_000_000,
-				call: {
-					encoded: transfer.method.toHex(),
-				},
+				call: { encoded: u8aToHex(transfer.method.toU8a()) },
 			},
 		};
 
@@ -88,15 +87,29 @@ describeWithExistingSubstrateNodes("XCM tests", (context) => {
 
 		const message = { V2: [instr1, instr2, instr3, instr4] };
 
-		// send the message
+		// wrap it with `sudo.sudo`
 		const tx = context.astar.tx.polkadotXcm.send(dest, message);
 
-		console.log("tx", tx);
+		// send the message
+		const sudoTx = context.astar.tx.sudo.sudo(tx);
+
 		// send the transaction (optional status callback)
-		const txHash = await tx.signAndSend(astarSudo);
+		await sudoTx.signAndSend(astarSudo);
 
-		console.log(`Submitted tx: ${txHash}`);
+		// Wait for `xcmpQueue.Success` and `balances.Transfer` events
+		let eventsData = await waitForEvents(
+			context.ownchain,
+			[
+				{ module: "xcmpQueue", name: "Success" },
+				{ module: "balances", name: "Transfer" },
+			],
+			5
+		);
 
-		expect(txHash).to.not.be.null;
-	}).timeout(40000);
+		expect(eventsData["xcmpQueue.Success"]).to.not.be.undefined;
+		expect(eventsData["balances.Transfer"]).to.not.be.undefined;
+		expect(eventsData["balances.Transfer"][0].toLowerCase()).to.equal(ASTAR_IN_OWNCHAIN);
+		expect(eventsData["balances.Transfer"][1].toLowerCase()).to.equal(dummyAccount);
+		expect(eventsData["balances.Transfer"][2].toString()).to.equal("1000000000000000000");
+	}).timeout(70000);
 });

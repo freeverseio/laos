@@ -109,3 +109,61 @@ export function slotAndOwnerToTokenId(slot: string, owner: string): string | nul
 
 	return Buffer.from(bytes).toString("hex"); // Convert Uint8Array to hexadecimal string
 }
+
+/**
+ * Wait for specific events to be emitted.
+ * @param api - Substrate API
+ * @param module - Module name
+ * @param name - Event name
+ * @param blocks - Number of blocks to wait for
+ * @returns Promise that resolves to the events data
+ */
+export async function waitForEvents(
+	api: ApiPromise,
+	targetEvents: { module: string; name: string }[],
+	blocks?: number
+): Promise<any> {
+	return new Promise((resolve, reject) => {
+		let blockCounter = 0;
+		api.query.system.events((events) => {
+			// Increment the block counter
+			blockCounter++;
+
+			if (blocks && blockCounter > blocks) {
+				reject(`Exceeded block limit of ${blocks}`);
+			}
+
+			console.log("Received some events", events.length);
+
+			// check if `target` is a subset of `source`
+			const isSubset = (target: { module: string; name: string }[], source: any[]): any[] => {
+				return source.filter((s) =>
+					target.some(
+						(t) =>
+							t.module.toLowerCase() === s.event.section.toLowerCase() &&
+							t.name.toLowerCase() === s.event.method.toLowerCase()
+					)
+				);
+			};
+
+			let foundEvents = isSubset(targetEvents, events);
+
+			if (foundEvents.length === targetEvents.length) {
+				console.log("Found all events");
+				let result = {};
+				// Loop through each of the parameters, displaying the type and data
+				foundEvents.forEach((e) => {
+					const { event } = e;
+					let types = event.typeDef;
+					// Loop through each of the parameters, displaying the type and data
+					event.data.forEach((data, index) => {
+						console.log(`\t\t\t${types[index].type}: ${data.toString()}`);
+					});
+					result[`${event.section}.${event.method}`] = event.data.map((d) => d.toString());
+				});
+
+				resolve(result);
+			}
+		});
+	});
+}
