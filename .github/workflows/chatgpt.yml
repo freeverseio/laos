@@ -21,8 +21,9 @@ jobs:
           echo "Commenter is $COMMENTER"
       - name: Run if Commenter
         if: env.COMMENTER != ''
-        uses: Codium-ai/pr-agent@v0.8
+        uses: Codium-ai/pr-agent@v0.9
         env:
           OPENAI_KEY: ${{ secrets.OPENAI_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_DESCRIPTION.PUBLISH_LABELS: false
+          github_action.auto_describe: "true"
