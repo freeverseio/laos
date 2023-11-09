@@ -35,6 +35,7 @@ frame-try-runtime = { workspace = true, optional = true }
 pallet-aura = { workspace = true }
 pallet-authorship = { workspace = true }
 pallet-balances = { workspace = true }
+pallet-multisig = { workspace = true }
 pallet-session = { workspace = true }
 pallet-sudo = { workspace = true }
 pallet-timestamp = { workspace = true }
@@ -125,6 +126,7 @@ std = [
 	"pallet-sudo/std",
 	"pallet-living-assets-ownership/std",
 	"pallet-laos-evolution/std",
+	"pallet-multisig/std",
 	"pallet-timestamp/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-transaction-payment/std",
@@ -180,6 +182,7 @@ runtime-benchmarks = [
 	"pallet-collator-selection/runtime-benchmarks",
 	"pallet-living-assets-ownership/runtime-benchmarks",
 	"pallet-laos-evolution/runtime-benchmarks",
+	"pallet-multisig/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"pallet-xcm/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
@@ -213,6 +216,7 @@ try-runtime = [
 	"pallet-sudo/try-runtime",
 	"pallet-living-assets-ownership/try-runtime",
 	"pallet-laos-evolution/try-runtime",
+	"pallet-multisig/try-runtime",
 	"pallet-timestamp/try-runtime",
 	"pallet-transaction-payment/try-runtime",
 	"pallet-xcm/try-runtime",

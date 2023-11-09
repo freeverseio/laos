@@ -4818,6 +4818,7 @@ dependencies = [
  "pallet-evm-precompile-simple",
  "pallet-laos-evolution",
  "pallet-living-assets-ownership",
+ "pallet-multisig",
  "pallet-session",
  "pallet-sudo",
  "pallet-timestamp",
