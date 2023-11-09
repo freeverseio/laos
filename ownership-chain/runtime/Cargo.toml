@@ -170,6 +170,7 @@ std = [
 	# Bridge deps,
 	"ownership-parachain-primitives/std",
 	"hex/std",
+	"polkadot-primitives/std",
 ]
 
 runtime-benchmarks = [
@@ -194,35 +195,4 @@ runtime-benchmarks = [
 	"polkadot-primitives/runtime-benchmarks",
 	"polkadot-runtime-common/runtime-benchmarks",
 	"xcm-executor/runtime-benchmarks",
-]
-
-try-runtime = [
-	"cumulus-pallet-aura-ext/try-runtime",
-	"cumulus-pallet-dmp-queue/try-runtime",
-	"cumulus-pallet-parachain-system/try-runtime",
-	"cumulus-pallet-xcm/try-runtime",
-	"cumulus-pallet-xcmp-queue/try-runtime",
-	"frame-executive/try-runtime",
-	"frame-system/try-runtime",
-	"frame-try-runtime/try-runtime",
-	"pallet-aura/try-runtime",
-	"pallet-authorship/try-runtime",
-	"pallet-balances/try-runtime",
-	"pallet-collator-selection/try-runtime",
-	"pallet-session/try-runtime",
-	"pallet-sudo/try-runtime",
-	"pallet-living-assets-ownership/try-runtime",
-	"pallet-laos-evolution/try-runtime",
-	"pallet-timestamp/try-runtime",
-	"pallet-transaction-payment/try-runtime",
-	"pallet-xcm/try-runtime",
-	"parachain-info/try-runtime",
-	"pallet-evm/try-runtime",
-	"pallet-evm-chain-id/try-runtime",
-	"pallet-ethereum/try-runtime",
-  	"pallet-base-fee/try-runtime",
-	"fp-self-contained/try-runtime",
-	"frame-support/try-runtime",
-	"polkadot-runtime-common/try-runtime",
-	"sp-runtime/try-runtime",
 ]
