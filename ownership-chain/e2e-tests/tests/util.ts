@@ -3,7 +3,7 @@ import BN from "bn.js";
 import { ethers } from "ethers";
 import Web3 from "web3";
 import { JsonRpcResponse } from "web3-core-helpers";
-import { ASTAR_RPC_PORT, MAX_U96, ROCOCO_RPC_PORT, RPC_PORT } from "./config";
+import { ASTAR_RPC_PORT, BLOCK_TIME, MAX_U96, ROCOCO_RPC_PORT, RPC_PORT } from "./config";
 
 require("events").EventEmitter.prototype._maxListeners = 100;
 
@@ -80,7 +80,6 @@ export function describeWithExistingSubstrateNodes(
 			context.relaychain = api;
 		});
 
-		console.log("Connected to Substrate nodes");
 		cb(context);
 	});
 }
@@ -115,54 +114,57 @@ export function slotAndOwnerToTokenId(slot: string, owner: string): string | nul
  * @param api - Substrate API
  * @param module - Module name
  * @param name - Event name
- * @param blocks - Number of blocks to wait for
+ * @param blocks - Number of blocks to wait for, defaults to 5
  * @returns Promise that resolves to the events data
  */
 export async function waitForEvents(
 	api: ApiPromise,
 	targetEvents: { module: string; name: string }[],
-	blocks?: number
+	blocks: number = 5
 ): Promise<any> {
 	let blockCounter = 0;
-	return new Promise((resolve, reject) => {
-		api.query.system.events((events) => {
-			// Increment the block counter
-			blockCounter++;
-			if (blocks && blockCounter > blocks) {
-				reject(`Exceeded block limit of ${blocks}`);
-			}
+	let result = {};
 
-			console.log("Received some events", events.length);
+	api.query.system.events((events) => {
+		// check if `target` is a subset of `source`
+		const isSubset = (target: { module: string; name: string }[], source: any[]): any[] => {
+			return source.filter((s) =>
+				target.some(
+					(t) =>
+						t.module.toLowerCase() === s.event.section.toLowerCase() &&
+						t.name.toLowerCase() === s.event.method.toLowerCase()
+				)
+			);
+		};
 
-			// check if `target` is a subset of `source`
-			const isSubset = (target: { module: string; name: string }[], source: any[]): any[] => {
-				return source.filter((s) =>
-					target.some(
-						(t) =>
-							t.module.toLowerCase() === s.event.section.toLowerCase() &&
-							t.name.toLowerCase() === s.event.method.toLowerCase()
-					)
-				);
-			};
+		let foundEvents = isSubset(targetEvents, events);
 
-			let foundEvents = isSubset(targetEvents, events);
+		// make sure we found all the unique events
+		const foundAllEvents = targetEvents.every((t) =>
+			foundEvents.some(
+				(f) =>
+					f.event.section.toLowerCase() === t.module.toLowerCase() &&
+					f.event.method.toLowerCase() == t.name.toLowerCase()
+			)
+		);
 
-			if (foundEvents.length === targetEvents.length) {
-				console.log("Found all events");
-				let result = {};
+		if (foundAllEvents && foundEvents.length === targetEvents.length) {
+			// Loop through each of the parameters, displaying the type and data
+			foundEvents.forEach((e) => {
+				const { event } = e;
+				let types = event.typeDef;
 				// Loop through each of the parameters, displaying the type and data
-				foundEvents.forEach((e) => {
-					const { event } = e;
-					let types = event.typeDef;
-					// Loop through each of the parameters, displaying the type and data
-					event.data.forEach((data, index) => {
-						console.log(`\t\t\t${types[index].type}: ${data.toString()}`);
-					});
-					result[`${event.section}.${event.method}`] = event.data.map((d) => d.toString());
+				event.data.forEach((data, index) => {
+					console.log(`\t\t\t${types[index].type}: ${data.toString()}`);
 				});
+				result[`${event.section}.${event.method}`] = event.data.map((d) => d.toString());
+			});
+		}
+	});
 
-				resolve(result);
-			}
-		});
+	return new Promise((resolve, _) => {
+		setTimeout(() => {
+			resolve(result);
+		}, BLOCK_TIME * blocks);
 	});
 }
