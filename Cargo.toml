@@ -70,7 +70,7 @@ sp-arithmetic = { git = "https://github.com/paritytech/polkadot-sdk", tag = "pol
 sp-externalities = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-v1.3.0", default-features = false }
 sp-consensus-grandpa = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-v1.3.0", default-features = false }
 sp-keyring = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-v1.3.0", default-features = false }
-sp-weights = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-v1.3.0" }
+sp-weights = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-v1.3.0", default-features = false }
 sp-state-machine = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-v1.3.0", default-features = false }
 sp-tracing = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-v1.3.0", default-features = false }
 
@@ -106,7 +106,6 @@ sc-consensus-grandpa-rpc = { git = "https://github.com/paritytech/polkadot-sdk",
 sc-keystore = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-v1.3.0" }
 sc-rpc-api = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-v1.3.0" }
 substrate-prometheus-endpoint = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-v1.3.0" }
-pallet-transaction-payment-rpc = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-v1.3.0" }
 substrate-frame-rpc-system = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-v1.3.0" }
 sc-cli = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-v1.3.0" }
 try-runtime-cli = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-v1.3.0" }
@@ -128,6 +127,7 @@ pallet-session = { git = "https://github.com/paritytech/polkadot-sdk", tag = "po
 pallet-sudo = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-v1.3.0", default-features = false }
 pallet-grandpa = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-v1.3.0", default-features = false }
 pallet-timestamp = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-v1.3.0", default-features = false }
+pallet-transaction-payment-rpc = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-v1.3.0", default-features = false }
 pallet-transaction-payment = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-v1.3.0", default-features = false }
 pallet-transaction-payment-rpc-runtime-api = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-v1.3.0", default-features = false }
 frame-benchmarking = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-v1.3.0", default-features = false }
