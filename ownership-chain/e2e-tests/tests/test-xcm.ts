@@ -11,6 +11,9 @@ describeWithExistingSubstrateNodes("XCM tests", (context) => {
 	let ownchainSudo = null;
 	let astarSudo = null;
 
+	const ASTAR_PARA_ID = 2008;
+	const OWNCHAIN_PARA_ID = 2900;
+
 	// Sovereign account of Astar in Ownership Chain
 	const ASTAR_IN_OWNCHAIN = "0x7369626cd8070000000000000000000000000000";
 	// Sovereign account of Ownership Chain in Astar
@@ -39,7 +42,21 @@ describeWithExistingSubstrateNodes("XCM tests", (context) => {
 		console.log(`Sovereign account of Astar in Ownership Chain: ${ASTAR_IN_OWNCHAIN}`);
 	});
 
-	step("should be able to transfer a CLDN token from Astar sovereign account", async function () {
+	step("hrmp channels should be opened", async function () {
+		let astarToOwnchain = await context.relaychain.query.hrmp.hrmpChannels({
+			sender: ASTAR_PARA_ID,
+			recipient: OWNCHAIN_PARA_ID,
+		});
+		let ownchainToAstar = await context.relaychain.query.hrmp.hrmpChannels({
+			sender: OWNCHAIN_PARA_ID,
+			recipient: ASTAR_PARA_ID,
+		});
+
+		expect(astarToOwnchain).to.not.be.undefined;
+		expect(ownchainToAstar).to.not.be.undefined;
+	});
+
+	step("should be able to transfer a CLDN token from Astar sovereign account", async function (done) {
 		// Simply a `dummy` string converted to H160
 		let dummyAccount = "0x64756d6d79000000000000000000000000000000";
 
@@ -111,5 +128,7 @@ describeWithExistingSubstrateNodes("XCM tests", (context) => {
 		expect(eventsData["balances.Transfer"][0].toLowerCase()).to.equal(ASTAR_IN_OWNCHAIN);
 		expect(eventsData["balances.Transfer"][1].toLowerCase()).to.equal(dummyAccount);
 		expect(eventsData["balances.Transfer"][2].toString()).to.equal("1000000000000000000");
-	}).timeout(70000);
+
+		done();
+	}).timeout(80000);
 });

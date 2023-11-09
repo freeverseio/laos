@@ -123,12 +123,11 @@ export async function waitForEvents(
 	targetEvents: { module: string; name: string }[],
 	blocks?: number
 ): Promise<any> {
+	let blockCounter = 0;
 	return new Promise((resolve, reject) => {
-		let blockCounter = 0;
 		api.query.system.events((events) => {
 			// Increment the block counter
 			blockCounter++;
-
 			if (blocks && blockCounter > blocks) {
 				reject(`Exceeded block limit of ${blocks}`);
 			}
