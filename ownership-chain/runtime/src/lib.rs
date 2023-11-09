@@ -53,10 +53,10 @@ use frame_support::{
 use frame_system::EnsureRoot;
 use pallet_balances::NegativeImbalance;
 use pallet_xcm::{EnsureXcm, IsVoiceOfBody};
+use polkadot_runtime_common::xcm_sender::NoPriceForMessageDelivery;
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 pub use sp_runtime::{Perbill, Permill};
 use xcm_config::{RelayLocation, XcmConfig, XcmOriginToTransactDispatchOrigin};
-use polkadot_runtime_common::xcm_sender::NoPriceForMessageDelivery;
 
 pub use pallet_xcm::Call as XcmCall;
 
@@ -187,7 +187,8 @@ impl WeightToFeePolynomial for WeightToFee {
 /// to even the core data structures.
 pub mod opaque {
 	use super::*;
-	use sp_runtime::{generic, 
+	use sp_runtime::{
+		generic,
 		traits::{BlakeTwo256, Hash as HashT},
 	};
 

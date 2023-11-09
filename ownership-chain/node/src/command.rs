@@ -2,8 +2,9 @@ use std::net::SocketAddr;
 
 use cumulus_primitives_core::ParaId;
 use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
-use log::info;
 use laos_ownership_runtime::Block;
+use log::info;
+use polkadot_service::RococoChainSpec;
 use sc_cli::{
 	ChainSpec, CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams,
 	NetworkParams, Result, SharedParams, SubstrateCli,
@@ -19,6 +20,12 @@ use crate::{
 
 fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 	Ok(match id {
+		"arrakis" => Box::new(chain_spec::ChainSpec::from_json_bytes(
+			&include_bytes!("../../specs/arrakis-frontier.json")[..],
+		)?),
+		"caladan" => Box::new(chain_spec::ChainSpec::from_json_bytes(
+			&include_bytes!("../../specs/caladan-raw.json")[..],
+		)?),
 		"dev" => Box::new(chain_spec::development_config()),
 		"template-rococo" => Box::new(chain_spec::local_testnet_config()),
 		"" | "local" => Box::new(chain_spec::local_testnet_config()),
@@ -94,7 +101,13 @@ impl SubstrateCli for RelayChainCli {
 	}
 
 	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
-		polkadot_cli::Cli::from_iter([RelayChainCli::executable_name()].iter()).load_spec(id)
+		match id {
+			"rococo_freeverse" => Ok(Box::new(RococoChainSpec::from_json_bytes(
+				&include_bytes!("../../specs/rococo-freeverse-chainspec.json")[..],
+			)?)),
+			_ => polkadot_cli::Cli::from_iter([RelayChainCli::executable_name()].iter())
+				.load_spec(id),
+		}
 	}
 }
 
