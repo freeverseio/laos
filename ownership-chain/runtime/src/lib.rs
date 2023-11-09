@@ -353,6 +353,7 @@ impl pallet_balances::Config for Runtime {
 	type MaxHolds = ConstU32<0>;
 	type RuntimeHoldReason = ();
 	type MaxFreezes = ConstU32<0>;
+	type RuntimeFreezeReason = ();
 }
 
 parameter_types! {
@@ -641,6 +642,7 @@ impl pallet_evm::Config for Runtime {
 	type WeightInfo = pallet_evm::weights::SubstrateWeight<Runtime>;
 	type WeightPerGas = WeightPerGas;
 	type WithdrawOrigin = pallet_evm::EnsureAddressNever<AccountId>;
+	type SuicideQuickClearLimit = ();
 }
 
 parameter_types! {

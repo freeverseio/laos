@@ -202,7 +202,7 @@ polkadot-primitives = { git = "https://github.com/paritytech/polkadot-sdk", tag 
 polkadot-runtime-common = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-v1.3.0", default-features = false }
 polkadot-core-primitives = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-v1.3.0", default-features = false }
 polkadot-runtime-parachains = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-v1.3.0", default-features = false }
-pallet-xcm = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v1.0.0" }
+pallet-xcm = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, tag = "polkadot-v1.3.0" }
 
 # Temporary, to ensure `runtime-benchmarks` features can compile
 polkadot-runtime = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-v1.3.0", default-features = false }
