@@ -61,12 +61,12 @@ pallet-evm-laos-evolution = { workspace = true }
 
 # Polkadot
 pallet-xcm = { workspace = true }
-polkadot-parachain = { workspace = true }
 polkadot-runtime-common = { workspace = true }
 xcm = { workspace = true }
 xcm-builder = { workspace = true }
 xcm-executor = { workspace = true }
 polkadot-primitives = { workspace = true }
+polkadot-parachain-primitives = { workspace = true }
 
 # Cumulus
 cumulus-pallet-aura-ext = { workspace = true }
@@ -130,8 +130,8 @@ std = [
 	"pallet-transaction-payment/std",
 	"pallet-xcm/std",
 	"parachain-info/std",
-	"polkadot-parachain/std",
 	"polkadot-primitives/std",
+	"polkadot-parachain-primitives/std",
 	"polkadot-runtime-common/std",
 	"sp-api/std",
 	"sp-block-builder/std",
@@ -190,7 +190,6 @@ runtime-benchmarks = [
 	"pallet-ethereum/runtime-benchmarks",
 	"pallet-evm/runtime-benchmarks",
 	"pallet-sudo/runtime-benchmarks",
-	"polkadot-parachain/runtime-benchmarks",
 	"polkadot-primitives/runtime-benchmarks",
 	"polkadot-runtime-common/runtime-benchmarks",
 	"xcm-executor/runtime-benchmarks",
