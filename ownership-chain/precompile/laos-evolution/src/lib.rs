@@ -14,7 +14,7 @@ use sp_runtime::DispatchError;
 use sp_std::{fmt::Debug, marker::PhantomData, vec::Vec};
 
 /// Solidity selector of the CreateCollection log, which is the Keccak of the Log signature.
-pub const SELECTOR_LOG_NEW_COLLECTION: [u8; 32] = keccak256!("NewCollection(uint64,address)");
+pub const SELECTOR_LOG_NEW_COLLECTION: [u8; 32] = keccak256!("NewCollection(address,address)");
 /// Solidity selector of the Transfer log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
 	keccak256!("MintedWithExternalURI(uint64,uint96,address,string,uint256)");
@@ -27,7 +27,7 @@ pub enum Action {
 	/// Create collection
 	CreateCollection = "createCollection(address)",
 	/// Get owner of the collection
-	OwnerOfCollection = "ownerOfCollection(uint64)",
+	Owner = "owner()",
 	/// Get tokenURI of the token in collection
 	TokenURI = "tokenURI(uint64,uint256)",
 	/// Mint token
@@ -69,25 +69,31 @@ where
 
 				match LaosEvolution::create_collection(owner.into()) {
 					Ok(collection_id) => {
+						let collection_id = H160::from_low_u64_be(collection_id);
+
 						LogsBuilder::new(context.address)
 							.log2(
 								SELECTOR_LOG_NEW_COLLECTION,
 								owner,
-								EvmDataWriter::new().write(collection_id).build(),
+								EvmDataWriter::new().write(Address(collection_id.into())).build(),
 							)
 							.record(handle)?;
 
-						Ok(succeed(EvmDataWriter::new().write(collection_id).build()))
+						Ok(succeed(
+							EvmDataWriter::new().write(Address(collection_id.into())).build(),
+						))
 					},
 					Err(err) => Err(revert_dispatch_error(err)),
 				}
 			},
-			Action::OwnerOfCollection => {
+			Action::Owner => {
 				input.expect_arguments(1)?;
 
-				let collection_id = input.read::<u64>()?;
+				let collection_id = input.read::<Address>()?;
 
-				if let Some(owner) = LaosEvolution::collection_owner(collection_id) {
+				if let Some(owner) =
+					LaosEvolution::collection_owner(H160::to_low_u64_be(&collection_id.0))
+				{
 					Ok(succeed(EvmDataWriter::new().write(Address(owner.into())).build()))
 				} else {
 					Err(revert_dispatch_error(DispatchError::Other("collection does not exist")))
@@ -203,7 +209,7 @@ where
 		handle.check_function_modifier(match selector {
 			Action::CreateCollection => FunctionModifier::NonPayable,
 			Action::Mint => FunctionModifier::NonPayable,
-			Action::OwnerOfCollection => FunctionModifier::View,
+			Action::Owner => FunctionModifier::View,
 			Action::TokenURI => FunctionModifier::View,
 			Action::Evolve => FunctionModifier::NonPayable,
 		})?;

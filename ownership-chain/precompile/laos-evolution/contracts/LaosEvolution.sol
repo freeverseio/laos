@@ -7,9 +7,9 @@ pragma solidity >=0.8.3;
 /// @custom:address 0x0000000000000000000000000000000000000403
 interface LaosEvolution {
     /// @notice Event emitted when a new collection is created
-    /// @param collectionId the id of the newly created collection
     /// @param owner the owner of the newly created collection
-    event NewCollection(uint64 collectionId, address indexed owner);
+    /// @param collectionAddress the address of the newly created collection
+    event NewCollection(address indexed owner, address collectionAddress);
 
     /// @notice Emitted when a new token is minted
     /// @dev Id of the token is concatenation of `slot` and `to`
@@ -39,14 +39,13 @@ interface LaosEvolution {
     /// @notice Creates a new collection
     /// @dev Call this function to create a new collection
     /// @param owner the owner of the newly created collection
-    /// @return the id of the newly created collection
-    function createCollection(address owner) external returns (uint64);
+    /// @return the address of the newly created collection
+    function createCollection(address owner) external returns (address);
 
     /// @notice Owner of the collection
     /// @dev Call this function to get the owner of a collection
-    /// @param collectionId the id of the collection
     /// @return the owner of the collection
-    function ownerOfCollection(uint64 collectionId) external view returns (address);
+    function owner() external view returns (address);
 
     /// @notice Provides a distinct Uniform Resource Identifier (URI) for a given token within a specified collection.
     /// @dev Implementations must follow the ERC-721 standard for token URIs, which should point to a JSON file conforming to the "ERC721 Metadata JSON Schema".
