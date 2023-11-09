@@ -7148,6 +7148,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-bags-list"
+version = "4.0.0-dev"
+source = "git+https://github.com/paritytech/polkadot-sdk?tag=polkadot-v1.3.0#7c9fd83805cc446983a7698c7a3281677cf655c8"
+dependencies = [
+ "aquamarine",
+ "docify",
+ "frame-benchmarking",
+ "frame-election-provider-support",
+ "frame-support",
+ "frame-system",
+ "log",
+ "pallet-balances",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "sp-tracing",
+]
+
+[[package]]
 name = "pallet-balances"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/polkadot-sdk?tag=polkadot-v1.3.0#7c9fd83805cc446983a7698c7a3281677cf655c8"
@@ -7744,6 +7766,56 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-nomination-pools"
+version = "1.0.0"
+source = "git+https://github.com/paritytech/polkadot-sdk?tag=polkadot-v1.3.0#7c9fd83805cc446983a7698c7a3281677cf655c8"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "log",
+ "pallet-balances",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-staking",
+ "sp-std",
+ "sp-tracing",
+]
+
+[[package]]
+name = "pallet-nomination-pools-benchmarking"
+version = "1.0.0"
+source = "git+https://github.com/paritytech/polkadot-sdk?tag=polkadot-v1.3.0#7c9fd83805cc446983a7698c7a3281677cf655c8"
+dependencies = [
+ "frame-benchmarking",
+ "frame-election-provider-support",
+ "frame-support",
+ "frame-system",
+ "pallet-bags-list",
+ "pallet-nomination-pools",
+ "pallet-staking",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-runtime",
+ "sp-runtime-interface",
+ "sp-staking",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-nomination-pools-runtime-api"
+version = "1.0.0-dev"
+source = "git+https://github.com/paritytech/polkadot-sdk?tag=polkadot-v1.3.0#7c9fd83805cc446983a7698c7a3281677cf655c8"
+dependencies = [
+ "pallet-nomination-pools",
+ "parity-scale-codec",
+ "sp-api",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-offences"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/polkadot-sdk?tag=polkadot-v1.3.0#7c9fd83805cc446983a7698c7a3281677cf655c8"
@@ -7755,6 +7827,30 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
+ "sp-runtime",
+ "sp-staking",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-offences-benchmarking"
+version = "4.0.0-dev"
+source = "git+https://github.com/paritytech/polkadot-sdk?tag=polkadot-v1.3.0#7c9fd83805cc446983a7698c7a3281677cf655c8"
+dependencies = [
+ "frame-benchmarking",
+ "frame-election-provider-support",
+ "frame-support",
+ "frame-system",
+ "log",
+ "pallet-babe",
+ "pallet-balances",
+ "pallet-grandpa",
+ "pallet-im-online",
+ "pallet-offences",
+ "pallet-session",
+ "pallet-staking",
+ "parity-scale-codec",
+ "scale-info",
  "sp-runtime",
  "sp-staking",
  "sp-std",
@@ -7830,6 +7926,7 @@ name = "pallet-referenda"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/polkadot-sdk?tag=polkadot-v1.3.0#7c9fd83805cc446983a7698c7a3281677cf655c8"
 dependencies = [
+ "assert_matches",
  "frame-benchmarking",
  "frame-support",
  "frame-system",
@@ -7884,6 +7981,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-session-benchmarking"
+version = "4.0.0-dev"
+source = "git+https://github.com/paritytech/polkadot-sdk?tag=polkadot-v1.3.0#7c9fd83805cc446983a7698c7a3281677cf655c8"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "pallet-session",
+ "pallet-staking",
+ "parity-scale-codec",
+ "rand 0.8.5",
+ "sp-runtime",
+ "sp-session",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-society"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/polkadot-sdk?tag=polkadot-v1.3.0#7c9fd83805cc446983a7698c7a3281677cf655c8"
@@ -7925,12 +8039,32 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-staking-reward-curve"
+version = "4.0.0-dev"
+source = "git+https://github.com/paritytech/polkadot-sdk?tag=polkadot-v1.3.0#7c9fd83805cc446983a7698c7a3281677cf655c8"
+dependencies = [
+ "proc-macro-crate 1.3.1",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.39",
+]
+
+[[package]]
 name = "pallet-staking-reward-fn"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/polkadot-sdk?tag=polkadot-v1.3.0#7c9fd83805cc446983a7698c7a3281677cf655c8"
 dependencies = [
  "log",
  "sp-arithmetic",
+]
+
+[[package]]
+name = "pallet-staking-runtime-api"
+version = "4.0.0-dev"
+source = "git+https://github.com/paritytech/polkadot-sdk?tag=polkadot-v1.3.0#7c9fd83805cc446983a7698c7a3281677cf655c8"
+dependencies = [
+ "parity-scale-codec",
+ "sp-api",
 ]
 
 [[package]]
@@ -9527,6 +9661,7 @@ dependencies = [
  "substrate-prometheus-endpoint",
  "thiserror",
  "tracing-gum",
+ "westend-runtime",
 ]
 
 [[package]]
@@ -15312,6 +15447,111 @@ dependencies = [
  "thiserror",
  "tokio",
  "winapi",
+]
+
+[[package]]
+name = "westend-runtime"
+version = "1.0.0"
+source = "git+https://github.com/paritytech/polkadot-sdk?tag=polkadot-v1.3.0#7c9fd83805cc446983a7698c7a3281677cf655c8"
+dependencies = [
+ "binary-merkle-tree",
+ "bitvec",
+ "frame-benchmarking",
+ "frame-election-provider-support",
+ "frame-executive",
+ "frame-support",
+ "frame-system",
+ "frame-system-benchmarking",
+ "frame-system-rpc-runtime-api",
+ "frame-try-runtime",
+ "hex-literal",
+ "log",
+ "pallet-asset-rate",
+ "pallet-authority-discovery",
+ "pallet-authorship",
+ "pallet-babe",
+ "pallet-bags-list",
+ "pallet-balances",
+ "pallet-beefy",
+ "pallet-beefy-mmr",
+ "pallet-collective",
+ "pallet-conviction-voting",
+ "pallet-democracy",
+ "pallet-election-provider-multi-phase",
+ "pallet-election-provider-support-benchmarking",
+ "pallet-elections-phragmen",
+ "pallet-fast-unstake",
+ "pallet-grandpa",
+ "pallet-identity",
+ "pallet-im-online",
+ "pallet-indices",
+ "pallet-membership",
+ "pallet-message-queue",
+ "pallet-mmr",
+ "pallet-multisig",
+ "pallet-nomination-pools",
+ "pallet-nomination-pools-benchmarking",
+ "pallet-nomination-pools-runtime-api",
+ "pallet-offences",
+ "pallet-offences-benchmarking",
+ "pallet-preimage",
+ "pallet-proxy",
+ "pallet-recovery",
+ "pallet-referenda",
+ "pallet-scheduler",
+ "pallet-session",
+ "pallet-session-benchmarking",
+ "pallet-society",
+ "pallet-staking",
+ "pallet-staking-reward-curve",
+ "pallet-staking-runtime-api",
+ "pallet-state-trie-migration",
+ "pallet-sudo",
+ "pallet-timestamp",
+ "pallet-transaction-payment",
+ "pallet-transaction-payment-rpc-runtime-api",
+ "pallet-treasury",
+ "pallet-utility",
+ "pallet-vesting",
+ "pallet-whitelist",
+ "pallet-xcm",
+ "pallet-xcm-benchmarks",
+ "parity-scale-codec",
+ "polkadot-parachain-primitives",
+ "polkadot-primitives",
+ "polkadot-runtime-common",
+ "polkadot-runtime-parachains",
+ "rustc-hex",
+ "scale-info",
+ "serde",
+ "serde_derive",
+ "smallvec",
+ "sp-api",
+ "sp-application-crypto",
+ "sp-arithmetic",
+ "sp-authority-discovery",
+ "sp-block-builder",
+ "sp-consensus-babe",
+ "sp-consensus-beefy",
+ "sp-core",
+ "sp-genesis-builder",
+ "sp-inherents",
+ "sp-io",
+ "sp-mmr-primitives",
+ "sp-npos-elections",
+ "sp-offchain",
+ "sp-runtime",
+ "sp-session",
+ "sp-staking",
+ "sp-std",
+ "sp-storage",
+ "sp-transaction-pool",
+ "sp-version",
+ "staging-xcm",
+ "staging-xcm-builder",
+ "staging-xcm-executor",
+ "substrate-wasm-builder",
+ "westend-runtime-constants",
 ]
 
 [[package]]
