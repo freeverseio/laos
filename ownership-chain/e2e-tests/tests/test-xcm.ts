@@ -65,7 +65,7 @@ describeWithExistingSubstrateNodes("XCM tests", (context) => {
 		let instr1 = {
 			WithdrawAsset: [
 				{
-					id: { Concrete: { parents: 1, interior: { Here: null } } },
+					id: { Concrete: { parents: 0, interior: { Here: null } } },
 					fun: { Fungible: new BN("2000000000000000000") },
 				},
 			],
@@ -74,7 +74,7 @@ describeWithExistingSubstrateNodes("XCM tests", (context) => {
 		let instr2 = {
 			BuyExecution: [
 				{
-					id: { Concrete: { parents: 1, interior: { Here: null } } },
+					id: { Concrete: { parents: 0, interior: { Here: null } } },
 					fun: { Fungible: new BN("2000000000000000000") },
 				},
 				{

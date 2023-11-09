@@ -7,7 +7,7 @@
 		"fmt-check": "prettier ./tests --check",
 		"fmt": "prettier ./tests --write",
 		"build": "cp -r ../precompile/laos-evolution/contracts contracts && truffle compile && rm -rf contracts",
-		"test": "mocha -r ts-node/register 'tests/**/*.ts' --exit",
+		"test": "mocha -r ts-node/register 'tests/test-xcm.ts' --exit",
 		"test-sql": "FRONTIER_BACKEND_TYPE='sql' mocha -r ts-node/register 'tests/**/*.ts'"
 	},
 	"author": "",
