@@ -159,6 +159,6 @@ jobs:
 
     - name: Run tests
       run: |
-        npm run build && npm run test
+        ./node_modules/.bin/truffle compile ../precompile/laos-evolution/contracts --all && npm run test
       working-directory: ./ownership-chain/e2e-tests
 
