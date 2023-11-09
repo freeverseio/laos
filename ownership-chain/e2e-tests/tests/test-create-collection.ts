@@ -21,11 +21,11 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
 
     step("when collection does not exist owner of call should fail", async function () {
         try {
-            await contract.methods.ownerOfCollection("1111").call();
+            await contract.methods.owner("1111").call();
             expect.fail("Expected error was not thrown"); // Ensure an error is thrown
         } catch (error) {
             expect(error.message).to.be.eq(
-                "Returned error: VM Exception while processing transaction: revert"
+                "Returned error: VM Exception while prssocessing transaction: revert"
             );
         }
     });
