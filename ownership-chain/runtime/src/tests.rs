@@ -64,7 +64,7 @@ fn asset_id_to_address_two_assets_same_owner() {
 }
 
 #[test]
-fn test_constants() {
+fn test_block_and_gas_limit_constants() {
 	use crate::Runtime;
 
 	let system_block_weights = <Runtime as frame_system::Config>::BlockWeights::get();
