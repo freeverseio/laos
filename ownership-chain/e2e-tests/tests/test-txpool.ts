@@ -50,7 +50,7 @@ describeWithExistingNode("Frontier RPC (TxPoolApi)", (context) => {
 
 	step("txpool_inspect should return correct result", async function () {
 		let txpoolInspect = await customRequest(context.web3, "txpool_inspect", []);
-		let genesisAccount = ensureLowercaseHex(GENESIS_ACCOUNT);
+		let genesisAccount = GENESIS_ACCOUNT.toLowerCase();
 
 		expect(txpoolInspect.result.pending[genesisAccount]["0x0"]).to.be.equal(
 			"0x0000000000000000000000000000000000000000: 0 wei + 1048576 gas x 1000000000 wei"
