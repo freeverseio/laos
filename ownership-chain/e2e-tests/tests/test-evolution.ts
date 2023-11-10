@@ -81,7 +81,7 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
         expect(Object.keys(result.events).length).to.be.eq(1);
 
         // data returned within the event
-        expect(result.events.MintedWithExternalURI.returnValues._collectionId).to.be.eq(collectionId);
+        expect(result.events.MintedWithExternalURI.returnValues._collectionId).to.be.eq(collectionId.toString());
         expect(result.events.MintedWithExternalURI.returnValues._slot).to.be.eq(slot);
         expect(result.events.MintedWithExternalURI.returnValues._to).to.be.eq(to);
         expect(result.events.MintedWithExternalURI.returnValues._tokenURI).to.be.eq(tokenURI);
