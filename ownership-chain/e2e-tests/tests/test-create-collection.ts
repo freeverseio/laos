@@ -41,9 +41,9 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
             nonce: nonce++,
         });
         expect(result.status).to.be.eq(true);
-        expect(context.web3.utils.isAddress(result.events.NewCollection.returnValues.collectionAddress)).to.be.eq(true);
+        expect(context.web3.utils.isAddress(result.events.NewCollection.returnValues._collectionAddress)).to.be.eq(true);
 
-        let collectionContract = new context.web3.eth.Contract(LAOS_EVOLUTION_ABI, result.events.NewCollection.returnValues.collectionAddress, {
+        let collectionContract = new context.web3.eth.Contract(LAOS_EVOLUTION_ABI, result.events.NewCollection.returnValues._collectionAddress, {
             from: GENESIS_ACCOUNT,
             gas: GAS_LIMIT,
             gasPrice: GAS_PRICE,
@@ -65,8 +65,8 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
         expect(result.status).to.be.eq(true);
 
         expect(Object.keys(result.events).length).to.be.eq(1);
-        expect(context.web3.utils.isAddress(result.events.NewCollection.returnValues.collectionAddress)).to.be.eq(true);
-        expect(result.events.NewCollection.returnValues.owner).to.be.eq(GENESIS_ACCOUNT);
+        expect(context.web3.utils.isAddress(result.events.NewCollection.returnValues._collectionAddress)).to.be.eq(true);
+        expect(result.events.NewCollection.returnValues._owner).to.be.eq(GENESIS_ACCOUNT);
 
         // event topics
         expect(result.events.NewCollection.raw.topics.length).to.be.eq(2);
@@ -74,7 +74,7 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
         expect(result.events.NewCollection.raw.topics[1]).to.be.eq(context.web3.utils.padLeft(GENESIS_ACCOUNT.toLowerCase(), 64));
 
         // event data
-        expect(result.events.NewCollection.raw.data).to.be.eq(context.web3.utils.padLeft(result.events.NewCollection.returnValues.collectionAddress, 64));
+        expect(result.events.NewCollection.raw.data).to.be.eq(context.web3.utils.padLeft(result.events.NewCollection.returnValues._collectionAddress, 64));
     });
 
 });

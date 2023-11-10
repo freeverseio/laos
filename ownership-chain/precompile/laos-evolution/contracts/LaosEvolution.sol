@@ -7,40 +7,40 @@ pragma solidity >=0.8.3;
 /// @custom:address 0x0000000000000000000000000000000000000403
 interface LaosEvolution {
     /// @notice Event emitted when a new collection is created
-    /// @param owner the owner of the newly created collection
-    /// @param collectionAddress the address of the newly created collection
-    event NewCollection(address indexed owner, address collectionAddress);
+    /// @param _owner the owner of the newly created collection
+    /// @param _collectionAddress the address of the newly created collection
+    event NewCollection(address indexed _owner, address _collectionAddress);
 
     /// @notice Emitted when a new token is minted
     /// @dev Id of the token is concatenation of `slot` and `to`
-    /// @param collectionId the id of the collection
-    /// @param slot the slot of the token
-    /// @param to the initial owner of the newly minted token
-    /// @param tokenURI the URI of the newly minted token
-    /// @param tokenId the resulting id of the newly minted token
+    /// @param _collectionId the id of the collection
+    /// @param _slot the slot of the token
+    /// @param _to the initial owner of the newly minted token
+    /// @param _tokenURI the URI of the newly minted token
+    /// @param _tokenId the resulting id of the newly minted token
     event MintedWithExternalURI(
-        uint64 collectionId,
-        uint96 slot,
-        address indexed to,
-        string tokenURI,
-        uint256 tokenId
+        uint64 _collectionId,
+        uint96 _slot,
+        address indexed _to,
+        string _tokenURI,
+        uint256 _tokenId
     );
 
     /// @notice Emitted when a token metadata is updated
-    /// @param tokenId the id of the token for which the metadata has changed
-    /// @param collectionId the id of the collection
-    /// @param tokenURI the new URI of the token
+    /// @param _tokenId the id of the token for which the metadata has changed
+    /// @param _collectionId the id of the collection
+    /// @param _tokenURI the new URI of the token
     event EvolvedWithExternalURI(
-        uint64 collectionId,
-        uint256 indexed tokenId,
-        string tokenURI
+        uint64 _collectionId,
+        uint256 indexed _tokenId,
+        string _tokenURI
     );
 
     /// @notice Creates a new collection
     /// @dev Call this function to create a new collection
-    /// @param owner the owner of the newly created collection
+    /// @param _owner the owner of the newly created collection
     /// @return the address of the newly created collection
-    function createCollection(address owner) external returns (address);
+    function createCollection(address _owner) external returns (address);
 
     /// @notice Owner of the collection
     /// @dev Call this function to get the owner of a collection
@@ -49,33 +49,33 @@ interface LaosEvolution {
 
     /// @notice Provides a distinct Uniform Resource Identifier (URI) for a given token within a specified collection.
     /// @dev Implementations must follow the ERC-721 standard for token URIs, which should point to a JSON file conforming to the "ERC721 Metadata JSON Schema".
-    /// @param collectionId The unique identifier of the collection to which the token belongs.
-    /// @param tokenId The unique identifier of the token within the specified collection.
+    /// @param _collectionId The unique identifier of the collection to which the token belongs.
+    /// @param _tokenId The unique identifier of the token within the specified collection.
     /// @return A string representing the URI of the specified token.
-    function tokenURI(uint64 collectionId, uint256 tokenId) external view returns (string memory);
+    function tokenURI(uint64 _collectionId, uint256 _tokenId) external view returns (string memory);
 
     /// @notice Mint a new token
     /// @dev Call this function to mint a new token, the caller must be the owner of the collection
-    /// @param collectionId the id of the collection
-    /// @param slot the slot of the token
-    /// @param to the owner of the newly minted token
-    /// @param tokenURI the tokenURI of the newly minted token
+    /// @param _collectionId the id of the collection
+    /// @param _slot the slot of the token
+    /// @param _to the owner of the newly minted token
+    /// @param _tokenURI the tokenURI of the newly minted token
     /// @return the id of the newly minted token
     function mintWithExternalURI(
-        uint64 collectionId,
-        uint96 slot,
-        address to,
-        string calldata tokenURI
+        uint64 _collectionId,
+        uint96 _slot,
+        address _to,
+        string calldata _tokenURI
     ) external returns (uint256);
 
     /// @notice Changes the tokenURI of an existing token
     /// @dev Call this function to evolve an existing token, the caller must be the owner of the collection
-    /// @param collectionId the id of the collection
-    /// @param tokenId the id of the token
-    /// @param tokenURI the new tokenURI of the token
+    /// @param _collectionId the id of the collection
+    /// @param _tokenId the id of the token
+    /// @param _tokenURI the new tokenURI of the token
     function evolveWithExternalURI(
-        uint64 collectionId,
-        uint256 tokenId,
-        string calldata tokenURI
+        uint64 _collectionId,
+        uint256 _tokenId,
+        string calldata _tokenURI
     ) external returns (uint256);
 }
