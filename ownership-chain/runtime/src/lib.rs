@@ -339,7 +339,7 @@ parameter_types! {
 /// behaviour if you set this to zero.
 ///
 /// Bottom line: Do yourself a favour and make it at least one!
-	pub const ExistentialDeposit: Balance = 1;
+	pub const ExistentialDeposit: Balance = 0;
 }
 
 impl pallet_balances::Config for Runtime {
