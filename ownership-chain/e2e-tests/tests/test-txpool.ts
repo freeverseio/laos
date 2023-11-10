@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { step } from "mocha-steps";
 
 import { GENESIS_ACCOUNT, GENESIS_ACCOUNT_PRIVATE_KEY } from "./config";
-import { customRequest, describeWithExistingNode, ensureLowercaseHex } from "./util";
+import { customRequest, describeWithExistingNode } from "./util";
 
 describeWithExistingNode("Frontier RPC (TxPoolApi)", (context) => {
 	const TEST_CONTRACT_BYTECODE =
