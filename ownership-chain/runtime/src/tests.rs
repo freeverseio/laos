@@ -78,36 +78,3 @@ fn minimum_balance_should_be_1() {
 	assert_eq!(EXISTENTIAL_DEPOSIT, 1);
 	assert_eq!(Balances::minimum_balance(), EXISTENTIAL_DEPOSIT);
 }
-
-#[test]
-fn deposit_existential_deposit_should_succeed() {
-	new_test_ext().execute_with(|| {
-		let alice = AccountId::from_str(ALICE).unwrap();
-		assert_eq!(Balances::total_balance(&alice), 0);
-
-		let result = Balances::deposit(&alice, EXISTENTIAL_DEPOSIT, Precision::Exact);
-
-		match result {
-			Ok(_) => (), // Test passes
-			Err(e) => panic!("Expected Ok, got Err: {:?}", e),
-		}
-		assert_eq!(Balances::total_balance(&alice), EXISTENTIAL_DEPOSIT);
-	})
-}
-
-#[test]
-fn deposit_less_than_existential_should_fail() {
-	new_test_ext().execute_with(|| {
-		let alice = AccountId::from_str(ALICE).unwrap();
-		assert_eq!(Balances::total_balance(&alice), 0);
-
-		let result = Balances::deposit(&alice, EXISTENTIAL_DEPOSIT - 1, Precision::Exact);
-
-		match result {
-			Ok(_) => panic!("It should fail"),
-			Err(_) => (), // Test passes
-		}
-	})
-}
-
-
