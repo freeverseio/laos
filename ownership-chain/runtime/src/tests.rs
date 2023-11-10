@@ -3,6 +3,11 @@ use core::str::FromStr;
 use super::*;
 use sp_core::U256;
 
+// Build genesis storage according to the mock runtime.
+pub fn new_test_ext() -> sp_io::TestExternalities {
+	frame_system::GenesisConfig::<Runtime>::default().build_storage().unwrap().into()
+}
+
 #[test]
 fn asset_id_to_address_type_zero_values() {
 	type TestAssetIdToInitialOwner =
@@ -61,3 +66,14 @@ fn asset_id_to_address_two_assets_same_owner() {
 		AccountId::from_str("c0f0f4ab324c46e55d02d0033343b4be8a55532d").unwrap()
 	);
 }
+
+
+#[test]
+fn check_multisig_configuration() {
+	new_test_ext().execute_with(||{
+		assert_eq!(<Runtime as pallet_multisig::Config>::DepositBase::get(), 543000000000);
+		assert_eq!(<Runtime as pallet_multisig::Config>::DepositFactor::get(), 192000000000);
+		assert_eq!(<Runtime as pallet_multisig::Config>::MaxSignatories::get(), 20);
+	})
+}
+
