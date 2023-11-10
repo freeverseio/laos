@@ -240,16 +240,6 @@ pub const UNIT: Balance = 1_000_000_000_000;
 pub const MILLIUNIT: Balance = 1_000_000_000;
 pub const MICROUNIT: Balance = 1_000_000;
 
-/// The minimum amount required to keep an account open. MUST BE GREATER THAN ZERO!
-///
-/// If you *really* need it to be zero, you can enable the feature `insecure_zero_ed` for
-/// this pallet. However, you do so at your own risk: this will open up a major DoS vector.
-/// In case you have multiple sources of provider references, you may also get unexpected
-/// behaviour if you set this to zero.
-///
-/// Bottom line: Do yourself a favour and make it at least one!
-pub const EXISTENTIAL_DEPOSIT: Balance = 1;
-
 /// Current approximation of the gas/s consumption considering
 /// EVM execution over compiled WASM (on 4.4Ghz CPU).
 /// Given the 500ms Weight, from which 75% only are used for transactions,
@@ -341,7 +331,15 @@ impl pallet_authorship::Config for Runtime {
 }
 
 parameter_types! {
-	pub const ExistentialDeposit: Balance = EXISTENTIAL_DEPOSIT;
+/// The minimum amount required to keep an account open. MUST BE GREATER THAN ZERO!
+///
+/// If you *really* need it to be zero, you can enable the feature `insecure_zero_ed` for
+/// this pallet. However, you do so at your own risk: this will open up a major DoS vector.
+/// In case you have multiple sources of provider references, you may also get unexpected
+/// behaviour if you set this to zero.
+///
+/// Bottom line: Do yourself a favour and make it at least one!
+	pub const ExistentialDeposit: Balance = 1;
 }
 
 impl pallet_balances::Config for Runtime {
