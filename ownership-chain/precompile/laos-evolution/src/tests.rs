@@ -5,6 +5,8 @@
 
 use core::str::FromStr;
 
+use crate::tests::helpers::PrecompileMockParams;
+
 use super::*;
 use frame_support::assert_ok;
 use precompile_utils::{
@@ -53,11 +55,10 @@ fn function_selectors() {
 fn failing_create_collection_should_return_error() {
 	impl_precompile_mock_simple!(
 		Mock,
-		Err(DispatchError::Other("this is an error")),
-		None,
-		Ok(0.into()),
-		None,
-		Ok(())
+		PrecompileMockParams {
+			create_collection_result: Err(DispatchError::Other("this is an error")),
+			..Default::default()
+		}
 	);
 
 	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
@@ -75,7 +76,7 @@ fn failing_create_collection_should_return_error() {
 
 #[test]
 fn create_collection_should_return_collection_id() {
-	impl_precompile_mock_simple!(Mock, Ok(0), None, Ok(0.into()), None, Ok(()));
+	impl_precompile_mock_simple!(Mock, PrecompileMockParams::default());
 
 	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
 		.write(Address(H160([1u8; 20])))
@@ -88,7 +89,10 @@ fn create_collection_should_return_collection_id() {
 
 #[test]
 fn create_collection_should_generate_log() {
-	impl_precompile_mock_simple!(Mock, Ok(123), None, Ok(0.into()), None, Ok(()));
+	impl_precompile_mock_simple!(
+		Mock,
+		PrecompileMockParams { create_collection_result: Ok(123), ..Default::default() }
+	);
 
 	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
 		.write(Address(H160::from_str(ALICE).unwrap()))
@@ -120,11 +124,10 @@ fn create_collection_should_generate_log() {
 fn mint_with_external_uri_should_generate_log() {
 	impl_precompile_mock_simple!(
 		Mock,
-		Ok(0),
-		None,
-		Ok(U256::from_str("0x010203").unwrap()), // return token id
-		None,
-		Ok(())
+		PrecompileMockParams {
+			mint_result: Ok(U256::from_str("0x010203").unwrap()),
+			..Default::default()
+		}
 	);
 
 	let input = EvmDataWriter::new_with_selector(Action::Mint)
@@ -167,7 +170,10 @@ fn mint_with_external_uri_should_generate_log() {
 
 #[test]
 fn create_collection_on_mock_with_nonzero_value_fails() {
-	impl_precompile_mock_simple!(Mock, Ok(5), None, Ok(0.into()), None, Ok(()));
+	impl_precompile_mock_simple!(
+		Mock,
+		PrecompileMockParams { create_collection_result: Ok(5), ..Default::default() }
+	);
 
 	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
 		.write(Address(H160([1u8; 20])))
@@ -204,7 +210,7 @@ fn create_collection_assign_collection_to_caller() {
 
 #[test]
 fn call_unexistent_selector_should_fail() {
-	impl_precompile_mock_simple!(Mock, Ok(0), None, Ok(0.into()), None, Ok(()));
+	impl_precompile_mock_simple!(Mock, PrecompileMockParams::default());
 
 	let nonexistent_selector =
 		hex::decode("fb24ae530000000000000000000000000000000000000000000000000000000000000000")
@@ -216,7 +222,7 @@ fn call_unexistent_selector_should_fail() {
 
 #[test]
 fn call_owner_of_non_existent_collection() {
-	impl_precompile_mock_simple!(Mock, Ok(0), None, Ok(0.into()), None, Ok(()));
+	impl_precompile_mock_simple!(Mock, PrecompileMockParams::default());
 
 	let input = EvmDataWriter::new_with_selector(Action::OwnerOfCollection)
 		.write(U256::from(0))
@@ -230,11 +236,10 @@ fn call_owner_of_non_existent_collection() {
 fn call_owner_of_collection_works() {
 	impl_precompile_mock_simple!(
 		Mock,
-		Ok(0),
-		Some(H160::from_low_u64_be(0x1234)),
-		Ok(0.into()),
-		None,
-		Ok(())
+		PrecompileMockParams {
+			collection_owner_result: Some(H160::from_low_u64_be(0x1234)),
+			..Default::default()
+		}
 	);
 
 	let owner = H160::from_low_u64_be(0x1234);
@@ -250,7 +255,7 @@ fn call_owner_of_collection_works() {
 
 #[test]
 fn token_uri_returns_nothing_when_source_token_uri_is_none() {
-	impl_precompile_mock_simple!(Mock, Ok(0), None, Ok(0.into()), None, Ok(()));
+	impl_precompile_mock_simple!(Mock, PrecompileMockParams::default());
 
 	let input = EvmDataWriter::new_with_selector(Action::TokenURI)
 		.write(0_u64)
@@ -264,7 +269,10 @@ fn token_uri_returns_nothing_when_source_token_uri_is_none() {
 
 #[test]
 fn token_uri_returns_the_result_from_source() {
-	impl_precompile_mock_simple!(Mock, Ok(0), None, Ok(0.into()), Some(vec![1_u8, 10]), Ok(()));
+	impl_precompile_mock_simple!(
+		Mock,
+		PrecompileMockParams { token_uri_result: Some(vec![1_u8, 10]), ..Default::default() }
+	);
 
 	let input = EvmDataWriter::new_with_selector(Action::TokenURI)
 		.write(0_u64)
@@ -280,11 +288,11 @@ fn token_uri_returns_the_result_from_source() {
 fn mint_works() {
 	impl_precompile_mock_simple!(
 		Mock,
-		Ok(0),
-		Some(H160::from_low_u64_be(0x1234)),
-		Ok(1.into()),
-		None,
-		Ok(())
+		PrecompileMockParams {
+			collection_owner_result: Some(H160::from_low_u64_be(0x1234)),
+			mint_result: Ok(1.into()),
+			..Default::default()
+		}
 	);
 
 	let to = H160::from_low_u64_be(1);
@@ -306,11 +314,11 @@ fn mint_works() {
 fn failing_mint_should_return_error() {
 	impl_precompile_mock_simple!(
 		Mock,
-		Ok(0),
-		Some(H160::from_low_u64_be(0x1234)),
-		Err(DispatchError::Other("this is error")),
-		None,
-		Ok(())
+		PrecompileMockParams {
+			collection_owner_result: Some(H160::from_low_u64_be(0x1234)),
+			mint_result: Err(DispatchError::Other("this is error")),
+			..Default::default()
+		}
 	);
 
 	let to = H160::from_low_u64_be(1);
@@ -335,11 +343,11 @@ mod evolve {
 	fn happy_path() {
 		impl_precompile_mock_simple!(
 			Mock,
-			Ok(0),
-			Some(H160::from_low_u64_be(0x1234)),
-			Ok(1.into()),
-			None,
-			Ok(())
+			PrecompileMockParams {
+				collection_owner_result: Some(H160::from_low_u64_be(0x1234)),
+				mint_result: Ok(1.into()),
+				..Default::default()
+			}
 		);
 
 		let input = EvmDataWriter::new_with_selector(Action::Evolve)
@@ -356,7 +364,7 @@ mod evolve {
 
 	#[test]
 	fn when_succeeds_should_generate_log() {
-		impl_precompile_mock_simple!(Mock, Ok(0), None, Ok(0.into()), None, Ok(()));
+		impl_precompile_mock_simple!(Mock, PrecompileMockParams::default());
 
 		let collection_id = 2;
 		let token_id = 1;
@@ -395,11 +403,12 @@ mod evolve {
 	fn when_fails_should_return_error() {
 		impl_precompile_mock_simple!(
 			Mock,
-			Ok(0),
-			Some(H160::from_low_u64_be(0x1234)),
-			Ok(1.into()),
-			None,
-			Err(DispatchError::Other("this is error"))
+			PrecompileMockParams {
+				collection_owner_result: Some(H160::from_low_u64_be(0x1234)),
+				mint_result: Ok(1.into()),
+				evolve_result: Err(DispatchError::Other("this is error")),
+				..Default::default()
+			}
 		);
 
 		let input = EvmDataWriter::new_with_selector(Action::Evolve)
@@ -416,6 +425,11 @@ mod evolve {
 }
 
 mod helpers {
+	use super::AccountId;
+	use pallet_laos_evolution::{CollectionId, TokenId};
+	use sp_runtime::DispatchError;
+	type TokenUri = Vec<u8>;
+
 	/// Macro to define a precompile mock for testing.
 	///
 	/// This macro creates mock implementations of the `CollectionManager` trait,
@@ -501,15 +515,35 @@ mod helpers {
 	/// ```
 	#[macro_export]
 	macro_rules! impl_precompile_mock_simple {
-		($name:ident, $create_collection_result:expr, $collection_owner_result:expr, $mint_result:expr, $token_uri_result:expr, $evolve_result:expr) => {
+		($name:ident, $params:expr) => {
 			impl_precompile_mock!(
 				$name,
-				|_owner| { $create_collection_result },
-				|_collection_id| { $collection_owner_result },
-				|_who, _collection_id, _slot, _to, _token_uri| { $mint_result },
-				|_collection_id, _token_id| { $token_uri_result },
-				|_who, _collection_id, _token_id, _token_uri| { $evolve_result }
+				|_owner| { $params.create_collection_result },
+				|_collection_id| { $params.collection_owner_result },
+				|_who, _collection_id, _slot, _to, _token_uri| { $params.mint_result },
+				|_collection_id, _token_id| { $params.token_uri_result },
+				|_who, _collection_id, _token_id, _token_uri| { $params.evolve_result }
 			);
 		};
+	}
+
+	pub struct PrecompileMockParams {
+		pub create_collection_result: Result<CollectionId, DispatchError>,
+		pub collection_owner_result: Option<AccountId>,
+		pub mint_result: Result<TokenId, DispatchError>,
+		pub token_uri_result: Option<TokenUri>,
+		pub evolve_result: Result<(), DispatchError>,
+	}
+
+	impl Default for PrecompileMockParams {
+		fn default() -> Self {
+			Self {
+				create_collection_result: Ok(0),
+				collection_owner_result: None,
+				mint_result: Ok(0.into()),
+				token_uri_result: None,
+				evolve_result: Ok(()),
+			}
+		}
 	}
 }
