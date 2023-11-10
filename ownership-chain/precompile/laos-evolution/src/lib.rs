@@ -90,8 +90,8 @@ where
 			},
 			Action::Owner => {
 				// collection id is encoded into the contract address
-				let collection_id = address_to_collection_id(handle.code_address())
-					.map_err(|_| revert("invalid collection address"))?; // TODO test this error
+				let collection_id = address_to_collection_id(handle.context().address)
+					.map_err(|_| revert("invalid collection address"))?;
 
 				if let Some(owner) = LaosEvolution::collection_owner(collection_id) {
 					Ok(succeed(EvmDataWriter::new().write(Address(owner.into())).build()))

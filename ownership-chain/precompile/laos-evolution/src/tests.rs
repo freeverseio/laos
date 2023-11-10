@@ -83,7 +83,13 @@ fn create_collection_should_return_collection_id() {
 	let mut handle = create_mock_handle_from_input(input);
 
 	let result = Mock::execute(&mut handle);
-	assert_ok!(result, succeed(H256::from_low_u64_be(0)));
+	assert_ok!(
+		result,
+		succeed(H256::from_slice(&[
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
+			0, 0, 0
+		]))
+	);
 }
 
 #[test]
@@ -110,7 +116,7 @@ fn create_collection_should_generate_log() {
 	assert_eq!(
 		logs[0].data,
 		vec![
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
 			0, 0, 123
 		]
 	);
@@ -218,10 +224,22 @@ fn call_unexistent_selector_should_fail() {
 fn call_owner_of_non_existent_collection() {
 	impl_precompile_mock_simple!(Mock, Ok(0), None, Ok(0.into()), None, Ok(()));
 
-	let input = EvmDataWriter::new_with_selector(Action::Owner).write(U256::from(0)).build();
-	let mut handle = create_mock_handle_from_input(input);
+	let input = EvmDataWriter::new_with_selector(Action::Owner).build();
+	let mut handle = create_mock_handle(input, 0, 0, H160::zero());
+	handle.context.address = H160::from_str("0000000000000000000000010000000000000005").unwrap();
 	let result = Mock::execute(&mut handle);
 	assert_eq!(result.unwrap_err(), revert("collection does not exist"));
+}
+
+#[test]
+fn call_owner_of_non_invalid_collection() {
+	impl_precompile_mock_simple!(Mock, Ok(0), None, Ok(0.into()), None, Ok(()));
+
+	let input = EvmDataWriter::new_with_selector(Action::Owner).write(U256::from(0)).build();
+	let mut handle = create_mock_handle(input, 0, 0, H160::zero());
+	handle.context.address = H160::from_str("0000000000000000000000000000000000000005").unwrap();
+	let result = Mock::execute(&mut handle);
+	assert_eq!(result.unwrap_err(), revert("invalid collection address"));
 }
 
 #[test]
@@ -236,10 +254,10 @@ fn call_owner_of_collection_works() {
 	);
 
 	let owner = H160::from_low_u64_be(0x1234);
+	let input = EvmDataWriter::new_with_selector(Action::Owner).build();
 
-	let input = EvmDataWriter::new_with_selector(Action::Owner).write(Address(owner)).build();
-
-	let mut handle = create_mock_handle_from_input(input);
+	let mut handle = create_mock_handle(input, 0, 0, H160::zero());
+	handle.context.address = H160::from_str("0000000000000000000000010000000000000005").unwrap();
 	let result = Mock::execute(&mut handle).unwrap();
 	assert_eq!(result, succeed(EvmDataWriter::new().write(Address(owner.into())).build()));
 }
