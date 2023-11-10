@@ -1,9 +1,9 @@
 import { describeWithExistingNode, slotAndOwnerToTokenId } from "./util";
-import { step } from "mocha-steps";
-import { CONTRACT_ADDRESS, GAS, GAS_PRICE, GENESIS_ACCOUNT, GENESIS_ACCOUNT_PRIVATE_KEY, LAOS_EVOLUTION_ABI, SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI, SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI, SELECTOR_LOG_NEW_COLLECTION } from "./config";
+import { CONTRACT_ADDRESS, GAS_LIMIT, GAS_PRICE, GENESIS_ACCOUNT, GENESIS_ACCOUNT_PRIVATE_KEY, LAOS_EVOLUTION_ABI, SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI, SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI, SELECTOR_LOG_NEW_COLLECTION } from "./config";
 import { expect } from "chai";
 import Contract from "web3-eth-contract";
 import BN from "bn.js";
+import { step } from "mocha-steps";
 
 describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
     let contract: Contract;
@@ -22,7 +22,7 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
 
         context.web3.eth.accounts.wallet.add(GENESIS_ACCOUNT_PRIVATE_KEY);
 
-        const result = await contract.methods.createCollection(GENESIS_ACCOUNT).send({ from: GENESIS_ACCOUNT, gas: GAS, nonce: nonce++ });
+        const result = await contract.methods.createCollection(GENESIS_ACCOUNT).send({ from: GENESIS_ACCOUNT, gas: GAS_LIMIT, nonce: nonce++ });
         expect(result.status).to.be.eq(true);
         collectionId = result.events.NewCollection.returnValues.collectionId;
     });
@@ -47,7 +47,7 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
         const to = GENESIS_ACCOUNT;
         const tokenURI = "https://example.com";
 
-        const result = await contract.methods.mintWithExternalURI(collectionId, slot, to, tokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS, nonce: nonce++ });
+        const result = await contract.methods.mintWithExternalURI(collectionId, slot, to, tokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS_LIMIT, nonce: nonce++ });
         expect(result.status).to.be.eq(true);
 
         const tokenId = result.events.MintedWithExternalURI.returnValues.tokenId;
@@ -75,7 +75,7 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
         const tokenURI = "https://example.com";
 
         const result = await contract.methods.mintWithExternalURI(collectionId, slot, to, tokenURI)
-            .send({ from: GENESIS_ACCOUNT, gas: GAS, nonce: nonce++ });
+            .send({ from: GENESIS_ACCOUNT, gas: GAS_LIMIT, nonce: nonce++ });
         expect(result.status).to.be.eq(true);
 
         expect(Object.keys(result.events).length).to.be.eq(1);
@@ -113,10 +113,10 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
         const tokenId = slotAndOwnerToTokenId(slot, to);
         const tokenIdDecimal = new BN(tokenId, 16, "be").toString(10);
 
-        const mintingResult = await contract.methods.mintWithExternalURI(collectionId, slot, to, tokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS, nonce: nonce++ });
+        const mintingResult = await contract.methods.mintWithExternalURI(collectionId, slot, to, tokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS_LIMIT, nonce: nonce++ });
         expect(mintingResult.status).to.be.eq(true);
 
-        const evolvingResult = await contract.methods.evolveWithExternalURI(collectionId, tokenIdDecimal, newTokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS, nonce: nonce++ });
+        const evolvingResult = await contract.methods.evolveWithExternalURI(collectionId, tokenIdDecimal, newTokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS_LIMIT, nonce: nonce++ });
         expect(evolvingResult.status).to.be.eq(true);
 
         const got = await contract.methods.tokenURI(collectionId, tokenIdDecimal).call();
@@ -133,10 +133,10 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
         const tokenId = slotAndOwnerToTokenId(slot, to);
         const tokenIdDecimal = new BN(tokenId, 16, "be").toString(10);
 
-        const mintingResult = await contract.methods.mintWithExternalURI(collectionId, slot, to, tokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS, nonce: nonce++ });
+        const mintingResult = await contract.methods.mintWithExternalURI(collectionId, slot, to, tokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS_LIMIT, nonce: nonce++ });
         expect(mintingResult.status).to.be.eq(true);
 
-        const evolvingResult = await contract.methods.evolveWithExternalURI(collectionId, tokenIdDecimal, newTokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS, nonce: nonce++ });
+        const evolvingResult = await contract.methods.evolveWithExternalURI(collectionId, tokenIdDecimal, newTokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS_LIMIT, nonce: nonce++ });
         expect(evolvingResult.status).to.be.eq(true);
 
         expect(Object.keys(evolvingResult.events).length).to.be.eq(1);
