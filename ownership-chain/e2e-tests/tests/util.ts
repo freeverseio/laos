@@ -73,3 +73,33 @@ export function slotAndOwnerToTokenId(slot: string, owner: string): string | nul
 
 	return Buffer.from(bytes).toString('hex'); // Convert Uint8Array to hexadecimal string
 } 
+
+export function addressToCollectionId(address: string): BN | null {
+	const addressBytes: Uint8Array = Uint8Array.from(Buffer.from(address.slice(2), 'hex'));  // Remove the '0x' prefix and convert hex to bytes
+
+	// Check if the address length is 20 bytes
+	if (addressBytes.length !== 20) {
+		return null;
+	}
+
+	// Check if the first 11 bytes are zeros
+	for (let i = 0; i < 11; i++) {
+		if (addressBytes[i] !== 0) {
+			return null;
+		}
+	}
+
+	// Check if the 12th byte is 1 (version byte)
+	if (addressBytes[11] !== 1) {
+		return null;
+	}
+
+	// Extract the last 8 bytes and convert them to a BigInt
+	const collectionIdBytes = addressBytes.slice(12, 20);
+	let collectionId = new BN(0);
+	for (let i = 0; i < collectionIdBytes.length; i++) {
+		collectionId = collectionId.shln(8).add(new BN(collectionIdBytes[i]));
+	}
+
+	return collectionId;
+}

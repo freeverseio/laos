@@ -1,4 +1,4 @@
-import { describeWithExistingNode, slotAndOwnerToTokenId } from "./util";
+import { addressToCollectionId, describeWithExistingNode, slotAndOwnerToTokenId } from "./util";
 import { CONTRACT_ADDRESS, GAS_LIMIT, GAS_PRICE, GENESIS_ACCOUNT, GENESIS_ACCOUNT_PRIVATE_KEY, LAOS_EVOLUTION_ABI, SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI, SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI, SELECTOR_LOG_NEW_COLLECTION } from "./config";
 import { expect } from "chai";
 import Contract from "web3-eth-contract";
@@ -8,7 +8,7 @@ import { step } from "mocha-steps";
 describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
     let contract: Contract;
     let nonce: number;
-    let collectionId: number;
+    let collectionId: BN;
 
     beforeEach(async function () {
         this.timeout(70000);
@@ -24,7 +24,7 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
 
         const result = await contract.methods.createCollection(GENESIS_ACCOUNT).send({ from: GENESIS_ACCOUNT, gas: GAS_LIMIT, nonce: nonce++ });
         expect(result.status).to.be.eq(true);
-        collectionId = result.events.NewCollection.returnValues._collectionId;
+        collectionId = addressToCollectionId(result.events.NewCollection.returnValues._collectionAddress);
     });
 
     step("when collection does not exist token uri should fail", async function () {
