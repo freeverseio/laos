@@ -1,7 +1,16 @@
 use core::str::FromStr;
 
 use super::*;
+use frame_support::traits::tokens::{fungible::Balanced, Precision};
 use sp_core::U256;
+
+// Build genesis storage according to the mock runtime.
+pub fn new_test_ext() -> sp_io::TestExternalities {
+	frame_system::GenesisConfig::<Runtime>::default()
+		.build_storage()
+		.unwrap()
+		.into()
+}
 
 #[test]
 fn asset_id_to_address_type_zero_values() {
@@ -63,20 +72,42 @@ fn asset_id_to_address_two_assets_same_owner() {
 }
 
 const ALICE: &str = "0x0000000000000000000000000000000000000005";
-const BOB: &str = "0x0000000000000000000000000000000000000005";
 
 #[test]
-fn transefer_balance() {
-	new_test_ext().execute_with(||{
+fn minimum_balance_should_be_1() {
+	assert_eq!(EXISTENTIAL_DEPOSIT, 1);
+	assert_eq!(Balances::minimum_balance(), EXISTENTIAL_DEPOSIT);
+}
+
+#[test]
+fn deposit_existential_deposit_should_succeed() {
+	new_test_ext().execute_with(|| {
 		let alice = AccountId::from_str(ALICE).unwrap();
 		assert_eq!(Balances::total_balance(&alice), 0);
-		Balances::deposit_creating(&alice, 100000000);
-		Balances::force_set_balance(origin, who, new_free)
-		assert_eq!(Balances::total_balance(&alice), 10000);
+
+		let result = Balances::deposit(&alice, EXISTENTIAL_DEPOSIT, Precision::Exact);
+
+		match result {
+			Ok(_) => (), // Test passes
+			Err(e) => panic!("Expected Ok, got Err: {:?}", e),
+		}
+		assert_eq!(Balances::total_balance(&alice), EXISTENTIAL_DEPOSIT);
 	})
 }
 
-// Build genesis storage according to the mock runtime.
-pub fn new_test_ext() -> sp_io::TestExternalities {
-	frame_system::GenesisConfig::<Runtime>::default().build_storage().unwrap().into()
+#[test]
+fn deposit_less_than_existential_should_fail() {
+	new_test_ext().execute_with(|| {
+		let alice = AccountId::from_str(ALICE).unwrap();
+		assert_eq!(Balances::total_balance(&alice), 0);
+
+		let result = Balances::deposit(&alice, EXISTENTIAL_DEPOSIT - 1, Precision::Exact);
+
+		match result {
+			Ok(_) => panic!("It should fail"),
+			Err(_) => (), // Test passes
+		}
+	})
 }
+
+
