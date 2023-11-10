@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { step } from "mocha-steps";
 
-import { GENESIS_ACCOUNT, GENESIS_ACCOUNT_PRIVATE_KEY } from "./config";
+import { OWNCHAIN_SUDO, OWNCHAIN_SUDO_PRIVATE_KEY } from "./config";
 import { customRequest, describeWithExistingNode } from "./util";
 
 describeWithExistingNode("Frontier RPC (TxPoolApi)", (context) => {
@@ -14,14 +14,14 @@ describeWithExistingNode("Frontier RPC (TxPoolApi)", (context) => {
 	async function sendTransaction(context, nonce) {
 		const tx = await context.web3.eth.accounts.signTransaction(
 			{
-				from: GENESIS_ACCOUNT,
+				from: OWNCHAIN_SUDO,
 				data: TEST_CONTRACT_BYTECODE,
 				value: "0x00",
 				gasPrice: "0x3B9ACA00",
 				gas: "0x100000",
 				nonce: nonce,
 			},
-			GENESIS_ACCOUNT_PRIVATE_KEY
+			OWNCHAIN_SUDO_PRIVATE_KEY
 		);
 		await customRequest(context.web3, "eth_sendRawTransaction", [tx.rawTransaction]);
 		return tx;
@@ -42,7 +42,7 @@ describeWithExistingNode("Frontier RPC (TxPoolApi)", (context) => {
 
 	step("txpool_content should return correct result", async function () {
 		let txpoolContent = await customRequest(context.web3, "txpool_content", []);
-		let genesisAccount = GENESIS_ACCOUNT.toLowerCase();
+		let genesisAccount = OWNCHAIN_SUDO.toLowerCase();
 
 		expect(txpoolContent.result.queued[genesisAccount]["0x3"].nonce).to.be.equal("0x3");
 		expect(txpoolContent.result.queued[genesisAccount]["0x3"].hash).to.be.equal(future_tx.transactionHash);
@@ -50,7 +50,7 @@ describeWithExistingNode("Frontier RPC (TxPoolApi)", (context) => {
 
 	step("txpool_inspect should return correct result", async function () {
 		let txpoolInspect = await customRequest(context.web3, "txpool_inspect", []);
-		let genesisAccount = GENESIS_ACCOUNT.toLowerCase();
+		let genesisAccount = OWNCHAIN_SUDO.toLowerCase();
 
 		expect(txpoolInspect.result.pending[genesisAccount]["0x0"]).to.be.equal(
 			"0x0000000000000000000000000000000000000000: 0 wei + 1048576 gas x 1000000000 wei"
