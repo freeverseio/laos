@@ -23,9 +23,9 @@ describeWithExistingSubstrateNodes("XCM tests", (context) => {
 		await cryptoWaitReady();
 
 		let ownchainKeyring = new Keyring({ type: "ethereum" });
-		let seesAsU8a = new BN(OWNCHAIN_SUDO_PRIVATE_KEY.slice(2), "hex").toArray("be", 32);
+		let seedAsU8a = new BN(OWNCHAIN_SUDO_PRIVATE_KEY.slice(2), "hex").toArray("be", 32);
 
-		ownchainSudo = ownchainKeyring.addFromSeed(Uint8Array.from(seesAsU8a));
+		ownchainSudo = ownchainKeyring.addFromSeed(Uint8Array.from(seedAsU8a));
 
 		let astarKeyring = new Keyring({ type: "sr25519" });
 		astarSudo = astarKeyring.addFromUri("//Alice");
@@ -49,17 +49,18 @@ describeWithExistingSubstrateNodes("XCM tests", (context) => {
 			recipient: ASTAR_PARA_ID,
 		});
 
-		expect(astarToOwnchain).to.not.be.undefined;
-		expect(ownchainToAstar).to.not.be.undefined;
+		expect(astarToOwnchain).to.not.be.empty;
+		expect(ownchainToAstar).to.not.be.empty;
 	});
 
 	step("should be able to transfer a CLDN token from Astar sovereign account", async function () {
 		// Simply a `dummy` string converted to H160
 		let dummyAccount = "0x64756d6d79000000000000000000000000000000";
 
-		// make a transfer call from `astarInOwnchain` to `GENESIS_ACCOUNT`
+		// make a transfer call from `astarInOwnchain` to `dummyAccount`
 		let transfer = context.ownchain.tx.balances.transferKeepAlive(dummyAccount, new BN("1000000000000000000"));
 
+		// Destination of the XCM call: ownership chain
 		let dest = { V2: { parents: 1, interior: { X1: { Parachain: 2900 } } } };
 
 		let instr1 = {
@@ -101,17 +102,16 @@ describeWithExistingSubstrateNodes("XCM tests", (context) => {
 
 		const message = { V2: [instr1, instr2, instr3, instr4] };
 
-		// wrap it with `sudo.sudo`
+		// xcm call
 		const tx = context.astar.tx.polkadotXcm.send(dest, message);
 
-		// send the message
+		// wrap it with `sudo.sudo`
 		const sudoTx = context.astar.tx.sudo.sudo(tx);
 
 		// send the transaction (optional status callback)
 		await sudoTx.signAndSend(astarSudo);
 
 		// Wait for `xcmpQueue.Success` and `balances.Transfer` events
-
 		let eventsData = await waitForEvents(
 			context.ownchain,
 			[
