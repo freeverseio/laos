@@ -239,7 +239,7 @@ fn call_owner_of_non_existent_collection() {
 
 #[test]
 fn call_owner_of_non_invalid_collection() {
-	impl_precompile_mock_simple!(Mock, Ok(0), None, Ok(0.into()), None, Ok(()));
+	impl_precompile_mock_simple!(Mock, PrecompileMockParams { ..Default::default() });
 
 	let input = EvmDataWriter::new_with_selector(Action::Owner).write(U256::from(0)).build();
 	let mut handle = create_mock_handle(input, 0, 0, H160::zero());
