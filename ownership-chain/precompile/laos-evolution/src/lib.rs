@@ -2,7 +2,10 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
-use pallet_laos_evolution::{traits::LaosEvolution as LaosEvolutionT, Slot, TokenId};
+use pallet_laos_evolution::{
+	address_to_collection_id, collection_id_to_address, traits::LaosEvolution as LaosEvolutionT,
+	Slot, TokenId,
+};
 use parity_scale_codec::Encode;
 use precompile_utils::{
 	keccak256, revert, revert_dispatch_error, succeed, Address, Bytes, EvmDataWriter, EvmResult,
@@ -10,7 +13,6 @@ use precompile_utils::{
 };
 
 use sp_core::H160;
-use sp_runtime::DispatchError;
 use sp_std::{fmt::Debug, marker::PhantomData, vec::Vec};
 
 /// Solidity selector of the CreateCollection log, which is the Keccak of the Log signature.
@@ -69,7 +71,7 @@ where
 
 				match LaosEvolution::create_collection(owner.into()) {
 					Ok(collection_id) => {
-						let collection_id = H160::from_low_u64_be(collection_id);
+						let collection_id: H160 = collection_id_to_address(collection_id);
 
 						LogsBuilder::new(context.address)
 							.log2(
@@ -87,16 +89,14 @@ where
 				}
 			},
 			Action::Owner => {
-				input.expect_arguments(1)?;
+				// collection id is encoded into the contract address
+				let collection_id = address_to_collection_id(handle.code_address())
+					.map_err(|_| revert("invalid collection address"))?; // TODO test this error
 
-				let collection_id = input.read::<Address>()?;
-
-				if let Some(owner) =
-					LaosEvolution::collection_owner(H160::to_low_u64_be(&collection_id.0))
-				{
+				if let Some(owner) = LaosEvolution::collection_owner(collection_id) {
 					Ok(succeed(EvmDataWriter::new().write(Address(owner.into())).build()))
 				} else {
-					Err(revert_dispatch_error(DispatchError::Other("collection does not exist")))
+					Err(revert("collection does not exist"))
 				}
 			},
 			Action::TokenURI => {
