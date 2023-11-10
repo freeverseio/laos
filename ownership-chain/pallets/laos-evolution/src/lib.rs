@@ -239,14 +239,6 @@ pub enum CollectionError {
 /// # Returns
 ///
 /// A 20-byte array representing the Ethereum address.
-///
-/// # Example
-///
-/// ```
-/// let collection_id = 5;
-/// let eth_address = collection_id_to_eth_address(collection_id);
-/// println!("Ethereum Address: {:?}", eth_address);
-/// ```
 pub fn collection_id_to_address<Address: From<[u8; 20]>>(collection_id: CollectionId) -> Address {
 	let mut address = [0u8; 20];
 	address[11] = 1; // Set version byte to 1
@@ -276,16 +268,6 @@ pub fn collection_id_to_address<Address: From<[u8; 20]>>(collection_id: Collecti
 /// # Returns
 ///
 /// An `Address` type representing the constructed address.
-///
-/// # Example
-///
-/// Assuming `Address` is a type that implements `From<[u8; 20]>`:
-///
-/// ```
-/// let collection_id = CollectionId(12345);
-/// let address: Address = collection_id_to_address(collection_id);
-/// // use `address` as needed
-/// ```
 pub fn address_to_collection_id<Address>(address: Address) -> Result<CollectionId, CollectionError>
 where
 	Address: Into<[u8; 20]>,
