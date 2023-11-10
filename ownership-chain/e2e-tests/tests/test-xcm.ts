@@ -16,8 +16,6 @@ describeWithExistingSubstrateNodes("XCM tests", (context) => {
 
 	// Sovereign account of Astar in Ownership Chain
 	const ASTAR_IN_OWNCHAIN = "0x7369626cd8070000000000000000000000000000";
-	// Sovereign account of Ownership Chain in Astar
-	const OWNCHAIN_IN_ASTAR = "5Eg2fnssBDaFCWy7JnEZYnEuNPZbbzzEWGw5zryrTpmsTuPL";
 
 	before(async function () {
 		await cryptoWaitReady();
@@ -57,8 +55,11 @@ describeWithExistingSubstrateNodes("XCM tests", (context) => {
 		// Simply a `dummy` string converted to H160
 		let dummyAccount = "0x64756d6d79000000000000000000000000000000";
 
+		let dummyAccountBalanceBefore: any = await context.ownchain.query.system.account(dummyAccount);
+
 		// make a transfer call from `astarInOwnchain` to `dummyAccount`
-		let transfer = context.ownchain.tx.balances.transferKeepAlive(dummyAccount, new BN("1000000000000000000"));
+		let amount = new BN("1000000000000000000");
+		let transfer = context.ownchain.tx.balances.transferKeepAlive(dummyAccount, amount);
 
 		// Destination of the XCM call: ownership chain
 		let dest = { V2: { parents: 1, interior: { X1: { Parachain: 2900 } } } };
@@ -118,13 +119,20 @@ describeWithExistingSubstrateNodes("XCM tests", (context) => {
 				{ module: "xcmpQueue", name: "Success" },
 				{ module: "balances", name: "Transfer" },
 			],
-			3
+			4
 		);
 
 		expect(eventsData["xcmpQueue.Success"]).to.not.be.undefined;
 		expect(eventsData["balances.Transfer"]).to.not.be.undefined;
 		expect(eventsData["balances.Transfer"][0].toLowerCase()).to.equal(ASTAR_IN_OWNCHAIN);
 		expect(eventsData["balances.Transfer"][1].toLowerCase()).to.equal(dummyAccount);
-		expect(eventsData["balances.Transfer"][2].toString()).to.equal("1000000000000000000");
+		expect(eventsData["balances.Transfer"][2].toString()).to.equal(amount.toString());
+
+		let dummyAccountBalanceAfter: any = await context.ownchain.query.system.account(dummyAccount);
+		expect(
+			new BN(dummyAccountBalanceBefore.data.free.toString())
+				.add(amount)
+				.eq(new BN(dummyAccountBalanceAfter.data.free.toString()))
+		).to.be.true;
 	}).timeout(80000);
 });
