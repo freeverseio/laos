@@ -407,3 +407,40 @@ fn evolve_with_external_uri_happy_path() {
 		);
 	});
 }
+
+mod collection_id_conversion {
+	use core::str::FromStr;
+
+	use crate::{
+		address_to_collection_id, collection_id_to_address, mock::AccountId, CollectionError,
+	};
+
+	#[test]
+	fn given_a_collection_id_from_id_to_address_works() {
+		let collection_id = 5;
+		let expected_address =
+			AccountId::from_str("0000000000000000000000010000000000000005").unwrap();
+		assert_eq!(collection_id_to_address::<AccountId>(collection_id), expected_address);
+	}
+
+	#[test]
+	fn given_invalid_format_from_address_to_id_fails() {
+		let address = AccountId::from_str("0010000000000000000000010000000000000005").unwrap();
+		let error = address_to_collection_id::<AccountId>(address).unwrap_err();
+		assert_eq!(error, CollectionError::InvalidFormat);
+	}
+
+	#[test]
+	fn given_invalid_version_from_address_to_id_fails() {
+		let address = AccountId::from_str("0000000000000000000000020000000000000005").unwrap();
+		let error = address_to_collection_id::<AccountId>(address).unwrap_err();
+		assert_eq!(error, CollectionError::InvalidVersion);
+	}
+
+	#[test]
+	fn given_valid_address_from_address_to_id_works() {
+		let address = AccountId::from_str("0000000000000000000000010000000000000005").unwrap();
+		let collection_id = address_to_collection_id::<AccountId>(address).unwrap();
+		assert_eq!(collection_id, 5);
+	}
+}

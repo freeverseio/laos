@@ -214,3 +214,94 @@ fn slot_and_owner_to_token_id(slot: Slot, owner: H160) -> Option<TokenId> {
 
 	Some(TokenId::from(bytes))
 }
+
+/// Enum representing possible errors related to collections.
+#[derive(Debug, PartialEq)]
+pub enum CollectionError {
+	/// Error indicating that the provided address does not have the correct format.
+	InvalidFormat,
+	/// Error indicating that the provided address does not have a valid version.
+	InvalidVersion,
+}
+
+/// Converts a u64 value (`CollectionId``) into a 20-byte Ethereum address.
+///
+/// The Ethereum address format is as follows:
+///  - The first 12 bytes are zeros.
+///  - The 13th byte is set to `1`, indicating the version.
+///  - The next 7 bytes can be any value (typically zeros).
+///  - The last 8 bytes represent the `CollectionId`.
+///
+/// # Arguments
+///
+/// * `collection_id` - The `CollectionId` (u64 value) to be converted into an Ethereum address.
+///
+/// # Returns
+///
+/// A 20-byte array representing the Ethereum address.
+///
+/// # Example
+///
+/// ```
+/// let collection_id = 5;
+/// let eth_address = collection_id_to_eth_address(collection_id);
+/// println!("Ethereum Address: {:?}", eth_address);
+/// ```
+pub fn collection_id_to_address<Address: From<[u8; 20]>>(collection_id: CollectionId) -> Address {
+	let mut address = [0u8; 20];
+	address[11] = 1; // Set version byte to 1
+	address[12..].copy_from_slice(&collection_id.to_be_bytes());
+	address.into()
+}
+
+/// Converts a `CollectionId` into a custom address type `Address`.
+///
+/// The function constructs a 20-byte Ethereum-like address with a specific format:
+///  - The first 11 bytes are zeros.
+///  - The 12th byte is set to `1`, indicating the version.
+///  - The last 8 bytes represent the `CollectionId` in big-endian format.
+///
+/// This function is generic over the return type `Address`, which must be a type
+/// that can be constructed from a 20-byte array (`[u8; 20]`). This allows flexibility
+/// in the type of address returned, as long as it can be created from the byte array.
+///
+/// # Type Parameters
+///
+/// * `Address` - The type of the address to be returned. This type must implement `From<[u8; 20]>`.
+///
+/// # Arguments
+///
+/// * `collection_id` - The `CollectionId` (u64 value) to be converted into an address.
+///
+/// # Returns
+///
+/// An `Address` type representing the constructed address.
+///
+/// # Example
+///
+/// Assuming `Address` is a type that implements `From<[u8; 20]>`:
+///
+/// ```
+/// let collection_id = CollectionId(12345);
+/// let address: Address = collection_id_to_address(collection_id);
+/// // use `address` as needed
+/// ```
+pub fn address_to_collection_id<Address>(address: Address) -> Result<CollectionId, CollectionError>
+where
+	Address: Into<[u8; 20]>,
+{
+	let address_bytes: [u8; 20] = address.into();
+	// Check if the first 11 bytes are zeros
+	if !address_bytes[..11].iter().all(|&byte| byte == 0) {
+		return Err(CollectionError::InvalidFormat)
+	}
+
+	// Check if the 12th byte is 1 (version byte)
+	if address_bytes[11] != 1 {
+		return Err(CollectionError::InvalidVersion)
+	}
+
+	let mut collection_id_bytes = [0u8; 8];
+	collection_id_bytes.copy_from_slice(&address_bytes[12..20]);
+	Ok(u64::from_be_bytes(collection_id_bytes))
+}
