@@ -4,6 +4,8 @@ use super::*;
 use frame_support::traits::tokens::{fungible::Balanced, Precision};
 use sp_core::U256;
 
+const ALICE: &str = "0x0000000000000000000000000000000000000005";
+
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
 	frame_system::GenesisConfig::<Runtime>::default()
@@ -70,8 +72,6 @@ fn asset_id_to_address_two_assets_same_owner() {
 		AccountId::from_str("c0f0f4ab324c46e55d02d0033343b4be8a55532d").unwrap()
 	);
 }
-
-const ALICE: &str = "0x0000000000000000000000000000000000000005";
 
 #[test]
 fn minimum_balance_should_be_1() {
