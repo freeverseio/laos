@@ -3,7 +3,7 @@ import BN from "bn.js";
 import { ethers } from "ethers";
 import Web3 from "web3";
 import { JsonRpcResponse } from "web3-core-helpers";
-import { ASTAR_RPC_PORT, BLOCK_TIME, MAX_U96, ROCOCO_RPC_PORT, RPC_PORT } from "./config";
+import { ASTAR_RPC_PORT, MAX_U96, ROCOCO_RPC_PORT, RPC_PORT } from "./config";
 
 require("events").EventEmitter.prototype._maxListeners = 100;
 
@@ -120,51 +120,59 @@ export function slotAndOwnerToTokenId(slot: string, owner: string): string | nul
 export async function waitForEvents(
 	api: ApiPromise,
 	targetEvents: { module: string; name: string }[],
-	blocks: number = 5
+	blocks: number = 3
 ): Promise<any> {
 	let blockCounter = 0;
-	let result = {};
+	// subscribe to new blocks, read events from them and check if we found the target events
+	return new Promise(async (resolve, reject) => {
+		const unsub = await api.rpc.chain.subscribeNewHeads(async (header) => {
+			blockCounter++;
+			console.log(`Block #${header.number} has hash ${header.hash}`);
 
-	api.query.system.events((events) => {
-		// check if `target` is a subset of `source`
-		const isSubset = (target: { module: string; name: string }[], source: any[]): any[] => {
-			return source.filter((s) =>
-				target.some(
-					(t) =>
-						t.module.toLowerCase() === s.event.section.toLowerCase() &&
-						t.name.toLowerCase() === s.event.method.toLowerCase()
-				)
-			);
-		};
+			if (blockCounter > blocks) {
+				reject(`No events found after ${blocks} blocks`);
+				unsub();
+			}
 
-		let foundEvents = isSubset(targetEvents, events);
+			let result = {};
+			(await api.at(header.hash)).query.system.events((events) => {
+				// check if `target` is a subset of `source`
+				const isSubset = (target: { module: string; name: string }[], source: any[]): any[] => {
+					return source.filter((s) =>
+						target.some(
+							(t) =>
+								t.module.toLowerCase() === s.event.section.toLowerCase() &&
+								t.name.toLowerCase() === s.event.method.toLowerCase()
+						)
+					);
+				};
 
-		// make sure we found all the unique events
-		const foundAllEvents = targetEvents.every((t) =>
-			foundEvents.some(
-				(f) =>
-					f.event.section.toLowerCase() === t.module.toLowerCase() &&
-					f.event.method.toLowerCase() == t.name.toLowerCase()
-			)
-		);
+				let foundEvents = isSubset(targetEvents, events);
 
-		if (foundAllEvents && foundEvents.length === targetEvents.length) {
-			// Loop through each of the parameters, displaying the type and data
-			foundEvents.forEach((e) => {
-				const { event } = e;
-				let types = event.typeDef;
-				// Loop through each of the parameters, displaying the type and data
-				event.data.forEach((data, index) => {
-					console.log(`\t\t\t${types[index].type}: ${data.toString()}`);
-				});
-				result[`${event.section}.${event.method}`] = event.data.map((d) => d.toString());
+				// make sure we found all the unique events
+				const foundAllEvents = targetEvents.every((t) =>
+					foundEvents.some(
+						(f) =>
+							f.event.section.toLowerCase() === t.module.toLowerCase() &&
+							f.event.method.toLowerCase() == t.name.toLowerCase()
+					)
+				);
+
+				if (foundAllEvents && foundEvents.length === targetEvents.length) {
+					// Loop through each of the parameters, displaying the type and data
+					foundEvents.forEach((e) => {
+						const { event } = e;
+						let types = event.typeDef;
+						// Loop through each of the parameters, displaying the type and data
+						event.data.forEach((data, index) => {
+							console.log(`\t\t\t${types[index].type}: ${data.toString()}`);
+						});
+						result[`${event.section}.${event.method}`] = event.data.map((d) => d.toString());
+						resolve(result);
+						unsub();
+					});
+				}
 			});
-		}
-	});
-
-	return new Promise((resolve, _) => {
-		setTimeout(() => {
-			resolve(result);
-		}, BLOCK_TIME * blocks);
+		});
 	});
 }
