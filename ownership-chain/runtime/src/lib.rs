@@ -148,6 +148,7 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPalletsWithSystem,
+	pallet_multisig::migrations::v1::MigrateToV1<Runtime>,
 >;
 
 pub type Precompiles = FrontierPrecompiles<Runtime>;
@@ -236,9 +237,10 @@ pub const HOURS: BlockNumber = MINUTES * 60;
 pub const DAYS: BlockNumber = HOURS * 24;
 
 // Unit = the base number of indivisible units for balances
-pub const UNIT: Balance = 1_000_000_000_000;
-pub const MILLIUNIT: Balance = 1_000_000_000;
-pub const MICROUNIT: Balance = 1_000_000;
+// 18 decimals
+pub const UNIT: Balance = 1_000_000_000_000_000_000;
+pub const MILLIUNIT: Balance = UNIT / 1000;
+pub const MICROUNIT: Balance = MILLIUNIT / 1000;
 
 /// The existential deposit. Set to 1/10 of the Connected Relay Chain.
 pub const EXISTENTIAL_DEPOSIT: Balance = MILLIUNIT;
@@ -679,6 +681,26 @@ impl pallet_base_fee::Config for Runtime {
 	type DefaultElasticity = DefaultElasticity;
 }
 
+parameter_types! {
+	// One storage item; key size is 32; value is size 4+4+16+32 bytes = 56 bytes
+	// Fixed to 1 UNIT
+	pub const DepositBase: Balance = UNIT;
+	// Additional storage item size of 32 bytes.
+	// Fixed to 0.1 UNIT
+	pub const DepositFactor: Balance = UNIT / 10;
+	pub const MaxSignatories: u32 = 20;
+}
+
+impl pallet_multisig::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeCall = RuntimeCall;
+	type Currency = Balances;
+	type DepositBase = DepositBase;
+	type DepositFactor = DepositFactor;
+	type MaxSignatories = MaxSignatories;
+	type WeightInfo = pallet_multisig::weights::SubstrateWeight<Runtime>;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub struct Runtime
@@ -719,6 +741,9 @@ construct_runtime!(
 		EVMChainId: pallet_evm_chain_id = 52,
 		// DynamicFee: pallet_dynamic_fee = 43,
 		BaseFee: pallet_base_fee = 54,
+
+		// Other pallets
+		Multisig: pallet_multisig = 60,
 	}
 );
 
