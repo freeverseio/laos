@@ -86,7 +86,10 @@ fp-account = { workspace = true }
 substrate-build-script-utils = { workspace = true }
 
 [features]
-default = []
+default = [
+	"txpool"
+]
+txpool = ["fc-rpc/txpool"]
 runtime-benchmarks = [
 	"laos-ownership-runtime/runtime-benchmarks",
 	"polkadot-cli/runtime-benchmarks",
