@@ -22,25 +22,25 @@ chain = "local-v"
   command = "{{ZOMBIENET_OWNCHAIN_COMMAND}}"
   validator = true
 
-[[parachains]]
-id = 2008
-cumulus_based = true
-chain = "astar-dev"
+# [[parachains]]
+# id = 2008
+# cumulus_based = true
+# chain = "astar-dev"
 
-  [[parachains.collators]]
-  name = "astar"
-  ws_port = 9998
-  command = "{{ZOMBIENET_ASTAR_COMMAND}}"
-  validator = true
+#   [[parachains.collators]]
+#   name = "astar"
+#   ws_port = 9998
+#   command = "{{ZOMBIENET_ASTAR_COMMAND}}"
+#   validator = true
 
-[[hrmp_channels]]
-sender = 2900
-recipient = 2008
-max_capacity = 8
-max_message_size = 1048576
+# [[hrmp_channels]]
+# sender = 2900
+# recipient = 2008
+# max_capacity = 8
+# max_message_size = 1048576
 
-[[hrmp_channels]]
-sender = 2008
-recipient = 2900
-max_capacity = 8
-max_message_size = 1048576
+# [[hrmp_channels]]
+# sender = 2008
+# recipient = 2900
+# max_capacity = 8
+# max_message_size = 1048576
