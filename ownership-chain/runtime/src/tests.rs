@@ -79,3 +79,12 @@ fn test_block_and_gas_limit_constants() {
 	// 15M gas
 	assert_eq!(block_gas_limit, U256::from(15_000_000));
 }
+
+#[test]
+fn test_multisig_constants() {
+	// 1 UNIT
+	assert_eq!(<Runtime as pallet_multisig::Config>::DepositBase::get(), UNIT);
+	// 0.1 UNIT
+	assert_eq!(<Runtime as pallet_multisig::Config>::DepositFactor::get(), UNIT / 10);
+	assert_eq!(<Runtime as pallet_multisig::Config>::MaxSignatories::get(), 20);
+}
