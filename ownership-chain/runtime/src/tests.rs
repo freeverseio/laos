@@ -64,7 +64,9 @@ fn asset_id_to_address_two_assets_same_owner() {
 
 #[test]
 fn test_multisig_constants() {
-	assert_eq!(<Runtime as pallet_multisig::Config>::DepositBase::get(), 1e18 as u128);
-	assert_eq!(<Runtime as pallet_multisig::Config>::DepositFactor::get(), 1e17 as u128);
+	// 1 UNIT
+	assert_eq!(<Runtime as pallet_multisig::Config>::DepositBase::get(), UNIT);
+	// 0.1 UNIT
+	assert_eq!(<Runtime as pallet_multisig::Config>::DepositFactor::get(), UNIT / 10);
 	assert_eq!(<Runtime as pallet_multisig::Config>::MaxSignatories::get(), 20);
 }
