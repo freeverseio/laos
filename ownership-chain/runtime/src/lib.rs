@@ -237,9 +237,10 @@ pub const HOURS: BlockNumber = MINUTES * 60;
 pub const DAYS: BlockNumber = HOURS * 24;
 
 // Unit = the base number of indivisible units for balances
-pub const UNIT: Balance = 1_000_000_000_000;
-pub const MILLIUNIT: Balance = 1_000_000_000;
-pub const MICROUNIT: Balance = 1_000_000;
+// 18 decimals
+pub const UNIT: Balance = 1_000_000_000_000_000_000;
+pub const MILLIUNIT: Balance = UNIT / 1000;
+pub const MICROUNIT: Balance = MILLIUNIT / 1000;
 
 /// The existential deposit. Set to 1/10 of the Connected Relay Chain.
 pub const EXISTENTIAL_DEPOSIT: Balance = MILLIUNIT;
@@ -680,16 +681,13 @@ impl pallet_base_fee::Config for Runtime {
 	type DefaultElasticity = DefaultElasticity;
 }
 
-/// Calculate deposit for storage item.
-pub const fn deposit(items: u32, bytes: u32) -> Balance {
-	items as Balance * 15 * MILLIUNIT + (bytes as Balance) * 6 * MILLIUNIT
-}
-
 parameter_types! {
-	// One storage item; key size is 32; value is size 4+4+16+32 bytes = 56 bytes.
-	pub const DepositBase: Balance = deposit(1, 88);
+	// One storage item; key size is 32; value is size 4+4+16+32 bytes = 56 bytes
+	// Fixed to 1 UNIT
+	pub const DepositBase: Balance = UNIT;
 	// Additional storage item size of 32 bytes.
-	pub const DepositFactor: Balance = deposit(0, 32);
+	// Fixed to 0.1 UNIT
+	pub const DepositFactor: Balance = UNIT / 10;
 	pub const MaxSignatories: u32 = 20;
 }
 

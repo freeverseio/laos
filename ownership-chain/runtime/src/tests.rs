@@ -61,3 +61,10 @@ fn asset_id_to_address_two_assets_same_owner() {
 		AccountId::from_str("c0f0f4ab324c46e55d02d0033343b4be8a55532d").unwrap()
 	);
 }
+
+#[test]
+fn test_multisig_constants() {
+	assert_eq!(<Runtime as pallet_multisig::Config>::DepositBase::get(), 1e18 as u128);
+	assert_eq!(<Runtime as pallet_multisig::Config>::DepositFactor::get(), 1e17 as u128);
+	assert_eq!(<Runtime as pallet_multisig::Config>::MaxSignatories::get(), 20);
+}
