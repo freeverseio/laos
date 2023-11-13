@@ -1,14 +1,17 @@
 use core::str::FromStr;
 
 use super::*;
+use frame_support::traits::tokens::{fungible::Balanced, Precision};
 use sp_core::U256;
-use frame_support::traits::tokens::{ Precision, fungible::Balanced };
 
 const ALICE: &str = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
 
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
-	frame_system::GenesisConfig::<Runtime>::default().build_storage().unwrap().into()
+	frame_system::GenesisConfig::<Runtime>::default()
+		.build_storage()
+		.unwrap()
+		.into()
 }
 
 #[test]
