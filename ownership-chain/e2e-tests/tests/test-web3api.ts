@@ -43,7 +43,7 @@ describeWithExistingNode("Frontier RPC (Web3Api)", (context) => {
         await context.web3.eth.sendTransaction({
             from: GENESIS_ACCOUNT,
             to: wallet.address,
-            value: 1000000001,
+            value: 1,
             gas: 21000,
         });
 
