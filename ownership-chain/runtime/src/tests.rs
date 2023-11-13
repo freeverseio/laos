@@ -74,7 +74,7 @@ fn asset_id_to_address_two_assets_same_owner() {
 }
 
 #[test]
-fn minimum_balance_should_be_1() {
+fn minimum_balance_should_be_0() {
 	assert_eq!(Balances::minimum_balance(), 0);
 }
 
