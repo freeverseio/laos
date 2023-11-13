@@ -1,7 +1,7 @@
 use cumulus_primitives_core::ParaId;
 use fp_evm::GenesisAccount;
 use hex_literal::hex;
-use laos_ownership_runtime::{AccountId, AuraId, Precompiles, EXISTENTIAL_DEPOSIT};
+use laos_ownership_runtime::{AccountId, AuraId, Precompiles};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
@@ -181,7 +181,7 @@ fn testnet_genesis(
 		},
 		collator_selection: laos_ownership_runtime::CollatorSelectionConfig {
 			invulnerables: invulnerables.iter().cloned().map(|(acc, _)| acc).collect(),
-			candidacy_bond: EXISTENTIAL_DEPOSIT * 16,
+			candidacy_bond: laos_ownership_runtime::ExistentialDeposit::get() * 16,
 			..Default::default()
 		},
 		session: laos_ownership_runtime::SessionConfig {
