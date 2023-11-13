@@ -74,6 +74,20 @@ export function slotAndOwnerToTokenId(slot: string, owner: string): string | nul
 	return Buffer.from(bytes).toString('hex'); // Convert Uint8Array to hexadecimal string
 } 
 
+/**
+ * Converts an Ethereum-like address into a `CollectionId` represented as a `BN` (big number).
+ *
+ * This function takes a hexadecimal string representation of an address and attempts to
+ * convert it into a `CollectionId`. The address is expected to be in a specific format:
+ *  - The first 11 bytes should be zeros.
+ *  - The 12th byte should be `1`, indicating the version.
+ *  - The last 8 bytes represent the `CollectionId`.
+ *
+ * If the address does not meet these criteria, the function returns `null`.
+ *
+ * @param address The Ethereum-like address in hexadecimal string format.
+ * @returns The `CollectionId` as a `BN` if the address is valid, or `null` otherwise.
+ */
 export function addressToCollectionId(address: string): BN | null {
 	const addressBytes: Uint8Array = Uint8Array.from(Buffer.from(address.slice(2), 'hex'));  // Remove the '0x' prefix and convert hex to bytes
 
