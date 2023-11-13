@@ -126,6 +126,7 @@ pallet-authorship = { git = "https://github.com/paritytech/substrate", branch = 
 pallet-session = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false, features = ["historical"] }
 pallet-sudo = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
 pallet-grandpa = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
+pallet-multisig = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
 pallet-timestamp = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
 pallet-transaction-payment = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
 pallet-transaction-payment-rpc-runtime-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
