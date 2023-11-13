@@ -36,4 +36,3 @@ export const SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI =
 
 // Constants
 export const MAX_U96 = new BN("79228162514264337593543950336"); // 2^96 - 1
-export const BLOCK_TIME = 12000; // 12 seconds

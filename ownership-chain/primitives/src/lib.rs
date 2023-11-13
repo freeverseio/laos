@@ -13,11 +13,11 @@ use sp_runtime::{
 
 /// Maximal weight of single OwnershipParachain block.
 ///
-/// This represents two seconds of compute assuming a target block time of six seconds.
+/// This represents 0.5 seconds of compute assuming a target block time of 12 seconds.
 ///
 /// Max PoV size is set to `5Mb` as all Cumulus-based parachains do.
 pub const MAXIMUM_BLOCK_WEIGHT: Weight =
-	Weight::from_parts(WEIGHT_REF_TIME_PER_SECOND.saturating_mul(2), 5 * 1024 * 1024);
+	Weight::from_parts(WEIGHT_REF_TIME_PER_SECOND.saturating_div(2), 5 * 1024 * 1024);
 
 /// Represents the portion of a block that will be used by Normal extrinsics.
 pub const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
