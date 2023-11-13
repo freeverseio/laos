@@ -1,6 +1,7 @@
 use core::str::FromStr;
 
 use super::*;
+use frame_support::assert_ok;
 use sp_core::U256;
 
 #[test]
@@ -60,4 +61,21 @@ fn asset_id_to_address_two_assets_same_owner() {
 		TestAssetIdToInitialOwner::convert(asset2),
 		AccountId::from_str("c0f0f4ab324c46e55d02d0033343b4be8a55532d").unwrap()
 	);
+}
+
+#[test]
+fn test_block_and_gas_limit_constants() {
+	use crate::Runtime;
+
+	let system_block_weights = <Runtime as frame_system::Config>::BlockWeights::get();
+
+	assert_ok!(system_block_weights.clone().validate());
+	// 0.5s of block time
+	assert_eq!(system_block_weights.max_block.ref_time(), 500_000_000_000);
+
+	// EVM constants
+	let block_gas_limit = <Runtime as pallet_evm::Config>::BlockGasLimit::get();
+
+	// 15M gas
+	assert_eq!(block_gas_limit, U256::from(15_000_000));
 }
