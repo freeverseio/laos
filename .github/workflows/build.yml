@@ -159,6 +159,6 @@ jobs:
 
     - name: Run tests
       run: |
-        cp -r ../precompile/laos-evolution/contracts contracts && npm run build && npm run test
+        npm run build && npm run test
       working-directory: ./ownership-chain/e2e-tests
 
