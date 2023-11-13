@@ -2,6 +2,7 @@ use core::str::FromStr;
 
 use super::*;
 use frame_support::traits::tokens::{fungible::Balanced, Precision};
+use frame_support::assert_ok;
 use sp_core::U256;
 
 const ALICE: &str = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
@@ -95,4 +96,19 @@ fn deposit_minimum_amount_should_succeed() {
 		}
 		assert_eq!(Balances::total_balance(&alice), minimum_amount);
 	})
+
+fn test_block_and_gas_limit_constants() {
+	use crate::Runtime;
+
+	let system_block_weights = <Runtime as frame_system::Config>::BlockWeights::get();
+
+	assert_ok!(system_block_weights.clone().validate());
+	// 0.5s of block time
+	assert_eq!(system_block_weights.max_block.ref_time(), 500_000_000_000);
+
+	// EVM constants
+	let block_gas_limit = <Runtime as pallet_evm::Config>::BlockGasLimit::get();
+
+	// 15M gas
+	assert_eq!(block_gas_limit, U256::from(15_000_000));
 }
