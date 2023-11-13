@@ -127,8 +127,6 @@ export async function waitForEvents(
 	return new Promise(async (resolve, reject) => {
 		const unsub = await api.rpc.chain.subscribeNewHeads(async (header) => {
 			blockCounter++;
-			console.log(`Block #${header.number} has hash ${header.hash}`);
-
 			if (blockCounter > blocks) {
 				reject(`No events found after ${blocks} blocks`);
 				unsub();
@@ -154,20 +152,21 @@ export async function waitForEvents(
 					foundEvents.some(
 						(f) =>
 							f.event.section.toLowerCase() === t.module.toLowerCase() &&
-							f.event.method.toLowerCase() == t.name.toLowerCase()
+							f.event.method.toLowerCase() === t.name.toLowerCase()
 					)
 				);
 
-				if (foundAllEvents && foundEvents.length === targetEvents.length) {
+				if (foundAllEvents) {
 					// Loop through each of the parameters, displaying the type and data
 					foundEvents.forEach((e) => {
 						const { event } = e;
-						let types = event.typeDef;
-						// Loop through each of the parameters, displaying the type and data
-						event.data.forEach((data, index) => {
-							console.log(`\t\t\t${types[index].type}: ${data.toString()}`);
-						});
-						result[`${event.section}.${event.method}`] = event.data.map((d) => d.toString());
+						let eventsData = event.data.map((d) => d.toString());
+
+						if (result[`${event.section}.${event.method}`]) {
+							result[`${event.section}.${event.method}`].push(eventsData);
+						} else {
+							result[`${event.section}.${event.method}`] = [eventsData];
+						}
 						resolve(result);
 						unsub();
 					});

@@ -124,9 +124,14 @@ describeWithExistingSubstrateNodes("XCM tests", (context) => {
 
 		expect(eventsData["xcmpQueue.Success"]).to.not.be.undefined;
 		expect(eventsData["balances.Transfer"]).to.not.be.undefined;
-		expect(eventsData["balances.Transfer"][0].toLowerCase()).to.equal(ASTAR_IN_OWNCHAIN);
-		expect(eventsData["balances.Transfer"][1].toLowerCase()).to.equal(dummyAccount);
-		expect(eventsData["balances.Transfer"][2].toString()).to.equal(amount.toString());
+
+		let transferEventData = eventsData["balances.Transfer"].filter((data) => {
+			return data[0].toLowerCase() === ASTAR_IN_OWNCHAIN;
+		});
+
+		expect(transferEventData[0][0].toLowerCase()).to.equal(ASTAR_IN_OWNCHAIN);
+		expect(transferEventData[0][1].toLowerCase()).to.equal(dummyAccount);
+		expect(transferEventData[0][2].toString()).to.equal(amount.toString());
 
 		let dummyAccountBalanceAfter: any = await context.ownchain.query.system.account(dummyAccount);
 		expect(
