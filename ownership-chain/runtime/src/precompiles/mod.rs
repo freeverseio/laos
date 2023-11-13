@@ -74,7 +74,7 @@ where
 			return IsPrecompileResult::Answer { is_precompile: true, extra_cost: 0 }
 		}
 
-		if matches!(address_to_collection_id(address), Ok(_)) {
+		if address_to_collection_id(address).is_ok() {
 			return IsPrecompileResult::Answer { is_precompile: true, extra_cost: 0 }
 		}
 
