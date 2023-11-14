@@ -181,7 +181,7 @@ fn testnet_genesis(
 		},
 		collator_selection: laos_ownership_runtime::CollatorSelectionConfig {
 			invulnerables: invulnerables.iter().cloned().map(|(acc, _)| acc).collect(),
-			candidacy_bond: laos_ownership_runtime::ExistentialDeposit::get() * 16 + 1,
+			candidacy_bond: laos_ownership_runtime::ExistentialDeposit::get() + 1,
 			..Default::default()
 		},
 		session: laos_ownership_runtime::SessionConfig {
