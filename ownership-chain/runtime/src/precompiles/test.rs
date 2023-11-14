@@ -1,3 +1,5 @@
+use core::str::FromStr;
+
 use super::{hash, mock::*, FrontierPrecompiles};
 use pallet_evm::{IsPrecompileResult, PrecompileSet};
 use sp_core::H160;
@@ -24,4 +26,6 @@ fn ethereum_precompiled_addresses_are_precompile() {
 	assert!(is_precompile(hash(5)).unwrap());
 	assert!(!is_precompile(hash(1026)).unwrap());
 	assert!(is_precompile(hash(1027)).unwrap());
+	assert!(is_precompile(H160::from_str("0x0000000000000000000000010000000000000005").unwrap())
+		.unwrap());
 }
