@@ -30,7 +30,7 @@ fn check_selectors() {
 fn check_log_selectors() {
 	assert_eq!(
 		hex::encode(SELECTOR_LOG_NEW_COLLECTION),
-		"6eb24fd767a7bcfa417f3fe25a2cb245d2ae52293d3c4a8f8c6450a09795d289"
+		"5b84d9550adb7000df7bee717735ecd3af48ea3f66c6886d52e8227548fb228c"
 	);
 	assert_eq!(
 		hex::encode(SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI),
@@ -45,7 +45,7 @@ fn check_log_selectors() {
 #[test]
 fn function_selectors() {
 	assert_eq!(Action::CreateCollection as u32, 0x2069E953);
-	assert_eq!(Action::OwnerOfCollection as u32, 0xFB34AE53);
+	assert_eq!(Action::Owner as u32, 0x8DA5CB5B);
 	assert_eq!(Action::TokenURI as u32, 0xC8A3F102);
 	assert_eq!(Action::Mint as u32, 0xD4AF5BBB);
 	assert_eq!(Action::Evolve as u32, 0x0EF2629F);
@@ -84,7 +84,13 @@ fn create_collection_should_return_collection_id() {
 	let mut handle = create_mock_handle_from_input(input);
 
 	let result = Mock::execute(&mut handle);
-	assert_ok!(result, succeed(H256::from_low_u64_be(0)));
+	assert_ok!(
+		result,
+		succeed(H256::from_slice(&[
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
+			0, 0, 0
+		]))
+	);
 }
 
 #[test]
@@ -114,7 +120,7 @@ fn create_collection_should_generate_log() {
 	assert_eq!(
 		logs[0].data,
 		vec![
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
 			0, 0, 123
 		]
 	);
@@ -224,12 +230,22 @@ fn call_unexistent_selector_should_fail() {
 fn call_owner_of_non_existent_collection() {
 	impl_precompile_mock_simple!(Mock, PrecompileMockParams::default());
 
-	let input = EvmDataWriter::new_with_selector(Action::OwnerOfCollection)
-		.write(U256::from(0))
-		.build();
-	let mut handle = create_mock_handle_from_input(input);
+	let input = EvmDataWriter::new_with_selector(Action::Owner).build();
+	let mut handle = create_mock_handle(input, 0, 0, H160::zero());
+	handle.context.address = H160::from_str("0000000000000000000000010000000000000005").unwrap();
 	let result = Mock::execute(&mut handle);
 	assert_eq!(result.unwrap_err(), revert("collection does not exist"));
+}
+
+#[test]
+fn call_owner_of_non_invalid_collection() {
+	impl_precompile_mock_simple!(Mock, PrecompileMockParams { ..Default::default() });
+
+	let input = EvmDataWriter::new_with_selector(Action::Owner).write(U256::from(0)).build();
+	let mut handle = create_mock_handle(input, 0, 0, H160::zero());
+	handle.context.address = H160::from_str("0000000000000000000000000000000000000005").unwrap();
+	let result = Mock::execute(&mut handle);
+	assert_eq!(result.unwrap_err(), revert("invalid collection address"));
 }
 
 #[test]
@@ -243,12 +259,10 @@ fn call_owner_of_collection_works() {
 	);
 
 	let owner = H160::from_low_u64_be(0x1234);
+	let input = EvmDataWriter::new_with_selector(Action::Owner).build();
 
-	let input = EvmDataWriter::new_with_selector(Action::OwnerOfCollection)
-		.write(Address(owner))
-		.build();
-
-	let mut handle = create_mock_handle_from_input(input);
+	let mut handle = create_mock_handle(input, 0, 0, H160::zero());
+	handle.context.address = H160::from_str("0000000000000000000000010000000000000005").unwrap();
 	let result = Mock::execute(&mut handle).unwrap();
 	assert_eq!(result, succeed(EvmDataWriter::new().write(Address(owner.into())).build()));
 }

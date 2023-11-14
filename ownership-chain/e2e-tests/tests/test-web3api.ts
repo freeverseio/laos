@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { step } from "mocha-steps";
 import BN from "bn.js";
 
-import { RUNTIME_SPEC_NAME, RUNTIME_SPEC_VERSION, RUNTIME_IMPL_VERSION, CHAIN_ID, GENESIS_ACCOUNT, GENESIS_ACCOUNT_PRIVATE_KEY, GAS_PRICE } from "./config";
+import { RUNTIME_SPEC_NAME, RUNTIME_SPEC_VERSION, RUNTIME_IMPL_VERSION, CHAIN_ID, GENESIS_ACCOUNT, GENESIS_ACCOUNT_PRIVATE_KEY } from "./config";
 import { describeWithExistingNode, customRequest } from "./util";
 
 describeWithExistingNode("Frontier RPC (Web3Api)", (context) => {

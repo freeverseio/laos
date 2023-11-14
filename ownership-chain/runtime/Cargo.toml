@@ -35,6 +35,7 @@ frame-try-runtime = { workspace = true, optional = true }
 pallet-aura = { workspace = true }
 pallet-authorship = { workspace = true }
 pallet-balances = { workspace = true , features = ["insecure_zero_ed"] }
+pallet-multisig = { workspace = true }
 pallet-session = { workspace = true }
 pallet-sudo = { workspace = true }
 pallet-timestamp = { workspace = true }
@@ -53,10 +54,7 @@ sp-std = { workspace = true }
 sp-transaction-pool = { workspace = true }
 sp-version = { workspace = true }
 
-pallet-living-assets-ownership = { workspace = true }
 pallet-laos-evolution = { workspace = true }
-pallet-evm-living-assets-ownership = { workspace = true }
-pallet-evm-erc721 = { workspace = true }
 pallet-evm-laos-evolution = { workspace = true }
 
 # Polkadot
@@ -123,8 +121,8 @@ std = [
 	"pallet-collator-selection/std",
 	"pallet-session/std",
 	"pallet-sudo/std",
-	"pallet-living-assets-ownership/std",
 	"pallet-laos-evolution/std",
+	"pallet-multisig/std",
 	"pallet-timestamp/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-transaction-payment/std",
@@ -156,7 +154,6 @@ std = [
 	"pallet-base-fee/std",
 	"pallet-ethereum/std",
 	"pallet-evm/std",
-	"pallet-evm-erc721/std",
 	"pallet-evm-laos-evolution/std",
 	"pallet-evm-chain-id/std",
 	"pallet-evm-precompile-modexp/std",
@@ -165,7 +162,6 @@ std = [
 	"frame-benchmarking",
 	"frame-system-benchmarking",
 	"frame-try-runtime",
-	"pallet-evm-living-assets-ownership/std",
 	# Bridge deps,
 	"ownership-parachain-primitives/std",
 	"hex/std",
@@ -178,8 +174,8 @@ runtime-benchmarks = [
 	"frame-system/runtime-benchmarks",
 	"pallet-balances/runtime-benchmarks",
 	"pallet-collator-selection/runtime-benchmarks",
-	"pallet-living-assets-ownership/runtime-benchmarks",
 	"pallet-laos-evolution/runtime-benchmarks",
+	"pallet-multisig/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"pallet-xcm/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
@@ -211,8 +207,8 @@ try-runtime = [
 	"pallet-collator-selection/try-runtime",
 	"pallet-session/try-runtime",
 	"pallet-sudo/try-runtime",
-	"pallet-living-assets-ownership/try-runtime",
 	"pallet-laos-evolution/try-runtime",
+	"pallet-multisig/try-runtime",
 	"pallet-timestamp/try-runtime",
 	"pallet-transaction-payment/try-runtime",
 	"pallet-xcm/try-runtime",

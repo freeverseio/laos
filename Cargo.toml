@@ -126,6 +126,7 @@ pallet-authorship = { git = "https://github.com/paritytech/substrate", branch = 
 pallet-session = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false, features = ["historical"] }
 pallet-sudo = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
 pallet-grandpa = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
+pallet-multisig = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
 pallet-timestamp = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
 pallet-transaction-payment = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
 pallet-transaction-payment-rpc-runtime-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
@@ -220,9 +221,7 @@ polkadot-cli = { git = "https://github.com/paritytech/polkadot", branch = "relea
 polkadot-service = { git = "https://github.com/paritytech/polkadot", branch = "release-v1.0.0" }
 
 # LAOS pallets
-pallet-living-assets-ownership = { path = "./ownership-chain/pallets/living-assets-ownership", default-features = false }
 pallet-laos-evolution = { path = "./ownership-chain/pallets/laos-evolution", default-features = false }
-pallet-evm-living-assets-ownership = { path = "./ownership-chain/precompile/living-assets", default-features = false }
 pallet-evm-laos-evolution = { path = "./ownership-chain/precompile/laos-evolution", default-features = false }
 pallet-evm-erc721 = { path = "./ownership-chain/precompile/erc721", default-features = false }
 
