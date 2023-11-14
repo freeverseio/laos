@@ -90,7 +90,7 @@ where
 			},
 			Action::Owner => {
 				// collection id is encoded into the contract address
-				let collection_id = address_to_collection_id(handle.context().address)
+				let collection_id = address_to_collection_id(context.address)
 					.map_err(|_| revert("invalid collection address"))?;
 
 				if let Some(owner) = LaosEvolution::collection_owner(collection_id) {
@@ -101,9 +101,11 @@ where
 			},
 			Action::TokenURI => {
 				let mut input = handle.read_input()?;
-				input.expect_arguments(2)?;
+				input.expect_arguments(1)?;
 
-				let collection_id = input.read::<u64>()?;
+				// collection id is encoded into the contract address
+				let collection_id = address_to_collection_id(context.address)
+					.map_err(|_| revert("invalid collection address"))?;
 				let token_id = input.read::<TokenId>()?;
 
 				if let Some(token_uri) = LaosEvolution::token_uri(collection_id, token_id) {
@@ -115,11 +117,13 @@ where
 			Action::Mint => {
 				let caller = context.caller;
 
-				input.expect_arguments(4)?;
+				input.expect_arguments(3)?;
 
-				let collection_id = input.read::<u64>()?;
-				let slot = input.read::<Slot>()?;
+				// collection id is encoded into the contract address
+				let collection_id = address_to_collection_id(context.address)
+					.map_err(|_| revert("invalid collection address"))?;
 				let to = input.read::<Address>()?.0;
+				let slot = input.read::<Slot>()?;
 				let token_uri_raw = input.read::<Bytes>()?.0;
 				let token_uri = token_uri_raw
 					.clone()
@@ -139,10 +143,9 @@ where
 								SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI,
 								to,
 								EvmDataWriter::new()
-									.write(collection_id)
 									.write(slot)
-									.write(Bytes(token_uri_raw))
 									.write(token_id)
+									.write(Bytes(token_uri_raw))
 									.build(),
 							)
 							.record(handle)?;
@@ -155,9 +158,11 @@ where
 			Action::Evolve => {
 				let caller = context.caller;
 
-				input.expect_arguments(4)?;
+				input.expect_arguments(3)?;
 
-				let collection_id = input.read::<u64>()?;
+				// collection id is encoded into the contract address
+				let collection_id = address_to_collection_id(context.address)
+					.map_err(|_| revert("invalid collection address"))?;
 				let token_id = input.read::<TokenId>()?;
 				let token_uri_raw = input.read::<Bytes>()?.0;
 				let token_uri = token_uri_raw
@@ -179,10 +184,7 @@ where
 							.log2(
 								SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI,
 								token_id_bytes,
-								EvmDataWriter::new()
-									.write(collection_id)
-									.write(Bytes(token_uri_raw))
-									.build(),
+								EvmDataWriter::new().write(Bytes(token_uri_raw)).build(),
 							)
 							.record(handle)?;
 
