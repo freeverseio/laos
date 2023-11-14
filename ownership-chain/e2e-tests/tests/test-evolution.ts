@@ -72,7 +72,6 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
         expect(Object.keys(result.events).length).to.be.eq(1);
 
         // data returned within the event
-        console.log(result.events.MintedWithExternalURI.returnValues)
         expect(result.events.MintedWithExternalURI.returnValues._to).to.be.eq(to);
         expect(result.events.MintedWithExternalURI.returnValues._slot).to.be.eq(slot);
         expect(result.events.MintedWithExternalURI.returnValues._tokenURI).to.be.eq(tokenURI);
@@ -88,8 +87,8 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
         // event data
         expect(result.events.MintedWithExternalURI.raw.data).to.be.eq(
             context.web3.eth.abi.encodeParameters(
-                ["uint64", "uint96", "string", "uint256"],
-                [collectionId, slot, tokenURI, tokenIdDecimal]
+                ["uint96", "uint256", "string"],
+                [slot, tokenIdDecimal, tokenURI]
             )
         );
     });
