@@ -22,11 +22,6 @@ type AddressMapping = pallet_evm::IdentityAddressMapping;
 const ALICE: &str = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
 
 #[test]
-fn check_selectors() {
-	assert_eq!(Action::CreateCollection as u32, 0x2069E953);
-}
-
-#[test]
 fn check_log_selectors() {
 	assert_eq!(
 		hex::encode(SELECTOR_LOG_NEW_COLLECTION),
@@ -34,11 +29,11 @@ fn check_log_selectors() {
 	);
 	assert_eq!(
 		hex::encode(SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI),
-		"4b3b5da28a351f8bb73b960d7c80b2cef3e3570cb03448234dee173942c74786"
+		"a7135052b348b0b4e9943bae82d8ef1c5ac225e594ef4271d12f0744cfc98348"
 	);
 	assert_eq!(
 		hex::encode(SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI),
-		"95c167d04a267f10e6b3f373c7a336dc65cf459caf048854dc32a2d37ab1607c"
+		"dde18ad2fe10c12a694de65b920c02b851c382cf63115967ea6f7098902fa1c8"
 	);
 }
 
@@ -46,9 +41,9 @@ fn check_log_selectors() {
 fn function_selectors() {
 	assert_eq!(Action::CreateCollection as u32, 0x2069E953);
 	assert_eq!(Action::Owner as u32, 0x8DA5CB5B);
-	assert_eq!(Action::TokenURI as u32, 0xC8A3F102);
-	assert_eq!(Action::Mint as u32, 0xD4AF5BBB);
-	assert_eq!(Action::Evolve as u32, 0x0EF2629F);
+	assert_eq!(Action::TokenURI as u32, 0xC87B56DD);
+	assert_eq!(Action::Mint as u32, 0xFD024566);
+	assert_eq!(Action::Evolve as u32, 0x2FD38F4D);
 }
 
 #[test]
