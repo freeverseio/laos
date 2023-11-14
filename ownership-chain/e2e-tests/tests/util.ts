@@ -58,7 +58,7 @@ export function describeWithExistingSubstrateNodes(
 	title: string,
 	cb: (context: { ownchain: ApiPromise; astar: ApiPromise; relaychain: ApiPromise }) => void
 ) {
-	describe.only(title, () => {
+	describe(title, () => {
 		let context: {
 			ownchain: ApiPromise;
 			astar: ApiPromise;
