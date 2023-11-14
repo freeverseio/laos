@@ -93,9 +93,8 @@ fn deposit_smallest_unit_should_succeed() {
 	})
 }
 
+#[test]
 fn test_block_and_gas_limit_constants() {
-	use crate::Runtime;
-
 	let system_block_weights = <Runtime as frame_system::Config>::BlockWeights::get();
 
 	assert_ok!(system_block_weights.clone().validate());
