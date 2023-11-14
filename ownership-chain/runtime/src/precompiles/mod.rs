@@ -22,8 +22,8 @@ where
 	pub fn new() -> Self {
 		Self(Default::default())
 	}
-	pub fn used_addresses() -> [H160; 8] {
-		[hash(1), hash(2), hash(3), hash(4), hash(5), hash(1025), hash(1026), hash(1027)]
+	pub fn used_addresses() -> [H160; 7] {
+		[hash(1), hash(2), hash(3), hash(4), hash(5), hash(1025), hash(1027)]
 	}
 }
 
