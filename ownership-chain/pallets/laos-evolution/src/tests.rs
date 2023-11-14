@@ -432,7 +432,7 @@ mod collection_id_conversion {
 	}
 
 	#[test]
-	fn given_invalid_11th_byte_from_address_to_id_fails() {
+	fn given_invalid_12th_byte_from_address_to_id_fails() {
 		let address = AccountId::from_str("0000000000000000000000020000000000000005").unwrap();
 		assert_err!(
 			address_to_collection_id::<AccountId>(address),
