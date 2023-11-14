@@ -23,7 +23,6 @@ fn minimum_balance_should_be_0() {
 
 #[test]
 fn deposit_smallest_unit_should_succeed() {
-
 	new_test_ext().execute_with(|| {
 		let alice = AccountId::from_str(ALICE).unwrap();
 		assert_eq!(Balances::total_balance(&alice), 0);
