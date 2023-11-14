@@ -1,6 +1,6 @@
 use frame_support::{
 	construct_runtime, parameter_types,
-	traits::{ConstU32, ConstU64, FindAuthor},
+	traits::{ConstU64, FindAuthor},
 	weights::Weight,
 };
 use pallet_evm::{
@@ -26,7 +26,6 @@ construct_runtime!(
 		System: frame_system,
 		Balances: pallet_balances,
 		Timestamp: pallet_timestamp,
-		LivingassetsOwnership: pallet_living_assets_ownership,
 		EVM: pallet_evm,
 	}
 );
@@ -90,13 +89,6 @@ impl pallet_timestamp::Config for Runtime {
 
 parameter_types! {
 	pub NullAddress: AccountId = AccountId::zero();
-}
-
-impl pallet_living_assets_ownership::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type BaseURILimit = ConstU32<256>;
-	type NullAddress = NullAddress;
-	type AssetIdToInitialOwner = MockAssetIdToInitialOwner;
 }
 
 pub struct MockAssetIdToInitialOwner;

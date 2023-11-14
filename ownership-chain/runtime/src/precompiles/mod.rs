@@ -6,13 +6,10 @@ use pallet_evm::{
 use sp_core::H160;
 use sp_std::marker::PhantomData;
 
-use pallet_evm_erc721::Erc721Precompile;
 use pallet_evm_laos_evolution::LaosEvolutionPrecompile;
-use pallet_evm_living_assets_ownership::CollectionManagerPrecompile;
 use pallet_evm_precompile_modexp::Modexp;
 use pallet_evm_precompile_simple::{ECRecover, ECRecoverPublicKey, Identity, Ripemd160, Sha256};
 use pallet_laos_evolution::TokenUriOf;
-use pallet_living_assets_ownership::{is_collection_address, BaseURIOf};
 
 use crate::{AccountId, Runtime};
 
@@ -25,19 +22,10 @@ where
 	pub fn new() -> Self {
 		Self(Default::default())
 	}
-	pub fn used_addresses() -> [H160; 8] {
-		[hash(1), hash(2), hash(3), hash(4), hash(5), hash(1025), hash(1026), hash(1027)]
+	pub fn used_addresses() -> [H160; 7] {
+		[hash(1), hash(2), hash(3), hash(4), hash(5), hash(1025), hash(1027)]
 	}
 }
-
-type LivingAssetsPrecompile = CollectionManagerPrecompile<
-	pallet_evm::IdentityAddressMapping,
-	AccountId,
-	BaseURIOf<Runtime>,
-	pallet_living_assets_ownership::Pallet<Runtime>,
->;
-
-type Erc721 = Erc721Precompile<AccountId, pallet_living_assets_ownership::Pallet<Runtime>>;
 
 type LaosEvolution = LaosEvolutionPrecompile<
 	pallet_evm::IdentityAddressMapping,
@@ -48,7 +36,7 @@ type LaosEvolution = LaosEvolutionPrecompile<
 
 impl<Runtime> PrecompileSet for FrontierPrecompiles<Runtime>
 where
-	Runtime: pallet_evm::Config + pallet_living_assets_ownership::Config,
+	Runtime: pallet_evm::Config,
 {
 	fn execute(&self, handle: &mut impl PrecompileHandle) -> Option<PrecompileResult> {
 		match handle.code_address() {
@@ -61,18 +49,12 @@ where
 			// Non-Frontier specific nor Ethereum precompiles :
 			// a if a == hash(1024) => Some(Sha3FIPS256::execute(handle)),
 			a if a == hash(1025) => Some(ECRecoverPublicKey::execute(handle)),
-			a if a == hash(1026) => Some(LivingAssetsPrecompile::execute(handle)),
 			a if a == hash(1027) => Some(LaosEvolution::execute(handle)),
-			a if is_collection_address(a) => Some(Erc721::execute(handle)),
 			_ => None,
 		}
 	}
 
 	fn is_precompile(&self, address: H160, _gas: u64) -> IsPrecompileResult {
-		if is_collection_address(address) {
-			return IsPrecompileResult::Answer { is_precompile: true, extra_cost: 0 }
-		}
-
 		IsPrecompileResult::Answer {
 			is_precompile: Self::used_addresses().contains(&address),
 			extra_cost: 0,
