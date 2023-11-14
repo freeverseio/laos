@@ -31,7 +31,7 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
         const tokenId = "0";
 
         try {
-            await contract.methods.tokenURI(collectionId, tokenId).call();
+            await contract.methods.tokenURI(tokenId).call();
             expect.fail("Expected error was not thrown"); // Ensure an error is thrown
         } catch (error) {
             expect(error.message).to.be.eq(
@@ -47,11 +47,11 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
         const to = GENESIS_ACCOUNT;
         const tokenURI = "https://example.com";
 
-        const result = await contract.methods.mintWithExternalURI(collectionId, slot, to, tokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS_LIMIT, nonce: nonce++ });
+        const result = await contract.methods.mintWithExternalURI(to, slot, tokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS_LIMIT, nonce: nonce++ });
         expect(result.status).to.be.eq(true);
 
         const tokenId = result.events.MintedWithExternalURI.returnValues._tokenId;
-        const got = await contract.methods.tokenURI(collectionId, tokenId).call();
+        const got = await contract.methods.tokenURI(tokenId).call();
         expect(got).to.be.eq(tokenURI);
     });
 
@@ -74,7 +74,7 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
         const to = GENESIS_ACCOUNT;
         const tokenURI = "https://example.com";
 
-        const result = await contract.methods.mintWithExternalURI(collectionId, slot, to, tokenURI)
+        const result = await contract.methods.mintWithExternalURI(to, slot, tokenURI)
             .send({ from: GENESIS_ACCOUNT, gas: GAS_LIMIT, nonce: nonce++ });
         expect(result.status).to.be.eq(true);
 
@@ -113,13 +113,13 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
         const tokenId = slotAndOwnerToTokenId(slot, to);
         const tokenIdDecimal = new BN(tokenId, 16, "be").toString(10);
 
-        const mintingResult = await contract.methods.mintWithExternalURI(collectionId, slot, to, tokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS_LIMIT, nonce: nonce++ });
+        const mintingResult = await contract.methods.mintWithExternalURI(to, slot, tokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS_LIMIT, nonce: nonce++ });
         expect(mintingResult.status).to.be.eq(true);
 
-        const evolvingResult = await contract.methods.evolveWithExternalURI(collectionId, tokenIdDecimal, newTokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS_LIMIT, nonce: nonce++ });
+        const evolvingResult = await contract.methods.evolveWithExternalURI(tokenIdDecimal, newTokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS_LIMIT, nonce: nonce++ });
         expect(evolvingResult.status).to.be.eq(true);
 
-        const got = await contract.methods.tokenURI(collectionId, tokenIdDecimal).call();
+        const got = await contract.methods.tokenURI(tokenIdDecimal).call();
         expect(got).to.be.eq(newTokenURI);
     });
 
@@ -133,10 +133,10 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
         const tokenId = slotAndOwnerToTokenId(slot, to);
         const tokenIdDecimal = new BN(tokenId, 16, "be").toString(10);
 
-        const mintingResult = await contract.methods.mintWithExternalURI(collectionId, slot, to, tokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS_LIMIT, nonce: nonce++ });
+        const mintingResult = await contract.methods.mintWithExternalURI(to, slot, tokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS_LIMIT, nonce: nonce++ });
         expect(mintingResult.status).to.be.eq(true);
 
-        const evolvingResult = await contract.methods.evolveWithExternalURI(collectionId, tokenIdDecimal, newTokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS_LIMIT, nonce: nonce++ });
+        const evolvingResult = await contract.methods.evolveWithExternalURI(tokenIdDecimal, newTokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS_LIMIT, nonce: nonce++ });
         expect(evolvingResult.status).to.be.eq(true);
 
         expect(Object.keys(evolvingResult.events).length).to.be.eq(1);
