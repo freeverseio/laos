@@ -84,9 +84,6 @@ use pallet_evm::{
 mod precompiles;
 use precompiles::FrontierPrecompiles;
 
-/// Import the living assets ownership pallet.
-pub use pallet_living_assets_ownership;
-
 /// Alias to 512-bit hash when used in the context of a transaction signature on the chain.
 pub type Signature = ownership_parachain_primitives::Signature;
 
@@ -473,13 +470,6 @@ parameter_types! {
 	pub NullAddress: AccountId = [0u8; 20].into();
 }
 
-impl pallet_living_assets_ownership::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type BaseURILimit = ConstU32<2015>;
-	type NullAddress = NullAddress;
-	type AssetIdToInitialOwner = AssetIdToInitialOwner;
-}
-
 parameter_types! {
 	/// Max length of the `TokenUri`
 	pub const MaxTokenUriLength: u32 = 512;
@@ -731,8 +721,6 @@ construct_runtime!(
 		// Sudo
 		Sudo: pallet_sudo = 40,
 
-		// Local pallets
-		LaosLivingAssetsOwnership: pallet_living_assets_ownership = 41,
 		LaosEvolution: pallet_laos_evolution = 42,
 
 		// Frontier

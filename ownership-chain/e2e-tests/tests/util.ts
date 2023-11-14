@@ -106,7 +106,51 @@ export function slotAndOwnerToTokenId(slot: string, owner: string): string | nul
 	bytes.set(slotBytes.slice(-12), 0); // slice from the right to ensure we get the least significant bytes
 	bytes.set(ownerBytes, 12);
 
-	return Buffer.from(bytes).toString("hex"); // Convert Uint8Array to hexadecimal string
+	return Buffer.from(bytes).toString('hex'); // Convert Uint8Array to hexadecimal string
+} 
+
+/**
+ * Converts an Ethereum-like address into a `CollectionId` represented as a `BN` (big number).
+ *
+ * This function takes a hexadecimal string representation of an address and attempts to
+ * convert it into a `CollectionId`. The address is expected to be in a specific format:
+ *  - The first 11 bytes should be zeros.
+ *  - The 12th byte should be `1`, indicating the version.
+ *  - The last 8 bytes represent the `CollectionId`.
+ *
+ * If the address does not meet these criteria, the function returns `null`.
+ *
+ * @param address The Ethereum-like address in hexadecimal string format.
+ * @returns The `CollectionId` as a `BN` if the address is valid, or `null` otherwise.
+ */
+export function addressToCollectionId(address: string): BN | null {
+	const addressBytes: Uint8Array = Uint8Array.from(Buffer.from(address.slice(2), 'hex'));  // Remove the '0x' prefix and convert hex to bytes
+
+	// Check if the address length is 20 bytes
+	if (addressBytes.length !== 20) {
+		return null;
+	}
+
+	// Check if the first 11 bytes are zeros
+	for (let i = 0; i < 11; i++) {
+		if (addressBytes[i] !== 0) {
+			return null;
+		}
+	}
+
+	// Check if the 12th byte is 1 (version byte)
+	if (addressBytes[11] !== 1) {
+		return null;
+	}
+
+	// Extract the last 8 bytes and convert them to a BigInt
+	const collectionIdBytes = addressBytes.slice(12, 20);
+	let collectionId = new BN(0);
+	for (let i = 0; i < collectionIdBytes.length; i++) {
+		collectionId = collectionId.shln(8).add(new BN(collectionIdBytes[i]));
+	}
+
+	return collectionId;
 }
 
 /**
@@ -174,4 +218,4 @@ export async function waitForEvents(
 			});
 		});
 	});
-}
+
