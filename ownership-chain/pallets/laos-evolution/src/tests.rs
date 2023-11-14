@@ -411,6 +411,8 @@ fn evolve_with_external_uri_happy_path() {
 mod collection_id_conversion {
 	use core::str::FromStr;
 
+	use frame_support::assert_err;
+
 	use crate::{
 		address_to_collection_id, collection_id_to_address, mock::AccountId, CollectionError,
 	};
@@ -426,15 +428,16 @@ mod collection_id_conversion {
 	#[test]
 	fn given_invalid_format_from_address_to_id_fails() {
 		let address = AccountId::from_str("0010000000000000000000010000000000000005").unwrap();
-		let error = address_to_collection_id::<AccountId>(address).unwrap_err();
-		assert_eq!(error, CollectionError::InvalidFormat);
+		assert_err!(address_to_collection_id::<AccountId>(address), CollectionError::InvalidFormat);
 	}
 
 	#[test]
 	fn given_invalid_version_from_address_to_id_fails() {
 		let address = AccountId::from_str("0000000000000000000000020000000000000005").unwrap();
-		let error = address_to_collection_id::<AccountId>(address).unwrap_err();
-		assert_eq!(error, CollectionError::InvalidVersion);
+		assert_err!(
+			address_to_collection_id::<AccountId>(address),
+			CollectionError::InvalidVersion
+		);
 	}
 
 	#[test]

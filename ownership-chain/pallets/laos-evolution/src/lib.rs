@@ -224,28 +224,6 @@ pub enum CollectionError {
 	InvalidVersion,
 }
 
-/// Converts a u64 value (`CollectionId``) into a 20-byte Ethereum address.
-///
-/// The Ethereum address format is as follows:
-///  - The first 12 bytes are zeros.
-///  - The 13th byte is set to `1`, indicating the version.
-///  - The next 7 bytes can be any value (typically zeros).
-///  - The last 8 bytes represent the `CollectionId`.
-///
-/// # Arguments
-///
-/// * `collection_id` - The `CollectionId` (u64 value) to be converted into an Ethereum address.
-///
-/// # Returns
-///
-/// A 20-byte array representing the Ethereum address.
-pub fn collection_id_to_address<Address: From<[u8; 20]>>(collection_id: CollectionId) -> Address {
-	let mut address = [0u8; 20];
-	address[11] = 1; // Set version byte to 1
-	address[12..].copy_from_slice(&collection_id.to_be_bytes());
-	address.into()
-}
-
 /// Converts a `CollectionId` into a custom address type `Address`.
 ///
 /// The function constructs a 20-byte Ethereum-like address with a specific format:
@@ -268,20 +246,48 @@ pub fn collection_id_to_address<Address: From<[u8; 20]>>(collection_id: Collecti
 /// # Returns
 ///
 /// An `Address` type representing the constructed address.
+pub fn collection_id_to_address<Address: From<[u8; 20]>>(collection_id: CollectionId) -> Address {
+	let mut address = [0u8; 20];
+	address[11] = 1; // Set version byte to 1
+	address[12..].copy_from_slice(&collection_id.to_be_bytes());
+	address.into()
+}
+
+/// Converts a given address into a `CollectionId`.
+///
+/// This function takes an `Address` and attempts to convert it into a `CollectionId`.
+/// The `Address` is expected to be a 20-byte array in a specific format:
+///  - The first 11 bytes should be zeros.
+///  - The 12th byte should be `1`, indicating the version.
+///  - The last 8 bytes represent the `CollectionId` in big-endian format.
+///
+/// # Type Parameters
+///
+/// * `Address`: A type that can be converted into a 20-byte array.
+///
+/// # Parameters
+///
+/// * `address`: The address to convert into a `CollectionId`. It must implement `Into<[u8; 20]>`.
+///
+/// # Returns
+///
+/// This function returns a `Result<CollectionId, CollectionError>`:
+///  - `Ok(CollectionId)`: If the conversion is successful, returns the `CollectionId`.
+///  - `Err(CollectionError::InvalidFormat)`: If the first 11 bytes of the address are not zeros.
+///  - `Err(CollectionError::InvalidVersion)`: If the 12th byte of the address is not `1`.
 pub fn address_to_collection_id<Address>(address: Address) -> Result<CollectionId, CollectionError>
 where
 	Address: Into<[u8; 20]>,
 {
 	let address_bytes: [u8; 20] = address.into();
+
 	// Check if the first 11 bytes are zeros
-	if !address_bytes[..11].iter().all(|&byte| byte == 0) {
-		return Err(CollectionError::InvalidFormat)
+	for &byte in &address_bytes[..11] {
+		ensure!(byte == 0, CollectionError::InvalidFormat);
 	}
 
 	// Check if the 12th byte is 1 (version byte)
-	if address_bytes[11] != 1 {
-		return Err(CollectionError::InvalidVersion)
-	}
+	ensure!(address_bytes[11] == 1, CollectionError::InvalidVersion);
 
 	let mut collection_id_bytes = [0u8; 8];
 	collection_id_bytes.copy_from_slice(&address_bytes[12..20]);

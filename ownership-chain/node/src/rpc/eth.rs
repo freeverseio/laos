@@ -17,7 +17,7 @@ use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
 use sp_core::H256;
 use sp_runtime::traits::Block as BlockT;
 // Frontier
-pub use fc_rpc::{EthBlockDataCacheTask, OverrideHandle, StorageOverride};
+pub use fc_rpc::{EthBlockDataCacheTask, OverrideHandle, StorageOverride, TxPoolApiServer};
 pub use fc_rpc_core::types::{FeeHistoryCache, FeeHistoryCacheLimit, FilterPool};
 use fc_rpc_core::{EthApiServer, EthFilterApiServer, NetApiServer, Web3ApiServer};
 pub use fc_storage::overrides_handle;
@@ -155,7 +155,7 @@ where
 			EthFilter::new(
 				client.clone(),
 				frontier_backend,
-				graph,
+				graph.clone(),
 				filter_pool,
 				500_usize, // max stored filters
 				max_past_logs,
@@ -175,7 +175,10 @@ where
 		.into_rpc(),
 	)?;
 
-	io.merge(Web3::new(client).into_rpc())?;
+	io.merge(Web3::new(client.clone()).into_rpc())?;
+
+	#[cfg(feature = "txpool")]
+	io.merge(fc_rpc::TxPool::new(client, graph).into_rpc())?;
 
 	Ok(io)
 }
