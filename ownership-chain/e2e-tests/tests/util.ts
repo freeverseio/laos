@@ -58,7 +58,7 @@ export function describeWithExistingSubstrateNodes(
 	title: string,
 	cb: (context: { ownchain: ApiPromise; astar: ApiPromise; relaychain: ApiPromise }) => void
 ) {
-	describe(title, () => {
+	describe.only(title, () => {
 		let context: {
 			ownchain: ApiPromise;
 			astar: ApiPromise;
@@ -106,8 +106,8 @@ export function slotAndOwnerToTokenId(slot: string, owner: string): string | nul
 	bytes.set(slotBytes.slice(-12), 0); // slice from the right to ensure we get the least significant bytes
 	bytes.set(ownerBytes, 12);
 
-	return Buffer.from(bytes).toString('hex'); // Convert Uint8Array to hexadecimal string
-} 
+	return Buffer.from(bytes).toString("hex"); // Convert Uint8Array to hexadecimal string
+}
 
 /**
  * Converts an Ethereum-like address into a `CollectionId` represented as a `BN` (big number).
@@ -124,7 +124,7 @@ export function slotAndOwnerToTokenId(slot: string, owner: string): string | nul
  * @returns The `CollectionId` as a `BN` if the address is valid, or `null` otherwise.
  */
 export function addressToCollectionId(address: string): BN | null {
-	const addressBytes: Uint8Array = Uint8Array.from(Buffer.from(address.slice(2), 'hex'));  // Remove the '0x' prefix and convert hex to bytes
+	const addressBytes: Uint8Array = Uint8Array.from(Buffer.from(address.slice(2), "hex")); // Remove the '0x' prefix and convert hex to bytes
 
 	// Check if the address length is 20 bytes
 	if (addressBytes.length !== 20) {
@@ -218,4 +218,4 @@ export async function waitForEvents(
 			});
 		});
 	});
-
+}
