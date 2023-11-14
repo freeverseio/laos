@@ -56,6 +56,7 @@ where
 	TokenUri: TryFrom<Vec<u8>> + Into<Vec<u8>>,
 	LaosEvolution: LaosEvolutionT<AccountId, TokenUri>,
 {
+	/// Inner execute function.
 	fn inner_execute(
 		handle: &mut impl PrecompileHandle,
 		action: &Action,
@@ -71,18 +72,20 @@ where
 
 				match LaosEvolution::create_collection(owner.into()) {
 					Ok(collection_id) => {
-						let collection_id: H160 = collection_id_to_address(collection_id);
+						let collection_address: H160 = collection_id_to_address(collection_id);
 
 						LogsBuilder::new(context.address)
 							.log2(
 								SELECTOR_LOG_NEW_COLLECTION,
 								owner,
-								EvmDataWriter::new().write(Address(collection_id.into())).build(),
+								EvmDataWriter::new()
+									.write(Address(collection_address.into()))
+									.build(),
 							)
 							.record(handle)?;
 
 						Ok(succeed(
-							EvmDataWriter::new().write(Address(collection_id.into())).build(),
+							EvmDataWriter::new().write(Address(collection_address.into())).build(),
 						))
 					},
 					Err(err) => Err(revert_dispatch_error(err)),
@@ -192,6 +195,14 @@ where
 				}
 			},
 		}
+	}
+
+	/// Do something when a collection is created.
+	///
+	/// Currently, we use this function to insert a dummy bytecode as an `AccountCode` for the
+	/// collection address.
+	fn on_create_collection(address: H160) -> EvmResult {
+		Ok(())
 	}
 }
 
