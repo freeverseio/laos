@@ -88,14 +88,7 @@ fn deposit_smallest_unit_should_succeed() {
 		assert_eq!(Balances::total_balance(&alice), 0);
 
 		let minimum_amount = 1;
-
-		let result = Balances::deposit(&alice, minimum_amount, Precision::Exact);
-
-		// I am forced to use match cause result doesn't implement Debug trait
-		match result {
-			Ok(_) => (), // Test passes
-			Err(e) => panic!("Expected Ok, got Err: {:?}", e),
-		}
+		assert!(Balances::deposit(&alice, minimum_amount, Precision::Exact).is_ok());
 		assert_eq!(Balances::total_balance(&alice), minimum_amount);
 	})
 }
