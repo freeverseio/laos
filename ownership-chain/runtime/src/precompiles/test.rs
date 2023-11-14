@@ -1,3 +1,5 @@
+use core::str::FromStr;
+
 use super::{hash, mock::*, FrontierPrecompiles};
 use pallet_evm::{IsPrecompileResult, PrecompileSet};
 use sp_core::H160;
