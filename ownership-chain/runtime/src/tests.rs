@@ -23,18 +23,6 @@ fn minimum_balance_should_be_0() {
 }
 
 #[test]
-fn deposit_smallest_unit_should_succeed() {
-	new_test_ext().execute_with(|| {
-		let alice = AccountId::from_str(ALICE).unwrap();
-		assert_eq!(Balances::total_balance(&alice), 0);
-
-		let minimum_amount = 1;
-		assert!(Balances::deposit(&alice, minimum_amount, Precision::Exact).is_ok());
-		assert_eq!(Balances::total_balance(&alice), minimum_amount);
-	})
-}
-
-#[test]
 fn test_block_and_gas_limit_constants() {
 	let system_block_weights = <Runtime as frame_system::Config>::BlockWeights::get();
 
@@ -59,7 +47,7 @@ fn test_multisig_constants() {
 }
 
 #[test]
-fn send_1_wei_to_wallet_with_0_balance_should_increase_balance_by_1_wei() {
+fn send_1_minimum_unit_to_wallet_with_0_wei_balance_should_increase_balance_by_1_wei() {
 	new_test_ext().execute_with(|| {
 		let alice = AccountId::from_str(ALICE).unwrap();
 		assert_eq!(Runtime::account_basic(alice.into()).balance, 0.into());
