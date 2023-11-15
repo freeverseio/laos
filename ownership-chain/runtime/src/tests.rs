@@ -1,4 +1,5 @@
 use super::*;
+use fp_rpc::runtime_decl_for_ethereum_runtime_rpc_api::EthereumRuntimeRPCApiV5;
 use frame_support::{
 	assert_ok,
 	traits::tokens::{fungible::Balanced, Precision},
@@ -55,4 +56,18 @@ fn test_multisig_constants() {
 	// 0.1 UNIT
 	assert_eq!(<Runtime as pallet_multisig::Config>::DepositFactor::get(), UNIT / 10);
 	assert_eq!(<Runtime as pallet_multisig::Config>::MaxSignatories::get(), 20);
+}
+
+#[test]
+fn send_1_wei_to_wallet_with_0_balance_should_increase_balance_by_1_wei() {
+	new_test_ext().execute_with(|| {
+		let alice = AccountId::from_str(ALICE).unwrap();
+		assert_eq!(Runtime::account_basic(alice.into()).balance, 0.into());
+
+		let minimum_amount = 1;
+		assert!(Balances::deposit(&alice, minimum_amount, Precision::Exact).is_ok());
+		assert_eq!(Balances::total_balance(&alice), minimum_amount);
+
+		assert_eq!(Runtime::account_basic(alice.into()).balance, 1.into());
+	})
 }

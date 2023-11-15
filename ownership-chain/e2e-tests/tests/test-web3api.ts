@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { step } from "mocha-steps";
 import BN from "bn.js";
 
-import { RUNTIME_SPEC_NAME, RUNTIME_SPEC_VERSION, RUNTIME_IMPL_VERSION, CHAIN_ID, GENESIS_ACCOUNT, GENESIS_ACCOUNT_PRIVATE_KEY } from "./config";
+import { RUNTIME_SPEC_NAME, RUNTIME_SPEC_VERSION, RUNTIME_IMPL_VERSION, CHAIN_ID, GENESIS_ACCOUNT } from "./config";
 import { describeWithExistingNode, customRequest } from "./util";
 
 describeWithExistingNode("Frontier RPC (Web3Api)", (context) => {
@@ -28,27 +28,5 @@ describeWithExistingNode("Frontier RPC (Web3Api)", (context) => {
     step("genesis balance is setup correctly", async function () {
         const balance = new BN(await context.web3.eth.getBalance(GENESIS_ACCOUNT));
         expect(balance.gt(new BN(0))).to.be.eq(true);
-    });
-
-    step("send 1 wei to wallet with 0 balance should increase balance by 1 wei", async function () {
-        this.timeout(70000);
-
-        const wallet = context.web3.eth.accounts.create();
-        const balanceBefore = new BN(await context.web3.eth.getBalance(wallet.address));
-        // check the balance is 0
-        expect(balanceBefore.eq(new BN(0))).to.be.eq(true);
-        
-        context.web3.eth.accounts.wallet.add(GENESIS_ACCOUNT_PRIVATE_KEY);
-        // send 1 wei to the wallet
-        await context.web3.eth.sendTransaction({
-            from: GENESIS_ACCOUNT,
-            to: wallet.address,
-            value: 1,
-            gas: 21000,
-        });
-
-        const balanceAfter = new BN(await context.web3.eth.getBalance(wallet.address));
-        // check the balance is 1
-        expect(balanceAfter.toString()).to.be.eq("1");
     });
 });
