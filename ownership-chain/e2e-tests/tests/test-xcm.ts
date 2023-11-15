@@ -1,4 +1,5 @@
 import { Keyring } from "@polkadot/api";
+import { AccountInfo } from "@polkadot/types/interfaces";
 import { u8aToHex } from "@polkadot/util";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { BN } from "bn.js";
@@ -55,7 +56,7 @@ describeWithExistingSubstrateNodes("XCM tests", (context) => {
 		// Simply a `dummy` string converted to H160
 		let dummyAccount = "0x64756d6d79000000000000000000000000000000";
 
-		let dummyAccountBalanceBefore: any = await context.ownchain.query.system.account(dummyAccount);
+		let dummyAccountBalanceBefore = await context.ownchain.query.system.account<AccountInfo>(dummyAccount);
 
 		// make a transfer call from `astarInOwnchain` to `dummyAccount`
 		let amount = new BN("1000000000000000000");
@@ -133,7 +134,7 @@ describeWithExistingSubstrateNodes("XCM tests", (context) => {
 		expect(transferEventData[0][1].toLowerCase()).to.equal(dummyAccount);
 		expect(transferEventData[0][2].toString()).to.equal(amount.toString());
 
-		let dummyAccountBalanceAfter: any = await context.ownchain.query.system.account(dummyAccount);
+		let dummyAccountBalanceAfter = await context.ownchain.query.system.account<AccountInfo>(dummyAccount);
 		expect(
 			new BN(dummyAccountBalanceBefore.data.free.toString())
 				.add(amount)

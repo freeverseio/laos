@@ -58,7 +58,7 @@ export function describeWithExistingSubstrateNodes(
 	title: string,
 	cb: (context: { ownchain: ApiPromise; astar: ApiPromise; relaychain: ApiPromise }) => void
 ) {
-	describe(title, () => {
+	describe.only(title, () => {
 		let context: {
 			ownchain: ApiPromise;
 			astar: ApiPromise;
@@ -66,7 +66,9 @@ export function describeWithExistingSubstrateNodes(
 		} = { ownchain: null, astar: null, relaychain: null };
 
 		let ownchainWs = new WsProvider(`ws://127.0.0.1:${RPC_PORT}`);
-		ApiPromise.create({ provider: ownchainWs }).then((api) => {
+		ApiPromise.create({
+			provider: ownchainWs,
+		}).then((api) => {
 			context.ownchain = api;
 		});
 
@@ -159,13 +161,16 @@ export function addressToCollectionId(address: string): BN | null {
  * @param module - Module name
  * @param name - Event name
  * @param blocks - Number of blocks to wait for, defaults to 5
- * @returns Promise that resolves to the events data
+ * @returns Promise that resolves to the events data in the following format:
+ * {
+ * 	"module.eventName" : [[..event_args], [..event_args], ...]
+ * }
  */
 export async function waitForEvents(
 	api: ApiPromise,
 	targetEvents: { module: string; name: string }[],
 	blocks: number = 3
-): Promise<any> {
+): Promise<Record<string, string[][]>> {
 	let blockCounter = 0;
 	// subscribe to new blocks, read events from them and check if we found the target events
 	return new Promise(async (resolve, reject) => {
