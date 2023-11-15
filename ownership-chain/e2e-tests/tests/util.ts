@@ -1,8 +1,10 @@
 import { ethers } from "ethers";
+import Contract from "web3-eth-contract";
 import Web3 from "web3";
 import { JsonRpcResponse } from "web3-core-helpers";
-import { MAX_U96, RPC_PORT } from "./config";
+import { CONTRACT_ADDRESS, GAS_LIMIT, GAS_PRICE, GENESIS_ACCOUNT, GENESIS_ACCOUNT_PRIVATE_KEY, LAOS_EVOLUTION_ABI, MAX_U96, RPC_PORT } from "./config";
 import BN from "bn.js";
+import { expect } from "chai";
 
 require("events").EventEmitter.prototype._maxListeners = 100;
 
@@ -46,6 +48,32 @@ export function describeWithExistingNode(title: string, cb: (context: { web3: We
 
 		cb(context);
 	});
+}
+
+export async function createCollection(context: { web3: Web3 }): Promise<Contract> {
+	const contract = new context.web3.eth.Contract(LAOS_EVOLUTION_ABI, CONTRACT_ADDRESS, {
+		from: GENESIS_ACCOUNT,
+		gasPrice: GAS_PRICE,
+	});
+	
+	let nonce = await context.web3.eth.getTransactionCount(GENESIS_ACCOUNT);
+	context.web3.eth.accounts.wallet.add(GENESIS_ACCOUNT_PRIVATE_KEY);
+	const result = await contract.methods.createCollection(GENESIS_ACCOUNT).send({
+		from: GENESIS_ACCOUNT,
+		gas: GAS_LIMIT,
+		gasPrice: GAS_PRICE,
+		nonce: nonce++,
+	});
+	expect(result.status).to.be.eq(true);
+	expect(context.web3.utils.isAddress(result.events.NewCollection.returnValues._collectionAddress)).to.be.eq(true);
+	
+	const collectionContract = new context.web3.eth.Contract(LAOS_EVOLUTION_ABI, result.events.NewCollection.returnValues._collectionAddress, {
+		from: GENESIS_ACCOUNT,
+		gas: GAS_LIMIT,
+		gasPrice: GAS_PRICE,
+	});
+	
+	return collectionContract;
 }
 
 /**

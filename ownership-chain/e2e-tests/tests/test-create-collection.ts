@@ -1,4 +1,4 @@
-import { describeWithExistingNode } from "./util";
+import { createCollection, describeWithExistingNode } from "./util";
 import { CONTRACT_ADDRESS, GAS_LIMIT, GAS_PRICE, GENESIS_ACCOUNT, GENESIS_ACCOUNT_PRIVATE_KEY, LAOS_EVOLUTION_ABI, SELECTOR_LOG_NEW_COLLECTION } from "./config";
 import { expect } from "chai";
 import Contract from "web3-eth-contract";
@@ -7,7 +7,6 @@ import { step } from "mocha-steps";
 
 describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
     let contract: Contract;
-    let nonce: number;
 
     beforeEach(async function () {
         contract = new context.web3.eth.Contract(LAOS_EVOLUTION_ABI, CONTRACT_ADDRESS, {
@@ -15,8 +14,6 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
             gasPrice: GAS_PRICE,
             gas: GAS_LIMIT,
         });
-
-        nonce = await context.web3.eth.getTransactionCount(GENESIS_ACCOUNT);
         context.web3.eth.accounts.wallet.add(GENESIS_ACCOUNT_PRIVATE_KEY);
     });
 
@@ -34,21 +31,7 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
     step("when collection is created, it should return owner", async function () {
         this.timeout(70000);
 
-        const result = await contract.methods.createCollection(GENESIS_ACCOUNT).send({
-            from: GENESIS_ACCOUNT,
-            gas: GAS_LIMIT,
-            gasPrice: GAS_PRICE,
-            nonce: nonce++,
-        });
-        expect(result.status).to.be.eq(true);
-        expect(context.web3.utils.isAddress(result.events.NewCollection.returnValues._collectionAddress)).to.be.eq(true);
-
-        let collectionContract = new context.web3.eth.Contract(LAOS_EVOLUTION_ABI, result.events.NewCollection.returnValues._collectionAddress, {
-            from: GENESIS_ACCOUNT,
-            gas: GAS_LIMIT,
-            gasPrice: GAS_PRICE,
-        });
-
+        const collectionContract = await createCollection(context);
         const owner = await collectionContract.methods.owner().call();
         expect(owner).to.be.eq(GENESIS_ACCOUNT);
     });
@@ -60,7 +43,6 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
             from: GENESIS_ACCOUNT,
             gas: GAS_LIMIT,
             gasPrice: GAS_PRICE,
-            nonce: nonce++,
         });
         expect(result.status).to.be.eq(true);
 
