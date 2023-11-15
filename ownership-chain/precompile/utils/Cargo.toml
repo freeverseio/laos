@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 # There's a problem with --all-features when this is moved under dev-deps
-evm = { workspace = true, features = ["with-codec"] }
+evm = { workspace = true, optional = true }
 impl-trait-for-tuples = { workspace = true }
 num_enum = { workspace = true }
 sha3 = { workspace = true }
@@ -33,7 +33,7 @@ hex-literal = { workspace = true }
 [features]
 default = ["std"]
 std = [
-	"evm/std",
+	"evm",
 	"evm/with-serde",
 	"parity-scale-codec/std",
 	"fp-evm/std",

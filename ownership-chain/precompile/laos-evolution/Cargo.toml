@@ -25,14 +25,14 @@ pallet-laos-evolution = { workspace = true }
 
 # Utils
 laos-precompile-utils-macro = { workspace = true }
-laos-precompile-utils = { workspace = true, features = ["testing"] }
+laos-precompile-utils = { workspace = true }
 
 num_enum = { workspace = true }
 
 [dev-dependencies]
 evm = { workspace = true }
 hex = { workspace = true }
-precompile-utils = { workspace = true, features = ["testing"]}
+laos-precompile-utils = { workspace = true, features = ["testing"]}
 
 [features]
 default = ["std"]
