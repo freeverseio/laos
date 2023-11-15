@@ -22,8 +22,9 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
             await contract.methods.owner().call();
             expect.fail("Expected error was not thrown"); // Ensure an error is thrown
         } catch (error) {
-            expect(error.message).to.be.eq(
-                "Returned error: VM Exception while processing transaction: revert"
+            const message = Buffer.from(error.data.substring(2), 'hex').toString();
+            expect(message).to.be.eq(
+                "invalid collection address"
             );
         }
     });

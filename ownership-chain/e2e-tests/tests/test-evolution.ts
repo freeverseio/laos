@@ -23,8 +23,9 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
             await collectionContract.methods.tokenURI(tokenId).call();
             expect.fail("Expected error was not thrown"); // Ensure an error is thrown
         } catch (error) {
-            expect(error.message).to.be.eq(
-                "Returned error: VM Exception while processing transaction: revert"
+            const message = Buffer.from(error.data.substring(2), 'hex').toString();
+            expect(message).to.be.eq(
+                "asset does not exist"
             );
         }
     });
