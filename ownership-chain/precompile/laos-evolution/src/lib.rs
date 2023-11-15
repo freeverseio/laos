@@ -2,9 +2,10 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
+use pallet_evm::Pallet as Evm;
 use pallet_laos_evolution::{
 	address_to_collection_id, collection_id_to_address, traits::LaosEvolution as LaosEvolutionT,
-	Slot, TokenId,
+	Pallet as LaosEvolution, Slot, TokenId, TokenUriOf,
 };
 use parity_scale_codec::Encode;
 use precompile_utils::{
@@ -13,7 +14,7 @@ use precompile_utils::{
 };
 
 use sp_core::H160;
-use sp_std::{fmt::Debug, marker::PhantomData, vec::Vec};
+use sp_std::{fmt::Debug, marker::PhantomData};
 
 /// Solidity selector of the CreateCollection log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_NEW_COLLECTION: [u8; 32] = keccak256!("NewCollection(address,address)");
@@ -22,6 +23,12 @@ pub const SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
 	keccak256!("MintedWithExternalURI(uint64,uint96,address,string,uint256)");
 pub const SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
 	keccak256!("EvolvedWithExternalURI(uint64,uint256,string)");
+
+// This is the simplest bytecode to revert without returning any data.
+// We will pre-deploy it under all of our precompiles to ensure they can be called from
+// within contracts.
+// (PUSH1 0x00 PUSH1 0x00 REVERT)
+pub const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
 
 #[precompile_utils_macro::generate_function_selector]
 #[derive(Debug, PartialEq)]
@@ -39,22 +46,15 @@ pub enum Action {
 }
 
 /// Wrapper for the precompile function.
-pub struct LaosEvolutionPrecompile<AddressMapping, AccountId, TokenUri, LaosEvolution>(
-	PhantomData<(AddressMapping, AccountId, TokenUri, LaosEvolution)>,
-)
+pub struct LaosEvolutionPrecompile<Runtime>(PhantomData<Runtime>)
 where
-	AddressMapping: pallet_evm::AddressMapping<AccountId>,
-	AccountId: Encode + Debug,
-	TokenUri: TryFrom<Vec<u8>>,
-	LaosEvolution: LaosEvolutionT<AccountId, TokenUri>;
+	Runtime: pallet_evm::Config + pallet_laos_evolution::Config;
 
-impl<AddressMapping, AccountId, TokenUri, LaosEvolution>
-	LaosEvolutionPrecompile<AddressMapping, AccountId, TokenUri, LaosEvolution>
+impl<Runtime> LaosEvolutionPrecompile<Runtime>
 where
-	AddressMapping: pallet_evm::AddressMapping<AccountId>,
-	AccountId: From<H160> + Into<H160> + Encode + Debug,
-	TokenUri: TryFrom<Vec<u8>> + Into<Vec<u8>>,
-	LaosEvolution: LaosEvolutionT<AccountId, TokenUri>,
+	Runtime: pallet_evm::Config + pallet_laos_evolution::Config,
+	Runtime::AccountId: From<H160> + Into<H160> + Encode + Debug,
+	LaosEvolution<Runtime>: LaosEvolutionT<Runtime::AccountId, TokenUriOf<Runtime>>,
 {
 	/// Inner execute function.
 	fn inner_execute(
@@ -70,9 +70,11 @@ where
 
 				let owner = input.read::<Address>()?.0;
 
-				match LaosEvolution::create_collection(owner.into()) {
+				match LaosEvolution::<Runtime>::create_collection(owner.into()) {
 					Ok(collection_id) => {
 						let collection_address: H160 = collection_id_to_address(collection_id);
+
+						Self::on_create_collection(&collection_address)?;
 
 						LogsBuilder::new(context.address)
 							.log2(
@@ -96,7 +98,7 @@ where
 				let collection_id = address_to_collection_id(handle.context().address)
 					.map_err(|_| revert("invalid collection address"))?;
 
-				if let Some(owner) = LaosEvolution::collection_owner(collection_id) {
+				if let Some(owner) = LaosEvolution::<Runtime>::collection_owner(collection_id) {
 					Ok(succeed(EvmDataWriter::new().write(Address(owner.into())).build()))
 				} else {
 					Err(revert("collection does not exist"))
@@ -109,7 +111,9 @@ where
 				let collection_id = input.read::<u64>()?;
 				let token_id = input.read::<TokenId>()?;
 
-				if let Some(token_uri) = LaosEvolution::token_uri(collection_id, token_id) {
+				if let Some(token_uri) =
+					LaosEvolution::<Runtime>::token_uri(collection_id, token_id)
+				{
 					Ok(succeed(EvmDataWriter::new().write(Bytes(token_uri.into())).build()))
 				} else {
 					Err(revert("asset does not exist"))
@@ -129,7 +133,7 @@ where
 					.try_into()
 					.map_err(|_| revert("invalid token uri length"))?;
 
-				match LaosEvolution::mint_with_external_uri(
+				match LaosEvolution::<Runtime>::mint_with_external_uri(
 					caller.into(),
 					collection_id,
 					slot,
@@ -168,7 +172,7 @@ where
 					.try_into()
 					.map_err(|_| revert("invalid token uri length"))?;
 
-				match LaosEvolution::evolve_with_external_uri(
+				match LaosEvolution::<Runtime>::evolve_with_external_uri(
 					caller.into(),
 					collection_id,
 					token_id,
@@ -199,20 +203,22 @@ where
 
 	/// Do something when a collection is created.
 	///
-	/// Currently, we use this function to insert a dummy bytecode as an `AccountCode` for the
+	/// Currently, we use this function to insert a [`REVERT_BYTECODE`] as an `AccountCode` for the
 	/// collection address.
-	fn on_create_collection(address: H160) -> EvmResult {
+	///
+	/// This is done to ensure internal calls to the collection address do not fail.
+	fn on_create_collection(address: &H160) -> EvmResult {
+		Evm::<Runtime>::create_account(*address, REVERT_BYTECODE.into());
+
 		Ok(())
 	}
 }
 
-impl<AddressMapping, AccountId, TokenUri, LaosEvolution> Precompile
-	for LaosEvolutionPrecompile<AddressMapping, AccountId, TokenUri, LaosEvolution>
+impl<Runtime> Precompile for LaosEvolutionPrecompile<Runtime>
 where
-	AddressMapping: pallet_evm::AddressMapping<AccountId>,
-	AccountId: From<H160> + Into<H160> + Encode + Debug,
-	TokenUri: TryFrom<Vec<u8>> + Into<Vec<u8>>,
-	LaosEvolution: LaosEvolutionT<AccountId, TokenUri>,
+	Runtime: pallet_evm::Config + pallet_laos_evolution::Config,
+	Runtime::AccountId: From<H160> + Into<H160> + Encode + Debug,
+	LaosEvolution<Runtime>: LaosEvolutionT<Runtime::AccountId, TokenUriOf<Runtime>>,
 {
 	fn execute(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
 		let selector = handle.read_selector()?;
@@ -229,5 +235,7 @@ where
 	}
 }
 
+#[cfg(test)]
+mod mock;
 #[cfg(test)]
 mod tests;

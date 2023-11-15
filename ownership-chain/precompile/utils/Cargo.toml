@@ -11,6 +11,9 @@ evm = { workspace = true, optional = true }
 impl-trait-for-tuples = { workspace = true }
 num_enum = { workspace = true }
 sha3 = { workspace = true }
+scale-info = { workspace = true }
+hex-literal = { workspace = true }
+serde = { workspace = true, optional = true }
 
 precompile-utils-macro = { workspace = true }
 
@@ -46,5 +49,7 @@ std = [
 	"sp-runtime/std",
 	"sha3/std",
 	"num_enum/std",
+	"scale-info/std",
+	"serde?/std",
 ]
 testing = ["std"]

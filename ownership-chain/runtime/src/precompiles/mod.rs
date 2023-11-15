@@ -9,9 +9,9 @@ use sp_std::marker::PhantomData;
 use pallet_evm_laos_evolution::LaosEvolutionPrecompile;
 use pallet_evm_precompile_modexp::Modexp;
 use pallet_evm_precompile_simple::{ECRecover, ECRecoverPublicKey, Identity, Ripemd160, Sha256};
-use pallet_laos_evolution::{address_to_collection_id, TokenUriOf};
+use pallet_laos_evolution::address_to_collection_id;
 
-use crate::{AccountId, Runtime};
+use crate::Runtime;
 
 pub struct FrontierPrecompiles<Runtime>(PhantomData<Runtime>);
 
@@ -27,12 +27,7 @@ where
 	}
 }
 
-type LaosEvolution = LaosEvolutionPrecompile<
-	pallet_evm::IdentityAddressMapping,
-	AccountId,
-	TokenUriOf<Runtime>,
-	pallet_laos_evolution::Pallet<Runtime>,
->;
+type LaosEvolution = LaosEvolutionPrecompile<Runtime>;
 
 impl<Runtime> PrecompileSet for FrontierPrecompiles<Runtime>
 where

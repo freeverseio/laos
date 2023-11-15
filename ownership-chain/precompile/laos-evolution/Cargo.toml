@@ -33,6 +33,9 @@ num_enum = { workspace = true }
 evm = { workspace = true }
 hex = { workspace = true }
 precompile-utils = { workspace = true, features = ["testing"]}
+frame-system = { workspace = true }
+pallet-timestamp = { workspace = true }
+pallet-balances = { workspace = true, features = ["std"] }
 
 [features]
 default = ["std"]
