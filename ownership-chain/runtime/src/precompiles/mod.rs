@@ -7,6 +7,7 @@ use sp_core::H160;
 use sp_std::marker::PhantomData;
 
 use pallet_evm_laos_evolution::LaosEvolutionPrecompile;
+use pallet_evm_livingassets_manager::LivingAssetsManagerPrecompile;
 use pallet_evm_precompile_modexp::Modexp;
 use pallet_evm_precompile_simple::{ECRecover, ECRecoverPublicKey, Identity, Ripemd160, Sha256};
 use pallet_laos_evolution::{address_to_collection_id, TokenUriOf};
@@ -30,6 +31,12 @@ where
 type LaosEvolution = LaosEvolutionPrecompile<
 	pallet_evm::IdentityAddressMapping,
 	AccountId,
+	pallet_laos_evolution::Pallet<Runtime>,
+>;
+
+type LivingAssetsManager = LivingAssetsManagerPrecompile<
+	pallet_evm::IdentityAddressMapping,
+	AccountId,
 	TokenUriOf<Runtime>,
 	pallet_laos_evolution::Pallet<Runtime>,
 >;
@@ -50,7 +57,7 @@ where
 			// a if a == hash(1024) => Some(Sha3FIPS256::execute(handle)),
 			a if a == hash(1025) => Some(ECRecoverPublicKey::execute(handle)),
 			a if a == hash(1027) => Some(LaosEvolution::execute(handle)),
-			a if address_to_collection_id(a).is_ok() => Some(LaosEvolution::execute(handle)),
+			a if address_to_collection_id(a).is_ok() => Some(LivingAssetsManager::execute(handle)),
 			_ => None,
 		}
 	}

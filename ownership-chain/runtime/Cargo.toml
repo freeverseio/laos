@@ -56,6 +56,7 @@ sp-version = { workspace = true }
 
 pallet-laos-evolution = { workspace = true }
 pallet-evm-laos-evolution = { workspace = true }
+pallet-evm-livingassets-manager = { workspace = true }
 
 # Polkadot
 pallet-xcm = { workspace = true }
@@ -155,6 +156,7 @@ std = [
 	"pallet-ethereum/std",
 	"pallet-evm/std",
 	"pallet-evm-laos-evolution/std",
+	"pallet-evm-livingassets-manager/std",
 	"pallet-evm-chain-id/std",
 	"pallet-evm-precompile-modexp/std",
 	"pallet-evm-precompile-simple/std",
