@@ -51,7 +51,6 @@ export function describeWithExistingNode(title: string, cb: (context: { web3: We
 }
 
 export async function createCollection(context: { web3: Web3 }): Promise<Contract> {
-	
 	const contract = new context.web3.eth.Contract(LAOS_EVOLUTION_ABI, CONTRACT_ADDRESS, {
 		from: GENESIS_ACCOUNT,
 		gasPrice: GAS_PRICE,
