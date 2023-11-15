@@ -1,0 +1,53 @@
+[package]
+name = "pallet-evm-livingassets-manager"
+version = "2.0.0-dev"
+description = "Living assets manager precompile"
+repository = "https://github.com/freeverseio/laos"
+edition = "2021"
+
+[dependencies]
+parity-scale-codec = { workspace = true, features = ["derive"] }
+scale-info = { workspace = true, features = ["derive"] }
+
+# Frontier
+fp-evm = { workspace = true, features = ["serde"] }
+pallet-evm = { workspace = true }
+
+# Substrate
+frame-support = { workspace = true }
+sp-arithmetic = { workspace = true }
+sp-core = { workspace = true }
+sp-runtime = { workspace = true }
+sp-std = { workspace = true }
+
+# Local pallet
+pallet-laos-evolution = { workspace = true }
+
+# Utils
+precompile-utils = { workspace = true }
+precompile-utils-macro = { workspace = true }
+
+num_enum = { workspace = true }
+
+[dev-dependencies]
+evm = { workspace = true }
+hex = { workspace = true }
+precompile-utils = { workspace = true, features = ["testing"]}
+
+[features]
+default = ["std"]
+std = [
+	# Frontier
+	"fp-evm/std",
+	"pallet-evm/std",
+	"sp-core/std",
+	"sp-runtime/std",
+	"sp-std/std",
+	"pallet-laos-evolution/std",
+	"num_enum/std",
+	"frame-support/std",
+	"sp-arithmetic/std",
+	"precompile-utils/std",
+	"parity-scale-codec/std",
+	"scale-info/std",
+]

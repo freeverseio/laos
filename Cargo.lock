@@ -4812,6 +4812,7 @@ dependencies = [
  "pallet-evm",
  "pallet-evm-chain-id",
  "pallet-evm-laos-evolution",
+ "pallet-evm-livingassets-manager",
  "pallet-evm-precompile-modexp",
  "pallet-evm-precompile-simple",
  "pallet-laos-evolution",
@@ -6687,6 +6688,27 @@ dependencies = [
 
 [[package]]
 name = "pallet-evm-laos-evolution"
+version = "2.0.0-dev"
+dependencies = [
+ "evm",
+ "fp-evm",
+ "frame-support",
+ "hex",
+ "num_enum 0.5.11",
+ "pallet-evm",
+ "pallet-laos-evolution",
+ "parity-scale-codec",
+ "precompile-utils",
+ "precompile-utils-macro",
+ "scale-info",
+ "sp-arithmetic",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-evm-livingassets-manager"
 version = "2.0.0-dev"
 dependencies = [
  "evm",
