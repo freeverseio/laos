@@ -39,13 +39,10 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
     step("when collection is created event is emitted", async function () {
         this.timeout(70000);
 
-        let nonce = await context.web3.eth.getTransactionCount(GENESIS_ACCOUNT);
-
         const result = await contract.methods.createCollection(GENESIS_ACCOUNT).send({
             from: GENESIS_ACCOUNT,
             gas: GAS_LIMIT,
             gasPrice: GAS_PRICE,
-            nonce: nonce++,
         });
         expect(result.status).to.be.eq(true);
 
