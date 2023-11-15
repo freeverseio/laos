@@ -30,6 +30,7 @@ sc-chain-spec = { workspace = true }
 sc-cli = { workspace = true }
 sc-client-api = { workspace = true }
 sc-consensus = { workspace = true }
+sc-consensus-aura = { workspace = true }
 sc-executor = { workspace = true }
 sc-network = { workspace = true }
 sc-network-sync = { workspace = true }
@@ -46,6 +47,7 @@ sp-block-builder = { workspace = true }
 sp-blockchain = { workspace = true }
 sp-consensus-aura = { workspace = true }
 sp-core = { workspace = true }
+sp-inherents = { workspace = true }
 sp-keystore = { workspace = true }
 sp-io = { workspace = true }
 sp-runtime = { workspace = true }
@@ -58,22 +60,25 @@ try-runtime-cli = { workspace = true, optional = true }
 polkadot-cli = { workspace = true, features = ["rococo-native"] }
 polkadot-service = { workspace = true, features = ["rococo-native"] }
 polkadot-primitives = { workspace = true }
-xcm = { workspace = true }
+staging-xcm = { workspace = true }
 
 # Cumulus
 cumulus-client-cli = { workspace = true }
+cumulus-client-collator = { workspace = true }
 cumulus-client-consensus-aura = { workspace = true }
 cumulus-client-consensus-common = { workspace = true }
+cumulus-client-consensus-proposer = { workspace = true }
 cumulus-client-service = { workspace = true }
 cumulus-primitives-core = { workspace = true }
 cumulus-primitives-parachain-inherent = { workspace = true }
 cumulus-relay-chain-interface = { workspace = true }
 
 # Frontier
+fc-api = { workspace = true }
 fc-cli = { workspace = true }
-fc-rpc = { workspace = true, features = [ "rpc-binary-search-estimate" ] }
+fc-rpc = { workspace = true, features = [ "rpc-binary-search-estimate", "txpool" ] }
 fc-rpc-core = { workspace = true }
-fc-mapping-sync = { workspace = true }
+fc-mapping-sync = { workspace = true, features = ["sql"] }
 fc-db = { workspace = true }
 fc-consensus = { workspace = true }
 fc-storage = { workspace = true }

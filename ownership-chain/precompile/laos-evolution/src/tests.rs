@@ -9,7 +9,7 @@ use crate::tests::helpers::PrecompileMockParams;
 
 use super::*;
 use frame_support::assert_ok;
-use precompile_utils::{
+use laos_precompile_utils::{
 	revert, succeed,
 	testing::{create_mock_handle, create_mock_handle_from_input},
 };

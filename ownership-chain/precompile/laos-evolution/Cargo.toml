@@ -24,8 +24,8 @@ sp-std = { workspace = true }
 pallet-laos-evolution = { workspace = true }
 
 # Utils
-precompile-utils = { workspace = true }
-precompile-utils-macro = { workspace = true }
+laos-precompile-utils-macro = { workspace = true }
+laos-precompile-utils = { workspace = true, features = ["testing"] }
 
 num_enum = { workspace = true }
 
@@ -47,7 +47,7 @@ std = [
 	"num_enum/std",
 	"frame-support/std",
 	"sp-arithmetic/std",
-	"precompile-utils/std",
+	"laos-precompile-utils/std",
 	"parity-scale-codec/std",
 	"scale-info/std",
 ]

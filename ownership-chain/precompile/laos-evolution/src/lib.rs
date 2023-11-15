@@ -2,15 +2,15 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
+use laos_precompile_utils::{
+	keccak256, revert, revert_dispatch_error, succeed, Address, Bytes, EvmDataWriter, EvmResult,
+	FunctionModifier, LogExt, LogsBuilder, PrecompileHandleExt,
+};
 use pallet_laos_evolution::{
 	address_to_collection_id, collection_id_to_address, traits::LaosEvolution as LaosEvolutionT,
 	Slot, TokenId,
 };
 use parity_scale_codec::Encode;
-use precompile_utils::{
-	keccak256, revert, revert_dispatch_error, succeed, Address, Bytes, EvmDataWriter, EvmResult,
-	FunctionModifier, LogExt, LogsBuilder, PrecompileHandleExt,
-};
 
 use sp_core::H160;
 use sp_std::{fmt::Debug, marker::PhantomData, vec::Vec};
@@ -23,7 +23,7 @@ pub const SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
 pub const SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
 	keccak256!("EvolvedWithExternalURI(uint256,string)");
 
-#[precompile_utils_macro::generate_function_selector]
+#[laos_precompile_utils_macro::generate_function_selector]
 #[derive(Debug, PartialEq)]
 pub enum Action {
 	/// Create collection

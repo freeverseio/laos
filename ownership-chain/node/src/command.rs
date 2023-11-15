@@ -1,43 +1,44 @@
-use std::net::SocketAddr;
+use std::{net::SocketAddr, sync::Arc};
 
+use cumulus_client_cli::generate_genesis_block;
 use cumulus_primitives_core::ParaId;
+use fc_db::kv::frontier_database_dir;
 use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
 use laos_ownership_runtime::Block;
-use log::{info, warn};
-use polkadot_service::RococoChainSpec;
+use log::info;
+use parity_scale_codec::Encode;
 use sc_cli::{
 	ChainSpec, CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams,
 	NetworkParams, Result, SharedParams, SubstrateCli,
 };
-use sc_service::config::{BasePath, /* DatabaseSource, */ PrometheusConfig};
-use sp_runtime::traits::AccountIdConversion;
-// Frontier
-// use fc_db::frontier_database_dir;
+use sc_service::{
+	config::{BasePath, PrometheusConfig},
+	DatabaseSource, PartialComponents,
+};
+use sp_core::hexdisplay::HexDisplay;
+use sp_runtime::traits::{AccountIdConversion, Block as BlockT};
 
+#[cfg(feature = "try-runtime")]
+use crate::service::ParachainNativeExecutor;
 use crate::{
 	chain_spec,
 	cli::{Cli, RelayChainCli, Subcommand},
-	service::{self, /* db_config_dir, */ new_partial},
+	eth::db_config_dir,
+	service::new_partial,
 };
 
 fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 	Ok(match id {
-		"arrakis" => Box::new(chain_spec::ChainSpec::from_json_bytes(
-			&include_bytes!("../../specs/arrakis-frontier.json")[..],
-		)?),
-		"caladan" => Box::new(chain_spec::ChainSpec::from_json_bytes(
-			&include_bytes!("../../specs/caladan-raw.json")[..],
-		)?),
 		"dev" => Box::new(chain_spec::development_config()),
 		"template-rococo" => Box::new(chain_spec::local_testnet_config()),
-		"" | "local" | "local-v" => Box::new(chain_spec::local_testnet_config()),
+		"" | "local" => Box::new(chain_spec::local_testnet_config()),
 		path => Box::new(chain_spec::ChainSpec::from_json_file(std::path::PathBuf::from(path))?),
 	})
 }
 
 impl SubstrateCli for Cli {
 	fn impl_name() -> String {
-		"Parachain Collator Template".into()
+		"Frontier Parachain Collator Template".into()
 	}
 
 	fn impl_version() -> String {
@@ -46,7 +47,7 @@ impl SubstrateCli for Cli {
 
 	fn description() -> String {
 		format!(
-			"Parachain Collator Template\n\nThe command-line arguments provided first will be \
+			"Frontier Parachain Collator Template\n\nThe command-line arguments provided first will be \
 		passed to the parachain node, while the arguments provided after -- will be passed \
 		to the relay chain node.\n\n\
 		{} <parachain-args> -- <relay-chain-args>",
@@ -59,7 +60,7 @@ impl SubstrateCli for Cli {
 	}
 
 	fn support_url() -> String {
-		"https://github.com/paritytech/cumulus/issues/new".into()
+		"https://github.com/paritytech/frontier-parachain-template/issues/new".into()
 	}
 
 	fn copyright_start_year() -> i32 {
@@ -73,7 +74,7 @@ impl SubstrateCli for Cli {
 
 impl SubstrateCli for RelayChainCli {
 	fn impl_name() -> String {
-		"Parachain Collator Template".into()
+		"Frontier Parachain Collator Template".into()
 	}
 
 	fn impl_version() -> String {
@@ -82,7 +83,7 @@ impl SubstrateCli for RelayChainCli {
 
 	fn description() -> String {
 		format!(
-			"Parachain Collator Template\n\nThe command-line arguments provided first will be \
+			"Frontier Parachain Collator Template\n\nThe command-line arguments provided first will be \
 		passed to the parachain node, while the arguments provided after -- will be passed \
 		to the relay chain node.\n\n\
 		{} <parachain-args> -- <relay-chain-args>",
@@ -95,7 +96,7 @@ impl SubstrateCli for RelayChainCli {
 	}
 
 	fn support_url() -> String {
-		"https://github.com/paritytech/cumulus/issues/new".into()
+		"https://github.com/paritytech/frontier-parachain-template/issues/new".into()
 	}
 
 	fn copyright_start_year() -> i32 {
@@ -103,13 +104,7 @@ impl SubstrateCli for RelayChainCli {
 	}
 
 	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
-		match id {
-			"rococo_freeverse" => Ok(Box::new(RococoChainSpec::from_json_bytes(
-				&include_bytes!("../../specs/rococo-freeverse-chainspec.json")[..],
-			)?)),
-			_ => polkadot_cli::Cli::from_iter([RelayChainCli::executable_name()].iter())
-				.load_spec(id),
-		}
+		polkadot_cli::Cli::from_iter([RelayChainCli::executable_name()].iter()).load_spec(id)
 	}
 }
 
@@ -163,20 +158,42 @@ pub fn run() -> Result<()> {
 			let runner = cli.create_runner(cmd)?;
 			runner.sync_run(|config| {
 				// Remove Frontier offchain db
-				// let db_config_dir = db_config_dir(&config);
-				// let frontier_database_config = match config.database {
-				// 	DatabaseSource::RocksDb { .. } => DatabaseSource::RocksDb {
-				// 		path: frontier_database_dir(&db_config_dir, "db"),
-				// 		cache_size: 0,
-				// 	},
-				// 	DatabaseSource::ParityDb { .. } => DatabaseSource::ParityDb {
-				// 		path: frontier_database_dir(&db_config_dir, "paritydb"),
-				// 	},
-				// 	_ => {
-				// 		return Err(format!("Cannot purge `{:?}` database", config.database).into())
-				// 	}
-				// };
-				// cmd.run(frontier_database_config)?;
+				let db_config_dir = db_config_dir(&config);
+				match cli.eth.frontier_backend_type {
+					crate::eth::BackendType::KeyValue => {
+						let frontier_database_config = match config.database {
+							DatabaseSource::RocksDb { .. } => DatabaseSource::RocksDb {
+								path: frontier_database_dir(&db_config_dir, "db"),
+								cache_size: 0,
+							},
+							DatabaseSource::ParityDb { .. } => DatabaseSource::ParityDb {
+								path: frontier_database_dir(&db_config_dir, "paritydb"),
+							},
+							_ =>
+								return Err(
+									format!("Cannot purge `{:?}` database", config.database).into()
+								),
+						};
+						cmd.base.run(frontier_database_config)?;
+					},
+					crate::eth::BackendType::Sql => {
+						let db_path = db_config_dir.join("sql");
+						match std::fs::remove_dir_all(&db_path) {
+							Ok(_) => {
+								println!("{:?} removed.", &db_path);
+							},
+							Err(ref err) if err.kind() == std::io::ErrorKind::NotFound => {
+								eprintln!("{:?} did not exist.", &db_path);
+							},
+							Err(err) =>
+								return Err(format!(
+									"Cannot purge `{:?}` database: {:?}",
+									db_path, err,
+								)
+								.into()),
+						};
+					},
+				};
 
 				let polkadot_cli = RelayChainCli::new(
 					&config,
@@ -188,7 +205,7 @@ pub fn run() -> Result<()> {
 					&polkadot_cli,
 					config.tokio_handle.clone(),
 				)
-				.map_err(|err| format!("Relay chain argument error: {err}"))?;
+				.map_err(|err| format!("Relay chain argument error: {}", err))?;
 
 				cmd.run(config, polkadot_config)
 			})
@@ -196,8 +213,9 @@ pub fn run() -> Result<()> {
 		Some(Subcommand::ExportGenesisState(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			runner.sync_run(|config| {
-				let partials = service::new_partial(&config, &cli.eth)?;
-				cmd.run(&*config.chain_spec, &*partials.client)
+				let partials = new_partial(&config, &eth_cfg)?;
+				let spec = cli.load_spec(&cmd.shared_params.chain.clone().unwrap_or_default())?;
+				cmd.run::<laos_ownership_runtime::opaque::Block>(&*spec, &*partials.client)
 			})
 		},
 		Some(Subcommand::ExportGenesisWasm(cmd)) => {
@@ -224,11 +242,13 @@ pub fn run() -> Result<()> {
 					cmd.run(partials.client)
 				}),
 				#[cfg(not(feature = "runtime-benchmarks"))]
-				BenchmarkCmd::Storage(_) => Err(sc_cli::Error::Input(
-					"Compile with --features=runtime-benchmarks \
+				BenchmarkCmd::Storage(_) =>
+					return Err(sc_cli::Error::Input(
+						"Compile with --features=runtime-benchmarks \
 						to enable storage benchmarks."
-						.into(),
-				)),
+							.into(),
+					)
+					.into()),
 				#[cfg(feature = "runtime-benchmarks")]
 				BenchmarkCmd::Storage(cmd) => runner.sync_run(|config| {
 					let partials = new_partial(&config, &eth_cfg)?;
@@ -246,7 +266,6 @@ pub fn run() -> Result<()> {
 		},
 		#[cfg(feature = "try-runtime")]
 		Some(Subcommand::TryRuntime(cmd)) => {
-			use crate::service::ParachainNativeExecutor;
 			use laos_ownership_runtime::MILLISECS_PER_BLOCK;
 			use sc_executor::{sp_wasm_interface::ExtendedHostFunctions, NativeExecutionDispatch};
 			use try_runtime_cli::block_building_info::timestamp_with_aura_info;
@@ -262,7 +281,7 @@ pub fn run() -> Result<()> {
 			let registry = &runner.config().prometheus_config.as_ref().map(|cfg| &cfg.registry);
 			let task_manager =
 				sc_service::TaskManager::new(runner.config().tokio_handle.clone(), *registry)
-					.map_err(|e| format!("Error: {e}"))?;
+					.map_err(|e| format!("Error: {:?}", e))?;
 			let info_provider = timestamp_with_aura_info(MILLISECS_PER_BLOCK);
 
 			runner.async_run(|_| {
@@ -281,10 +300,13 @@ pub fn run() -> Result<()> {
 		Some(Subcommand::FrontierDb(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			runner.sync_run(|config| {
-				let params = crate::service::new_partial(&config, &cli.eth)?;
-				let client = params.client;
-				let (_, _, _, frontier_backend) = params.other;
-
+				let PartialComponents { client, other, .. } =
+					crate::service::new_partial(&config, &cli.eth)?;
+				let (_, _, _, frontier_backend, _) = other;
+				let frontier_backend = match frontier_backend {
+					fc_db::Backend::KeyValue(kv) => Arc::new(kv),
+					_ => panic!("Only fc_db::Backend::KeyValue supported"),
+				};
 				cmd.run(client, frontier_backend)
 			})
 		},
@@ -293,14 +315,12 @@ pub fn run() -> Result<()> {
 			let collator_options = cli.run.collator_options();
 
 			runner.run_node_until_exit(|config| async move {
-				let hwbench = if !cli.no_hardware_benchmarks {
-					config.database.path().map(|database_path| {
+				let hwbench = (!cli.no_hardware_benchmarks)
+					.then_some(config.database.path().map(|database_path| {
 						let _ = std::fs::create_dir_all(database_path);
 						sc_sysinfo::gather_hwbench(Some(database_path))
-					})
-				} else {
-					None
-				};
+					}))
+					.flatten();
 
 				let para_id = chain_spec::Extensions::try_get(&*config.chain_spec)
 					.map(|e| e.para_id)
@@ -314,20 +334,24 @@ pub fn run() -> Result<()> {
 				let id = ParaId::from(para_id);
 
 				let parachain_account =
-					AccountIdConversion::<polkadot_primitives::v5::AccountId>::into_account_truncating(&id);
+					AccountIdConversion::<polkadot_primitives::AccountId>::into_account_truncating(
+						&id,
+					);
+
+				let block: laos_ownership_runtime::opaque::Block =
+					generate_genesis_block(&*config.chain_spec, sp_runtime::StateVersion::V1)
+						.map_err(|e| format!("{:?}", e))?;
+				let genesis_state = format!("0x{:?}", HexDisplay::from(&block.header().encode()));
 
 				let tokio_handle = config.tokio_handle.clone();
 				let polkadot_config =
 					SubstrateCli::create_configuration(&polkadot_cli, &polkadot_cli, tokio_handle)
-						.map_err(|err| format!("Relay chain argument error: {err}"))?;
+						.map_err(|err| format!("Relay chain argument error: {}", err))?;
 
 				info!("Parachain id: {:?}", id);
 				info!("Parachain Account: {}", parachain_account);
+				info!("Parachain genesis state: {}", genesis_state);
 				info!("Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
-
-				if !collator_options.relay_chain_rpc_urls.is_empty() && !cli.relay_chain_args.is_empty() {
-					warn!("Detected relay chain node arguments together with --relay-chain-rpc-url. This command starts a minimal Polkadot node that only uses a network-related subset of all relay chain CLI options.");
-				}
 
 				crate::service::start_parachain_node(
 					config,
