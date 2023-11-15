@@ -6,7 +6,7 @@
   "scripts": {
     "fmt-check": "prettier ./tests --check",
     "fmt": "prettier ./tests --write",
-    "build": "cp -r ../precompile/laos-evolution/contracts contracts && truffle compile && rm -rf contracts",
+    "build": "cp -r ../precompile/laos-evolution/contracts contracts && cp -r ../precompile/livingassets-manager/contracts contracts && truffle compile && rm -rf contracts",
     "test": "mocha -r ts-node/register 'tests/**/*.ts'",
     "test-sql": "FRONTIER_BACKEND_TYPE='sql' mocha -r ts-node/register 'tests/**/*.ts'"
   },
