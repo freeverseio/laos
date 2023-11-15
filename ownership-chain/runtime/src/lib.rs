@@ -239,9 +239,6 @@ pub const UNIT: Balance = 1_000_000_000_000_000_000;
 pub const MILLIUNIT: Balance = UNIT / 1000;
 pub const MICROUNIT: Balance = MILLIUNIT / 1000;
 
-/// The existential deposit. Set to 1/10 of the Connected Relay Chain.
-pub const EXISTENTIAL_DEPOSIT: Balance = MILLIUNIT;
-
 /// Current approximation of the gas/s consumption considering
 /// EVM execution over compiled WASM (on 4.4Ghz CPU).
 /// Given the 500ms Weight, from which 75% only are used for transactions,
@@ -333,7 +330,14 @@ impl pallet_authorship::Config for Runtime {
 }
 
 parameter_types! {
-	pub const ExistentialDeposit: Balance = EXISTENTIAL_DEPOSIT;
+	/// The minimum amount required to keep an account open, set to zero in this case.
+	///
+	/// While it's generally advised to have this value greater than zero to avoid potential
+	/// DoS vectors, we set it to zero here due to specific concerns about relay attacks.
+	/// In such attacks, the reset of the nonce upon account deletion can be exploited.
+	/// By setting the ExistentialDeposit to zero, we prevent the scenario where an account's
+	/// balance drops to a level that would trigger its deletion and subsequent nonce reset.
+	pub const ExistentialDeposit: Balance = 0;
 }
 
 impl pallet_balances::Config for Runtime {
