@@ -27,9 +27,9 @@ extern crate alloc;
 
 use crate::alloc::borrow::ToOwned;
 use fp_evm::{
-	Context, ExitError, ExitRevert, ExitSucceed, PrecompileFailure, PrecompileHandle,
-	PrecompileOutput,
+	Context, ExitError, ExitSucceed, PrecompileFailure, PrecompileHandle, PrecompileOutput,
 };
+use precompile_utils::solidity::revert::revert;
 
 use pallet_evm::Log;
 use sp_core::{H160, H256, U256};
@@ -319,14 +319,6 @@ impl<T: PrecompileHandle> PrecompileHandleExt for T {
 	}
 }
 
-#[must_use]
-pub fn revert(output: impl AsRef<[u8]>) -> PrecompileFailure {
-	PrecompileFailure::Revert {
-		exit_status: ExitRevert::Reverted,
-		output: output.as_ref().to_owned(),
-	}
-}
-
 /// Reverts [DispatchError](sp_runtime::DispatchError) by converting it to a readable message.
 #[must_use]
 pub fn revert_dispatch_error(error: DispatchError) -> PrecompileFailure {
@@ -334,8 +326,8 @@ pub fn revert_dispatch_error(error: DispatchError) -> PrecompileFailure {
 		DispatchError::Arithmetic(_) => revert("arithmetic overflow/underflow"),
 		DispatchError::BadOrigin => revert("bad origin"),
 		DispatchError::CannotLookup => revert("cannot lookup"),
-		DispatchError::Module(m) => revert(m.error),
-		DispatchError::Other(msg) => revert(msg.as_bytes()),
+		DispatchError::Module(m) => revert(m.message.unwrap_or("unknown module error")),
+		DispatchError::Other(msg) => revert(msg),
 		_ => revert("unknown error"),
 	}
 }

@@ -5435,6 +5435,7 @@ dependencies = [
  "num_enum",
  "pallet-evm",
  "parity-scale-codec",
+ "precompile-utils",
  "sha3",
  "sp-core",
  "sp-io",

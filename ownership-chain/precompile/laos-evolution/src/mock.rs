@@ -1,6 +1,5 @@
 use core::str::FromStr;
 
-use evm::ExitReason;
 use fp_evm::{FeeCalculator, Precompile, PrecompileHandle};
 use sp_runtime::BuildStorage;
 

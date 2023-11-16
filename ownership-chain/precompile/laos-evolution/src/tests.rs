@@ -8,18 +8,8 @@ use core::str::FromStr;
 use super::*;
 use evm::Context;
 use fp_evm::{Log, PrecompileSet};
-use frame_support::assert_ok;
-use laos_precompile_utils::{
-	revert, succeed,
-	testing::{create_mock_handle, create_mock_handle_from_input},
-};
 use mock::*;
-use precompile_utils::{
-	precompile_set::*,
-	solidity::codec::Writer,
-	testing::{execution::PrecompileTesterExt, MockHandle},
-	EvmResult,
-};
+use precompile_utils::testing::{execution::PrecompileTesterExt, MockHandle};
 use sp_core::{H160, H256, U256};
 
 const ALICE: &str = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
@@ -30,8 +20,9 @@ fn precompiles() -> MockPrecompileSet<Test> {
 
 /// Utility function to create a collection
 fn create_collection(owner: impl Into<H160>) -> H160 {
+	let owner: H160 = owner.into();
 	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
-		.write(Address(owner.into()))
+		.write(Address(owner.clone()))
 		.build();
 
 	let collection_address = {
@@ -39,7 +30,7 @@ fn create_collection(owner: impl Into<H160>) -> H160 {
 			PRECOMPILE_ADDRESS.into(),
 			Context {
 				address: PRECOMPILE_ADDRESS.into(),
-				caller: owner.into(),
+				caller: owner,
 				apparent_value: U256::zero(),
 			},
 		);
@@ -51,7 +42,7 @@ fn create_collection(owner: impl Into<H160>) -> H160 {
 		res.output
 	};
 
-	H160::from_slice(collection_address.as_slice())
+	H160::from_slice(collection_address.as_slice()[12..].as_ref())
 }
 
 /// Fixed precompile address for testing.
@@ -179,47 +170,24 @@ fn mint_with_external_uri_should_generate_log() {
 	});
 }
 
-// #[test]
-// fn create_collection_on_mock_with_nonzero_value_fails() {
-// 	impl_precompile_mock_simple!(
-// 		Test,
-// 		Mock,
-// 		PrecompileMockParams { create_collection_result: Ok(5), ..Default::default() }
-// 	);
+#[test]
+fn create_collection_on_mock_with_nonzero_value_fails() {
+	new_test_ext().execute_with(|| {
+		let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
+			.write(Address(H160([1u8; 20])))
+			.build();
 
-// 	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
-// 		.write(Address(H160([1u8; 20])))
-// 		.build();
-// 	let mut handle = create_mock_handle(input, 0, 1, H160::zero());
+		precompiles()
+			.prepare_test(H160([1u8; 20]), H160(PRECOMPILE_ADDRESS), input)
+			.with_value(U256::from(1))
+			.execute_reverts(|r| r == b"function is not payable");
+	});
+}
 
-// 	let result = Mock::execute(&mut handle);
-// 	assert!(result.is_err());
-// 	assert_eq!(result.unwrap_err(), revert("function is not payable"));
-// }
-
-// #[test]
-// fn create_collection_assign_collection_to_caller() {
-// 	impl_precompile_mock!(
-// 		Test,
-// 		Mock, // name of the defined precompile
-// 		|owner| {
-// 			assert_eq!(owner, H160::from_low_u64_be(0x1234));
-// 			Ok(0)
-// 		}, // Closure for create_collection result
-// 		|_| { None }, // Closure for collection_owner result
-// 		|_, _, _, _, _| { Ok(0.into()) }, // Closure for mint result
-// 		|_, _| { None }, // Closure for token_uri result
-// 		|_, _, _, _| { Ok(()) }  // Closure for evolve result
-// 	);
-
-// 	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
-// 		.write(Address(H160::from_low_u64_be(0x1234)))
-// 		.build();
-
-// 	let mut handle = create_mock_handle(input, 0, 0, H160::from_low_u64_be(0x1234));
-// 	let result = Mock::execute(&mut handle);
-// 	assert!(result.is_ok());
-// }
+#[test]
+fn create_collection_assign_collection_to_caller() {
+	new_test_ext().execute_with(|| {});
+}
 
 // #[test]
 // fn call_unexistent_selector_should_fail() {

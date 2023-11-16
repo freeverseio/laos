@@ -27,6 +27,9 @@ pallet-laos-evolution = { workspace = true }
 laos-precompile-utils-macro = { workspace = true }
 laos-precompile-utils = { workspace = true }
 
+# Frontier precompile utils
+precompile-utils = { workspace = true }
+
 num_enum = { workspace = true }
 
 [dev-dependencies]

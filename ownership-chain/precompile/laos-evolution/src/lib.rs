@@ -3,7 +3,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
 use laos_precompile_utils::{
-	keccak256, revert, revert_dispatch_error, succeed, Address, Bytes, EvmDataWriter, EvmResult,
+	keccak256, revert_dispatch_error, succeed, Address, Bytes, EvmDataWriter, EvmResult,
 	FunctionModifier, LogExt, LogsBuilder, PrecompileHandleExt,
 };
 use pallet_evm::Pallet as Evm;
@@ -12,6 +12,7 @@ use pallet_laos_evolution::{
 	Pallet as LaosEvolution, Slot, TokenId, TokenUriOf,
 };
 use parity_scale_codec::Encode;
+use precompile_utils::solidity::revert::revert;
 
 use sp_core::H160;
 use sp_std::{fmt::Debug, marker::PhantomData};
