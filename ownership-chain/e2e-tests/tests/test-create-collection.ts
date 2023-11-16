@@ -1,5 +1,5 @@
 import { createCollection, describeWithExistingNode } from "./util";
-import { CONTRACT_ADDRESS, GAS_LIMIT, GAS_PRICE, GENESIS_ACCOUNT, GENESIS_ACCOUNT_PRIVATE_KEY, LAOS_EVOLUTION_ABI, SELECTOR_LOG_NEW_COLLECTION } from "./config";
+import { CONTRACT_ADDRESS, GAS_LIMIT, GAS_PRICE, GENESIS_ACCOUNT, GENESIS_ACCOUNT_PRIVATE_KEY, EVOLUTION_COLLETION_FACTORY_ABI, SELECTOR_LOG_NEW_COLLECTION } from "./config";
 import { expect } from "chai";
 import Contract from "web3-eth-contract";
 import { step } from "mocha-steps";
@@ -9,7 +9,7 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
     let contract: Contract;
 
     beforeEach(async function () {
-        contract = new context.web3.eth.Contract(LAOS_EVOLUTION_ABI, CONTRACT_ADDRESS, {
+        contract = new context.web3.eth.Contract(EVOLUTION_COLLETION_FACTORY_ABI, CONTRACT_ADDRESS, {
             from: GENESIS_ACCOUNT,
             gasPrice: GAS_PRICE,
             gas: GAS_LIMIT,
