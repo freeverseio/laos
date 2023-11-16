@@ -51,9 +51,11 @@ use frame_support::{
 };
 use frame_system::EnsureRoot;
 use pallet_balances::NegativeImbalance;
+pub use pallet_evm_evolution_collection_factory::REVERT_BYTECODE;
 use pallet_xcm::{EnsureXcm, IsVoiceOfBody};
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 pub use sp_runtime::{Perbill, Permill};
+
 use xcm_config::{RelayLocation, XcmConfig, XcmOriginToTransactDispatchOrigin};
 
 pub use pallet_xcm::Call as XcmCall;

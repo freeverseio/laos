@@ -1,7 +1,7 @@
 use cumulus_primitives_core::ParaId;
 use fp_evm::GenesisAccount;
 use hex_literal::hex;
-use laos_ownership_runtime::{AccountId, AuraId, Precompiles};
+use laos_ownership_runtime::{AccountId, AuraId, Precompiles, REVERT_BYTECODE};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
@@ -160,12 +160,6 @@ fn testnet_genesis(
 	root_key: Option<AccountId>,
 	id: ParaId,
 ) -> laos_ownership_runtime::RuntimeGenesisConfig {
-	// This is the simplest bytecode to revert without returning any data.
-	// We will pre-deploy it under all of our precompiles to ensure they can be called from
-	// within contracts.
-	// (PUSH1 0x00 PUSH1 0x00 REVERT)
-	let revert_bytecode = vec![0x60, 0x00, 0x60, 0x00, 0xFD];
-
 	laos_ownership_runtime::RuntimeGenesisConfig {
 		system: laos_ownership_runtime::SystemConfig {
 			code: laos_ownership_runtime::WASM_BINARY
@@ -224,7 +218,7 @@ fn testnet_genesis(
 								nonce: Default::default(),
 								balance: Default::default(),
 								storage: Default::default(),
-								code: revert_bytecode.clone(),
+								code: REVERT_BYTECODE.into(),
 							},
 						)
 					})

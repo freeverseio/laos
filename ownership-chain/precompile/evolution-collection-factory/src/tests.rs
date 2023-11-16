@@ -9,6 +9,7 @@ use crate::mock::*;
 
 use super::*;
 use fp_evm::Log;
+use pallet_evm::AccountCodes;
 use precompile_utils::testing::PrecompileTesterExt;
 use sp_core::{H160, H256, U256};
 
@@ -114,5 +115,31 @@ fn create_collection_assign_collection_to_caller() {
 			.execute_returns(expected_output);
 
 		assert_eq!(LaosEvolution::<Test>::collection_owner(0), Some(H160([1u8; 20].into())));
+	});
+}
+
+#[test]
+fn create_collection_inserts_bytecode_to_address() {
+	new_test_ext().execute_with(|| {
+		let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
+			.write(Address(H160([1u8; 20])))
+			.build();
+
+		let expected_address = "fffffffffffffffffffffffe0000000000000000";
+		// output is padded with 12 bytes of zeros
+		let expected_output =
+			H256::from_str(format!("000000000000000000000000{}", expected_address).as_str())
+				.unwrap();
+
+		precompiles()
+			.prepare_test(H160([1u8; 20]), H160(PRECOMPILE_ADDRESS), input)
+			.execute_returns(expected_output);
+
+		let collection_address = &H160::from_str(expected_address).unwrap();
+		// Address is not empty
+		assert!(!Evm::<Test>::is_account_empty(&collection_address));
+
+		// Address has correct code
+		assert!(AccountCodes::<Test>::get(&collection_address) == REVERT_BYTECODE);
 	});
 }
