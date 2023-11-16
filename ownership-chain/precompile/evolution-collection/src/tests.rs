@@ -9,6 +9,7 @@ use super::*;
 use evm::Context;
 use fp_evm::{Log, PrecompileSet};
 use mock::*;
+use pallet_evm_evolution_collection_factory::Action as CollectionFactoryAction;
 use precompile_utils::{
 	solidity::codec::BoundedBytes,
 	testing::{execution::PrecompileTesterExt, MockHandle},
@@ -17,6 +18,7 @@ use sp_core::{H160, H256, U256};
 
 const ALICE: &str = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
 
+/// Get precompiles from the mock.
 fn precompiles() -> MockPrecompileSet<Test> {
 	MockPrecompiles::get()
 }
@@ -28,13 +30,17 @@ fn precompiles() -> MockPrecompileSet<Test> {
 /// function.
 fn create_collection(owner: impl Into<H160>) -> H160 {
 	let owner: H160 = owner.into();
-	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
+	let input = EvmDataWriter::new_with_selector(CollectionFactoryAction::CreateCollection)
 		.write(Address(owner.clone()))
 		.build();
 
 	let mut handle = MockHandle::new(
-		PRECOMPILE_ADDRESS.into(),
-		Context { address: PRECOMPILE_ADDRESS.into(), caller: owner, apparent_value: U256::zero() },
+		EVOLUTION_FACTORY_PRECOMPILE_ADDRESS.into(),
+		Context {
+			address: EVOLUTION_FACTORY_PRECOMPILE_ADDRESS.into(),
+			caller: owner,
+			apparent_value: U256::zero(),
+		},
 	);
 
 	handle.input = input;
@@ -74,15 +80,8 @@ fn mint(
 	TokenId::from(res.output.as_slice())
 }
 
-/// Fixed precompile address for testing.
-const PRECOMPILE_ADDRESS: [u8; 20] = [5u8; 20];
-
 #[test]
 fn check_log_selectors() {
-	assert_eq!(
-		hex::encode(SELECTOR_LOG_NEW_COLLECTION),
-		"5b84d9550adb7000df7bee717735ecd3af48ea3f66c6886d52e8227548fb228c"
-	);
 	assert_eq!(
 		hex::encode(SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI),
 		"a7135052b348b0b4e9943bae82d8ef1c5ac225e594ef4271d12f0744cfc98348"
@@ -95,58 +94,10 @@ fn check_log_selectors() {
 
 #[test]
 fn function_selectors() {
-	assert_eq!(Action::CreateCollection as u32, 0x2069E953);
 	assert_eq!(Action::Owner as u32, 0x8DA5CB5B);
 	assert_eq!(Action::TokenURI as u32, 0xC87B56DD);
 	assert_eq!(Action::Mint as u32, 0xFD024566);
 	assert_eq!(Action::Evolve as u32, 0x2FD38F4D);
-}
-
-#[test]
-fn create_collection_returns_address() {
-	new_test_ext().execute_with(|| {
-		let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
-			.write(Address(H160([1u8; 20])))
-			.build();
-
-		let expected_address = "0000000000000000000000010000000000000000";
-		// output is padded with 12 bytes of zeros
-		let expected_output =
-			H256::from_str(format!("000000000000000000000000{}", expected_address).as_str())
-				.unwrap();
-
-		precompiles()
-			.prepare_test(H160([1u8; 20]), H160(PRECOMPILE_ADDRESS), input)
-			.execute_returns(expected_output);
-	})
-}
-
-#[test]
-fn create_collection_should_generate_log() {
-	new_test_ext().execute_with(|| {
-		let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
-			.write(Address(H160::from_str(ALICE).unwrap()))
-			.build();
-
-		let expected_log = Log {
-			address: H160::zero(),
-			topics: vec![
-				SELECTOR_LOG_NEW_COLLECTION.into(),
-				H256::from_str(
-					"0x000000000000000000000000f24ff3a9cf04c71dbc94d0b566f7a27b94566cac",
-				)
-				.unwrap(),
-			],
-			data: vec![
-				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
-				0, 0, 0, 123,
-			],
-		};
-
-		let _ = precompiles()
-			.prepare_test(H160([1u8; 20]), H160(PRECOMPILE_ADDRESS), input)
-			.expect_log(expected_log);
-	});
 }
 
 #[test]
@@ -190,47 +141,12 @@ fn mint_with_external_uri_should_generate_log() {
 }
 
 #[test]
-fn create_collection_on_mock_with_nonzero_value_fails() {
-	new_test_ext().execute_with(|| {
-		let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
-			.write(Address(H160([1u8; 20])))
-			.build();
-
-		precompiles()
-			.prepare_test(H160([1u8; 20]), H160(PRECOMPILE_ADDRESS), input)
-			.with_value(U256::from(1))
-			.execute_reverts(|r| r == b"function is not payable");
-	});
-}
-
-#[test]
-fn create_collection_assign_collection_to_caller() {
-	new_test_ext().execute_with(|| {
-		let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
-			.write(Address(H160([1u8; 20])))
-			.build();
-
-		let expected_address = "0000000000000000000000010000000000000000";
-		// output is padded with 12 bytes of zeros
-		let expected_output =
-			H256::from_str(format!("000000000000000000000000{}", expected_address).as_str())
-				.unwrap();
-
-		precompiles()
-			.prepare_test(H160([1u8; 20]), H160(PRECOMPILE_ADDRESS), input)
-			.execute_returns(expected_output);
-
-		assert_eq!(LaosEvolution::<Test>::collection_owner(0), Some(H160([1u8; 20].into())));
-	});
-}
-
-#[test]
 fn call_unexistent_selector_should_fail() {
 	new_test_ext().execute_with(|| {
 		let input = EvmDataWriter::new_with_selector(0x12345678 as u32).build();
 
 		precompiles()
-			.prepare_test(H160([1u8; 20]), H160(PRECOMPILE_ADDRESS), input)
+			.prepare_test(H160([1u8; 20]), H160(EVOLUTION_FACTORY_PRECOMPILE_ADDRESS), input)
 			.execute_reverts(|r| r == b"unknown selector");
 	});
 }
@@ -240,7 +156,7 @@ fn call_owner_of_non_existent_collection() {
 	new_test_ext().execute_with(|| {
 		let alice = H160::from_str(ALICE).unwrap();
 		let collection_address =
-			H160::from_str("0000000000000000000000010000000000000005").unwrap();
+			H160::from_str("fffffffffffffffffffffffe0000000000000000").unwrap();
 
 		let input = EvmDataWriter::new_with_selector(Action::Owner).build();
 
@@ -253,13 +169,15 @@ fn call_owner_of_non_existent_collection() {
 #[test]
 fn call_owner_of_invalid_collection_address() {
 	new_test_ext().execute_with(|| {
-		let invalid_address = H160::from_str("0000000000000000000000000000000000000005").unwrap();
+		let _invalid_address = H160::from_str("0000000000000000000000000000000000000005").unwrap();
 
-		let input = EvmDataWriter::new_with_selector(Action::Owner).write(U256::from(0)).build();
+		let _input = EvmDataWriter::new_with_selector(Action::Owner).build();
 
-		precompiles()
-			.prepare_test(invalid_address, invalid_address, input)
-			.execute_reverts(|r| r == b"invalid collection address");
+		// TODO: Uncomment this when this PR is merged: https://github.com/paritytech/frontier/pull/1248
+		// Above PR fixes a bug in `execute_none()`
+		// precompiles()
+		// 	.prepare_test(H160([1u8; 20]), invalid_address, input)
+		// 	.execute_none();
 	});
 }
 
@@ -338,94 +256,91 @@ fn mint_works() {
 fn failing_mint_should_return_error() {
 	new_test_ext().execute_with(|| {
 		let to = H160::from_str(ALICE).unwrap();
-		let non_existent_collection =
-			H160::from_str("0000000000000000000000010000000000000005").unwrap();
+		let collection_address = create_collection(to);
+
+		let _occupied_slot_token_id = mint(to, collection_address, 0, Vec::new());
 
 		let input = EvmDataWriter::new_with_selector(Action::Mint)
 			.write(Address(to))
-			.write(U256::from(1))
+			.write(U256::zero())
 			.write(Bytes([1u8; 20].to_vec()))
 			.build();
 
 		precompiles()
-			.prepare_test(to, non_existent_collection, input)
-			.execute_reverts(|r| r == b"CollectionDoesNotExist");
+			.prepare_test(to, collection_address, input)
+			.execute_reverts(|r| r == b"AlreadyMinted");
 	});
 }
 
-mod evolve {
-	use super::*;
+#[test]
+fn evolve_works() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let collection_address = create_collection(alice);
+		let token_id = mint(alice, collection_address, 0, Vec::new());
 
-	#[test]
-	fn evolve_works() {
-		new_test_ext().execute_with(|| {
-			let alice = H160::from_str(ALICE).unwrap();
-			let collection_address = create_collection(alice);
-			let token_id = mint(alice, collection_address, 0, Vec::new());
+		let input = EvmDataWriter::new_with_selector(Action::Evolve)
+			.write(token_id)
+			.write(Bytes([1u8; 20].to_vec()))
+			.build();
 
-			let input = EvmDataWriter::new_with_selector(Action::Evolve)
-				.write(token_id)
-				.write(Bytes([1u8; 20].to_vec()))
-				.build();
+		precompiles()
+			.prepare_test(alice, collection_address, input)
+			.execute_returns(token_id);
+	});
+}
 
-			precompiles()
-				.prepare_test(alice, collection_address, input)
-				.execute_returns(token_id);
-		});
-	}
+#[test]
+fn when_succeeds_should_generate_log() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let collection_address = create_collection(alice);
+		let token_id = mint(alice, collection_address, 0, Vec::new());
 
-	#[test]
-	fn when_succeeds_should_generate_log() {
-		new_test_ext().execute_with(|| {
-			let alice = H160::from_str(ALICE).unwrap();
-			let collection_address = create_collection(alice);
-			let token_id = mint(alice, collection_address, 0, Vec::new());
+		let input = EvmDataWriter::new_with_selector(Action::Evolve)
+			.write(token_id)
+			.write(Bytes([1u8; 20].to_vec()))
+			.build();
 
-			let input = EvmDataWriter::new_with_selector(Action::Evolve)
-				.write(token_id)
-				.write(Bytes([1u8; 20].to_vec()))
-				.build();
+		let expected_log = Log {
+			address: collection_address,
+			topics: vec![
+				SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI.into(),
+				H256::from_str(
+					"0x000000000000000000000000f24ff3a9cf04c71dbc94d0b566f7a27b94566cac",
+				)
+				.unwrap(),
+			],
+			data: vec![
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 32, // offset
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 20, // lenght of token_uri
+				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, // token_uri
+			],
+		};
 
-			let expected_log = Log {
-				address: collection_address,
-				topics: vec![
-					SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI.into(),
-					H256::from_str(
-						"0x000000000000000000000000f24ff3a9cf04c71dbc94d0b566f7a27b94566cac",
-					)
-					.unwrap(),
-				],
-				data: vec![
-					0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-					0, 0, 0, 0, 0, 32, // offset
-					0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-					0, 0, 0, 0, 0, 20, // lenght of token_uri
-					1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
-					0, 0, 0, 0, 0, 0, // token_uri
-				],
-			};
+		let _ = precompiles()
+			.prepare_test(alice, collection_address, input)
+			.expect_log(expected_log);
+	});
+}
 
-			let _ = precompiles()
-				.prepare_test(alice, collection_address, input)
-				.expect_log(expected_log);
-		});
-	}
+#[test]
+fn when_fails_should_return_error() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let collection_address = create_collection(alice);
+		let token_id = U256::from(1);
 
-	#[test]
-	fn when_fails_should_return_error() {
-		new_test_ext().execute_with(|| {
-			let alice = H160::from_str(ALICE).unwrap();
-			let collection_address = create_collection(alice);
-			let token_id = U256::from(1);
+		let input = EvmDataWriter::new_with_selector(Action::Evolve)
+			.write(token_id)
+			.write(Bytes([1u8; 20].to_vec()))
+			.build();
 
-			let input = EvmDataWriter::new_with_selector(Action::Evolve)
-				.write(token_id)
-				.write(Bytes([1u8; 20].to_vec()))
-				.build();
-
-			precompiles()
-				.prepare_test(alice, collection_address, input)
-				.execute_reverts(|r| r == b"AssetDoesNotExist");
-		});
-	}
+		precompiles()
+			.prepare_test(alice, collection_address, input)
+			.execute_reverts(|r| r == b"AssetDoesNotExist");
+	});
 }

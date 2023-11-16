@@ -1,6 +1,7 @@
 import BN from "bn.js";
 import { AbiItem } from "web3-utils";
-import LaosEvolution from "../build/contracts/LaosEvolution.json";
+import EvolutionCollectionFactory from "../build/contracts/EvolutionCollectionFactory.json";
+import EvolutionCollection from "../build/contracts/EvolutionCollection.json";
 
 // Node config
 export const RUNTIME_SPEC_NAME = "frontier-template";
@@ -20,7 +21,8 @@ export const ETH_BLOCK_GAS_LIMIT = 15000000; // The same configuration as runtim
 export const GAS_LIMIT = ETH_BLOCK_GAS_LIMIT - 10000000; 
 
 // LAOS Evolution Contract
-export const LAOS_EVOLUTION_ABI = LaosEvolution.abi as AbiItem[];
+export const EVOLUTION_COLLETION_FACTORY_ABI = EvolutionCollectionFactory.abi as AbiItem[];
+export const EVOLUTION_COLLECTION_ABI = EvolutionCollection.abi as AbiItem[];
 export const CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000403";
 export const SELECTOR_LOG_NEW_COLLECTION = "0x5b84d9550adb7000df7bee717735ecd3af48ea3f66c6886d52e8227548fb228c";
 export const SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI = "0xa7135052b348b0b4e9943bae82d8ef1c5ac225e594ef4271d12f0744cfc98348";

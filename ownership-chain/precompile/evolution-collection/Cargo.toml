@@ -1,8 +1,8 @@
 [package]
-name = "pallet-evm-laos-evolution"
+name = "pallet-evm-evolution-collection"
 version = "2.0.0-dev"
-description = "Living assets evolution precompile"
-repository = "https://github.com/freeverseio/pallet-livingassets-ownership"
+description = "Collection evolver and minter precompile"
+repository = "https://github.com/freeverseio/laos"
 edition = "2021"
 
 [dependencies]
@@ -42,6 +42,7 @@ frame-system = { workspace = true }
 pallet-balances = { workspace = true, features = ["std", "insecure_zero_ed"] }
 pallet-timestamp = { workspace = true }
 sp-io = { workspace = true }
+pallet-evm-evolution-collection-factory = { workspace = true }
 
 [features]
 default = ["std"]

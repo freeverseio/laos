@@ -1,9 +1,11 @@
 use core::str::FromStr;
 
 use fp_evm::{FeeCalculator, Precompile, PrecompileHandle};
+use pallet_evm_evolution_collection_factory::EvolutionCollectionFactoryPrecompile;
 use sp_runtime::BuildStorage;
+use pallet_laos_evolution::address_to_collection_id;
 
-use crate::LaosEvolutionPrecompile;
+use crate::EvolutionCollectionPrecompile;
 
 use frame_support::{
 	parameter_types,
@@ -160,7 +162,8 @@ impl pallet_evm::Config for Test {
 
 pub struct MockPrecompileSet<Test>(sp_std::marker::PhantomData<Test>);
 
-pub type MockLaosEvolution = LaosEvolutionPrecompile<Test>;
+pub type MockEvolutionCollectionPrecompile = EvolutionCollectionPrecompile<Test>;
+pub type MockEvolutionCollectionFactoryPrecompile = EvolutionCollectionFactoryPrecompile<Test>;
 
 impl<Test> MockPrecompileSet<Test>
 where
@@ -171,12 +174,20 @@ where
 	}
 }
 
+/// Fixed precompile addresses for testing.
+pub const EVOLUTION_FACTORY_PRECOMPILE_ADDRESS: [u8; 20] = [6u8; 20];
+
 impl<Test> fp_evm::PrecompileSet for MockPrecompileSet<Test>
 where
 	Test: pallet_evm::Config + pallet_laos_evolution::Config,
 {
 	fn execute(&self, handle: &mut impl PrecompileHandle) -> Option<fp_evm::PrecompileResult> {
-		Some(MockLaosEvolution::execute(handle))
+		match handle.context().address {
+			a if address_to_collection_id(a).is_ok() => Some(MockEvolutionCollectionPrecompile::execute(handle)),
+			H160(EVOLUTION_FACTORY_PRECOMPILE_ADDRESS) =>
+				Some(MockEvolutionCollectionFactoryPrecompile::execute(handle)),
+			_ => return None,
+		}
 	}
 
 	fn is_precompile(&self, _address: H160, _gas: u64) -> fp_evm::IsPrecompileResult {

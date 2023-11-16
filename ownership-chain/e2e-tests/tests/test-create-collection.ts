@@ -1,5 +1,5 @@
 import { createCollection, describeWithExistingNode } from "./util";
-import { CONTRACT_ADDRESS, GAS_LIMIT, GAS_PRICE, GENESIS_ACCOUNT, GENESIS_ACCOUNT_PRIVATE_KEY, LAOS_EVOLUTION_ABI, SELECTOR_LOG_NEW_COLLECTION } from "./config";
+import { CONTRACT_ADDRESS, GAS_LIMIT, GAS_PRICE, GENESIS_ACCOUNT, GENESIS_ACCOUNT_PRIVATE_KEY, EVOLUTION_COLLETION_FACTORY_ABI, SELECTOR_LOG_NEW_COLLECTION } from "./config";
 import { expect } from "chai";
 import Contract from "web3-eth-contract";
 import { step } from "mocha-steps";
@@ -9,23 +9,12 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
     let contract: Contract;
 
     beforeEach(async function () {
-        contract = new context.web3.eth.Contract(LAOS_EVOLUTION_ABI, CONTRACT_ADDRESS, {
+        contract = new context.web3.eth.Contract(EVOLUTION_COLLETION_FACTORY_ABI, CONTRACT_ADDRESS, {
             from: GENESIS_ACCOUNT,
             gasPrice: GAS_PRICE,
             gas: GAS_LIMIT,
         });
         context.web3.eth.accounts.wallet.add(GENESIS_ACCOUNT_PRIVATE_KEY);
-    });
-
-    step("when collection does not exist owner of call should fail", async function () {
-        try {
-            await contract.methods.owner().call();
-            expect.fail("Expected error was not thrown"); // Ensure an error is thrown
-        } catch (error) {
-            expect(error.message).to.be.eq(
-                "Returned error: VM Exception while processing transaction: revert"
-            );
-        }
     });
 
     step("when collection is created, it should return owner", async function () {
@@ -56,7 +45,7 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
         expect(result.events.NewCollection.raw.topics[1]).to.be.eq(context.web3.utils.padLeft(GENESIS_ACCOUNT.toLowerCase(), 64));
 
         // event data
-        expect(result.events.NewCollection.raw.data).to.be.eq(context.web3.utils.padLeft(result.events.NewCollection.returnValues._collectionAddress, 64));
+        expect(result.events.NewCollection.raw.data.toLowerCase()).to.be.eq(context.web3.utils.padLeft(result.events.NewCollection.returnValues._collectionAddress, 64).toLowerCase());
     });
 
 });

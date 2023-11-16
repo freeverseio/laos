@@ -228,7 +228,8 @@ polkadot-service = { git = "https://github.com/paritytech/polkadot-sdk", branch 
 
 # LAOS pallets
 pallet-laos-evolution = { path = "./ownership-chain/pallets/laos-evolution", default-features = false }
-pallet-evm-laos-evolution = { path = "./ownership-chain/precompile/laos-evolution", default-features = false }
+pallet-evm-evolution-collection-factory = { path = "./ownership-chain/precompile/evolution-collection-factory", default-features = false }
+pallet-evm-evolution-collection = { path = "./ownership-chain/precompile/evolution-collection", default-features = false }
 pallet-evm-erc721 = { path = "./ownership-chain/precompile/erc721", default-features = false }
 
 # Precompiles

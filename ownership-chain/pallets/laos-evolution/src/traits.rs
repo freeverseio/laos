@@ -3,11 +3,14 @@
 use crate::types::{CollectionId, Slot, TokenId};
 use sp_runtime::DispatchError;
 
-/// `LivingEvolution` trait for managing collections and tokens
-pub trait LaosEvolution<AccountId, TokenUri> {
+/// `EvolutionCollectionFactory` trait for creating collections
+pub trait EvolutionCollectionFactory<AccountId> {
 	/// Creates new collection
 	fn create_collection(owner: AccountId) -> Result<CollectionId, DispatchError>;
+}
 
+/// `EvolutionCollection` trait for managing living assets within a collection
+pub trait EvolutionCollection<AccountId, TokenUri> {
 	/// Mint new token with external URI
 	fn mint_with_external_uri(
 		who: AccountId,
