@@ -18,7 +18,7 @@ use sp_runtime::{
 	ArithmeticError, DispatchError,
 };
 
-pub use traits::{CollectionEvolverAndMinter, EvolutionCollectionFactory};
+pub use traits::{EvolutionCollection, EvolutionCollectionFactory};
 pub use types::*;
 
 #[frame_support::pallet]
@@ -128,7 +128,7 @@ impl<T: Config> EvolutionCollectionFactory<AccountIdOf<T>> for Pallet<T> {
 	}
 }
 
-impl<T: Config> CollectionEvolverAndMinter<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T> {
+impl<T: Config> EvolutionCollection<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T> {
 	fn mint_with_external_uri(
 		who: AccountIdOf<T>,
 		collection_id: CollectionId,

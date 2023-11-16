@@ -9,8 +9,8 @@ pub trait EvolutionCollectionFactory<AccountId> {
 	fn create_collection(owner: AccountId) -> Result<CollectionId, DispatchError>;
 }
 
-/// `CollectionEvolverAndMinter` trait for managing living assets within a collection
-pub trait CollectionEvolverAndMinter<AccountId, TokenUri> {
+/// `EvolutionCollection` trait for managing living assets within a collection
+pub trait EvolutionCollection<AccountId, TokenUri> {
 	/// Mint new token with external URI
 	fn mint_with_external_uri(
 		who: AccountId,

@@ -329,7 +329,7 @@ mod helpers {
 
 	/// Macro to define a precompile mock for testing.
 	///
-	/// This macro creates mock implementations of the `CollectionEvolverAndMinter` trait,
+	/// This macro creates mock implementations of the `EvolutionCollection` trait,
 	/// allowing you to test how your code interacts with the precompiled contracts.
 	/// The mock type is named `Mock`, and the implementation uses the provided expressions.
 	///
@@ -353,10 +353,10 @@ mod helpers {
 			use sp_runtime::DispatchError;
 			type TokenUri = Vec<u8>;
 
-			struct CollectionEvolverAndMinterMock;
+			struct EvolutionCollectionMock;
 
-			impl pallet_laos_evolution::traits::CollectionEvolverAndMinter<AccountId, TokenUri>
-				for CollectionEvolverAndMinterMock
+			impl pallet_laos_evolution::traits::EvolutionCollection<AccountId, TokenUri>
+				for EvolutionCollectionMock
 			{
 				fn mint_with_external_uri(
 					who: AccountId,
@@ -386,11 +386,11 @@ mod helpers {
 				}
 			}
 
-			type $name = CollectionEvolverAndMinterPrecompile<
+			type $name = EvolutionCollectionPrecompile<
 				AddressMapping,
 				AccountId,
 				TokenUri,
-				CollectionEvolverAndMinterMock,
+				EvolutionCollectionMock,
 			>;
 		};
 	}

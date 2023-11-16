@@ -56,7 +56,7 @@ sp-version = { workspace = true }
 
 pallet-laos-evolution = { workspace = true }
 pallet-evm-evolution-collection-factory = { workspace = true }
-pallet-evm-collection-evolver-and-minter = { workspace = true }
+pallet-evm-evolution-collection = { workspace = true }
 
 # Polkadot
 pallet-xcm = { workspace = true }
@@ -156,7 +156,7 @@ std = [
 	"pallet-ethereum/std",
 	"pallet-evm/std",
 	"pallet-evm-evolution-collection-factory/std",
-	"pallet-evm-collection-evolver-and-minter/std",
+	"pallet-evm-evolution-collection/std",
 	"pallet-evm-chain-id/std",
 	"pallet-evm-precompile-modexp/std",
 	"pallet-evm-precompile-simple/std",

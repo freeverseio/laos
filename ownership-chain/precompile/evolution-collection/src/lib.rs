@@ -3,8 +3,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
 use pallet_laos_evolution::{
-	address_to_collection_id, traits::CollectionEvolverAndMinter as CollectionEvolverAndMinterT,
-	Slot, TokenId,
+	address_to_collection_id, traits::EvolutionCollection as EvolutionCollectionT, Slot, TokenId,
 };
 use parity_scale_codec::Encode;
 use precompile_utils::{
@@ -36,22 +35,22 @@ pub enum Action {
 }
 
 /// Wrapper for the precompile function.
-pub struct CollectionEvolverAndMinterPrecompile<AddressMapping, AccountId, TokenUri, LaosEvolution>(
+pub struct EvolutionCollectionPrecompile<AddressMapping, AccountId, TokenUri, LaosEvolution>(
 	PhantomData<(AddressMapping, AccountId, TokenUri, LaosEvolution)>,
 )
 where
 	AddressMapping: pallet_evm::AddressMapping<AccountId>,
 	AccountId: Encode + Debug,
 	TokenUri: TryFrom<Vec<u8>>,
-	LaosEvolution: CollectionEvolverAndMinterT<AccountId, TokenUri>;
+	LaosEvolution: EvolutionCollectionT<AccountId, TokenUri>;
 
 impl<AddressMapping, AccountId, TokenUri, LaosEvolution>
-	CollectionEvolverAndMinterPrecompile<AddressMapping, AccountId, TokenUri, LaosEvolution>
+	EvolutionCollectionPrecompile<AddressMapping, AccountId, TokenUri, LaosEvolution>
 where
 	AddressMapping: pallet_evm::AddressMapping<AccountId>,
 	AccountId: From<H160> + Into<H160> + Encode + Debug,
 	TokenUri: TryFrom<Vec<u8>> + Into<Vec<u8>>,
-	LaosEvolution: CollectionEvolverAndMinterT<AccountId, TokenUri>,
+	LaosEvolution: EvolutionCollectionT<AccountId, TokenUri>,
 {
 	fn inner_execute(
 		handle: &mut impl PrecompileHandle,
@@ -171,12 +170,12 @@ where
 }
 
 impl<AddressMapping, AccountId, TokenUri, LaosEvolution> Precompile
-	for CollectionEvolverAndMinterPrecompile<AddressMapping, AccountId, TokenUri, LaosEvolution>
+	for EvolutionCollectionPrecompile<AddressMapping, AccountId, TokenUri, LaosEvolution>
 where
 	AddressMapping: pallet_evm::AddressMapping<AccountId>,
 	AccountId: From<H160> + Into<H160> + Encode + Debug,
 	TokenUri: TryFrom<Vec<u8>> + Into<Vec<u8>>,
-	LaosEvolution: CollectionEvolverAndMinterT<AccountId, TokenUri>,
+	LaosEvolution: EvolutionCollectionT<AccountId, TokenUri>,
 {
 	fn execute(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
 		let selector = handle.read_selector()?;

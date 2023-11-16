@@ -3,7 +3,7 @@ use core::str::FromStr;
 use crate::{
 	mock::*,
 	slot_and_owner_to_token_id,
-	traits::{CollectionEvolverAndMinter, EvolutionCollectionFactory},
+	traits::{EvolutionCollection, EvolutionCollectionFactory},
 	types::{TokenId, TokenUriOf, MAX_U96},
 	CollectionId, Error, Event,
 };

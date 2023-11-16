@@ -4,7 +4,7 @@ pragma solidity >=0.8.3;
 /// @title Pallet Laos Evolution Interface
 /// @author LAOS Team
 /// @notice This interface allows Solidity contracts to interact with pallet-laos-evolution
-interface CollectionEvolverAndMinter {
+interface EvolutionCollection {
     /// @notice Emitted when a new token is minted
     /// @dev Id of the token is concatenation of `slot` and `to`
     /// @param _to the initial owner of the newly minted token

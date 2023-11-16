@@ -1,5 +1,5 @@
 [package]
-name = "pallet-evm-collection-evolver-and-minter"
+name = "pallet-evm-evolution-collection"
 version = "2.0.0-dev"
 description = "Collection evolver and minter precompile"
 repository = "https://github.com/freeverseio/laos"
