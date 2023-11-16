@@ -18,7 +18,7 @@ use sp_runtime::{
 	ArithmeticError, DispatchError,
 };
 
-pub use traits::LaosEvolution;
+pub use traits::{EvolutionCollection, EvolutionCollectionFactory};
 pub use types::*;
 
 #[frame_support::pallet]
@@ -110,7 +110,7 @@ pub mod pallet {
 	impl<T: Config> Pallet<T> {}
 }
 
-impl<T: Config> LaosEvolution<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T> {
+impl<T: Config> EvolutionCollectionFactory<AccountIdOf<T>> for Pallet<T> {
 	fn create_collection(owner: AccountIdOf<T>) -> Result<CollectionId, DispatchError> {
 		let collection_id = Self::collection_counter();
 
@@ -126,7 +126,9 @@ impl<T: Config> LaosEvolution<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T> {
 
 		Ok(collection_id)
 	}
+}
 
+impl<T: Config> EvolutionCollection<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T> {
 	fn mint_with_external_uri(
 		who: AccountIdOf<T>,
 		collection_id: CollectionId,
