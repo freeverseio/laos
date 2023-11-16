@@ -63,7 +63,7 @@ fn create_collection_should_generate_log() {
 			.build();
 
 		let expected_log = Log {
-			address: H160::zero(),
+			address: H160(PRECOMPILE_ADDRESS),
 			topics: vec![
 				SELECTOR_LOG_NEW_COLLECTION.into(),
 				H256::from_str(
@@ -72,14 +72,15 @@ fn create_collection_should_generate_log() {
 				.unwrap(),
 			],
 			data: vec![
-				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
-				0, 0, 0, 123,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+				255, 255, 254, 0, 0, 0, 0, 0, 0, 0, 0,
 			],
 		};
 
-		let _ = precompiles()
+		precompiles()
 			.prepare_test(H160([1u8; 20]), H160(PRECOMPILE_ADDRESS), input)
-			.expect_log(expected_log);
+			.expect_log(expected_log)
+			.execute_some();
 	});
 }
 

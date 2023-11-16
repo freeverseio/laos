@@ -103,11 +103,11 @@ fn function_selectors() {
 #[test]
 fn mint_with_external_uri_should_generate_log() {
 	new_test_ext().execute_with(|| {
-		let alice = H160::from_str(ALICE).unwrap();
-		let collection_address = create_collection(alice);
+		let owner = H160([1u8; 20]);
+		let collection_address = create_collection(owner);
 
 		let input = EvmDataWriter::new_with_selector(Action::Mint)
-			.write(Address(alice)) // to
+			.write(Address(owner)) // to
 			.write(U256::from(9)) // slot
 			.write(Bytes("ciao".into())) // token_uri
 			.build();
@@ -117,15 +117,15 @@ fn mint_with_external_uri_should_generate_log() {
 			topics: vec![
 				SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI.into(),
 				H256::from_str(
-					"0x000000000000000000000000f24ff3a9cf04c71dbc94d0b566f7a27b94566cac",
+					"0x0000000000000000000000000101010101010101010101010101010101010101",
 				)
 				.unwrap(),
 			],
 			data: vec![
 				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 				0, 0, 0, 9, // slot
-				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-				0, 1, 2, 3, // token id
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+				1, 1, 1, 1, // token id
 				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 				0, 0, 0, 96, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 				0, 0, 0, 0, 0, 0, 0, 0, 4, // token uri length
@@ -134,9 +134,10 @@ fn mint_with_external_uri_should_generate_log() {
 			],
 		};
 
-		let _ = precompiles()
-			.prepare_test(alice, collection_address, input)
-			.expect_log(expected_log);
+		precompiles()
+			.prepare_test(owner, collection_address, input)
+			.expect_log(expected_log)
+			.execute_some();
 	});
 }
 
@@ -321,9 +322,10 @@ fn when_succeeds_should_generate_log() {
 			],
 		};
 
-		let _ = precompiles()
+		precompiles()
 			.prepare_test(alice, collection_address, input)
-			.expect_log(expected_log);
+			.expect_log(expected_log)
+			.execute_some();
 	});
 }
 
