@@ -23,7 +23,7 @@ type Block = frame_system::mocking::MockBlock<Test>;
 frame_support::construct_runtime!(
 	pub enum Test {
 		System: frame_system::{Pallet, Call, Config<T>, Storage, Event<T>},
-		LaosEvolution: pallet_laos_evolution,
+		LaosEvolutionPallet: pallet_laos_evolution,
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		Timestamp: pallet_timestamp::{Pallet, Call, Storage},
 		EVM: pallet_evm::{Pallet, Call, Storage, Config<T>, Event<T>},
@@ -179,7 +179,7 @@ where
 		Some(MockLaosEvolution::execute(handle))
 	}
 
-	fn is_precompile(&self, address: H160, _gas: u64) -> fp_evm::IsPrecompileResult {
+	fn is_precompile(&self, _address: H160, _gas: u64) -> fp_evm::IsPrecompileResult {
 		return fp_evm::IsPrecompileResult::Answer { is_precompile: true, extra_cost: 0 }
 	}
 }

@@ -45,6 +45,32 @@ fn create_collection(owner: impl Into<H160>) -> H160 {
 	H160::from_slice(collection_address.as_slice()[12..].as_ref())
 }
 
+/// Mint a token with external token uri
+fn mint(
+	owner: impl Into<H160>,
+	collection_address: H160,
+	slot: Slot,
+	token_uri: Vec<u8>,
+) -> TokenId {
+	let owner: H160 = owner.into();
+	let input = EvmDataWriter::new_with_selector(Action::Mint)
+		.write(Address(owner.clone()))
+		.write(U256::from(slot))
+		.write(Bytes(token_uri))
+		.build();
+
+	let mut handle = MockHandle::new(
+		collection_address,
+		Context { address: collection_address, caller: owner, apparent_value: U256::zero() },
+	);
+
+	handle.input = input;
+
+	let res = precompiles().execute(&mut handle).unwrap().unwrap();
+
+	TokenId::from(res.output.as_slice())
+}
+
 /// Fixed precompile address for testing.
 const PRECOMPILE_ADDRESS: [u8; 20] = [5u8; 20];
 
@@ -80,25 +106,15 @@ fn create_collection_returns_address() {
 			.write(Address(H160([1u8; 20])))
 			.build();
 
-		precompiles()
-			.prepare_test(H160([1u8; 20]), H160(PRECOMPILE_ADDRESS), input)
-			.execute_returns(1_u64);
-	})
-}
-
-#[test]
-fn create_collection_should_return_collection_id() {
-	new_test_ext().execute_with(|| {
-		let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
-			.write(Address(H160([1u8; 20])))
-			.build();
+		let expected_address = "0000000000000000000000010000000000000000";
+		// output is padded with 12 bytes of zeros
+		let expected_output =
+			H256::from_str(format!("000000000000000000000000{}", expected_address).as_str())
+				.unwrap();
 
 		precompiles()
 			.prepare_test(H160([1u8; 20]), H160(PRECOMPILE_ADDRESS), input)
-			.execute_returns(H256::from([
-				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
-				0, 0, 0, 0,
-			]));
+			.execute_returns(expected_output);
 	})
 }
 
@@ -186,99 +202,113 @@ fn create_collection_on_mock_with_nonzero_value_fails() {
 
 #[test]
 fn create_collection_assign_collection_to_caller() {
-	new_test_ext().execute_with(|| {});
+	new_test_ext().execute_with(|| {
+		let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
+			.write(Address(H160([1u8; 20])))
+			.build();
+
+		let expected_address = "0000000000000000000000010000000000000000";
+		// output is padded with 12 bytes of zeros
+		let expected_output =
+			H256::from_str(format!("000000000000000000000000{}", expected_address).as_str())
+				.unwrap();
+
+		precompiles()
+			.prepare_test(H160([1u8; 20]), H160(PRECOMPILE_ADDRESS), input)
+			.execute_returns(expected_output);
+
+		assert_eq!(LaosEvolution::<Test>::collection_owner(0), Some(H160([1u8; 20].into())));
+	});
 }
 
-// #[test]
-// fn call_unexistent_selector_should_fail() {
-// 	impl_precompile_mock_simple!(Test, Mock, PrecompileMockParams::default());
+#[test]
+fn call_unexistent_selector_should_fail() {
+	new_test_ext().execute_with(|| {
+		let input = EvmDataWriter::new_with_selector(0x12345678 as u32).build();
 
-// 	let nonexistent_selector =
-// 		hex::decode("fb24ae530000000000000000000000000000000000000000000000000000000000000000")
-// 			.unwrap();
-// 	let mut handle = create_mock_handle_from_input(nonexistent_selector);
-// 	let result = Mock::execute(&mut handle);
-// 	assert_eq!(result.unwrap_err(), revert("unknown selector"));
-// }
+		precompiles()
+			.prepare_test(H160([1u8; 20]), H160(PRECOMPILE_ADDRESS), input)
+			.execute_reverts(|r| r == b"unknown selector");
+	});
+}
 
-// #[test]
-// fn call_owner_of_non_existent_collection() {
-// 	impl_precompile_mock_simple!(Test, Mock, PrecompileMockParams::default());
+#[test]
+fn call_owner_of_non_existent_collection() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let collection_address =
+			H160::from_str("0000000000000000000000010000000000000005").unwrap();
 
-// 	let collection_address = H160::from_str("0000000000000000000000010000000000000005").unwrap();
-// 	let input = EvmDataWriter::new_with_selector(Action::Owner).build();
-// 	let mut handle = create_mock_handle(input, 0, 0, H160::zero());
-// 	handle.context.address = collection_address;
-// 	let result = Mock::execute(&mut handle);
-// 	assert_eq!(result.unwrap_err(), revert("collection does not exist"));
-// }
+		let input = EvmDataWriter::new_with_selector(Action::Owner).build();
 
-// #[test]
-// fn call_owner_of_non_invalid_collection() {
-// 	impl_precompile_mock_simple!(Test, Mock, PrecompileMockParams { ..Default::default() });
+		precompiles()
+			.prepare_test(alice, collection_address, input)
+			.execute_reverts(|r| r == b"collection does not exist");
+	})
+}
 
-// 	let input = EvmDataWriter::new_with_selector(Action::Owner).write(U256::from(0)).build();
-// 	let mut handle = create_mock_handle(input, 0, 0, H160::zero());
-// 	handle.context.address = H160::from_str("0000000000000000000000000000000000000005").unwrap();
-// 	let result = Mock::execute(&mut handle);
-// 	assert_eq!(result.unwrap_err(), revert("invalid collection address"));
-// }
+#[test]
+fn call_owner_of_invalid_collection_address() {
+	new_test_ext().execute_with(|| {
+		let invalid_address = H160::from_str("0000000000000000000000000000000000000005").unwrap();
 
-// #[test]
-// fn call_owner_of_collection_works() {
-// 	impl_precompile_mock_simple!(
-// 		Test,
-// 		Mock,
-// 		PrecompileMockParams {
-// 			collection_owner_result: Some(H160::from_low_u64_be(0x1234)),
-// 			..Default::default()
-// 		}
-// 	);
+		let input = EvmDataWriter::new_with_selector(Action::Owner).write(U256::from(0)).build();
 
-// 	let owner = H160::from_low_u64_be(0x1234);
-// 	let input = EvmDataWriter::new_with_selector(Action::Owner).build();
-// 	let collection_address = H160::from_str("0000000000000000000000010000000000000005").unwrap();
+		precompiles()
+			.prepare_test(invalid_address, invalid_address, input)
+			.execute_reverts(|r| r == b"invalid collection address");
+	});
+}
 
-// 	let mut handle = create_mock_handle(input, 0, 0, H160::zero());
-// 	handle.context.address = collection_address;
-// 	let result = Mock::execute(&mut handle).unwrap();
-// 	assert_eq!(result, succeed(EvmDataWriter::new().write(Address(owner.into())).build()));
-// }
+#[test]
+fn call_owner_of_collection_works() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let collection_address = create_collection(alice);
 
-// #[test]
-// fn token_uri_returns_nothing_when_source_token_uri_is_none() {
-// 	impl_precompile_mock_simple!(Test, Mock, PrecompileMockParams::default());
+		let input = EvmDataWriter::new_with_selector(Action::Owner).build();
 
-// 	let collection_address = H160::from_str("0000000000000000000000010000000000000005").unwrap();
-// 	let input = EvmDataWriter::new_with_selector(Action::TokenURI)
-// 		.write(TokenId::from(0))
-// 		.build();
+		precompiles().prepare_test(alice, collection_address, input).execute_returns(
+			H256::from_str(
+				format!("000000000000000000000000{}", ALICE.trim_start_matches("0x")).as_str(),
+			)
+			.unwrap(),
+		);
+	});
+}
 
-// 	let mut handle = create_mock_handle(input, 0, 0, H160::zero());
-// 	handle.context.address = collection_address;
-// 	let result = Mock::execute(&mut handle);
-// 	assert_eq!(result.unwrap_err(), revert("asset does not exist"));
-// }
+#[test]
+fn token_uri_reverts_when_asset_does_not_exist() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let collection_address = create_collection(alice);
 
-// #[test]
-// fn token_uri_returns_the_result_from_source() {
-// 	impl_precompile_mock_simple!(
-// 		Test,
-// 		Mock,
-// 		PrecompileMockParams { token_uri_result: Some(vec![1_u8, 10]), ..Default::default() }
-// 	);
+		let input = EvmDataWriter::new_with_selector(Action::TokenURI)
+			.write(TokenId::from(0))
+			.build();
 
-// 	let collection_address = H160::from_str("0000000000000000000000010000000000000005").unwrap();
+		precompiles()
+			.prepare_test(alice, collection_address, input)
+			.execute_reverts(|r| r == b"asset does not exist");
+	});
+}
 
-// 	let input = EvmDataWriter::new_with_selector(Action::TokenURI)
-// 		.write(TokenId::from(0))
-// 		.build();
+#[test]
+fn token_uri_returns_the_result_from_source() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let collection_address = create_collection(alice);
+		let token_id = mint(alice, collection_address, 0, Vec::new());
 
-// 	let mut handle = create_mock_handle(input, 0, 0, H160::zero());
-// 	handle.context.address = collection_address;
-// 	let result = Mock::execute(&mut handle);
-// 	assert_eq!(result.unwrap(), succeed(EvmDataWriter::new().write(Bytes(vec![1_u8, 10])).build()));
-// }
+		let input = EvmDataWriter::new_with_selector(Action::TokenURI).write(token_id).build();
+
+		let token_uri = LaosEvolution::<Test>::token_uri(0, token_id).unwrap();
+		println!("token_uri: {:?}", token_uri);
+		precompiles()
+			.prepare_test(alice, collection_address, input)
+			.execute_returns(H256::zero());
+	});
+}
 
 // #[test]
 // fn mint_works() {

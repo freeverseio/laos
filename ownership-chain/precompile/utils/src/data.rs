@@ -25,7 +25,8 @@ use crate::{revert, EvmResult};
 use alloc::borrow::ToOwned;
 use core::ops::Range;
 use impl_trait_for_tuples::impl_for_tuples;
-use sp_core::{H160, H256, U256};
+use precompile_utils::solidity::codec::BoundedBytes;
+use sp_core::{ConstU32, H160, H256, U256};
 use sp_std::{convert::TryInto, vec, vec::Vec};
 
 /// The `address` type of Solidity.

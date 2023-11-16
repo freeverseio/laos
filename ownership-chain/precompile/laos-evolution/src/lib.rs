@@ -12,7 +12,7 @@ use pallet_laos_evolution::{
 	Pallet as LaosEvolution, Slot, TokenId, TokenUriOf,
 };
 use parity_scale_codec::Encode;
-use precompile_utils::solidity::revert::revert;
+use precompile_utils::solidity::{codec::BoundedBytes, revert::revert};
 
 use sp_core::H160;
 use sp_std::{fmt::Debug, marker::PhantomData};
