@@ -56,7 +56,7 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
         expect(result.events.NewCollection.raw.topics[1]).to.be.eq(context.web3.utils.padLeft(GENESIS_ACCOUNT.toLowerCase(), 64));
 
         // event data
-        expect(result.events.NewCollection.raw.data).to.be.eq(context.web3.utils.padLeft(result.events.NewCollection.returnValues._collectionAddress, 64));
+        expect(result.events.NewCollection.raw.data.toLowerCase()).to.be.eq(context.web3.utils.padLeft(result.events.NewCollection.returnValues._collectionAddress, 64).toLowerCase());
     });
 
 });
