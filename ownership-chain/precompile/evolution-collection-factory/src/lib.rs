@@ -2,14 +2,14 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
+use laos_precompile_utils::{
+	keccak256, revert_dispatch_error, succeed, Address, EvmDataWriter, EvmResult, FunctionModifier,
+	LogExt, LogsBuilder, PrecompileHandleExt,
+};
 use pallet_laos_evolution::{
 	collection_id_to_address, traits::EvolutionCollectionFactory as EvolutionCollectionFactoryT,
 };
 use parity_scale_codec::Encode;
-use precompile_utils::{
-	keccak256, revert_dispatch_error, succeed, Address, EvmDataWriter, EvmResult, FunctionModifier,
-	LogExt, LogsBuilder, PrecompileHandleExt,
-};
 
 use sp_core::H160;
 use sp_std::{fmt::Debug, marker::PhantomData};
@@ -17,7 +17,7 @@ use sp_std::{fmt::Debug, marker::PhantomData};
 /// Solidity selector of the CreateCollection log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_NEW_COLLECTION: [u8; 32] = keccak256!("NewCollection(address,address)");
 
-#[precompile_utils_macro::generate_function_selector]
+#[laos_precompile_utils_macro::generate_function_selector]
 #[derive(Debug, PartialEq)]
 pub enum Action {
 	/// Create collection
