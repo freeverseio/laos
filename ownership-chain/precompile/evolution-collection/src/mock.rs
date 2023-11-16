@@ -2,8 +2,8 @@ use core::str::FromStr;
 
 use fp_evm::{FeeCalculator, Precompile, PrecompileHandle};
 use pallet_evm_evolution_collection_factory::EvolutionCollectionFactoryPrecompile;
-use sp_runtime::BuildStorage;
 use pallet_laos_evolution::address_to_collection_id;
+use sp_runtime::BuildStorage;
 
 use crate::EvolutionCollectionPrecompile;
 
@@ -183,7 +183,8 @@ where
 {
 	fn execute(&self, handle: &mut impl PrecompileHandle) -> Option<fp_evm::PrecompileResult> {
 		match handle.context().address {
-			a if address_to_collection_id(a).is_ok() => Some(MockEvolutionCollectionPrecompile::execute(handle)),
+			a if address_to_collection_id(a).is_ok() =>
+				Some(MockEvolutionCollectionPrecompile::execute(handle)),
 			H160(EVOLUTION_FACTORY_PRECOMPILE_ADDRESS) =>
 				Some(MockEvolutionCollectionFactoryPrecompile::execute(handle)),
 			_ => return None,

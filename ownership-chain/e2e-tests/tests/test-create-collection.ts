@@ -1,51 +1,84 @@
-import { createCollection, describeWithExistingNode } from "./util";
-import { CONTRACT_ADDRESS, GAS_LIMIT, GAS_PRICE, GENESIS_ACCOUNT, GENESIS_ACCOUNT_PRIVATE_KEY, EVOLUTION_COLLETION_FACTORY_ABI, SELECTOR_LOG_NEW_COLLECTION } from "./config";
 import { expect } from "chai";
-import Contract from "web3-eth-contract";
 import { step } from "mocha-steps";
-
+import Contract from "web3-eth-contract";
+import {
+	CONTRACT_ADDRESS,
+	EVOLUTION_COLLETION_FACTORY_ABI,
+	GAS_LIMIT,
+	GAS_PRICE,
+	GENESIS_ACCOUNT,
+	GENESIS_ACCOUNT_PRIVATE_KEY,
+	REVERT_BYTECODE,
+	SELECTOR_LOG_NEW_COLLECTION,
+} from "./config";
+import { createCollection, describeWithExistingNode } from "./util";
 
 describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
-    let contract: Contract;
+	let contract: Contract;
+	// This is the contract that is created in the test
+	let testCollectionContract: Contract;
+	// This is the address of another contract that is created in the test
+	let testCollectionAddress: string;
 
-    beforeEach(async function () {
-        contract = new context.web3.eth.Contract(EVOLUTION_COLLETION_FACTORY_ABI, CONTRACT_ADDRESS, {
-            from: GENESIS_ACCOUNT,
-            gasPrice: GAS_PRICE,
-            gas: GAS_LIMIT,
-        });
-        context.web3.eth.accounts.wallet.add(GENESIS_ACCOUNT_PRIVATE_KEY);
-    });
+	beforeEach(async function () {
+		contract = new context.web3.eth.Contract(EVOLUTION_COLLETION_FACTORY_ABI, CONTRACT_ADDRESS, {
+			from: GENESIS_ACCOUNT,
+			gasPrice: GAS_PRICE,
+			gas: GAS_LIMIT,
+		});
+		context.web3.eth.accounts.wallet.add(GENESIS_ACCOUNT_PRIVATE_KEY);
+	});
 
-    step("when collection is created, it should return owner", async function () {
-        this.timeout(70000);
+	step("when collection is created, it should return owner", async function () {
+		this.timeout(70000);
 
-        const collectionContract = await createCollection(context);
-        const owner = await collectionContract.methods.owner().call();
-        expect(owner).to.be.eq(GENESIS_ACCOUNT);
-    });
+		const collectionContract = await createCollection(context);
+		testCollectionContract = collectionContract;
 
-    step("when collection is created event is emitted", async function () {
-        this.timeout(70000);
+		const owner = await collectionContract.methods.owner().call();
+		expect(owner).to.be.eq(GENESIS_ACCOUNT);
+	});
 
-        const result = await contract.methods.createCollection(GENESIS_ACCOUNT).send({
-            from: GENESIS_ACCOUNT,
-            gas: GAS_LIMIT,
-            gasPrice: GAS_PRICE,
-        });
-        expect(result.status).to.be.eq(true);
+	step("when collection is created event is emitted", async function () {
+		this.timeout(70000);
 
-        expect(Object.keys(result.events).length).to.be.eq(1);
-        expect(context.web3.utils.isAddress(result.events.NewCollection.returnValues._collectionAddress)).to.be.eq(true);
-        expect(result.events.NewCollection.returnValues._owner).to.be.eq(GENESIS_ACCOUNT);
+		const result = await contract.methods.createCollection(GENESIS_ACCOUNT).send({
+			from: GENESIS_ACCOUNT,
+			gas: GAS_LIMIT,
+			gasPrice: GAS_PRICE,
+		});
+		expect(result.status).to.be.eq(true);
 
-        // event topics
-        expect(result.events.NewCollection.raw.topics.length).to.be.eq(2);
-        expect(result.events.NewCollection.raw.topics[0]).to.be.eq(SELECTOR_LOG_NEW_COLLECTION);
-        expect(result.events.NewCollection.raw.topics[1]).to.be.eq(context.web3.utils.padLeft(GENESIS_ACCOUNT.toLowerCase(), 64));
+		expect(Object.keys(result.events).length).to.be.eq(1);
+		expect(context.web3.utils.isAddress(result.events.NewCollection.returnValues._collectionAddress)).to.be.eq(
+			true
+		);
+		testCollectionAddress = result.events.NewCollection.returnValues._collectionAddress;
+		expect(result.events.NewCollection.returnValues._owner).to.be.eq(GENESIS_ACCOUNT);
 
-        // event data
-        expect(result.events.NewCollection.raw.data.toLowerCase()).to.be.eq(context.web3.utils.padLeft(result.events.NewCollection.returnValues._collectionAddress, 64).toLowerCase());
-    });
+		// event topics
+		expect(result.events.NewCollection.raw.topics.length).to.be.eq(2);
+		expect(result.events.NewCollection.raw.topics[0]).to.be.eq(SELECTOR_LOG_NEW_COLLECTION);
+		expect(result.events.NewCollection.raw.topics[1]).to.be.eq(
+			context.web3.utils.padLeft(GENESIS_ACCOUNT.toLowerCase(), 64)
+		);
 
+		// event data
+		expect(result.events.NewCollection.raw.data.toLowerCase()).to.be.eq(
+			context.web3.utils.padLeft(result.events.NewCollection.returnValues._collectionAddress, 64).toLowerCase()
+		);
+	});
+
+	step("when collection is created, bytecode is inserted in the storage", async function () {
+		const first_contract_bytecode = await context.web3.eth.getCode(testCollectionContract.options.address);
+		const second_contract_bytecode = await context.web3.eth.getCode(testCollectionAddress);
+
+		expect(first_contract_bytecode).to.not.be.eq("0x");
+		expect(second_contract_bytecode).to.not.be.eq("0x");
+		expect(first_contract_bytecode).to.be.eq(REVERT_BYTECODE);
+		expect(second_contract_bytecode).to.be.eq(REVERT_BYTECODE);
+
+		// genesis account doesn't have any code
+		expect(await context.web3.eth.getCode(GENESIS_ACCOUNT)).to.be.eq("0x");
+	});
 });
