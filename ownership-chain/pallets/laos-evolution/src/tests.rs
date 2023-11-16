@@ -3,11 +3,9 @@ use core::str::FromStr;
 use crate::{
 	mock::*,
 	slot_and_owner_to_token_id,
-	// traits::{CollectionEvolverAndMinter, EvolutionCollectionFactory as _},
+	traits::{CollectionEvolverAndMinter, EvolutionCollectionFactory},
 	types::{TokenId, TokenUriOf, MAX_U96},
-	CollectionId,
-	Error,
-	Event,
+	CollectionId, Error, Event,
 };
 use frame_support::{assert_noop, assert_ok};
 use parity_scale_codec::Encode;
