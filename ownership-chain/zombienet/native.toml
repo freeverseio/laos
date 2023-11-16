@@ -32,15 +32,3 @@ chain = "astar-dev"
   ws_port = 9998
   command = "{{ZOMBIENET_ASTAR_COMMAND}}"
   validator = true
-
-[[hrmp_channels]]
-sender = 2900
-recipient = 2008
-max_capacity = 8
-max_message_size = 1048576
-
-[[hrmp_channels]]
-sender = 2008
-recipient = 2900
-max_capacity = 8
-max_message_size = 1048576
