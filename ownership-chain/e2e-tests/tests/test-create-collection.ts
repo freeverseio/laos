@@ -70,15 +70,10 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
 	});
 
 	step("when collection is created, bytecode is inserted in the storage", async function () {
-		const first_contract_bytecode = await context.web3.eth.getCode(testCollectionContract.options.address);
-		const second_contract_bytecode = await context.web3.eth.getCode(testCollectionAddress);
+		expect(await context.web3.eth.getCode(testCollectionContract.options.address)).to.be.eq(REVERT_BYTECODE);
+		expect(await context.web3.eth.getCode(testCollectionAddress)).to.be.eq(REVERT_BYTECODE);
 
-		expect(first_contract_bytecode).to.not.be.eq("0x");
-		expect(second_contract_bytecode).to.not.be.eq("0x");
-		expect(first_contract_bytecode).to.be.eq(REVERT_BYTECODE);
-		expect(second_contract_bytecode).to.be.eq(REVERT_BYTECODE);
-
-		// genesis account doesn't have any code
+		// non-contract address doesn't have any code
 		expect(await context.web3.eth.getCode(GENESIS_ACCOUNT)).to.be.eq("0x");
 	});
 });
