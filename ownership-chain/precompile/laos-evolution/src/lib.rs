@@ -20,9 +20,9 @@ use sp_std::{fmt::Debug, marker::PhantomData};
 pub const SELECTOR_LOG_NEW_COLLECTION: [u8; 32] = keccak256!("NewCollection(address,address)");
 /// Solidity selector of the Transfer log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
-	keccak256!("MintedWithExternalURI(uint64,uint96,address,string,uint256)");
+	keccak256!("MintedWithExternalURI(address,uint96,uint256,string)");
 pub const SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
-	keccak256!("EvolvedWithExternalURI(uint64,uint256,string)");
+	keccak256!("EvolvedWithExternalURI(uint256,string)");
 
 // This is the simplest bytecode to revert without returning any data.
 // We will pre-deploy it under all of our precompiles to ensure they can be called from
@@ -38,11 +38,11 @@ pub enum Action {
 	/// Get owner of the collection
 	Owner = "owner()",
 	/// Get tokenURI of the token in collection
-	TokenURI = "tokenURI(uint64,uint256)",
+	TokenURI = "tokenURI(uint256)",
 	/// Mint token
-	Mint = "mintWithExternalURI(uint64,uint96,address,string)",
+	Mint = "mintWithExternalURI(address,uint96,string)",
 	/// Evolve token
-	Evolve = "evolveWithExternalURI(uint64,uint256,string)",
+	Evolve = "evolveWithExternalURI(uint256,string)",
 }
 
 /// Wrapper for the precompile function.
@@ -95,7 +95,7 @@ where
 			},
 			Action::Owner => {
 				// collection id is encoded into the contract address
-				let collection_id = address_to_collection_id(handle.context().address)
+				let collection_id = address_to_collection_id(context.address)
 					.map_err(|_| revert("invalid collection address"))?;
 
 				if let Some(owner) = LaosEvolution::<Runtime>::collection_owner(collection_id) {
@@ -106,9 +106,11 @@ where
 			},
 			Action::TokenURI => {
 				let mut input = handle.read_input()?;
-				input.expect_arguments(2)?;
+				input.expect_arguments(1)?;
 
-				let collection_id = input.read::<u64>()?;
+				// collection id is encoded into the contract address
+				let collection_id = address_to_collection_id(context.address)
+					.map_err(|_| revert("invalid collection address"))?;
 				let token_id = input.read::<TokenId>()?;
 
 				if let Some(token_uri) =
@@ -122,11 +124,13 @@ where
 			Action::Mint => {
 				let caller = context.caller;
 
-				input.expect_arguments(4)?;
+				input.expect_arguments(3)?;
 
-				let collection_id = input.read::<u64>()?;
-				let slot = input.read::<Slot>()?;
+				// collection id is encoded into the contract address
+				let collection_id = address_to_collection_id(context.address)
+					.map_err(|_| revert("invalid collection address"))?;
 				let to = input.read::<Address>()?.0;
+				let slot = input.read::<Slot>()?;
 				let token_uri_raw = input.read::<Bytes>()?.0;
 				let token_uri = token_uri_raw
 					.clone()
@@ -146,10 +150,9 @@ where
 								SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI,
 								to,
 								EvmDataWriter::new()
-									.write(collection_id)
 									.write(slot)
-									.write(Bytes(token_uri_raw))
 									.write(token_id)
+									.write(Bytes(token_uri_raw))
 									.build(),
 							)
 							.record(handle)?;
@@ -162,9 +165,11 @@ where
 			Action::Evolve => {
 				let caller = context.caller;
 
-				input.expect_arguments(4)?;
+				input.expect_arguments(3)?;
 
-				let collection_id = input.read::<u64>()?;
+				// collection id is encoded into the contract address
+				let collection_id = address_to_collection_id(context.address)
+					.map_err(|_| revert("invalid collection address"))?;
 				let token_id = input.read::<TokenId>()?;
 				let token_uri_raw = input.read::<Bytes>()?.0;
 				let token_uri = token_uri_raw
@@ -186,10 +191,7 @@ where
 							.log2(
 								SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI,
 								token_id_bytes,
-								EvmDataWriter::new()
-									.write(collection_id)
-									.write(Bytes(token_uri_raw))
-									.build(),
+								EvmDataWriter::new().write(Bytes(token_uri_raw)).build(),
 							)
 							.record(handle)?;
 

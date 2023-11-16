@@ -1,11 +1,12 @@
 use cumulus_primitives_core::ParaId;
 use fp_evm::GenesisAccount;
 use hex_literal::hex;
-use laos_ownership_runtime::{AccountId, AuraId, Precompiles, EXISTENTIAL_DEPOSIT};
+use laos_ownership_runtime::{AccountId, AuraId, Precompiles};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
 use sp_core::{Pair, Public, H160, U256};
+use sp_runtime::traits::Zero;
 use std::{collections::BTreeMap, str::FromStr};
 
 /// List of endowed accounts.
@@ -181,7 +182,7 @@ fn testnet_genesis(
 		},
 		collator_selection: laos_ownership_runtime::CollatorSelectionConfig {
 			invulnerables: invulnerables.iter().cloned().map(|(acc, _)| acc).collect(),
-			candidacy_bond: EXISTENTIAL_DEPOSIT * 16,
+			candidacy_bond: Zero::zero(),
 			..Default::default()
 		},
 		session: laos_ownership_runtime::SessionConfig {
