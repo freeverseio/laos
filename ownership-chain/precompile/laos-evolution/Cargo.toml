@@ -23,7 +23,7 @@ sp-std = { workspace = true }
 # Local pallet
 pallet-laos-evolution = { workspace = true }
 
-# Utils
+# Local precompile utils
 laos-precompile-utils-macro = { workspace = true }
 laos-precompile-utils = { workspace = true }
 
@@ -33,6 +33,12 @@ num_enum = { workspace = true }
 evm = { workspace = true }
 hex = { workspace = true }
 laos-precompile-utils = { workspace = true, features = ["testing"]}
+precompile-utils = { workspace = true, features = ["testing"]}
+parity-scale-codec = { workspace = true, features = ["derive"] }
+frame-system = { workspace = true }
+pallet-balances = { workspace = true, features = ["std"] }
+pallet-timestamp = { workspace = true }
+sp-io = { workspace = true }
 
 [features]
 default = ["std"]

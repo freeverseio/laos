@@ -74,12 +74,12 @@ where
 					Ok(collection_id) => {
 						let collection_address: H160 = collection_id_to_address(collection_id);
 
-						/// Currently, we insert [`REVERT_BYTECODE`] as an
-						/// `AccountCode` for the collection address.
-						///
-						/// This is done to ensure internal calls to the collection address do not
-						/// fail.
-						Evm::<Runtime>::create_account(*address, REVERT_BYTECODE.into());
+						// Currently, we insert [`REVERT_BYTECODE`] as an
+						// `AccountCode` for the collection address.
+						//
+						// This is done to ensure internal calls to the collection address do not
+						// fail.
+						Evm::<Runtime>::create_account(collection_address, REVERT_BYTECODE.into());
 
 						LogsBuilder::new(context.address)
 							.log2(

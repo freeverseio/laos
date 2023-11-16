@@ -187,7 +187,7 @@ where
 
 /// New Test Ext
 // Build genesis storage according to the mock runtime.
-pub(crate) fn new_test_ext() -> frame_support::sp_io::TestExternalities {
+pub(crate) fn new_test_ext() -> sp_io::TestExternalities {
 	frame_system::GenesisConfig::<Test>::default().build_storage().unwrap().into()
 }
 
