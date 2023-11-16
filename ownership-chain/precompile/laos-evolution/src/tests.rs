@@ -82,8 +82,8 @@ fn create_collection_should_return_collection_id() {
 	assert_ok!(
 		result,
 		succeed(H256::from_slice(&[
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
-			0, 0, 0
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+			255, 254, 0, 0, 0, 0, 0, 0, 0, 0
 		]))
 	);
 }
@@ -115,8 +115,8 @@ fn create_collection_should_generate_log() {
 	assert_eq!(
 		logs[0].data,
 		vec![
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
-			0, 0, 123
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+			255, 254, 0, 0, 0, 0, 0, 0, 0, 123
 		]
 	);
 }
@@ -131,7 +131,7 @@ fn mint_with_external_uri_should_generate_log() {
 		}
 	);
 
-	let collection_address = H160::from_str("0000000000000000000000010000000000000005").unwrap();
+	let collection_address = H160::from_str("0xfffffffffffffffffffffffe0000000000000005").unwrap();
 	let input = EvmDataWriter::new_with_selector(Action::Mint)
 		.write(Address(H160::from_str(ALICE).unwrap())) // to
 		.write(U256::from(9)) // slot
@@ -224,7 +224,7 @@ fn call_unexistent_selector_should_fail() {
 fn call_owner_of_non_existent_collection() {
 	impl_precompile_mock_simple!(Mock, PrecompileMockParams::default());
 
-	let collection_address = H160::from_str("0000000000000000000000010000000000000005").unwrap();
+	let collection_address = H160::from_str("0xfffffffffffffffffffffffe0000000000000005").unwrap();
 	let input = EvmDataWriter::new_with_selector(Action::Owner).build();
 	let mut handle = create_mock_handle(input, 0, 0, H160::zero());
 	handle.context.address = collection_address;
@@ -255,7 +255,7 @@ fn call_owner_of_collection_works() {
 
 	let owner = H160::from_low_u64_be(0x1234);
 	let input = EvmDataWriter::new_with_selector(Action::Owner).build();
-	let collection_address = H160::from_str("0000000000000000000000010000000000000005").unwrap();
+	let collection_address = H160::from_str("0xfffffffffffffffffffffffe0000000000000005").unwrap();
 
 	let mut handle = create_mock_handle(input, 0, 0, H160::zero());
 	handle.context.address = collection_address;
@@ -267,7 +267,7 @@ fn call_owner_of_collection_works() {
 fn token_uri_returns_nothing_when_source_token_uri_is_none() {
 	impl_precompile_mock_simple!(Mock, PrecompileMockParams::default());
 
-	let collection_address = H160::from_str("0000000000000000000000010000000000000005").unwrap();
+	let collection_address = H160::from_str("0xfffffffffffffffffffffffe0000000000000005").unwrap();
 	let input = EvmDataWriter::new_with_selector(Action::TokenURI)
 		.write(TokenId::from(0))
 		.build();
@@ -285,7 +285,7 @@ fn token_uri_returns_the_result_from_source() {
 		PrecompileMockParams { token_uri_result: Some(vec![1_u8, 10]), ..Default::default() }
 	);
 
-	let collection_address = H160::from_str("0000000000000000000000010000000000000005").unwrap();
+	let collection_address = H160::from_str("0xfffffffffffffffffffffffe0000000000000005").unwrap();
 
 	let input = EvmDataWriter::new_with_selector(Action::TokenURI)
 		.write(TokenId::from(0))
@@ -309,7 +309,7 @@ fn mint_works() {
 	);
 
 	let to = H160::from_low_u64_be(1);
-	let collection_address = H160::from_str("0000000000000000000000010000000000000005").unwrap();
+	let collection_address = H160::from_str("0xfffffffffffffffffffffffe0000000000000005").unwrap();
 
 	let input = EvmDataWriter::new_with_selector(Action::Mint)
 		.write(Address(to))
@@ -336,7 +336,7 @@ fn failing_mint_should_return_error() {
 	);
 
 	let to = H160::from_low_u64_be(1);
-	let collection_address = H160::from_str("0000000000000000000000010000000000000005").unwrap();
+	let collection_address = H160::from_str("0xfffffffffffffffffffffffe0000000000000005").unwrap();
 
 	let input = EvmDataWriter::new_with_selector(Action::Mint)
 		.write(Address(to))
@@ -366,7 +366,7 @@ mod evolve {
 		);
 
 		let collection_address =
-			H160::from_str("0000000000000000000000010000000000000005").unwrap();
+			H160::from_str("0xfffffffffffffffffffffffe0000000000000005").unwrap();
 		let input = EvmDataWriter::new_with_selector(Action::Evolve)
 			.write(U256::from(1))
 			.write(Bytes([1u8; 20].to_vec()))
@@ -384,7 +384,7 @@ mod evolve {
 		impl_precompile_mock_simple!(Mock, PrecompileMockParams::default());
 
 		let collection_address =
-			H160::from_str("0000000000000000000000010000000000000005").unwrap();
+			H160::from_str("0xfffffffffffffffffffffffe0000000000000005").unwrap();
 		let token_id = 1;
 		let token_uri = Bytes([1u8; 20].to_vec());
 
@@ -428,7 +428,7 @@ mod evolve {
 		);
 
 		let collection_address =
-			H160::from_str("0000000000000000000000010000000000000005").unwrap();
+			H160::from_str("0xfffffffffffffffffffffffe0000000000000005").unwrap();
 		let input = EvmDataWriter::new_with_selector(Action::Evolve)
 			.write(U256::from(1))
 			.write(Bytes([1u8; 20].to_vec()))

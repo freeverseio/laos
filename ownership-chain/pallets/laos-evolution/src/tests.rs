@@ -421,28 +421,19 @@ mod collection_id_conversion {
 	fn given_a_collection_id_from_id_to_address_works() {
 		let collection_id = 5;
 		let expected_address =
-			AccountId::from_str("0000000000000000000000010000000000000005").unwrap();
+			AccountId::from_str("fffffffffffffffffffffffe0000000000000005").unwrap();
 		assert_eq!(collection_id_to_address::<AccountId>(collection_id), expected_address);
 	}
 
 	#[test]
 	fn given_invalid_format_from_address_to_id_fails() {
 		let address = AccountId::from_str("0010000000000000000000010000000000000005").unwrap();
-		assert_err!(address_to_collection_id::<AccountId>(address), CollectionError::InvalidFormat);
-	}
-
-	#[test]
-	fn given_invalid_12th_byte_from_address_to_id_fails() {
-		let address = AccountId::from_str("0000000000000000000000020000000000000005").unwrap();
-		assert_err!(
-			address_to_collection_id::<AccountId>(address),
-			CollectionError::InvalidVersion
-		);
+		assert_err!(address_to_collection_id::<AccountId>(address), CollectionError::InvalidPrefix);
 	}
 
 	#[test]
 	fn given_valid_address_from_address_to_id_works() {
-		let address = AccountId::from_str("0000000000000000000000010000000000000005").unwrap();
+		let address = AccountId::from_str("fffffffffffffffffffffffe0000000000000005").unwrap();
 		let collection_id = address_to_collection_id::<AccountId>(address).unwrap();
 		assert_eq!(collection_id, 5);
 	}
