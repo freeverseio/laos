@@ -39,7 +39,7 @@ laos-precompile-utils = { workspace = true, features = ["testing"]}
 precompile-utils = { workspace = true, features = ["testing"]}
 parity-scale-codec = { workspace = true, features = ["derive"] }
 frame-system = { workspace = true }
-pallet-balances = { workspace = true, features = ["std"] }
+pallet-balances = { workspace = true, features = ["std", "insecure_zero_ed"] }
 pallet-timestamp = { workspace = true }
 sp-io = { workspace = true }
 
