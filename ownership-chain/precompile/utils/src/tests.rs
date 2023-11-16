@@ -22,6 +22,7 @@
 
 use super::*;
 use hex_literal::hex;
+use precompile_utils::solidity::revert::RevertReason;
 use sp_core::{H256, U256};
 
 fn u256_repeat_byte(byte: u8) -> U256 {
@@ -370,10 +371,11 @@ fn read_address_array_size_too_big() {
 
 	match reader.read::<Vec<Address>>() {
 		Ok(_) => panic!("should not parse correctly"),
-		Err(PrecompileFailure::Revert { output: err, .. }) => {
-			assert_eq!(err, b"tried to parse H160 out of bounds")
+		Err(err) => {
+			let revert_reason: PrecompileFailure =
+				RevertReason::custom("tried to parse H160 out of bounds").into();
+			assert_eq!(err, revert_reason);
 		},
-		Err(_) => panic!("unexpected error"),
 	}
 }
 
