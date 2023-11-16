@@ -23,7 +23,7 @@
 use crate::{revert, EvmResult};
 
 use alloc::borrow::ToOwned;
-use core::{any::type_name, ops::Range};
+use core::ops::Range;
 use impl_trait_for_tuples::impl_for_tuples;
 use sp_core::{H160, H256, U256};
 use sp_std::{convert::TryInto, vec, vec::Vec};
@@ -109,10 +109,10 @@ impl<'a> EvmDataReader<'a> {
 		let mut buffer = [0u8; 4];
 		buffer.copy_from_slice(&input[0..4]);
 		let selector = T::try_from_primitive(u32::from_be_bytes(buffer)).map_err(|_| {
-			frame_support::log::trace!(
-				target: "precompile-utils",
-				"Failed to match function selector for {}",
-				type_name::<T>()
+			sp_io::logging::log(
+				sp_core::LogLevel::Trace,
+				"precompile-utils",
+				b"Failed to match function selector for type",
 			);
 			revert("unknown selector")
 		})?;

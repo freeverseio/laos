@@ -7,11 +7,11 @@ use core::str::FromStr;
 
 use super::*;
 use frame_support::assert_ok;
-use mock::*;
-use ownership_precompile_utils::{
+use laos_precompile_utils::{
 	revert, succeed,
 	testing::{create_mock_handle, create_mock_handle_from_input, MockHandle},
 };
+use mock::*;
 use sp_core::{H160, H256, U256};
 
 type AccountId = H160;

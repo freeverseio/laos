@@ -1,5 +1,5 @@
 [package]
-name = "precompile-utils"
+name = "laos-precompile-utils"
 authors = ["StakeTechnologies", "PureStake"]
 description = "Utils to write EVM precompiles."
 version = "0.4.3"
@@ -15,7 +15,7 @@ scale-info = { workspace = true }
 hex-literal = { workspace = true }
 serde = { workspace = true, optional = true }
 
-precompile-utils-macro = { workspace = true }
+laos-precompile-utils-macro = { workspace = true }
 
 # Substrate
 frame-support = { workspace = true }
@@ -37,12 +37,12 @@ hex-literal = { workspace = true }
 default = ["std"]
 std = [
 	"evm",
+	"evm/with-serde",
 	"parity-scale-codec/std",
 	"fp-evm/std",
 	"frame-support/std",
 	"frame-system/std",
 	"pallet-evm/std",
-	"evm/with-serde",
 	"sp-core/std",
 	"sp-io/std",
 	"sp-std/std",

@@ -1,10 +1,13 @@
 use std::{collections::BTreeMap, sync::Arc};
 
+use fc_rpc::pending::AuraConsensusDataProvider;
+use fc_rpc_core::EthApiServer;
 use jsonrpsee::RpcModule;
 // Substrate
 use sc_client_api::{
 	backend::{Backend, StorageProvider},
 	client::BlockchainEvents,
+	AuxStore, UsageProvider,
 };
 use sc_network::NetworkService;
 use sc_network_sync::SyncingService;
@@ -14,17 +17,19 @@ use sc_transaction_pool_api::TransactionPool;
 use sp_api::{CallApiAt, ProvideRuntimeApi};
 use sp_block_builder::BlockBuilder as BlockBuilderApi;
 use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
+use sp_consensus_aura::{sr25519::AuthorityId as AuraId, AuraApi};
 use sp_core::H256;
 use sp_runtime::traits::Block as BlockT;
 // Frontier
-pub use fc_rpc::{EthBlockDataCacheTask, OverrideHandle, StorageOverride, TxPoolApiServer};
+pub use fc_rpc::{EthBlockDataCacheTask, EthConfig, OverrideHandle, StorageOverride};
+#[cfg(feature = "txpool")]
+use fc_rpc::{TxPool, TxPoolApiServer};
 pub use fc_rpc_core::types::{FeeHistoryCache, FeeHistoryCacheLimit, FilterPool};
-use fc_rpc_core::{EthApiServer, EthFilterApiServer, NetApiServer, Web3ApiServer};
 pub use fc_storage::overrides_handle;
 use fp_rpc::{ConvertTransaction, ConvertTransactionRuntimeApi, EthereumRuntimeRPCApi};
 
 /// Extra dependencies for Ethereum compatibility.
-pub struct EthDeps<C, P, A: ChainApi, CT, B: BlockT> {
+pub struct EthDeps<C, P, A: ChainApi, CT, B: BlockT, CIDP> {
 	/// The client instance to use.
 	pub client: Arc<C>,
 	/// Transaction pool instance.
@@ -42,7 +47,7 @@ pub struct EthDeps<C, P, A: ChainApi, CT, B: BlockT> {
 	/// Chain syncing service
 	pub sync: Arc<SyncingService<B>>,
 	/// Frontier Backend.
-	pub frontier_backend: Arc<fc_db::kv::Backend<B>>,
+	pub frontier_backend: Arc<dyn fc_api::Backend<B>>,
 	/// Ethereum data access overrides.
 	pub overrides: Arc<OverrideHandle<B>>,
 	/// Cache for Ethereum block data.
@@ -60,9 +65,11 @@ pub struct EthDeps<C, P, A: ChainApi, CT, B: BlockT> {
 	pub execute_gas_limit_multiplier: u64,
 	/// Mandated parent hashes for a given block hash.
 	pub forced_parent_hashes: Option<BTreeMap<H256, H256>>,
+	/// Something that can create the inherent data providers for pending state
+	pub pending_create_inherent_data_providers: CIDP,
 }
 
-impl<C, P, A: ChainApi, CT: Clone, B: BlockT> Clone for EthDeps<C, P, A, CT, B> {
+impl<C, P, A: ChainApi, CT: Clone, B: BlockT, CIDP: Clone> Clone for EthDeps<C, P, A, CT, B, CIDP> {
 	fn clone(&self) -> Self {
 		Self {
 			client: self.client.clone(),
@@ -82,28 +89,44 @@ impl<C, P, A: ChainApi, CT: Clone, B: BlockT> Clone for EthDeps<C, P, A, CT, B> 
 			fee_history_cache_limit: self.fee_history_cache_limit,
 			execute_gas_limit_multiplier: self.execute_gas_limit_multiplier,
 			forced_parent_hashes: self.forced_parent_hashes.clone(),
+			pending_create_inherent_data_providers: self
+				.pending_create_inherent_data_providers
+				.clone(),
 		}
 	}
 }
 
 /// Instantiate Ethereum-compatible RPC extensions.
-pub fn create_eth<C, BE, P, A, CT, B>(
+pub fn create_eth<B, C, P, CT, BE, A, CIDP, EC: EthConfig<B, C>>(
 	mut io: RpcModule<()>,
-	deps: EthDeps<C, P, A, CT, B>,
-	_subscription_task_executor: SubscriptionTaskExecutor,
+	deps: EthDeps<C, P, A, CT, B, CIDP>,
+	subscription_task_executor: SubscriptionTaskExecutor,
+	pubsub_notification_sinks: Arc<
+		fc_mapping_sync::EthereumBlockNotificationSinks<
+			fc_mapping_sync::EthereumBlockNotification<B>,
+		>,
+	>,
 ) -> Result<RpcModule<()>, Box<dyn std::error::Error + Send + Sync>>
 where
-	B: BlockT,
+	B: BlockT<Hash = sp_core::H256>,
 	C: CallApiAt<B> + ProvideRuntimeApi<B>,
-	C::Api: BlockBuilderApi<B> + EthereumRuntimeRPCApi<B> + ConvertTransactionRuntimeApi<B>,
-	C: BlockchainEvents<B> + 'static,
-	C: HeaderBackend<B> + HeaderMetadata<B, Error = BlockChainError> + StorageProvider<B, BE>,
+	C: AuxStore + UsageProvider<B>,
+	C::Api: BlockBuilderApi<B>
+		+ EthereumRuntimeRPCApi<B>
+		+ ConvertTransactionRuntimeApi<B>
+		+ AuraApi<B, AuraId>,
+	C: HeaderBackend<B> + HeaderMetadata<B, Error = BlockChainError>,
+	C: BlockchainEvents<B> + AuxStore + UsageProvider<B> + StorageProvider<B, BE> + 'static,
 	BE: Backend<B> + 'static,
 	P: TransactionPool<Block = B> + 'static,
 	A: ChainApi<Block = B> + 'static,
 	CT: ConvertTransaction<<B as BlockT>::Extrinsic> + Send + Sync + 'static,
+	CIDP: sp_inherents::CreateInherentDataProviders<B, ()> + Send + 'static,
 {
-	use fc_rpc::{Eth, EthDevSigner, EthFilter, EthSigner, Net, Web3};
+	use fc_rpc::{
+		Eth, EthDevSigner, EthFilter, EthFilterApiServer, EthPubSub, EthPubSubApiServer, EthSigner,
+		Net, NetApiServer, Web3, Web3ApiServer,
+	};
 
 	let EthDeps {
 		client,
@@ -122,7 +145,8 @@ where
 		fee_history_cache,
 		fee_history_cache_limit,
 		execute_gas_limit_multiplier,
-		forced_parent_hashes: _,
+		forced_parent_hashes,
+		pending_create_inherent_data_providers,
 	} = deps;
 
 	let mut signers = Vec::new();
@@ -131,22 +155,25 @@ where
 	}
 
 	io.merge(
-		Eth::new(
+		Eth::<B, C, P, CT, BE, A, CIDP, EC>::new(
 			client.clone(),
-			pool,
+			pool.clone(),
 			graph.clone(),
 			converter,
-			sync,
+			sync.clone(),
 			signers,
-			overrides,
+			overrides.clone(),
 			frontier_backend.clone(),
 			is_authority,
 			block_data_cache.clone(),
 			fee_history_cache,
 			fee_history_cache_limit,
 			execute_gas_limit_multiplier,
-			None,
+			forced_parent_hashes,
+			pending_create_inherent_data_providers,
+			Some(Box::new(AuraConsensusDataProvider::new(client.clone()))),
 		)
+		.replace_config::<EC>()
 		.into_rpc(),
 	)?;
 
@@ -166,6 +193,18 @@ where
 	}
 
 	io.merge(
+		EthPubSub::new(
+			pool,
+			client.clone(),
+			sync,
+			subscription_task_executor,
+			overrides,
+			pubsub_notification_sinks,
+		)
+		.into_rpc(),
+	)?;
+
+	io.merge(
 		Net::new(
 			client.clone(),
 			network,
@@ -178,7 +217,7 @@ where
 	io.merge(Web3::new(client.clone()).into_rpc())?;
 
 	#[cfg(feature = "txpool")]
-	io.merge(fc_rpc::TxPool::new(client, graph).into_rpc())?;
+	io.merge(TxPool::new(client, graph).into_rpc())?;
 
 	Ok(io)
 }
