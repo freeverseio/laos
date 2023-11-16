@@ -1,7 +1,7 @@
 [package]
-name = "pallet-evm-livingassets-manager"
+name = "pallet-evm-collection-evolver-and-minter"
 version = "2.0.0-dev"
-description = "Living assets manager precompile"
+description = "Collection evolver and minter precompile"
 repository = "https://github.com/freeverseio/laos"
 edition = "2021"
 

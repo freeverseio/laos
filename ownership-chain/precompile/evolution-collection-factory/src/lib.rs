@@ -2,7 +2,9 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
-use pallet_laos_evolution::{collection_id_to_address, traits::LaosEvolution as LaosEvolutionT};
+use pallet_laos_evolution::{
+	collection_id_to_address, traits::EvolutionCollectionFactory as EvolutionCollectionFactoryT,
+};
 use parity_scale_codec::Encode;
 use precompile_utils::{
 	keccak256, revert_dispatch_error, succeed, Address, EvmDataWriter, EvmResult, FunctionModifier,
@@ -23,20 +25,20 @@ pub enum Action {
 }
 
 /// Wrapper for the precompile function.
-pub struct LaosEvolutionPrecompile<AddressMapping, AccountId, LaosEvolution>(
+pub struct EvolutionCollectionFactoryPrecompile<AddressMapping, AccountId, LaosEvolution>(
 	PhantomData<(AddressMapping, AccountId, LaosEvolution)>,
 )
 where
 	AddressMapping: pallet_evm::AddressMapping<AccountId>,
 	AccountId: Encode + Debug,
-	LaosEvolution: LaosEvolutionT<AccountId>;
+	LaosEvolution: EvolutionCollectionFactoryT<AccountId>;
 
 impl<AddressMapping, AccountId, LaosEvolution>
-	LaosEvolutionPrecompile<AddressMapping, AccountId, LaosEvolution>
+	EvolutionCollectionFactoryPrecompile<AddressMapping, AccountId, LaosEvolution>
 where
 	AddressMapping: pallet_evm::AddressMapping<AccountId>,
 	AccountId: From<H160> + Into<H160> + Encode + Debug,
-	LaosEvolution: LaosEvolutionT<AccountId>,
+	LaosEvolution: EvolutionCollectionFactoryT<AccountId>,
 {
 	fn inner_execute(
 		handle: &mut impl PrecompileHandle,
@@ -75,11 +77,11 @@ where
 }
 
 impl<AddressMapping, AccountId, LaosEvolution> Precompile
-	for LaosEvolutionPrecompile<AddressMapping, AccountId, LaosEvolution>
+	for EvolutionCollectionFactoryPrecompile<AddressMapping, AccountId, LaosEvolution>
 where
 	AddressMapping: pallet_evm::AddressMapping<AccountId>,
 	AccountId: From<H160> + Into<H160> + Encode + Debug,
-	LaosEvolution: LaosEvolutionT<AccountId>,
+	LaosEvolution: EvolutionCollectionFactoryT<AccountId>,
 {
 	fn execute(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
 		let selector = handle.read_selector()?;

@@ -183,15 +183,21 @@ mod helpers {
 			use pallet_laos_evolution::types::*;
 			use sp_runtime::DispatchError;
 
-			struct LaosEvolutionMock;
+			struct EvolutionCollectionFactoryMock;
 
-			impl pallet_laos_evolution::traits::LaosEvolution<AccountId> for LaosEvolutionMock {
+			impl pallet_laos_evolution::traits::EvolutionCollectionFactory<AccountId>
+				for EvolutionCollectionFactoryMock
+			{
 				fn create_collection(owner: AccountId) -> Result<CollectionId, DispatchError> {
 					($create_collection_result)(owner)
 				}
 			}
 
-			type $name = LaosEvolutionPrecompile<AddressMapping, AccountId, LaosEvolutionMock>;
+			type $name = EvolutionCollectionFactoryPrecompile<
+				AddressMapping,
+				AccountId,
+				EvolutionCollectionFactoryMock,
+			>;
 		};
 	}
 

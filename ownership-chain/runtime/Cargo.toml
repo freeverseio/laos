@@ -55,8 +55,8 @@ sp-transaction-pool = { workspace = true }
 sp-version = { workspace = true }
 
 pallet-laos-evolution = { workspace = true }
-pallet-evm-laos-evolution = { workspace = true }
-pallet-evm-livingassets-manager = { workspace = true }
+pallet-evm-evolution-collection-factory = { workspace = true }
+pallet-evm-collection-evolver-and-minter = { workspace = true }
 
 # Polkadot
 pallet-xcm = { workspace = true }
@@ -155,8 +155,8 @@ std = [
 	"pallet-base-fee/std",
 	"pallet-ethereum/std",
 	"pallet-evm/std",
-	"pallet-evm-laos-evolution/std",
-	"pallet-evm-livingassets-manager/std",
+	"pallet-evm-evolution-collection-factory/std",
+	"pallet-evm-collection-evolver-and-minter/std",
 	"pallet-evm-chain-id/std",
 	"pallet-evm-precompile-modexp/std",
 	"pallet-evm-precompile-simple/std",

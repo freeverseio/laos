@@ -6,8 +6,8 @@ use pallet_evm::{
 use sp_core::H160;
 use sp_std::marker::PhantomData;
 
-use pallet_evm_laos_evolution::LaosEvolutionPrecompile;
-use pallet_evm_livingassets_manager::LivingAssetsManagerPrecompile;
+use pallet_evm_collection_evolver_and_minter::CollectionEvolverAndMinterPrecompile;
+use pallet_evm_evolution_collection_factory::EvolutionCollectionFactoryPrecompile;
 use pallet_evm_precompile_modexp::Modexp;
 use pallet_evm_precompile_simple::{ECRecover, ECRecoverPublicKey, Identity, Ripemd160, Sha256};
 use pallet_laos_evolution::{address_to_collection_id, TokenUriOf};
@@ -28,13 +28,13 @@ where
 	}
 }
 
-type LaosEvolution = LaosEvolutionPrecompile<
+type EvolutionCollectionFactory = EvolutionCollectionFactoryPrecompile<
 	pallet_evm::IdentityAddressMapping,
 	AccountId,
 	pallet_laos_evolution::Pallet<Runtime>,
 >;
 
-type LivingAssetsManager = LivingAssetsManagerPrecompile<
+type CollectionEvolverAndMinter = CollectionEvolverAndMinterPrecompile<
 	pallet_evm::IdentityAddressMapping,
 	AccountId,
 	TokenUriOf<Runtime>,
@@ -56,8 +56,9 @@ where
 			// Non-Frontier specific nor Ethereum precompiles :
 			// a if a == hash(1024) => Some(Sha3FIPS256::execute(handle)),
 			a if a == hash(1025) => Some(ECRecoverPublicKey::execute(handle)),
-			a if a == hash(1027) => Some(LaosEvolution::execute(handle)),
-			a if address_to_collection_id(a).is_ok() => Some(LivingAssetsManager::execute(handle)),
+			a if a == hash(1027) => Some(EvolutionCollectionFactory::execute(handle)),
+			a if address_to_collection_id(a).is_ok() =>
+				Some(CollectionEvolverAndMinter::execute(handle)),
 			_ => None,
 		}
 	}

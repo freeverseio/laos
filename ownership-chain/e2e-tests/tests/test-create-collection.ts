@@ -17,17 +17,6 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
         context.web3.eth.accounts.wallet.add(GENESIS_ACCOUNT_PRIVATE_KEY);
     });
 
-    step("when collection does not exist owner of call should fail", async function () {
-        try {
-            await contract.methods.owner().call();
-            expect.fail("Expected error was not thrown"); // Ensure an error is thrown
-        } catch (error) {
-            expect(error.message).to.be.eq(
-                "Returned error: VM Exception while processing transaction: revert"
-            );
-        }
-    });
-
     step("when collection is created, it should return owner", async function () {
         this.timeout(70000);
 

@@ -329,16 +329,17 @@ mod helpers {
 
 	/// Macro to define a precompile mock for testing.
 	///
-	/// This macro creates mock implementations of the `LivingAssetsManager` trait,
+	/// This macro creates mock implementations of the `CollectionEvolverAndMinter` trait,
 	/// allowing you to test how your code interacts with the precompiled contracts.
 	/// The mock type is named `Mock`, and the implementation uses the provided expressions.
 	///
 	/// # Arguments
 	///
 	/// * `$name`: An identifier to name the precompile mock type.
-	/// * `$create_collection_result`: An expression that evaluates to a `Result<CollectionId,
-	///   &'static str>`.
 	/// * `$collection_owner_result`: An expression that evaluates to an `Option<AccountId>`.
+	/// * `$mint_result`: An expression that evaluates to an `Option<TokenUri>`.
+	/// * `$token_uri_result`: An expression that evaluates to an `Result<TokenId, DispatchError>`.
+	/// * `$evolve_result`: An expression that evaluates to an `Result<(), DispatchError>`.
 	///
 	/// # Example
 	///
@@ -352,10 +353,10 @@ mod helpers {
 			use sp_runtime::DispatchError;
 			type TokenUri = Vec<u8>;
 
-			struct LivingAssetsManagerMock;
+			struct CollectionEvolverAndMinterMock;
 
-			impl pallet_laos_evolution::traits::LivingAssetsManager<AccountId, TokenUri>
-				for LivingAssetsManagerMock
+			impl pallet_laos_evolution::traits::CollectionEvolverAndMinter<AccountId, TokenUri>
+				for CollectionEvolverAndMinterMock
 			{
 				fn mint_with_external_uri(
 					who: AccountId,
@@ -385,11 +386,11 @@ mod helpers {
 				}
 			}
 
-			type $name = LivingAssetsManagerPrecompile<
+			type $name = CollectionEvolverAndMinterPrecompile<
 				AddressMapping,
 				AccountId,
 				TokenUri,
-				LivingAssetsManagerMock,
+				CollectionEvolverAndMinterMock,
 			>;
 		};
 	}
@@ -402,14 +403,10 @@ mod helpers {
 	///
 	/// # Arguments
 	///
-	/// * `$create_collection_result`: An expression that evaluates to a `Result`.
-	/// * `$owner_of_collection_result`: An expression that evaluates to an `Option<AccountId>`.
-	///
-	/// # Example
-	///
-	/// ```
-	/// impl_precompile_mock_simple!(Mock, Ok(0), Some(BaseURI::new());
-	/// ```
+	/// * `$collection_owner_result`: An expression that evaluates to an `Option<AccountId>`.
+	/// * `$mint_result`: An expression that evaluates to an `Option<TokenUri>`.
+	/// * `$token_uri_result`: An expression that evaluates to an `Result<TokenId, DispatchError>`.
+	/// * `$evolve_result`: An expression that evaluates to an `Result<(), DispatchError>`.
 	#[macro_export]
 	macro_rules! impl_precompile_mock_simple {
 		($name:ident, $params:expr) => {

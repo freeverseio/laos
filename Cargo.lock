@@ -4811,8 +4811,8 @@ dependencies = [
  "pallet-ethereum",
  "pallet-evm",
  "pallet-evm-chain-id",
- "pallet-evm-laos-evolution",
- "pallet-evm-livingassets-manager",
+ "pallet-evm-collection-evolver-and-minter",
+ "pallet-evm-evolution-collection-factory",
  "pallet-evm-precompile-modexp",
  "pallet-evm-precompile-simple",
  "pallet-laos-evolution",
@@ -6687,7 +6687,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-evm-laos-evolution"
+name = "pallet-evm-collection-evolver-and-minter"
 version = "2.0.0-dev"
 dependencies = [
  "evm",
@@ -6708,7 +6708,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-evm-livingassets-manager"
+name = "pallet-evm-evolution-collection-factory"
 version = "2.0.0-dev"
 dependencies = [
  "evm",

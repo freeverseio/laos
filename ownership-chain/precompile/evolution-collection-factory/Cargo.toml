@@ -1,8 +1,8 @@
 [package]
-name = "pallet-evm-laos-evolution"
+name = "pallet-evm-evolution-collection-factory"
 version = "2.0.0-dev"
-description = "Living assets evolution precompile"
-repository = "https://github.com/freeverseio/pallet-livingassets-ownership"
+description = "Evolution collection factory precompile"
+repository = "https://github.com/freeverseio/laos"
 edition = "2021"
 
 [dependencies]
