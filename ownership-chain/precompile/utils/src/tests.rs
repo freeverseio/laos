@@ -136,7 +136,7 @@ fn read_u256() {
 fn read_selector() {
 	use sha3::{Digest, Keccak256};
 
-	#[precompile_utils_macro::generate_function_selector]
+	#[laos_precompile_utils_macro::generate_function_selector]
 	#[derive(Debug, PartialEq)]
 	enum FakeAction {
 		Action1 = "action1()",

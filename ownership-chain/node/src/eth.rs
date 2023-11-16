@@ -7,15 +7,14 @@ use std::{
 
 use futures::{future, prelude::*};
 // Substrate
-use sc_client_api::{BlockchainEvents, StateBackendFor};
+use sc_client_api::BlockchainEvents;
 use sc_executor::{NativeElseWasmExecutor, NativeExecutionDispatch};
-use sc_network_sync::SyncingService;
 
+use sc_network_sync::SyncingService;
 use sc_service::{
 	error::Error as ServiceError, Configuration, TFullBackend, TFullClient, TaskManager,
 };
 use sp_api::ConstructRuntimeApi;
-use sp_runtime::traits::BlakeTwo256;
 // Frontier
 pub use fc_consensus::FrontierBlockImport;
 use fc_mapping_sync::{kv::MappingSyncWorker, SyncStrategy};
@@ -24,8 +23,21 @@ pub use fc_rpc_core::types::{FeeHistoryCache, FeeHistoryCacheLimit, FilterPool};
 // Local
 use laos_ownership_runtime::opaque::Block;
 
+/// Frontier DB backend type.
+pub type FrontierBackend = fc_db::Backend<Block>;
+
 pub fn db_config_dir(config: &Configuration) -> PathBuf {
 	config.base_path.config_dir(config.chain_spec.id())
+}
+
+/// Avalailable frontier backend types.
+#[derive(Debug, Copy, Clone, Default, clap::ValueEnum)]
+pub enum BackendType {
+	/// Either RocksDb or ParityDb as per inherited from the global backend settings.
+	#[default]
+	KeyValue,
+	/// Sql database with custom log indexing.
+	Sql,
 }
 
 /// The ethereum-compatibility configuration used to run a node.
@@ -58,6 +70,27 @@ pub struct EthConfiguration {
 	/// Size in bytes of the LRU cache for transactions statuses data.
 	#[arg(long, default_value = "50")]
 	pub eth_statuses_cache: usize,
+
+	/// Sets the frontier backend type (KeyValue or Sql)
+	#[arg(long, value_enum, ignore_case = true, default_value_t = BackendType::default())]
+	pub frontier_backend_type: BackendType,
+
+	// Sets the SQL backend's pool size.
+	#[arg(long, default_value = "100")]
+	pub frontier_sql_backend_pool_size: u32,
+
+	/// Sets the SQL backend's query timeout in number of VM ops.
+	#[arg(long, default_value = "10000000")]
+	pub frontier_sql_backend_num_ops_timeout: u32,
+
+	/// Sets the SQL backend's auxiliary thread limit.
+	#[arg(long, default_value = "4")]
+	pub frontier_sql_backend_thread_count: u32,
+
+	/// Sets the SQL backend's query timeout in number of VM ops.
+	/// Default value is 200MB.
+	#[arg(long, default_value = "209715200")]
+	pub frontier_sql_backend_cache_size: u64,
 }
 
 pub struct FrontierPartialComponents {
@@ -81,26 +114,21 @@ pub trait EthCompatRuntimeApiCollection:
 	sp_api::ApiExt<Block>
 	+ fp_rpc::EthereumRuntimeRPCApi<Block>
 	+ fp_rpc::ConvertTransactionRuntimeApi<Block>
-where
-	<Self as sp_api::ApiExt<Block>>::StateBackend: sp_api::StateBackend<BlakeTwo256>,
 {
 }
 
-impl<Api> EthCompatRuntimeApiCollection for Api
-where
+impl<Api> EthCompatRuntimeApiCollection for Api where
 	Api: sp_api::ApiExt<Block>
 		+ fp_rpc::EthereumRuntimeRPCApi<Block>
-		+ fp_rpc::ConvertTransactionRuntimeApi<Block>,
-	<Self as sp_api::ApiExt<Block>>::StateBackend: sp_api::StateBackend<BlakeTwo256>,
+		+ fp_rpc::ConvertTransactionRuntimeApi<Block>
 {
 }
 
-#[allow(clippy::too_many_arguments)]
-pub fn spawn_frontier_tasks<RuntimeApi, Executor>(
+pub async fn spawn_frontier_tasks<RuntimeApi, Executor>(
 	task_manager: &TaskManager,
 	client: Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
 	backend: Arc<TFullBackend<Block>>,
-	frontier_backend: Arc<fc_db::kv::Backend<Block>>,
+	frontier_backend: FrontierBackend,
 	filter_pool: Option<FilterPool>,
 	overrides: Arc<OverrideHandle<Block>>,
 	fee_history_cache: FeeHistoryCache,
@@ -117,28 +145,52 @@ pub fn spawn_frontier_tasks<RuntimeApi, Executor>(
 		TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>,
 	>,
 	RuntimeApi: Send + Sync + 'static,
-	RuntimeApi::RuntimeApi:
-		EthCompatRuntimeApiCollection<StateBackend = StateBackendFor<TFullBackend<Block>, Block>>,
+	RuntimeApi::RuntimeApi: EthCompatRuntimeApiCollection,
 	Executor: NativeExecutionDispatch + 'static,
 {
-	task_manager.spawn_essential_handle().spawn(
-		"frontier-mapping-sync-worker",
-		Some("frontier"),
-		MappingSyncWorker::new(
-			client.import_notification_stream(),
-			Duration::new(6, 0),
-			client.clone(),
-			backend,
-			overrides.clone(),
-			frontier_backend,
-			3,
-			0,
-			SyncStrategy::Parachain,
-			sync,
-			pubsub_notification_sinks,
-		)
-		.for_each(|()| future::ready(())),
-	);
+	// Spawn main mapping sync worker background task.
+
+	match frontier_backend {
+		fc_db::Backend::KeyValue(b) => {
+			task_manager.spawn_essential_handle().spawn(
+				"frontier-mapping-sync-worker",
+				Some("frontier"),
+				MappingSyncWorker::new(
+					client.import_notification_stream(),
+					Duration::new(6, 0),
+					client.clone(),
+					backend,
+					overrides.clone(),
+					Arc::new(b),
+					3,
+					0,
+					SyncStrategy::Parachain,
+					sync,
+					pubsub_notification_sinks,
+				)
+				.for_each(|()| future::ready(())),
+			);
+		},
+		fc_db::Backend::Sql(b) => {
+			task_manager.spawn_essential_handle().spawn_blocking(
+				"frontier-mapping-sync-worker",
+				Some("frontier"),
+				fc_mapping_sync::sql::SyncWorker::run(
+					client.clone(),
+					backend,
+					Arc::new(b),
+					client.import_notification_stream(),
+					fc_mapping_sync::sql::SyncWorkerConfig {
+						read_notification_timeout: Duration::from_secs(10),
+						check_indexed_blocks_interval: Duration::from_secs(60),
+					},
+					fc_mapping_sync::SyncStrategy::Parachain,
+					sync,
+					pubsub_notification_sinks,
+				),
+			);
+		},
+	}
 
 	// Spawn Frontier EthFilterApi maintenance task.
 	if let Some(filter_pool) = filter_pool {
