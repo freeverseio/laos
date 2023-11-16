@@ -7,6 +7,7 @@ use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
 use laos_ownership_runtime::Block;
 use log::info;
 use parity_scale_codec::Encode;
+use polkadot_service::RococoChainSpec;
 use sc_cli::{
 	ChainSpec, CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams,
 	NetworkParams, Result, SharedParams, SubstrateCli,
@@ -110,7 +111,13 @@ impl SubstrateCli for RelayChainCli {
 	}
 
 	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
-		polkadot_cli::Cli::from_iter([RelayChainCli::executable_name()].iter()).load_spec(id)
+		match id {
+			"rococo_freeverse" => Ok(Box::new(RococoChainSpec::from_json_bytes(
+				&include_bytes!("../../specs/rococo-freeverse-chainspec.json")[..],
+			)?)),
+			_ => polkadot_cli::Cli::from_iter([RelayChainCli::executable_name()].iter())
+				.load_spec(id),
+		}
 	}
 }
 
