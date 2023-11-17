@@ -5,20 +5,23 @@
 
 use core::str::FromStr;
 
-use crate::tests::helpers::PrecompileMockParams;
+use crate::mock::*;
 
 use super::*;
-use frame_support::assert_ok;
-use laos_precompile_utils::{
-	revert, succeed,
-	testing::{create_mock_handle, create_mock_handle_from_input},
-};
-use sp_core::{H160, H256};
-
-type AccountId = H160;
-type AddressMapping = pallet_evm::IdentityAddressMapping;
+use fp_evm::Log;
+use pallet_evm::AccountCodes;
+use precompile_utils::testing::PrecompileTesterExt;
+use sp_core::{H160, H256, U256};
 
 const ALICE: &str = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
+
+/// Fixed precompile address for testing.
+const PRECOMPILE_ADDRESS: [u8; 20] = [5u8; 20];
+
+/// Get precompiles from the mock.
+fn precompiles() -> MockPrecompileSet<Test> {
+	MockPrecompiles::get()
+}
 
 #[test]
 fn check_log_selectors() {
@@ -34,203 +37,110 @@ fn function_selectors() {
 }
 
 #[test]
-fn failing_create_collection_should_return_error() {
-	impl_precompile_mock_simple!(
-		Mock,
-		PrecompileMockParams {
-			create_collection_result: Err(DispatchError::Other("this is an error")),
-			..Default::default()
-		}
-	);
+fn create_collection_returns_address() {
+	new_test_ext().execute_with(|| {
+		let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
+			.write(Address(H160([1u8; 20])))
+			.build();
 
-	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
-		.write(Address(H160([1u8; 20])))
-		.build();
+		let expected_address = "fffffffffffffffffffffffe0000000000000000";
+		// output is padded with 12 bytes of zeros
+		let expected_output =
+			H256::from_str(format!("000000000000000000000000{}", expected_address).as_str())
+				.unwrap();
 
-	let mut handle = create_mock_handle_from_input(input);
-
-	let result = Mock::execute(&mut handle);
-	assert_eq!(
-		result.unwrap_err(),
-		revert_dispatch_error(DispatchError::Other("this is an error"))
-	);
-}
-
-#[test]
-fn create_collection_should_return_collection_id() {
-	impl_precompile_mock_simple!(Mock, PrecompileMockParams::default());
-
-	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
-		.write(Address(H160([1u8; 20])))
-		.build();
-	let mut handle = create_mock_handle_from_input(input);
-
-	let result = Mock::execute(&mut handle);
-	assert_ok!(
-		result,
-		succeed(H256::from_slice(&[
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-			255, 254, 0, 0, 0, 0, 0, 0, 0, 0
-		]))
-	);
+		precompiles()
+			.prepare_test(H160([1u8; 20]), H160(PRECOMPILE_ADDRESS), input)
+			.execute_returns(expected_output);
+	})
 }
 
 #[test]
 fn create_collection_should_generate_log() {
-	impl_precompile_mock_simple!(
-		Mock,
-		PrecompileMockParams { create_collection_result: Ok(123), ..Default::default() }
-	);
+	new_test_ext().execute_with(|| {
+		let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
+			.write(Address(H160::from_str(ALICE).unwrap()))
+			.build();
 
-	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
-		.write(Address(H160::from_str(ALICE).unwrap()))
-		.build();
-	let mut handle = create_mock_handle_from_input(input);
+		let expected_log = Log {
+			address: H160(PRECOMPILE_ADDRESS),
+			topics: vec![
+				SELECTOR_LOG_NEW_COLLECTION.into(),
+				H256::from_str(
+					"0x000000000000000000000000f24ff3a9cf04c71dbc94d0b566f7a27b94566cac",
+				)
+				.unwrap(),
+			],
+			data: vec![
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+				255, 255, 254, 0, 0, 0, 0, 0, 0, 0, 0,
+			],
+		};
 
-	let result = Mock::execute(&mut handle);
-	assert!(result.is_ok());
-	let logs = handle.logs;
-	assert_eq!(logs.len(), 1);
-	assert_eq!(logs[0].address, H160::zero());
-	assert_eq!(logs[0].topics.len(), 2);
-	assert_eq!(logs[0].topics[0], SELECTOR_LOG_NEW_COLLECTION.into());
-	assert_eq!(
-		logs[0].topics[1],
-		H256::from_str("0x000000000000000000000000f24ff3a9cf04c71dbc94d0b566f7a27b94566cac")
-			.unwrap()
-	);
-	assert_eq!(
-		logs[0].data,
-		vec![
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-			255, 254, 0, 0, 0, 0, 0, 0, 0, 123
-		]
-	);
+		precompiles()
+			.prepare_test(H160([1u8; 20]), H160(PRECOMPILE_ADDRESS), input)
+			.expect_log(expected_log)
+			.execute_some();
+	});
 }
 
 #[test]
 fn create_collection_on_mock_with_nonzero_value_fails() {
-	impl_precompile_mock_simple!(
-		Mock,
-		PrecompileMockParams { create_collection_result: Ok(5), ..Default::default() }
-	);
+	new_test_ext().execute_with(|| {
+		let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
+			.write(Address(H160([1u8; 20])))
+			.build();
 
-	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
-		.write(Address(H160([1u8; 20])))
-		.build();
-	let mut handle = create_mock_handle(input, 0, 1, H160::zero());
-
-	let result = Mock::execute(&mut handle);
-	assert!(result.is_err());
-	assert_eq!(result.unwrap_err(), revert("function is not payable"));
+		precompiles()
+			.prepare_test(H160([1u8; 20]), H160(PRECOMPILE_ADDRESS), input)
+			.with_value(U256::from(1))
+			.execute_reverts(|r| r == b"function is not payable");
+	});
 }
 
 #[test]
 fn create_collection_assign_collection_to_caller() {
-	impl_precompile_mock!(
-		Mock, // name of the defined precompile
-		|owner| {
-			assert_eq!(owner, H160::from_low_u64_be(0x1234));
-			Ok(0)
-		}  // Closure for create_collection result
-	);
+	new_test_ext().execute_with(|| {
+		let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
+			.write(Address(H160([1u8; 20])))
+			.build();
 
-	let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
-		.write(Address(H160::from_low_u64_be(0x1234)))
-		.build();
+		let expected_address = "fffffffffffffffffffffffe0000000000000000";
+		// output is padded with 12 bytes of zeros
+		let expected_output =
+			H256::from_str(format!("000000000000000000000000{}", expected_address).as_str())
+				.unwrap();
 
-	let mut handle = create_mock_handle(input, 0, 0, H160::from_low_u64_be(0x1234));
-	let result = Mock::execute(&mut handle);
-	assert!(result.is_ok());
+		precompiles()
+			.prepare_test(H160([1u8; 20]), H160(PRECOMPILE_ADDRESS), input)
+			.execute_returns(expected_output);
+
+		assert_eq!(LaosEvolution::<Test>::collection_owner(0), Some(H160([1u8; 20].into())));
+	});
 }
 
 #[test]
-fn call_unexistent_selector_should_fail() {
-	impl_precompile_mock_simple!(Mock, PrecompileMockParams::default());
+fn create_collection_inserts_bytecode_to_address() {
+	new_test_ext().execute_with(|| {
+		let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
+			.write(Address(H160([1u8; 20])))
+			.build();
 
-	let nonexistent_selector =
-		hex::decode("fb24ae530000000000000000000000000000000000000000000000000000000000000000")
-			.unwrap();
-	let mut handle = create_mock_handle_from_input(nonexistent_selector);
-	let result = Mock::execute(&mut handle);
-	assert_eq!(result.unwrap_err(), revert("unknown selector"));
-}
+		let expected_address = "fffffffffffffffffffffffe0000000000000000";
+		// output is padded with 12 bytes of zeros
+		let expected_output =
+			H256::from_str(format!("000000000000000000000000{}", expected_address).as_str())
+				.unwrap();
 
-mod helpers {
-	use pallet_laos_evolution::CollectionId;
-	use sp_runtime::DispatchError;
+		precompiles()
+			.prepare_test(H160([1u8; 20]), H160(PRECOMPILE_ADDRESS), input)
+			.execute_returns(expected_output);
 
-	/// Macro to define a precompile mock for testing.
-	///
-	/// This macro creates mock implementations of the `CollectionManager` trait,
-	/// allowing you to test how your code interacts with the precompiled contracts.
-	/// The mock type is named `Mock`, and the implementation uses the provided expressions.
-	///
-	/// # Arguments
-	///
-	/// * `$name`: An identifier to name the precompile mock type.
-	/// * `$create_collection_result`: An expression that evaluates to a `Result<CollectionId,
-	///   &'static str>`.
-	///
-	/// # Example
-	///
-	/// ```
-	/// impl_precompile_mock_simple!(Mock, Ok(0)));
-	/// ```
-	#[macro_export]
-	macro_rules! impl_precompile_mock {
-		($name:ident, $create_collection_result:expr) => {
-			use pallet_laos_evolution::types::*;
-			use sp_runtime::DispatchError;
+		let collection_address = &H160::from_str(expected_address).unwrap();
+		// Address is not empty
+		assert!(!Evm::<Test>::is_account_empty(&collection_address));
 
-			struct EvolutionCollectionFactoryMock;
-
-			impl pallet_laos_evolution::traits::EvolutionCollectionFactory<AccountId>
-				for EvolutionCollectionFactoryMock
-			{
-				fn create_collection(owner: AccountId) -> Result<CollectionId, DispatchError> {
-					($create_collection_result)(owner)
-				}
-			}
-
-			type $name = EvolutionCollectionFactoryPrecompile<
-				AddressMapping,
-				AccountId,
-				EvolutionCollectionFactoryMock,
-			>;
-		};
-	}
-
-	/// Macro to define a precompile mock for testing.
-	///
-	/// This macro creates mock implementations of the `CollectionManager` trait,
-	/// allowing you to test how your code interacts with the precompiled contracts.
-	/// The mock type is named `Mock`, and the implementation uses the provided expressions.
-	///
-	/// # Arguments
-	///
-	/// * `$create_collection_result`: An expression that evaluates to a `Result`.
-	/// * `$owner_of_collection_result`: An expression that evaluates to an `Option<AccountId>`.
-	///
-	/// # Example
-	///
-	/// ```
-	/// impl_precompile_mock_simple!(Mock, Ok(0), Some(BaseURI::new());
-	/// ```
-	#[macro_export]
-	macro_rules! impl_precompile_mock_simple {
-		($name:ident, $params:expr) => {
-			impl_precompile_mock!($name, |_owner| { $params.create_collection_result });
-		};
-	}
-
-	pub struct PrecompileMockParams {
-		pub create_collection_result: Result<CollectionId, DispatchError>,
-	}
-
-	impl Default for PrecompileMockParams {
-		fn default() -> Self {
-			Self { create_collection_result: Ok(0) }
-		}
-	}
+		// Address has correct code
+		assert!(AccountCodes::<Test>::get(&collection_address) == REVERT_BYTECODE);
+	});
 }

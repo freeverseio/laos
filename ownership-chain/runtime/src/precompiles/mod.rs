@@ -10,9 +10,9 @@ use pallet_evm_evolution_collection::EvolutionCollectionPrecompile;
 use pallet_evm_evolution_collection_factory::EvolutionCollectionFactoryPrecompile;
 use pallet_evm_precompile_modexp::Modexp;
 use pallet_evm_precompile_simple::{ECRecover, ECRecoverPublicKey, Identity, Ripemd160, Sha256};
-use pallet_laos_evolution::{address_to_collection_id, TokenUriOf};
+use pallet_laos_evolution::address_to_collection_id;
 
-use crate::{AccountId, Runtime};
+use crate::Runtime;
 
 pub struct FrontierPrecompiles<Runtime>(PhantomData<Runtime>);
 
@@ -28,18 +28,9 @@ where
 	}
 }
 
-type EvolutionCollectionFactory = EvolutionCollectionFactoryPrecompile<
-	pallet_evm::IdentityAddressMapping,
-	AccountId,
-	pallet_laos_evolution::Pallet<Runtime>,
->;
+type EvolutionCollectionFactory = EvolutionCollectionFactoryPrecompile<Runtime>;
 
-type EvolutionCollection = EvolutionCollectionPrecompile<
-	pallet_evm::IdentityAddressMapping,
-	AccountId,
-	TokenUriOf<Runtime>,
-	pallet_laos_evolution::Pallet<Runtime>,
->;
+type EvolutionCollection = EvolutionCollectionPrecompile<Runtime>;
 
 impl<Runtime> PrecompileSet for FrontierPrecompiles<Runtime>
 where

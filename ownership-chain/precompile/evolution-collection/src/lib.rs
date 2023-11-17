@@ -3,16 +3,18 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
 use laos_precompile_utils::{
-	keccak256, revert, revert_dispatch_error, succeed, Address, Bytes, EvmDataWriter, EvmResult,
+	keccak256, revert_dispatch_error, succeed, Address, Bytes, EvmDataWriter, EvmResult,
 	FunctionModifier, LogExt, LogsBuilder, PrecompileHandleExt,
 };
 use pallet_laos_evolution::{
-	address_to_collection_id, traits::EvolutionCollection as EvolutionCollectionT, Slot, TokenId,
+	address_to_collection_id, traits::EvolutionCollection as EvolutionCollectionT,
+	Pallet as LaosEvolution, Slot, TokenId, TokenUriOf,
 };
 use parity_scale_codec::Encode;
+use precompile_utils::solidity::revert::revert;
 
 use sp_core::H160;
-use sp_std::{fmt::Debug, marker::PhantomData, vec::Vec};
+use sp_std::{fmt::Debug, marker::PhantomData};
 
 /// Solidity selector of the MintedWithExternalURI log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
@@ -35,23 +37,17 @@ pub enum Action {
 }
 
 /// Wrapper for the precompile function.
-pub struct EvolutionCollectionPrecompile<AddressMapping, AccountId, TokenUri, LaosEvolution>(
-	PhantomData<(AddressMapping, AccountId, TokenUri, LaosEvolution)>,
-)
+pub struct EvolutionCollectionPrecompile<Runtime>(PhantomData<Runtime>)
 where
-	AddressMapping: pallet_evm::AddressMapping<AccountId>,
-	AccountId: Encode + Debug,
-	TokenUri: TryFrom<Vec<u8>>,
-	LaosEvolution: EvolutionCollectionT<AccountId, TokenUri>;
+	Runtime: pallet_laos_evolution::Config;
 
-impl<AddressMapping, AccountId, TokenUri, LaosEvolution>
-	EvolutionCollectionPrecompile<AddressMapping, AccountId, TokenUri, LaosEvolution>
+impl<Runtime> EvolutionCollectionPrecompile<Runtime>
 where
-	AddressMapping: pallet_evm::AddressMapping<AccountId>,
-	AccountId: From<H160> + Into<H160> + Encode + Debug,
-	TokenUri: TryFrom<Vec<u8>> + Into<Vec<u8>>,
-	LaosEvolution: EvolutionCollectionT<AccountId, TokenUri>,
+	Runtime: pallet_laos_evolution::Config,
+	Runtime::AccountId: From<H160> + Into<H160> + Encode + Debug,
+	LaosEvolution<Runtime>: EvolutionCollectionT<Runtime::AccountId, TokenUriOf<Runtime>>,
 {
+	/// Inner execute function.
 	fn inner_execute(
 		handle: &mut impl PrecompileHandle,
 		action: &Action,
@@ -65,7 +61,7 @@ where
 				let collection_id = address_to_collection_id(context.address)
 					.map_err(|_| revert("invalid collection address"))?;
 
-				if let Some(owner) = LaosEvolution::collection_owner(collection_id) {
+				if let Some(owner) = LaosEvolution::<Runtime>::collection_owner(collection_id) {
 					Ok(succeed(EvmDataWriter::new().write(Address(owner.into())).build()))
 				} else {
 					Err(revert("collection does not exist"))
@@ -80,7 +76,9 @@ where
 					.map_err(|_| revert("invalid collection address"))?;
 				let token_id = input.read::<TokenId>()?;
 
-				if let Some(token_uri) = LaosEvolution::token_uri(collection_id, token_id) {
+				if let Some(token_uri) =
+					LaosEvolution::<Runtime>::token_uri(collection_id, token_id)
+				{
 					Ok(succeed(EvmDataWriter::new().write(Bytes(token_uri.into())).build()))
 				} else {
 					Err(revert("asset does not exist"))
@@ -102,7 +100,7 @@ where
 					.try_into()
 					.map_err(|_| revert("invalid token uri length"))?;
 
-				match LaosEvolution::mint_with_external_uri(
+				match LaosEvolution::<Runtime>::mint_with_external_uri(
 					caller.into(),
 					collection_id,
 					slot,
@@ -142,7 +140,7 @@ where
 					.try_into()
 					.map_err(|_| revert("invalid token uri length"))?;
 
-				match LaosEvolution::evolve_with_external_uri(
+				match LaosEvolution::<Runtime>::evolve_with_external_uri(
 					caller.into(),
 					collection_id,
 					token_id,
@@ -169,13 +167,11 @@ where
 	}
 }
 
-impl<AddressMapping, AccountId, TokenUri, LaosEvolution> Precompile
-	for EvolutionCollectionPrecompile<AddressMapping, AccountId, TokenUri, LaosEvolution>
+impl<Runtime> Precompile for EvolutionCollectionPrecompile<Runtime>
 where
-	AddressMapping: pallet_evm::AddressMapping<AccountId>,
-	AccountId: From<H160> + Into<H160> + Encode + Debug,
-	TokenUri: TryFrom<Vec<u8>> + Into<Vec<u8>>,
-	LaosEvolution: EvolutionCollectionT<AccountId, TokenUri>,
+	Runtime: pallet_laos_evolution::Config,
+	Runtime::AccountId: From<H160> + Into<H160> + Encode + Debug,
+	LaosEvolution<Runtime>: EvolutionCollectionT<Runtime::AccountId, TokenUriOf<Runtime>>,
 {
 	fn execute(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
 		let selector = handle.read_selector()?;
@@ -191,5 +187,7 @@ where
 	}
 }
 
+#[cfg(test)]
+mod mock;
 #[cfg(test)]
 mod tests;

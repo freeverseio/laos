@@ -24,7 +24,7 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
             expect.fail("Expected error was not thrown"); // Ensure an error is thrown
         } catch (error) {
             expect(error.message).to.be.eq(
-                "Returned error: VM Exception while processing transaction: revert"
+                "Returned error: VM Exception while processing transaction: revert asset does not exist"
             );
         }
     });
