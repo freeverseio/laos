@@ -3,8 +3,8 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
 use laos_precompile_utils::{
-	keccak256, revert_dispatch_error, succeed, Address, Bytes, EvmDataWriter,
-	EvmResult, FunctionModifier, LogExt, LogsBuilder, PrecompileHandleExt,
+	keccak256, revert_dispatch_error, succeed, Address, Bytes, EvmDataWriter, EvmResult,
+	FunctionModifier, LogExt, LogsBuilder, PrecompileHandleExt,
 };
 use pallet_laos_evolution::{
 	address_to_collection_id, traits::EvolutionCollection as EvolutionCollectionT,
