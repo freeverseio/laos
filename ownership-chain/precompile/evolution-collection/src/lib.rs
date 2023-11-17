@@ -61,7 +61,6 @@ where
 	}
 }
 
-/// Wrapper for the precompile function.
 pub struct EvolutionCollectionPrecompile<Runtime>(PhantomData<Runtime>)
 where
 	Runtime: pallet_laos_evolution::Config;
