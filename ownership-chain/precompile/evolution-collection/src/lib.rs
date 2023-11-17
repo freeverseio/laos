@@ -3,8 +3,8 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
 use laos_precompile_utils::{
-	keccak256, revert_dispatch_error, succeed, Address, Bytes, EvmDataWriter, EvmResult,
-	FunctionModifier, LogExt, LogsBuilder, PrecompileHandleExt,
+	keccak256, revert_dispatch_error, succeed, Address, Bytes, EvmDataReader, EvmDataWriter,
+	EvmResult, FunctionModifier, LogExt, LogsBuilder, PrecompileHandleExt,
 };
 use pallet_laos_evolution::{
 	address_to_collection_id, traits::EvolutionCollection as EvolutionCollectionT,
@@ -56,17 +56,7 @@ where
 		let context = handle.context();
 
 		match action {
-			Action::Owner => {
-				// collection id is encoded into the contract address
-				let collection_id = address_to_collection_id(context.address)
-					.map_err(|_| revert("invalid collection address"))?;
-
-				if let Some(owner) = LaosEvolution::<Runtime>::collection_owner(collection_id) {
-					Ok(succeed(EvmDataWriter::new().write(Address(owner.into())).build()))
-				} else {
-					Err(revert("collection does not exist"))
-				}
-			},
+			Action::Owner => Self::owner(context),
 			Action::TokenURI => {
 				let mut input = handle.read_input()?;
 				input.expect_arguments(1)?;
@@ -163,6 +153,18 @@ where
 					Err(err) => Err(revert_dispatch_error(err)),
 				}
 			},
+		}
+	}
+
+	fn owner(context: &fp_evm::Context) -> EvmResult<PrecompileOutput> {
+		// collection id is encoded into the contract address
+		let collection_id = address_to_collection_id(context.address)
+			.map_err(|_| revert("invalid collection address"))?;
+
+		if let Some(owner) = LaosEvolution::<Runtime>::collection_owner(collection_id) {
+			Ok(succeed(EvmDataWriter::new().write(Address(owner.into())).build()))
+		} else {
+			Err(revert("collection does not exist"))
 		}
 	}
 }
