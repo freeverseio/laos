@@ -5,7 +5,7 @@ import EvolutionCollectionFactory from "../build/contracts/EvolutionCollectionFa
 
 // Node config
 export const RUNTIME_SPEC_NAME = "frontier-template";
-export const RUNTIME_SPEC_VERSION = 8;
+export const RUNTIME_SPEC_VERSION = 9;
 export const RUNTIME_IMPL_VERSION = 0;
 export const RPC_PORT = 9999;
 
