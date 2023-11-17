@@ -1,8 +1,8 @@
 [package]
-name = "pallet-evm-laos-evolution"
+name = "pallet-evm-evolution-collection-factory"
 version = "2.0.0-dev"
-description = "Living assets evolution precompile"
-repository = "https://github.com/freeverseio/pallet-livingassets-ownership"
+description = "Evolution collection factory precompile"
+repository = "https://github.com/freeverseio/laos"
 edition = "2021"
 
 [dependencies]
@@ -24,15 +24,15 @@ sp-std = { workspace = true }
 pallet-laos-evolution = { workspace = true }
 
 # Utils
-precompile-utils = { workspace = true }
-precompile-utils-macro = { workspace = true }
+laos-precompile-utils = { workspace = true }
+laos-precompile-utils-macro = { workspace = true }
 
 num_enum = { workspace = true }
 
 [dev-dependencies]
 evm = { workspace = true }
 hex = { workspace = true }
-precompile-utils = { workspace = true, features = ["testing"]}
+laos-precompile-utils = { workspace = true, features = ["testing"]}
 
 [features]
 default = ["std"]
@@ -47,7 +47,7 @@ std = [
 	"num_enum/std",
 	"frame-support/std",
 	"sp-arithmetic/std",
-	"precompile-utils/std",
+	"laos-precompile-utils/std",
 	"parity-scale-codec/std",
 	"scale-info/std",
 ]

@@ -1,5 +1,5 @@
 [package]
-name = "precompile-utils-macro"
+name = "laos-precompile-utils-macro"
 authors = ["StakeTechnologies", "PureStake"]
 description = ""
 version = "0.1.0"

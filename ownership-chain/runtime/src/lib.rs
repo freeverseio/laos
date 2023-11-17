@@ -71,8 +71,8 @@ use polkadot_runtime_common::{BlockHashCount, SlowAdjustingFeeUpdate};
 use weights::{ExtrinsicBaseWeight, RocksDbWeight};
 
 // XCM Imports
-use xcm::latest::prelude::BodyId;
-use xcm_executor::XcmExecutor;
+use staging_xcm::latest::prelude::BodyId;
+use staging_xcm_executor::XcmExecutor;
 
 // Frontier
 use fp_rpc::TransactionStatus;

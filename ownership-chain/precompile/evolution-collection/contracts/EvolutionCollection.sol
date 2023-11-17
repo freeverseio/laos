@@ -1,16 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-only
 pragma solidity >=0.8.3;
 
-/// @title Pallet Collection Manager Interface
+/// @title Pallet Laos Evolution Interface
 /// @author LAOS Team
-/// @notice This interface allows Solidity contracts to interact with pallet-living-assets
-/// @custom:address 0x0000000000000000000000000000000000000403
-interface LaosEvolution {
-    /// @notice Event emitted when a new collection is created
-    /// @param _owner the owner of the newly created collection
-    /// @param _collectionAddress the address of the newly created collection
-    event NewCollection(address indexed _owner, address _collectionAddress);
-
+/// @notice This interface allows Solidity contracts to interact with pallet-laos-evolution
+interface EvolutionCollection {
     /// @notice Emitted when a new token is minted
     /// @dev Id of the token is concatenation of `slot` and `to`
     /// @param _to the initial owner of the newly minted token
@@ -31,12 +25,6 @@ interface LaosEvolution {
         uint256 indexed _tokenId,
         string _tokenURI
     );
-
-    /// @notice Creates a new collection
-    /// @dev Call this function to create a new collection
-    /// @param _owner the owner of the newly created collection
-    /// @return the address of the newly created collection
-    function createCollection(address _owner) external returns (address);
 
     /// @notice Owner of the collection
     /// @dev Call this function to get the owner of a collection

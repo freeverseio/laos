@@ -39,7 +39,7 @@ use sp_std::{vec, vec::Vec};
 mod data;
 
 pub use data::{Address, Bytes, EvmData, EvmDataReader, EvmDataWriter};
-pub use precompile_utils_macro::{generate_function_selector, keccak256};
+pub use laos_precompile_utils_macro::{generate_function_selector, keccak256};
 
 #[cfg(feature = "testing")]
 pub mod testing;
