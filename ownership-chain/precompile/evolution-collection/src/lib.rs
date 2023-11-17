@@ -4,7 +4,7 @@
 use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
 use laos_precompile_utils::{
 	keccak256, revert_dispatch_error, succeed, Address, Bytes, EvmDataWriter, EvmResult,
-	FunctionModifier, LogExt, LogsBuilder, PrecompileHandleExt,
+	FunctionModifier, GasCalculator, LogExt, LogsBuilder, PrecompileHandleExt,
 };
 use pallet_laos_evolution::{
 	address_to_collection_id, traits::EvolutionCollection as EvolutionCollectionT,
@@ -38,7 +38,7 @@ pub enum Action {
 
 impl<Runtime> Precompile for EvolutionCollectionPrecompile<Runtime>
 where
-	Runtime: pallet_laos_evolution::Config,
+	Runtime: pallet_laos_evolution::Config + pallet_evm::Config,
 	Runtime::AccountId: From<H160> + Into<H160> + Encode + Debug,
 	LaosEvolution<Runtime>: EvolutionCollectionT<Runtime::AccountId, TokenUriOf<Runtime>>,
 {
@@ -67,7 +67,7 @@ where
 
 impl<Runtime> EvolutionCollectionPrecompile<Runtime>
 where
-	Runtime: pallet_laos_evolution::Config,
+	Runtime: pallet_laos_evolution::Config + pallet_evm::Config,
 	Runtime::AccountId: From<H160> + Into<H160> + Encode + Debug,
 	LaosEvolution<Runtime>: EvolutionCollectionT<Runtime::AccountId, TokenUriOf<Runtime>>,
 {
@@ -79,6 +79,9 @@ where
 			.map_err(|_| revert("invalid collection address"))?;
 
 		if let Some(owner) = LaosEvolution::<Runtime>::collection_owner(collection_id) {
+			let consumed_gas: u64 = GasCalculator::<Runtime>::db_read_gas_cost(1);
+			handle.record_cost(consumed_gas)?;
+
 			Ok(succeed(EvmDataWriter::new().write(Address(owner.into())).build()))
 		} else {
 			Err(revert("collection does not exist"))
@@ -96,6 +99,8 @@ where
 		let token_id = input.read::<TokenId>()?;
 
 		if let Some(token_uri) = LaosEvolution::<Runtime>::token_uri(collection_id, token_id) {
+			let consumed_gas: u64 = GasCalculator::<Runtime>::db_read_gas_cost(1);
+			handle.record_cost(consumed_gas)?;
 			Ok(succeed(EvmDataWriter::new().write(Bytes(token_uri.into())).build()))
 		} else {
 			Err(revert("asset does not exist"))

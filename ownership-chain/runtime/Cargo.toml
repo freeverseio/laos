@@ -192,6 +192,7 @@ runtime-benchmarks = [
 	"polkadot-parachain-primitives/runtime-benchmarks",
 	"polkadot-runtime-common/runtime-benchmarks",
 	"staging-xcm-executor/runtime-benchmarks",
+	"pallet-laos-evolution/runtime-benchmarks",
 ]
 
 try-runtime = [

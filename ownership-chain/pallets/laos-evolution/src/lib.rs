@@ -21,6 +21,8 @@ use sp_runtime::{
 pub use traits::{EvolutionCollection, EvolutionCollectionFactory};
 pub use types::*;
 
+mod benchmarking;
+
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
