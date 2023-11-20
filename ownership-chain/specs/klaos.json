@@ -9,7 +9,7 @@
   ],
   "protocolId": "klaos_chain",
   "properties": {
-    "ss58Format": 42,
+    "ss58Format": 20333,
     "tokenDecimals": 18,
     "tokenSymbol": "KLAOS"
   },
