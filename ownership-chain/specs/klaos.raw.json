@@ -2,7 +2,11 @@
   "name": "klaos network",
   "id": "klaos_chain",
   "chainType": "Live",
-  "bootNodes": [],
+  "bootNodes": [
+    "/ip4/159.223.241.56/tcp/30334/p2p/12D3KooWK5UdnG9kkbAdGGS8Wg4tMVNKjqtDDhxKWyQTNgrJuVW3",
+    "/ip4/167.99.16.64/tcp/30334/p2p/12D3KooWJyy76xKUu36MyWALPp2AcqKzb7EqyUDeKWVfg3biEvjW",
+    "/ip4/64.225.82.80/tcp/30334/p2p/12D3KooWLMTiDN1yAWtDs2NShThPgBMvxfx2wdaXzRUcAgG4poW8"
+  ],
   "telemetryEndpoints": [
     [
       "/dns/telemetry.polkadot.io/tcp/443/x-parity-wss/%2Fsubmit%2F",
