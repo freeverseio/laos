@@ -29,6 +29,7 @@ use crate::alloc::borrow::ToOwned;
 use fp_evm::{
 	Context, ExitError, ExitSucceed, PrecompileFailure, PrecompileHandle, PrecompileOutput,
 };
+use frame_support::weights::Weight;
 use precompile_utils::solidity::revert::revert;
 
 use pallet_evm::{GasWeightMapping, Log};
@@ -136,6 +137,7 @@ pub trait LogExt {
 
 impl LogExt for Log {
 	fn record(self, handle: &mut impl PrecompileHandle) -> EvmResult {
+		handle.record_log_costs_manual(self.topics.len(), self.data.len())?;
 		handle.log(self.address, self.topics, self.data)?;
 		Ok(())
 	}
@@ -156,18 +158,22 @@ where
 	Runtime: pallet_evm::Config + frame_system::Config,
 {
 	/// Cost of a Substrate DB write in gas.
-	pub fn db_write_gas_cost() -> u64 {
+	pub fn db_write_gas_cost(writes: u64) -> u64 {
 		<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
-			<Runtime as frame_system::Config>::DbWeight::get().writes(1),
+			<Runtime as frame_system::Config>::DbWeight::get().writes(writes),
 		)
 	}
 
 	/// Cost of a Substrate DB read in gas.
-	pub fn db_read_gas_cost(reads: u32) -> u64 {
-		reads as u64 *
-			<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
-				<Runtime as frame_system::Config>::DbWeight::get().reads(1),
-			)
+	pub fn db_read_gas_cost(reads: u64) -> u64 {
+		<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
+			<Runtime as frame_system::Config>::DbWeight::get().reads(reads),
+		)
+	}
+
+	/// Convert weight to gas.
+	pub fn weight_to_gas(weight: Weight) -> u64 {
+		<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(weight)
 	}
 }
 
