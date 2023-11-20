@@ -1,5 +1,5 @@
 {
-  "name": "klaos chain",
+  "name": "klaos network",
   "id": "klaos_chain",
   "chainType": "Live",
   "bootNodes": [],
@@ -8,7 +8,7 @@
   "properties": {
     "ss58Format": 42,
     "tokenDecimals": 18,
-    "tokenSymbol": "KLAUS"
+    "tokenSymbol": "KLAOS"
   },
   "relay_chain": "kusama",
   "para_id": 3336,
