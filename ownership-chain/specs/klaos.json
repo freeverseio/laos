@@ -3,7 +3,10 @@
   "id": "klaos_chain",
   "chainType": "Live",
   "bootNodes": [],
-  "telemetryEndpoints": null,
+  "telemetryEndpoints": [
+    ["/dns/telemetry.polkadot.io/tcp/443/x-parity-wss/%2Fsubmit%2F", 0],
+    ["/dns/telemetry-shard.gorengine.com/tcp/443/x-parity-wss/%2Fsubmit%2F", 0]
+  ],
   "protocolId": "klaos_chain",
   "properties": {
     "ss58Format": 42,
