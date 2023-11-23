@@ -1,14 +1,22 @@
-# LAOS Monorepo
+# The LAOS Chain
 
-![LAOS Logo](https://static.wixstatic.com/media/d45ec5_c4a74c9dd6904a7690244e066a3b9c93~mv2.jpg/v1/fill/w_1905,h_1052,al_c,q_90,usm_0.66_1.00_0.01,enc_auto/d45ec5_c4a74c9dd6904a7690244e066a3b9c93~mv2.jpg)
+LAOS is the Universal Layer 1 for digital assets across all blockchains.  
+LAOS introduces unique features such as universal minting and dynamic asset evolution. This monorepo houses all the essential resources and documentation needed for building and deploying assets on the LAOS blockchain platform.
 
-> **NOTE**: To streamline our development process and encourage diverse contributions, we've consolidated three core projects—Ownership Chain, Evolution Chain, and Bridge—into this single monorepo.
+![LAOS Logo](docs/LAOS_logo.png)
 
-## Introduction
+LAOS is fully open source and decentralized. The main code repositories are:
 
-The LAOS Monorepo is the centralized codebase for LAOS, a next-generation, non-custodial, dynamic NFT (Non-Fungible Token) protocol. With the aim of redefining the NFT landscape, LAOS introduces unique features such as universal minting and dynamic asset evolution. This monorepo houses all the essential resources and documentation needed for building and deploying assets on the LAOS blockchain platform.
+* **[The LAOS Parachain](#the-parachain-monorepo)**. You are already in it. To streamline the development process and encourage diverse contributions, all core components of the Parachain were integrated in this single monorepo.
 
-## Core Projects
+* **[The Universal Node](https://github.com/freeverseio/laos-universal-node)**. This node streamlines the integration process for DApps aiming to incorporate bridgeless minting and evolution across various chains, including Ethereum, by merely adjusting the RPC endpoint to connect to the relevant Universal Nodes.
+
+* **[The Universal ERC721 Solidity Templates](https://github.com/freeverseio/laos-erc721)**. This template contains the minimal extensions of the ERC721 OpenZeppelin implementation that enables bridgeless minting and evolution in any EVM chain.
+
+
+## The LAOS Parachain Monorepo
+
+The LAOS Monorepo is the centralized codebase for the LAOS Parachain core components.
 
 ### [Ownership Chain](./ownership-chain/)
 
