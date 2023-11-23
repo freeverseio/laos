@@ -36,7 +36,7 @@ Presently, LAOS is accessible through its test network, named **Caladan**. Addit
 
 ## Running your own node
 
-The quickest entry point to run your own LAOS node:
+The quickest entry point to run your own LAOS Parachain node:
 ```
 $ docker run freeverseio/laos-ownership-node:<release> --chain=caladan
 ```
