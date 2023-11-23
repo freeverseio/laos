@@ -1,7 +1,6 @@
 # The LAOS Chain
 
-LAOS is the Universal Layer 1 for digital assets across all blockchains.  
-LAOS introduces unique features such as universal minting and dynamic asset evolution. This monorepo houses all the essential resources and documentation needed for building and deploying assets on the LAOS blockchain platform.
+LAOS is the Universal Layer 1 for digital assets across all blockchains. LAOS introduces unique features such as universal minting and dynamic asset evolution. This monorepo houses all the essential resources and documentation needed for building and deploying assets on the LAOS blockchain platform.
 
 ![LAOS Logo](docs/LAOS_logo.png)
 
@@ -24,7 +23,10 @@ Presently, LAOS is accessible through its test network, named **Caladan**. Addit
 
 ### Caladan Parachain: 
 * Polkadot.js explorer: [wss://caladan.gorengine.com/own](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Fcaladan.gorengine.com%2Fown#/explorer)
+* Substrate RPC endpoint: wss://caladan.gorengine.com/own
 * EVM endpoint: https://caladan.gorengine.com/own
+* EVM Chain ID: 667
+* EVM Currency Symbol: CLD 
 * EVM block explorer: https://caladan.gorengine.com 
 
 ### KLAOS Parachain: 
@@ -32,6 +34,10 @@ Presently, LAOS is accessible through its test network, named **Caladan**. Addit
 * EVM endpoint: TBD
 * EVM block explorer: TBD
 
+Quickest entry point to run your own LAOS node:
+```
+$ docker run freeverseio/laos-ownership-node:<release> --chain=caladan
+```
 
 ## The LAOS Parachain Monorepo
 
@@ -48,3 +54,7 @@ Evolution Chain is engineered to provide dynamic capabilities to NFTs. It enable
 ### [Bridge](./bridge/)
 
 The Bridge module acts as the communication layer between the Ownership Chain and Evolution Chain, allowing for seamless data exchange and functionality integration.
+
+
+# Contributing
+Contributions to the LAOS Ownership Parachain project are welcome.
