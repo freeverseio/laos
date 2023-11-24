@@ -38,9 +38,9 @@ Presently, LAOS is accessible both via its canary Parachain in Kusama, named **K
 
 The quickest entry point to run your own LAOS Parachain node:
 ```
-$ docker run freeverseio/laos-ownership-node:<release> --chain=caladan
+$ docker run freeverseio/laos-ownership-node:<release> --chain=chain_name
 ```
-The available releases are published [here](https://github.com/freeverseio/laos/releases).
+using either `klaos` or `caladan` for `chain_name`. Available releases are published [here](https://github.com/freeverseio/laos/releases).
 
 # Contributing
 
