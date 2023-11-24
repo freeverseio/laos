@@ -1,40 +1,47 @@
-# LAOS Monorepo
+# The LAOS Chain
 
-![LAOS Logo](https://static.wixstatic.com/media/d45ec5_c4a74c9dd6904a7690244e066a3b9c93~mv2.jpg/v1/fill/w_1905,h_1052,al_c,q_90,usm_0.66_1.00_0.01,enc_auto/d45ec5_c4a74c9dd6904a7690244e066a3b9c93~mv2.jpg)
+LAOS is the Universal layer 1 for digital assets across all blockchains, introducing unique features such as bridgeless minting and evolution. 
 
-> **NOTE**: To streamline our development process and encourage diverse contributions, we've consolidated three core projects—Ownership Chain, Evolution Chain, and Bridge—into this single monorepo.
+![LAOS Logo](docs/LAOS_logo.png)
 
-## Introduction
+LAOS's main documentation can be found here:
+- **[LAOS Whitepaper](https://github.com/freeverseio/laos-whitepaper/blob/main/laos.pdf)**, for an in-depth, fully detailed description.
+- **[LAOS Litepaper](https://spaces.gorengine.com/laos/LAOS_litepaper.pdf)**, for a high-level, use case oriented description.
+- **[SBP Roadmap](https://github.com/freeverseio/laos-roadmap)**, the engineering roadmap within the Substrate Builders Program, ending on Q1 2024.
 
-The LAOS Monorepo is the centralized codebase for LAOS, a next-generation, non-custodial, dynamic NFT (Non-Fungible Token) protocol. With the aim of redefining the NFT landscape, LAOS introduces unique features such as universal minting and dynamic asset evolution. This monorepo houses all the essential resources and documentation needed for building and deploying assets on the LAOS blockchain platform.
+LAOS is fully open source and decentralized. The main code repositories are:
 
-## Core Projects
+* **[The LAOS Parachain](#the-laos-parachain-monorepo)**. You are already in it. To streamline the development process and encourage diverse contributions, all core components of the Parachain were integrated in this single monorepo.
 
-### [Ownership Chain](./ownership-chain/)
+* **[The Universal Node](https://github.com/freeverseio/laos-universal-node)**. This node streamlines the integration process for DApps aiming to incorporate bridgeless minting and evolution across various chains, including Ethereum, by merely adjusting the RPC endpoint to connect to the relevant Universal Nodes.
 
-Ownership Chain is dedicated to the enforcement and management of asset ownership within the LAOS ecosystem. It ensures secure, transparent, and efficient tracking of asset ownership changes, serving as a cornerstone of the LAOS platform.
+* **[The Universal ERC721 Solidity Templates](https://github.com/freeverseio/laos-erc721)**. This template contains the minimal extensions of the ERC721 OpenZeppelin implementation that enables bridgeless minting and evolution in any EVM chain.
 
-### [Evolution Chain](./evolution-chain/)
+LAOS is targeting late Q1'2024 to bid for a Parachain slot on Polkadot.
+Presently, LAOS is accessible through its test network, named **Caladan**. Additionally, it is in the process of participating in a Parachain auction on Kusama; the Parachain will be named **KLAOS**, which stands for **K**usama LAOS. 
 
-Evolution Chain is engineered to provide dynamic capabilities to NFTs. It enables assets to evolve and adapt over time, based on either pre-defined rules or real-time external factors. This adds a life-like quality to NFTs, making them more engaging and valuable.
-
-### [Bridge](./bridge/)
-
-The Bridge module acts as the communication layer between the Ownership Chain and Evolution Chain, allowing for seamless data exchange and functionality integration.
-
-## Testing Networks
-
-#### Caladan Ownership chain: 
-* Polkadot.js explorer: [wss://caladan.gorengine.com/own](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Fcaladan.gorengine.com%2Fown#/explorer)
+### Caladan Parachain: 
+* Substrate RPC endpoint: [wss://caladan.gorengine.com/own](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Fcaladan.gorengine.com%2Fown#/explorer)
 * EVM endpoint: https://caladan.gorengine.com/own
-* EVM blockexplorer: https://caladan.gorengine.com 
+* EVM Chain ID: 667
+* EVM Currency Symbol: CLD 
+* EVM block explorer: https://caladan.gorengine.com 
 
-#### Seldon Evolution chain: 
-* Polkadot.js explorer: [wss://seldon.gorengine.com/evo](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Fseldon.gorengine.com%2Fevo#/explorer)
-* EVM endpoint: https://seldon.gorengine.com/own
-* EVM blockexplorer: https://seldon.gorengine.com 
+### KLAOS Parachain: 
+* Substrate RPC endpoint: TBD
+* EVM endpoint: TBD
+* EVM Chain ID: TBD
+* EVM Currency Symbol: KLAOS 
+* EVM block explorer: TBD
 
-## Additional Resources
+## Running your own node
 
-- **Whitepaper**: For an in-depth understanding, refer to our [whitepaper](https://github.com/freeverseio/laos-whitepaper/blob/main/laos.pdf).
-- **Roadmap**: To explore our future plans and updates, visit our [roadmap](https://github.com/freeverseio/laos-roadmap).
+The quickest entry point to run your own LAOS Parachain node:
+```
+$ docker run freeverseio/laos-ownership-node:<release> --chain=caladan
+```
+The available releases are published [here](https://github.com/freeverseio/laos/releases).
+
+# Contributing
+
+Contributions to the LAOS Parachain project are highly appreciated. Please adhere to [Github's contribution guidelines](https://docs.github.com/en/get-started/quickstart/contributing-to-projects) to ensure a smooth collaboration process.
