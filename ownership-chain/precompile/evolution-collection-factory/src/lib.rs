@@ -15,7 +15,7 @@ use pallet_laos_evolution::{
 };
 use parity_scale_codec::Encode;
 
-use sp_core::H160;
+use sp_core::{Get, H160};
 use sp_std::{fmt::Debug, marker::PhantomData};
 
 /// Solidity selector of the CreateCollection log, which is the Keccak of the Log signature.
@@ -65,9 +65,8 @@ where
 
 				match LaosEvolution::<Runtime>::create_collection(owner.into()) {
 					Ok(collection_id) => {
-						let consumed_weight = LaosEvolutionWeights::<Runtime>::create_collection();
-						let mut consumed_gas =
-							GasCalculator::<Runtime>::weight_to_gas(consumed_weight);
+						let mut consumed_weight =
+							LaosEvolutionWeights::<Runtime>::create_collection();
 
 						let collection_address: H160 = collection_id_to_address(collection_id);
 
@@ -78,12 +77,14 @@ where
 						// fail.
 						Evm::<Runtime>::create_account(collection_address, REVERT_BYTECODE.into());
 
-						// 1 read for if `collection_address` exists, 1 read for if
-						// `collection_address` is `Suicided` 1 write for inserting
-						// `REVERT_BYTECODE` as `AccountCode`
-						consumed_gas = consumed_gas
-							.saturating_add(GasCalculator::<Runtime>::db_read_gas_cost(2))
-							.saturating_add(GasCalculator::<Runtime>::db_write_gas_cost(1));
+						// `AccountCode` -> 1 write, 1 read
+						// `Suicided` -> 1 read
+						// `AccountMetadata` -> 1 write
+						consumed_weight = consumed_weight.saturating_add(
+							<Runtime as frame_system::Config>::DbWeight::get().reads_writes(2, 2),
+						);
+
+						let consumed_gas = GasCalculator::<Runtime>::weight_to_gas(consumed_weight);
 
 						LogsBuilder::new(context.address)
 							.log2(
@@ -95,10 +96,12 @@ where
 							)
 							.record(handle)?;
 
+						// record EVM cost
 						handle.record_cost(consumed_gas)?;
 
-						// TODO: Add external cost when precompiles are benchmarked
-						// handle.record_external_cost(consumed_gas)?;
+						// Record Substrate related costs
+						// TODO: Add `ref_time` when precompiles are benchmarked
+						handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
 
 						Ok(succeed(
 							EvmDataWriter::new().write(Address(collection_address.into())).build(),

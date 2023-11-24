@@ -10,3 +10,9 @@ Frontier offers some manual way of recording cost of execution via `PrecompileHa
 
 ## Results
 
+| **method**          | **interface** | **weight**      |  **cost**       |
+| ---------------- | ----------- | ----------- | ----------- |
+| `create_collection` | extrinsic  | {ref_time: 360,414,000; proofSize: 1,493}  | 0.000942882 |    
+| `create_collection` | precompile | {ref_time: 1,056,325,000; proofSize: 2154} | 0.000154469 |
+| `mint`              | precompile | {ref_time: 613,225,000, proofSize: 790 }   | 0.000090751 |
+| `mint`              | extrinsic  | {ref_time: 295,385,471; proofSize: 4,051}  | 0.001522267 |

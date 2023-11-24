@@ -26,7 +26,7 @@ mod benchmarks {
 	impl_benchmark_test_suite!(LaosEvolution, crate::mock::new_test_ext(), crate::mock::Test);
 
 	#[benchmark]
-	fn mint_with_external_uri() {
+	fn mint_with_external_uri(s: Linear<0, { <T as Config>::MaxTokenUriLength::get() }>) {
 		let caller: T::AccountId = whitelisted_caller();
 		let owner = caller.clone();
 		let collection_id = LaosEvolution::<T>::create_collection(owner.clone()).unwrap();
@@ -36,32 +36,30 @@ mod benchmarks {
 			let token_id = LaosEvolution::<T>::mint_with_external_uri(
 				owner.clone(),
 				collection_id,
-				0,
+				s as Slot,
 				owner.clone(),
-				vec![0u8; <T as Config>::MaxTokenUriLength::get() as usize].try_into().unwrap(),
+				vec![1u8; s as usize].try_into().unwrap(),
 			)
 			.unwrap();
 
 			assert_eq!(
 				LaosEvolution::<T>::token_uri(collection_id, token_id),
-				Some(
-					vec![0u8; <T as Config>::MaxTokenUriLength::get() as usize].try_into().unwrap()
-				)
+				Some(vec![1u8; s as usize].try_into().unwrap())
 			);
 		};
 	}
 
 	#[benchmark]
-	fn evolve_with_external_uri() {
+	fn evolve_with_external_uri(s: Linear<0, { <T as Config>::MaxTokenUriLength::get() }>) {
 		let caller: T::AccountId = whitelisted_caller();
 		let owner = caller.clone();
 		let collection_id = LaosEvolution::<T>::create_collection(owner.clone()).unwrap();
 		let token_id = LaosEvolution::<T>::mint_with_external_uri(
 			owner.clone(),
 			0,
-			0,
+			s as Slot,
 			owner.clone(),
-			vec![0u8; <T as Config>::MaxTokenUriLength::get() as usize].try_into().unwrap(),
+			vec![0u8; s as usize].try_into().unwrap(),
 		)
 		.unwrap();
 
@@ -71,14 +69,14 @@ mod benchmarks {
 				owner.clone(),
 				collection_id,
 				token_id,
-				vec![1u8; <T as Config>::MaxTokenUriLength::get() as usize].try_into().unwrap(),
+				vec![1u8; s as usize].try_into().unwrap(),
 			)
 			.unwrap();
 		}
 
 		assert_eq!(
 			LaosEvolution::<T>::token_uri(collection_id, token_id),
-			Some(vec![1u8; <T as Config>::MaxTokenUriLength::get() as usize].try_into().unwrap())
+			Some(vec![1u8; s as usize].try_into().unwrap())
 		);
 	}
 }

@@ -119,17 +119,12 @@ pub mod pallet {
 		pub fn create_collection_ext(origin: OriginFor<T>) -> DispatchResult {
 			let who = frame_system::ensure_signed(origin)?;
 
-			let collection_id =
-				<Self as EvolutionCollectionFactory<AccountIdOf<T>>>::create_collection(
-					who.clone(),
-				)?;
-
-			Self::deposit_event(Event::CollectionCreated { collection_id, owner: who });
+			<Self as EvolutionCollectionFactory<AccountIdOf<T>>>::create_collection(who.clone())?;
 
 			Ok(().into())
 		}
 
-		#[pallet::weight(T::WeightInfo::mint_with_external_uri())]
+		#[pallet::weight(T::WeightInfo::mint_with_external_uri(token_uri.len() as u32))]
 		#[pallet::call_index(1)]
 		pub fn mint_with_external_uri_ext(
 			origin: OriginFor<T>,
@@ -151,7 +146,7 @@ pub mod pallet {
 			Ok(().into())
 		}
 
-		#[pallet::weight(T::WeightInfo::evolve_with_external_uri())]
+		#[pallet::weight(T::WeightInfo::evolve_with_external_uri(token_uri.len() as u32))]
 		#[pallet::call_index(2)]
 		pub fn evolve_with_external_uri_ext(
 			origin: OriginFor<T>,
