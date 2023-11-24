@@ -1,12 +1,8 @@
 [package]
 name = "laos-ownership"
 version = "0.1.0"
-authors = ["Anonymous"]
-description = "A new Cumulus FRAME-based Substrate Node, ready for hacking together a parachain."
-license = "Unlicense"
-homepage = "https://substrate.io"
-repository = "https://github.com/paritytech/cumulus/"
 edition = "2021"
+authors = { workspace = true }
 build = "build.rs"
 
 [dependencies]
