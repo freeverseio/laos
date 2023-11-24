@@ -37,6 +37,18 @@ where
 	Runtime: pallet_evm::Config,
 {
 	fn execute(&self, handle: &mut impl PrecompileHandle) -> Option<PrecompileResult> {
+		let address = handle.code_address();
+        if let IsPrecompileResult::Answer { is_precompile, .. } =
+            self.is_precompile(address, u64::MAX)
+        {
+            if is_precompile && address > hash(9) && handle.context().address != address {
+                return Some(Err(PrecompileFailure::Revert {
+                    exit_status: ExitRevert::Reverted,
+                    output: b"cannot be called with DELEGATECALL or CALLCODE".to_vec(),
+                }));
+            }
+        }
+
 		match handle.code_address() {
 			// Ethereum precompiles :
 			a if a == hash(1) => Some(ECRecover::execute(handle)),
