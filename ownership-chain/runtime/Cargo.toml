@@ -90,6 +90,8 @@ pallet-evm-precompile-simple = { workspace = true }
 
 [dev-dependencies]
 static_assertions = { workspace = true }
+precompile-utils = { workspace = true, features = ["testing"] }
+evm = { workspace = true }
 
 [features]
 default = [

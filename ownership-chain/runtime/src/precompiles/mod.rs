@@ -1,7 +1,8 @@
 #![allow(clippy::new_without_default)]
 
 use pallet_evm::{
-	IsPrecompileResult, Precompile, PrecompileHandle, PrecompileResult, PrecompileSet, ExitRevert, PrecompileFailure,
+	ExitRevert, IsPrecompileResult, Precompile, PrecompileFailure, PrecompileHandle,
+	PrecompileResult, PrecompileSet,
 };
 use sp_core::H160;
 use sp_std::marker::PhantomData;
@@ -26,6 +27,21 @@ where
 	pub fn used_addresses() -> [H160; 7] {
 		[hash(1), hash(2), hash(3), hash(4), hash(5), hash(1025), hash(1027)]
 	}
+
+	fn is_delegatecall_to_custom_precompile(
+		&self,
+		code_address: H160,
+		context_address: H160,
+	) -> bool {
+		if let IsPrecompileResult::Answer { is_precompile, .. } =
+			self.is_precompile(code_address, u64::MAX)
+		{
+			if is_precompile && code_address > hash(9) && context_address != code_address {
+				return true;
+			}
+		}
+		false
+	}
 }
 
 type EvolutionCollectionFactory = EvolutionCollectionFactoryPrecompile<Runtime>;
@@ -37,16 +53,13 @@ where
 	Runtime: pallet_evm::Config,
 {
 	fn execute(&self, handle: &mut impl PrecompileHandle) -> Option<PrecompileResult> {
-		let address = handle.code_address();
-		if let IsPrecompileResult::Answer { is_precompile, .. } =
-			self.is_precompile(address, u64::MAX)
+		if self
+			.is_delegatecall_to_custom_precompile(handle.code_address(), handle.context().address)
 		{
-			if is_precompile && address > hash(9) && handle.context().address != address {
-				return Some(Err(PrecompileFailure::Revert {
-					exit_status: ExitRevert::Reverted,
-					output: b"cannot be called with DELEGATECALL or CALLCODE".to_vec(),
-				}));
-			}
+			return Some(Err(PrecompileFailure::Revert {
+				exit_status: ExitRevert::Reverted,
+				output: b"cannot be called with DELEGATECALL or CALLCODE".to_vec(),
+			}));
 		}
 
 		match handle.code_address() {
