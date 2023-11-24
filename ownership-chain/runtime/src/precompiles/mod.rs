@@ -38,16 +38,16 @@ where
 {
 	fn execute(&self, handle: &mut impl PrecompileHandle) -> Option<PrecompileResult> {
 		let address = handle.code_address();
-        if let IsPrecompileResult::Answer { is_precompile, .. } =
-            self.is_precompile(address, u64::MAX)
-        {
-            if is_precompile && address > hash(9) && handle.context().address != address {
-                return Some(Err(PrecompileFailure::Revert {
-                    exit_status: ExitRevert::Reverted,
-                    output: b"cannot be called with DELEGATECALL or CALLCODE".to_vec(),
-                }));
-            }
-        }
+		if let IsPrecompileResult::Answer { is_precompile, .. } =
+			self.is_precompile(address, u64::MAX)
+		{
+			if is_precompile && address > hash(9) && handle.context().address != address {
+				return Some(Err(PrecompileFailure::Revert {
+					exit_status: ExitRevert::Reverted,
+					output: b"cannot be called with DELEGATECALL or CALLCODE".to_vec(),
+				}));
+			}
+		}
 
 		match handle.code_address() {
 			// Ethereum precompiles :
@@ -56,8 +56,11 @@ where
 			a if a == hash(3) => Some(Ripemd160::execute(handle)),
 			a if a == hash(4) => Some(Identity::execute(handle)),
 			a if a == hash(5) => Some(Modexp::execute(handle)),
+			a if a == hash(6) => Some(Bn128Add::execute(handle)),
+			a if a == hash(7) => Some(Bn128Mul::execute(handle)),
+			a if a == hash(8) => Some(Bn128Pairing::execute(handle)),
+			a if a == hash(9) => Some(Blake2F::execute(handle)),
 			// Non-Frontier specific nor Ethereum precompiles :
-			// a if a == hash(1024) => Some(Sha3FIPS256::execute(handle)),
 			a if a == hash(1025) => Some(ECRecoverPublicKey::execute(handle)),
 			a if a == hash(1027) => Some(EvolutionCollectionFactory::execute(handle)),
 			a if address_to_collection_id(a).is_ok() => Some(EvolutionCollection::execute(handle)),
