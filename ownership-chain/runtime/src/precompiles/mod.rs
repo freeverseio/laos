@@ -1,7 +1,7 @@
 #![allow(clippy::new_without_default)]
 
 use pallet_evm::{
-	IsPrecompileResult, Precompile, PrecompileHandle, PrecompileResult, PrecompileSet,
+	IsPrecompileResult, Precompile, PrecompileHandle, PrecompileResult, PrecompileSet, ExitRevert, PrecompileFailure,
 };
 use sp_core::H160;
 use sp_std::marker::PhantomData;
@@ -56,10 +56,6 @@ where
 			a if a == hash(3) => Some(Ripemd160::execute(handle)),
 			a if a == hash(4) => Some(Identity::execute(handle)),
 			a if a == hash(5) => Some(Modexp::execute(handle)),
-			a if a == hash(6) => Some(Bn128Add::execute(handle)),
-			a if a == hash(7) => Some(Bn128Mul::execute(handle)),
-			a if a == hash(8) => Some(Bn128Pairing::execute(handle)),
-			a if a == hash(9) => Some(Blake2F::execute(handle)),
 			// Non-Frontier specific nor Ethereum precompiles :
 			a if a == hash(1025) => Some(ECRecoverPublicKey::execute(handle)),
 			a if a == hash(1027) => Some(EvolutionCollectionFactory::execute(handle)),

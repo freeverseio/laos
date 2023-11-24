@@ -24,11 +24,7 @@ fn ethereum_precompiled_addresses_are_precompile() {
 	assert!(is_precompile(hash(3)).unwrap());
 	assert!(is_precompile(hash(4)).unwrap());
 	assert!(is_precompile(hash(5)).unwrap());
-	assert!(is_precompile(hash(6)).unwrap());
-	assert!(is_precompile(hash(7)).unwrap());
-	assert!(is_precompile(hash(8)).unwrap());
-	assert!(is_precompile(hash(9)).unwrap());
-	assert!(is_precompile(hash(10)).unwrap());
+	assert!(!is_precompile(hash(6)).unwrap());
 	assert!(!is_precompile(hash(1026)).unwrap());
 	assert!(is_precompile(hash(1027)).unwrap());
 	assert!(is_precompile(H160::from_str("0xfffffffffffffffffffffffe0000000000000005").unwrap())
