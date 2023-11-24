@@ -44,36 +44,4 @@ The available releases are published [here](https://github.com/freeverseio/laos/
 
 # Contributing
 
-Contributions to the LAOS Parachain project are welcome. We value the participation of each member of the community and want to ensure that everyone has an enjoyable and fulfilling experience. 
-
-## Ways to Contribute
-
-There are many ways to contribute to the LAOS Parachain project:
-
-1. **Code Contributions**: If you're a developer and wish to contribute to our codebase, please check out the Github repositories detailed above. We welcome improvements to existing code and new feature developments.
-
-2. **Bug Reports**: If you find any bugs or issues, please report them in the [Issues section](https://github.com/freeverseio/laos/issues) of our GitHub repository. Clearly describe the issue, including steps to reproduce it, and, if possible, attach screenshots.
-
-3. **Feature Requests**: Have ideas for new features? Feel free to submit them as feature requests in the [Issues section](https://github.com/freeverseio/laos/issues). Please provide a clear and detailed explanation of the feature and its potential benefits.
-
-4. **Documentation**: Help us improve our documentation. Whether it's a typo fix, a better explanation, or new content, we greatly appreciate any contributions to our documentation. 
-
-## Contribution Process
-
-1. **Fork the Repository**: Start by forking the repository you wish to contribute to.
-
-2. **Create a Branch**: Create a new branch in your fork for your contribution.
-
-3. **Make Your Changes**: Implement your changes, bug fixes, or feature enhancements.
-
-4. **Test Your Changes**: Ensure your changes do not break any existing functionality.
-
-5. **Submit a Pull Request**: Once your changes are ready, submit a pull request. Include a clear description of your changes and any relevant issue numbers.
-
-6. **Review and Merge**: Your pull request will be reviewed by the maintainers, and, if approved, it will be merged into the project.
-
-## Getting Help
-
-If you need help with contributing, feel free to [open an issue](https://github.com/freeverseio/laos/issues).
-
-We look forward to your contributions and are excited to see the impact they will have on the LAOS Parachain project!
+Contributions to the LAOS Parachain project are highly appreciated. Please adhere to [Github's contribution guidelines](https://docs.github.com/en/get-started/quickstart/contributing-to-projects) to ensure a smooth collaboration process.
