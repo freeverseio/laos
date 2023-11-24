@@ -21,7 +21,7 @@ LAOS is targeting late Q1'2024 to bid for a Parachain slot on Polkadot.
 Presently, LAOS is accessible both via its canary Parachain in Kusama, named **KLAOS**, which stands for **K**usama LAOS, as well as through its test network, named **Caladan**. 
 
 ### KLAOS Parachain: 
-* Substrate RPC endpoint: [wss://rpc.klaos.laosfoundation.io](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Frpc.klaos.laosfoundation.io%2Fown#/explorer)   
+* Substrate RPC endpoint: [wss://rpc.klaos.laosfoundation.io](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Frpc.klaos.laosfoundation.io#/rpc)   
 * EVM endpoint: https://rpc.klaos.laosfoundation.io
 * EVM Chain ID: 2718
 * EVM Currency Symbol: KLAOS 
