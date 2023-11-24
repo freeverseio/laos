@@ -27,7 +27,18 @@ where
 		Self(Default::default())
 	}
 	pub fn used_addresses() -> [H160; 10] {
-		[hash(1), hash(2), hash(3), hash(4), hash(5), hash(6), hash(7), hash(8), hash(9), hash(1027)]
+		[
+			hash(1),
+			hash(2),
+			hash(3),
+			hash(4),
+			hash(5),
+			hash(6),
+			hash(7),
+			hash(8),
+			hash(9),
+			hash(1027),
+		]
 	}
 
 	fn is_delegatecall_to_custom_precompile(
