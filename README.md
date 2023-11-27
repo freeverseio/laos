@@ -20,8 +20,8 @@ LAOS is fully open source and decentralized. The main code repositories are:
 LAOS is targeting late Q1'2024 to bid for a Parachain slot on Polkadot.
 Presently, LAOS is accessible both via its canary Parachain in Kusama, named **K-LAOS**, which stands for **K**usama LAOS, as well as through its test network, named **Caladan**. Please read the [disclaimer about K-LAOS](https://www.laosfoundation.io/disclaimer-klaos).
 
-### K-LAOS Parachain: 
-* Substrate RPC endpoint: [wss://rpc.klaos.laosfoundation.io](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Frpc.klaos.laosfoundation.io%2Fown#/explorer)   
+### KLAOS Parachain: 
+* Substrate RPC endpoint: [wss://rpc.klaos.laosfoundation.io](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Frpc.klaos.laosfoundation.io#/rpc)   
 * EVM endpoint: https://rpc.klaos.laosfoundation.io
 * EVM Chain ID: 2718
 * EVM Currency Symbol: KLAOS 
