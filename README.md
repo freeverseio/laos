@@ -18,7 +18,14 @@ LAOS is fully open source and decentralized. The main code repositories are:
 * **[The Universal ERC721 Solidity Templates](https://github.com/freeverseio/laos-erc721)**. This template contains the minimal extensions of the ERC721 OpenZeppelin implementation that enables bridgeless minting and evolution in any EVM chain.
 
 LAOS is targeting late Q1'2024 to bid for a Parachain slot on Polkadot.
-Presently, LAOS is accessible through its test network, named **Caladan**. Additionally, it is in the process of participating in a Parachain auction on Kusama; the Parachain will be named **KLAOS**, which stands for **K**usama LAOS. 
+Presently, LAOS is accessible both via its canary Parachain in Kusama, named **K-LAOS**, which stands for **K**usama LAOS, as well as through its test network, named **Caladan**. Please read the [disclaimer about K-LAOS](https://www.laosfoundation.io/disclaimer-klaos).
+
+### KLAOS Parachain: 
+* Substrate RPC endpoint: [wss://rpc.klaos.laosfoundation.io](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Frpc.klaos.laosfoundation.io#/rpc)   
+* EVM endpoint: https://rpc.klaos.laosfoundation.io
+* EVM Chain ID: 2718
+* EVM Currency Symbol: KLAOS 
+* EVM block explorer: https://blockscout.klaos.laosfoundation.io
 
 ### Caladan Parachain: 
 * Substrate RPC endpoint: [wss://caladan.gorengine.com/own](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Fcaladan.gorengine.com%2Fown#/explorer)
@@ -27,20 +34,13 @@ Presently, LAOS is accessible through its test network, named **Caladan**. Addit
 * EVM Currency Symbol: CLD 
 * EVM block explorer: https://caladan.gorengine.com 
 
-### KLAOS Parachain: 
-* Substrate RPC endpoint: TBD
-* EVM endpoint: TBD
-* EVM Chain ID: TBD
-* EVM Currency Symbol: KLAOS 
-* EVM block explorer: TBD
-
 ## Running your own node
 
 The quickest entry point to run your own LAOS Parachain node:
 ```
-$ docker run freeverseio/laos-ownership-node:<release> --chain=caladan
+$ docker run freeverseio/laos-ownership-node:<release> --chain=chain_name
 ```
-The available releases are published [here](https://github.com/freeverseio/laos/releases).
+using either `klaos` or `caladan` for `chain_name`. Available releases are published [here](https://github.com/freeverseio/laos/releases).
 
 # Contributing
 
