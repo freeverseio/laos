@@ -18,8 +18,8 @@ fn null_address_is_not_precompile() {
 	assert!(!is_precompile(H160::zero()).unwrap());
 }
 
-#[test]
 /// Check if standard Ethereum precompiled addresses are recognized.
+#[test]
 fn check_ethereum_precompiled_addresses() {
 	// Test Ethereum precompiled addresses from 1 to 9
 	for i in 1..=9 {
@@ -27,8 +27,8 @@ fn check_ethereum_precompiled_addresses() {
 	}
 }
 
-#[test]
 /// Check if custom precompiled addresses are recognized.
+#[test]
 fn check_custom_precompiled_addresses() {
 	// Test specific custom precompiled addresses
 	assert!(is_precompile(hash(1027)).unwrap());
@@ -36,9 +36,9 @@ fn check_custom_precompiled_addresses() {
 		.unwrap());
 }
 
-#[test]
 /// Test to ensure that delegate calls to addresses that are not precompiles are recognized
 /// correctly.
+#[test]
 fn delegatecall_to_non_precompile_is_recognized() {
 	let precompiles = FrontierPrecompiles::<Runtime>::new();
 
@@ -52,8 +52,8 @@ fn delegatecall_to_non_precompile_is_recognized() {
 	assert!(!precompiles.is_delegatecall_to_custom_precompile(code_address, context_address));
 }
 
-#[test]
 /// Test to ensure that delegate calls to non-standard Ethereum precompile addresses are recognized.
+#[test]
 fn delegatecall_to_custom_precompile_is_recognized() {
 	let precompiles = FrontierPrecompiles::<Runtime>::new();
 
@@ -67,9 +67,9 @@ fn delegatecall_to_custom_precompile_is_recognized() {
 	assert!(precompiles.is_delegatecall_to_custom_precompile(code_address, context_address));
 }
 
-#[test]
 /// Test to ensure that delegate calls to standard Ethereum precompile addresses are not recognized
 /// as custom precompiles.
+#[test]
 fn delegatecall_to_standard_precompile_not_recognized_as_custom() {
 	let precompiles = FrontierPrecompiles::<Runtime>::new();
 
