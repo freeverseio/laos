@@ -1,7 +1,8 @@
 #![allow(clippy::new_without_default)]
 
 use pallet_evm::{
-	IsPrecompileResult, Precompile, PrecompileHandle, PrecompileResult, PrecompileSet,
+	ExitRevert, IsPrecompileResult, Precompile, PrecompileFailure, PrecompileHandle,
+	PrecompileResult, PrecompileSet,
 };
 use sp_core::H160;
 use sp_std::marker::PhantomData;
@@ -26,6 +27,27 @@ where
 	pub fn used_addresses() -> [H160; 7] {
 		[hash(1), hash(2), hash(3), hash(4), hash(5), hash(1025), hash(1027)]
 	}
+
+	fn is_delegatecall_to_custom_precompile(
+		&self,
+		code_address: H160,
+		context_address: H160,
+	) -> bool {
+		// Check if the code address is a precompile
+		if let IsPrecompileResult::Answer { is_precompile, .. } =
+			self.is_precompile(code_address, u64::MAX)
+		{
+			// Return true if:
+			// 1. It is a precompile.
+			// 2. The code address is beyond the first nine standard Ethereum precompiles.
+			// 3. The context address is different from the code address.
+			// This indicates a delegate call to a custom precompile.
+			return is_precompile && code_address > hash(9) && context_address != code_address;
+		}
+
+		// If none of the above conditions are met, return false
+		false
+	}
 }
 
 type EvolutionCollectionFactory = EvolutionCollectionFactoryPrecompile<Runtime>;
@@ -37,6 +59,15 @@ where
 	Runtime: pallet_evm::Config,
 {
 	fn execute(&self, handle: &mut impl PrecompileHandle) -> Option<PrecompileResult> {
+		if self
+			.is_delegatecall_to_custom_precompile(handle.code_address(), handle.context().address)
+		{
+			return Some(Err(PrecompileFailure::Revert {
+				exit_status: ExitRevert::Reverted,
+				output: b"cannot be called with DELEGATECALL or CALLCODE".to_vec(),
+			}));
+		}
+
 		match handle.code_address() {
 			// Ethereum precompiles :
 			a if a == hash(1) => Some(ECRecover::execute(handle)),
@@ -45,7 +76,6 @@ where
 			a if a == hash(4) => Some(Identity::execute(handle)),
 			a if a == hash(5) => Some(Modexp::execute(handle)),
 			// Non-Frontier specific nor Ethereum precompiles :
-			// a if a == hash(1024) => Some(Sha3FIPS256::execute(handle)),
 			a if a == hash(1025) => Some(ECRecoverPublicKey::execute(handle)),
 			a if a == hash(1027) => Some(EvolutionCollectionFactory::execute(handle)),
 			a if address_to_collection_id(a).is_ok() => Some(EvolutionCollection::execute(handle)),
