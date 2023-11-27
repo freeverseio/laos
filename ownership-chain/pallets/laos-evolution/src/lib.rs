@@ -14,13 +14,11 @@ pub mod types;
 pub mod weights;
 
 use frame_support::pallet_prelude::*;
-use frame_system::pallet_prelude::*;
 use sp_core::H160;
 use sp_runtime::{
 	traits::{Convert, One},
 	ArithmeticError, DispatchError,
 };
-use weights::WeightInfo;
 
 pub use traits::{EvolutionCollection, EvolutionCollectionFactory};
 pub use types::*;
@@ -42,8 +40,6 @@ pub mod pallet {
 		/// Limit for the length of `token_uri`
 		#[pallet::constant]
 		type MaxTokenUriLength: Get<u32>;
-		/// Weight information for extrinsics in this pallet.
-		type WeightInfo: WeightInfo;
 	}
 
 	/// Collection counter
@@ -113,59 +109,7 @@ pub mod pallet {
 	}
 
 	#[pallet::call]
-	impl<T: Config> Pallet<T> {
-		#[pallet::weight(T::WeightInfo::create_collection())]
-		#[pallet::call_index(0)]
-		pub fn create_collection_ext(origin: OriginFor<T>) -> DispatchResult {
-			let who = frame_system::ensure_signed(origin)?;
-
-			<Self as EvolutionCollectionFactory<AccountIdOf<T>>>::create_collection(who.clone())?;
-
-			Ok(().into())
-		}
-
-		#[pallet::weight(T::WeightInfo::mint_with_external_uri(token_uri.len() as u32))]
-		#[pallet::call_index(1)]
-		pub fn mint_with_external_uri_ext(
-			origin: OriginFor<T>,
-			collection_id: CollectionId,
-			slot: Slot,
-			to: AccountIdOf<T>,
-			token_uri: TokenUriOf<T>,
-		) -> DispatchResult {
-			let who = frame_system::ensure_signed(origin)?;
-
-			<Self as EvolutionCollection<AccountIdOf<T>, TokenUriOf<T>>>::mint_with_external_uri(
-				who.clone(),
-				collection_id,
-				slot,
-				to,
-				token_uri,
-			)?;
-
-			Ok(().into())
-		}
-
-		#[pallet::weight(T::WeightInfo::evolve_with_external_uri(token_uri.len() as u32))]
-		#[pallet::call_index(2)]
-		pub fn evolve_with_external_uri_ext(
-			origin: OriginFor<T>,
-			collection_id: CollectionId,
-			token_id: TokenId,
-			token_uri: TokenUriOf<T>,
-		) -> DispatchResult {
-			let who = frame_system::ensure_signed(origin)?;
-
-			<Self as EvolutionCollection<AccountIdOf<T>, TokenUriOf<T>>>::evolve_with_external_uri(
-				who.clone(),
-				collection_id,
-				token_id,
-				token_uri,
-			)?;
-
-			Ok(().into())
-		}
-	}
+	impl<T: Config> Pallet<T> {}
 }
 
 impl<T: Config> EvolutionCollectionFactory<AccountIdOf<T>> for Pallet<T> {
