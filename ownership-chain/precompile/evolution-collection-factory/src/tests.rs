@@ -144,3 +144,17 @@ fn create_collection_inserts_bytecode_to_address() {
 		assert!(AccountCodes::<Test>::get(&collection_address) == REVERT_BYTECODE);
 	});
 }
+
+#[test]
+fn create_collection_does_not_record_costs() {
+	new_test_ext().execute_with(|| {
+		let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
+			.write(Address(H160([1u8; 20])))
+			.build();
+
+		precompiles()
+			.prepare_test(H160([1u8; 20]), H160(PRECOMPILE_ADDRESS), input)
+			.expect_cost(0)
+			.execute_some();
+	})
+}
