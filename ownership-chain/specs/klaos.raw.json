@@ -5,7 +5,8 @@
   "bootNodes": [
     "/ip4/159.223.242.241/tcp/30334/p2p/12D3KooWPLfdfdDuNA2EcQQg1UfniDw2cJHjhcS98Vgj3pyvepgd",
     "/ip4/159.223.241.56/tcp/30334/p2p/12D3KooWP4hW5sQsS61yLWqgSnEEAUePdveMvqMdZxVWz4a4M6n7",
-    "/ip4/64.225.82.80/tcp/30334/p2p/12D3KooWCEZ635J1LtCSX95vSjk6WzAm6oHdzKdEhiKzLNtiUvpT"
+    "/ip4/64.225.82.80/tcp/30334/p2p/12D3KooWCEZ635J1LtCSX95vSjk6WzAm6oHdzKdEhiKzLNtiUvpT",
+    "/dns4/klaos-boot-0.gorengine.com/tcp/30334/p2p/12D3KooWCEZ635J1LtCSX95vSjk6WzAm6oHdzKdEhiKzLNtiUvpT"
   ],
   "telemetryEndpoints": [
     [
