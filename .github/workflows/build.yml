@@ -104,6 +104,7 @@ jobs:
       - name: Try Runtime
         run: |
           RUST_LOG=try-runtime ./target/release/laos-ownership try-runtime --runtime ./target/release/wbuild/laos-ownership-runtime/laos_ownership_runtime.wasm on-runtime-upgrade --checks=pre-and-post live --uri ws://161.35.247.178:9944
+          RUST_LOG=try-runtime ./target/release/laos-ownership try-runtime --runtime ./target/release/wbuild/laos-ownership-runtime/laos_ownership_runtime.wasm on-runtime-upgrade --checks=pre-and-post live --uri wss://rpc.klaos.laosfoundation.io
   
   e2e-tests:
     runs-on: 
