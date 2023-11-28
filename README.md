@@ -49,3 +49,5 @@ using either `klaos` or `caladan` for `chain_name`. Available releases are publi
 # Contributing
 
 Contributions to the LAOS Parachain project are highly appreciated. Please adhere to [Github's contribution guidelines](https://docs.github.com/en/get-started/quickstart/contributing-to-projects) to ensure a smooth collaboration process.
+
+For detailed implementation assistance, please engage with the development team on the official [LAOS Discord server](https://discord.gg/5YX9DHda).
