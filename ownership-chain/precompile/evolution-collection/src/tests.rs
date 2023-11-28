@@ -8,7 +8,6 @@ use core::str::FromStr;
 use super::*;
 use evm::Context;
 use fp_evm::{Log, PrecompileSet};
-use laos_precompile_utils::log_costs;
 use mock::*;
 use pallet_evm_evolution_collection_factory::Action as CollectionFactoryAction;
 use precompile_utils::{
@@ -360,11 +359,9 @@ fn test_expected_cost_token_uri() {
 		// Expected weight of the precompile call implementation.
 		// Since benchmarking precompiles is not supported yet, we are benchmarking
 		// functions that precompile calls internally.
-		let expected_cost = GasCalculator::<Test>::db_read_gas_cost(1);
-
 		precompiles()
 			.prepare_test(alice, collection_address, input)
-			.expect_cost(expected_cost)
+			.expect_cost(25000000) //  [`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	})
 }
@@ -380,11 +377,9 @@ fn test_expected_cost_owner() {
 		// Expected weight of the precompile call implementation.
 		// Since benchmarking precompiles is not supported yet, we are benchmarking
 		// functions that precompile calls internally.
-		let expected_cost = GasCalculator::<Test>::db_read_gas_cost(1);
-
 		precompiles()
 			.prepare_test(alice, collection_address, input)
-			.expect_cost(expected_cost)
+			.expect_cost(25000000) //  [`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	})
 }
@@ -406,18 +401,12 @@ fn test_expected_cost_mint_with_external_uri() {
 		// Expected weight of the precompile call implementation.
 		// Since benchmarking precompiles is not supported yet, we are benchmarking
 		// functions that precompile calls internally.
-		let expected_weight =
-			LaosEvolutionWeights::<Test>::mint_with_external_uri(token_uri.0.len() as u32);
-
-		// see [`mint_with_external_uri_should_generate_log`] why log is 160 bytes of length
-		let log_cost = log_costs(2, 160).unwrap();
-
-		// we have [`WeightToGas`] set to 1:1 in mock
-		let expected_cost = expected_weight.ref_time() + log_cost;
-
+		//
+		// Following `cost` is calculated as:
+		// `mint_with_external_uri` weight + log cost
 		precompiles()
 			.prepare_test(owner, collection_address, input)
-			.expect_cost(expected_cost)
+			.expect_cost(170960430) // [`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	})
 }
@@ -437,16 +426,12 @@ fn test_expected_cost_evolve_with_external_uri() {
 		// Expected weight of the precompile call implementation.
 		// Since benchmarking precompiles is not supported yet, we are benchmarking
 		// functions that precompile calls internally.
-		let expected_weight = LaosEvolutionWeights::<Test>::evolve_with_external_uri(20);
-
-		let log_cost = log_costs(2, 96).unwrap();
-
-		// we have [`WeightToGas`] set to 1:1 in mock
-		let expected_cost = expected_weight.ref_time() + log_cost;
-
+		//
+		// Following `cost` is calculated as:
+		// `evolve_with_external_uri` weight + log cost
 		precompiles()
 			.prepare_test(alice, collection_address, input)
-			.expect_cost(expected_cost)
+			.expect_cost(169493154) // [`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	})
 }

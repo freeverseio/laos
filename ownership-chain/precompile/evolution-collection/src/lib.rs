@@ -81,8 +81,7 @@ where
 			.map_err(|_| revert("invalid collection address"))?;
 
 		if let Some(owner) = LaosEvolution::<Runtime>::collection_owner(collection_id) {
-			let consumed_gas: u64 = GasCalculator::<Runtime>::db_read_gas_cost(1);
-			handle.record_cost(consumed_gas)?;
+			handle.record_cost(GasCalculator::<Runtime>::db_read_gas_cost(1))?;
 
 			Ok(succeed(EvmDataWriter::new().write(Address(owner.into())).build()))
 		} else {

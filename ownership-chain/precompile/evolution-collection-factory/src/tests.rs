@@ -9,8 +9,6 @@ use crate::mock::*;
 
 use super::*;
 use fp_evm::Log;
-use frame_support::weights::RuntimeDbWeight;
-use laos_precompile_utils::log_costs;
 use pallet_evm::AccountCodes;
 use precompile_utils::testing::PrecompileTesterExt;
 use sp_core::{H160, H256, U256};
@@ -154,25 +152,15 @@ fn test_expected_cost_create_collection() {
 			.write(Address(H160([1u8; 20])))
 			.build();
 
-		let db_weight: RuntimeDbWeight = <Test as frame_system::Config>::DbWeight::get();
-
 		// Expected weight of the precompile call implementation.
 		// Since benchmarking precompiles is not supported yet, we are benchmarking
 		// functions that precompile calls internally.
-		let mut expected_weight = LaosEvolutionWeights::<Test>::create_collection();
-
-		// for inserting bytecode for the collection address
-		expected_weight = expected_weight.saturating_add(db_weight.reads_writes(2, 2));
-
-		// there is also cost of the log
-		let log_cost = log_costs(2, 32).unwrap();
-
-		// we have [`WeightToGas`] set to 1:1 in mock
-		let expected_cost = expected_weight.ref_time() + log_cost;
-
+		//
+		// The weight of this precompile call is calculated as:
+		// `create_collection` weight + insert account bytecode for the collection + log costs
 		precompiles()
 			.prepare_test(H160([1u8; 20]), H160(PRECOMPILE_ADDRESS), input)
-			.expect_cost(expected_cost) // weight to gas -> 1 to 1 in mock
+			.expect_cost(486001381) //[`WeightToGas`] set to 1:1 in mock // weight to gas -> 1 to 1 in mock
 			.execute_some();
 	})
 }
