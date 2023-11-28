@@ -331,13 +331,13 @@ pub fn run() -> Result<()> {
 			let collator_options = cli.run.collator_options();
 
 			if runner.config().chain_spec.id().starts_with("klaos") {
-				info!("-----------------------------------------------------------");
+				info!("-----------------------------------------------------------------");
 				info!(" The KLAOS Parachain on Kusama is a test chain for");
 				info!(" the LAOS Parachain on Polkadot.");
 				info!(" KLAOS is not endorsed by either the LAOS Foundation or Freeverse");
 				info!(" for real-value transactions involving the KLAOS token");
 				info!(" https://disclaimer.klaos.laosfoundation.io");
-				info!("-----------------------------------------------------------");
+				info!("-----------------------------------------------------------------");
 			};
 
 			runner.run_node_until_exit(|config| async move {
