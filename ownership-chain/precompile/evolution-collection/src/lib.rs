@@ -4,10 +4,12 @@
 use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
 use laos_precompile_utils::{
 	keccak256, revert_dispatch_error, succeed, Address, Bytes, EvmDataWriter, EvmResult,
-	FunctionModifier, LogExt, LogsBuilder, PrecompileHandleExt,
+	FunctionModifier, GasCalculator, LogExt, LogsBuilder, PrecompileHandleExt,
 };
 use pallet_laos_evolution::{
-	address_to_collection_id, traits::EvolutionCollection as EvolutionCollectionT,
+	address_to_collection_id,
+	traits::EvolutionCollection as EvolutionCollectionT,
+	weights::{SubstrateWeight as LaosEvolutionWeights, WeightInfo},
 	Pallet as LaosEvolution, Slot, TokenId, TokenUriOf,
 };
 use parity_scale_codec::Encode;
@@ -38,7 +40,7 @@ pub enum Action {
 
 impl<Runtime> Precompile for EvolutionCollectionPrecompile<Runtime>
 where
-	Runtime: pallet_laos_evolution::Config,
+	Runtime: pallet_laos_evolution::Config + pallet_evm::Config,
 	Runtime::AccountId: From<H160> + Into<H160> + Encode + Debug,
 	LaosEvolution<Runtime>: EvolutionCollectionT<Runtime::AccountId, TokenUriOf<Runtime>>,
 {
@@ -67,7 +69,7 @@ where
 
 impl<Runtime> EvolutionCollectionPrecompile<Runtime>
 where
-	Runtime: pallet_laos_evolution::Config,
+	Runtime: pallet_laos_evolution::Config + pallet_evm::Config,
 	Runtime::AccountId: From<H160> + Into<H160> + Encode + Debug,
 	LaosEvolution<Runtime>: EvolutionCollectionT<Runtime::AccountId, TokenUriOf<Runtime>>,
 {
@@ -79,6 +81,8 @@ where
 			.map_err(|_| revert("invalid collection address"))?;
 
 		if let Some(owner) = LaosEvolution::<Runtime>::collection_owner(collection_id) {
+			handle.record_cost(GasCalculator::<Runtime>::db_read_gas_cost(1))?;
+
 			Ok(succeed(EvmDataWriter::new().write(Address(owner.into())).build()))
 		} else {
 			Err(revert("collection does not exist"))
@@ -96,6 +100,8 @@ where
 		let token_id = input.read::<TokenId>()?;
 
 		if let Some(token_uri) = LaosEvolution::<Runtime>::token_uri(collection_id, token_id) {
+			let consumed_gas: u64 = GasCalculator::<Runtime>::db_read_gas_cost(1);
+			handle.record_cost(consumed_gas)?;
 			Ok(succeed(EvmDataWriter::new().write(Bytes(token_uri.into())).build()))
 		} else {
 			Err(revert("asset does not exist"))
@@ -128,6 +134,10 @@ where
 			token_uri,
 		) {
 			Ok(token_id) => {
+				let consumed_weight = LaosEvolutionWeights::<Runtime>::mint_with_external_uri(
+					token_uri_raw.len() as u32,
+				);
+
 				LogsBuilder::new(context.address)
 					.log2(
 						SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI,
@@ -139,6 +149,13 @@ where
 							.build(),
 					)
 					.record(handle)?;
+
+				// Record EVM cost
+				handle.record_cost(GasCalculator::<Runtime>::weight_to_gas(consumed_weight))?;
+
+				// Record Substrate related costs
+				// TODO: Add `ref_time` when precompiles are benchmarked
+				handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
 
 				Ok(succeed(EvmDataWriter::new().write(token_id).build()))
 			},
@@ -171,6 +188,10 @@ where
 			token_uri,
 		) {
 			Ok(()) => {
+				let consumed_weight = LaosEvolutionWeights::<Runtime>::evolve_with_external_uri(
+					token_uri_raw.len() as u32,
+				);
+
 				let mut token_id_bytes = [0u8; 32];
 				token_id.to_big_endian(&mut token_id_bytes);
 
@@ -181,6 +202,13 @@ where
 						EvmDataWriter::new().write(Bytes(token_uri_raw)).build(),
 					)
 					.record(handle)?;
+
+				// Record EVM cost
+				handle.record_cost(GasCalculator::<Runtime>::weight_to_gas(consumed_weight))?;
+
+				// Record Substrate related costs
+				// TODO: Add `ref_time` when precompiles are benchmarked
+				handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
 
 				Ok(succeed(EvmDataWriter::new().write(token_id).build()))
 			},

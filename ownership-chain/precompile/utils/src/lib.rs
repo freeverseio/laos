@@ -29,10 +29,11 @@ use crate::alloc::borrow::ToOwned;
 use fp_evm::{
 	Context, ExitError, ExitSucceed, PrecompileFailure, PrecompileHandle, PrecompileOutput,
 };
+use frame_support::weights::Weight;
 use precompile_utils::solidity::revert::revert;
 
-use pallet_evm::Log;
-use sp_core::{H160, H256, U256};
+use pallet_evm::{GasWeightMapping, Log};
+use sp_core::{Get, H160, H256, U256};
 use sp_runtime::DispatchError;
 use sp_std::{vec, vec::Vec};
 
@@ -136,6 +137,7 @@ pub trait LogExt {
 
 impl LogExt for Log {
 	fn record(self, handle: &mut impl PrecompileHandle) -> EvmResult {
+		handle.record_log_costs(&[&self])?;
 		handle.log(self.address, self.topics, self.data)?;
 		Ok(())
 	}
@@ -145,75 +147,35 @@ impl LogExt for Log {
 	}
 }
 
-// /// Helper functions requiring a Runtime.
-// /// This runtime must of course implement `pallet_evm::Config`.
-// #[derive(Clone, Copy, Debug)]
-// pub struct RuntimeHelper<Runtime>(PhantomData<Runtime>);
+/// Helper struct that requires `Runtime` to calculate `read` and `write` costs.
+///
+/// This struct is used to calculate the cost of a DB read or write in gas.
+#[derive(Clone, Copy, Debug)]
+pub struct GasCalculator<Runtime>(sp_std::marker::PhantomData<Runtime>);
 
-// impl<Runtime> RuntimeHelper<Runtime>
-// where
-// 	Runtime: pallet_evm::Config,
-// 	Runtime::RuntimeCall: Dispatchable<PostInfo = PostDispatchInfo> + GetDispatchInfo,
-// {
-// 	/// Try to dispatch a Substrate call.
-// 	/// Return an error if there are not enough gas, or if the call fails.
-// 	/// If successful returns the used gas using the Runtime GasWeightMapping.
-// 	pub fn try_dispatch<Call>(
-// 		handle: &mut impl PrecompileHandleExt,
-// 		origin: <Runtime::RuntimeCall as Dispatchable>::RuntimeOrigin,
-// 		call: Call,
-// 	) -> EvmResult<()>
-// 	where
-// 		Runtime::RuntimeCall: From<Call>,
-// 	{
-// 		let call = Runtime::RuntimeCall::from(call);
-// 		let dispatch_info = call.get_dispatch_info();
+impl<Runtime> GasCalculator<Runtime>
+where
+	Runtime: pallet_evm::Config + frame_system::Config,
+{
+	/// Cost of a Substrate DB write in gas.
+	pub fn db_write_gas_cost(writes: u64) -> u64 {
+		<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
+			<Runtime as frame_system::Config>::DbWeight::get().writes(writes),
+		)
+	}
 
-// 		// Make sure there is enough gas.
-// 		let remaining_gas = handle.remaining_gas();
-// 		let required_gas = Runtime::GasWeightMapping::weight_to_gas(dispatch_info.weight);
-// 		if required_gas > remaining_gas {
-// 			return Err(PrecompileFailure::Error { exit_status: ExitError::OutOfGas })
-// 		}
+	/// Cost of a Substrate DB read in gas.
+	pub fn db_read_gas_cost(reads: u64) -> u64 {
+		<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
+			<Runtime as frame_system::Config>::DbWeight::get().reads(reads),
+		)
+	}
 
-// 		// Dispatch call.
-// 		// It may be possible to not record gas cost if the call returns Pays::No.
-// 		// However while Substrate handle checking weight while not making the sender pay for it,
-// 		// the EVM doesn't. It seems this safer to always record the costs to avoid unmetered
-// 		// computations.
-// 		let result = call
-// 			.dispatch(origin)
-// 			.map_err(|e| revert(alloc::format!("Dispatched call failed with error: {:?}", e)))?;
-
-// 		let used_weight = result.actual_weight;
-
-// 		let used_gas =
-// 			Runtime::GasWeightMapping::weight_to_gas(used_weight.unwrap_or(dispatch_info.weight));
-
-// 		handle.record_cost(used_gas)?;
-
-// 		Ok(())
-// 	}
-// }
-
-// impl<Runtime> RuntimeHelper<Runtime>
-// where
-// 	Runtime: pallet_evm::Config + frame_system::Config,
-// {
-// 	/// Cost of a Substrate DB write in gas.
-// 	pub fn db_write_gas_cost() -> u64 {
-// 		<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
-// 			<Runtime as frame_system::Config>::DbWeight::get().writes(1),
-// 		)
-// 	}
-
-// 	/// Cost of a Substrate DB read in gas.
-// 	pub fn db_read_gas_cost() -> u64 {
-// 		<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
-// 			<Runtime as frame_system::Config>::DbWeight::get().reads(1),
-// 		)
-// 	}
-// }
+	/// Convert weight to gas.
+	pub fn weight_to_gas(weight: Weight) -> u64 {
+		<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(weight)
+	}
+}
 
 /// Represents modifiers a Solidity function can be annotated with.
 #[derive(Copy, Clone, PartialEq, Eq)]
