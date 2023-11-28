@@ -330,6 +330,16 @@ pub fn run() -> Result<()> {
 			let runner = cli.create_runner(&cli.run.normalize())?;
 			let collator_options = cli.run.collator_options();
 
+			if runner.config().chain_spec.id().starts_with("klaos") {
+				info!("-----------------------------------------------------------------");
+				info!(" The KLAOS Parachain on Kusama is a test chain for");
+				info!(" the LAOS Parachain on Polkadot.");
+				info!(" KLAOS is not endorsed by either the LAOS Foundation or Freeverse");
+				info!(" for real-value transactions involving the KLAOS token");
+				info!(" https://disclaimer.klaos.laosfoundation.io");
+				info!("-----------------------------------------------------------------");
+			};
+
 			runner.run_node_until_exit(|config| async move {
 				let hwbench = (!cli.no_hardware_benchmarks)
 					.then_some(config.database.path().map(|database_path| {
