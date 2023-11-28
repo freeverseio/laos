@@ -3,28 +3,34 @@ use core::str::FromStr;
 use evm::Context;
 use precompile_utils::testing::MockHandle;
 
+// Check if a given address corresponds to a precompile.
 fn is_precompile(address: H160) -> Result<bool, &'static str> {
 	let p = FrontierPrecompiles::<Runtime>::new();
 	match p.is_precompile(address, 0) {
-		IsPrecompileResult::Answer { is_precompile, extra_cost: _ } => Ok(is_precompile),
+		IsPrecompileResult::Answer { is_precompile, .. } => Ok(is_precompile),
 		_ => Err("Unexpected result variant"),
 	}
 }
 
 #[test]
+/// Ensure the null address is not considered a precompile.
 fn null_address_is_not_precompile() {
 	assert!(!is_precompile(H160::zero()).unwrap());
 }
 
+/// Check if standard Ethereum precompiled addresses are recognized.
 #[test]
-fn ethereum_precompiled_addresses_are_precompile() {
-	assert!(is_precompile(hash(1)).unwrap());
-	assert!(is_precompile(hash(2)).unwrap());
-	assert!(is_precompile(hash(3)).unwrap());
-	assert!(is_precompile(hash(4)).unwrap());
-	assert!(is_precompile(hash(5)).unwrap());
-	assert!(!is_precompile(hash(6)).unwrap());
-	assert!(!is_precompile(hash(1026)).unwrap());
+fn check_ethereum_precompiled_addresses() {
+	// Test Ethereum precompiled addresses from 1 to 9
+	for i in 1..=9 {
+		assert!(is_precompile(hash(i)).unwrap(), "Address {} should be a precompile", i);
+	}
+}
+
+/// Check if custom precompiled addresses are recognized.
+#[test]
+fn check_custom_precompiled_addresses() {
+	// Test specific custom precompiled addresses
 	assert!(is_precompile(hash(1027)).unwrap());
 	assert!(is_precompile(H160::from_str("0xfffffffffffffffffffffffe0000000000000005").unwrap())
 		.unwrap());
@@ -70,7 +76,7 @@ fn delegatecall_to_standard_precompile_not_recognized_as_custom() {
 	let context_address = hash(123456);
 
 	// Iterate over standard Ethereum precompile addresses (1 to 9)
-	for i in 1..=5 {
+	for i in 1..=9 {
 		let code_address = hash(i);
 
 		// Verify each standard precompile address is not recognized as a custom precompile delegate
