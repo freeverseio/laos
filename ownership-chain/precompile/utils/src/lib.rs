@@ -137,7 +137,7 @@ pub trait LogExt {
 
 impl LogExt for Log {
 	fn record(self, handle: &mut impl PrecompileHandle) -> EvmResult {
-		handle.record_log_costs_manual(self.topics.len(), self.data.len())?;
+		handle.record_log_costs(&[&self])?;
 		handle.log(self.address, self.topics, self.data)?;
 		Ok(())
 	}

@@ -2,6 +2,7 @@ use crate as pallet_laos_evolution;
 use frame_support::{
 	parameter_types,
 	traits::{ConstU16, ConstU64},
+	weights::constants::RocksDbWeight,
 };
 use sp_core::{H160, H256};
 use sp_runtime::{
@@ -26,7 +27,7 @@ impl frame_system::Config for Test {
 	type BaseCallFilter = frame_support::traits::Everything;
 	type BlockWeights = ();
 	type BlockLength = ();
-	type DbWeight = ();
+	type DbWeight = RocksDbWeight;
 	type RuntimeOrigin = RuntimeOrigin;
 	type RuntimeCall = RuntimeCall;
 	type Nonce = u64;

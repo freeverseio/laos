@@ -8,6 +8,7 @@ use core::str::FromStr;
 use super::*;
 use evm::Context;
 use fp_evm::{Log, PrecompileSet};
+use laos_precompile_utils::log_costs;
 use mock::*;
 use pallet_evm_evolution_collection_factory::Action as CollectionFactoryAction;
 use precompile_utils::{
@@ -292,7 +293,7 @@ fn evolve_works() {
 }
 
 #[test]
-fn when_succeeds_should_generate_log() {
+fn evolve_with_external_uri_generates_log() {
 	new_test_ext().execute_with(|| {
 		let alice = H160::from_str(ALICE).unwrap();
 		let collection_address = create_collection(alice);
@@ -345,4 +346,107 @@ fn when_fails_should_return_error() {
 			.prepare_test(alice, collection_address, input)
 			.execute_reverts(|r| r == b"AssetDoesNotExist");
 	});
+}
+
+#[test]
+fn test_expected_cost_token_uri() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let collection_address = create_collection(alice);
+		let token_id = mint(alice, collection_address, 0, Vec::new());
+
+		let input = EvmDataWriter::new_with_selector(Action::TokenURI).write(token_id).build();
+
+		// Expected weight of the precompile call implementation.
+		// Since benchmarking precompiles is not supported yet, we are benchmarking
+		// functions that precompile calls internally.
+		let expected_cost = GasCalculator::<Test>::db_read_gas_cost(1);
+
+		precompiles()
+			.prepare_test(alice, collection_address, input)
+			.expect_cost(expected_cost)
+			.execute_some();
+	})
+}
+
+#[test]
+fn test_expected_cost_owner() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let collection_address = create_collection(alice);
+
+		let input = EvmDataWriter::new_with_selector(Action::Owner).build();
+
+		// Expected weight of the precompile call implementation.
+		// Since benchmarking precompiles is not supported yet, we are benchmarking
+		// functions that precompile calls internally.
+		let expected_cost = GasCalculator::<Test>::db_read_gas_cost(1);
+
+		precompiles()
+			.prepare_test(alice, collection_address, input)
+			.expect_cost(expected_cost)
+			.execute_some();
+	})
+}
+
+#[test]
+fn test_expected_cost_mint_with_external_uri() {
+	new_test_ext().execute_with(|| {
+		let owner = H160([1u8; 20]);
+		let collection_address = create_collection(owner);
+
+		let token_uri = Bytes("ciao".into());
+
+		let input = EvmDataWriter::new_with_selector(Action::Mint)
+			.write(Address(owner)) // to
+			.write(U256::from(9)) // slot
+			.write(token_uri.clone()) // token_uri
+			.build();
+
+		// Expected weight of the precompile call implementation.
+		// Since benchmarking precompiles is not supported yet, we are benchmarking
+		// functions that precompile calls internally.
+		let expected_weight =
+			LaosEvolutionWeights::<Test>::mint_with_external_uri(token_uri.0.len() as u32);
+
+		// see [`mint_with_external_uri_should_generate_log`] why log is 160 bytes of length
+		let log_cost = log_costs(2, 160).unwrap();
+
+		// we have [`WeightToGas`] set to 1:1 in mock
+		let expected_cost = expected_weight.ref_time() + log_cost;
+
+		precompiles()
+			.prepare_test(owner, collection_address, input)
+			.expect_cost(expected_cost)
+			.execute_some();
+	})
+}
+
+#[test]
+fn test_expected_cost_evolve_with_external_uri() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let collection_address = create_collection(alice);
+		let token_id = mint(alice, collection_address, 0, Vec::new());
+
+		let input = EvmDataWriter::new_with_selector(Action::Evolve)
+			.write(token_id)
+			.write(Bytes([1u8; 20].to_vec()))
+			.build();
+
+		// Expected weight of the precompile call implementation.
+		// Since benchmarking precompiles is not supported yet, we are benchmarking
+		// functions that precompile calls internally.
+		let expected_weight = LaosEvolutionWeights::<Test>::evolve_with_external_uri(20);
+
+		let log_cost = log_costs(2, 96).unwrap();
+
+		// we have [`WeightToGas`] set to 1:1 in mock
+		let expected_cost = expected_weight.ref_time() + log_cost;
+
+		precompiles()
+			.prepare_test(alice, collection_address, input)
+			.expect_cost(expected_cost)
+			.execute_some();
+	})
 }
