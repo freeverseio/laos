@@ -21,18 +21,22 @@ LAOS is targeting late Q1'2024 to bid for a Parachain slot on Polkadot.
 Presently, LAOS is accessible both via its canary Parachain in Kusama, named **K-LAOS**, which stands for **K**usama LAOS, as well as through its test network, named **Caladan**. Please read the [disclaimer about K-LAOS](https://www.laosfoundation.io/disclaimer-klaos).
 
 ### KLAOS Parachain: 
-* Substrate RPC endpoint: [wss://rpc.klaos.laosfoundation.io](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Frpc.klaos.laosfoundation.io#/rpc)   
-* EVM endpoint: https://rpc.klaos.laosfoundation.io
+* EVM Public RPC endpoint: https://rpc.klaos.laosfoundation.io
 * EVM Chain ID: 2718
 * EVM Currency Symbol: KLAOS 
 * EVM block explorer: https://blockscout.klaos.laosfoundation.io
+* Substrate RPC endpoint: [wss://rpc.klaos.laosfoundation.io](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Frpc.klaos.laosfoundation.io#/rpc)   
+* ParaId: 3336
+* EVM PalletInstance: 51
 
 ### Caladan Parachain: 
-* Substrate RPC endpoint: [wss://caladan.gorengine.com/own](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Fcaladan.gorengine.com%2Fown#/explorer)
-* EVM endpoint: https://caladan.gorengine.com/own
+* EVM Public RPC endpoint: https://caladan.gorengine.com/own
 * EVM Chain ID: 667
 * EVM Currency Symbol: CLD 
 * EVM block explorer: https://caladan.gorengine.com 
+* Substrate RPC endpoint: [wss://caladan.gorengine.com/own](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Fcaladan.gorengine.com%2Fown#/explorer)
+* ParaId: 2900
+* EVM PalletInstance: 51
 
 ## Running your own node
 
@@ -45,3 +49,5 @@ using either `klaos` or `caladan` for `chain_name`. Available releases are publi
 # Contributing
 
 Contributions to the LAOS Parachain project are highly appreciated. Please adhere to [Github's contribution guidelines](https://docs.github.com/en/get-started/quickstart/contributing-to-projects) to ensure a smooth collaboration process.
+
+For detailed implementation assistance, please engage with the development team on the official [LAOS Discord server](https://discord.gg/5YX9DHda).
