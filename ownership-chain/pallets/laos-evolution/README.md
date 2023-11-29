@@ -3,11 +3,9 @@
 ## Overview
 The LAOS Evolution Pallet is a core component of LAOS, providing a framework for managing the minting and evolution of digital assets while allowing the management of their ownership to be governed by external consensus systems.
 
-## Installation and Setup
+## Tests
 
 ```
-$ git clone https://github.com/freeverseio/laos.git
-$ cd laos/ownership-chain/pallets/laos-evolution
 $ cargo build --release
 $ cargo test
 ```
