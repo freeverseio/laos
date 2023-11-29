@@ -9,8 +9,10 @@ use sp_std::marker::PhantomData;
 
 use pallet_evm_evolution_collection::EvolutionCollectionPrecompile;
 use pallet_evm_evolution_collection_factory::EvolutionCollectionFactoryPrecompile;
+use pallet_evm_precompile_blake2::Blake2F;
+use pallet_evm_precompile_bn128::{Bn128Add, Bn128Mul, Bn128Pairing};
 use pallet_evm_precompile_modexp::Modexp;
-use pallet_evm_precompile_simple::{ECRecover, ECRecoverPublicKey, Identity, Ripemd160, Sha256};
+use pallet_evm_precompile_simple::{ECRecover, Identity, Ripemd160, Sha256};
 use pallet_laos_evolution::address_to_collection_id;
 
 use crate::Runtime;
@@ -24,8 +26,40 @@ where
 	pub fn new() -> Self {
 		Self(Default::default())
 	}
-	pub fn used_addresses() -> [H160; 7] {
-		[hash(1), hash(2), hash(3), hash(4), hash(5), hash(1025), hash(1027)]
+	pub fn used_addresses() -> [H160; 10] {
+		[
+			hash(1),
+			hash(2),
+			hash(3),
+			hash(4),
+			hash(5),
+			hash(6),
+			hash(7),
+			hash(8),
+			hash(9),
+			hash(1027),
+		]
+	}
+
+	fn is_delegatecall_to_custom_precompile(
+		&self,
+		code_address: H160,
+		context_address: H160,
+	) -> bool {
+		// Check if the code address is a precompile
+		if let IsPrecompileResult::Answer { is_precompile, .. } =
+			self.is_precompile(code_address, u64::MAX)
+		{
+			// Return true if:
+			// 1. It is a precompile.
+			// 2. The code address is beyond the first nine standard Ethereum precompiles.
+			// 3. The context address is different from the code address.
+			// This indicates a delegate call to a custom precompile.
+			return is_precompile && code_address > hash(9) && context_address != code_address;
+		}
+
+		// If none of the above conditions are met, return false
+		false
 	}
 
 	fn is_delegatecall_to_custom_precompile(
@@ -75,8 +109,10 @@ where
 			a if a == hash(3) => Some(Ripemd160::execute(handle)),
 			a if a == hash(4) => Some(Identity::execute(handle)),
 			a if a == hash(5) => Some(Modexp::execute(handle)),
-			// Non-Frontier specific nor Ethereum precompiles :
-			a if a == hash(1025) => Some(ECRecoverPublicKey::execute(handle)),
+			a if a == hash(6) => Some(Bn128Add::execute(handle)),
+			a if a == hash(7) => Some(Bn128Mul::execute(handle)),
+			a if a == hash(8) => Some(Bn128Pairing::execute(handle)),
+			a if a == hash(9) => Some(Blake2F::execute(handle)),
 			a if a == hash(1027) => Some(EvolutionCollectionFactory::execute(handle)),
 			a if address_to_collection_id(a).is_ok() => Some(EvolutionCollection::execute(handle)),
 			_ => None,
