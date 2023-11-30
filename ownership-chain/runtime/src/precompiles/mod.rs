@@ -61,27 +61,6 @@ where
 		// If none of the above conditions are met, return false
 		false
 	}
-
-	fn is_delegatecall_to_custom_precompile(
-		&self,
-		code_address: H160,
-		context_address: H160,
-	) -> bool {
-		// Check if the code address is a precompile
-		if let IsPrecompileResult::Answer { is_precompile, .. } =
-			self.is_precompile(code_address, u64::MAX)
-		{
-			// Return true if:
-			// 1. It is a precompile.
-			// 2. The code address is beyond the first nine standard Ethereum precompiles.
-			// 3. The context address is different from the code address.
-			// This indicates a delegate call to a custom precompile.
-			return is_precompile && code_address > hash(9) && context_address != code_address;
-		}
-
-		// If none of the above conditions are met, return false
-		false
-	}
 }
 
 type EvolutionCollectionFactory = EvolutionCollectionFactoryPrecompile<Runtime>;
