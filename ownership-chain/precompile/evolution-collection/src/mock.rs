@@ -1,6 +1,6 @@
 use core::str::FromStr;
 
-use fp_evm::{FeeCalculator, Precompile, PrecompileHandle};
+use fp_evm::{Precompile, PrecompileHandle};
 use pallet_evm_evolution_collection_factory::EvolutionCollectionFactoryPrecompile;
 use pallet_laos_evolution::address_to_collection_id;
 use sp_runtime::BuildStorage;
@@ -10,7 +10,7 @@ use crate::EvolutionCollectionPrecompile;
 use frame_support::{
 	parameter_types,
 	traits::{ConstU16, ConstU64, FindAuthor},
-	weights::Weight,
+	weights::constants::RocksDbWeight,
 };
 use pallet_balances::AccountData;
 use sp_core::{H160, H256, U256};
@@ -38,7 +38,7 @@ impl frame_system::Config for Test {
 	type BaseCallFilter = frame_support::traits::Everything;
 	type BlockWeights = ();
 	type BlockLength = ();
-	type DbWeight = ();
+	type DbWeight = RocksDbWeight;
 	type RuntimeOrigin = RuntimeOrigin;
 	type RuntimeCall = RuntimeCall;
 	type Nonce = u64;
@@ -108,14 +108,6 @@ impl pallet_timestamp::Config for Test {
 	type WeightInfo = ();
 }
 
-pub struct FixedGasPrice;
-impl FeeCalculator for FixedGasPrice {
-	fn min_gas_price() -> (U256, Weight) {
-		// Return some meaningful gas price and weight
-		(1_000_000_000u128.into(), Weight::from_parts(7u64, 0))
-	}
-}
-
 pub struct FindAuthorTruncated;
 impl FindAuthor<H160> for FindAuthorTruncated {
 	fn find_author<'a, I>(_digests: I) -> Option<H160>
@@ -125,24 +117,23 @@ impl FindAuthor<H160> for FindAuthorTruncated {
 		Some(H160::from_str("1234500000000000000000000000000000000000").unwrap())
 	}
 }
-pub const BLOCK_GAS_LIMIT: u64 = 150_000_000;
+pub const BLOCK_GAS_LIMIT: u64 = 15_000_000;
 pub const MAX_POV_SIZE: u64 = 5 * 1024 * 1024;
 
 frame_support::parameter_types! {
 	pub BlockGasLimit: U256 = U256::from(crate::mock::BLOCK_GAS_LIMIT);
 	pub const GasLimitPovSizeRatio: u64 = crate::mock::BLOCK_GAS_LIMIT.saturating_div(crate::mock::MAX_POV_SIZE);
-	pub WeightPerGas: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(20_000, 0);
+	/// 1 weight to 1 gas, for testing purposes
+	pub WeightPerGas: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(1, 0);
 	pub MockPrecompiles: MockPrecompileSet<Test> = MockPrecompileSet::<_>::new();
 }
 
 impl pallet_evm::Config for Test {
-	type FeeCalculator = FixedGasPrice;
+	type FeeCalculator = ();
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
 	type WeightPerGas = WeightPerGas;
-
 	type BlockHashMapping = pallet_evm::SubstrateBlockHashMapping<Self>;
 	type CallOrigin = pallet_evm::EnsureAddressRoot<Self::AccountId>;
-
 	type WithdrawOrigin = pallet_evm::EnsureAddressNever<Self::AccountId>;
 	type AddressMapping = pallet_evm::IdentityAddressMapping;
 	type Currency = Balances;

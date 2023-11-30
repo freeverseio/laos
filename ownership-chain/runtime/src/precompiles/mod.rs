@@ -92,7 +92,6 @@ where
 			a if a == hash(7) => Some(Bn128Mul::execute(handle)),
 			a if a == hash(8) => Some(Bn128Pairing::execute(handle)),
 			a if a == hash(9) => Some(Blake2F::execute(handle)),
-			// Non-Frontier specific nor Ethereum precompiles :
 			a if a == hash(1027) => Some(EvolutionCollectionFactory::execute(handle)),
 			a if address_to_collection_id(a).is_ok() => Some(EvolutionCollection::execute(handle)),
 			_ => None,

@@ -4,16 +4,18 @@
 use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
 use laos_precompile_utils::{
 	keccak256, revert_dispatch_error, succeed, Address, EvmDataWriter, EvmResult, FunctionModifier,
-	LogExt, LogsBuilder, PrecompileHandleExt,
+	GasCalculator, LogExt, LogsBuilder, PrecompileHandleExt,
 };
 use pallet_evm::Pallet as Evm;
 use pallet_laos_evolution::{
-	collection_id_to_address, traits::EvolutionCollectionFactory as EvolutionCollectionFactoryT,
+	collection_id_to_address,
+	traits::EvolutionCollectionFactory as EvolutionCollectionFactoryT,
+	weights::{SubstrateWeight as LaosEvolutionWeights, WeightInfo},
 	Pallet as LaosEvolution,
 };
 use parity_scale_codec::Encode;
 
-use sp_core::H160;
+use sp_core::{Get, H160};
 use sp_std::{fmt::Debug, marker::PhantomData};
 
 /// Solidity selector of the CreateCollection log, which is the Keccak of the Log signature.
@@ -63,6 +65,9 @@ where
 
 				match LaosEvolution::<Runtime>::create_collection(owner.into()) {
 					Ok(collection_id) => {
+						let mut consumed_weight =
+							LaosEvolutionWeights::<Runtime>::create_collection();
+
 						let collection_address: H160 = collection_id_to_address(collection_id);
 
 						// Currently, we insert [`REVERT_BYTECODE`] as an
@@ -71,6 +76,15 @@ where
 						// This is done to ensure internal calls to the collection address do not
 						// fail.
 						Evm::<Runtime>::create_account(collection_address, REVERT_BYTECODE.into());
+
+						// `AccountCode` -> 1 write, 1 read
+						// `Suicided` -> 1 read
+						// `AccountMetadata` -> 1 write
+						consumed_weight = consumed_weight.saturating_add(
+							<Runtime as frame_system::Config>::DbWeight::get().reads_writes(2, 2),
+						);
+
+						let consumed_gas = GasCalculator::<Runtime>::weight_to_gas(consumed_weight);
 
 						LogsBuilder::new(context.address)
 							.log2(
@@ -81,6 +95,13 @@ where
 									.build(),
 							)
 							.record(handle)?;
+
+						// record EVM cost
+						handle.record_cost(consumed_gas)?;
+
+						// Record Substrate related costs
+						// TODO: Add `ref_time` when precompiles are benchmarked
+						handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
 
 						Ok(succeed(
 							EvmDataWriter::new().write(Address(collection_address.into())).build(),

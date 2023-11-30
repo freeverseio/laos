@@ -8,8 +8,10 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
+mod benchmarking;
 pub mod traits;
 pub mod types;
+pub mod weights;
 
 use frame_support::pallet_prelude::*;
 use sp_core::H160;

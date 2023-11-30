@@ -210,7 +210,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("frontier-template"),
 	impl_name: create_runtime_str!("frontier-template"),
 	authoring_version: 1,
-	spec_version: 10,
+	spec_version: 601,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -628,7 +628,7 @@ impl pallet_evm::Config for Runtime {
 	type FindAuthor = CustomFindAuthor<pallet_session::FindAccountFromAuthorIndex<Self, Aura>>;
 	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
-	type OnChargeTransaction = EVMTransactionChargeHandler<EVMDealWithFees<Runtime>>;
+	type OnChargeTransaction = EVMCurrencyAdapter<Balances, EVMDealWithFees<Runtime>>;
 	type OnCreate = ();
 	type PrecompilesType = FrontierPrecompiles<Self>;
 	type PrecompilesValue = PrecompilesValue;
@@ -859,6 +859,7 @@ mod benches {
 		[pallet_timestamp, Timestamp]
 		[pallet_collator_selection, CollatorSelection]
 		[cumulus_pallet_xcmp_queue, XcmpQueue]
+		[pallet_laos_evolution, LaosEvolution]
 	);
 }
 

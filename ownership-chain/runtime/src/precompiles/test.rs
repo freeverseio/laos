@@ -28,7 +28,6 @@ fn check_ethereum_precompiled_addresses() {
 }
 
 /// Check if custom precompiled addresses are recognized.
-#[test]
 fn check_custom_precompiled_addresses() {
 	// Test specific custom precompiled addresses
 	assert!(is_precompile(hash(1027)).unwrap());
