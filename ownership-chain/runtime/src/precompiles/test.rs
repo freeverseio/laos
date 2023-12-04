@@ -3,6 +3,7 @@ use crate::tests::new_test_ext;
 use super::*;
 use core::str::FromStr;
 use evm::Context;
+use frame_support::assert_noop;
 use precompile_utils::testing::MockHandle;
 
 // Check if a given address corresponds to a precompile.
@@ -124,6 +125,12 @@ fn call_unknown_address_does_not_revert() {
 
 		handle.input = mint_with_external_uri_input.as_bytes().to_vec();
 
+		assert_noop!(
+			p.execute(&mut handle).ok_or("returned None"),
+			"returned None"
+		);
+
+		// now dispatch it again and check it is none
 		let result = p.execute(&mut handle);
 
 		assert!(result.is_none());
@@ -154,9 +161,17 @@ fn call_unknown_address_is_noop() {
 
 		let p = FrontierPrecompiles::<Runtime>::new();
 
-		frame_support::assert_noop!(
+		assert_noop!(
 			p.execute(&mut handle).ok_or("returned None"),
 			"returned None"
 		);
+
+		let result = p.execute(&mut handle);
+
+		assert!(result.is_none());
+
+		assert_ne!(
+			result, Some(Err(PrecompileFailure::Revert { exit_status: ExitRevert::Reverted, output: vec![] })
+		));
 	});
 }
