@@ -435,32 +435,3 @@ fn test_expected_cost_evolve_with_external_uri() {
 			.execute_some();
 	})
 }
-
-#[test]
-fn call_unknown_address() {
-	new_test_ext().execute_with(|| {
-		let dummy_contract = H160::from_str("0xe4BdA39B4E2730a578D5E2461A0Cc74FCAa64d62").unwrap();
-
-		fn try_call_precompile(address: H160) -> Result<(), &'static str> {
-			let mut handle = MockHandle::new(
-				address,
-				Context {
-					address,
-					caller: H160::from_str(ALICE).unwrap(),
-					apparent_value: U256::zero(),
-				},
-			);
-
-			handle.input = EvmDataWriter::new_with_selector(Action::Owner).build();
-
-			precompiles()
-				.execute(&mut handle)
-				.ok_or("precompile does not exist")?
-				.map_err(|_| "result is err")?;
-
-			Ok(())
-		}
-
-		frame_support::assert_noop!(try_call_precompile(dummy_contract), "precompile does not exist");
-	}); 
-}

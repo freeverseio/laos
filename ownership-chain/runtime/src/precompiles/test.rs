@@ -1,3 +1,5 @@
+use crate::tests::new_test_ext;
+
 use super::*;
 use core::str::FromStr;
 use evm::Context;
@@ -108,4 +110,61 @@ fn execute_delegate_call_on_custom_precompile_should_fail() {
 	assert!(
 		matches!(result, Some(Err(PrecompileFailure::Revert { exit_status: ExitRevert::Reverted, output })) if output == b"cannot be called with DELEGATECALL or CALLCODE")
 	);
+}
+
+#[test]
+fn test_call_unknown_address_does_not_revert() {
+	new_test_ext().execute_with(|| {
+		let dummy_contract = H160::from_str("0xe4BdA39B4E2730a578D5E2461A0Cc74FCAa64d62").unwrap();
+		let p = FrontierPrecompiles::<Runtime>::new();
+
+		// call data for `mint_with_external_uri`
+		let mint_with_external_uri_input = "0xfd024566000000000000000000000000f24ff3a9cf04c71dbc94d0b566f7a27b94566cac000000000000000000000000000000000000000000000000000000000000007b0000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000000e746573742d746f6b656e2d757269000000000000000000000000000000000000";
+	
+		let mut handle = MockHandle::new(
+			dummy_contract,
+			Context {
+				address: dummy_contract,
+				caller: H160([1u8;20]),
+				apparent_value: sp_core::U256::zero(),
+			},
+		);
+
+		handle.input = mint_with_external_uri_input.as_bytes().to_vec();
+
+		let result = p.execute(&mut handle);
+
+		assert!(result.is_none());
+
+		assert_ne!(
+			result, Some(Err(PrecompileFailure::Revert { exit_status: ExitRevert::Reverted, output: vec![] })
+		));
+	});
+}
+
+#[test]
+fn call_unknown_address_is_noop() {
+	new_test_ext().execute_with(|| {
+		let dummy_contract = H160::from_str("0x80fc115869ba344BBd6Baf14a8b089b48e870AaD").unwrap();
+
+		let mut handle = MockHandle::new(
+			dummy_contract,
+			Context {
+				address: dummy_contract,
+				caller: H160([1u8;20]),
+				apparent_value: sp_core::U256::zero(),
+			},
+		);
+
+		let evolve_with_external_uri = "0x2fd38f4d000000000000000000000000f24ff3a9cf04c71dbc94d0b566f7a27b94566cac00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000012616b6a647368666a6b616866646b6c6164660000000000000000000000000000";
+
+		handle.input = evolve_with_external_uri.as_bytes().to_vec();
+
+		let p = FrontierPrecompiles::<Runtime>::new();
+
+		frame_support::assert_noop!(
+			p.execute(&mut handle).ok_or("returned None"),
+			"returned None"
+		);
+	});
 }
