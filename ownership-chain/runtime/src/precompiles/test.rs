@@ -1,6 +1,9 @@
+use crate::tests::new_test_ext;
+
 use super::*;
 use core::str::FromStr;
 use evm::Context;
+use frame_support::assert_noop;
 use precompile_utils::testing::MockHandle;
 
 // Check if a given address corresponds to a precompile.
@@ -10,6 +13,15 @@ fn is_precompile(address: H160) -> Result<bool, &'static str> {
 		IsPrecompileResult::Answer { is_precompile, .. } => Ok(is_precompile),
 		_ => Err("Unexpected result variant"),
 	}
+}
+
+/// Check if custom precompiled addresses are recognized.
+#[test]
+fn check_custom_precompiled_addresses() {
+	// Test specific custom precompiled addresses
+	assert!(is_precompile(hash(1027)).unwrap());
+	assert!(is_precompile(H160::from_str("0xfffffffffffffffffffffffe0000000000000005").unwrap())
+		.unwrap());
 }
 
 #[test]
@@ -25,14 +37,6 @@ fn check_ethereum_precompiled_addresses() {
 	for i in 1..=9 {
 		assert!(is_precompile(hash(i)).unwrap(), "Address {} should be a precompile", i);
 	}
-}
-
-/// Check if custom precompiled addresses are recognized.
-fn check_custom_precompiled_addresses() {
-	// Test specific custom precompiled addresses
-	assert!(is_precompile(hash(1027)).unwrap());
-	assert!(is_precompile(H160::from_str("0xfffffffffffffffffffffffe0000000000000005").unwrap())
-		.unwrap());
 }
 
 /// Test to ensure that delegate calls to addresses that are not precompiles are recognized
@@ -108,4 +112,84 @@ fn execute_delegate_call_on_custom_precompile_should_fail() {
 	assert!(
 		matches!(result, Some(Err(PrecompileFailure::Revert { exit_status: ExitRevert::Reverted, output })) if output == b"cannot be called with DELEGATECALL or CALLCODE")
 	);
+}
+
+#[test]
+fn call_unknown_address_does_not_revert() {
+	new_test_ext().execute_with(|| {
+		let dummy_contract = H160::from_str("0xe4BdA39B4E2730a578D5E2461A0Cc74FCAa64d62").unwrap();
+		let p = FrontierPrecompiles::<Runtime>::new();
+
+		// call data for `mint_with_external_uri`
+		let mint_with_external_uri_input = "0xfd024566000000000000000000000000f24ff3a9cf04c71dbc94d0b566f7a27b94566cac000000000000000000000000000000000000000000000000000000000000007b0000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000000e746573742d746f6b656e2d757269000000000000000000000000000000000000";
+		// call data for `evolve_with_external_uri`
+		let evolve_with_external_uri = "0x2fd38f4d000000000000000000000000f24ff3a9cf04c71dbc94d0b566f7a27b94566cac00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000012616b6a647368666a6b616866646b6c6164660000000000000000000000000000";
+
+		let mut handle = MockHandle::new(
+			dummy_contract,
+			Context {
+				address: dummy_contract,
+				caller: H160([1u8;20]),
+				apparent_value: sp_core::U256::zero(),
+			},
+		);
+
+		handle.input = mint_with_external_uri_input.as_bytes().to_vec();
+
+		// now dispatch it again and check it is none
+		let result = p.execute(&mut handle);
+
+		assert!(result.is_none());
+
+		assert_ne!(
+			result, Some(Err(PrecompileFailure::Revert { exit_status: ExitRevert::Reverted, output: vec![] })
+		));
+
+		handle.input = evolve_with_external_uri.as_bytes().to_vec();
+
+		let result = p.execute(&mut handle);
+
+		assert!(result.is_none());
+
+		assert_ne!(
+			result, Some(Err(PrecompileFailure::Revert { exit_status: ExitRevert::Reverted, output: vec![] })
+		));
+	});
+}
+
+#[test]
+fn call_unknown_address_is_noop() {
+	new_test_ext().execute_with(|| {
+		let dummy_contract = H160::from_str("0x80fc115869ba344BBd6Baf14a8b089b48e870AaD").unwrap();
+
+		let mut handle = MockHandle::new(
+			dummy_contract,
+			Context {
+				address: dummy_contract,
+				caller: H160([1u8;20]),
+				apparent_value: sp_core::U256::zero(),
+			},
+		);
+
+		// call data for `mint_with_external_uri`
+		let mint_with_external_uri_input = "0xfd024566000000000000000000000000f24ff3a9cf04c71dbc94d0b566f7a27b94566cac000000000000000000000000000000000000000000000000000000000000007b0000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000000e746573742d746f6b656e2d757269000000000000000000000000000000000000";
+		// call data for `evolve_with_external_uri`
+		let evolve_with_external_uri = "0x2fd38f4d000000000000000000000000f24ff3a9cf04c71dbc94d0b566f7a27b94566cac00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000012616b6a647368666a6b616866646b6c6164660000000000000000000000000000";
+
+		handle.input = evolve_with_external_uri.as_bytes().to_vec();
+
+		let p = FrontierPrecompiles::<Runtime>::new();
+
+		assert_noop!(
+			p.execute(&mut handle).ok_or("returned None"),
+			"returned None"
+		);
+
+		handle.input = mint_with_external_uri_input.as_bytes().to_vec();
+
+		assert_noop!(
+			p.execute(&mut handle).ok_or("returned None"),
+			"returned None"
+		);
+	});
 }
