@@ -15,6 +15,15 @@ fn is_precompile(address: H160) -> Result<bool, &'static str> {
 	}
 }
 
+/// Check if custom precompiled addresses are recognized.
+#[test]
+fn check_custom_precompiled_addresses() {
+	// Test specific custom precompiled addresses
+	assert!(is_precompile(hash(1027)).unwrap());
+	assert!(is_precompile(H160::from_str("0xfffffffffffffffffffffffe0000000000000005").unwrap())
+		.unwrap());
+}
+
 #[test]
 /// Ensure the null address is not considered a precompile.
 fn null_address_is_not_precompile() {
@@ -103,7 +112,7 @@ fn execute_delegate_call_on_custom_precompile_should_fail() {
 	assert!(
 		matches!(result, Some(Err(PrecompileFailure::Revert { exit_status: ExitRevert::Reverted, output })) if output == b"cannot be called with DELEGATECALL or CALLCODE")
 	);
-} 
+}
 
 #[test]
 fn call_unknown_address_does_not_revert() {
@@ -113,7 +122,9 @@ fn call_unknown_address_does_not_revert() {
 
 		// call data for `mint_with_external_uri`
 		let mint_with_external_uri_input = "0xfd024566000000000000000000000000f24ff3a9cf04c71dbc94d0b566f7a27b94566cac000000000000000000000000000000000000000000000000000000000000007b0000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000000e746573742d746f6b656e2d757269000000000000000000000000000000000000";
-	
+		// call data for `evolve_with_external_uri`
+		let evolve_with_external_uri = "0x2fd38f4d000000000000000000000000f24ff3a9cf04c71dbc94d0b566f7a27b94566cac00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000012616b6a647368666a6b616866646b6c6164660000000000000000000000000000";
+
 		let mut handle = MockHandle::new(
 			dummy_contract,
 			Context {
@@ -125,12 +136,17 @@ fn call_unknown_address_does_not_revert() {
 
 		handle.input = mint_with_external_uri_input.as_bytes().to_vec();
 
-		assert_noop!(
-			p.execute(&mut handle).ok_or("returned None"),
-			"returned None"
-		);
-
 		// now dispatch it again and check it is none
+		let result = p.execute(&mut handle);
+
+		assert!(result.is_none());
+
+		assert_ne!(
+			result, Some(Err(PrecompileFailure::Revert { exit_status: ExitRevert::Reverted, output: vec![] })
+		));
+
+		handle.input = evolve_with_external_uri.as_bytes().to_vec();
+
 		let result = p.execute(&mut handle);
 
 		assert!(result.is_none());
@@ -155,6 +171,9 @@ fn call_unknown_address_is_noop() {
 			},
 		);
 
+		// call data for `mint_with_external_uri`
+		let mint_with_external_uri_input = "0xfd024566000000000000000000000000f24ff3a9cf04c71dbc94d0b566f7a27b94566cac000000000000000000000000000000000000000000000000000000000000007b0000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000000e746573742d746f6b656e2d757269000000000000000000000000000000000000";
+		// call data for `evolve_with_external_uri`
 		let evolve_with_external_uri = "0x2fd38f4d000000000000000000000000f24ff3a9cf04c71dbc94d0b566f7a27b94566cac00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000012616b6a647368666a6b616866646b6c6164660000000000000000000000000000";
 
 		handle.input = evolve_with_external_uri.as_bytes().to_vec();
@@ -166,12 +185,11 @@ fn call_unknown_address_is_noop() {
 			"returned None"
 		);
 
-		let result = p.execute(&mut handle);
+		handle.input = mint_with_external_uri_input.as_bytes().to_vec();
 
-		assert!(result.is_none());
-
-		assert_ne!(
-			result, Some(Err(PrecompileFailure::Revert { exit_status: ExitRevert::Reverted, output: vec![] })
-		));
+		assert_noop!(
+			p.execute(&mut handle).ok_or("returned None"),
+			"returned None"
+		);
 	});
 }
