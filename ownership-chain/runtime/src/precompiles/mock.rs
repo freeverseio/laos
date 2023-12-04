@@ -45,7 +45,7 @@ impl frame_system::Config for Runtime {
 	type BlockHashCount = ConstU64<250>;
 	type Version = ();
 	type PalletInfo = PalletInfo;
-	type AccountData = pallet_balances::AccountData<u64>;
+	type AccountData = pallet_balances::AccountData<u128>;
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
 	type SystemWeightInfo = ();
@@ -63,7 +63,7 @@ parameter_types! {
 impl pallet_balances::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
-	type Balance = u64;
+	type Balance = u128;
 	type DustRemoval = ();
 	type ExistentialDeposit = ExistentialDeposit;
 	type AccountStore = System;
@@ -146,22 +146,4 @@ impl pallet_evm::Config for Runtime {
 	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
 	type Timestamp = Timestamp;
 	type WeightInfo = ();
-}
-
-fn new_test_ext() -> sp_io::TestExternalities {
-	let mut t = frame_system::GenesisConfig::<Runtime>::default()
-		.build_storage()
-		.unwrap()
-		.into();
-
-	pallet_balances::GenesisConfig::<Runtime> {
-		balances: vec![
-			([0u8; 20].into(), 1_000_000_000_000_000_000_000_000u128),
-			([1u8; 20].into(), 1_000_000_000_000_000_000_000_000u128),
-		],
-	}
-	.assimilate_storage(&mut t)
-	.unwrap();
-
-	t.into()
 }

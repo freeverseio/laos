@@ -29,14 +29,6 @@ fn check_ethereum_precompiled_addresses() {
 	}
 }
 
-/// Check if custom precompiled addresses are recognized.
-fn check_custom_precompiled_addresses() {
-	// Test specific custom precompiled addresses
-	assert!(is_precompile(hash(1027)).unwrap());
-	assert!(is_precompile(H160::from_str("0xfffffffffffffffffffffffe0000000000000005").unwrap())
-		.unwrap());
-}
-
 /// Test to ensure that delegate calls to addresses that are not precompiles are recognized
 /// correctly.
 #[test]
@@ -110,10 +102,10 @@ fn execute_delegate_call_on_custom_precompile_should_fail() {
 	assert!(
 		matches!(result, Some(Err(PrecompileFailure::Revert { exit_status: ExitRevert::Reverted, output })) if output == b"cannot be called with DELEGATECALL or CALLCODE")
 	);
-}
+} 
 
 #[test]
-fn test_call_unknown_address_does_not_revert() {
+fn call_unknown_address_does_not_revert() {
 	new_test_ext().execute_with(|| {
 		let dummy_contract = H160::from_str("0xe4BdA39B4E2730a578D5E2461A0Cc74FCAa64d62").unwrap();
 		let p = FrontierPrecompiles::<Runtime>::new();
