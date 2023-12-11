@@ -21,6 +21,7 @@ chain = "local-v"
   ws_port = 9999
   command = "{{ZOMBIENET_OWNCHAIN_COMMAND}}"
   validator = true
+  args = ["-lxcm=trace,debug"]
 
 [[parachains]]
 id = 2008
@@ -32,3 +33,4 @@ chain = "astar-dev"
   ws_port = 9998
   command = "{{ZOMBIENET_ASTAR_COMMAND}}"
   validator = true
+  args = ["-lxcm=trace,debug"]
