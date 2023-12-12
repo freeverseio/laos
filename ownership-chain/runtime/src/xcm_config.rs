@@ -26,10 +26,6 @@ use staging_xcm_executor::XcmExecutor;
 parameter_types! {
 	pub const ParentLocation: MultiLocation = MultiLocation::parent();
 	pub const OurLocation: MultiLocation = MultiLocation::here();
-	pub const AstarLocation: MultiLocation = MultiLocation {
-		parents: 1,
-		interior: X1(Junction::Parachain(2008)),
-	};
 	pub const RelayNetwork: Option<NetworkId> = None;
 	pub RelayChainOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into();
 	pub UniversalLocation: InteriorMultiLocation = Parachain(ParachainInfo::parachain_id().into()).into();
