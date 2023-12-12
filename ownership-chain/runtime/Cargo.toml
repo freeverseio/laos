@@ -62,6 +62,8 @@ staging-xcm-builder = { workspace = true }
 staging-xcm-executor = { workspace = true }
 polkadot-primitives = { workspace = true }
 orml-xtokens = { workspace = true }
+orml-traits = { workspace = true }
+orml-xcm-support = { workspace = true }
 
 # Cumulus
 cumulus-pallet-aura-ext = { workspace = true }
@@ -131,6 +133,9 @@ std = [
 	"parachain-info/std",
 	"polkadot-parachain-primitives/std",
 	"polkadot-primitives/std",
+	"orml-xtokens/std",
+	"orml-traits/std",
+	"orml-xcm-support/std",
 	"polkadot-runtime-common/std",
 	"sp-api/std",
 	"sp-block-builder/std",
