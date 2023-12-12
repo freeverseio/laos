@@ -5,7 +5,7 @@ use super::{
 use core::marker::PhantomData;
 use frame_support::{
 	match_types, parameter_types,
-	traits::{ConstU32, ContainsPair, Currency, Everything, Nothing, OnUnbalanced, OriginTrait},
+	traits::{ConstU32, Currency, Everything, Nothing, OnUnbalanced, OriginTrait},
 	weights::Weight,
 };
 use frame_system::{EnsureRoot, RawOrigin as SystemRawOrigin};
@@ -16,9 +16,10 @@ use staging_xcm::latest::prelude::*;
 use staging_xcm_builder::{
 	AccountKey20Aliases, AllowExplicitUnpaidExecutionFrom, AllowTopLevelPaidExecutionFrom,
 	CurrencyAdapter, DenyReserveTransferToRelayChain, DenyThenTry, EnsureXcmOrigin,
-	FixedWeightBounds, IsConcrete, ParentIsPreset, RelayChainAsNative, SiblingParachainAsNative,
-	SiblingParachainConvertsVia, SignedAccountKey20AsNative, SovereignSignedViaLocation,
-	TakeWeightCredit, TrailingSetTopicAsId, UsingComponents, WithComputedOrigin, WithUniqueTopic,
+	FixedWeightBounds, IsConcrete, NativeAsset, ParentIsPreset, RelayChainAsNative,
+	SiblingParachainAsNative, SiblingParachainConvertsVia, SignedAccountKey20AsNative,
+	SovereignSignedViaLocation, TakeWeightCredit, TrailingSetTopicAsId, UsingComponents,
+	WithComputedOrigin, WithUniqueTopic,
 };
 use staging_xcm_executor::XcmExecutor;
 
@@ -113,17 +114,6 @@ pub type Barrier = TrailingSetTopicAsId<
 	>,
 >;
 
-/// Temporary fix to allow reserve asset transfers from Astar.
-/// TODO: remove this once we have a pallet that handles XCM reserve asset transfers.
-pub struct IsReserve;
-impl ContainsPair<MultiAsset, MultiLocation> for IsReserve {
-	// `asset` - the asset being transferred
-	// `origin` - the origin of the reserve asset transfer, i.e where the asset is coming from
-	fn contains(asset: &MultiAsset, origin: &MultiLocation) -> bool {
-		matches!(asset.id, Concrete(ref id) if origin == id || origin == &AstarLocation::get())
-	}
-}
-
 pub struct XcmConfig;
 impl staging_xcm_executor::Config for XcmConfig {
 	type RuntimeCall = RuntimeCall;
@@ -131,7 +121,7 @@ impl staging_xcm_executor::Config for XcmConfig {
 	// How to withdraw and deposit an asset.
 	type AssetTransactor = LocalAssetTransactor;
 	type OriginConverter = XcmOriginToTransactDispatchOrigin;
-	type IsReserve = IsReserve;
+	type IsReserve = NativeAsset;
 	type IsTeleporter = (); // Teleporting is disabled.
 	type UniversalLocation = UniversalLocation;
 	type Barrier = Barrier;
