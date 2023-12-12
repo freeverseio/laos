@@ -94,6 +94,11 @@ pallet-evm-precompile-blake2 = { workspace = true }
 static_assertions = { workspace = true }
 precompile-utils = { workspace = true, features = ["testing"] }
 evm = { workspace = true }
+orml-traits = { workspace = true }
+orml-xtokens = { workspace = true }
+orml-xcm-support = { workspace = true }
+xcm-simulator = { workspace = true }
+polkadot-runtime-parachains = { workspace = true }
 
 [features]
 default = [

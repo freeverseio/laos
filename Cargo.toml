@@ -226,10 +226,17 @@ staging-xcm = { git = "https://github.com/paritytech/polkadot-sdk", branch = "re
 staging-xcm-builder = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
 staging-xcm-executor = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
 staging-xcm-simulator = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
+xcm-simulator = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
 
 # (native)
 polkadot-cli = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
 polkadot-service = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+
+# Orml
+# (wasm)
+orml-traits = { git = "https://github.com/open-web3-stack/open-runtime-module-library", branch = "polkadot-v1.1.0", default-features = false }
+orml-xcm-support = { git = "https://github.com/open-web3-stack/open-runtime-module-library", branch = "polkadot-v1.1.0", default-features = false }
+orml-xtokens = { git = "https://github.com/open-web3-stack/open-runtime-module-library", branch = "polkadot-v1.1.0", default-features = false }
 
 # LAOS pallets
 pallet-laos-evolution = { path = "./ownership-chain/pallets/laos-evolution", default-features = false }

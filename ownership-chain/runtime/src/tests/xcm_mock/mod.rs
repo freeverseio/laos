@@ -1,3 +1,21 @@
+// This file is part of Astar.
+
+// Copyright (C) 2019-2023 Stake Technologies Pte.Ltd.
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+// Astar is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// Astar is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with Astar. If not, see <http://www.gnu.org/licenses/>.
+
 pub(crate) mod msg_queue;
 pub(crate) mod parachain;
 pub(crate) mod relay_chain;
@@ -7,8 +25,8 @@ use sp_runtime::{
 	traits::{Bounded, StaticLookup},
 	DispatchResult,
 };
-use xcm::latest::prelude::*;
-use xcm_executor::traits::Convert;
+use staging_xcm::latest::prelude::*;
+use staging_xcm_executor::traits::Convert;
 use xcm_simulator::{decl_test_network, decl_test_parachain, decl_test_relay_chain, TestExt};
 
 pub const ALICE: sp_runtime::AccountId32 = sp_runtime::AccountId32::new([0xFAu8; 32]);
@@ -58,9 +76,7 @@ decl_test_network! {
 }
 
 pub type RelayChainPalletXcm = pallet_xcm::Pallet<relay_chain::Runtime>;
-
 pub type ParachainPalletXcm = pallet_xcm::Pallet<parachain::Runtime>;
-pub type ParachainAssets = pallet_assets::Pallet<parachain::Runtime>;
 pub type ParachainBalances = pallet_balances::Pallet<parachain::Runtime>;
 pub type ParachainXtokens = orml_xtokens::Pallet<parachain::Runtime>;
 

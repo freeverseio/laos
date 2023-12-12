@@ -1,35 +1,171 @@
-use super::{
-	AccountId, AllPalletsWithSystem, Balances, ParachainInfo, ParachainSystem, PolkadotXcm,
-	Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin, WeightToFee, XcmpQueue,
-};
-use core::marker::PhantomData;
 use frame_support::{
-	match_types, parameter_types,
-	traits::{ConstU32, Currency, Everything, Nothing, OnUnbalanced, OriginTrait},
+	construct_runtime, parameter_types,
+	traits::{ConstU64, Everything, FindAuthor},
 	weights::Weight,
 };
-use frame_system::{EnsureRoot, RawOrigin as SystemRawOrigin};
-use pallet_xcm::XcmPassthrough;
-use polkadot_parachain_primitives::primitives::Sibling;
-use sp_runtime::traits::TryConvert;
-use staging_xcm::latest::prelude::*;
-use staging_xcm_builder::{
-	AccountKey20Aliases, AllowExplicitUnpaidExecutionFrom, AllowTopLevelPaidExecutionFrom,
-	CurrencyAdapter, DenyReserveTransferToRelayChain, DenyThenTry, EnsureXcmOrigin,
-	FixedWeightBounds, IsConcrete, NativeAsset, ParentIsPreset, RelayChainAsNative,
-	SiblingParachainAsNative, SiblingParachainConvertsVia, SignedAccountKey20AsNative,
-	SovereignSignedViaLocation, TakeWeightCredit, TrailingSetTopicAsId, UsingComponents,
-	WithComputedOrigin, WithUniqueTopic,
+use pallet_evm::{
+	runner, EnsureAddressNever, EnsureAddressRoot, FeeCalculator, FixedGasWeightMapping,
+	IdentityAddressMapping, SubstrateBlockHashMapping,
 };
-use staging_xcm_executor::XcmExecutor;
 
+use pallet_laos_evolution::TokenId;
+use sp_core::{ConstU32, H160, H256, U256};
+use sp_runtime::{
+	traits::{BlakeTwo256, Convert, IdentityLookup},
+	ConsensusEngineId,
+};
+use sp_std::{boxed::Box, prelude::*, str::FromStr};
+
+use super::FrontierPrecompiles;
+
+type Block = frame_system::mocking::MockBlock<Runtime>;
+type AccountId = H160;
+
+// Configure a mock runtime to test the pallet.
+construct_runtime!(
+	pub enum Runtime {
+		System: frame_system,
+		Balances: pallet_balances,
+		Timestamp: pallet_timestamp,
+		EVM: pallet_evm,
+		MsgQueue: mock_msg_queue::{Pallet, Storage, Event<T>},
+		PolkadotXcm: pallet_xcm::{Pallet, Call, Event<T>, Origin},
+		CumulusXcm: cumulus_pallet_xcm::{Pallet, Event<T>, Origin},
+		Utility: pallet_utility::{Pallet, Call, Event},
+		Xtokens: orml_xtokens::{Pallet, Storage, Call, Event<T>},
+	}
+);
+
+pub type Balance = u128;
+
+impl frame_system::Config for Runtime {
+	type BaseCallFilter = frame_support::traits::Everything;
+	type BlockWeights = ();
+	type BlockLength = ();
+	type DbWeight = ();
+	type RuntimeOrigin = RuntimeOrigin;
+	type RuntimeCall = RuntimeCall;
+	type Hash = H256;
+	type Hashing = BlakeTwo256;
+	type AccountId = AccountId;
+	type Lookup = IdentityLookup<Self::AccountId>;
+	type RuntimeEvent = RuntimeEvent;
+	type BlockHashCount = ConstU64<250>;
+	type Version = ();
+	type PalletInfo = PalletInfo;
+	type AccountData = pallet_balances::AccountData<u128>;
+	type OnNewAccount = ();
+	type OnKilledAccount = ();
+	type SystemWeightInfo = ();
+	type SS58Prefix = ();
+	type OnSetCode = ();
+	type MaxConsumers = frame_support::traits::ConstU32<16>;
+	type Nonce = u64;
+	type Block = Block;
+}
+
+parameter_types! {
+	pub const ExistentialDeposit: u64 = 1;
+}
+
+impl pallet_balances::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type WeightInfo = ();
+	type Balance = Balance;
+	type DustRemoval = ();
+	type ExistentialDeposit = ExistentialDeposit;
+	type AccountStore = System;
+	type ReserveIdentifier = ();
+	type FreezeIdentifier = ();
+	type MaxLocks = ();
+	type MaxReserves = ();
+	type MaxHolds = ();
+	type MaxFreezes = ();
+	type RuntimeHoldReason = ();
+}
+
+parameter_types! {
+	pub const MinimumPeriod: u64 = 1000;
+}
+
+impl pallet_timestamp::Config for Runtime {
+	type Moment = u64;
+	type OnTimestampSet = ();
+	type MinimumPeriod = MinimumPeriod;
+	type WeightInfo = ();
+}
+
+parameter_types! {
+	pub NullAddress: AccountId = AccountId::zero();
+}
+
+pub struct MockAssetIdToInitialOwner;
+impl Convert<U256, AccountId> for MockAssetIdToInitialOwner {
+	fn convert(_asset_id: U256) -> AccountId {
+		H160::zero()
+	}
+}
+
+pub struct FixedGasPrice;
+impl FeeCalculator for FixedGasPrice {
+	fn min_gas_price() -> (U256, Weight) {
+		// Return some meaningful gas price and weight
+		(1_000_000_000u128.into(), Weight::from_parts(7u64, 0))
+	}
+}
+pub struct FindAuthorTruncated;
+impl FindAuthor<H160> for FindAuthorTruncated {
+	fn find_author<'a, I>(_digests: I) -> Option<H160>
+	where
+		I: 'a + IntoIterator<Item = (ConsensusEngineId, &'a [u8])>,
+	{
+		Some(H160::from_str("1234500000000000000000000000000000000000").unwrap())
+	}
+}
+
+const BLOCK_GAS_LIMIT: u64 = 150_000_000;
+const MAX_POV_SIZE: u64 = 5 * 1024 * 1024;
+
+parameter_types! {
+	pub BlockGasLimit: U256 = U256::from(BLOCK_GAS_LIMIT);
+	pub const GasLimitPovSizeRatio: u64 = BLOCK_GAS_LIMIT.saturating_div(MAX_POV_SIZE);
+	pub WeightPerGas: Weight = Weight::from_parts(20_000, 0);
+	pub PrecompilesValue: FrontierPrecompiles<Runtime> = FrontierPrecompiles::<_>::new();
+}
+
+impl pallet_evm::Config for Runtime {
+	type FeeCalculator = FixedGasPrice;
+	type GasWeightMapping = FixedGasWeightMapping<Self>;
+	type WeightPerGas = WeightPerGas;
+	type BlockHashMapping = SubstrateBlockHashMapping<Self>;
+	type CallOrigin = EnsureAddressRoot<Self::AccountId>;
+	type WithdrawOrigin = EnsureAddressNever<Self::AccountId>;
+	type AddressMapping = IdentityAddressMapping;
+	type Currency = Balances;
+	type RuntimeEvent = RuntimeEvent;
+	type PrecompilesType = FrontierPrecompiles<Self>;
+	type PrecompilesValue = PrecompilesValue;
+	type ChainId = ();
+	type BlockGasLimit = BlockGasLimit;
+	type Runner = runner::stack::Runner<Self>;
+	type OnChargeTransaction = ();
+	type OnCreate = ();
+	type FindAuthor = FindAuthorTruncated;
+	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
+	type Timestamp = Timestamp;
+	type WeightInfo = ();
+}
+
+impl pallet_utility::Config for Runtime {
+	type Event = RuntimeEvent;
+	type Call = Call;
+	type WeightInfo = ();
+}
+
+// Below is XCM related configuration
 parameter_types! {
 	pub const ParentLocation: MultiLocation = MultiLocation::parent();
 	pub const OurLocation: MultiLocation = MultiLocation::here();
-	pub const AstarLocation: MultiLocation = MultiLocation {
-		parents: 1,
-		interior: X1(Junction::Parachain(2008)),
-	};
 	pub const RelayNetwork: Option<NetworkId> = None;
 	pub RelayChainOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into();
 	pub UniversalLocation: InteriorMultiLocation = Parachain(ParachainInfo::parachain_id().into()).into();
@@ -237,4 +373,49 @@ where
 			<pallet_balances::Pallet<R>>::resolve_creating(&account, amount);
 		}
 	}
+}
+
+parameter_type_with_key! {
+	pub ParachainMinFee: |location: MultiLocation| -> Option<u128> {
+		match (location.parents, location.first_interior()) {
+			(1, Some(Parachain(4u32))) => Some(50u128),
+			_ => None,
+		}
+	};
+}
+
+/// Convert `AccountId` to `MultiLocation`.
+pub struct AccountIdToMultiLocation;
+impl Convert<AccountId, MultiLocation> for AccountIdToMultiLocation {
+	fn convert(account: AccountId) -> MultiLocation {
+		X1(Junction::AccountId32 { network: None, id: account.into() }).into()
+	}
+}
+
+parameter_types! {
+	pub const UnitWeightCost: Weight = Weight::from_parts(10, 0);
+	pub const MaxInstructions: u32 = 100;
+	pub NativePerSecond: (XcmAssetId, u128, u128) = (Concrete(ShidenLocation::get()), 1_000_000_000_000, 1024 * 1024);
+	pub const MaxAssetsForTransfer: usize = 2;
+
+}
+
+// The XCM message wrapper wrapper
+impl orml_xtokens::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Balance = Balance;
+	type CurrencyId = TokenId;
+	type AccountIdToMultiLocation = AccountIdToMultiLocation<AccountId>;
+	type CurrencyIdConvert =
+		CurrencyIdtoMultiLocation<xcm_primitives::AsAssetType<AssetId, AssetType, AssetManager>>;
+	type XcmExecutor = XcmExecutor<XcmConfig>;
+	type SelfLocation = OurLocation;
+	type Weigher =
+		staging_xcm_builder::FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
+	type BaseXcmWeight = UnitWeightCost;
+	type UniversalLocation = UniversalLocation;
+	type MaxAssetsForTransfer = MaxAssetsForTransfer;
+	type MinXcmFee = ParachainMinFee;
+	type MultiLocationsFilter = Everything;
+	type ReserveProvider = xcm_primitives::AbsoluteAndRelativeReserve<SelfLocationAbsolute>;
 }
