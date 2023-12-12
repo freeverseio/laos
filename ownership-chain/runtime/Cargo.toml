@@ -53,7 +53,7 @@ pallet-laos-evolution = { workspace = true }
 pallet-evm-evolution-collection-factory = { workspace = true }
 pallet-evm-evolution-collection = { workspace = true }
 
-# Polkadot
+# Polkadot / XCM
 pallet-xcm = { workspace = true }
 polkadot-runtime-common = { workspace = true }
 polkadot-parachain-primitives = { workspace = true }
@@ -61,6 +61,7 @@ staging-xcm = { workspace = true }
 staging-xcm-builder = { workspace = true }
 staging-xcm-executor = { workspace = true }
 polkadot-primitives = { workspace = true }
+orml-xtokens = { workspace = true }
 
 # Cumulus
 cumulus-pallet-aura-ext = { workspace = true }

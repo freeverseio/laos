@@ -722,6 +722,7 @@ construct_runtime!(
 		PolkadotXcm: pallet_xcm = 31,
 		CumulusXcm: cumulus_pallet_xcm = 32,
 		DmpQueue: cumulus_pallet_dmp_queue = 33,
+		XTokens: orml_tokens = 34,
 
 		// Sudo
 		Sudo: pallet_sudo = 40,
