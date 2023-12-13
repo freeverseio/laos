@@ -1,10 +1,16 @@
-use crate::tests::new_test_ext;
+use crate::{precompiles::FrontierPrecompiles, tests::new_test_ext};
 
-use super::*;
+use crate::Runtime;
 use core::str::FromStr;
 use evm::Context;
 use frame_support::assert_noop;
+use pallet_evm::{ExitRevert, IsPrecompileResult, PrecompileFailure, PrecompileSet};
 use precompile_utils::testing::MockHandle;
+use sp_core::H160;
+
+fn hash(a: u64) -> H160 {
+	H160::from_low_u64_be(a)
+}
 
 // Check if a given address corresponds to a precompile.
 fn is_precompile(address: H160) -> Result<bool, &'static str> {

@@ -21,7 +21,7 @@ use parity_scale_codec::{Decode, Encode};
 use sp_runtime::traits::Hash;
 use sp_std::prelude::*;
 
-use polkadot_core_primitives::BlockNumber as RelayBlockNumber;
+use polkadot_primitives::BlockNumber as RelayBlockNumber;
 use polkadot_parachain_primitives::primitives::{
 	DmpMessageHandler, Id as ParaId, XcmpMessageFormat, XcmpMessageHandler,
 };
