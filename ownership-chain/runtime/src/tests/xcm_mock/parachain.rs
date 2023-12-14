@@ -1,3 +1,6 @@
+//! Mock parachain runtime, as close to the real runtime as possible.
+//! NOTE: uses the same XCM configuration as the real runtime, i.e `xcm_config.rs`.
+
 use cumulus_primitives_core::{
 	AssetId::{self as XcmAssetId, Concrete},
 	InteriorMultiLocation,
