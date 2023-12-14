@@ -20,7 +20,7 @@ pub(crate) mod msg_queue;
 pub(crate) mod parachain;
 pub(crate) mod relay_chain;
 
-use frame_support::traits::{Currency, IsType, OnFinalize, OnInitialize};
+use frame_support::traits::{IsType, OnFinalize, OnInitialize};
 use sp_core::H160;
 use sp_runtime::BuildStorage;
 use staging_xcm::latest::prelude::*;
@@ -30,12 +30,14 @@ use xcm_simulator::{decl_test_network, decl_test_parachain, decl_test_relay_chai
 use parachain::Runtime as MockParachainRuntime;
 use relay_chain::Runtime as MockRelayChainRuntime;
 
+use crate::UNIT;
+
 pub const ALICE: sp_runtime::AccountId32 = sp_runtime::AccountId32::new([0xFAu8; 32]);
 pub const BOB: sp_runtime::AccountId32 = sp_runtime::AccountId32::new([0xFBu8; 32]);
-pub const ALITH: H160 = H160::from([0xFAu8; 20]);
-pub const BOBTH: H160 = H160::from([0xFBu8; 20]);
+pub const ALITH: H160 = H160([0xFAu8; 20]);
+pub const BOBTH: H160 = H160([0xFBu8; 20]);
 
-pub const INITIAL_BALANCE: u128 = 1_000_000_000_000_000_000_000_000;
+pub const INITIAL_BALANCE: u128 = 1_000_000 * UNIT;
 
 decl_test_parachain! {
 	pub struct ParaA {
@@ -105,23 +107,6 @@ pub fn sibling_para_account_id(para: u32) -> parachain::AccountId {
 	.unwrap()
 }
 
-// /// Derive parachain's account's account on a sibling parachain
-// pub fn sibling_para_account_account_id(
-// 	para: u32,
-// 	who: sp_runtime::AccountId32,
-// ) -> parachain::AccountId {
-// 	let location = (
-// 		Parent,
-// 		Parachain(para),
-// 		AccountId32 {
-// 			// we have kusama as relay in mock
-// 			network: Some(Kusama),
-// 			id: who.into(),
-// 		},
-// 	);
-// 	parachain::LocationToAccountId::convert_location(location.into()).unwrap()
-// }
-
 /// Prepare parachain test externality
 pub fn para_ext(para_id: u32) -> sp_io::TestExternalities {
 	let mut t = frame_system::GenesisConfig::<MockParachainRuntime>::default()
@@ -131,8 +116,7 @@ pub fn para_ext(para_id: u32) -> sp_io::TestExternalities {
 	pallet_balances::GenesisConfig::<MockParachainRuntime> {
 		balances: vec![
 			(ALITH, INITIAL_BALANCE),
-			// (sibling_para_account_account_id(1, ALITH), INITIAL_BALANCE),
-			// (sibling_para_account_account_id(2, ALITH), INITIAL_BALANCE),
+			(parent_account_id(), INITIAL_BALANCE),
 			(sibling_para_account_id(1), INITIAL_BALANCE),
 			(sibling_para_account_id(2), INITIAL_BALANCE),
 		],

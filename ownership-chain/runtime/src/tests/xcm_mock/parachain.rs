@@ -486,7 +486,7 @@ impl Convert<AccountId, MultiLocation> for AccountIdToMultiLocation {
 parameter_types! {
 	pub const UnitWeightCost: Weight = Weight::from_parts(10, 0);
 	pub const MaxInstructions: u32 = 100;
-	pub NativePerSecond: (XcmAssetId, u128, u128) = (Concrete(OurLocation::get()), 1_000_000_000_000, 1024 * 1024);
+	pub NativePerSecond: (XcmAssetId, u128, u128) = (Concrete(OurLocation::get()), 1_000_000, 1024 * 1024);
 	pub const MaxAssetsForTransfer: usize = 2;
 }
 
