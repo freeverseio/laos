@@ -1,12 +1,8 @@
 //! Cross-chain asset transfer tests
 
-use super::{
-	new_test_ext,
-	xcm_mock::{MockNet, ParaA, Relay},
-};
+use super::xcm_mock::{MockNet, ParaA, Relay};
 use crate::tests::xcm_mock::{parachain, RelayChainPalletXcm};
 use cumulus_primitives_core::{
-	AssetId,
 	Instruction::{BuyExecution, Transact, WithdrawAsset},
 	Junction::Parachain,
 	Junctions::Here,
@@ -36,7 +32,7 @@ fn basic_dmp() {
 					vec![MultiAsset {
 						id: MultiLocation::here().into(),
 						fun: cumulus_primitives_core::Fungibility::Fungible(
-							1_000_000_000_000_000_000_000_000
+							1_000_000_000_000_000_000
 						)
 					}]
 					.into()
@@ -45,7 +41,7 @@ fn basic_dmp() {
 					fees: MultiAsset {
 						id: MultiLocation::here().into(),
 						fun: cumulus_primitives_core::Fungibility::Fungible(
-							1_000_000_000_000_000_000_000_000
+							1_000_000_000_000_000_000
 						)
 					},
 					weight_limit: Unlimited,
