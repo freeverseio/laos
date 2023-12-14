@@ -200,8 +200,6 @@ parameter_types! {
 
 impl origin::Config for Runtime {}
 
-type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Runtime>;
-
 parameter_types! {
 	/// Amount of weight that can be spent per block to service messages.
 	pub MessageQueueServiceWeight: Weight = Weight::from_parts(1_000_000_000, 1_000_000);

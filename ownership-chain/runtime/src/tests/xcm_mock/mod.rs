@@ -100,6 +100,7 @@ pub fn para_ext(para_id: u32) -> sp_io::TestExternalities {
 	pallet_balances::GenesisConfig::<MockParachainRuntime> {
 		balances: vec![
 			(ALITH, INITIAL_BALANCE),
+			(BOBTH, INITIAL_BALANCE),
 			(parent_account_id(), INITIAL_BALANCE),
 			(sibling_para_account_id(1), INITIAL_BALANCE),
 			(sibling_para_account_id(2), INITIAL_BALANCE),

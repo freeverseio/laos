@@ -3,10 +3,10 @@
 
 use cumulus_primitives_core::{
 	AssetId::{self as XcmAssetId, Concrete},
-	InteriorMultiLocation,
-	Junction::{self, Parachain},
-	Junctions::{Here, X1},
-	MultiAsset, MultiLocation, NetworkId, Plurality,
+	Fungibility, InteriorMultiLocation,
+	Junction::{self, GlobalConsensus, Parachain},
+	Junctions::{Here, X1, X2},
+	MultiAsset, MultiLocation, NetworkId, Plurality, XcmContext, XcmError,
 };
 use frame_support::{
 	construct_runtime, match_types, parameter_types,
@@ -14,7 +14,7 @@ use frame_support::{
 		AsEnsureOriginWithArg, ConstU64, Currency, Everything, FindAuthor, Nothing, OnUnbalanced,
 		OriginTrait,
 	},
-	weights::{IdentityFee, Weight},
+	weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight},
 	PalletId,
 };
 use frame_system::{EnsureRoot, RawOrigin as SystemRawOrigin};
@@ -34,20 +34,23 @@ use polkadot_parachain_primitives::primitives::Sibling;
 use sp_core::{ConstU128, ConstU32, H160, H256, U256};
 use sp_io::storage;
 use sp_runtime::{
-	traits::{AccountIdConversion, BlakeTwo256, Convert, IdentityLookup, TryConvert},
+	traits::{
+		AccountIdConversion, BlakeTwo256, Convert, IdentityLookup, MaybeEquivalence, Saturating,
+		TryConvert,
+	},
 	ConsensusEngineId,
 };
 use sp_std::{boxed::Box, prelude::*, str::FromStr};
 use staging_xcm::v3::BodyId;
 use staging_xcm_builder::{
 	AccountKey20Aliases, AllowExplicitUnpaidExecutionFrom, AllowTopLevelPaidExecutionFrom,
-	CurrencyAdapter, DenyReserveTransferToRelayChain, DenyThenTry, EnsureXcmOrigin,
-	FixedWeightBounds, IsConcrete, NativeAsset, ParentIsPreset, RelayChainAsNative,
-	SiblingParachainAsNative, SiblingParachainConvertsVia, SignedAccountKey20AsNative,
-	SovereignSignedViaLocation, TakeWeightCredit, TrailingSetTopicAsId, UsingComponents,
-	WithComputedOrigin,
+	ConvertedConcreteId, CurrencyAdapter, DenyReserveTransferToRelayChain, DenyThenTry,
+	EnsureXcmOrigin, FixedRateOfFungible, FixedWeightBounds, FungiblesAdapter, IsConcrete,
+	NativeAsset, NoChecking, ParentIsPreset, RelayChainAsNative, SiblingParachainAsNative,
+	SiblingParachainConvertsVia, SignedAccountKey20AsNative, SovereignSignedViaLocation,
+	TakeWeightCredit, TrailingSetTopicAsId, WithComputedOrigin,
 };
-use staging_xcm_executor::XcmExecutor;
+use staging_xcm_executor::{traits::WeightTrader, XcmExecutor};
 use xcm_simulator::PhantomData;
 
 use super::msg_queue::mock_msg_queue;
@@ -99,7 +102,7 @@ impl frame_system::Config for Runtime {
 }
 
 parameter_types! {
-	pub const ExistentialDeposit: u64 = 1;
+	pub const ExistentialDeposit: u64 = 0;
 }
 
 impl pallet_balances::Config for Runtime {
@@ -268,9 +271,10 @@ impl mock_msg_queue::Config for Runtime {
 parameter_types! {
 	pub const ParentLocation: MultiLocation = MultiLocation::parent();
 	pub const OurLocation: MultiLocation = MultiLocation::here();
-	pub const RelayNetwork: Option<NetworkId> = None;
+	pub const RelayNetwork: Option<NetworkId> = Some(NetworkId::Kusama);
 	pub RelayChainOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into();
-	pub UniversalLocation: InteriorMultiLocation = Here.into();
+	pub UniversalLocation: InteriorMultiLocation = X2(GlobalConsensus(RelayNetwork::get().unwrap()), Parachain(MsgQueue::parachain_id().into()));
+	pub DummyCheckingAccount: AccountId = PalletId(*b"laos_xcm").into_account_truncating();
 }
 
 /// Type for specifying how a `MultiLocation` can be converted into an `AccountId`. This is used
@@ -285,7 +289,7 @@ pub type LocationToAccountId = (
 	AccountKey20Aliases<RelayNetwork, AccountId>,
 );
 
-/// Means for transacting assets on this chain.
+/// Means for transacting native currency on this chain.
 pub type LocalAssetTransactor = CurrencyAdapter<
 	// Use this currency:
 	Balances,
@@ -298,6 +302,53 @@ pub type LocalAssetTransactor = CurrencyAdapter<
 	// We don't track any teleports.
 	(),
 >;
+
+/// Used to convert asset id to MultiLocation.
+/// For mock use case only, since it is hard-coded to return same location for all assets.
+pub struct AssetLocationIdConverter;
+
+impl MaybeEquivalence<MultiLocation, AssetId> for AssetLocationIdConverter {
+	fn convert(a: &MultiLocation) -> Option<AssetId> {
+		match a {
+			MultiLocation { parents: 1, interior: X1(Parachain(1)) } => Some(2),
+			MultiLocation { parents: 1, interior: X1(Parachain(2)) } => Some(1),
+			_ => None,
+		}
+	}
+
+	fn convert_back(b: &AssetId) -> Option<MultiLocation> {
+		match b {
+			1 => Some(MultiLocation { parents: 1, interior: X1(Parachain(2)) }),
+			2 => Some(MultiLocation { parents: 1, interior: X1(Parachain(1)) }),
+			_ => None,
+		}
+	}
+}
+
+/// Simple, one-to-one `u128` to `Balance` converter.
+pub struct ConvertBalance;
+
+impl MaybeEquivalence<u128, Balance> for ConvertBalance {
+	fn convert(a: &u128) -> Option<Balance> {
+		Some(*a)
+	}
+
+	fn convert_back(b: &Balance) -> Option<u128> {
+		Some(*b)
+	}
+}
+
+/// Means for transacting assets on this chain.
+pub type FungiblesTransactor = FungiblesAdapter<
+	Assets,
+	ConvertedConcreteId<AssetId, Balance, AssetLocationIdConverter, ConvertBalance>,
+	LocationToAccountId,
+	AccountId,
+	NoChecking,
+	DummyCheckingAccount,
+>;
+
+pub type AssetTransactor = (LocalAssetTransactor, FungiblesTransactor);
 
 /// This is the type we use to convert an (incoming) XCM origin into a local `Origin` instance,
 /// ready for dispatching a transaction with Xcm's `Transact`. There is an `OriginKind` which can
@@ -345,25 +396,119 @@ pub type Barrier = TrailingSetTopicAsId<
 	>,
 >;
 
+/// Used as weight trader for foreign assets.
+///
+/// In case foreigin asset is supported as payment asset, XCM execution time
+/// on-chain can be paid by the foreign asset, using the configured rate.
+///
+/// Currently it's mocked to support two assets.
+pub struct FixedRateOfForeignAsset {
+	/// Total used weight
+	weight: Weight,
+	/// Total consumed assets
+	consumed: u128,
+	/// Asset Id (as MultiLocation) and units per second for payment
+	asset_location_and_units_per_second: Option<(MultiLocation, u128)>,
+}
+
+impl WeightTrader for FixedRateOfForeignAsset {
+	fn new() -> Self {
+		Self { weight: Weight::zero(), consumed: 0, asset_location_and_units_per_second: None }
+	}
+
+	fn buy_weight(
+		&mut self,
+		weight: Weight,
+		payment: staging_xcm_executor::Assets,
+		_context: &XcmContext,
+	) -> Result<staging_xcm_executor::Assets, XcmError> {
+		// Atm in pallet, we only support one asset so this should work
+		let payment_asset = payment.fungible_assets_iter().next().ok_or(XcmError::TooExpensive)?;
+
+		match payment_asset {
+			MultiAsset {
+				id: staging_xcm::latest::AssetId::Concrete(asset_location),
+				fun: Fungibility::Fungible(_),
+			} => {
+				let units_per_second = match AssetLocationIdConverter::convert(&asset_location) {
+					Some(1) => 1_000_000_000_u128,
+					Some(2) => 2_000_000_000_u128,
+					_ => return Err(XcmError::TooExpensive),
+				};
+
+				let amount = units_per_second.saturating_mul(weight.ref_time() as u128) // TODO: change this to u64?
+								/ (WEIGHT_REF_TIME_PER_SECOND as u128);
+				if amount == 0 {
+					return Ok(payment);
+				}
+
+				let unused = payment
+					.checked_sub((asset_location.clone(), amount).into())
+					.map_err(|_| XcmError::TooExpensive)?;
+
+				self.weight = self.weight.saturating_add(weight);
+
+				// If there are multiple calls to `BuyExecution` but with different assets, we need
+				// to be able to handle that. Current primitive implementation will just keep total
+				// track of consumed asset for the FIRST consumed asset. Others will just be ignored
+				// when refund is concerned.
+				if let Some((old_asset_location, _)) =
+					self.asset_location_and_units_per_second.clone()
+				{
+					if old_asset_location == asset_location {
+						self.consumed = self.consumed.saturating_add(amount);
+					}
+				} else {
+					self.consumed = self.consumed.saturating_add(amount);
+					self.asset_location_and_units_per_second =
+						Some((asset_location, units_per_second));
+				}
+
+				Ok(unused)
+			},
+			_ => Err(XcmError::TooExpensive),
+		}
+	}
+
+	fn refund_weight(&mut self, weight: Weight, _context: &XcmContext) -> Option<MultiAsset> {
+		if let Some((asset_location, units_per_second)) =
+			self.asset_location_and_units_per_second.clone()
+		{
+			let weight = weight.min(self.weight);
+			let amount = units_per_second.saturating_mul(weight.ref_time() as u128) /
+				(WEIGHT_REF_TIME_PER_SECOND as u128);
+
+			self.weight = self.weight.saturating_sub(weight);
+			self.consumed = self.consumed.saturating_sub(amount);
+
+			if amount > 0 {
+				Some((asset_location, amount).into())
+			} else {
+				None
+			}
+		} else {
+			None
+		}
+	}
+}
+
+impl Drop for FixedRateOfForeignAsset {
+	fn drop(&mut self) {}
+}
+
 pub struct XcmConfig;
 impl staging_xcm_executor::Config for XcmConfig {
 	type RuntimeCall = RuntimeCall;
 	type XcmSender = XcmRouter;
 	// How to withdraw and deposit an asset.
-	type AssetTransactor = LocalAssetTransactor;
+	type AssetTransactor = AssetTransactor;
 	type OriginConverter = XcmOriginToTransactDispatchOrigin;
 	type IsReserve = NativeAsset;
 	type IsTeleporter = (); // Teleporting is disabled.
 	type UniversalLocation = UniversalLocation;
 	type Barrier = Barrier;
 	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
-	type Trader = UsingComponents<
-		IdentityFee<Balance>,
-		OurLocation,
-		AccountId,
-		Balances,
-		ToTreasury<Runtime>,
-	>;
+	type Trader = (FixedRateOfFungible<NativePerSecond, ()>, FixedRateOfForeignAsset);
 	type ResponseHandler = PolkadotXcm;
 	type AssetTrap = PolkadotXcm;
 	type AssetClaims = PolkadotXcm;
@@ -517,7 +662,7 @@ impl Convert<AssetId, Option<MultiLocation>> for AssetIdConvert {
 		if asset_id == 0 {
 			Some(MultiLocation::here())
 		} else {
-			None
+			AssetLocationIdConverter::convert_back(&asset_id)
 		}
 	}
 }
