@@ -8,19 +8,16 @@ use crate::{
 	UNIT,
 };
 use cumulus_primitives_core::{
+	Fungibility::Fungible,
 	Instruction::{BuyExecution, Transact, WithdrawAsset},
 	Junction::{AccountKey20, Parachain},
-	Junctions::{Here, X2},
-	MultiAsset, MultiLocation,
-	NetworkId::{self, Kusama},
-	OriginKind,
+	Junctions::{Here, X1, X2},
+	MultiAsset, MultiLocation, NetworkId, OriginKind,
 	WeightLimit::Unlimited,
 	Xcm,
 };
-use frame_support::{assert_ok, traits::fungibles::Inspect, weights::Weight};
-use pallet_authorship::pallet;
+use frame_support::{assert_ok, weights::Weight};
 use parity_scale_codec::Encode;
-use precompile_utils::assert_event_emitted;
 use xcm_simulator::TestExt;
 
 /// Test downward message passing. Does some basic remark in the parachain from the relay chain.
@@ -75,7 +72,7 @@ fn basic_dmp() {
 }
 
 #[test]
-fn test_reserve_asset_transfer() {
+fn para_to_para_transfer_and_back() {
 	MockNet::reset();
 
 	// in ParaB, we need to set up and register the token of ParaA
@@ -114,7 +111,7 @@ fn test_reserve_asset_transfer() {
 	});
 
 	ParaB::execute_with(|| {
-		use parachain::{Assets, RuntimeEvent, System};
+		use parachain::{RuntimeEvent, System};
 
 		assert!(System::events().iter().any(|r| {
 			matches!(r.event, RuntimeEvent::MsgQueue(mock_msg_queue::Event::Success(_)))
@@ -122,6 +119,41 @@ fn test_reserve_asset_transfer() {
 
 		assert!(System::events().iter().any(|r| {
 			matches!(r.event, RuntimeEvent::Assets(pallet_assets::Event::Issued { .. }))
+		}));
+
+		// now transfer back some of the tokens
+
+		let destination = MultiLocation {
+			parents: 1,
+			interior: X2(
+				Parachain(1),
+				AccountKey20 { network: Some(NetworkId::Kusama), key: ALITH.0 },
+			),
+		};
+
+		assert_ok!(ParachainXtokens::transfer_multiasset(
+			parachain::RuntimeOrigin::signed(BOBTH),
+			Box::new(
+				MultiAsset {
+					id: MultiLocation { parents: 1, interior: X1(Parachain(1)) }.into(),
+					fun: Fungible(amount - UNIT)
+				}
+				.into()
+			),
+			Box::new(destination.into()),
+			Unlimited,
+		));
+	});
+
+	ParaA::execute_with(|| {
+		use parachain::{RuntimeEvent, System};
+
+		assert!(System::events().iter().any(|r| {
+			matches!(r.event, RuntimeEvent::MsgQueue(mock_msg_queue::Event::Success(_)))
+		}));
+
+		assert!(System::events().iter().any(|r| {
+			matches!(r.event, RuntimeEvent::Balances(pallet_balances::Event::Deposit { .. }))
 		}));
 	});
 }
