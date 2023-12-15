@@ -81,7 +81,7 @@ fn para_to_para_native_transfer_and_back() {
 			2_u32,
 			ALITH,
 			false,
-			1 * UNIT
+			UNIT
 		));
 	});
 
@@ -158,7 +158,7 @@ fn para_to_para_native_transfer_and_back() {
 		}));
 
 		// calculate the final balance of ALITH
-		let rounded_balance = ParachainBalances::free_balance(&ALITH) / UNIT * UNIT;
+		let rounded_balance = ParachainBalances::free_balance(ALITH) / UNIT * UNIT;
 
 		assert_eq!(rounded_balance, INITIAL_BALANCE - UNIT);
 	});
