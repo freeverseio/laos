@@ -4,8 +4,8 @@
 use cumulus_primitives_core::{
 	AssetId::{self as XcmAssetId, Concrete},
 	Fungibility, InteriorMultiLocation,
-	Junction::{self, GlobalConsensus, Parachain},
-	Junctions::{Here, X1, X2},
+	Junction::{self, GeneralIndex, GlobalConsensus, PalletInstance, Parachain},
+	Junctions::{Here, X1, X2, X3},
 	MultiAsset, MultiLocation, NetworkId, Plurality, XcmContext, XcmError,
 };
 use frame_support::{
@@ -35,8 +35,7 @@ use sp_core::{ConstU128, ConstU32, H160, H256, U256};
 use sp_io::storage;
 use sp_runtime::{
 	traits::{
-		AccountIdConversion, BlakeTwo256, Convert, IdentityLookup, MaybeEquivalence, Saturating,
-		TryConvert,
+		AccountIdConversion, BlakeTwo256, Convert, IdentityLookup, MaybeEquivalence, TryConvert,
 	},
 	ConsensusEngineId,
 };
@@ -71,7 +70,7 @@ construct_runtime!(
 		PolkadotXcm: pallet_xcm,
 		CumulusXcm: cumulus_pallet_xcm,
 		Xtokens: orml_xtokens,
-		Assets: pallet_assets,
+		Assets: pallet_assets = 123,
 	}
 );
 
@@ -310,8 +309,16 @@ pub struct AssetLocationIdConverter;
 impl MaybeEquivalence<MultiLocation, AssetId> for AssetLocationIdConverter {
 	fn convert(a: &MultiLocation) -> Option<AssetId> {
 		match a {
+			// native currency of Parachain 1 is asset id 2 in Parachain 2
 			MultiLocation { parents: 1, interior: X1(Parachain(1)) } => Some(2),
+			// native currency of Parachain 2 is asset id 1 in Parachain 1
 			MultiLocation { parents: 1, interior: X1(Parachain(2)) } => Some(1),
+			// a case for custom asset: foreign asset id 32 (in parachain 1) is asset id 3 in
+			// Parachain 2
+			MultiLocation {
+				parents: 1,
+				interior: X3(Parachain(1), PalletInstance(123), GeneralIndex(3)),
+			} => Some(32),
 			_ => None,
 		}
 	}
@@ -320,6 +327,10 @@ impl MaybeEquivalence<MultiLocation, AssetId> for AssetLocationIdConverter {
 		match b {
 			1 => Some(MultiLocation { parents: 1, interior: X1(Parachain(2)) }),
 			2 => Some(MultiLocation { parents: 1, interior: X1(Parachain(1)) }),
+			32 => Some(MultiLocation {
+				parents: 1,
+				interior: X3(Parachain(1), PalletInstance(123), GeneralIndex(3)),
+			}),
 			_ => None,
 		}
 	}
@@ -401,7 +412,7 @@ pub type Barrier = TrailingSetTopicAsId<
 /// In case foreigin asset is supported as payment asset, XCM execution time
 /// on-chain can be paid by the foreign asset, using the configured rate.
 ///
-/// Currently it's mocked to support two assets.
+/// Currently it's mocked to support three assets.
 pub struct FixedRateOfForeignAsset {
 	/// Total used weight
 	weight: Weight,
@@ -433,6 +444,7 @@ impl WeightTrader for FixedRateOfForeignAsset {
 				let units_per_second = match AssetLocationIdConverter::convert(&asset_location) {
 					Some(1) => 1_000_000_000_u128,
 					Some(2) => 2_000_000_000_u128,
+					Some(32) => 1_000_000_000_u128,
 					_ => return Err(XcmError::TooExpensive),
 				};
 

@@ -4,7 +4,6 @@ pub(crate) mod msg_queue;
 pub(crate) mod parachain;
 pub(crate) mod relay_chain;
 
-use frame_support::traits::{OnFinalize, OnInitialize};
 use sp_core::H160;
 use sp_runtime::BuildStorage;
 use staging_xcm::latest::prelude::*;
@@ -17,7 +16,6 @@ use relay_chain::Runtime as MockRelayChainRuntime;
 use crate::UNIT;
 
 pub const ALICE: sp_runtime::AccountId32 = sp_runtime::AccountId32::new([0xFAu8; 32]);
-pub const BOB: sp_runtime::AccountId32 = sp_runtime::AccountId32::new([0xFBu8; 32]);
 pub const ALITH: H160 = H160([0xFAu8; 20]);
 pub const BOBTH: H160 = H160([0xFBu8; 20]);
 
@@ -64,8 +62,6 @@ decl_test_network! {
 }
 
 pub type RelayChainPalletXcm = pallet_xcm::Pallet<MockRelayChainRuntime>;
-pub type ParachainPalletXcm = pallet_xcm::Pallet<MockParachainRuntime>;
-pub type ParachainBalances = pallet_balances::Pallet<MockParachainRuntime>;
 pub type ParachainXtokens = orml_xtokens::Pallet<MockParachainRuntime>;
 
 pub fn parent_account_id() -> parachain::AccountId {
@@ -136,26 +132,4 @@ pub fn relay_ext() -> sp_io::TestExternalities {
 	let mut ext = sp_io::TestExternalities::new(t);
 	ext.execute_with(|| relay_chain::System::set_block_number(1));
 	ext
-}
-
-/// Advance parachain blocks until `block_number`.
-/// No effect if parachain is already at that number or exceeds it.
-pub fn advance_parachain_block_to(block_number: u64) {
-	while parachain::System::block_number() < block_number {
-		// On Finalize
-		let current_block_number = parachain::System::block_number();
-		parachain::PolkadotXcm::on_finalize(current_block_number);
-		parachain::Balances::on_finalize(current_block_number);
-		parachain::System::on_finalize(current_block_number);
-
-		// Forward 1 block
-		let current_block_number = current_block_number + 1;
-		parachain::System::set_block_number(current_block_number);
-		parachain::System::reset_events();
-
-		// On Initialize
-		parachain::System::on_initialize(current_block_number);
-		parachain::Balances::on_initialize(current_block_number);
-		parachain::PolkadotXcm::on_initialize(current_block_number);
-	}
 }
