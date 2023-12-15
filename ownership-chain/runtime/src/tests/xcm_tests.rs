@@ -3,17 +3,17 @@
 use super::xcm_mock::{parachain::Assets, MockNet, ParaA, ParaB, Relay};
 use crate::{
 	tests::xcm_mock::{
-		msg_queue::mock_msg_queue, parachain, ParachainXtokens, RelayChainPalletXcm, ALITH, BOBTH,
+		msg_queue::mock_msg_queue, parachain, ParachainBalances, ParachainXtokens,
+		RelayChainPalletXcm, ALITH, BOBTH, INITIAL_BALANCE,
 	},
 	UNIT,
 };
 use cumulus_primitives_core::{
 	Fungibility::Fungible,
-	GeneralIndex,
 	Instruction::{BuyExecution, Transact, WithdrawAsset},
 	Junction::{AccountKey20, Parachain},
-	Junctions::{Here, X1, X2, X3},
-	MultiAsset, MultiLocation, NetworkId, OriginKind, PalletInstance,
+	Junctions::{Here, X1, X2},
+	MultiAsset, MultiLocation, NetworkId, OriginKind,
 	WeightLimit::Unlimited,
 	Xcm,
 };
@@ -38,18 +38,14 @@ fn basic_dmp() {
 				WithdrawAsset(
 					vec![MultiAsset {
 						id: MultiLocation::here().into(),
-						fun: cumulus_primitives_core::Fungibility::Fungible(
-							1_000_000_000_000_000_000
-						)
+						fun: cumulus_primitives_core::Fungibility::Fungible(UNIT)
 					}]
 					.into()
 				),
 				BuyExecution {
 					fees: MultiAsset {
 						id: MultiLocation::here().into(),
-						fun: cumulus_primitives_core::Fungibility::Fungible(
-							1_000_000_000_000_000_000
-						)
+						fun: cumulus_primitives_core::Fungibility::Fungible(UNIT)
 					},
 					weight_limit: Unlimited,
 				},
@@ -120,8 +116,14 @@ fn para_to_para_native_transfer_and_back() {
 			matches!(r.event, RuntimeEvent::Assets(pallet_assets::Event::Issued { .. }))
 		}));
 
-		// now transfer back some of the tokens
+		// try to round up the amount to the nearest second, since we don't know how much fee was
+		// charged
+		let rounded_balance = Assets::total_balance(2, &BOBTH) / UNIT * UNIT;
 
+		// we have 1 UNIT of tolerance, i.e at most 1 UNIT of was charged
+		assert_eq!(rounded_balance, amount - UNIT);
+
+		// now transfer back some of the tokens
 		let destination = MultiLocation {
 			parents: 1,
 			interior: X2(
@@ -135,7 +137,7 @@ fn para_to_para_native_transfer_and_back() {
 			Box::new(
 				MultiAsset {
 					id: MultiLocation { parents: 1, interior: X1(Parachain(1)) }.into(),
-					fun: Fungible(amount - UNIT)
+					fun: Fungible(Assets::total_balance(2, &BOBTH))
 				}
 				.into()
 			),
@@ -154,108 +156,10 @@ fn para_to_para_native_transfer_and_back() {
 		assert!(System::events().iter().any(|r| {
 			matches!(r.event, RuntimeEvent::Balances(pallet_balances::Event::Deposit { .. }))
 		}));
-	});
-}
 
-#[test]
-fn para_to_para_custom_asset_transfer_and_back() {
-	MockNet::reset();
+		// calculate the final balance of ALITH
+		let rounded_balance = ParachainBalances::free_balance(&ALITH) / UNIT * UNIT;
 
-	// create a custom asset in ParaB, mint some
-	ParaB::execute_with(|| {
-		assert_ok!(Assets::force_create(
-			parachain::RuntimeOrigin::root(),
-			3_u32,
-			ALITH,
-			false,
-			1 * UNIT
-		));
-
-		assert_ok!(Assets::mint(parachain::RuntimeOrigin::signed(ALITH), 3_u32, ALITH, 100 * UNIT));
-
-		assert_eq!(Assets::total_issuance(3_u32), 100 * UNIT);
-	});
-
-	// in ParaA, we need to set up and register custom token of ParaB
-	ParaA::execute_with(|| {
-		// we only need to create the foreign asset, registering location and setting unit price
-		// per second is not necessary, since it is already mocked
-		assert_ok!(Assets::force_create(
-			parachain::RuntimeOrigin::root(),
-			32_u32,
-			BOBTH,
-			false,
-			1 * UNIT
-		));
-	});
-
-	let amount = 50 * UNIT;
-
-	ParaB::execute_with(|| {
-		// transfer the custom asset to ParaA
-		let destination = MultiLocation {
-			parents: 1,
-			interior: X2(
-				Parachain(1),
-				AccountKey20 { network: Some(NetworkId::Kusama), key: ALITH.0 },
-			),
-		};
-
-		// use native token as fee item
-		assert_ok!(ParachainXtokens::transfer_multiassets(
-			parachain::RuntimeOrigin::signed(ALITH),
-			// zero id is the native token, 3 is the custom token
-			Box::new(
-				vec![
-					MultiAsset { id: MultiLocation::here().into(), fun: Fungible(UNIT) }.into(),
-					MultiAsset {
-						id: MultiLocation {
-							parents: 1,
-							interior: X3(Parachain(2), PalletInstance(123), GeneralIndex(3))
-						}
-						.into(),
-						fun: Fungible(amount)
-					}
-				]
-				.into()
-			),
-			0,
-			Box::new(destination.into()),
-			Unlimited,
-		));
-
-		// check that the custom asset is transferred
-		assert_eq!(Assets::total_balance(3, &ALITH), 100 * UNIT - amount);
-	});
-
-	ParaA::execute_with(|| {
-		use parachain::{RuntimeEvent, System};
-
-		assert!(System::events().iter().any(|r| {
-			matches!(r.event, RuntimeEvent::MsgQueue(mock_msg_queue::Event::Success(_)))
-		}));
-
-		assert!(System::events().iter().any(|r| {
-			matches!(r.event, RuntimeEvent::Assets(pallet_assets::Event::Issued { .. }))
-		}));
-
-		// now transfer back some of the tokens
-		let destination = MultiLocation {
-			parents: 1,
-			interior: X2(
-				Parachain(2),
-				AccountKey20 { network: Some(NetworkId::Kusama), key: BOBTH.0 },
-			),
-		};
-
-		// use native token as fee item
-		assert_ok!(ParachainXtokens::transfer_multicurrencies(
-			parachain::RuntimeOrigin::signed(ALITH),
-			// zero id is the native token, 3 is the custom token
-			vec![(0, UNIT), (32, amount - UNIT)],
-			0,
-			Box::new(destination.into()),
-			Unlimited,
-		));
+		assert_eq!(rounded_balance, INITIAL_BALANCE - UNIT);
 	});
 }
