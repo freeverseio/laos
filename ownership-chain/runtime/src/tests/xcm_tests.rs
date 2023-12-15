@@ -3,7 +3,7 @@
 use super::xcm_mock::{parachain::Assets, MockNet, ParaA, ParaB, Relay};
 use crate::{
 	tests::xcm_mock::{
-		msg_queue::mock_msg_queue, parachain, ParachainBalances, ParachainXtokens,
+		msg_queue::mock_msg_queue, parachain, ParachainBalances, ParachainXcm, ParachainXtokens,
 		RelayChainPalletXcm, ALITH, BOBTH, INITIAL_BALANCE,
 	},
 	UNIT,
@@ -74,33 +74,58 @@ fn para_to_para_native_transfer_and_back() {
 
 	// in ParaB, we need to set up and register the token of ParaA
 	ParaB::execute_with(|| {
+		let create_asset =
+			parachain::RuntimeCall::Assets(pallet_assets::Call::<parachain::Runtime>::create {
+				id: 2,
+				admin: ALITH,
+				min_balance: UNIT,
+			})
+			.encode();
+
 		// we only need to create the asset, registering location and setting unit price
 		// per second is not necessary, since it is already mocked by
-		assert_ok!(Assets::force_create(
+		assert_ok!(ParachainXcm::send(
 			parachain::RuntimeOrigin::root(),
-			2_u32,
-			ALITH,
-			false,
-			UNIT
+			Box::new(MultiLocation { parents: 1, interior: X1(Parachain(1)) }.into()),
+			Box::new(staging_xcm::VersionedXcm::V3(Xcm(vec![
+				WithdrawAsset(
+					vec![MultiAsset { id: MultiLocation::here().into(), fun: Fungible(UNIT) }]
+						.into()
+				),
+				BuyExecution {
+					fees: MultiAsset { id: MultiLocation::here().into(), fun: Fungible(UNIT) },
+					weight_limit: Unlimited,
+				},
+				Transact {
+					origin_kind: OriginKind::SovereignAccount,
+					require_weight_at_most: Weight::from_parts(1_000_000_000, 1024 * 1024),
+					call: create_asset.into()
+				},
+			]
+			.into())))
 		));
 	});
 
 	let amount = 100 * UNIT;
 	ParaA::execute_with(|| {
 		// bob in ParaB
-		let destination = MultiLocation {
-			parents: 1,
-			interior: X2(
-				Parachain(2),
-				AccountKey20 { network: Some(NetworkId::Kusama), key: BOBTH.0 },
-			),
-		};
+		let destination = MultiLocation { parents: 1, interior: X1(Parachain(2)) };
 
-		assert_ok!(ParachainXtokens::transfer(
+		assert_ok!(ParachainXcm::limited_reserve_transfer_assets(
 			parachain::RuntimeOrigin::signed(ALITH),
-			0,
-			amount,
 			Box::new(destination.into()),
+			Box::new(
+				MultiLocation {
+					parents: 0,
+					interior: X1(AccountKey20 { network: None, key: BOBTH.0 })
+				}
+				.into(),
+			),
+			Box::new(
+				vec![MultiAsset { id: MultiLocation::here().into(), fun: Fungible(amount) }.into()]
+					.into()
+			),
+			0,
 			Unlimited,
 		));
 	});
