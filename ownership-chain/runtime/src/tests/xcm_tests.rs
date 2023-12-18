@@ -124,7 +124,7 @@ fn para_to_para_native_transfer_and_back() {
 			matches!(r.event, RuntimeEvent::MsgQueue(mock_msg_queue::Event::Success(_)))
 		}));
 		assert!(System::events().iter().any(|r| {
-			matches!(r.event, RuntimeEvent::Assets(pallet_assets::Event::Created(_)))
+			matches!(r.event, RuntimeEvent::Assets(pallet_assets::Event::Created { .. }))
 		}));
 	});
 
