@@ -4,7 +4,7 @@
 use cumulus_primitives_core::{
 	AssetId::{self as XcmAssetId, Concrete},
 	Fungibility, InteriorMultiLocation,
-	Junction::{self, GeneralIndex, GlobalConsensus, PalletInstance, Parachain},
+	Junction::{self, GlobalConsensus, PalletInstance, Parachain},
 	Junctions::{Here, X1, X2, X3},
 	MultiAsset, MultiLocation, NetworkId, Plurality, XcmContext, XcmError,
 };
@@ -313,12 +313,6 @@ impl MaybeEquivalence<MultiLocation, AssetId> for AssetLocationIdConverter {
 			MultiLocation { parents: 1, interior: X1(Parachain(1)) } => Some(2),
 			// native currency of Parachain 2 is asset id 1 in Parachain 1
 			MultiLocation { parents: 1, interior: X1(Parachain(2)) } => Some(1),
-			// a case for custom asset: foreign asset id 32 (in parachain 1) is asset id 3 in
-			// Parachain 2
-			MultiLocation {
-				parents: 1,
-				interior: X3(Parachain(1), PalletInstance(123), GeneralIndex(3)),
-			} => Some(32),
 			_ => None,
 		}
 	}
@@ -327,10 +321,6 @@ impl MaybeEquivalence<MultiLocation, AssetId> for AssetLocationIdConverter {
 		match b {
 			1 => Some(MultiLocation { parents: 1, interior: X1(Parachain(2)) }),
 			2 => Some(MultiLocation { parents: 1, interior: X1(Parachain(1)) }),
-			32 => Some(MultiLocation {
-				parents: 1,
-				interior: X3(Parachain(1), PalletInstance(123), GeneralIndex(3)),
-			}),
 			_ => None,
 		}
 	}

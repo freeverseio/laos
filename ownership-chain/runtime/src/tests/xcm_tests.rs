@@ -1,4 +1,14 @@
 //! Cross-chain asset transfer tests
+//!
+//! The scenario for these tests is as follows:
+//!
+//! - ParaA is our parachain, so we use similar configuration to our runtime. There might be some
+//!   extra pallets (`Assets` and `XTokens`, e.g) in the mock,
+//! but we do not use them.
+//!
+//! - ParaB is another parachain. We assume that another parachain we are interacting with is
+//!   configured with a minimum of
+//! `Assets` and `XTokens` pallets.
 
 use super::xcm_mock::{parachain::Assets, MockNet, ParaA, ParaB, Relay};
 use crate::{
@@ -72,21 +82,20 @@ fn basic_dmp() {
 fn para_to_para_native_transfer_and_back() {
 	MockNet::reset();
 
-	// in ParaB, we need to set up and register the token of ParaA
-	ParaB::execute_with(|| {
+	// in ParaB, we need to set up and register the token of ParaA.
+	// we do this by sending a XCM message to ParaB
+	ParaA::execute_with(|| {
 		let create_asset =
 			parachain::RuntimeCall::Assets(pallet_assets::Call::<parachain::Runtime>::create {
 				id: 2,
 				admin: ALITH,
 				min_balance: UNIT,
-			})
-			.encode();
-
+			});
 		// we only need to create the asset, registering location and setting unit price
 		// per second is not necessary, since it is already mocked by
 		assert_ok!(ParachainXcm::send(
 			parachain::RuntimeOrigin::root(),
-			Box::new(MultiLocation { parents: 1, interior: X1(Parachain(1)) }.into()),
+			Box::new(MultiLocation { parents: 1, interior: X1(Parachain(2)) }.into()),
 			Box::new(staging_xcm::VersionedXcm::V3(Xcm(vec![
 				WithdrawAsset(
 					vec![MultiAsset { id: MultiLocation::here().into(), fun: Fungible(UNIT) }]
@@ -99,11 +108,24 @@ fn para_to_para_native_transfer_and_back() {
 				Transact {
 					origin_kind: OriginKind::SovereignAccount,
 					require_weight_at_most: Weight::from_parts(1_000_000_000, 1024 * 1024),
-					call: create_asset.into()
+					call: create_asset.encode().into(),
 				},
 			]
 			.into())))
 		));
+	});
+
+	ParaB::execute_with(|| {
+		use parachain::{RuntimeEvent, System};
+		// check that asset is created
+		assert_eq!(Assets::total_balance(1, &ALITH), 0);
+
+		assert!(System::events().iter().any(|r| {
+			matches!(r.event, RuntimeEvent::MsgQueue(mock_msg_queue::Event::Success(_)))
+		}));
+		assert!(System::events().iter().any(|r| {
+			matches!(r.event, RuntimeEvent::Assets(pallet_assets::Event::Created(_)))
+		}));
 	});
 
 	let amount = 100 * UNIT;
@@ -169,6 +191,9 @@ fn para_to_para_native_transfer_and_back() {
 			Box::new(destination.into()),
 			Unlimited,
 		));
+
+		// all the asset should, in theory, be transferred back
+		assert_eq!(Assets::total_issuance(2), 0);
 	});
 
 	ParaA::execute_with(|| {
