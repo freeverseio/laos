@@ -4,8 +4,8 @@
 use cumulus_primitives_core::{
 	AssetId::{self as XcmAssetId, Concrete},
 	Fungibility, InteriorMultiLocation,
-	Junction::{self, GlobalConsensus, PalletInstance, Parachain},
-	Junctions::{Here, X1, X2, X3},
+	Junction::{self, GlobalConsensus, Parachain},
+	Junctions::{Here, X1, X2},
 	MultiAsset, MultiLocation, NetworkId, Plurality, XcmContext, XcmError,
 };
 use frame_support::{
