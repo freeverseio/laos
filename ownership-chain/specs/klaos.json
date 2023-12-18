@@ -5,7 +5,10 @@
   "bootNodes": [
     "/ip4/159.223.242.241/tcp/30334/p2p/12D3KooWPLfdfdDuNA2EcQQg1UfniDw2cJHjhcS98Vgj3pyvepgd",
     "/ip4/159.223.241.56/tcp/30334/p2p/12D3KooWP4hW5sQsS61yLWqgSnEEAUePdveMvqMdZxVWz4a4M6n7",
-    "/ip4/64.225.82.80/tcp/30334/p2p/12D3KooWCEZ635J1LtCSX95vSjk6WzAm6oHdzKdEhiKzLNtiUvpT"
+    "/ip4/64.225.82.80/tcp/30334/p2p/12D3KooWCEZ635J1LtCSX95vSjk6WzAm6oHdzKdEhiKzLNtiUvpT",
+    "/dns4/klaos-boot-0.gorengine.com/tcp/30334/p2p/12D3KooWAkbe8ecKSGUyRjgZwh8DifGiu5oe6s1VbVdBcVmc7mkS",
+    "/dns4/klaos-boot-1.gorengine.com/tcp/30334/p2p/12D3KooWGCw6Wuq2pGnZAGqd8M6UAXDPVUybGoCAgQBiAUShjx1V",
+    "/dns4/klaos-boot-2.gorengine.com/tcp/30334/p2p/12D3KooWGwLs4QoQo4aWC8VE4rT5MGeLqZn8LVWMi4tFdG1iKoJq"
   ],
   "telemetryEndpoints": [
     ["/dns/telemetry.polkadot.io/tcp/443/x-parity-wss/%2Fsubmit%2F", 0],
