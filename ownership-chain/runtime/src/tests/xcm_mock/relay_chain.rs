@@ -202,9 +202,9 @@ impl origin::Config for Runtime {}
 
 parameter_types! {
 	/// Amount of weight that can be spent per block to service messages.
-	pub MessageQueueServiceWeight: Weight = Weight::from_parts(1_000_000_000, 1_000_000);
-	pub const MessageQueueHeapSize: u32 = 65_536;
-	pub const MessageQueueMaxStale: u32 = 16;
+	pub MessageQueueServiceWeight: Weight = Weight::from_parts(4_000_000_000, 1_000_000);
+	pub const MessageQueueHeapSize: u32 = 655_536;
+	pub const MessageQueueMaxStale: u32 = 256;
 }
 
 /// Message processor to handle any messages that were enqueued into the `MessageQueue` pallet.

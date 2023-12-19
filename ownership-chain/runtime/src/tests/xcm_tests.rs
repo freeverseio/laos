@@ -2,19 +2,19 @@
 //!
 //! The scenario for these tests is as follows:
 //!
-//! - ParaA is our parachain, so we use similar configuration to our runtime. There might be some
+//! - LaosPara is our parachain, so we use similar configuration to our runtime. There might be some
 //!   extra pallets (`Assets` and `XTokens`, e.g) in the mock,
 //! but we do not use them.
 //!
-//! - ParaB is another parachain. We assume that another parachain we are interacting with is
+//! - OtherPara is another parachain. We assume that another parachain we are interacting with is
 //!   configured with a minimum of
 //! `Assets` and `XTokens` pallets.
 
-use super::xcm_mock::{parachain::Assets, MockNet, ParaA, ParaB, Relay};
+use super::xcm_mock::{parachain::Assets, LaosPara, MockNet, OtherPara, Relay};
 use crate::{
 	tests::xcm_mock::{
-		msg_queue::mock_msg_queue, parachain, ParachainBalances, ParachainXtokens,
-		RealParachainXcm, RelayChainPalletXcm, ALITH, BOBTH, INITIAL_BALANCE,
+		parachain, LaosParachainBalances, LaosParachainXcm, ParachainXtokens, RelayChainPalletXcm,
+		ALITH, BOBTH, INITIAL_BALANCE,
 	},
 	UNIT,
 };
@@ -23,7 +23,7 @@ use cumulus_primitives_core::{
 	Instruction::{BuyExecution, Transact, WithdrawAsset},
 	Junction::{AccountKey20, Parachain},
 	Junctions::{Here, X1, X2},
-	MultiAsset, MultiLocation, NetworkId,
+	MultiAsset, MultiLocation,
 	WeightLimit::Unlimited,
 	Xcm,
 };
@@ -70,7 +70,7 @@ fn basic_dmp() {
 	});
 
 	// Execute remote transact and verify that `Remarked` event is emitted.
-	ParaA::execute_with(|| {
+	LaosPara::execute_with(|| {
 		use crate::{RuntimeEvent, System};
 
 		for event in System::events() {
@@ -87,9 +87,10 @@ fn basic_dmp() {
 fn para_to_para_native_transfer_and_back() {
 	MockNet::reset();
 
-	// in ParaB, we need to set up and register the token of ParaA.
-	// we do this by sending a XCM message to ParaB
-	ParaA::execute_with(|| {
+	// in OtherPara, we need to set up and register the token of LaosPara.
+	// we do this by sending a XCM message to OtherPara
+	LaosPara::execute_with(|| {
+		env_logger::init();
 		let create_asset =
 			parachain::RuntimeCall::Assets(pallet_assets::Call::<parachain::Runtime>::create {
 				id: 2,
@@ -97,15 +98,11 @@ fn para_to_para_native_transfer_and_back() {
 				min_balance: UNIT,
 			});
 
-		assert_ok!(RealParachainXcm::force_default_xcm_version(
-			crate::RuntimeOrigin::root(),
-			Some(3)
-		));
 		// we only need to create the asset, registering location and setting unit price
 		// per second is not necessary, since it is already mocked by
-		assert_ok!(RealParachainXcm::send(
+		assert_ok!(LaosParachainXcm::send(
 			crate::RuntimeOrigin::root(),
-			Box::new(MultiLocation { parents: 1, interior: X1(Parachain(100)) }.into()),
+			Box::new(MultiLocation { parents: 1, interior: X1(Parachain(2)) }.into()),
 			Box::new(staging_xcm::VersionedXcm::V3(Xcm(vec![
 				WithdrawAsset(
 					vec![MultiAsset { id: MultiLocation::here().into(), fun: Fungible(UNIT) }]
@@ -125,25 +122,28 @@ fn para_to_para_native_transfer_and_back() {
 		));
 	});
 
-	ParaB::execute_with(|| {
+	OtherPara::execute_with(|| {
 		use parachain::{RuntimeEvent, System};
 		// check that asset is created
 		assert_eq!(Assets::total_balance(1, &ALITH), 0);
 
-		// assert!(System::events().iter().any(|r| {
-		// 	matches!(r.event, RuntimeEvent::MsgQueue(mock_msg_queue::Event::Success(_)))
-		// }));
+		assert!(System::events().iter().any(|r| {
+			matches!(
+				r.event,
+				RuntimeEvent::XcmpQueue(cumulus_pallet_xcmp_queue::Event::Success { .. })
+			)
+		}));
 		assert!(System::events().iter().any(|r| {
 			matches!(r.event, RuntimeEvent::Assets(pallet_assets::Event::Created { .. }))
 		}));
 	});
 
 	let amount = 100 * UNIT;
-	ParaA::execute_with(|| {
-		// bob in ParaB
+	LaosPara::execute_with(|| {
+		// bob in OtherPara
 		let destination = MultiLocation { parents: 1, interior: X1(Parachain(2)) };
 
-		assert_ok!(RealParachainXcm::limited_reserve_transfer_assets(
+		assert_ok!(LaosParachainXcm::limited_reserve_transfer_assets(
 			crate::RuntimeOrigin::signed(ALITH.0.into()),
 			Box::new(destination.into()),
 			Box::new(
@@ -162,12 +162,15 @@ fn para_to_para_native_transfer_and_back() {
 		));
 	});
 
-	ParaB::execute_with(|| {
+	OtherPara::execute_with(|| {
 		use parachain::{RuntimeEvent, System};
 
-		// assert!(System::events().iter().any(|r| {
-		// 	matches!(r.event, RuntimeEvent::MsgQueue(mock_msg_queue::Event::Success(_)))
-		// }));
+		assert!(System::events().iter().any(|r| {
+			matches!(
+				r.event,
+				RuntimeEvent::XcmpQueue(cumulus_pallet_xcmp_queue::Event::Success { .. })
+			)
+		}));
 
 		assert!(System::events().iter().any(|r| {
 			matches!(r.event, RuntimeEvent::Assets(pallet_assets::Event::Issued { .. }))
@@ -183,10 +186,7 @@ fn para_to_para_native_transfer_and_back() {
 		// now transfer back some of the tokens
 		let destination = MultiLocation {
 			parents: 1,
-			interior: X2(
-				Parachain(1),
-				AccountKey20 { network: Some(NetworkId::Kusama), key: ALITH.0 },
-			),
+			interior: X2(Parachain(1), AccountKey20 { network: None, key: ALITH.0 }),
 		};
 
 		assert_ok!(ParachainXtokens::transfer_multiasset(
@@ -206,12 +206,16 @@ fn para_to_para_native_transfer_and_back() {
 		assert_eq!(Assets::total_issuance(2), 0);
 	});
 
-	ParaA::execute_with(|| {
+	LaosPara::execute_with(|| {
 		use crate::{RuntimeEvent, System};
 
-		// assert!(System::events().iter().any(|r| {
-		// 	matches!(r.event, RuntimeEvent::MsgQueue(mock_msg_queue::Event::Success(_)))
-		// }));
+		assert!(System::events().iter().any(|r| {
+			matches!(
+				r.event,
+				RuntimeEvent::XcmpQueue(cumulus_pallet_xcmp_queue::Event::Success { .. })
+			)
+		}));
+
 		for event in System::events() {
 			println!("{:?}", event.event);
 		}
@@ -221,7 +225,7 @@ fn para_to_para_native_transfer_and_back() {
 		}));
 
 		// calculate the final balance of ALITH
-		let rounded_balance = ParachainBalances::free_balance(ALITH) / UNIT * UNIT;
+		let rounded_balance = LaosParachainBalances::free_balance(&ALITH.0.into()) / UNIT * UNIT;
 
 		assert_eq!(rounded_balance, INITIAL_BALANCE - UNIT);
 	});

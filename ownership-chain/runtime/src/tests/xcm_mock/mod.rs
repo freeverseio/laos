@@ -1,6 +1,5 @@
 //! Mock types for testing XCM.
 
-pub(crate) mod msg_queue;
 pub(crate) mod parachain;
 pub(crate) mod relay_chain;
 
@@ -23,7 +22,7 @@ pub const BOBTH: H160 = H160([0xFBu8; 20]);
 pub const INITIAL_BALANCE: u128 = 1_000_000 * UNIT;
 
 decl_test_parachain! {
-	pub struct ParaA {
+	pub struct LaosPara {
 		Runtime = RealParachainRuntime,
 		XcmpMessageHandler = cumulus_pallet_xcmp_queue::Pallet<RealParachainRuntime>,
 		DmpMessageHandler = cumulus_pallet_dmp_queue::Pallet<RealParachainRuntime>,
@@ -32,7 +31,7 @@ decl_test_parachain! {
 }
 
 decl_test_parachain! {
-	pub struct ParaB {
+	pub struct OtherPara {
 		Runtime = MockParachainRuntime,
 		XcmpMessageHandler = cumulus_pallet_xcmp_queue::Pallet<MockParachainRuntime>,
 		DmpMessageHandler = cumulus_pallet_dmp_queue::Pallet<MockParachainRuntime>,
@@ -56,16 +55,17 @@ decl_test_network! {
 	pub struct MockNet {
 		relay_chain = Relay,
 		parachains = vec![
-			(1, ParaA),
-			(2, ParaB),
+			(1, LaosPara),
+			(2, OtherPara),
 		],
 	}
 }
 
 pub type RelayChainPalletXcm = pallet_xcm::Pallet<MockRelayChainRuntime>;
 pub type ParachainXtokens = orml_xtokens::Pallet<MockParachainRuntime>;
-pub type RealParachainXcm = pallet_xcm::Pallet<RealParachainRuntime>;
-pub type ParachainBalances = pallet_balances::Pallet<MockParachainRuntime>;
+pub type LaosParachainXcm = pallet_xcm::Pallet<RealParachainRuntime>;
+pub type LaosParachainBalances = pallet_balances::Pallet<RealParachainRuntime>;
+pub type OtherParachainBalances = pallet_balances::Pallet<MockParachainRuntime>;
 
 pub fn parent_account_id() -> parachain::AccountId {
 	parachain::LocationToAccountId::convert_location(&MultiLocation { parents: 1, interior: Here })
@@ -93,7 +93,7 @@ pub fn sibling_para_account_id(para: u32) -> parachain::AccountId {
 /// Prepare parachain test externality
 pub fn para_ext<Runtime>(para_id: u32) -> sp_io::TestExternalities
 where
-	Runtime: pallet_balances::Config + parachain_info::Config,
+	Runtime: pallet_balances::Config + parachain_info::Config + pallet_xcm::Config,
 	Runtime::AccountId: From<H160> + Into<H160>,
 	Runtime::Balance: From<u128> + Into<u128>,
 {
@@ -118,6 +118,10 @@ where
 	.assimilate_storage(&mut t)
 	.unwrap();
 
+	pallet_xcm::GenesisConfig::<Runtime> { _config: Default::default(), safe_xcm_version: Some(3) }
+		.assimilate_storage(&mut t)
+		.unwrap();
+
 	let mut ext = sp_io::TestExternalities::new(t);
 
 	ext.execute_with(|| {
@@ -138,6 +142,13 @@ pub fn relay_ext() -> sp_io::TestExternalities {
 			(child_para_account_id(1), INITIAL_BALANCE),
 			(child_para_account_id(2), INITIAL_BALANCE),
 		],
+	}
+	.assimilate_storage(&mut t)
+	.unwrap();
+
+	pallet_xcm::GenesisConfig::<MockRelayChainRuntime> {
+		_config: Default::default(),
+		safe_xcm_version: Some(3),
 	}
 	.assimilate_storage(&mut t)
 	.unwrap();

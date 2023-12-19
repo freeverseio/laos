@@ -48,12 +48,11 @@ use staging_xcm_builder::{
 	EnsureXcmOrigin, FixedRateOfFungible, FixedWeightBounds, FungiblesAdapter, IsConcrete,
 	NativeAsset, NoChecking, ParentIsPreset, RelayChainAsNative, SiblingParachainAsNative,
 	SiblingParachainConvertsVia, SignedAccountKey20AsNative, SovereignSignedViaLocation,
-	TakeWeightCredit, TrailingSetTopicAsId, WithComputedOrigin, WithUniqueTopic,
+	TakeWeightCredit, TrailingSetTopicAsId, WithComputedOrigin,
 };
 use staging_xcm_executor::{traits::WeightTrader, XcmExecutor};
 use xcm_simulator::PhantomData;
 
-use super::msg_queue::mock_msg_queue;
 use crate::precompiles::FrontierPrecompiles;
 
 pub type Block = frame_system::mocking::MockBlock<Runtime>;
@@ -95,7 +94,7 @@ impl frame_system::Config for Runtime {
 	type BlockHashCount = ConstU64<250>;
 	type Version = ();
 	type PalletInfo = PalletInfo;
-	type AccountData = pallet_balances::AccountData<u128>;
+	type AccountData = pallet_balances::AccountData<Balance>;
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
 	type SystemWeightInfo = ();
@@ -566,12 +565,7 @@ pub type LocalOriginToLocation = SignedToAccountId20<RuntimeOrigin, AccountId, R
 
 /// The means for routing XCM messages which are not for local execution into the right message
 /// queues.
-pub type XcmRouter = WithUniqueTopic<(
-	// Two routers - use UMP to communicate with the relay chain:
-	cumulus_primitives_utility::ParentAsUmp<ParachainSystem, (), ()>,
-	// ..and XCMP to communicate with the sibling chains.
-	XcmpQueue,
-)>;
+pub type XcmRouter = super::ParachainXcmRouter<ParachainInfo>;
 
 #[cfg(feature = "runtime-benchmarks")]
 parameter_types! {

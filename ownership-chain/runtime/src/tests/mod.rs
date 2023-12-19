@@ -6,9 +6,11 @@ mod precompile_tests;
 mod xcm_mock;
 mod xcm_tests;
 
+pub use xcm_mock::ParachainXcmRouter;
+
 use sp_runtime::BuildStorage;
 
-// Build genesis storage according to the mock runtime.
+// Build genesis storag e according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
 	let mut t = frame_system::GenesisConfig::<crate::Runtime>::default()
 		.build_storage()
