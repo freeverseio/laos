@@ -8,6 +8,9 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+pub use tests::ParachainXcmRouter;
+
 mod weights;
 pub mod xcm_config;
 
