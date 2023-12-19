@@ -18,6 +18,7 @@ use frame_support::{
 	PalletId,
 };
 use frame_system::{EnsureRoot, RawOrigin as SystemRawOrigin};
+use ownership_parachain_primitives::MAXIMUM_BLOCK_WEIGHT;
 use pallet_assets::AssetsCallback;
 use pallet_evm::{
 	runner, EnsureAddressNever, EnsureAddressRoot, FeeCalculator, FixedGasWeightMapping,
@@ -52,7 +53,6 @@ use staging_xcm_builder::{
 use staging_xcm_executor::{traits::WeightTrader, XcmExecutor};
 use xcm_simulator::PhantomData;
 
-use super::msg_queue::mock_msg_queue;
 use crate::precompiles::FrontierPrecompiles;
 
 pub type Block = frame_system::mocking::MockBlock<Runtime>;
@@ -65,10 +65,15 @@ construct_runtime!(
 		System: frame_system,
 		Balances: pallet_balances,
 		Timestamp: pallet_timestamp,
+		ParachainInfo: parachain_info = 3,
 		EVM: pallet_evm,
-		MsgQueue: mock_msg_queue,
+		ParachainSystem: cumulus_pallet_parachain_system,
+
+		XcmpQueue: cumulus_pallet_xcmp_queue,
 		PolkadotXcm: pallet_xcm,
 		CumulusXcm: cumulus_pallet_xcm,
+		DmpQueue: cumulus_pallet_dmp_queue,
+
 		Xtokens: orml_xtokens,
 		Assets: pallet_assets = 123,
 	}
@@ -89,12 +94,12 @@ impl frame_system::Config for Runtime {
 	type BlockHashCount = ConstU64<250>;
 	type Version = ();
 	type PalletInfo = PalletInfo;
-	type AccountData = pallet_balances::AccountData<u128>;
+	type AccountData = pallet_balances::AccountData<Balance>;
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
-	type OnSetCode = ();
+	type OnSetCode = cumulus_pallet_parachain_system::ParachainSetCode<Self>;
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 	type Nonce = u64;
 	type Block = Block;
@@ -260,9 +265,41 @@ impl pallet_assets::Config for Runtime {
 	type BenchmarkHelper = ();
 }
 
-impl mock_msg_queue::Config for Runtime {
+impl parachain_info::Config for Runtime {}
+
+parameter_types! {
+	pub const ReservedXcmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT.saturating_div(4);
+	pub const ReservedDmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT.saturating_div(4);
+}
+
+impl cumulus_pallet_parachain_system::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type OnSystemEvent = ();
+	type SelfParaId = parachain_info::Pallet<Runtime>;
+	type OutboundXcmpMessageSource = XcmpQueue;
+	type DmpMessageHandler = DmpQueue;
+	type ReservedDmpWeight = ReservedDmpWeight;
+	type XcmpMessageHandler = XcmpQueue;
+	type ReservedXcmpWeight = ReservedXcmpWeight;
+	type CheckAssociatedRelayNumber = cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
+}
+
+impl cumulus_pallet_xcmp_queue::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type XcmExecutor = XcmExecutor<XcmConfig>;
+	type ChannelInfo = ParachainSystem;
+	type VersionWrapper = ();
+	type ExecuteOverweightOrigin = EnsureRoot<AccountId>;
+	type ControllerOrigin = EnsureRoot<AccountId>;
+	type ControllerOriginConverter = XcmOriginToTransactDispatchOrigin;
+	type WeightInfo = ();
+	type PriceForSiblingDelivery = ();
+}
+
+impl cumulus_pallet_dmp_queue::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type XcmExecutor = XcmExecutor<XcmConfig>;
+	type ExecuteOverweightOrigin = EnsureRoot<AccountId>;
 }
 
 // Below is XCM related configuration
@@ -272,7 +309,7 @@ parameter_types! {
 	pub const OurLocation: MultiLocation = MultiLocation::here();
 	pub const RelayNetwork: Option<NetworkId> = Some(NetworkId::Kusama);
 	pub RelayChainOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into();
-	pub UniversalLocation: InteriorMultiLocation = X2(GlobalConsensus(RelayNetwork::get().unwrap()), Parachain(MsgQueue::parachain_id().into()));
+	pub UniversalLocation: InteriorMultiLocation = X2(GlobalConsensus(RelayNetwork::get().unwrap()), Parachain(ParachainInfo::parachain_id().into()));
 	pub DummyCheckingAccount: AccountId = PalletId(*b"laos_xcm").into_account_truncating();
 }
 
@@ -528,7 +565,7 @@ pub type LocalOriginToLocation = SignedToAccountId20<RuntimeOrigin, AccountId, R
 
 /// The means for routing XCM messages which are not for local execution into the right message
 /// queues.
-pub type XcmRouter = super::ParachainXcmRouter<MsgQueue>;
+pub type XcmRouter = super::ParachainXcmRouter<ParachainInfo>;
 
 #[cfg(feature = "runtime-benchmarks")]
 parameter_types! {
