@@ -102,7 +102,6 @@ polkadot-runtime-parachains = { workspace = true }
 pallet-assets = { workspace = true }
 pallet-message-queue = { workspace = true }
 pallet-utility = { workspace = true }
-env_logger = { version = "0.8" }
 
 [features]
 default = [

@@ -2,9 +2,7 @@
 //!
 //! The scenario for these tests is as follows:
 //!
-//! - LaosPara is our parachain, so we use similar configuration to our runtime. There might be some
-//!   extra pallets (`Assets` and `XTokens`, e.g) in the mock,
-//! but we do not use them.
+//! - LaosPara is our parachain's runtime.
 //!
 //! - OtherPara is another parachain. We assume that another parachain we are interacting with is
 //!   configured with a minimum of
@@ -90,7 +88,6 @@ fn para_to_para_native_transfer_and_back() {
 	// in OtherPara, we need to set up and register the token of LaosPara.
 	// we do this by sending a XCM message to OtherPara
 	LaosPara::execute_with(|| {
-		env_logger::init();
 		let create_asset =
 			parachain::RuntimeCall::Assets(pallet_assets::Call::<parachain::Runtime>::create {
 				id: 2,
@@ -215,10 +212,6 @@ fn para_to_para_native_transfer_and_back() {
 				RuntimeEvent::XcmpQueue(cumulus_pallet_xcmp_queue::Event::Success { .. })
 			)
 		}));
-
-		for event in System::events() {
-			println!("{:?}", event.event);
-		}
 
 		assert!(System::events().iter().any(|r| {
 			matches!(r.event, RuntimeEvent::Balances(pallet_balances::Event::Deposit { .. }))

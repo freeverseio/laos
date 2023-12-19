@@ -65,7 +65,6 @@ pub type RelayChainPalletXcm = pallet_xcm::Pallet<MockRelayChainRuntime>;
 pub type ParachainXtokens = orml_xtokens::Pallet<MockParachainRuntime>;
 pub type LaosParachainXcm = pallet_xcm::Pallet<RealParachainRuntime>;
 pub type LaosParachainBalances = pallet_balances::Pallet<RealParachainRuntime>;
-pub type OtherParachainBalances = pallet_balances::Pallet<MockParachainRuntime>;
 
 pub fn parent_account_id() -> parachain::AccountId {
 	parachain::LocationToAccountId::convert_location(&MultiLocation { parents: 1, interior: Here })
