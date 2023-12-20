@@ -71,9 +71,6 @@ fn basic_dmp() {
 	LaosPara::execute_with(|| {
 		use crate::{RuntimeEvent, System};
 
-		for event in System::events() {
-			println!("{:?}", event.event);
-		}
 		assert!(System::events().iter().any(|r| matches!(
 			r.event,
 			RuntimeEvent::System(frame_system::Event::Remarked { .. })
