@@ -8,27 +8,80 @@
 //!   configured with a minimum of
 //! `Assets` and `XTokens` pallets.
 
-use super::xcm_mock::{parachain::Assets, LaosPara, MockNet, OtherPara, Relay};
+use super::xcm_mock::{
+	parachain::{Assets, Runtime as MockParachainRuntime},
+	relay_chain::Runtime as MockRelayChainRuntime,
+	LaosPara, MockNet, OtherPara, Relay,
+};
 use crate::{
 	tests::xcm_mock::{
-		parachain, LaosParachainBalances, LaosParachainXcm, ParachainXtokens, RelayChainPalletXcm,
-		ALITH, BOBTH, INITIAL_BALANCE,
+		parachain, sibling_para_account_id, LaosParachainBalances, LaosParachainXcm,
+		ParachainXtokens, ALITH, BOBTH, INITIAL_BALANCE,
 	},
 	UNIT,
 };
 use cumulus_primitives_core::{
 	Fungibility::Fungible,
-	Instruction::{BuyExecution, Transact, WithdrawAsset},
+	Instruction::{BuyExecution, DepositAsset, Transact, WithdrawAsset},
 	Junction::{AccountKey20, Parachain},
-	Junctions::{Here, X1, X2},
-	MultiAsset, MultiLocation,
+	Junctions::{X1, X2},
+	MultiAsset,
+	MultiAssetFilter::Wild,
+	MultiLocation,
 	WeightLimit::Unlimited,
+	WildMultiAsset::All,
 	Xcm,
 };
+
 use frame_support::{assert_ok, traits::fungibles::Inspect, weights::Weight};
+use frame_system::RawOrigin;
 use parity_scale_codec::Encode;
 use staging_xcm::v3;
 use xcm_simulator::TestExt;
+
+/// Utility function for transacting a call to other chain
+///
+/// - Buys 1 UNIT of execution weight
+/// - Transacts the call
+/// - Deposit surplus asset to sovereign account
+fn transact<Runtime: pallet_xcm::Config>(dest: MultiLocation, encoded_call: Vec<u8>) {
+	let xcm_call = Xcm(vec![
+		WithdrawAsset(
+			vec![MultiAsset {
+				id: MultiLocation::here().into(),
+				fun: cumulus_primitives_core::Fungibility::Fungible(UNIT),
+			}]
+			.into(),
+		),
+		BuyExecution {
+			fees: MultiAsset {
+				id: MultiLocation::here().into(),
+				fun: cumulus_primitives_core::Fungibility::Fungible(UNIT),
+			},
+			weight_limit: Unlimited,
+		},
+		Transact {
+			origin_kind: v3::OriginKind::SovereignAccount,
+			require_weight_at_most: Weight::from_parts(1_000_000_000, 1024 * 1024),
+			call: encoded_call.into(),
+		},
+		DepositAsset {
+			assets: Wild(All),
+			beneficiary: MultiLocation {
+				parents: 0,
+				interior: AccountKey20 { network: None, key: ALITH.0 }.into(),
+			}
+			.into(),
+		},
+	]
+	.into());
+
+	assert_ok!(pallet_xcm::Pallet::<Runtime>::send(
+		RawOrigin::Root.into(),
+		Box::new(dest.into()),
+		Box::new(staging_xcm::VersionedXcm::V3(xcm_call)),
+	));
+}
 
 /// Test downward message passing. Does some basic remark in the parachain from the relay chain.
 #[test]
@@ -40,31 +93,7 @@ fn basic_dmp() {
 	);
 
 	Relay::execute_with(|| {
-		assert_ok!(RelayChainPalletXcm::send_xcm(
-			Here,
-			Parachain(1),
-			Xcm(vec![
-				WithdrawAsset(
-					vec![MultiAsset {
-						id: MultiLocation::here().into(),
-						fun: cumulus_primitives_core::Fungibility::Fungible(UNIT)
-					}]
-					.into()
-				),
-				BuyExecution {
-					fees: MultiAsset {
-						id: MultiLocation::here().into(),
-						fun: cumulus_primitives_core::Fungibility::Fungible(UNIT)
-					},
-					weight_limit: Unlimited,
-				},
-				Transact {
-					origin_kind: v3::OriginKind::SovereignAccount,
-					require_weight_at_most: Weight::from_parts(1_000_000_000, 1024 * 1024),
-					call: remark.encode().into(),
-				}
-			]),
-		));
+		transact::<MockRelayChainRuntime>(Parachain(1).into(), remark.encode().into());
 	});
 
 	// Execute remote transact and verify that `Remarked` event is emitted.
@@ -78,8 +107,10 @@ fn basic_dmp() {
 	});
 }
 
+/// Registers LAOS native token in OtherPara and transfers it to OtherPara.
+/// Then transfers it back to LAOS.
 #[test]
-fn para_to_para_native_transfer_and_back() {
+fn laos_para_to_other_para_reserver_transfer_and_back() {
 	MockNet::reset();
 
 	// in OtherPara, we need to set up and register the token of LaosPara.
@@ -219,4 +250,120 @@ fn para_to_para_native_transfer_and_back() {
 
 		assert_eq!(rounded_balance, INITIAL_BALANCE - UNIT);
 	});
+}
+
+#[test]
+fn other_para_transacts() {
+	MockNet::reset();
+
+	OtherPara::execute_with(|| {
+		// other para tries to `System::remark` in laos para
+		let remark =
+			crate::RuntimeCall::System(frame_system::Call::<crate::Runtime>::remark_with_event {
+				remark: vec![1, 2, 3],
+			});
+
+		transact::<MockParachainRuntime>(
+			MultiLocation { parents: 1, interior: X1(Parachain(1)) },
+			remark.encode(),
+		);
+	});
+
+	LaosPara::execute_with(|| {
+		use crate::{RuntimeEvent, System};
+
+		assert!(System::events().iter().any(|r| {
+			matches!(
+				r.event,
+				RuntimeEvent::XcmpQueue(cumulus_pallet_xcmp_queue::Event::Success { .. })
+			)
+		}));
+
+		assert!(System::events().iter().any(|r| {
+			matches!(r.event, RuntimeEvent::System(frame_system::Event::Remarked { .. }))
+		}));
+	});
+
+	// other para tries a sudo call in laos para
+	OtherPara::execute_with(|| {
+		let sudo_call =
+			crate::RuntimeCall::System(frame_system::Call::<crate::Runtime>::set_code {
+				code: vec![1, 2, 3],
+			});
+
+		transact::<MockParachainRuntime>(
+			MultiLocation { parents: 1, interior: X1(Parachain(1)) },
+			sudo_call.encode(),
+		);
+	});
+
+	LaosPara::execute_with(|| {
+		use crate::{RuntimeEvent, System};
+
+		System::reset_events();
+
+		assert!(System::events().iter().any(|r| {
+			matches!(
+				r.event,
+				RuntimeEvent::XcmpQueue(cumulus_pallet_xcmp_queue::Event::Fail { .. })
+			)
+		}));
+
+		assert!(!System::events().iter().any(|r| {
+			matches!(r.event, RuntimeEvent::System(frame_system::Event::CodeUpdated { .. }))
+		}));
+	});
+}
+
+#[test]
+fn invalid_xcm_execute() {
+	MockNet::reset();
+
+	LaosPara::execute_with(|| {
+		// first, transfer 100 UNIT to BOBTH in OtherPara
+		let destination = MultiLocation { parents: 1, interior: X1(Parachain(2)) };
+
+		assert_ok!(LaosParachainXcm::limited_reserve_transfer_assets(
+			RuntimeOrigin::signed(ALITH.0.into()),
+			Box::new(destination.into()),
+			Box::new(
+				MultiLocation {
+					parents: 0,
+					interior: X1(AccountKey20 { network: None, key: BOBTH.0 })
+				}
+				.into(),
+			),
+			Box::new(
+				vec![MultiAsset { id: MultiLocation::here().into(), fun: Fungible(100 * UNIT) }
+					.into()]
+				.into()
+			),
+			0,
+			Unlimited,
+		));
+	});
+
+	// OtherPara::execute_with(|| {
+	// 	// now, try to transfer 100 UNIT to BOBTH in OtherPara
+	// 	let destination = MultiLocation { parents: 1, interior: X1(Parachain(2)) };
+
+	// 	assert_ok!(LaosParachainXcm::limited_reserve_transfer_assets(
+	// 		RuntimeOrigin::signed(ALITH.0.into()),
+	// 		Box::new(destination.into()),
+	// 		Box::new(
+	// 			MultiLocation {
+	// 				parents: 0,
+	// 				interior: X1(AccountKey20 { network: None, key: BOBTH.0 })
+	// 			}
+	// 			.into(),
+	// 		),
+	// 		Box::new(
+	// 			vec![MultiAsset { id: MultiLocation::here().into(), fun: Fungible(100 * UNIT) }
+	// 				.into()]
+	// 			.into()
+	// 		),
+	// 		0,
+	// 		Unlimited,
+	// 	));
+	// });
 }

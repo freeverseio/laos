@@ -61,7 +61,6 @@ decl_test_network! {
 	}
 }
 
-pub type RelayChainPalletXcm = pallet_xcm::Pallet<MockRelayChainRuntime>;
 pub type ParachainXtokens = orml_xtokens::Pallet<MockParachainRuntime>;
 pub type LaosParachainXcm = pallet_xcm::Pallet<RealParachainRuntime>;
 pub type LaosParachainBalances = pallet_balances::Pallet<RealParachainRuntime>;
