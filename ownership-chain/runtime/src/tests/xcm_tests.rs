@@ -15,10 +15,10 @@ use super::xcm_mock::{
 };
 use crate::{
 	tests::xcm_mock::{
-		parachain, sibling_para_account_id, LaosParachainBalances, LaosParachainXcm,
-		ParachainXtokens, ALITH, BOBTH, INITIAL_BALANCE,
+		parachain, LaosParachainBalances, LaosParachainXcm, ParachainXtokens, ALICE, ALITH, BOBTH,
+		INITIAL_BALANCE,
 	},
-	UNIT,
+	Runtime, RuntimeOrigin, UNIT,
 };
 use cumulus_primitives_core::{
 	Fungibility::Fungible,
@@ -27,13 +27,13 @@ use cumulus_primitives_core::{
 	Junctions::{X1, X2},
 	MultiAsset,
 	MultiAssetFilter::Wild,
-	MultiLocation,
+	MultiLocation, Outcome,
 	WeightLimit::Unlimited,
 	WildMultiAsset::All,
 	Xcm,
 };
 
-use frame_support::{assert_ok, traits::fungibles::Inspect, weights::Weight};
+use frame_support::{assert_noop, assert_ok, traits::fungibles::Inspect, weights::Weight};
 use frame_system::RawOrigin;
 use parity_scale_codec::Encode;
 use staging_xcm::v3;
@@ -125,26 +125,10 @@ fn laos_para_to_other_para_reserver_transfer_and_back() {
 
 		// we only need to create the asset, registering location and setting unit price
 		// per second is not necessary, since it is already mocked by
-		assert_ok!(LaosParachainXcm::send(
-			crate::RuntimeOrigin::root(),
-			Box::new(MultiLocation { parents: 1, interior: X1(Parachain(2)) }.into()),
-			Box::new(staging_xcm::VersionedXcm::V3(Xcm(vec![
-				WithdrawAsset(
-					vec![MultiAsset { id: MultiLocation::here().into(), fun: Fungible(UNIT) }]
-						.into()
-				),
-				BuyExecution {
-					fees: MultiAsset { id: MultiLocation::here().into(), fun: Fungible(UNIT) },
-					weight_limit: Unlimited,
-				},
-				Transact {
-					origin_kind: v3::OriginKind::SovereignAccount,
-					require_weight_at_most: Weight::from_parts(1_000_000_000, 1024 * 1024),
-					call: create_asset.encode().into(),
-				},
-			]
-			.into())))
-		));
+		transact::<crate::Runtime>(
+			MultiLocation { parents: 1, interior: X1(Parachain(2)) },
+			create_asset.encode(),
+		);
 	});
 
 	OtherPara::execute_with(|| {
@@ -315,55 +299,81 @@ fn other_para_transacts() {
 	});
 }
 
+/// This tests following config values:
+/// - `pallet_xcm::XcmExecuteFilter`
 #[test]
-fn invalid_xcm_execute() {
-	MockNet::reset();
-
+fn local_xcm_execution_is_filtered_out() {
 	LaosPara::execute_with(|| {
-		// first, transfer 100 UNIT to BOBTH in OtherPara
-		let destination = MultiLocation { parents: 1, interior: X1(Parachain(2)) };
+		assert_noop!(
+			LaosParachainXcm::execute(
+				RuntimeOrigin::root(),
+				Box::new(staging_xcm::VersionedXcm::V3(Xcm(vec![
+					WithdrawAsset(
+						vec![MultiAsset { id: MultiLocation::here().into(), fun: Fungible(UNIT) }]
+							.into(),
+					),
+					BuyExecution {
+						fees: MultiAsset { id: MultiLocation::here().into(), fun: Fungible(UNIT) },
+						weight_limit: Unlimited,
+					},
+					Transact {
+						origin_kind: v3::OriginKind::SovereignAccount,
+						require_weight_at_most: Weight::from_parts(1_000_000_000, 1024 * 1024),
+						call: vec![].into(),
+					},
+					DepositAsset {
+						assets: Wild(All),
+						beneficiary: MultiLocation {
+							parents: 0,
+							interior: AccountKey20 { network: None, key: ALITH.0 }.into(),
+						}
+						.into(),
+					},
+				]))),
+				Weight::from_parts(1_000_000_000, 1024 * 1024),
+			),
+			pallet_xcm::Error::<Runtime>::Filtered
+		);
+	});
+}
 
-		assert_ok!(LaosParachainXcm::limited_reserve_transfer_assets(
-			RuntimeOrigin::signed(ALITH.0.into()),
-			Box::new(destination.into()),
+/// This tests following config values:
+/// - `staging_xcm_executor::IsTeleporter`
+/// - `pallet_xcm::XcmTeleportFilter`
+#[test]
+fn teleport_is_disabled() {
+	// try teleporting KSM from relay chain to parachain
+	Relay::execute_with(|| {
+		assert_ok!(pallet_xcm::Pallet::<MockRelayChainRuntime>::limited_teleport_assets(
+			super::xcm_mock::relay_chain::RuntimeOrigin::signed(ALICE),
+			Box::new(X1(Parachain(1)).into()),
 			Box::new(
 				MultiLocation {
 					parents: 0,
-					interior: X1(AccountKey20 { network: None, key: BOBTH.0 })
+					interior: AccountKey20 { network: None, key: ALITH.0 }.into(),
 				}
-				.into(),
+				.into()
 			),
 			Box::new(
-				vec![MultiAsset { id: MultiLocation::here().into(), fun: Fungible(100 * UNIT) }
-					.into()]
-				.into()
+				vec![MultiAsset { id: MultiLocation::here().into(), fun: Fungible(UNIT) }.into()]
+					.into()
 			),
 			0,
 			Unlimited,
-		));
+		),);
 	});
 
-	// OtherPara::execute_with(|| {
-	// 	// now, try to transfer 100 UNIT to BOBTH in OtherPara
-	// 	let destination = MultiLocation { parents: 1, interior: X1(Parachain(2)) };
+	LaosPara::execute_with(|| {
+		use crate::{RuntimeEvent, System};
 
-	// 	assert_ok!(LaosParachainXcm::limited_reserve_transfer_assets(
-	// 		RuntimeOrigin::signed(ALITH.0.into()),
-	// 		Box::new(destination.into()),
-	// 		Box::new(
-	// 			MultiLocation {
-	// 				parents: 0,
-	// 				interior: X1(AccountKey20 { network: None, key: BOBTH.0 })
-	// 			}
-	// 			.into(),
-	// 		),
-	// 		Box::new(
-	// 			vec![MultiAsset { id: MultiLocation::here().into(), fun: Fungible(100 * UNIT) }
-	// 				.into()]
-	// 			.into()
-	// 		),
-	// 		0,
-	// 		Unlimited,
-	// 	));
-	// });
+		assert!(System::events().iter().any(|r| {
+			matches!(
+				r.event,
+				RuntimeEvent::DmpQueue(cumulus_pallet_dmp_queue::Event::ExecutedDownward {
+					outcome: Outcome::Incomplete(.., v3::Error::UntrustedTeleportLocation),
+					..
+				})
+			)
+		}));
+	});
 }

@@ -3,6 +3,7 @@
 pub(crate) mod parachain;
 pub(crate) mod relay_chain;
 
+use frame_support::traits::Get;
 use sp_core::H160;
 use sp_runtime::BuildStorage;
 use staging_xcm::latest::prelude::*;
@@ -19,7 +20,7 @@ pub const ALICE: sp_runtime::AccountId32 = sp_runtime::AccountId32::new([0xFAu8;
 pub const ALITH: H160 = H160([0xFAu8; 20]);
 pub const BOBTH: H160 = H160([0xFBu8; 20]);
 
-pub const INITIAL_BALANCE: u128 = 1_000_000 * UNIT;
+pub const INITIAL_BALANCE: u128 = 1_000 * UNIT;
 
 decl_test_parachain! {
 	pub struct LaosPara {
@@ -94,9 +95,11 @@ where
 	Runtime: pallet_balances::Config + parachain_info::Config + pallet_xcm::Config,
 	Runtime::AccountId: From<H160> + Into<H160>,
 	Runtime::Balance: From<u128> + Into<u128>,
+	<Runtime as pallet_balances::Config>::Balance: From<u128> + Into<u128>,
 {
 	let mut t = frame_system::GenesisConfig::<Runtime>::default().build_storage().unwrap();
 
+	// Initialize parachain account with some balance
 	pallet_balances::GenesisConfig::<Runtime> {
 		balances: vec![
 			(ALITH.into(), INITIAL_BALANCE.into()),
