@@ -471,7 +471,6 @@ impl WeightTrader for FixedRateOfForeignAsset {
 				let units_per_second = match AssetLocationIdConverter::convert(&asset_location) {
 					Some(1) => 1_000_000_000_u128,
 					Some(2) => 2_000_000_000_u128,
-					Some(32) => 1_000_000_000_u128,
 					_ => return Err(XcmError::TooExpensive),
 				};
 

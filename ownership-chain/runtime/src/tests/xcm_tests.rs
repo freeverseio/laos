@@ -42,7 +42,7 @@ use xcm_simulator::TestExt;
 ///
 /// - Buys 1 UNIT of execution weight
 /// - Transacts the call
-/// - Deposit surplus asset to sovereign account
+/// - Deposits surplus asset to ALITH
 fn transact<Runtime: pallet_xcm::Config>(dest: MultiLocation, encoded_call: Vec<u8>) {
 	let xcm_call = Xcm(vec![
 		WithdrawAsset(
@@ -232,6 +232,46 @@ fn laos_para_to_other_para_reserver_transfer_and_back() {
 		let rounded_balance = LaosParachainBalances::free_balance(&ALITH.0.into()) / UNIT * UNIT;
 
 		assert_eq!(rounded_balance, INITIAL_BALANCE - UNIT);
+	});
+}
+
+#[test]
+fn other_para_native_asset_reserve_transfer_fails() {
+	MockNet::reset();
+
+	// Laos parachain does not have any foreign assets concept, so any reserve transfer to us
+	// should fail
+	OtherPara::execute_with(|| {
+		assert_ok!(ParachainXtokens::transfer(
+			parachain::RuntimeOrigin::signed(BOBTH),
+			0,
+			10 * UNIT,
+			Box::new(
+				MultiLocation {
+					parents: 1,
+					interior: X2(Parachain(1), AccountKey20 { network: None, key: ALITH.0 })
+				}
+				.into()
+			),
+			Unlimited,
+		),);
+	});
+
+	LaosPara::execute_with(|| {
+		use crate::{RuntimeEvent, System};
+
+		// the error is `TooExpensive` because we don't have `OtherPara` token
+		// registered and set as an asset that can be paid for fees
+		// i.e there is not enough payment asset to pay for the fees
+		assert!(System::events().iter().any(|r| {
+			matches!(
+				r.event,
+				RuntimeEvent::XcmpQueue(cumulus_pallet_xcmp_queue::Event::Fail {
+					error: v3::Error::TooExpensive,
+					..
+				})
+			)
+		}));
 	});
 }
 
