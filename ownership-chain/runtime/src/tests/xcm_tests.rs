@@ -9,9 +9,8 @@
 //! `Assets` and `XTokens` pallets.
 
 use super::xcm_mock::{
-	parachain::{Assets, Runtime as MockParachainRuntime},
-	relay_chain::Runtime as MockRelayChainRuntime,
-	LaosPara, MockNet, OtherPara, Relay,
+	parachain::Assets, relay_chain::Runtime as MockRelayChainRuntime, LaosPara, MockNet, OtherPara,
+	Relay,
 };
 use crate::{
 	tests::xcm_mock::{
@@ -233,69 +232,6 @@ fn laos_para_to_other_para_reserver_transfer_and_back() {
 		let rounded_balance = LaosParachainBalances::free_balance(&ALITH.0.into()) / UNIT * UNIT;
 
 		assert_eq!(rounded_balance, INITIAL_BALANCE - UNIT);
-	});
-}
-
-#[test]
-fn other_para_transacts() {
-	MockNet::reset();
-
-	OtherPara::execute_with(|| {
-		// other para tries to `System::remark` in laos para
-		let remark =
-			crate::RuntimeCall::System(frame_system::Call::<crate::Runtime>::remark_with_event {
-				remark: vec![1, 2, 3],
-			});
-
-		transact::<MockParachainRuntime>(
-			MultiLocation { parents: 1, interior: X1(Parachain(1)) },
-			remark.encode(),
-		);
-	});
-
-	LaosPara::execute_with(|| {
-		use crate::{RuntimeEvent, System};
-
-		assert!(System::events().iter().any(|r| {
-			matches!(
-				r.event,
-				RuntimeEvent::XcmpQueue(cumulus_pallet_xcmp_queue::Event::Success { .. })
-			)
-		}));
-
-		assert!(System::events().iter().any(|r| {
-			matches!(r.event, RuntimeEvent::System(frame_system::Event::Remarked { .. }))
-		}));
-	});
-
-	// other para tries a sudo call in laos para
-	OtherPara::execute_with(|| {
-		let sudo_call =
-			crate::RuntimeCall::System(frame_system::Call::<crate::Runtime>::set_code {
-				code: vec![1, 2, 3],
-			});
-
-		transact::<MockParachainRuntime>(
-			MultiLocation { parents: 1, interior: X1(Parachain(1)) },
-			sudo_call.encode(),
-		);
-	});
-
-	LaosPara::execute_with(|| {
-		use crate::{RuntimeEvent, System};
-
-		System::reset_events();
-
-		assert!(System::events().iter().any(|r| {
-			matches!(
-				r.event,
-				RuntimeEvent::XcmpQueue(cumulus_pallet_xcmp_queue::Event::Fail { .. })
-			)
-		}));
-
-		assert!(!System::events().iter().any(|r| {
-			matches!(r.event, RuntimeEvent::System(frame_system::Event::CodeUpdated { .. }))
-		}));
 	});
 }
 

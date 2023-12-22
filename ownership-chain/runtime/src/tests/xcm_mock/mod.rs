@@ -3,7 +3,6 @@
 pub(crate) mod parachain;
 pub(crate) mod relay_chain;
 
-use frame_support::traits::Get;
 use sp_core::H160;
 use sp_runtime::BuildStorage;
 use staging_xcm::latest::prelude::*;
