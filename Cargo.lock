@@ -5304,7 +5304,7 @@ dependencies = [
 
 [[package]]
 name = "laos-ownership"
-version = "0.1.0"
+version = "0.9.0"
 dependencies = [
  "clap",
  "cumulus-client-cli",
@@ -5461,7 +5461,7 @@ dependencies = [
 
 [[package]]
 name = "laos-precompile-utils"
-version = "0.4.3"
+version = "0.9.0"
 dependencies = [
  "evm",
  "fp-evm",
@@ -5483,7 +5483,7 @@ dependencies = [
 
 [[package]]
 name = "laos-precompile-utils-macro"
-version = "0.1.0"
+version = "0.9.0"
 dependencies = [
  "num_enum",
  "proc-macro2",
@@ -7061,7 +7061,7 @@ dependencies = [
 
 [[package]]
 name = "ownership-parachain-primitives"
-version = "0.1.0"
+version = "0.9.0"
 dependencies = [
  "fp-account",
  "frame-support",
@@ -7705,7 +7705,7 @@ dependencies = [
 
 [[package]]
 name = "pallet-laos-evolution"
-version = "4.0.0-dev"
+version = "0.9.0"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
