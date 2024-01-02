@@ -20,7 +20,20 @@ fn version_to_int(version: &str) -> Result<u32, Error> {
 		.parse::<u32>()
 		.map_err(|e: ParseIntError| Error::new(ErrorKind::InvalidInput, e))?;
 
+	// check all the numbers are less than 100
+	if major >= 100 || minor >= 100 || patch >= 100 {
+		return Err(Error::new(ErrorKind::InvalidInput, "Invalid version format"));
+	}
+
 	Ok(major * 10000 + minor * 100 + patch)
+}
+
+#[test]
+fn test_version_member_is_100_should_error() {
+	match version_to_int("100.0.0") {
+		Err(e) => assert_eq!(e.kind(), ErrorKind::InvalidInput),
+		_ => panic!("Expected an InvalidInput error"),
+	}
 }
 
 #[test]
