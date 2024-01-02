@@ -94,6 +94,14 @@ pallet-evm-precompile-blake2 = { workspace = true }
 static_assertions = { workspace = true }
 precompile-utils = { workspace = true, features = ["testing"] }
 evm = { workspace = true }
+orml-traits = { workspace = true }
+orml-xtokens = { workspace = true, features = ["std"] }
+orml-xcm-support = { workspace = true, features = ["std"] }
+xcm-simulator = { workspace = true }
+polkadot-runtime-parachains = { workspace = true }
+pallet-assets = { workspace = true }
+pallet-message-queue = { workspace = true }
+pallet-utility = { workspace = true }
 
 [features]
 default = [
@@ -175,6 +183,7 @@ runtime-benchmarks = [
 	"frame-support/runtime-benchmarks",
 	"frame-system-benchmarking/runtime-benchmarks",
 	"frame-system/runtime-benchmarks",
+	"pallet-assets/runtime-benchmarks",
 	"pallet-balances/runtime-benchmarks",
 	"pallet-collator-selection/runtime-benchmarks",
 	"pallet-laos-evolution/runtime-benchmarks",

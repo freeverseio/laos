@@ -8,6 +8,7 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 #[cfg(test)]
 mod tests;
+
 mod weights;
 pub mod xcm_config;
 
@@ -63,7 +64,6 @@ pub use pallet_xcm::Call as XcmCall;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 
-// Cumulus imports
 //https://github.com/paritytech/cumulus/tree/master/parachains/common
 pub use parachains_common::impls::DealWithFees;
 

@@ -41,7 +41,7 @@ where
 		]
 	}
 
-	fn is_delegatecall_to_custom_precompile(
+	pub(crate) fn is_delegatecall_to_custom_precompile(
 		&self,
 		code_address: H160,
 		context_address: H160,
@@ -116,6 +116,3 @@ fn hash(a: u64) -> H160 {
 
 #[cfg(test)]
 mod mock;
-
-#[cfg(test)]
-mod test;
