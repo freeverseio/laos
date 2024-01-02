@@ -4,6 +4,24 @@ use std::{
 	num::ParseIntError,
 };
 
+/// Converts a version string in the format "major.minor.patch" to an integer.
+/// Each part of the version (major, minor, patch) must be a number less than 100.
+/// The resulting integer is in the format major*10000 + minor*100 + patch.
+///
+/// # Arguments
+/// * `version` - A string slice representing the version.
+///
+/// # Returns
+/// A `Result` containing either the integer representation of the version
+/// or an `Error` if the input format is incorrect or any part of the version
+/// is 100 or greater.
+///
+/// # Examples
+/// ```
+/// let version = "1.2.3";
+/// let int_version = version_to_int(version).unwrap();
+/// assert_eq!(int_version, 10203);
+/// ```
 fn version_to_int(version: &str) -> Result<u32, Error> {
 	let parts: Vec<&str> = version.split('.').collect();
 	if parts.len() != 3 {
@@ -20,9 +38,9 @@ fn version_to_int(version: &str) -> Result<u32, Error> {
 		.parse::<u32>()
 		.map_err(|e: ParseIntError| Error::new(ErrorKind::InvalidInput, e))?;
 
-	// check all the numbers are less than 100
+	// Check all the numbers are less than 100
 	if major >= 100 || minor >= 100 || patch >= 100 {
-		return Err(Error::new(ErrorKind::InvalidInput, "Invalid version format"));
+		return Err(Error::new(ErrorKind::InvalidInput, "Version number must be less than 100"));
 	}
 
 	Ok(major * 10000 + minor * 100 + patch)
