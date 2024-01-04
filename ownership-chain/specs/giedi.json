@@ -235,7 +235,7 @@
         }
       },
       "evmChainId": {
-        "chainId": 667
+        "chainId": 668
       },
       "baseFee": {
         "baseFeePerGas": "0x3b9aca00",
