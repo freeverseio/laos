@@ -13,7 +13,7 @@
     "tokenSymbol": "GIE"
   },
   "relay_chain": "rococo",
-  "para_id": 2001,
+  "para_id": 4343,
   "codeSubstitutes": {},
   "genesis": {
     "runtime": {
@@ -22,13 +22,13 @@
       },
       "parachainSystem": {},
       "parachainInfo": {
-        "parachainId": 2001
+        "parachainId": 4343
       },
       "balances": {
         "balances": [
           [
             "0x506543b5d64A0083Dd0faA386FfE41b75141A31C",
-            999999999999999983222784
+            1000000000000000000000000
           ]
         ]
       },
