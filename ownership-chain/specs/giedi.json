@@ -3,7 +3,6 @@
   "id": "giedi_chain",
   "chainType": "Live",
   "bootNodes": [
-    "/ip4/127.0.0.1/tcp/30333/p2p/12D3KooWEi5CUGgTXBeUS3vAdVHYxT7u17TEeqBDJkN4xWRrkVLh"
   ],
   "telemetryEndpoints": null,
   "protocolId": "giedi_chain",
