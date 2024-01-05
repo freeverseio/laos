@@ -1,0 +1,29 @@
+[package]
+name = "pallet-asset-metadata-extender"
+version = "0.1.0"
+homepage = "https://freeverse.io"
+edition = "2021"
+license = "MIT-0"
+publish = false
+
+[dependencies]
+parity-scale-codec = { workspace = true, features = ["derive"] }
+scale-info = { workspace = true, features = ["derive"] }
+frame-support = { workspace = true }
+frame-system = { workspace = true }
+sp-runtime = { workspace = true }
+sp-core = { workspace = true }
+
+[features]
+default = ["std"]
+std = [
+	"parity-scale-codec/std",
+	"scale-info/std",
+	"frame-support/std",
+	"frame-system/std",
+    	"sp-core/std",
+	"sp-runtime/std",
+]
+
+[dev-dependencies]
+sp-io = { workspace = true }
