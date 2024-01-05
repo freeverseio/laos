@@ -1,6 +1,6 @@
 [package]
 name = "pallet-laos-evolution"
-version = "4.0.0-dev"
+version = { workspace = true }
 homepage = "https://freeverse.io"
 edition = "2021"
 license = "MIT-0"

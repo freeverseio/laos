@@ -1,6 +1,6 @@
 [package]
 name = "pallet-evm-evolution-collection-factory"
-version = "2.0.0-dev"
+version = { workspace = true }
 description = "Evolution collection factory precompile"
 repository = "https://github.com/freeverseio/laos"
 edition = "2021"
