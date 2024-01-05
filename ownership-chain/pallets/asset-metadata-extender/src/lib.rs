@@ -51,7 +51,7 @@ pub mod pallet {
 		OptionQuery,
 	>;
 
-	/// Records all token URIs associated with a given claimer who performed the extension.
+	/// Records all token URIs associated with a given claimer who performed the metadata extension.
 	#[pallet::storage]
 	#[pallet::getter(fn claimer_metadata_extensions)]
 	pub(super) type ClaimerMetadataExtensions<T: Config> = StorageDoubleMap<
