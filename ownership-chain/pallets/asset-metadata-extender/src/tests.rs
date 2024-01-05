@@ -23,8 +23,8 @@ fn given_an_ul_and_token_uri_i_can_create_asset_extension() {
 		// Go past genesis block so events get deposited
 		System::set_block_number(1);
 		let claimer = H160::zero();
-		let universal_location: BoundedVec<u8, MaxUniversalLocationLength> = bounded_vec![0; 1];
-		let token_uri: BoundedVec<u8, MaxTokenUriLength> = bounded_vec![0; 1];
+		let universal_location: BoundedVec<u8, MaxUniversalLocationLength> = bounded_vec![1; 10];
+		let token_uri: BoundedVec<u8, MaxTokenUriLength> = bounded_vec![2; 10];
 
 		create_metadata_extension(claimer, universal_location.clone(), token_uri.clone());
 
@@ -38,8 +38,8 @@ fn given_an_ul_and_token_uri_i_can_create_asset_extension() {
 fn given_an_ul_and_token_uri_i_cannot_create_twice_asset_extension_with_same_claimer() {
 	new_test_ext().execute_with(|| {
 		let claimer = H160::zero();
-		let universal_location: BoundedVec<u8, MaxUniversalLocationLength> = bounded_vec![0; 1];
-		let token_uri: BoundedVec<u8, MaxTokenUriLength> = bounded_vec![0; 1];
+		let universal_location: BoundedVec<u8, MaxUniversalLocationLength> = bounded_vec![1; 10];
+		let token_uri: BoundedVec<u8, MaxTokenUriLength> = bounded_vec![2; 10];
 
 		create_metadata_extension(claimer, universal_location.clone(), token_uri.clone());
 		assert_noop!(
@@ -57,8 +57,8 @@ fn given_an_ul_and_token_uri_i_cannot_create_twice_asset_extension_with_same_cla
 fn given_an_universal_location_after_creating_extension_counter_increases() {
 	new_test_ext().execute_with(|| {
 		let claimer = H160::zero();
-		let universal_location: BoundedVec<u8, MaxUniversalLocationLength> = bounded_vec![0; 1];
-		let token_uri: BoundedVec<u8, MaxTokenUriLength> = bounded_vec![0; 1];
+		let universal_location: BoundedVec<u8, MaxUniversalLocationLength> = bounded_vec![1; 10];
+		let token_uri: BoundedVec<u8, MaxTokenUriLength> = bounded_vec![2; 10];
 
 		// create first extension for the given UL
 		assert_eq!(
@@ -90,8 +90,8 @@ fn given_an_universal_location_after_creating_extension_counter_increases() {
 #[test]
 fn given_an_ul_i_can_get_all_its_extensions() {
 	new_test_ext().execute_with(|| {
-		let universal_location: BoundedVec<u8, MaxUniversalLocationLength> = bounded_vec![0; 1];
-		let token_uri: BoundedVec<u8, MaxTokenUriLength> = bounded_vec![0; 1];
+		let universal_location: BoundedVec<u8, MaxUniversalLocationLength> = bounded_vec![1; 10];
+		let token_uri: BoundedVec<u8, MaxTokenUriLength> = bounded_vec![2; 10];
 
 		let n = 1000;
 		for i in 0..n {
@@ -101,16 +101,22 @@ fn given_an_ul_i_can_get_all_its_extensions() {
 
 		for i in 0..n {
 			assert_eq!(
-				AssetMetadataExtender::metadata_extensions(universal_location.clone(), i)
-					.unwrap()
-					.token_uri,
+				AssetMetadataExtender::indexed_metadata_extensions(
+					universal_location.clone(),
+					i as u32
+				)
+				.unwrap()
+				.token_uri,
 				token_uri
 			);
 			let expected_claimer = H160::from_low_u64_be(i);
 			assert_eq!(
-				AssetMetadataExtender::metadata_extensions(universal_location.clone(), i)
-					.unwrap()
-					.claimer,
+				AssetMetadataExtender::indexed_metadata_extensions(
+					universal_location.clone(),
+					i as u32
+				)
+				.unwrap()
+				.claimer,
 				expected_claimer
 			);
 		}
@@ -121,14 +127,14 @@ fn given_an_ul_i_can_get_all_its_extensions() {
 fn given_a_claimer_and_ul_i_can_get_the_extension() {
 	new_test_ext().execute_with(|| {
 		let claimer = H160::zero();
-		let universal_location: BoundedVec<u8, MaxUniversalLocationLength> = bounded_vec![0; 1];
-		let token_uri: BoundedVec<u8, MaxTokenUriLength> = bounded_vec![0; 1];
+		let universal_location: BoundedVec<u8, MaxUniversalLocationLength> = bounded_vec![1; 10];
+		let token_uri: BoundedVec<u8, MaxTokenUriLength> = bounded_vec![2; 10];
 
-		create_metadata_extension(claimer, universal_location.clone(), token_uri);
+		create_metadata_extension(claimer, universal_location.clone(), token_uri.clone());
 		assert_eq!(
 			AssetMetadataExtender::claimer_metadata_extensions(claimer, universal_location.clone())
 				.unwrap(),
-			universal_location
+			token_uri
 		);
 	});
 }

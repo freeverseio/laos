@@ -9,7 +9,6 @@ use sp_runtime::{traits::One, ArithmeticError, DispatchError};
 use traits::AssetMetadataExtender;
 use types::*;
 
-/// Wrapper around `BoundedVec` for `tokenUri`
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
@@ -35,13 +34,13 @@ pub mod pallet {
 	/// Asset metadata extensions counter for a given location
 	#[pallet::storage]
 	#[pallet::getter(fn metadata_extensions_counter)]
-	pub(super) type MetadataExtensionsCounter<T: Config> =
+	pub(super) type IndexedMetadataExtensionsCounter<T: Config> =
 		StorageMap<_, Blake2_128Concat, UniversalLocationOf<T>, Index, ValueQuery>;
 
-	/// Records all metadata extensions for a given asset location
+	/// Records all metadata extensions with index for a given asset location
 	#[pallet::storage]
-	#[pallet::getter(fn metadata_extensions)]
-	pub(super) type MetadataExtensions<T: Config> = StorageDoubleMap<
+	#[pallet::getter(fn indexed_metadata_extensions)]
+	pub(super) type IndexedMetadataExtensions<T: Config> = StorageDoubleMap<
 		_,
 		Blake2_128Concat,
 		UniversalLocationOf<T>,
@@ -54,7 +53,7 @@ pub mod pallet {
 	/// Records all token URIs associated with a given claimer who performed the metadata extension.
 	#[pallet::storage]
 	#[pallet::getter(fn claimer_metadata_extensions)]
-	pub(super) type ClaimerMetadataExtensions<T: Config> = StorageDoubleMap<
+	pub(super) type ClaimerIndexedMetadataExtensions<T: Config> = StorageDoubleMap<
 		_,
 		Blake2_128Concat,
 		AccountIdOf<T>,
@@ -95,26 +94,26 @@ impl<T: Config> AssetMetadataExtender<AccountIdOf<T>, TokenUriOf<T>, UniversalLo
 		token_uri: TokenUriOf<T>,
 	) -> Result<(), DispatchError> {
 		ensure!(
-			ClaimerMetadataExtensions::<T>::contains_key(
+			!ClaimerIndexedMetadataExtensions::<T>::contains_key(
 				claimer.clone(),
 				universal_location.clone()
-			) == false,
+			),
 			Error::<T>::MetadataExtensionAlreadyExists
 		);
 
 		let index = Self::metadata_extensions_counter(universal_location.clone());
-		MetadataExtensions::<T>::insert(
+		IndexedMetadataExtensions::<T>::insert(
 			universal_location.clone(),
 			index,
 			MetadataExtension { claimer: claimer.clone(), token_uri: token_uri.clone() },
 		);
-		ClaimerMetadataExtensions::<T>::insert(
+		ClaimerIndexedMetadataExtensions::<T>::insert(
 			claimer.clone(),
 			universal_location.clone(),
 			token_uri.clone(),
 		);
 		let next_index = index.checked_add(One::one()).ok_or(ArithmeticError::Overflow)?;
-		MetadataExtensionsCounter::<T>::insert(universal_location.clone(), next_index);
+		IndexedMetadataExtensionsCounter::<T>::insert(universal_location.clone(), next_index);
 
 		Self::deposit_event(Event::MetadataExtensionCreated {
 			universal_location,

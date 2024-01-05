@@ -1,4 +1,4 @@
-use sp_runtime::DispatchError;
+use sp_runtime::DispatchResult;
 
 /// `AssetMetadataExtender` trait for managing asset metadata extensions
 pub trait AssetMetadataExtender<AccountId, TokenUri, UniversalLocation> {
@@ -7,5 +7,5 @@ pub trait AssetMetadataExtender<AccountId, TokenUri, UniversalLocation> {
 		claimer: AccountId,
 		universal_location: UniversalLocation,
 		token_uri: TokenUri,
-	) -> Result<(), DispatchError>;
+	) -> DispatchResult;
 }
