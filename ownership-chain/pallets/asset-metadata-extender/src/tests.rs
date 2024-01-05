@@ -62,13 +62,13 @@ fn given_an_universal_location_after_creating_extension_counter_increases() {
 
 		// create first extension for the given UL
 		assert_eq!(
-			AssetMetadataExtender::asset_metadata_extensions_counter(universal_location.clone()),
+			AssetMetadataExtender::metadata_extensions_counter(universal_location.clone()),
 			0
 		);
 
 		create_metadata_extension(claimer, universal_location.clone(), token_uri.clone());
 		assert_eq!(
-			AssetMetadataExtender::asset_metadata_extensions_counter(universal_location.clone()),
+			AssetMetadataExtender::metadata_extensions_counter(universal_location.clone()),
 			1
 		);
 
@@ -76,14 +76,14 @@ fn given_an_universal_location_after_creating_extension_counter_increases() {
 		let another_universal_location: BoundedVec<u8, MaxUniversalLocationLength> =
 			bounded_vec![1; 1];
 		assert_eq!(
-			AssetMetadataExtender::asset_metadata_extensions_counter(another_universal_location),
+			AssetMetadataExtender::metadata_extensions_counter(another_universal_location),
 			0
 		);
 
 		// create another extension for the same UL with another claimer
 		let another_claimer = H160::from_low_u64_be(1);
 		create_metadata_extension(another_claimer, universal_location.clone(), token_uri);
-		assert_eq!(AssetMetadataExtender::asset_metadata_extensions_counter(universal_location), 2);
+		assert_eq!(AssetMetadataExtender::metadata_extensions_counter(universal_location), 2);
 	});
 }
 
