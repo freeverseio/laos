@@ -21,7 +21,7 @@ use sp_consensus_aura::{sr25519::AuthorityId as AuraId, AuraApi};
 use sp_core::H256;
 use sp_runtime::traits::Block as BlockT;
 // Frontier
-pub use fc_rpc::{EthBlockDataCacheTask, EthConfig, OverrideHandle, StorageOverride};
+pub use fc_rpc::{EthBlockDataCacheTask, EthConfig, OverrideHandle};
 #[cfg(feature = "txpool")]
 use fc_rpc::{TxPool, TxPoolApiServer};
 pub use fc_rpc_core::types::{FeeHistoryCache, FeeHistoryCacheLimit, FilterPool};
