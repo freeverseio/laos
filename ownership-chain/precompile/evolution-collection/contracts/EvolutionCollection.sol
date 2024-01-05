@@ -56,5 +56,5 @@ interface EvolutionCollection {
     function evolveWithExternalURI(
         uint256 _tokenId,
         string calldata _tokenURI
-    ) external returns (uint256);
+    ) external;
 }
