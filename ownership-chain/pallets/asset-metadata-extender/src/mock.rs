@@ -1,12 +1,13 @@
 use crate as pallet_asset_metadata_extender;
 use frame_support::{
+	parameter_types,
 	traits::{ConstU16, ConstU64},
 	weights::constants::RocksDbWeight,
 };
 use sp_core::{H160, H256};
 use sp_runtime::{
 	traits::{BlakeTwo256, IdentityLookup},
-	BuildStorage,
+	BoundedVec, BuildStorage,
 };
 
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -21,6 +22,10 @@ frame_support::construct_runtime!(
 );
 
 pub type AccountId = H160;
+pub type TokenUri =
+	BoundedVec<u8, <Test as pallet_asset_metadata_extender::Config>::MaxTokenUriLength>;
+pub type UniversalLocation =
+	BoundedVec<u8, <Test as pallet_asset_metadata_extender::Config>::MaxUniversalLocationLength>;
 
 impl frame_system::Config for Test {
 	type BaseCallFilter = frame_support::traits::Everything;
@@ -48,8 +53,15 @@ impl frame_system::Config for Test {
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 
+parameter_types! {
+	pub const MaxTokenUriLength: u32 = 512;
+	pub const MaxUniversalLocationLength: u32 = 512;
+}
+
 impl pallet_asset_metadata_extender::Config for Test {
-	// type RuntimeEvent = RuntimeEvent;
+	type RuntimeEvent = RuntimeEvent;
+	type MaxUniversalLocationLength = MaxUniversalLocationLength;
+	type MaxTokenUriLength = MaxTokenUriLength;
 }
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
