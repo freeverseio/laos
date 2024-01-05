@@ -77,11 +77,11 @@ pub mod pallet {
 		},
 	}
 
-	// Customs errors for this pallet
+	/// Customs errors for this pallet
 	#[pallet::error]
 	#[derive(PartialEq)]
 	pub enum Error<T> {
-		// One claimer one can perform one extension for a given universal location
+		/// A claimer can perform one metadata extension for a given universal location
 		MetadataExtensionAlreadyExists,
 	}
 }
