@@ -48,7 +48,7 @@ fn given_an_ul_and_token_uri_i_cannot_create_twice_asset_extension_with_same_cla
 				universal_location,
 				token_uri
 			),
-			Error::<Test>::ExtensionAlreadyExists
+			Error::<Test>::MetadataExtensionAlreadyExists
 		);
 	});
 }

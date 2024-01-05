@@ -82,7 +82,7 @@ pub mod pallet {
 	#[derive(PartialEq)]
 	pub enum Error<T> {
 		// One claimer one can perform one extension for a given universal location
-		ExtensionAlreadyExists,
+		MetadataExtensionAlreadyExists,
 	}
 }
 
@@ -99,7 +99,7 @@ impl<T: Config> AssetMetadataExtender<AccountIdOf<T>, TokenUriOf<T>, UniversalLo
 				claimer.clone(),
 				universal_location.clone()
 			) == false,
-			Error::<T>::ExtensionAlreadyExists
+			Error::<T>::MetadataExtensionAlreadyExists
 		);
 
 		let index = Self::metadata_extensions_counter(universal_location.clone());
