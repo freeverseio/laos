@@ -3,6 +3,7 @@
   "id": "giedi_chain",
   "chainType": "Live",
   "bootNodes": [
+    "/dns4/giedi-boot-1.gorengine.com/tcp/30334/p2p/12D3KooWR3UsCUm33oNtCWqEJ3EyzP1haodZxhqgQcLZwf68Nt7V"
   ],
   "telemetryEndpoints": null,
   "protocolId": "giedi_chain",
