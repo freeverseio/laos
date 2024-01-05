@@ -210,7 +210,7 @@ where
 				// TODO: Add `ref_time` when precompiles are benchmarked
 				handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
 
-				Ok(succeed(EvmDataWriter::new().write(token_id).build()))
+				Ok(succeed(vec![]))
 			},
 			Err(err) => Err(revert_dispatch_error(err)),
 		}
