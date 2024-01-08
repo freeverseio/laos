@@ -2,7 +2,7 @@
 name = "laos-precompile-utils"
 authors = ["StakeTechnologies", "PureStake"]
 description = "Utils to write EVM precompiles."
-version = { workspace = true }
+version = "0.4.3"
 edition = "2021"
 
 [dependencies]

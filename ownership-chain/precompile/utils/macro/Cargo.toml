@@ -2,7 +2,7 @@
 name = "laos-precompile-utils-macro"
 authors = ["StakeTechnologies", "PureStake"]
 description = "Precompile macro utilities"
-version = { workspace = true }
+version = "0.1.0"
 edition = "2021"
 
 [lib]

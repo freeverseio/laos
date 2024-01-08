@@ -1,6 +1,6 @@
 [package]
 name = "pallet-evm-evolution-collection"
-version = { workspace = true }
+version = "2.0.0-dev"
 description = "Collection evolver and minter precompile"
 repository = "https://github.com/freeverseio/laos"
 edition = "2021"
