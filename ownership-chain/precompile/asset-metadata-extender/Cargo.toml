@@ -1,0 +1,12 @@
+[package]
+name = "pallet-evm-asset-metadata-extender"
+version = "0.1.0"
+edition = "2021"
+description = "Asset Metadata Extender precompile"
+repository = "https://github.com/freeverseio/laos"
+homepage.workspace = true
+authors.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
