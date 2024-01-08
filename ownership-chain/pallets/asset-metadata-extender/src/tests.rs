@@ -120,8 +120,7 @@ fn given_a_claimer_and_ul_i_can_get_the_extension() {
 
 		create_metadata_extension(claimer, universal_location.clone(), token_uri.clone());
 		assert_eq!(
-			AssetMetadataExtender::claimer_metadata_extensions(claimer, universal_location.clone())
-				.unwrap(),
+			AssetMetadataExtender::claimer_token_uri(claimer, universal_location.clone()).unwrap(),
 			token_uri
 		);
 	});

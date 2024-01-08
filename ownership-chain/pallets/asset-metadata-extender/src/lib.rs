@@ -52,8 +52,8 @@ pub mod pallet {
 
 	/// Records all token URIs associated with a given claimer who performed the metadata extension.
 	#[pallet::storage]
-	#[pallet::getter(fn claimer_metadata_extensions)]
-	pub(super) type ClaimerIndexedMetadataExtensions<T: Config> = StorageDoubleMap<
+	#[pallet::getter(fn claimer_token_uri)]
+	pub(super) type ClaimerTokenURI<T: Config> = StorageDoubleMap<
 		_,
 		Blake2_128Concat,
 		AccountIdOf<T>,
@@ -94,10 +94,7 @@ impl<T: Config> AssetMetadataExtender<AccountIdOf<T>, TokenUriOf<T>, UniversalLo
 		token_uri: TokenUriOf<T>,
 	) -> Result<(), DispatchError> {
 		ensure!(
-			!ClaimerIndexedMetadataExtensions::<T>::contains_key(
-				claimer.clone(),
-				universal_location.clone()
-			),
+			!ClaimerTokenURI::<T>::contains_key(claimer.clone(), universal_location.clone()),
 			Error::<T>::MetadataExtensionAlreadyExists
 		);
 
@@ -107,7 +104,7 @@ impl<T: Config> AssetMetadataExtender<AccountIdOf<T>, TokenUriOf<T>, UniversalLo
 			index,
 			MetadataExtension { claimer: claimer.clone(), token_uri: token_uri.clone() },
 		);
-		ClaimerIndexedMetadataExtensions::<T>::insert(
+		ClaimerTokenURI::<T>::insert(
 			claimer.clone(),
 			universal_location.clone(),
 			token_uri.clone(),
