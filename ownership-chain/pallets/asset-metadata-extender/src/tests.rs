@@ -100,25 +100,13 @@ fn given_an_ul_i_can_get_all_its_extensions() {
 		}
 
 		for i in 0..n {
-			assert_eq!(
-				AssetMetadataExtender::indexed_metadata_extensions(
-					universal_location.clone(),
-					i as u32
-				)
-				.unwrap()
-				.token_uri,
-				token_uri
-			);
-			let expected_claimer = H160::from_low_u64_be(i);
-			assert_eq!(
-				AssetMetadataExtender::indexed_metadata_extensions(
-					universal_location.clone(),
-					i as u32
-				)
-				.unwrap()
-				.claimer,
-				expected_claimer
-			);
+			let metadata_extension = AssetMetadataExtender::indexed_metadata_extensions(
+				universal_location.clone(),
+				i as u32,
+			)
+			.unwrap();
+			assert_eq!(metadata_extension.token_uri, token_uri);
+			assert_eq!(metadata_extension.claimer, H160::from_low_u64_be(i));
 		}
 	});
 }
