@@ -5412,6 +5412,7 @@ dependencies = [
  "pallet-collator-selection",
  "pallet-ethereum",
  "pallet-evm",
+ "pallet-evm-asset-metadata-extender",
  "pallet-evm-chain-id",
  "pallet-evm-evolution-collection",
  "pallet-evm-evolution-collection-factory",
@@ -7517,6 +7518,15 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-std",
+]
+
+[[package]]
+name = "pallet-evm-asset-metadata-extender"
+version = "0.1.0"
+dependencies = [
+ "hex",
+ "laos-precompile-utils",
+ "laos-precompile-utils-macro",
 ]
 
 [[package]]
