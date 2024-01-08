@@ -56,7 +56,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with: 
-          fetch-depth: 100
+          fetch-depth: 0
       - uses: ./.github/actions/setup
       - uses: ./.github/actions/cache
         with:
@@ -70,7 +70,7 @@ jobs:
           VERSION=$(grep -m1 version Cargo.toml | sed -E 's/.*"(.*)".*/\1/')
           # get latest tag from git, remove `v` prefix
 
-          LATEST_TAG=$(git describe --tags --abbrev=0 | sed -E 's/v(.*)/\1/')
+          LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1` | sed -E 's/v(.*)/\1/')
 
           # check if this PR is releasing a new version, i.e branch is of type `release/v*`
           if [[ $GITHUB_REF == refs/heads/release/v* ]]; then
