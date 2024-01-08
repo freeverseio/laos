@@ -10,3 +10,16 @@ authors.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+# Local precompile utils
+laos-precompile-utils-macro = { workspace = true }
+laos-precompile-utils = { workspace = true }
+
+[dev-dependencies]
+hex = { workspace = true }
+
+[features]
+default = ["std"]
+std = [
+	# Frontier
+	"laos-precompile-utils/std",
+]
