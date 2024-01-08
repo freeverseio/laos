@@ -7527,6 +7527,7 @@ dependencies = [
  "hex",
  "laos-precompile-utils",
  "laos-precompile-utils-macro",
+ "num_enum",
 ]
 
 [[package]]

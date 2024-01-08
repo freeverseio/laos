@@ -9,9 +9,11 @@ fn check_log_selectors() {
 }
 
 #[test]
-#[ignore]
 fn function_selectors() {
-	todo!();
+	assert_eq!(Action::Extend as u32, 0xB5A72BFF);
+	assert_eq!(Action::Balance as u32, 0x7B65DED5);
+	assert_eq!(Action::Claimer as u32, 0xC050D9BE);
+	assert_eq!(Action::Extension as u32, 0x4322DE03);
 }
 
 #[test]
