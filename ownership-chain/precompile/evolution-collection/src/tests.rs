@@ -287,7 +287,7 @@ fn evolve_works() {
 
 		precompiles()
 			.prepare_test(alice, collection_address, input)
-			.execute_returns(token_id);
+			.execute_returns_raw(vec![]);
 	});
 }
 
