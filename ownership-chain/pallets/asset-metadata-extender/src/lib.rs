@@ -68,10 +68,10 @@ pub mod pallet {
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
 		/// Metadata extension created
-		/// parameters. [universal_location, claimer, token_uri]
+		/// parameters. [claimer, universal_location, token_uri]
 		MetadataExtensionCreated {
-			universal_location: UniversalLocationOf<T>,
 			claimer: AccountIdOf<T>,
+			universal_location: UniversalLocationOf<T>,
 			token_uri: TokenUriOf<T>,
 		},
 	}
