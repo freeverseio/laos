@@ -54,7 +54,7 @@ fn claimer_cannot_create_multiple_extensions_per_ul() {
 }
 
 #[test]
-fn given_an_universal_location_after_creating_extension_counter_increases() {
+fn create_metadata_extension_increases_counter() {
 	new_test_ext().execute_with(|| {
 		let claimer = H160::zero();
 		let universal_location: BoundedVec<u8, MaxUniversalLocationLength> = bounded_vec![1; 10];
@@ -112,7 +112,7 @@ fn given_an_ul_i_can_get_all_its_extensions() {
 }
 
 #[test]
-fn given_a_claimer_and_ul_i_can_get_the_extension() {
+fn claimer_token_uri_works() {
 	new_test_ext().execute_with(|| {
 		let claimer = H160::zero();
 		let universal_location: BoundedVec<u8, MaxUniversalLocationLength> = bounded_vec![1; 10];
