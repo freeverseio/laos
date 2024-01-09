@@ -34,7 +34,7 @@ pub mod pallet {
 	/// Asset metadata extensions counter for a given location
 	#[pallet::storage]
 	#[pallet::getter(fn metadata_extensions_counter)]
-	pub(super) type IndexedMetadataExtensionsCounter<T: Config> =
+	pub(super) type MetadataExtensionsCounter<T: Config> =
 		StorageMap<_, Blake2_128Concat, UniversalLocationOf<T>, Index, ValueQuery>;
 
 	/// Records all metadata extensions with index for a given asset location
@@ -110,7 +110,7 @@ impl<T: Config> AssetMetadataExtender<AccountIdOf<T>, TokenUriOf<T>, UniversalLo
 			token_uri.clone(),
 		);
 		let next_index = index.checked_add(One::one()).ok_or(ArithmeticError::Overflow)?;
-		IndexedMetadataExtensionsCounter::<T>::insert(universal_location.clone(), next_index);
+		MetadataExtensionsCounter::<T>::insert(universal_location.clone(), next_index);
 
 		Self::deposit_event(Event::MetadataExtensionCreated {
 			universal_location,
