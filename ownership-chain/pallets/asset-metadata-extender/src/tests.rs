@@ -103,7 +103,7 @@ fn get_all_indexed_metadata_extensions_details() {
 		}
 
 		for i in 0..n {
-			let metadata_extension = AssetMetadataExtender::indexed_metadata_extensions_details(
+			let metadata_extension = AssetMetadataExtender::indexed_metadata_extensions(
 				universal_location.clone(),
 				i as u32,
 			)
@@ -115,7 +115,7 @@ fn get_all_indexed_metadata_extensions_details() {
 }
 
 #[test]
-fn claimer_token_uri_works() {
+fn get_metadata_extensions_works() {
 	new_test_ext().execute_with(|| {
 		let claimer = H160::zero();
 		let universal_location: UniversalLocationOf<Test> = bounded_vec![1; 10];
@@ -123,7 +123,8 @@ fn claimer_token_uri_works() {
 
 		create_metadata_extension(claimer, universal_location.clone(), token_uri.clone());
 		assert_eq!(
-			AssetMetadataExtender::claimer_token_uri(claimer, universal_location.clone()).unwrap(),
+			AssetMetadataExtender::metadata_extensions(claimer, universal_location.clone())
+				.unwrap(),
 			token_uri
 		);
 	});
