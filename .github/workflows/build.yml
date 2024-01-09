@@ -68,23 +68,10 @@ jobs:
       - name: check version
         run: |
           VERSION=$(grep -m1 version Cargo.toml | sed -E 's/.*"(.*)".*/\1/')
-          # get latest tag from git, remove `v` prefix
-
-          LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1` | sed -E 's/v(.*)/\1/')
-
-          # check if this PR is releasing a new version, i.e branch is of type `release/v*`
-          if [[ $GITHUB_REF == refs/heads/release/v* ]]; then
-            # check if version is changed in Cargo.toml
-            if [ "$VERSION" == "$LATEST_TAG" ]; then
-              echo "Version in Cargo.toml ($VERSION) is not changed"
-              exit 1
-            fi
-          else
-            # check if version in Cargo.toml is equal to latest tag, removing `v` prefix from tag 
-            if [ "$VERSION" != "$LATEST_TAG" ]; then
-              echo "Version in Cargo.toml ($VERSION) does not match latest git tag ($LATEST_TAG)"
-              exit 1
-            fi
+          
+          if [ "$VERSION" != "$LATEST_TAG" ]; then
+            echo "Version in Cargo.toml ($VERSION) does not match latest git tag ($LATEST_TAG)"
+            exit 1
           fi
       - name: check format
         run: |

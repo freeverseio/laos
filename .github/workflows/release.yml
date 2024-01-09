@@ -17,6 +17,14 @@ jobs:
       - uses: ./.github/actions/cache
         with:
           cache-key: build_and_push
+
+      - name: Version check (new tag version should be different than the last one)
+        run: |
+          if [ "$LATEST_TAG" == "${{ github.ref_name }}" ]; then
+            echo "Error: Tag version is the same as the last one"
+            exit 1
+          fi
+
       - name: Build
         run: |
           cargo build --release
@@ -27,7 +35,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
-      - name: push image ownership node
+      - name: Push image ownership node
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -41,4 +49,3 @@ jobs:
             gh release upload ${{ github.ref_name }} ./target/release/wbuild/laos-ownership-runtime/laos_ownership_runtime.compact.compressed.wasm
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                
