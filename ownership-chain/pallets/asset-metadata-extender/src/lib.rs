@@ -5,7 +5,7 @@ pub mod types;
 
 use frame_support::pallet_prelude::*;
 pub use pallet::*;
-use sp_runtime::{traits::One, ArithmeticError, DispatchError};
+use sp_runtime::{traits::One, ArithmeticError, DispatchResult};
 use traits::AssetMetadataExtender;
 use types::*;
 
@@ -46,7 +46,7 @@ pub mod pallet {
 		UniversalLocationOf<T>,
 		Blake2_128Concat,
 		Index,
-		MetadataExtension<T>,
+		MetadataExtensionDetails<T>,
 		OptionQuery,
 	>;
 
@@ -92,7 +92,7 @@ impl<T: Config> AssetMetadataExtender<AccountIdOf<T>, TokenUriOf<T>, UniversalLo
 		claimer: AccountIdOf<T>,
 		universal_location: UniversalLocationOf<T>,
 		token_uri: TokenUriOf<T>,
-	) -> Result<(), DispatchError> {
+	) -> DispatchResult {
 		ensure!(
 			!ClaimerTokenURI::<T>::contains_key(claimer.clone(), universal_location.clone()),
 			Error::<T>::MetadataExtensionAlreadyExists
@@ -102,7 +102,7 @@ impl<T: Config> AssetMetadataExtender<AccountIdOf<T>, TokenUriOf<T>, UniversalLo
 		IndexedMetadataExtensions::<T>::insert(
 			universal_location.clone(),
 			index,
-			MetadataExtension { claimer: claimer.clone(), token_uri: token_uri.clone() },
+			MetadataExtensionDetails { claimer: claimer.clone(), token_uri: token_uri.clone() },
 		);
 		ClaimerTokenURI::<T>::insert(
 			claimer.clone(),

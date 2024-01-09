@@ -14,10 +14,10 @@ pub type UniversalLocationOf<T> = BoundedVec<u8, <T as crate::Config>::MaxUniver
 pub type Index = u32;
 
 /// Asset metadata extension
-/// This will contain the claimer account and location in a raw form
+/// Contains the claimer account and token URI
 #[derive(Encode, Decode, MaxEncodedLen, TypeInfo, Debug, PartialEq, Eq, Clone)]
 #[scale_info(skip_type_params(T))]
-pub struct MetadataExtension<T: crate::Config> {
+pub struct MetadataExtensionDetails<T: crate::Config> {
 	pub claimer: AccountIdOf<T>,
 	pub token_uri: TokenUriOf<T>,
 }
