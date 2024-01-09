@@ -1,15 +1,22 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
 use laos_precompile_utils::{
-	keccak256, succeed, Bytes, EvmResult, FunctionModifier, PrecompileHandleExt,
+	keccak256, revert_dispatch_error, succeed, Bytes, EvmDataReader, EvmResult, FunctionModifier,
+	PrecompileHandleExt,
 };
 use pallet_asset_metadata_extender::{
 	traits::AssetMetadataExtender as AssetMetadataExtenderT,
-	types::{TokenUriOf, UniversalLocationOf},
+	types::{AccountIdOf, TokenUriOf, UniversalLocationOf},
 	Config, Pallet as AssetMetadataExtender,
 };
+use parity_scale_codec::Encode;
 use precompile_utils::solidity::revert::revert;
-use sp_runtime::BoundedVec;
+
+use sp_core::H160;
+use sp_runtime::{
+	traits::{Convert, One},
+	ArithmeticError, BoundedVec, DispatchError,
+};
 use sp_std::{fmt::Debug, marker::PhantomData};
 /// Solidity selector of the TokenURIExtended log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_TOKEN_URI_EXTENDED: [u8; 32] =
@@ -35,6 +42,8 @@ where
 impl<Runtime> Precompile for AssetMetadataExtenderPrecompile<Runtime>
 where
 	Runtime: pallet_evm::Config + pallet_asset_metadata_extender::Config,
+	Runtime::AccountId: From<H160> + Into<H160> + Encode + Debug,
+	AssetMetadataExtender<Runtime>: AssetMetadataExtenderT<Runtime>,
 {
 	fn execute(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
 		let selector = handle.read_selector()?;
@@ -58,29 +67,46 @@ where
 impl<Runtime> AssetMetadataExtenderPrecompile<Runtime>
 where
 	Runtime: pallet_evm::Config + pallet_asset_metadata_extender::Config,
-	AssetMetadataExtender<Runtime>: AssetMetadataExtenderT<
-		Runtime::AccountId,
-		TokenUriOf<Runtime>,
-		UniversalLocationOf<Runtime>,
-	>,
+	Runtime::AccountId: From<H160> + Into<H160> + Encode + Debug,
+	AssetMetadataExtender<Runtime>: AssetMetadataExtenderT<Runtime>,
 {
 	fn extend(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
-		let mut input = handle.read_input()?;
 		let context = handle.context();
-		let _caller = context.caller;
 
+		let mut input = handle.read_input()?;
 		input.expect_arguments(2)?;
+		let universal_location = Self::get_ul_from_input(input)?;
+		let token_uri = Self::get_token_uri_from_input(input)?;
+
+		match AssetMetadataExtender::<Runtime>::create_metadata_extension(
+			context.caller.into(),
+			universal_location.into(),
+			token_uri.into(),
+		) {
+			Ok(_) => Ok(succeed(sp_std::vec![])),
+			Err(err) => Err(revert_dispatch_error(err)),
+		}
+	}
+
+	fn get_ul_from_input(
+		mut input: EvmDataReader,
+	) -> EvmResult<BoundedVec<u8, <Runtime as Config>::MaxUniversalLocationLength>> {
 		let universal_location = input.read::<Bytes>()?.0;
-		let _universal_location: BoundedVec<u8, <Runtime as Config>::MaxUniversalLocationLength> =
+		let universal_location: BoundedVec<u8, <Runtime as Config>::MaxUniversalLocationLength> =
 			universal_location
 				.clone()
 				.try_into()
 				.map_err(|_| revert("invalid universal location length"))?;
-		let token_uri = input.read::<Bytes>()?.0;
-		let _token_uri: BoundedVec<u8, <Runtime as Config>::MaxTokenUriLength> =
-			token_uri.clone().try_into().map_err(|_| revert("invalid token uri length"))?;
+		Ok(universal_location)
+	}
 
-		Ok(succeed(sp_std::vec![]))
+	fn get_token_uri_from_input(
+		mut input: EvmDataReader,
+	) -> EvmResult<BoundedVec<u8, <Runtime as Config>::MaxTokenUriLength>> {
+		let token_uri = input.read::<Bytes>()?.0;
+		let token_uri: BoundedVec<u8, <Runtime as Config>::MaxTokenUriLength> =
+			token_uri.clone().try_into().map_err(|_| revert("invalid token uri length"))?;
+		Ok(token_uri)
 	}
 }
 

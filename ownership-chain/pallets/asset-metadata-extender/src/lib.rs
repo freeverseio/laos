@@ -5,7 +5,11 @@ pub mod types;
 
 use frame_support::pallet_prelude::*;
 pub use pallet::*;
-use sp_runtime::{traits::One, ArithmeticError, DispatchResult};
+use sp_core::H160;
+use sp_runtime::{
+	traits::{Convert, One},
+	ArithmeticError, DispatchResult,
+};
 use traits::AssetMetadataExtender;
 use types::*;
 
@@ -21,6 +25,9 @@ pub mod pallet {
 	pub trait Config: frame_system::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
+
+		/// Converts `Self::AccountId` to `H160`
+		type AccountIdToH160: Convert<Self::AccountId, H160>;
 
 		/// Limit for the length of `token_uri`
 		#[pallet::constant]

@@ -11,6 +11,8 @@ fn precompiles() -> MockPrecompileSet<Test> {
 	MockPrecompiles::get()
 }
 
+const TEST_CLAIMER: H160 = H160([1u8; 20]);
+
 #[test]
 fn check_log_selectors() {
 	assert_eq!(
@@ -33,22 +35,43 @@ fn call_unexistent_selector_should_fail() {
 	todo!();
 }
 
+fn create_metadata_extension_succeeds(claimer: H160, universal_location: Bytes, token_uri: Bytes) {
+	let input = EvmDataWriter::new_with_selector(Action::Extend)
+		.write(universal_location)
+		.write(token_uri)
+		.build();
+
+	precompiles()
+		.prepare_test(claimer, H160(PRECOMPILE_ADDRESS), input)
+		.execute_returns_raw(vec![])
+}
+
+fn create_metadata_extension_reverts(
+	claimer: H160,
+	universal_location: Bytes,
+	token_uri: Bytes,
+	revert_reason: &[u8],
+) {
+	let input = EvmDataWriter::new_with_selector(Action::Extend)
+		.write(universal_location)
+		.write(token_uri)
+		.build();
+
+	precompiles()
+		.prepare_test(claimer, H160(PRECOMPILE_ADDRESS), input)
+		.execute_reverts(|r| r == revert_reason);
+}
+
 mod create_metadata_extension {
 	use super::*;
 
 	#[test]
-	fn does_not_return_anything() {
+	fn should_generates_log() {
 		new_test_ext().execute_with(|| {
 			let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
 			let token_uri = Bytes("my_awesome_token_uri".as_bytes().to_vec());
-			let input = EvmDataWriter::new_with_selector(Action::Extend)
-				.write(universal_location)
-				.write(token_uri)
-				.build();
-
-			precompiles()
-				.prepare_test(H160([1u8; 20]), H160(PRECOMPILE_ADDRESS), input)
-				.execute_returns_raw(vec![]);
+			create_metadata_extension_succeeds(TEST_CLAIMER, universal_location, token_uri);
+			// TODO
 		});
 	}
 
@@ -58,14 +81,12 @@ mod create_metadata_extension {
 			let unallowed_size = (MaxUniversalLocationLength::get() + 10).try_into().unwrap();
 			let universal_location = Bytes(vec![b'a'; unallowed_size]);
 			let token_uri = Bytes(vec![b'b'; MaxTokenUriLength::get().try_into().unwrap()]);
-			let input = EvmDataWriter::new_with_selector(Action::Extend)
-				.write(universal_location)
-				.write(token_uri)
-				.build();
-
-			precompiles()
-				.prepare_test(H160([1u8; 20]), H160(PRECOMPILE_ADDRESS), input)
-				.execute_reverts(|r| r == b"invalid universal location length");
+			create_metadata_extension_reverts(
+				TEST_CLAIMER,
+				universal_location,
+				token_uri,
+				b"invalid universal location length",
+			);
 		});
 	}
 
@@ -76,20 +97,21 @@ mod create_metadata_extension {
 			let token_uri = Bytes(vec![b'a'; unallowed_size]);
 			let universal_location =
 				Bytes(vec![b'b'; MaxUniversalLocationLength::get().try_into().unwrap()]);
-			let input = EvmDataWriter::new_with_selector(Action::Extend)
-				.write(universal_location)
-				.write(token_uri)
-				.build();
-
-			precompiles()
-				.prepare_test(H160([1u8; 20]), H160(PRECOMPILE_ADDRESS), input)
-				.execute_reverts(|r| r == b"invalid token uri length");
+			create_metadata_extension_reverts(
+				TEST_CLAIMER,
+				universal_location,
+				token_uri,
+				b"invalid token uri length",
+			);
 		});
 	}
 
 	#[test]
 	#[ignore]
 	fn reverts_when_claimer_already_has_metadata_extension_for_universal_location() {
+		let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
+		let token_uri = Bytes("my_awesome_token_uri".as_bytes().to_vec());
+		create_metadata_extension_succeeds(TEST_CLAIMER, universal_location, token_uri);
 		todo!();
 	}
 

@@ -60,6 +60,15 @@ impl pallet_asset_metadata_extender::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type MaxUniversalLocationLength = MaxUniversalLocationLength;
 	type MaxTokenUriLength = MaxTokenUriLength;
+	type AccountIdToH160 = AccountIdToH160;
+}
+
+pub struct AccountIdToH160;
+
+impl sp_runtime::traits::Convert<AccountId, H160> for AccountIdToH160 {
+	fn convert(account_id: AccountId) -> H160 {
+		account_id
+	}
 }
 
 parameter_types! {
