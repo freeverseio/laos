@@ -46,7 +46,7 @@ pub mod pallet {
 		UniversalLocationOf<T>,
 		Blake2_128Concat,
 		Index,
-		MetadataExtension<T>,
+		MetadataExtensionDetails<T>,
 		OptionQuery,
 	>;
 
@@ -102,7 +102,7 @@ impl<T: Config> AssetMetadataExtender<AccountIdOf<T>, TokenUriOf<T>, UniversalLo
 		IndexedMetadataExtensions::<T>::insert(
 			universal_location.clone(),
 			index,
-			MetadataExtension { claimer: claimer.clone(), token_uri: token_uri.clone() },
+			MetadataExtensionDetails { claimer: claimer.clone(), token_uri: token_uri.clone() },
 		);
 		ClaimerTokenURI::<T>::insert(
 			claimer.clone(),

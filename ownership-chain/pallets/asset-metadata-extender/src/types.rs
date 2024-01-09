@@ -17,7 +17,7 @@ pub type Index = u32;
 /// Contains the claimer account and token URI
 #[derive(Encode, Decode, MaxEncodedLen, TypeInfo, Debug, PartialEq, Eq, Clone)]
 #[scale_info(skip_type_params(T))]
-pub struct MetadataExtension<T: crate::Config> {
+pub struct MetadataExtensionDetails<T: crate::Config> {
 	pub claimer: AccountIdOf<T>,
 	pub token_uri: TokenUriOf<T>,
 }
