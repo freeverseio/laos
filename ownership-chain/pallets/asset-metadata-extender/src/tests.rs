@@ -100,7 +100,7 @@ fn get_all_indexed_metadata_extensions() {
 		}
 
 		for i in 0..n {
-			let metadata_extension = AssetMetadataExtender::indexed_metadata_extensions(
+			let metadata_extension = AssetMetadataExtender::indexed_metadata_extensions_details(
 				universal_location.clone(),
 				i as u32,
 			)

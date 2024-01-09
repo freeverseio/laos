@@ -39,8 +39,8 @@ pub mod pallet {
 
 	/// Records all metadata extensions with index for a given asset location
 	#[pallet::storage]
-	#[pallet::getter(fn indexed_metadata_extensions)]
-	pub(super) type IndexedMetadataExtensions<T: Config> = StorageDoubleMap<
+	#[pallet::getter(fn indexed_metadata_extensions_details)]
+	pub(super) type IndexedMetadataExtensionsDetails<T: Config> = StorageDoubleMap<
 		_,
 		Blake2_128Concat,
 		UniversalLocationOf<T>,
@@ -99,7 +99,7 @@ impl<T: Config> AssetMetadataExtender<AccountIdOf<T>, TokenUriOf<T>, UniversalLo
 		);
 
 		let index = Self::metadata_extensions_counter(universal_location.clone());
-		IndexedMetadataExtensions::<T>::insert(
+		IndexedMetadataExtensionsDetails::<T>::insert(
 			universal_location.clone(),
 			index,
 			MetadataExtensionDetails { claimer: claimer.clone(), token_uri: token_uri.clone() },
