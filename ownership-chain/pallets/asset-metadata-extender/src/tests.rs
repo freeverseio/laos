@@ -88,7 +88,7 @@ fn create_metadata_extension_increases_counter() {
 }
 
 #[test]
-fn get_all_indexed_metadata_extensions() {
+fn get_all_indexed_metadata_extensions_details() {
 	new_test_ext().execute_with(|| {
 		let universal_location: BoundedVec<u8, MaxUniversalLocationLength> = bounded_vec![1; 10];
 		let token_uri: BoundedVec<u8, MaxTokenUriLength> = bounded_vec![2; 10];
