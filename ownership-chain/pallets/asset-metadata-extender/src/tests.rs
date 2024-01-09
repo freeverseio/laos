@@ -1,14 +1,18 @@
-use crate::{mock::*, traits::AssetMetadataExtender as _, Error, Event};
+use crate::{
+	mock::*,
+	traits::AssetMetadataExtender as _,
+	types::{AccountIdOf, TokenUriOf, UniversalLocationOf},
+	Error, Event,
+};
 use frame_support::{assert_noop, assert_ok};
 use sp_core::{bounded_vec, H160};
-use sp_runtime::BoundedVec;
 
 // UL stands for Universal Location
 
 fn create_metadata_extension(
-	claimer: AccountId,
-	universal_location: UniversalLocation,
-	token_uri: TokenUri,
+	claimer: AccountIdOf<Test>,
+	universal_location: UniversalLocationOf<Test>,
+	token_uri: TokenUriOf<Test>,
 ) {
 	assert_ok!(AssetMetadataExtender::create_metadata_extension(
 		claimer,
@@ -23,8 +27,8 @@ fn create_metadata_extension_works() {
 		// Go past genesis block so events get deposited
 		System::set_block_number(1);
 		let claimer = H160::zero();
-		let universal_location: BoundedVec<u8, MaxUniversalLocationLength> = bounded_vec![1; 10];
-		let token_uri: BoundedVec<u8, MaxTokenUriLength> = bounded_vec![2; 10];
+		let universal_location: UniversalLocationOf<Test> = bounded_vec![1; 10];
+		let token_uri: TokenUriOf<Test> = bounded_vec![2; 10];
 
 		create_metadata_extension(claimer, universal_location.clone(), token_uri.clone());
 
@@ -38,8 +42,8 @@ fn create_metadata_extension_works() {
 fn claimer_cannot_create_multiple_extensions_per_ul() {
 	new_test_ext().execute_with(|| {
 		let claimer = H160::zero();
-		let universal_location: BoundedVec<u8, MaxUniversalLocationLength> = bounded_vec![1; 10];
-		let token_uri: BoundedVec<u8, MaxTokenUriLength> = bounded_vec![2; 10];
+		let universal_location: UniversalLocationOf<Test> = bounded_vec![1; 10];
+		let token_uri: TokenUriOf<Test> = bounded_vec![2; 10];
 
 		create_metadata_extension(claimer, universal_location.clone(), token_uri.clone());
 		assert_noop!(
@@ -57,8 +61,8 @@ fn claimer_cannot_create_multiple_extensions_per_ul() {
 fn create_metadata_extension_increases_counter() {
 	new_test_ext().execute_with(|| {
 		let claimer = H160::zero();
-		let universal_location: BoundedVec<u8, MaxUniversalLocationLength> = bounded_vec![1; 10];
-		let token_uri: BoundedVec<u8, MaxTokenUriLength> = bounded_vec![2; 10];
+		let universal_location: UniversalLocationOf<Test> = bounded_vec![1; 10];
+		let token_uri: TokenUriOf<Test> = bounded_vec![2; 10];
 
 		// create first extension for the given UL
 		assert_eq!(
@@ -73,8 +77,7 @@ fn create_metadata_extension_increases_counter() {
 		);
 
 		// check that no other UL has been affected
-		let another_universal_location: BoundedVec<u8, MaxUniversalLocationLength> =
-			bounded_vec![1; 1];
+		let another_universal_location: UniversalLocationOf<Test> = bounded_vec![1; 1];
 		assert_eq!(
 			AssetMetadataExtender::metadata_extensions_counter(another_universal_location),
 			0
@@ -90,8 +93,8 @@ fn create_metadata_extension_increases_counter() {
 #[test]
 fn get_all_indexed_metadata_extensions_details() {
 	new_test_ext().execute_with(|| {
-		let universal_location: BoundedVec<u8, MaxUniversalLocationLength> = bounded_vec![1; 10];
-		let token_uri: BoundedVec<u8, MaxTokenUriLength> = bounded_vec![2; 10];
+		let universal_location: UniversalLocationOf<Test> = bounded_vec![1; 10];
+		let token_uri: TokenUriOf<Test> = bounded_vec![2; 10];
 
 		let n = 1000;
 		for i in 0..n {
@@ -115,8 +118,8 @@ fn get_all_indexed_metadata_extensions_details() {
 fn claimer_token_uri_works() {
 	new_test_ext().execute_with(|| {
 		let claimer = H160::zero();
-		let universal_location: BoundedVec<u8, MaxUniversalLocationLength> = bounded_vec![1; 10];
-		let token_uri: BoundedVec<u8, MaxTokenUriLength> = bounded_vec![2; 10];
+		let universal_location: UniversalLocationOf<Test> = bounded_vec![1; 10];
+		let token_uri: TokenUriOf<Test> = bounded_vec![2; 10];
 
 		create_metadata_extension(claimer, universal_location.clone(), token_uri.clone());
 		assert_eq!(
