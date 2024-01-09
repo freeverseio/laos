@@ -1,4 +1,15 @@
 use super::*;
+use crate::mock::*;
+use laos_precompile_utils::EvmDataWriter;
+use precompile_utils::testing::PrecompileTesterExt;
+use sp_core::H160;
+/// Fixed precompile address for testing.
+const PRECOMPILE_ADDRESS: [u8; 20] = [5u8; 20];
+
+/// Get precompiles from the mock.
+fn precompiles() -> MockPrecompileSet<Test> {
+	MockPrecompiles::get()
+}
 
 #[test]
 fn check_log_selectors() {
@@ -23,10 +34,57 @@ fn call_unexistent_selector_should_fail() {
 }
 
 mod create_metadata_extension {
+	use super::*;
+
 	#[test]
-	#[ignore]
 	fn does_not_return_anything() {
-		todo!();
+		new_test_ext().execute_with(|| {
+			let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
+			let token_uri = Bytes("my_awesome_token_uri".as_bytes().to_vec());
+			let input = EvmDataWriter::new_with_selector(Action::Extend)
+				.write(universal_location)
+				.write(token_uri)
+				.build();
+
+			precompiles()
+				.prepare_test(H160([1u8; 20]), H160(PRECOMPILE_ADDRESS), input)
+				.execute_returns_raw(vec![]);
+		});
+	}
+
+	#[test]
+	fn reverts_when_ul_exceeds_length() {
+		new_test_ext().execute_with(|| {
+			let unallowed_size = (MaxUniversalLocationLength::get() + 10).try_into().unwrap();
+			let universal_location = Bytes(vec![b'a'; unallowed_size]);
+			let token_uri = Bytes(vec![b'b'; MaxTokenUriLength::get().try_into().unwrap()]);
+			let input = EvmDataWriter::new_with_selector(Action::Extend)
+				.write(universal_location)
+				.write(token_uri)
+				.build();
+
+			precompiles()
+				.prepare_test(H160([1u8; 20]), H160(PRECOMPILE_ADDRESS), input)
+				.execute_reverts(|r| r == b"invalid universal location length");
+		});
+	}
+
+	#[test]
+	fn reverts_when_token_uri_exceeds_length() {
+		new_test_ext().execute_with(|| {
+			let unallowed_size = (MaxTokenUriLength::get() + 1).try_into().unwrap();
+			let token_uri = Bytes(vec![b'a'; unallowed_size]);
+			let universal_location =
+				Bytes(vec![b'b'; MaxUniversalLocationLength::get().try_into().unwrap()]);
+			let input = EvmDataWriter::new_with_selector(Action::Extend)
+				.write(universal_location)
+				.write(token_uri)
+				.build();
+
+			precompiles()
+				.prepare_test(H160([1u8; 20]), H160(PRECOMPILE_ADDRESS), input)
+				.execute_reverts(|r| r == b"invalid token uri length");
+		});
 	}
 
 	#[test]

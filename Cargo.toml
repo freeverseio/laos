@@ -245,6 +245,7 @@ pallet-laos-evolution = { path = "./ownership-chain/pallets/laos-evolution", def
 pallet-evm-evolution-collection-factory = { path = "./ownership-chain/precompile/evolution-collection-factory", default-features = false }
 pallet-evm-evolution-collection = { path = "./ownership-chain/precompile/evolution-collection", default-features = false }
 pallet-evm-erc721 = { path = "./ownership-chain/precompile/erc721", default-features = false }
+pallet-asset-metadata-extender = { path = "./ownership-chain/pallets/asset-metadata-extender", default-features = false }
 pallet-evm-asset-metadata-extender = { path = "./ownership-chain/precompile/asset-metadata-extender", default-features = false }
 
 # Precompiles
