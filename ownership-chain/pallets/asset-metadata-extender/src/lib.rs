@@ -5,7 +5,7 @@ pub mod types;
 
 use frame_support::pallet_prelude::*;
 pub use pallet::*;
-use sp_runtime::{traits::One, ArithmeticError, DispatchError};
+use sp_runtime::{traits::One, ArithmeticError, DispatchResult};
 use traits::AssetMetadataExtender;
 use types::*;
 
@@ -92,7 +92,7 @@ impl<T: Config> AssetMetadataExtender<AccountIdOf<T>, TokenUriOf<T>, UniversalLo
 		claimer: AccountIdOf<T>,
 		universal_location: UniversalLocationOf<T>,
 		token_uri: TokenUriOf<T>,
-	) -> Result<(), DispatchError> {
+	) -> DispatchResult {
 		ensure!(
 			!ClaimerTokenURI::<T>::contains_key(claimer.clone(), universal_location.clone()),
 			Error::<T>::MetadataExtensionAlreadyExists
