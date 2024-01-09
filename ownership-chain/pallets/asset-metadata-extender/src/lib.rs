@@ -85,9 +85,7 @@ pub mod pallet {
 	}
 }
 
-impl<T: Config> AssetMetadataExtender<AccountIdOf<T>, TokenUriOf<T>, UniversalLocationOf<T>>
-	for Pallet<T>
-{
+impl<T: Config> AssetMetadataExtender<T> for Pallet<T> {
 	fn create_metadata_extension(
 		claimer: AccountIdOf<T>,
 		universal_location: UniversalLocationOf<T>,
