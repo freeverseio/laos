@@ -37,237 +37,149 @@ fn call_unexistent_selector_should_fail() {
 	todo!();
 }
 
-fn create_metadata_extension_succeeds(claimer: H160, universal_location: Bytes, token_uri: Bytes) {
-	let input = EvmDataWriter::new_with_selector(Action::Extend)
-		.write(universal_location)
-		.write(token_uri)
-		.build();
+#[test]
+fn create_metadata_extension_should_generates_log() {
+	new_test_ext().execute_with(|| {
+		let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
+		let token_uri = Bytes("my_awesome_token_uri".as_bytes().to_vec());
 
-	precompiles()
-		.prepare_test(claimer, H160(PRECOMPILE_ADDRESS), input)
-		.execute_returns_raw(vec![])
+		let input = EvmDataWriter::new_with_selector(Action::Extend)
+			.write(universal_location)
+			.write(token_uri)
+			.build();
+
+		precompiles()
+			.prepare_test(TEST_CLAIMER, H160(PRECOMPILE_ADDRESS), input)
+			.execute_returns_raw(vec![])
+		// TODO
+	});
 }
 
-fn create_metadata_extension_reverts(
-	claimer: H160,
-	universal_location: Bytes,
-	token_uri: Bytes,
-	revert_reason: &[u8],
+#[test]
+fn create_metadata_extension_reverts_when_ul_exceeds_length() {
+	new_test_ext().execute_with(|| {
+		let unallowed_size = (MaxUniversalLocationLength::get() + 10).try_into().unwrap();
+		let universal_location = Bytes(vec![b'a'; unallowed_size]);
+		let token_uri = Bytes(vec![b'b'; MaxTokenUriLength::get().try_into().unwrap()]);
+
+		let input = EvmDataWriter::new_with_selector(Action::Extend)
+			.write(universal_location)
+			.write(token_uri)
+			.build();
+
+		precompiles()
+			.prepare_test(TEST_CLAIMER, H160(PRECOMPILE_ADDRESS), input)
+			.execute_reverts(|r| r == b"invalid universal location length");
+	});
+}
+
+#[test]
+fn create_metadata_extension_reverts_when_token_uri_exceeds_length() {
+	new_test_ext().execute_with(|| {
+		let unallowed_size = (MaxTokenUriLength::get() + 1).try_into().unwrap();
+		let token_uri = Bytes(vec![b'a'; unallowed_size]);
+		let universal_location =
+			Bytes(vec![b'b'; MaxUniversalLocationLength::get().try_into().unwrap()]);
+
+		let input = EvmDataWriter::new_with_selector(Action::Extend)
+			.write(universal_location)
+			.write(token_uri)
+			.build();
+
+		precompiles()
+			.prepare_test(TEST_CLAIMER, H160(PRECOMPILE_ADDRESS), input)
+			.execute_reverts(|r| r == b"invalid token uri length");
+	});
+}
+
+#[test]
+fn create_metadata_extension_reverts_when_claimer_already_has_metadata_extension_for_universal_location(
 ) {
-	let input = EvmDataWriter::new_with_selector(Action::Extend)
-		.write(universal_location)
-		.write(token_uri)
-		.build();
+	new_test_ext().execute_with(|| {
+		let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
+		let token_uri = Bytes("my_awesome_token_uri".as_bytes().to_vec());
 
-	precompiles()
-		.prepare_test(claimer, H160(PRECOMPILE_ADDRESS), input)
-		.execute_reverts(|r| r == revert_reason);
+		let input = EvmDataWriter::new_with_selector(Action::Extend)
+			.write(universal_location.clone())
+			.write(token_uri.clone())
+			.build();
+
+		precompiles()
+			.prepare_test(TEST_CLAIMER, H160(PRECOMPILE_ADDRESS), input)
+			.execute_returns_raw(vec![]);
+
+		let input = EvmDataWriter::new_with_selector(Action::Extend)
+			.write(universal_location)
+			.write(token_uri)
+			.build();
+
+		precompiles()
+			.prepare_test(TEST_CLAIMER, H160(PRECOMPILE_ADDRESS), input)
+			.execute_reverts(|r| r == b"MetadataExtensionAlreadyExists");
+	});
 }
 
-mod create_metadata_extension {
-	use super::*;
+#[test]
+fn create_metadata_extension_on_mock_with_nonzero_value_fails() {
+	new_test_ext().execute_with(|| {
+		let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
+		let token_uri = Bytes("my_awesome_token_uri".as_bytes().to_vec());
+		let input = EvmDataWriter::new_with_selector(Action::Extend)
+			.write(universal_location)
+			.write(token_uri)
+			.build();
 
-	#[test]
-	fn should_generates_log() {
-		new_test_ext().execute_with(|| {
-			let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
-			let token_uri = Bytes("my_awesome_token_uri".as_bytes().to_vec());
-
-			let input = EvmDataWriter::new_with_selector(Action::Extend)
-				.write(universal_location)
-				.write(token_uri)
-				.build();
-
-			precompiles()
-				.prepare_test(TEST_CLAIMER, H160(PRECOMPILE_ADDRESS), input)
-				.execute_returns_raw(vec![])
-			// TODO
-		});
-	}
-
-	#[test]
-	fn reverts_when_ul_exceeds_length() {
-		new_test_ext().execute_with(|| {
-			let unallowed_size = (MaxUniversalLocationLength::get() + 10).try_into().unwrap();
-			let universal_location = Bytes(vec![b'a'; unallowed_size]);
-			let token_uri = Bytes(vec![b'b'; MaxTokenUriLength::get().try_into().unwrap()]);
-
-			let input = EvmDataWriter::new_with_selector(Action::Extend)
-				.write(universal_location)
-				.write(token_uri)
-				.build();
-
-			precompiles()
-				.prepare_test(TEST_CLAIMER, H160(PRECOMPILE_ADDRESS), input)
-				.execute_reverts(|r| r == b"invalid universal location length");
-		});
-	}
-
-	#[test]
-	fn reverts_when_token_uri_exceeds_length() {
-		new_test_ext().execute_with(|| {
-			let unallowed_size = (MaxTokenUriLength::get() + 1).try_into().unwrap();
-			let token_uri = Bytes(vec![b'a'; unallowed_size]);
-			let universal_location =
-				Bytes(vec![b'b'; MaxUniversalLocationLength::get().try_into().unwrap()]);
-
-			let input = EvmDataWriter::new_with_selector(Action::Extend)
-				.write(universal_location)
-				.write(token_uri)
-				.build();
-
-			precompiles()
-				.prepare_test(TEST_CLAIMER, H160(PRECOMPILE_ADDRESS), input)
-				.execute_reverts(|r| r == b"invalid token uri length");
-		});
-	}
-
-	#[test]
-	fn reverts_when_claimer_already_has_metadata_extension_for_universal_location() {
-		new_test_ext().execute_with(|| {
-			let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
-			let token_uri = Bytes("my_awesome_token_uri".as_bytes().to_vec());
-
-			let input = EvmDataWriter::new_with_selector(Action::Extend)
-				.write(universal_location.clone())
-				.write(token_uri.clone())
-				.build();
-
-			precompiles()
-				.prepare_test(TEST_CLAIMER, H160(PRECOMPILE_ADDRESS), input)
-				.execute_returns_raw(vec![]);
-
-			let input = EvmDataWriter::new_with_selector(Action::Extend)
-				.write(universal_location)
-				.write(token_uri)
-				.build();
-
-			precompiles()
-				.prepare_test(TEST_CLAIMER, H160(PRECOMPILE_ADDRESS), input)
-				.execute_reverts(|r| r == b"MetadataExtensionAlreadyExists");
-		});
-	}
-
-	#[test]
-	fn on_mock_with_nonzero_value_fails() {
-		new_test_ext().execute_with(|| {
-			let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
-			let token_uri = Bytes("my_awesome_token_uri".as_bytes().to_vec());
-			let input = EvmDataWriter::new_with_selector(Action::Extend)
-				.write(universal_location)
-				.write(token_uri)
-				.build();
-
-			precompiles()
-				.prepare_test(TEST_CLAIMER, H160(PRECOMPILE_ADDRESS), input)
-				.with_value(U256::from(1))
-				.execute_reverts(|r| r == b"function is not payable");
-		});
-	}
-
-	#[test]
-	#[ignore]
-	fn it_is_expected_to_have_a_cost() {
-		todo!();
-	}
+		precompiles()
+			.prepare_test(TEST_CLAIMER, H160(PRECOMPILE_ADDRESS), input)
+			.with_value(U256::from(1))
+			.execute_reverts(|r| r == b"function is not payable");
+	});
 }
 
-mod balance_of_ul {
-	use super::*;
-
-	#[test]
-	fn reverts_when_ul_does_not_exist() {
-		new_test_ext().execute_with(|| {
-			let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
-			let input = EvmDataWriter::new_with_selector(Action::Balance)
-				.write(universal_location)
-				.build();
-
-			precompiles()
-				.prepare_test(TEST_CLAIMER, H160(PRECOMPILE_ADDRESS), input)
-				.execute_reverts(|r| r == b"universal location does not exist");
-		});
-	}
-
-	#[test]
-	fn returns_number_of_extensions() {
-		new_test_ext().execute_with(|| {
-			let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
-			let token_uri = Bytes("my_awesome_token_uri".as_bytes().to_vec());
-
-			let input = EvmDataWriter::new_with_selector(Action::Extend)
-				.write(universal_location.clone())
-				.write(token_uri.clone())
-				.build();
-
-			precompiles()
-				.prepare_test(TEST_CLAIMER, H160(PRECOMPILE_ADDRESS), input)
-				.execute_returns_raw(vec![]);
-
-			let input = EvmDataWriter::new_with_selector(Action::Extend)
-				.write(universal_location)
-				.write(token_uri)
-				.build();
-
-			let expected_output = H256::from_str("1").unwrap();
-
-			precompiles()
-				.prepare_test(TEST_CLAIMER, H160(PRECOMPILE_ADDRESS), input)
-				.with_value(U256::from(1))
-				.execute_returns(expected_output);
-		});
-	}
-
-	#[test]
-	#[ignore]
-	fn it_is_expected_to_have_a_cost() {
-		todo!();
-		new_test_ext().execute_with(|| {});
-	}
+#[test]
+#[ignore]
+fn create_metadata_extension_it_is_expected_to_have_a_cost() {
+	todo!();
 }
 
-mod claimer_of_ul_by_index {
-	#[test]
-	#[ignore]
-	fn claimer_of_ul_by_index_given_unexistent_index_returns_empty_address() {
-		todo!();
-	}
-
-	#[test]
-	#[ignore]
-	fn claimer_of_ul_by_index_returns_claimer() {
-		todo!();
-	}
-
-	#[test]
-	#[ignore]
-	fn claimer_of_ul_by_index_it_is_expected_to_have_a_cost() {
-		todo!();
-	}
+#[test]
+#[ignore]
+fn claimer_of_ul_by_index_given_unexistent_index_returns_empty_address() {
+	todo!();
 }
 
-mod extension_of_ul_by_index {
-	#[test]
-	#[ignore]
-	fn it_is_expected_to_have_a_cost() {
-		todo!();
-	}
+#[test]
+#[ignore]
+fn claimer_of_ul_by_index_returns_claimer() {
+	todo!();
+}
 
-	#[test]
-	#[ignore]
-	fn returns_extension() {
-		todo!();
-	}
+#[test]
+#[ignore]
+fn claimer_of_ul_by_index_it_is_expected_to_have_a_cost() {
+	todo!();
+}
 
-	#[test]
-	#[ignore]
-	fn given_unexistent_ul_returns_empty_string() {
-		todo!();
-	}
+#[test]
+#[ignore]
+fn extension_of_ul_by_index_it_is_expected_to_have_a_cost() {
+	todo!();
+}
 
-	#[test]
-	#[ignore]
-	fn given_unexistent_index_returns_empty_string() {
-		todo!();
-	}
+#[test]
+#[ignore]
+fn extension_of_ul_by_index_returns_extension() {
+	todo!();
+}
+
+#[test]
+#[ignore]
+fn extension_of_ul_by_index_given_unexistent_ul_returns_empty_string() {
+	todo!();
+}
+
+#[test]
+#[ignore]
+fn extension_of_ul_by_index_given_unexistent_index_returns_empty_string() {
+	todo!();
 }
