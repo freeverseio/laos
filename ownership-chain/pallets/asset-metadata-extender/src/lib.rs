@@ -74,6 +74,14 @@ pub mod pallet {
 			claimer: AccountIdOf<T>,
 			token_uri: TokenUriOf<T>,
 		},
+
+		/// Extension updated
+		/// parameters. [universal_location, claimer, token_uri]
+		ExtensionUpdated {
+			universal_location: UniversalLocationOf<T>,
+			claimer: AccountIdOf<T>,
+			token_uri: TokenUriOf<T>,
+		},
 	}
 
 	/// Customs errors for this pallet
@@ -82,11 +90,13 @@ pub mod pallet {
 	pub enum Error<T> {
 		/// A claimer can perform one extension for a given universal location
 		ExtensionAlreadyExists,
+		/// A claimer can update an extension only if it exists
+		ExtensionDoesNotExist,
 	}
 }
 
 impl<T: Config> AssetMetadataExtender<T> for Pallet<T> {
-	fn create_metadata_extension(
+	fn create_token_uri_extension(
 		claimer: AccountIdOf<T>,
 		universal_location: UniversalLocationOf<T>,
 		token_uri: TokenUriOf<T>,
@@ -110,6 +120,30 @@ impl<T: Config> AssetMetadataExtender<T> for Pallet<T> {
 		ExtensionsCounter::<T>::insert(universal_location.clone(), next_index);
 
 		Self::deposit_event(Event::ExtensionCreated { universal_location, claimer, token_uri });
+
+		Ok(())
+	}
+
+	fn update_token_uri_extension(
+		claimer: AccountIdOf<T>,
+		universal_location: UniversalLocationOf<T>,
+		token_uri: TokenUriOf<T>,
+	) -> DispatchResult {
+		ensure!(
+			TokenUrisByClaimerAndLocation::<T>::contains_key(
+				claimer.clone(),
+				universal_location.clone()
+			),
+			Error::<T>::ExtensionDoesNotExist
+		);
+
+		TokenUrisByClaimerAndLocation::<T>::insert(
+			claimer.clone(),
+			universal_location.clone(),
+			token_uri.clone(),
+		);
+
+		Self::deposit_event(Event::ExtensionUpdated { claimer, universal_location, token_uri });
 
 		Ok(())
 	}

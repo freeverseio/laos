@@ -7,7 +7,13 @@ use crate::{
 
 /// `AssetMetadataExtender` trait for managing asset metadata extensions
 pub trait AssetMetadataExtender<T: Config> {
-	fn create_metadata_extension(
+	fn create_token_uri_extension(
+		claimer: AccountIdOf<T>,
+		universal_location: UniversalLocationOf<T>,
+		token_uri: TokenUriOf<T>,
+	) -> DispatchResult;
+
+	fn update_token_uri_extension(
 		claimer: AccountIdOf<T>,
 		universal_location: UniversalLocationOf<T>,
 		token_uri: TokenUriOf<T>,
