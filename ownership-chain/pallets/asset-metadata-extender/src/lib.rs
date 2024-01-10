@@ -1,5 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+mod benchmarking;
 pub mod traits;
 pub mod types;
 
@@ -10,9 +11,8 @@ use sp_runtime::{
 	traits::{Convert, One},
 	ArithmeticError, DispatchResult,
 };
-use traits::AssetMetadataExtender;
-use types::*;
-
+pub use traits::AssetMetadataExtender as AssetMetadataExtenderT;
+pub use types::*;
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
@@ -90,9 +90,12 @@ pub mod pallet {
 		/// A claimer can perform one metadata extension for a given universal location
 		MetadataExtensionAlreadyExists,
 	}
+
+	#[pallet::call]
+	impl<T: Config> Pallet<T> {}
 }
 
-impl<T: Config> AssetMetadataExtender<T> for Pallet<T> {
+impl<T: Config> AssetMetadataExtenderT<T> for Pallet<T> {
 	fn create_metadata_extension(
 		claimer: AccountIdOf<T>,
 		universal_location: UniversalLocationOf<T>,
@@ -125,6 +128,18 @@ impl<T: Config> AssetMetadataExtender<T> for Pallet<T> {
 
 		Ok(())
 	}
+
+	// fn balance_of_universal_location(universal_location: UniversalLocationOf<T>) -> u32 {
+	// 	MetadataExtensionsCounter::<T>::get(universal_location)
+	// }
+
+	// fn indexed_metadata_extensions(
+	// 	universal_location: UniversalLocationOf<T>,
+	// 	index: Index,
+	// ) -> Option<(AccountIdOf<T>, TokenUriOf<T>)> {
+	// 	IndexedMetadataExtensions::<T>::get(universal_location, index)
+	// 		.map(|details| (details.claimer, details.token_uri))
+	// }
 }
 
 #[cfg(test)]
