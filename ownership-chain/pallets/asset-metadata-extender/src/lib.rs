@@ -31,29 +31,29 @@ pub mod pallet {
 		type MaxUniversalLocationLength: Get<u32>;
 	}
 
-	/// Asset metadata extensions counter for a given location
+	/// Extensions counter for a given location
 	#[pallet::storage]
-	#[pallet::getter(fn metadata_extensions_counter)]
-	pub(super) type MetadataExtensionsCounter<T: Config> =
+	#[pallet::getter(fn extensions_counter)]
+	pub(super) type ExtensionsCounter<T: Config> =
 		StorageMap<_, Blake2_128Concat, UniversalLocationOf<T>, Index, ValueQuery>;
 
-	/// Records all metadata extensions with index for a given asset location
+	/// Records all claimers with index that performed an extension for a given asset location
 	#[pallet::storage]
-	#[pallet::getter(fn indexed_metadata_extensions)]
-	pub(super) type IndexedMetadataExtensions<T: Config> = StorageDoubleMap<
+	#[pallet::getter(fn claimers_by_location_and_index)]
+	pub(super) type ClaimersByLocationAndIndex<T: Config> = StorageDoubleMap<
 		_,
 		Blake2_128Concat,
 		UniversalLocationOf<T>,
 		Blake2_128Concat,
 		Index,
-		MetadataExtensionDetails<T>,
+		AccountIdOf<T>,
 		OptionQuery,
 	>;
 
-	/// Records all token URIs associated with a given claimer who performed the metadata extension.
+	/// Records all the token uris associated with a universal location performed by a claimer.
 	#[pallet::storage]
-	#[pallet::getter(fn metadata_extensions)]
-	pub(super) type MetadataExtensions<T: Config> = StorageDoubleMap<
+	#[pallet::getter(fn token_uris_by_claimer_and_location)]
+	pub(super) type TokenUrisByClaimerAndLocation<T: Config> = StorageDoubleMap<
 		_,
 		Blake2_128Concat,
 		AccountIdOf<T>,
@@ -67,9 +67,9 @@ pub mod pallet {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		/// Metadata extension created
+		/// Extension created
 		/// parameters. [universal_location, claimer, token_uri]
-		MetadataExtensionCreated {
+		ExtensionCreated {
 			universal_location: UniversalLocationOf<T>,
 			claimer: AccountIdOf<T>,
 			token_uri: TokenUriOf<T>,
@@ -80,8 +80,8 @@ pub mod pallet {
 	#[pallet::error]
 	#[derive(PartialEq)]
 	pub enum Error<T> {
-		/// A claimer can perform one metadata extension for a given universal location
-		MetadataExtensionAlreadyExists,
+		/// A claimer can perform one extension for a given universal location
+		ExtensionAlreadyExists,
 	}
 }
 
@@ -92,29 +92,24 @@ impl<T: Config> AssetMetadataExtender<T> for Pallet<T> {
 		token_uri: TokenUriOf<T>,
 	) -> DispatchResult {
 		ensure!(
-			!MetadataExtensions::<T>::contains_key(claimer.clone(), universal_location.clone()),
-			Error::<T>::MetadataExtensionAlreadyExists
+			!TokenUrisByClaimerAndLocation::<T>::contains_key(
+				claimer.clone(),
+				universal_location.clone()
+			),
+			Error::<T>::ExtensionAlreadyExists
 		);
 
-		let index = Self::metadata_extensions_counter(universal_location.clone());
-		IndexedMetadataExtensions::<T>::insert(
-			universal_location.clone(),
-			index,
-			MetadataExtensionDetails { claimer: claimer.clone(), token_uri: token_uri.clone() },
-		);
-		MetadataExtensions::<T>::insert(
+		let index = Self::extensions_counter(universal_location.clone());
+		ClaimersByLocationAndIndex::<T>::insert(universal_location.clone(), index, claimer.clone());
+		TokenUrisByClaimerAndLocation::<T>::insert(
 			claimer.clone(),
 			universal_location.clone(),
 			token_uri.clone(),
 		);
 		let next_index = index.checked_add(One::one()).ok_or(ArithmeticError::Overflow)?;
-		MetadataExtensionsCounter::<T>::insert(universal_location.clone(), next_index);
+		ExtensionsCounter::<T>::insert(universal_location.clone(), next_index);
 
-		Self::deposit_event(Event::MetadataExtensionCreated {
-			universal_location,
-			claimer,
-			token_uri,
-		});
+		Self::deposit_event(Event::ExtensionCreated { universal_location, claimer, token_uri });
 
 		Ok(())
 	}
