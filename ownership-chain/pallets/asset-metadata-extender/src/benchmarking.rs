@@ -18,7 +18,7 @@ mod benchmarks {
 	);
 
 	#[benchmark]
-	fn create_metadata_extension(
+	fn create_token_uri_extension(
 		t: Linear<0, { <T as Config>::MaxTokenUriLength::get() }>,
 		u: Linear<0, { <T as Config>::MaxUniversalLocationLength::get() }>,
 	) {
@@ -27,7 +27,7 @@ mod benchmarks {
 
 		#[block]
 		{
-			AssetMetadataExtender::<T>::create_metadata_extension(
+			AssetMetadataExtender::<T>::create_token_uri_extension(
 				claimer.clone(),
 				vec![1u8; t as usize].try_into().unwrap(),
 				vec![1u8; u as usize].try_into().unwrap(),
