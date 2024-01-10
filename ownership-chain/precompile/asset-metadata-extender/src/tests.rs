@@ -38,7 +38,7 @@ fn call_unexistent_selector_should_fail() {
 }
 
 #[test]
-fn create_metadata_extension_should_generates_log() {
+fn create_token_uri_extension_should_generates_log() {
 	new_test_ext().execute_with(|| {
 		let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
 		let token_uri = Bytes("my_awesome_token_uri".as_bytes().to_vec());
@@ -56,7 +56,7 @@ fn create_metadata_extension_should_generates_log() {
 }
 
 #[test]
-fn create_metadata_extension_reverts_when_ul_exceeds_length() {
+fn create_token_uri_extension_reverts_when_ul_exceeds_length() {
 	new_test_ext().execute_with(|| {
 		let unallowed_size = (MaxUniversalLocationLength::get() + 10).try_into().unwrap();
 		let universal_location = Bytes(vec![b'a'; unallowed_size]);
@@ -74,7 +74,7 @@ fn create_metadata_extension_reverts_when_ul_exceeds_length() {
 }
 
 #[test]
-fn create_metadata_extension_reverts_when_token_uri_exceeds_length() {
+fn create_token_uri_extension_reverts_when_token_uri_exceeds_length() {
 	new_test_ext().execute_with(|| {
 		let unallowed_size = (MaxTokenUriLength::get() + 1).try_into().unwrap();
 		let token_uri = Bytes(vec![b'a'; unallowed_size]);
@@ -93,7 +93,7 @@ fn create_metadata_extension_reverts_when_token_uri_exceeds_length() {
 }
 
 #[test]
-fn create_metadata_extension_reverts_when_claimer_already_has_metadata_extension_for_universal_location(
+fn create_token_uri_extension_reverts_when_claimer_already_has_metadata_extension_for_universal_location(
 ) {
 	new_test_ext().execute_with(|| {
 		let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
@@ -115,12 +115,12 @@ fn create_metadata_extension_reverts_when_claimer_already_has_metadata_extension
 
 		precompiles()
 			.prepare_test(TEST_CLAIMER, H160(PRECOMPILE_ADDRESS), input)
-			.execute_reverts(|r| r == b"MetadataExtensionAlreadyExists");
+			.execute_reverts(|r| r == b"ExtensionAlreadyExists");
 	});
 }
 
 #[test]
-fn create_metadata_extension_on_mock_with_nonzero_value_fails() {
+fn create_token_uri_extension_on_mock_with_nonzero_value_fails() {
 	new_test_ext().execute_with(|| {
 		let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
 		let token_uri = Bytes("my_awesome_token_uri".as_bytes().to_vec());
@@ -138,7 +138,7 @@ fn create_metadata_extension_on_mock_with_nonzero_value_fails() {
 
 #[test]
 #[ignore]
-fn create_metadata_extension_it_is_expected_to_have_a_cost() {
+fn create_token_uri_extension_it_is_expected_to_have_a_cost() {
 	todo!();
 }
 

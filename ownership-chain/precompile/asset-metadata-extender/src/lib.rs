@@ -78,7 +78,7 @@ where
 		let universal_location = Self::get_ul_from_input(input)?;
 		let token_uri = Self::get_token_uri_from_input(input)?;
 
-		match AssetMetadataExtender::<Runtime>::create_metadata_extension(
+		match AssetMetadataExtender::<Runtime>::create_token_uri_extension(
 			context.caller.into(),
 			universal_location.into(),
 			token_uri.into(),
