@@ -9,7 +9,7 @@ use sp_core::{bounded_vec, H160};
 
 // UL stands for Universal Location
 
-fn create_metadata_extension(
+fn create_token_uri_extension(
 	claimer: AccountIdOf<Test>,
 	universal_location: UniversalLocationOf<Test>,
 	token_uri: TokenUriOf<Test>,
@@ -22,7 +22,7 @@ fn create_metadata_extension(
 }
 
 #[test]
-fn create_metadata_extension_works() {
+fn create_token_uri_extension_works() {
 	new_test_ext().execute_with(|| {
 		// Go past genesis block so events get deposited
 		System::set_block_number(1);
@@ -30,7 +30,7 @@ fn create_metadata_extension_works() {
 		let universal_location: UniversalLocationOf<Test> = bounded_vec![1; 10];
 		let token_uri: TokenUriOf<Test> = bounded_vec![2; 10];
 
-		create_metadata_extension(claimer, universal_location.clone(), token_uri.clone());
+		create_token_uri_extension(claimer, universal_location.clone(), token_uri.clone());
 
 		assert_eq!(
 			AssetMetadataExtender::token_uris_by_claimer_and_location(
@@ -54,7 +54,7 @@ fn claimer_cannot_create_multiple_extensions_per_ul() {
 		let universal_location: UniversalLocationOf<Test> = bounded_vec![1; 10];
 		let token_uri: TokenUriOf<Test> = bounded_vec![2; 10];
 
-		create_metadata_extension(claimer, universal_location.clone(), token_uri.clone());
+		create_token_uri_extension(claimer, universal_location.clone(), token_uri.clone());
 		assert_noop!(
 			AssetMetadataExtender::create_token_uri_extension(
 				claimer,
@@ -67,7 +67,7 @@ fn claimer_cannot_create_multiple_extensions_per_ul() {
 }
 
 #[test]
-fn create_metadata_extension_increases_counter() {
+fn create_token_uri_extension_increases_counter() {
 	new_test_ext().execute_with(|| {
 		let claimer = H160::zero();
 		let universal_location: UniversalLocationOf<Test> = bounded_vec![1; 10];
@@ -76,7 +76,7 @@ fn create_metadata_extension_increases_counter() {
 		// create first extension for the given UL
 		assert_eq!(AssetMetadataExtender::extensions_counter(universal_location.clone()), 0);
 
-		create_metadata_extension(claimer, universal_location.clone(), token_uri.clone());
+		create_token_uri_extension(claimer, universal_location.clone(), token_uri.clone());
 		assert_eq!(AssetMetadataExtender::extensions_counter(universal_location.clone()), 1);
 
 		// check that no other UL has been affected
@@ -85,7 +85,7 @@ fn create_metadata_extension_increases_counter() {
 
 		// create another extension for the same UL with another claimer
 		let another_claimer = H160::from_low_u64_be(1);
-		create_metadata_extension(another_claimer, universal_location.clone(), token_uri);
+		create_token_uri_extension(another_claimer, universal_location.clone(), token_uri);
 		assert_eq!(AssetMetadataExtender::extensions_counter(universal_location), 2);
 	});
 }
@@ -99,7 +99,7 @@ fn get_all_token_uris_and_claimers_from_extensions_works() {
 		let n = 1000;
 		for i in 0..n {
 			let claimer = H160::from_low_u64_be(i);
-			create_metadata_extension(
+			create_token_uri_extension(
 				claimer,
 				universal_location.clone(),
 				token_uri_expected.clone(),
@@ -130,7 +130,7 @@ fn get_token_uris_by_claimer_and_location_works() {
 		let universal_location: UniversalLocationOf<Test> = bounded_vec![1; 10];
 		let token_uri: TokenUriOf<Test> = bounded_vec![2; 10];
 
-		create_metadata_extension(claimer, universal_location.clone(), token_uri.clone());
+		create_token_uri_extension(claimer, universal_location.clone(), token_uri.clone());
 		assert_eq!(
 			AssetMetadataExtender::token_uris_by_claimer_and_location(
 				claimer,
@@ -150,7 +150,7 @@ fn update_extension_works() {
 		let token_uri: TokenUriOf<Test> = bounded_vec![2; 10];
 		let new_token_uri: TokenUriOf<Test> = bounded_vec![3; 10];
 
-		create_metadata_extension(claimer.clone(), universal_location.clone(), token_uri.clone());
+		create_token_uri_extension(claimer.clone(), universal_location.clone(), token_uri.clone());
 		assert_eq!(
 			AssetMetadataExtender::token_uris_by_claimer_and_location(
 				claimer.clone(),
@@ -186,7 +186,7 @@ fn after_update_extension_it_returns_the_new_value() {
 		let token_uri: TokenUriOf<Test> = bounded_vec![2; 10];
 		let new_token_uri: TokenUriOf<Test> = bounded_vec![3; 10];
 
-		create_metadata_extension(claimer.clone(), universal_location.clone(), token_uri.clone());
+		create_token_uri_extension(claimer.clone(), universal_location.clone(), token_uri.clone());
 		assert_eq!(
 			AssetMetadataExtender::token_uris_by_claimer_and_location(
 				claimer.clone(),
@@ -232,5 +232,25 @@ fn update_extension_fails_if_it_does_not_exist() {
 			),
 			Error::<Test>::ExtensionDoesNotExist
 		);
+	});
+}
+
+#[test]
+
+fn after_update_extension_counter_does_not_increase() {
+	new_test_ext().execute_with(|| {
+		let claimer = H160::zero();
+		let universal_location: UniversalLocationOf<Test> = bounded_vec![1; 10];
+		let token_uri: TokenUriOf<Test> = bounded_vec![2; 10];
+		let new_token_uri: TokenUriOf<Test> = bounded_vec![3; 10];
+
+		create_token_uri_extension(claimer.clone(), universal_location.clone(), token_uri.clone());
+		assert_eq!(AssetMetadataExtender::extensions_counter(universal_location.clone()), 0);
+		assert_ok!(AssetMetadataExtender::update_token_uri_extension(
+			claimer.clone(),
+			universal_location.clone(),
+			new_token_uri.clone()
+		));
+		assert_eq!(AssetMetadataExtender::extensions_counter(universal_location.clone()), 0);
 	});
 }
