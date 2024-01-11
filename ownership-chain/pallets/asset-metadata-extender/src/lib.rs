@@ -1,14 +1,18 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+mod benchmarking;
 pub mod traits;
 pub mod types;
-// pub mod weights;
 
 use frame_support::pallet_prelude::*;
 pub use pallet::*;
-use sp_runtime::{traits::One, ArithmeticError, DispatchResult};
-use traits::AssetMetadataExtender;
-use types::*;
+use sp_core::H160;
+use sp_runtime::{
+	traits::{Convert, One},
+	ArithmeticError, DispatchResult,
+};
+pub use traits::AssetMetadataExtender as AssetMetadataExtenderT;
+pub use types::*;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -30,6 +34,9 @@ pub mod pallet {
 		/// Limit for the length of `universal_location`
 		#[pallet::constant]
 		type MaxUniversalLocationLength: Get<u32>;
+
+		/// Converts `Self::AccountId` to `H160`
+		type AccountIdToH160: Convert<Self::AccountId, H160>;
 	}
 
 	/// Extensions counter for a given location
@@ -96,7 +103,7 @@ pub mod pallet {
 	}
 }
 
-impl<T: Config> AssetMetadataExtender<T> for Pallet<T> {
+impl<T: Config> AssetMetadataExtenderT<T> for Pallet<T> {
 	fn create_token_uri_extension(
 		claimer: AccountIdOf<T>,
 		universal_location: UniversalLocationOf<T>,
