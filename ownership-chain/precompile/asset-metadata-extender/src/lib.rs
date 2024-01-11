@@ -66,7 +66,7 @@ where
 			Action::Balance => unimplemented!(),
 			Action::Claimer => unimplemented!(),
 			Action::Extension => unimplemented!(),
-			Action::Update => unimplemented!(),
+			Action::Update => Self::update(handle),
 		}
 	}
 }
@@ -95,9 +95,27 @@ where
 		}
 	}
 
+	fn update(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
+		let context = handle.context();
+
+		let input = handle.read_input()?;
+		input.expect_arguments(2)?;
+		let universal_location = Self::get_ul_from_input(input)?;
+		let token_uri = Self::get_token_uri_from_input(input)?;
+
+		match AssetMetadataExtender::<Runtime>::update_token_uri_extension(
+			context.caller.into(),
+			universal_location.into(),
+			token_uri.into(),
+		) {
+			Ok(_) => Ok(succeed(sp_std::vec![])),
+			Err(err) => Err(revert_dispatch_error(err)),
+		}
+	}
+
 	fn get_ul_from_input(
 		mut input: EvmDataReader,
-	) -> EvmResult<BoundedVec<u8, <Runtime as Config>::MaxUniversalLocationLength>> {
+	) -> EvmResult<UniversalLocationOf<Runtime>> {
 		let universal_location = input.read::<Bytes>()?.0;
 		let universal_location: BoundedVec<u8, <Runtime as Config>::MaxUniversalLocationLength> =
 			universal_location
