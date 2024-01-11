@@ -4,8 +4,6 @@ runs:
   using: "composite"
   steps:
     - uses: actions/checkout@v3
-      with: 
-        fetch-depth: 0
     - name: Install linux dependencies
       run: |
         sudo apt update -yy
@@ -15,10 +13,4 @@ runs:
       run: |
         rustup update stable --no-self-update
         rustup target add wasm32-unknown-unknown
-      shell: bash
-    - name: Store latest tag version
-      run: |
-        # get latest tag from git, remove `v` prefix, if any
-        LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1` | sed -E 's/v(.*)/\1/')
-        echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
       shell: bash

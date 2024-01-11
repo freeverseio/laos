@@ -3,11 +3,29 @@ name: Release
 on:
   push:
     tags:
-      - '*'
+      - 'v*.*.*'
   workflow_dispatch:
 
 jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    outputs:
+      proceed: ${{ steps.check_version.outputs.proceed }}
+    steps:
+      - uses: actions/checkout@v3
+      - id: check_version
+        run: |
+          VERSION=$(grep -m1 version Cargo.toml | sed -E 's/.*"(.*)".*/\1/')
+          if [ "$VERSION" == "${{ github.ref_name }}" ]; then
+            echo "::set-output name=proceed::true"
+          else
+            echo "Version in Cargo.toml ($VERSION) does not match current tag ${{ github.ref_name }}. Canceling release..."
+            echo "::set-output name=proceed::false"
+          fi
+
   dockerize:
+    needs: check-version
+    if: needs.check-version.outputs.proceed == 'true'
     runs-on: 
       group: laos
       labels: ubuntu-16-cores
@@ -17,24 +35,14 @@ jobs:
       - uses: ./.github/actions/cache
         with:
           cache-key: build_and_push
-
-      - name: Version check (new tag version should be different than the last one)
-        run: |
-          if [ "$LATEST_TAG" == "${{ github.ref_name }}" ]; then
-            echo "Error: Tag version is the same as the last one"
-            exit 1
-          fi
-
       - name: Build
         run: |
           cargo build --release
-
       - name: Log in to Docker Hub
         uses: docker/login-action@v2.1.0
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
-
       - name: Push image ownership node
         uses: docker/build-push-action@v4
         with:
@@ -42,7 +50,6 @@ jobs:
           push: true
           file: ./docker/ownership-node.local.Dockerfile
           tags: freeverseio/laos-ownership-node:${{ github.ref_name }}
-      
       - name: Upload Ownership Wasm Binaries
         run: |
             echo "Uploading ownership wasm binary for release ${{ github.ref_name }}"
