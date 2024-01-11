@@ -5404,6 +5404,7 @@ dependencies = [
  "orml-xcm-support",
  "orml-xtokens",
  "ownership-parachain-primitives",
+ "pallet-asset-metadata-extender",
  "pallet-assets",
  "pallet-aura",
  "pallet-authorship",

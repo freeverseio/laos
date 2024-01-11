@@ -52,6 +52,7 @@ sp-version = { workspace = true }
 pallet-laos-evolution = { workspace = true }
 pallet-evm-evolution-collection-factory = { workspace = true }
 pallet-evm-evolution-collection = { workspace = true }
+pallet-asset-metadata-extender = { workspace = true }
 pallet-evm-asset-metadata-extender = { workspace = true }
 
 # Polkadot
@@ -131,6 +132,7 @@ std = [
 	"pallet-session/std",
 	"pallet-sudo/std",
 	"pallet-laos-evolution/std",
+	"pallet-asset-metadata-extender/std",
 	"pallet-multisig/std",
 	"pallet-timestamp/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
@@ -204,7 +206,7 @@ runtime-benchmarks = [
 	"polkadot-parachain-primitives/runtime-benchmarks",
 	"polkadot-runtime-common/runtime-benchmarks",
 	"staging-xcm-executor/runtime-benchmarks",
-	"pallet-laos-evolution/runtime-benchmarks",
+	"pallet-asset-metadata-extender/runtime-benchmarks",
 ]
 
 try-runtime = [
@@ -236,4 +238,5 @@ try-runtime = [
 	"frame-support/try-runtime",
 	"polkadot-runtime-common/try-runtime",
 	"sp-runtime/try-runtime",
+	"pallet-asset-metadata-extender/try-runtime",
 ]
