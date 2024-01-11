@@ -1,8 +1,10 @@
 use super::*;
 use crate::mock::*;
+use core::str::FromStr;
+use fp_evm::Log;
 use laos_precompile_utils::EvmDataWriter;
 use precompile_utils::testing::PrecompileTesterExt;
-use sp_core::{H160, U256};
+use sp_core::{H160, H256, U256};
 
 /// Fixed precompile address for testing.
 const PRECOMPILE_ADDRESS: [u8; 20] = [5u8; 20];
@@ -12,7 +14,7 @@ fn precompiles() -> MockPrecompileSet<Test> {
 	MockPrecompiles::get()
 }
 
-const TEST_CLAIMER: H160 = H160([1u8; 20]);
+const TEST_CLAIMER: &str = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
 
 #[test]
 fn check_log_selectors() {
@@ -45,17 +47,44 @@ fn call_unexistent_selector_should_fail() {
 fn create_token_uri_extension_should_generates_log() {
 	new_test_ext().execute_with(|| {
 		let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
-		let token_uri = Bytes("my_awesome_token_uri".as_bytes().to_vec());
+		let token_uri = Bytes("ciao".as_bytes().to_vec());
 
 		let input = EvmDataWriter::new_with_selector(Action::Extend)
 			.write(universal_location)
 			.write(token_uri)
 			.build();
 
+		let expected_log = Log {
+			address: H160(PRECOMPILE_ADDRESS),
+			topics: vec![
+				SELECTOR_LOG_TOKEN_URI_EXTENDED.into(),
+				H256::from_str(
+					format!("000000000000000000000000{}", TEST_CLAIMER.trim_start_matches("0x"))
+						.as_str(),
+				)
+				.unwrap(),
+				// TODO use universa location value
+				H256::from_str(
+					format!("000000000000000000000000{}", TEST_CLAIMER.trim_start_matches("0x"))
+						.as_str(),
+				)
+				.unwrap(),
+			],
+			data: vec![
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 32, // The number 32 (decimal) which is '2' in the hex string
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 4, // Length of "ciao" (4 bytes, big-endian format)
+				99, 105, 97, 111, // ASCII representation of "ciao" in hexadecimal
+				// Trailing zeros (padding to reach the total length of 96 bytes)
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			],
+		};
+
 		precompiles()
-			.prepare_test(TEST_CLAIMER, H160(PRECOMPILE_ADDRESS), input)
-			.execute_returns_raw(vec![])
-		// TODO event
+			.prepare_test(H160::from_str(TEST_CLAIMER).unwrap(), H160(PRECOMPILE_ADDRESS), input)
+			.expect_log(expected_log)
+			.execute_some();
 	});
 }
 
@@ -72,7 +101,7 @@ fn create_token_uri_extension_reverts_when_ul_exceeds_length() {
 			.build();
 
 		precompiles()
-			.prepare_test(TEST_CLAIMER, H160(PRECOMPILE_ADDRESS), input)
+			.prepare_test(H160::from_str(TEST_CLAIMER).unwrap(), H160(PRECOMPILE_ADDRESS), input)
 			.execute_reverts(|r| r == b"invalid universal location length");
 	});
 }
@@ -91,7 +120,7 @@ fn create_token_uri_extension_reverts_when_token_uri_exceeds_length() {
 			.build();
 
 		precompiles()
-			.prepare_test(TEST_CLAIMER, H160(PRECOMPILE_ADDRESS), input)
+			.prepare_test(H160::from_str(TEST_CLAIMER).unwrap(), H160(PRECOMPILE_ADDRESS), input)
 			.execute_reverts(|r| r == b"invalid token uri length");
 	});
 }
@@ -109,7 +138,7 @@ fn create_token_uri_extension_reverts_when_claimer_already_has_metadata_extensio
 			.build();
 
 		precompiles()
-			.prepare_test(TEST_CLAIMER, H160(PRECOMPILE_ADDRESS), input)
+			.prepare_test(H160::from_str(TEST_CLAIMER).unwrap(), H160(PRECOMPILE_ADDRESS), input)
 			.execute_returns_raw(vec![]);
 
 		let input = EvmDataWriter::new_with_selector(Action::Extend)
@@ -118,7 +147,7 @@ fn create_token_uri_extension_reverts_when_claimer_already_has_metadata_extensio
 			.build();
 
 		precompiles()
-			.prepare_test(TEST_CLAIMER, H160(PRECOMPILE_ADDRESS), input)
+			.prepare_test(H160::from_str(TEST_CLAIMER).unwrap(), H160(PRECOMPILE_ADDRESS), input)
 			.execute_reverts(|r| r == b"ExtensionAlreadyExists");
 	});
 }
@@ -134,7 +163,7 @@ fn create_token_uri_extension_on_mock_with_nonzero_value_fails() {
 			.build();
 
 		precompiles()
-			.prepare_test(TEST_CLAIMER, H160(PRECOMPILE_ADDRESS), input)
+			.prepare_test(H160::from_str(TEST_CLAIMER).unwrap(), H160(PRECOMPILE_ADDRESS), input)
 			.with_value(U256::from(1))
 			.execute_reverts(|r| r == b"function is not payable");
 	});
@@ -157,7 +186,7 @@ fn create_token_uri_extension_it_is_expected_to_have_a_cost() {
 		// Following `cost` is calculated as:
 		// `create_token_uri_extension` weight + log cost
 		precompiles()
-			.prepare_test(TEST_CLAIMER, H160(PRECOMPILE_ADDRESS), input)
+			.prepare_test(H160::from_str(TEST_CLAIMER).unwrap(), H160(PRECOMPILE_ADDRESS), input)
 			.expect_cost(364336626) // [`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	})

@@ -1,8 +1,8 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
 use laos_precompile_utils::{
-	keccak256, revert_dispatch_error, succeed, Bytes, EvmDataReader, EvmResult, FunctionModifier,
-	GasCalculator, PrecompileHandleExt,
+	keccak256, revert_dispatch_error, succeed, Bytes, EvmDataReader, EvmDataWriter, EvmResult,
+	FunctionModifier, GasCalculator, LogExt, LogsBuilder, PrecompileHandleExt,
 };
 use pallet_asset_metadata_extender::{
 	traits::AssetMetadataExtender as AssetMetadataExtenderT,
@@ -13,7 +13,7 @@ use pallet_asset_metadata_extender::{
 use parity_scale_codec::Encode;
 use precompile_utils::solidity::revert::revert;
 
-use sp_core::H160;
+use sp_core::{H160, H256};
 use sp_std::{fmt::Debug, marker::PhantomData};
 /// Solidity selector of the TokenURIExtended log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_TOKEN_URI_EXTENDED: [u8; 32] =
@@ -76,6 +76,7 @@ where
 {
 	fn extend(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
 		let context = handle.context();
+		let claimer = context.caller;
 
 		let mut input = handle.read_input()?;
 		input.expect_arguments(2)?;
@@ -95,7 +96,7 @@ where
 			.map_err(|_| revert("invalid token uri length"))?;
 
 		match AssetMetadataExtender::<Runtime>::create_token_uri_extension(
-			context.caller.into(),
+			claimer.into(),
 			universal_location,
 			token_uri,
 		) {
@@ -105,6 +106,23 @@ where
 						token_uri_raw.len() as u32,
 						universal_location_raw.len() as u32,
 					);
+
+				// TODO do it properly and use big endian
+				let mut universal_location_raw_clone = universal_location_raw.clone();
+				universal_location_raw_clone.resize(32, 0);
+				let universal_location_array: Result<[u8; 32], _> =
+					universal_location_raw_clone.try_into();
+				let universal_location_bytes: [u8; 32] =
+					universal_location_array.expect("invalid universal location lenght");
+
+				LogsBuilder::new(context.address)
+					.log3(
+						SELECTOR_LOG_TOKEN_URI_EXTENDED,
+						claimer,
+						universal_location_bytes,
+						EvmDataWriter::new().write(Bytes(token_uri_raw)).build(),
+					)
+					.record(handle)?;
 
 				// Record EVM cost
 				handle.record_cost(GasCalculator::<Runtime>::weight_to_gas(consumed_weight))?;
