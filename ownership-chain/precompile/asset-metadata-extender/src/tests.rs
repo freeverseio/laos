@@ -141,6 +141,51 @@ fn create_token_uri_extension_on_mock_with_nonzero_value_fails() {
 }
 
 #[test]
+fn update_unexistest_extension_should_fail() {
+	new_test_ext().execute_with(|| {
+		let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
+		let token_uri = Bytes("my_awesome_token_uri".as_bytes().to_vec());
+
+		let input = EvmDataWriter::new_with_selector(Action::Update)
+			.write(universal_location)
+			.write(token_uri)
+			.build();
+
+		precompiles()
+			.prepare_test(TEST_CLAIMER, H160(PRECOMPILE_ADDRESS), input)
+			.execute_reverts(|r| r == b"ExtensionDoesNotExist");
+	});
+}
+
+#[test]
+fn update_of_extension_should_success() {
+	new_test_ext().execute_with(|| {
+		let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
+		let token_uri = Bytes("my_awesome_token_uri".as_bytes().to_vec());
+
+		let input = EvmDataWriter::new_with_selector(Action::Extend)
+			.write(universal_location.clone())
+			.write(token_uri.clone())
+			.build();
+
+		precompiles()
+			.prepare_test(TEST_CLAIMER, H160(PRECOMPILE_ADDRESS), input)
+			.execute_returns_raw(vec![]);
+
+		let new_token_uri = Bytes("my_awesome_new_token_uri".as_bytes().to_vec());
+
+		let input = EvmDataWriter::new_with_selector(Action::Update)
+			.write(universal_location)
+			.write(new_token_uri)
+			.build();
+
+		precompiles()
+			.prepare_test(TEST_CLAIMER, H160(PRECOMPILE_ADDRESS), input)
+			.execute_returns_raw(vec![]);
+	});
+}
+
+#[test]
 #[ignore]
 fn create_token_uri_extension_it_is_expected_to_have_a_cost() {
 	todo!();
