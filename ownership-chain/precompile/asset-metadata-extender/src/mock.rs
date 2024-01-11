@@ -60,7 +60,6 @@ impl pallet_asset_metadata_extender::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type MaxUniversalLocationLength = MaxUniversalLocationLength;
 	type MaxTokenUriLength = MaxTokenUriLength;
-	type AccountIdToH160 = AccountIdToH160;
 }
 
 pub struct AccountIdToH160;

@@ -1,18 +1,14 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-mod benchmarking;
 pub mod traits;
 pub mod types;
 
 use frame_support::pallet_prelude::*;
 pub use pallet::*;
-use sp_core::H160;
-use sp_runtime::{
-	traits::{Convert, One},
-	ArithmeticError, DispatchResult,
-};
-pub use traits::AssetMetadataExtender as AssetMetadataExtenderT;
-pub use types::*;
+use sp_runtime::{traits::One, ArithmeticError, DispatchResult};
+use traits::AssetMetadataExtender;
+use types::*;
+
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
@@ -25,9 +21,6 @@ pub mod pallet {
 	pub trait Config: frame_system::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
-
-		/// Converts `Self::AccountId` to `H160`
-		type AccountIdToH160: Convert<Self::AccountId, H160>;
 
 		/// Limit for the length of `token_uri`
 		#[pallet::constant]
@@ -100,12 +93,9 @@ pub mod pallet {
 		/// A claimer can update an extension only if it exists
 		ExtensionDoesNotExist,
 	}
-
-	#[pallet::call]
-	impl<T: Config> Pallet<T> {}
 }
 
-impl<T: Config> AssetMetadataExtenderT<T> for Pallet<T> {
+impl<T: Config> AssetMetadataExtender<T> for Pallet<T> {
 	fn create_token_uri_extension(
 		claimer: AccountIdOf<T>,
 		universal_location: UniversalLocationOf<T>,
@@ -157,18 +147,6 @@ impl<T: Config> AssetMetadataExtenderT<T> for Pallet<T> {
 
 		Ok(())
 	}
-
-	// fn balance_of_universal_location(universal_location: UniversalLocationOf<T>) -> u32 {
-	// 	MetadataExtensionsCounter::<T>::get(universal_location)
-	// }
-
-	// fn indexed_metadata_extensions(
-	// 	universal_location: UniversalLocationOf<T>,
-	// 	index: Index,
-	// ) -> Option<(AccountIdOf<T>, TokenUriOf<T>)> {
-	// 	IndexedMetadataExtensions::<T>::get(universal_location, index)
-	// 		.map(|details| (details.claimer, details.token_uri))
-	// }
 }
 
 #[cfg(test)]

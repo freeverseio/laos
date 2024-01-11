@@ -1,9 +1,8 @@
 use super::*;
 use crate::mock::*;
-use core::str::FromStr;
 use laos_precompile_utils::EvmDataWriter;
 use precompile_utils::testing::PrecompileTesterExt;
-use sp_core::{H160, H256, U256};
+use sp_core::{H160, U256};
 
 /// Fixed precompile address for testing.
 const PRECOMPILE_ADDRESS: [u8; 20] = [5u8; 20];
@@ -21,6 +20,10 @@ fn check_log_selectors() {
 		hex::encode(SELECTOR_LOG_TOKEN_URI_EXTENDED),
 		"f46176c5100037c043791a91ccf3a737b3c8b2d240c695679518d3b5efa72680"
 	);
+	assert_eq!(
+		hex::encode(SELECTOR_LOG_EXTENDED_TOKEN_URI_UPDATED),
+		"09caa56717fb6472811ebb17ea40328232e4481d80b2079a6e7578dba4d36e3d"
+	);
 }
 
 #[test]
@@ -29,6 +32,7 @@ fn function_selectors() {
 	assert_eq!(Action::Balance as u32, 0x7B65DED5);
 	assert_eq!(Action::Claimer as u32, 0xC050D9BE);
 	assert_eq!(Action::Extension as u32, 0x4322DE03);
+	assert_eq!(Action::Update as u32, 0xC7108F8);
 }
 
 #[test]

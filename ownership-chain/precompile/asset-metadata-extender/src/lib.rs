@@ -6,21 +6,20 @@ use laos_precompile_utils::{
 };
 use pallet_asset_metadata_extender::{
 	traits::AssetMetadataExtender as AssetMetadataExtenderT,
-	types::{AccountIdOf, TokenUriOf, UniversalLocationOf},
-	Config, Pallet as AssetMetadataExtender,
+	types::{TokenUriOf, UniversalLocationOf},
+	Pallet as AssetMetadataExtender,
 };
 use parity_scale_codec::Encode;
 use precompile_utils::solidity::revert::revert;
 
 use sp_core::H160;
-use sp_runtime::{
-	traits::{Convert, One},
-	ArithmeticError, BoundedVec, DispatchError,
-};
 use sp_std::{fmt::Debug, marker::PhantomData};
 /// Solidity selector of the TokenURIExtended log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_TOKEN_URI_EXTENDED: [u8; 32] =
 	keccak256!("TokenURIExtended(address,string,uint256)");
+/// Solidity selector of the ExtendedTokenURIUpdated log, which is the Keccak of the Log signature.
+pub const SELECTOR_LOG_EXTENDED_TOKEN_URI_UPDATED: [u8; 32] =
+	keccak256!("ExtendedTokenURIUpdated(address,string,string)");
 
 #[laos_precompile_utils_macro::generate_function_selector]
 #[derive(Debug, PartialEq)]
@@ -33,6 +32,8 @@ pub enum Action {
 	Claimer = "claimerOfULByIndex(string,uint256)",
 	/// Get token uri of a given universal location using indexation
 	Extension = "extensionOfULByIndex(string,uint256)", // TODO rename `extension` for `tokenURI`?
+	/// Update token uri of a given universal location using indexation
+	Update = "updateTokenURI(string,string)",
 }
 
 pub struct AssetMetadataExtenderPrecompile<Runtime>(PhantomData<Runtime>)
@@ -53,6 +54,7 @@ where
 			Action::Balance => FunctionModifier::View,
 			Action::Claimer => FunctionModifier::View,
 			Action::Extension => FunctionModifier::View,
+			Action::Update => FunctionModifier::NonPayable,
 		})?;
 
 		match selector {
@@ -60,6 +62,7 @@ where
 			Action::Balance => unimplemented!(),
 			Action::Claimer => unimplemented!(),
 			Action::Extension => unimplemented!(),
+			Action::Update => Self::update(handle),
 		}
 	}
 }
@@ -73,7 +76,7 @@ where
 	fn extend(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
 		let context = handle.context();
 
-		let mut input = handle.read_input()?;
+		let input = handle.read_input()?;
 		input.expect_arguments(2)?;
 		let universal_location = Self::get_ul_from_input(input)?;
 		let token_uri = Self::get_token_uri_from_input(input)?;
@@ -88,11 +91,29 @@ where
 		}
 	}
 
+	fn update(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
+		let context = handle.context();
+
+		let input = handle.read_input()?;
+		input.expect_arguments(2)?;
+		let universal_location = Self::get_ul_from_input(input)?;
+		let token_uri = Self::get_token_uri_from_input(input)?;
+
+		match AssetMetadataExtender::<Runtime>::update_token_uri_extension(
+			context.caller.into(),
+			universal_location.into(),
+			token_uri.into(),
+		) {
+			Ok(_) => Ok(succeed(sp_std::vec![])),
+			Err(err) => Err(revert_dispatch_error(err)),
+		}
+	}
+
 	fn get_ul_from_input(
 		mut input: EvmDataReader,
-	) -> EvmResult<BoundedVec<u8, <Runtime as Config>::MaxUniversalLocationLength>> {
+	) -> EvmResult<UniversalLocationOf<Runtime>> {
 		let universal_location = input.read::<Bytes>()?.0;
-		let universal_location: BoundedVec<u8, <Runtime as Config>::MaxUniversalLocationLength> =
+		let universal_location  =
 			universal_location
 				.clone()
 				.try_into()
@@ -102,9 +123,9 @@ where
 
 	fn get_token_uri_from_input(
 		mut input: EvmDataReader,
-	) -> EvmResult<BoundedVec<u8, <Runtime as Config>::MaxTokenUriLength>> {
+	) -> EvmResult<TokenUriOf<Runtime>> {
 		let token_uri = input.read::<Bytes>()?.0;
-		let token_uri: BoundedVec<u8, <Runtime as Config>::MaxTokenUriLength> =
+		let token_uri =
 			token_uri.clone().try_into().map_err(|_| revert("invalid token uri length"))?;
 		Ok(token_uri)
 	}
