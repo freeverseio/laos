@@ -234,3 +234,23 @@ fn update_extension_fails_if_it_does_not_exist() {
 		);
 	});
 }
+
+#[test]
+
+fn after_update_extension_counter_does_not_increase() {
+	new_test_ext().execute_with(|| {
+		let claimer = H160::zero();
+		let universal_location: UniversalLocationOf<Test> = bounded_vec![1; 10];
+		let token_uri: TokenUriOf<Test> = bounded_vec![2; 10];
+		let new_token_uri: TokenUriOf<Test> = bounded_vec![3; 10];
+
+		create_token_uri_extension(claimer.clone(), universal_location.clone(), token_uri.clone());
+		assert_eq!(AssetMetadataExtender::extensions_counter(universal_location.clone()), 1);
+		assert_ok!(AssetMetadataExtender::update_token_uri_extension(
+			claimer.clone(),
+			universal_location.clone(),
+			new_token_uri.clone()
+		));
+		assert_eq!(AssetMetadataExtender::extensions_counter(universal_location.clone()), 1);
+	});
+}
