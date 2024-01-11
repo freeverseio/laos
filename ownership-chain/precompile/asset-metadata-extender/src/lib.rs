@@ -107,7 +107,7 @@ where
 						universal_location_raw.len() as u32,
 					);
 
-				// TODO do it properly and use big endian
+				// TODO do it properly and use big endian; raises an error instead of panicking
 				let mut universal_location_raw_clone = universal_location_raw.clone();
 				universal_location_raw_clone.resize(32, 0);
 				let universal_location_array: Result<[u8; 32], _> =

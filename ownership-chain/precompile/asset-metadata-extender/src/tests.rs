@@ -63,7 +63,7 @@ fn create_token_uri_extension_should_generates_log() {
 						.as_str(),
 				)
 				.unwrap(),
-				// TODO use universa location value
+				// TODO use universal location value
 				H256::from_str(
 					format!("000000000000000000000000{}", TEST_CLAIMER.trim_start_matches("0x"))
 						.as_str(),
@@ -231,5 +231,26 @@ fn extension_of_ul_by_index_given_unexistent_ul_returns_empty_string() {
 #[test]
 #[ignore]
 fn extension_of_ul_by_index_given_unexistent_index_returns_empty_string() {
+	todo!();
+}
+
+#[test]
+#[ignore]
+
+fn reverts_when_ul_does_not_exist() {
+	todo!();
+}
+
+#[test]
+#[ignore]
+
+fn returns_number_of_extensions() {
+	todo!();
+}
+
+#[test]
+#[ignore]
+
+fn it_is_expected_to_have_a_cost() {
 	todo!();
 }
