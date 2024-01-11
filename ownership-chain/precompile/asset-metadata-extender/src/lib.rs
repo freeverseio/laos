@@ -76,17 +76,36 @@ where
 	fn extend(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
 		let context = handle.context();
 
-		let input = handle.read_input()?;
+		let mut input = handle.read_input()?;
 		input.expect_arguments(2)?;
-		let universal_location = Self::get_ul_from_input(input)?;
-		let token_uri = Self::get_token_uri_from_input(input)?;
+
+		// get universal location from input
+		let universal_location_raw = input.read::<Bytes>()?.0;
+		let universal_location = universal_location_raw
+			.clone()
+			.try_into()
+			.map_err(|_| revert("invalid universal location length"))?;
+
+		// get token uri from input
+		let token_uri_raw = input.read::<Bytes>()?.0;
+		let token_uri = token_uri_raw
+			.clone()
+			.try_into()
+			.map_err(|_| revert("invalid token uri length"))?;
 
 		match AssetMetadataExtender::<Runtime>::create_token_uri_extension(
 			context.caller.into(),
-			universal_location.into(),
-			token_uri.into(),
+			universal_location,
+			token_uri,
 		) {
-			Ok(_) => Ok(succeed(sp_std::vec![])),
+			Ok(_) => {
+				// let consumed_weight =
+				// 	AssetMetadataExtenderWeights::<Runtime>::create_token_uri_extension(
+				// 		token_uri_raw.len() as u32,
+				// 		universal_location_raw.len() as u32,
+				// 	);
+				Ok(succeed(sp_std::vec![]))
+			},
 			Err(err) => Err(revert_dispatch_error(err)),
 		}
 	}
@@ -94,40 +113,31 @@ where
 	fn update(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
 		let context = handle.context();
 
-		let input = handle.read_input()?;
+		let mut input = handle.read_input()?;
 		input.expect_arguments(2)?;
-		let universal_location = Self::get_ul_from_input(input)?;
-		let token_uri = Self::get_token_uri_from_input(input)?;
+
+		// get universal location from input
+		let universal_location_raw = input.read::<Bytes>()?.0;
+		let universal_location = universal_location_raw
+			.clone()
+			.try_into()
+			.map_err(|_| revert("invalid universal location length"))?;
+
+		// get token uri from input
+		let token_uri_raw = input.read::<Bytes>()?.0;
+		let token_uri = token_uri_raw
+			.clone()
+			.try_into()
+			.map_err(|_| revert("invalid token uri length"))?;
 
 		match AssetMetadataExtender::<Runtime>::update_token_uri_extension(
 			context.caller.into(),
-			universal_location.into(),
-			token_uri.into(),
+			universal_location,
+			token_uri,
 		) {
 			Ok(_) => Ok(succeed(sp_std::vec![])),
 			Err(err) => Err(revert_dispatch_error(err)),
 		}
-	}
-
-	fn get_ul_from_input(
-		mut input: EvmDataReader,
-	) -> EvmResult<UniversalLocationOf<Runtime>> {
-		let universal_location = input.read::<Bytes>()?.0;
-		let universal_location  =
-			universal_location
-				.clone()
-				.try_into()
-				.map_err(|_| revert("invalid universal location length"))?;
-		Ok(universal_location)
-	}
-
-	fn get_token_uri_from_input(
-		mut input: EvmDataReader,
-	) -> EvmResult<TokenUriOf<Runtime>> {
-		let token_uri = input.read::<Bytes>()?.0;
-		let token_uri =
-			token_uri.clone().try_into().map_err(|_| revert("invalid token uri length"))?;
-		Ok(token_uri)
 	}
 }
 
