@@ -2,11 +2,12 @@
 use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
 use laos_precompile_utils::{
 	keccak256, revert_dispatch_error, succeed, Bytes, EvmDataReader, EvmResult, FunctionModifier,
-	PrecompileHandleExt,
+	GasCalculator, PrecompileHandleExt,
 };
 use pallet_asset_metadata_extender::{
 	traits::AssetMetadataExtender as AssetMetadataExtenderT,
 	types::{TokenUriOf, UniversalLocationOf},
+	weights::{SubstrateWeight as AssetMetadataExtenderWeights, WeightInfo},
 	Pallet as AssetMetadataExtender,
 };
 use parity_scale_codec::Encode;
@@ -99,11 +100,19 @@ where
 			token_uri,
 		) {
 			Ok(_) => {
-				// let consumed_weight =
-				// 	AssetMetadataExtenderWeights::<Runtime>::create_token_uri_extension(
-				// 		token_uri_raw.len() as u32,
-				// 		universal_location_raw.len() as u32,
-				// 	);
+				let consumed_weight =
+					AssetMetadataExtenderWeights::<Runtime>::create_token_uri_extension(
+						token_uri_raw.len() as u32,
+						universal_location_raw.len() as u32,
+					);
+
+				// Record EVM cost
+				handle.record_cost(GasCalculator::<Runtime>::weight_to_gas(consumed_weight))?;
+
+				// Record Substrate related costs
+				// TODO: Add `ref_time` when precompiles are benchmarked
+				handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
+
 				Ok(succeed(sp_std::vec![]))
 			},
 			Err(err) => Err(revert_dispatch_error(err)),

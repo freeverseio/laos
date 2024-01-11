@@ -55,7 +55,7 @@ fn create_token_uri_extension_should_generates_log() {
 		precompiles()
 			.prepare_test(TEST_CLAIMER, H160(PRECOMPILE_ADDRESS), input)
 			.execute_returns_raw(vec![])
-		// TODO
+		// TODO event
 	});
 }
 
@@ -141,9 +141,26 @@ fn create_token_uri_extension_on_mock_with_nonzero_value_fails() {
 }
 
 #[test]
-#[ignore]
 fn create_token_uri_extension_it_is_expected_to_have_a_cost() {
-	todo!();
+	new_test_ext().execute_with(|| {
+		let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
+		let token_uri = Bytes("my_awesome_token_uri".as_bytes().to_vec());
+		let input = EvmDataWriter::new_with_selector(Action::Extend)
+			.write(universal_location)
+			.write(token_uri)
+			.build();
+
+		// Expected weight of the precompile call implementation.
+		// Since benchmarking precompiles is not supported yet, we are benchmarking
+		// functions that precompile calls internally.
+		//
+		// Following `cost` is calculated as:
+		// `create_token_uri_extension` weight + log cost
+		precompiles()
+			.prepare_test(TEST_CLAIMER, H160(PRECOMPILE_ADDRESS), input)
+			.expect_cost(364336626) // [`WeightToGas`] set to 1:1 in mock
+			.execute_some();
+	})
 }
 
 #[test]

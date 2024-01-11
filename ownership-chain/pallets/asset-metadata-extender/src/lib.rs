@@ -3,6 +3,7 @@
 mod benchmarking;
 pub mod traits;
 pub mod types;
+pub mod weights;
 
 use frame_support::pallet_prelude::*;
 pub use pallet::*;
