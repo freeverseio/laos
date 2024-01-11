@@ -1,7 +1,7 @@
 use sp_runtime::DispatchResult;
 
 use crate::{
-	types::{AccountIdOf, Index, TokenUriOf, UniversalLocationOf},
+	types::{AccountIdOf, TokenUriOf, UniversalLocationOf},
 	Config,
 };
 

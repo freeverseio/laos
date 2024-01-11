@@ -6,17 +6,13 @@ use laos_precompile_utils::{
 };
 use pallet_asset_metadata_extender::{
 	traits::AssetMetadataExtender as AssetMetadataExtenderT,
-	types::{AccountIdOf, TokenUriOf, UniversalLocationOf},
-	Config, Pallet as AssetMetadataExtender,
+	types::{TokenUriOf, UniversalLocationOf},
+	Pallet as AssetMetadataExtender,
 };
 use parity_scale_codec::Encode;
 use precompile_utils::solidity::revert::revert;
 
 use sp_core::H160;
-use sp_runtime::{
-	traits::{Convert, One},
-	ArithmeticError, BoundedVec, DispatchError,
-};
 use sp_std::{fmt::Debug, marker::PhantomData};
 /// Solidity selector of the TokenURIExtended log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_TOKEN_URI_EXTENDED: [u8; 32] =
@@ -80,7 +76,7 @@ where
 	fn extend(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
 		let context = handle.context();
 
-		let mut input = handle.read_input()?;
+		let input = handle.read_input()?;
 		input.expect_arguments(2)?;
 		let universal_location = Self::get_ul_from_input(input)?;
 		let token_uri = Self::get_token_uri_from_input(input)?;

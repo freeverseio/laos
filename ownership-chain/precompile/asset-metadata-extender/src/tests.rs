@@ -1,9 +1,8 @@
 use super::*;
 use crate::mock::*;
-use core::str::FromStr;
 use laos_precompile_utils::EvmDataWriter;
 use precompile_utils::testing::PrecompileTesterExt;
-use sp_core::{H160, H256, U256};
+use sp_core::{H160, U256};
 
 /// Fixed precompile address for testing.
 const PRECOMPILE_ADDRESS: [u8; 20] = [5u8; 20];
