@@ -18,11 +18,4 @@ pub trait AssetMetadataExtender<T: Config> {
 		universal_location: UniversalLocationOf<T>,
 		token_uri: TokenUriOf<T>,
 	) -> DispatchResult;
-
-	// fn balance_of_universal_location(universal_location: UniversalLocationOf<T>) -> u32;
-
-	// fn indexed_metadata_extensions(
-	// 	universal_location: UniversalLocationOf<T>,
-	// 	index: Index,
-	// ) -> Option<(AccountIdOf<T>, TokenUriOf<T>)>;
 }

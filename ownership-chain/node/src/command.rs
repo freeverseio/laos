@@ -39,6 +39,9 @@ fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 		"caladan" => Box::new(chain_spec::ChainSpec::from_json_bytes(
 			&include_bytes!("../../specs/caladan-raw.json")[..],
 		)?),
+		"giedi" => Box::new(chain_spec::ChainSpec::from_json_bytes(
+			&include_bytes!("../../specs/giedi.raw.json")[..],
+		)?),
 		"dev" => Box::new(chain_spec::development_config()),
 		"template-rococo" => Box::new(chain_spec::local_testnet_config()),
 		"" | "local" | "local-v" => Box::new(chain_spec::local_testnet_config()),
