@@ -2,7 +2,7 @@
 use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
 use laos_precompile_utils::{
 	keccak256, revert_dispatch_error, succeed, Bytes, EvmDataReader, EvmResult, FunctionModifier,
-	PrecompileHandleExt,
+	PrecompileHandleExt, LogsBuilder, EvmDataWriter, LogExt,
 };
 use pallet_asset_metadata_extender::{
 	traits::AssetMetadataExtender as AssetMetadataExtenderT,
@@ -98,13 +98,26 @@ where
 		input.expect_arguments(2)?;
 		let universal_location = Self::get_ul_from_input(input)?;
 		let token_uri = Self::get_token_uri_from_input(input)?;
+		let claimer = context.caller;
 
 		match AssetMetadataExtender::<Runtime>::update_token_uri_extension(
-			context.caller.into(),
+			claimer.clone().into(),
 			universal_location.into(),
-			token_uri.into(),
+			token_uri.clone().into(),
 		) {
-			Ok(_) => Ok(succeed(sp_std::vec![])),
+			Ok(_) => { 
+			LogsBuilder::new(context.address)
+					.log2(
+						SELECTOR_LOG_EXTENDED_TOKEN_URI_UPDATED,
+						claimer,
+						EvmDataWriter::new()
+							.write(Bytes(token_uri.into()))
+							.build(),
+					)
+					.record(handle)?;
+
+				Ok(succeed(sp_std::vec![]))
+			},
 			Err(err) => Err(revert_dispatch_error(err)),
 		}
 	}
