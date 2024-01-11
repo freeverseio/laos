@@ -117,7 +117,7 @@ where
 		mut input: EvmDataReader,
 	) -> EvmResult<UniversalLocationOf<Runtime>> {
 		let universal_location = input.read::<Bytes>()?.0;
-		let universal_location: BoundedVec<u8, <Runtime as Config>::MaxUniversalLocationLength> =
+		let universal_location  =
 			universal_location
 				.clone()
 				.try_into()
@@ -127,9 +127,9 @@ where
 
 	fn get_token_uri_from_input(
 		mut input: EvmDataReader,
-	) -> EvmResult<BoundedVec<u8, <Runtime as Config>::MaxTokenUriLength>> {
+	) -> EvmResult<TokenUriOf<Runtime>> {
 		let token_uri = input.read::<Bytes>()?.0;
-		let token_uri: BoundedVec<u8, <Runtime as Config>::MaxTokenUriLength> =
+		let token_uri =
 			token_uri.clone().try_into().map_err(|_| revert("invalid token uri length"))?;
 		Ok(token_uri)
 	}
