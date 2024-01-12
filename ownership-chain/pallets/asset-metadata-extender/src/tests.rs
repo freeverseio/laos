@@ -271,7 +271,7 @@ fn get_unexistent_extension_by_location_and_claimer_should_fail() {
 }
 
 #[test]
-fn get_extension_by_location_and_claimer_should_work() {
+fn get_extension_by_location_and_claimer_works() {
 	new_test_ext().execute_with(|| {
 		let claimer = H160::zero();
 		let universal_location: UniversalLocationOf<Test> = bounded_vec![1; 10];
