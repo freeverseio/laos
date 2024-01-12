@@ -48,6 +48,8 @@ impl ::std::fmt::Debug for Bytes {
 	}
 }
 
+/// Converts a string literal to a Keccak256 hash.
+/// Only works with string literals.
 #[proc_macro]
 pub fn keccak256(input: TokenStream) -> TokenStream {
 	let lit_str = parse_macro_input!(input as LitStr);

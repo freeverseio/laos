@@ -1,19 +1,18 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
 use laos_precompile_utils::{
-	keccak256, revert_dispatch_error, succeed, Bytes, EvmDataReader, EvmDataWriter, EvmResult,
-	FunctionModifier, GasCalculator, LogExt, LogsBuilder, PrecompileHandleExt,
+	keccak256, revert_dispatch_error, succeed, Bytes, EvmDataWriter, EvmResult, FunctionModifier,
+	GasCalculator, LogExt, LogsBuilder, PrecompileHandleExt,
 };
 use pallet_asset_metadata_extender::{
 	traits::AssetMetadataExtender as AssetMetadataExtenderT,
-	types::{TokenUriOf, UniversalLocationOf},
 	weights::{SubstrateWeight as AssetMetadataExtenderWeights, WeightInfo},
 	Pallet as AssetMetadataExtender,
 };
 use parity_scale_codec::Encode;
 use precompile_utils::solidity::revert::revert;
 
-use sp_core::{H160, H256};
+use sp_core::{keccak_256, H160};
 use sp_std::{fmt::Debug, marker::PhantomData};
 /// Solidity selector of the TokenURIExtended log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_TOKEN_URI_EXTENDED: [u8; 32] =
@@ -107,20 +106,17 @@ where
 						universal_location_raw.len() as u32,
 					);
 
-				// TODO do it properly and use big endian; raises an error instead of panicking
-				let mut universal_location_raw_clone = universal_location_raw.clone();
-				universal_location_raw_clone.resize(32, 0);
-				let universal_location_array: Result<[u8; 32], _> =
-					universal_location_raw_clone.try_into();
-				let universal_location_bytes: [u8; 32] =
-					universal_location_array.expect("invalid universal location lenght");
+				let ul_hash = keccak_256(&universal_location_raw);
 
 				LogsBuilder::new(context.address)
 					.log3(
 						SELECTOR_LOG_TOKEN_URI_EXTENDED,
 						claimer,
-						universal_location_bytes,
-						EvmDataWriter::new().write(Bytes(token_uri_raw)).build(),
+						ul_hash,
+						EvmDataWriter::new()
+							.write(Bytes(universal_location_raw))
+							.write(Bytes(token_uri_raw))
+							.build(),
 					)
 					.record(handle)?;
 

@@ -44,14 +44,14 @@ fn call_unexistent_selector_should_fail() {
 }
 
 #[test]
-fn create_token_uri_extension_should_generates_log() {
+fn create_token_uri_extension_should_generate_log() {
 	new_test_ext().execute_with(|| {
 		let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
 		let token_uri = Bytes("ciao".as_bytes().to_vec());
 
 		let input = EvmDataWriter::new_with_selector(Action::Extend)
-			.write(universal_location)
-			.write(token_uri)
+			.write(universal_location.clone())
+			.write(token_uri.clone())
 			.build();
 
 		let expected_log = Log {
@@ -63,22 +63,11 @@ fn create_token_uri_extension_should_generates_log() {
 						.as_str(),
 				)
 				.unwrap(),
-				// TODO use universal location value
-				H256::from_str(
-					format!("000000000000000000000000{}", TEST_CLAIMER.trim_start_matches("0x"))
-						.as_str(),
-				)
+				keccak_256(&universal_location.0).into(),
+			],
+			// ul is 29 bytes, so it's prepended with 64 bytes of zeros + ul + 3 bytes to make it 32
+			data: hex::decode("00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000001D6D795F617765736F6D655F756E6976657273616C5F6C6F636174696F6E00000000000000000000000000000000000000000000000000000000000000000000046369616F00000000000000000000000000000000000000000000000000000000")
 				.unwrap(),
-			],
-			data: vec![
-				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-				0, 0, 0, 32, // The number 32 (decimal) which is '2' in the hex string
-				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-				0, 0, 0, 4, // Length of "ciao" (4 bytes, big-endian format)
-				99, 105, 97, 111, // ASCII representation of "ciao" in hexadecimal
-				// Trailing zeros (padding to reach the total length of 96 bytes)
-				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			],
 		};
 
 		precompiles()
