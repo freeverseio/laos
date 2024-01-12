@@ -1,13 +1,13 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
 use laos_precompile_utils::{
-	keccak256, revert_dispatch_error, succeed, Bytes, EvmDataWriter, EvmDataReader, EvmResult, FunctionModifier,
-	GasCalculator, LogExt, LogsBuilder, PrecompileHandleExt,
+	keccak256, revert_dispatch_error, succeed, Bytes, EvmDataReader, EvmDataWriter, EvmResult,
+	FunctionModifier, GasCalculator, LogExt, LogsBuilder, PrecompileHandleExt,
 };
 use pallet_asset_metadata_extender::{
 	traits::AssetMetadataExtender as AssetMetadataExtenderT,
 	weights::{SubstrateWeight as AssetMetadataExtenderWeights, WeightInfo},
-	Pallet as AssetMetadataExtender, UniversalLocationOf, TokenUriOf,
+	Pallet as AssetMetadataExtender, TokenUriOf, UniversalLocationOf,
 };
 use parity_scale_codec::Encode;
 use precompile_utils::solidity::revert::revert;
