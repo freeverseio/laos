@@ -100,24 +100,20 @@ where
 		let universal_location = Self::get_ul_from_input(input)?;
 		let token_uri = Self::get_token_uri_from_input(input)?;
 		let claimer = context.caller;
+		let universal_location_hash = keccak_256(&universal_location);
 
-		let universel_location_hash = keccak_256(&universal_location);
-
-		let result = AssetMetadataExtender::<Runtime>::update_token_uri_extension(
+		AssetMetadataExtender::<Runtime>::update_token_uri_extension(
 			claimer.into(),
 			universal_location.clone().into(),
 			token_uri.clone().into(),
-		);
-
-		if let Err(err) = result {
-			return Err(revert_dispatch_error(err));
-		}
+		)
+		.map_err(revert_dispatch_error)?;
 
 		LogsBuilder::new(context.address)
 			.log3(
 				SELECTOR_LOG_EXTENDED_TOKEN_URI_UPDATED,
 				claimer,
-				universel_location_hash,
+				universal_location_hash,
 				EvmDataWriter::new()
 					.write(Bytes(universal_location.into()))
 					.write(Bytes(token_uri.into()))
