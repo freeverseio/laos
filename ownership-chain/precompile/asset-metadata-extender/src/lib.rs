@@ -94,43 +94,40 @@ where
 			.try_into()
 			.map_err(|_| revert("invalid token uri length"))?;
 
-		match AssetMetadataExtender::<Runtime>::create_token_uri_extension(
+		AssetMetadataExtender::<Runtime>::create_token_uri_extension(
 			claimer.into(),
 			universal_location,
 			token_uri,
-		) {
-			Ok(_) => {
-				let consumed_weight =
-					AssetMetadataExtenderWeights::<Runtime>::create_token_uri_extension(
-						token_uri_raw.len() as u32,
-						universal_location_raw.len() as u32,
-					);
+		)
+		.map_err(revert_dispatch_error)?;
 
-				let ul_hash = keccak_256(&universal_location_raw);
+		let consumed_weight = AssetMetadataExtenderWeights::<Runtime>::create_token_uri_extension(
+			token_uri_raw.len() as u32,
+			universal_location_raw.len() as u32,
+		);
 
-				LogsBuilder::new(context.address)
-					.log3(
-						SELECTOR_LOG_TOKEN_URI_EXTENDED,
-						claimer,
-						ul_hash,
-						EvmDataWriter::new()
-							.write(Bytes(universal_location_raw))
-							.write(Bytes(token_uri_raw))
-							.build(),
-					)
-					.record(handle)?;
+		let ul_hash = keccak_256(&universal_location_raw);
 
-				// Record EVM cost
-				handle.record_cost(GasCalculator::<Runtime>::weight_to_gas(consumed_weight))?;
+		LogsBuilder::new(context.address)
+			.log3(
+				SELECTOR_LOG_TOKEN_URI_EXTENDED,
+				claimer,
+				ul_hash,
+				EvmDataWriter::new()
+					.write(Bytes(universal_location_raw))
+					.write(Bytes(token_uri_raw))
+					.build(),
+			)
+			.record(handle)?;
 
-				// Record Substrate related costs
-				// TODO: Add `ref_time` when precompiles are benchmarked
-				handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
+		// Record EVM cost
+		handle.record_cost(GasCalculator::<Runtime>::weight_to_gas(consumed_weight))?;
 
-				Ok(succeed(sp_std::vec![]))
-			},
-			Err(err) => Err(revert_dispatch_error(err)),
-		}
+		// Record Substrate related costs
+		// TODO: Add `ref_time` when precompiles are benchmarked
+		handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
+
+		Ok(succeed(sp_std::vec![]))
 	}
 
 	fn update(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
