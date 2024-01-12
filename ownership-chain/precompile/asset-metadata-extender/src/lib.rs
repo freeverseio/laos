@@ -1,13 +1,13 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
 use laos_precompile_utils::{
-	keccak256, revert_dispatch_error, succeed, Bytes, EvmDataWriter, EvmResult, FunctionModifier,
-	GasCalculator, LogExt, LogsBuilder, PrecompileHandleExt,
+	keccak256, revert_dispatch_error, succeed, Bytes, EvmDataReader, EvmDataWriter, EvmResult,
+	FunctionModifier, GasCalculator, LogExt, LogsBuilder, PrecompileHandleExt,
 };
 use pallet_asset_metadata_extender::{
 	traits::AssetMetadataExtender as AssetMetadataExtenderT,
 	weights::{SubstrateWeight as AssetMetadataExtenderWeights, WeightInfo},
-	Pallet as AssetMetadataExtender,
+	Pallet as AssetMetadataExtender, TokenUriOf, UniversalLocationOf,
 };
 use parity_scale_codec::Encode;
 use precompile_utils::solidity::revert::revert;
@@ -15,12 +15,13 @@ use precompile_utils::solidity::revert::revert;
 use sp_core::H160;
 use sp_io::hashing::keccak_256;
 use sp_std::{fmt::Debug, marker::PhantomData};
+
 /// Solidity selector of the TokenURIExtended log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_TOKEN_URI_EXTENDED: [u8; 32] =
 	keccak256!("TokenURIExtended(address,string,uint256)");
 /// Solidity selector of the ExtendedTokenURIUpdated log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_EXTENDED_TOKEN_URI_UPDATED: [u8; 32] =
-	keccak256!("ExtendedTokenURIUpdated(address,string,string)");
+	keccak256!("ExtendedTokenURIUpdated(address,uint256,string,string)");
 
 #[laos_precompile_utils_macro::generate_function_selector]
 #[derive(Debug, PartialEq)]
@@ -134,31 +135,49 @@ where
 	fn update(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
 		let context = handle.context();
 
-		let mut input = handle.read_input()?;
+		let input = handle.read_input()?;
 		input.expect_arguments(2)?;
+		let universal_location = Self::get_ul_from_input(input)?;
+		let token_uri = Self::get_token_uri_from_input(input)?;
+		let claimer = context.caller;
+		let universal_location_hash = keccak_256(&universal_location);
 
-		// get universal location from input
-		let universal_location_raw = input.read::<Bytes>()?.0;
-		let universal_location = universal_location_raw
+		AssetMetadataExtender::<Runtime>::update_token_uri_extension(
+			claimer.into(),
+			universal_location.clone().into(),
+			token_uri.clone().into(),
+		)
+		.map_err(revert_dispatch_error)?;
+
+		LogsBuilder::new(context.address)
+			.log3(
+				SELECTOR_LOG_EXTENDED_TOKEN_URI_UPDATED,
+				claimer,
+				universal_location_hash,
+				EvmDataWriter::new()
+					.write(Bytes(universal_location.into()))
+					.write(Bytes(token_uri.into()))
+					.build(),
+			)
+			.record(handle)?;
+
+		Ok(succeed(sp_std::vec![]))
+	}
+
+	fn get_ul_from_input(mut input: EvmDataReader) -> EvmResult<UniversalLocationOf<Runtime>> {
+		let universal_location = input.read::<Bytes>()?.0;
+		let universal_location = universal_location
 			.clone()
 			.try_into()
 			.map_err(|_| revert("invalid universal location length"))?;
+		Ok(universal_location)
+	}
 
-		// get token uri from input
-		let token_uri_raw = input.read::<Bytes>()?.0;
-		let token_uri = token_uri_raw
-			.clone()
-			.try_into()
-			.map_err(|_| revert("invalid token uri length"))?;
-
-		match AssetMetadataExtender::<Runtime>::update_token_uri_extension(
-			context.caller.into(),
-			universal_location,
-			token_uri,
-		) {
-			Ok(_) => Ok(succeed(sp_std::vec![])),
-			Err(err) => Err(revert_dispatch_error(err)),
-		}
+	fn get_token_uri_from_input(mut input: EvmDataReader) -> EvmResult<TokenUriOf<Runtime>> {
+		let token_uri = input.read::<Bytes>()?.0;
+		let token_uri =
+			token_uri.clone().try_into().map_err(|_| revert("invalid token uri length"))?;
+		Ok(token_uri)
 	}
 }
 

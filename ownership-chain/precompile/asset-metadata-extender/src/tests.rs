@@ -24,7 +24,7 @@ fn check_log_selectors() {
 	);
 	assert_eq!(
 		hex::encode(SELECTOR_LOG_EXTENDED_TOKEN_URI_UPDATED),
-		"09caa56717fb6472811ebb17ea40328232e4481d80b2079a6e7578dba4d36e3d"
+		"f6dbda042628e46f998e12b6aa1e1c46f496c3553a2b6f1b836ae1e680a75ab2"
 	);
 }
 
@@ -159,6 +159,23 @@ fn create_token_uri_extension_on_mock_with_nonzero_value_fails() {
 }
 
 #[test]
+fn update_inexistent_extension_should_fail() {
+	new_test_ext().execute_with(|| {
+		let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
+		let token_uri = Bytes("my_awesome_token_uri".as_bytes().to_vec());
+
+		let input = EvmDataWriter::new_with_selector(Action::Update)
+			.write(universal_location)
+			.write(token_uri)
+			.build();
+
+		precompiles()
+			.prepare_test(H160::from_str(TEST_CLAIMER).unwrap(), H160(PRECOMPILE_ADDRESS), input)
+			.execute_reverts(|r| r == b"ExtensionDoesNotExist");
+	});
+}
+
+#[test]
 fn create_token_uri_extension_records_cost() {
 	new_test_ext().execute_with(|| {
 		let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
@@ -179,6 +196,80 @@ fn create_token_uri_extension_records_cost() {
 			.expect_cost(364339662) // [`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	})
+}
+
+#[test]
+fn update_of_extension_should_succeed() {
+	new_test_ext().execute_with(|| {
+		let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
+		let token_uri = Bytes("my_awesome_token_uri".as_bytes().to_vec());
+
+		let input = EvmDataWriter::new_with_selector(Action::Extend)
+			.write(universal_location.clone())
+			.write(token_uri.clone())
+			.build();
+
+		precompiles()
+			.prepare_test(H160::from_str(TEST_CLAIMER).unwrap(), H160(PRECOMPILE_ADDRESS), input)
+			.execute_returns_raw(vec![]);
+
+		let new_token_uri = Bytes("my_awesome_new_token_uri".as_bytes().to_vec());
+
+		let input = EvmDataWriter::new_with_selector(Action::Update)
+			.write(universal_location)
+			.write(new_token_uri)
+			.build();
+
+		precompiles()
+			.prepare_test(H160::from_str(TEST_CLAIMER).unwrap(), H160(PRECOMPILE_ADDRESS), input)
+			.execute_returns_raw(vec![]);
+	});
+}
+
+#[test]
+fn update_of_extension_should_emit_a_log() {
+	new_test_ext().execute_with(|| {
+		let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
+		let token_uri = Bytes("my_awesome_token_uri".as_bytes().to_vec());
+
+		let input = EvmDataWriter::new_with_selector(Action::Extend)
+			.write(universal_location.clone())
+			.write(token_uri.clone())
+			.build();
+
+		precompiles()
+			.prepare_test(H160::from_str(TEST_CLAIMER).unwrap(), H160(PRECOMPILE_ADDRESS), input)
+			.execute_returns_raw(vec![]);
+
+		let new_token_uri = Bytes("my_awesome_new_token_uri".as_bytes().to_vec());
+
+		let input = EvmDataWriter::new_with_selector(Action::Update)
+			.write(universal_location)
+			.write(new_token_uri)
+			.build();
+
+		let expected_log = Log {
+			address: H160(PRECOMPILE_ADDRESS),
+			topics: vec![
+				SELECTOR_LOG_EXTENDED_TOKEN_URI_UPDATED.into(),
+				H160::from_str(TEST_CLAIMER).unwrap().into(),
+				keccak256!("my_awesome_universal_location").into(),
+			],
+			data: hex::decode("00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000001D6D795F617765736F6D655F756E6976657273616C5F6C6F636174696F6E000000000000000000000000000000000000000000000000000000000000000000001D6D795F617765736F6D655F756E6976657273616C5F6C6F636174696F6E000000")
+				.unwrap(),
+		};
+
+		precompiles()
+			.prepare_test(H160::from_str(TEST_CLAIMER).unwrap(), H160(PRECOMPILE_ADDRESS), input)
+			.expect_log(expected_log)
+			.execute_returns_raw(vec![]);
+	});
+}
+
+#[test]
+#[ignore]
+fn create_token_uri_extension_it_is_expected_to_have_a_cost() {
+	todo!();
 }
 
 #[test]
