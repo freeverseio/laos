@@ -154,6 +154,10 @@ impl<T: Config> AssetMetadataExtender<T> for Pallet<T> {
 	) -> Option<TokenUriOf<T>> {
 		TokenUrisByClaimerAndLocation::<T>::get(claimer, universal_location)
 	}
+
+	fn has_extension(universal_location: UniversalLocationOf<T>, claimer: AccountIdOf<T>) -> bool {
+		TokenUrisByClaimerAndLocation::<T>::contains_key(claimer, universal_location)
+	}
 }
 
 #[cfg(test)]

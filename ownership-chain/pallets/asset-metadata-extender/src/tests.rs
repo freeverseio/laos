@@ -255,7 +255,7 @@ fn after_update_extension_counter_does_not_increase() {
 }
 
 #[test]
-fn get_unexistent_extension_by_location_and_claimer_should_fail(){
+fn get_unexistent_extension_by_location_and_claimer_should_fail() {
 	new_test_ext().execute_with(|| {
 		let claimer = H160::zero();
 		let universal_location: UniversalLocationOf<Test> = bounded_vec![1; 10];
@@ -286,5 +286,27 @@ fn get_extension_by_location_and_claimer_should_work() {
 			.unwrap(),
 			token_uri
 		);
+	});
+}
+
+#[test]
+fn has_extension_should_return_true_if_it_exists() {
+	new_test_ext().execute_with(|| {
+		let claimer = H160::zero();
+		let universal_location: UniversalLocationOf<Test> = bounded_vec![1; 10];
+		let token_uri: TokenUriOf<Test> = bounded_vec![2; 10];
+
+		create_token_uri_extension(claimer.clone(), universal_location.clone(), token_uri.clone());
+		assert_eq!(AssetMetadataExtender::has_extension(universal_location, claimer), true);
+	});
+}
+
+#[test]
+fn has_extension_should_return_false_if_it_does_not_exist() {
+	new_test_ext().execute_with(|| {
+		let claimer = H160::zero();
+		let universal_location: UniversalLocationOf<Test> = bounded_vec![1; 10];
+
+		assert_eq!(AssetMetadataExtender::has_extension(universal_location, claimer), false);
 	});
 }

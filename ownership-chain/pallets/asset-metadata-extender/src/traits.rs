@@ -23,4 +23,6 @@ pub trait AssetMetadataExtender<T: Config> {
 		universal_location: UniversalLocationOf<T>,
 		claimer: AccountIdOf<T>,
 	) -> Option<TokenUriOf<T>>;
+
+	fn has_extension(universal_location: UniversalLocationOf<T>, claimer: AccountIdOf<T>) -> bool;
 }
