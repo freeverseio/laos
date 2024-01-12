@@ -255,7 +255,7 @@ fn after_update_extension_counter_does_not_increase() {
 }
 
 #[test]
-fn get_unexistent_extension_by_location_and_claimer_should_fail() {
+fn get_unexistent_extension_by_location_and_claimer_fails() {
 	new_test_ext().execute_with(|| {
 		let claimer = H160::zero();
 		let universal_location: UniversalLocationOf<Test> = bounded_vec![1; 10];
