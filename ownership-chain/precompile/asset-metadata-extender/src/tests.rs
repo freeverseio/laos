@@ -142,7 +142,7 @@ fn create_token_uri_extension_on_mock_with_nonzero_value_fails() {
 }
 
 #[test]
-fn update_unexistest_extension_should_fail() {
+fn update_inexistent_extension_should_fail() {
 	new_test_ext().execute_with(|| {
 		let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
 		let token_uri = Bytes("my_awesome_token_uri".as_bytes().to_vec());
