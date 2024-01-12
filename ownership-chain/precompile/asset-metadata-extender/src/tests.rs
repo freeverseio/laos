@@ -187,7 +187,7 @@ fn update_of_extension_should_succeed() {
 }
 
 #[test]
-fn update_of_extension_should_raise_an_event() {
+fn update_of_extension_should_emit_a_log() {
 	new_test_ext().execute_with(|| {
 		let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
 		let token_uri = Bytes("my_awesome_token_uri".as_bytes().to_vec());
