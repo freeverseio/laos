@@ -62,9 +62,9 @@ where
 
 		match selector {
 			Action::Extend => Self::extend(handle),
-			Action::Balance => unimplemented!(),
-			Action::Claimer => unimplemented!(),
-			Action::Extension => unimplemented!(),
+			Action::Balance => Self::balance_of(handle),
+			Action::Claimer => Self::claimer_by_index(handle),
+			Action::Extension => Self::extension_by_index(handle),
 			Action::Update => Self::update(handle),
 		}
 	}
@@ -85,13 +85,13 @@ where
 
 		// get universal location from input
 		let universal_location_raw = input.read::<Bytes>()?.0;
-		let universal_location = Self::read_bounded_vec(input.clone())
+		let universal_location = Self::read_bounded_vec(&mut input)
 			.map_err(|_| revert("invalid universal location length"))?;
 
 		// get token uri from input
 		let token_uri_raw = input.read::<Bytes>()?.0;
 		let token_uri =
-			Self::read_bounded_vec(input).map_err(|_| revert("invalid token uri length"))?;
+			Self::read_bounded_vec(&mut input).map_err(|_| revert("invalid token uri length"))?;
 
 		AssetMetadataExtender::<Runtime>::create_token_uri_extension(
 			claimer.into(),
@@ -163,8 +163,52 @@ where
 		Ok(succeed(sp_std::vec![]))
 	}
 
+	fn balance_of(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
+		let mut input = handle.read_input()?;
+		input.expect_arguments(1)?;
+
+		let universal_location = Self::read_bounded_vec(&mut input)
+			.map_err(|_| revert("invalid universal location length"))?;
+
+		let balance = AssetMetadataExtender::<Runtime>::balance_of(universal_location);
+
+		Ok(succeed(balance.encode()))
+	}
+
+	fn claimer_by_index(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
+		let mut input = handle.read_input()?;
+		input.expect_arguments(2)?;
+
+		let universal_location = Self::read_bounded_vec(&mut input)
+			.map_err(|_| revert("invalid universal location length"))?;
+
+		let index = input.read::<u32>()?;
+
+		let claimer =
+			AssetMetadataExtender::<Runtime>::claimer_by_index(universal_location.clone(), index);
+
+		Ok(succeed(claimer.encode()))
+	}
+
+	fn extension_by_index(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
+		let mut input = handle.read_input()?;
+		input.expect_arguments(2)?;
+
+		let universal_location = Self::read_bounded_vec(&mut input)
+			.map_err(|_| revert("invalid universal location length"))?;
+
+		let index = input.read::<u32>()?;
+
+		let token_uri = AssetMetadataExtender::<Runtime>::token_uri_extension_by_index(
+			universal_location.clone(),
+			index,
+		);
+
+		Ok(succeed(token_uri.encode()))
+	}
+
 	fn read_bounded_vec<Bound: Get<u32>>(
-		mut input: EvmDataReader,
+		input: &mut EvmDataReader,
 	) -> Result<BoundedVec<u8, Bound>, ()> {
 		let raw_vec = input.read::<Bytes>().map_err(|_| ())?.0;
 		raw_vec.try_into().map_err(|_| ())
