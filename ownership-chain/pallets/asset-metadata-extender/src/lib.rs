@@ -158,8 +158,8 @@ impl<T: Config> AssetMetadataExtenderT<T> for Pallet<T> {
 	}
 
 	fn extension_by_location_and_claimer(
-		universal_location: UniversalLocationOf<T>,
 		claimer: AccountIdOf<T>,
+		universal_location: UniversalLocationOf<T>,
 	) -> Option<TokenUriOf<T>> {
 		TokenUrisByClaimerAndLocation::<T>::get(claimer, universal_location)
 	}
