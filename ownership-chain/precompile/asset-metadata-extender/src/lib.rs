@@ -101,8 +101,6 @@ where
 		let token_uri = Self::get_token_uri_from_input(input)?;
 		let claimer = context.caller;
 
-		// create a hash of the universal location of type keccak256 do not use keccak256! macro
-		// because universal location is not a literal
 		let universel_location_hash = keccak_256(&universal_location);
 
 		let result = AssetMetadataExtender::<Runtime>::update_token_uri_extension(
