@@ -44,7 +44,7 @@ fn call_unexistent_selector_should_fail() {
 }
 
 #[test]
-fn create_token_uri_extension_should_generate_log() {
+fn create_token_uri_extension_should_emit_log() {
 	new_test_ext().execute_with(|| {
 		let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
 		let token_uri = Bytes("ciao".as_bytes().to_vec());

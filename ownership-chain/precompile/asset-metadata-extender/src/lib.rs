@@ -12,7 +12,8 @@ use pallet_asset_metadata_extender::{
 use parity_scale_codec::Encode;
 use precompile_utils::solidity::revert::revert;
 
-use sp_core::{keccak_256, H160};
+use sp_core::H160;
+use sp_io::hashing::keccak_256;
 use sp_std::{fmt::Debug, marker::PhantomData};
 /// Solidity selector of the TokenURIExtended log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_TOKEN_URI_EXTENDED: [u8; 32] =
