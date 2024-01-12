@@ -12,14 +12,15 @@ use pallet_asset_metadata_extender::{
 use parity_scale_codec::Encode;
 use precompile_utils::solidity::revert::revert;
 
-use sp_core::H160;
+use sp_core::{keccak_256, H160};
 use sp_std::{fmt::Debug, marker::PhantomData};
+
 /// Solidity selector of the TokenURIExtended log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_TOKEN_URI_EXTENDED: [u8; 32] =
 	keccak256!("TokenURIExtended(address,string,uint256)");
 /// Solidity selector of the ExtendedTokenURIUpdated log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_EXTENDED_TOKEN_URI_UPDATED: [u8; 32] =
-	keccak256!("ExtendedTokenURIUpdated(address,string,string)");
+	keccak256!("ExtendedTokenURIUpdated(address,uint256,string,string)");
 
 #[laos_precompile_utils_macro::generate_function_selector]
 #[derive(Debug, PartialEq)]
@@ -100,9 +101,13 @@ where
 		let token_uri = Self::get_token_uri_from_input(input)?;
 		let claimer = context.caller;
 
+		// create a hash of the universal location of type keccak256 do not use keccak256! macro
+		// because universal location is not a literal
+		let universel_location_hash = keccak_256(&universal_location);
+
 		let result = AssetMetadataExtender::<Runtime>::update_token_uri_extension(
 			claimer.into(),
-			universal_location.into(),
+			universal_location.clone().into(),
 			token_uri.clone().into(),
 		);
 
@@ -111,10 +116,14 @@ where
 		}
 
 		LogsBuilder::new(context.address)
-			.log2(
+			.log3(
 				SELECTOR_LOG_EXTENDED_TOKEN_URI_UPDATED,
 				claimer,
-				EvmDataWriter::new().write(Bytes(token_uri.into())).build(),
+				universel_location_hash,
+				EvmDataWriter::new()
+					.write(Bytes(universal_location.into()))
+					.write(Bytes(token_uri.into()))
+					.build(),
 			)
 			.record(handle)?;
 

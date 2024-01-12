@@ -17,11 +17,13 @@ interface AssetMetadataExtender {
 
     /// @notice Emitted when an extended token's URI is updated
     /// @param _claimer The address of the user who updated the token URI
-    /// @param _uloc The universal location identifier of the token as a string
+    /// @param _universelLocationHash keccak256 hash of the universal location 
+    /// @param _universalLocation The universal location of the token
     /// @param _tokenURI The new token URI after the update
     event ExtendedTokenURIUpdated(
         address indexed _claimer,
-        string indexed _uloc,
+        uint256 indexed _universelLocationHash,
+        string _universalLocation,
         string _tokenURI
     );
 
