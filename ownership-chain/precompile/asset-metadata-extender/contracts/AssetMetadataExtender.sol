@@ -34,4 +34,22 @@ interface AssetMetadataExtender {
         string calldata _uloc,
         string calldata _tokenURI
     ) external;
+
+    /// @notice Retrieves the extension of a token's universal location by a claimer
+    /// @param _universalLocation Universal location of the token
+    /// @param _claimer Address of the claimer
+    /// @return Extension of the token's universal location
+    function extensionOfULByClaimer(
+        string calldata _universalLocation,
+        address _claimer
+    ) external view returns (string memory);
+
+    /// @notice Checks if a token's universal location has an extension by a claimer
+    /// @param _universalLocation Universal location of the token
+    /// @param _claimer Address of the claimer
+    /// @return True if there is an extension, false otherwise
+    function hasExtensionByClaimer(
+        string calldata _universalLocation,
+        address _claimer
+    ) external view returns (bool);
 }
