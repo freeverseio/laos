@@ -261,7 +261,7 @@ fn get_unexistent_extension_by_location_and_claimer_should_fail() {
 		let universal_location: UniversalLocationOf<Test> = bounded_vec![1; 10];
 
 		assert_eq!(
-			AssetMetadataExtender::token_uris_by_claimer_and_location(
+			AssetMetadataExtender::extension_by_location_and_claimer(
 				claimer.clone(),
 				universal_location.clone()
 			),
