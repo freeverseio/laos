@@ -12,8 +12,9 @@ use pallet_asset_metadata_extender::{
 use parity_scale_codec::Encode;
 use precompile_utils::solidity::revert::revert;
 
-use sp_core::H160;
+use sp_core::{Get, H160};
 use sp_io::hashing::keccak_256;
+use sp_runtime::BoundedVec;
 use sp_std::{fmt::Debug, marker::PhantomData};
 
 /// Solidity selector of the TokenURIExtended log, which is the Keccak of the Log signature.
@@ -84,17 +85,13 @@ where
 
 		// get universal location from input
 		let universal_location_raw = input.read::<Bytes>()?.0;
-		let universal_location = universal_location_raw
-			.clone()
-			.try_into()
+		let universal_location = Self::read_bounded_vec(input.clone())
 			.map_err(|_| revert("invalid universal location length"))?;
 
 		// get token uri from input
 		let token_uri_raw = input.read::<Bytes>()?.0;
-		let token_uri = token_uri_raw
-			.clone()
-			.try_into()
-			.map_err(|_| revert("invalid token uri length"))?;
+		let token_uri =
+			Self::read_bounded_vec(input).map_err(|_| revert("invalid token uri length"))?;
 
 		AssetMetadataExtender::<Runtime>::create_token_uri_extension(
 			claimer.into(),
@@ -137,15 +134,17 @@ where
 
 		let input = handle.read_input()?;
 		input.expect_arguments(2)?;
-		let universal_location = Self::get_ul_from_input(input)?;
+
+		let universal_location = Self::get_ul_from_input(input.clone())?;
 		let token_uri = Self::get_token_uri_from_input(input)?;
+
 		let claimer = context.caller;
 		let universal_location_hash = keccak_256(&universal_location);
 
 		AssetMetadataExtender::<Runtime>::update_token_uri_extension(
 			claimer.into(),
-			universal_location.clone().into(),
-			token_uri.clone().into(),
+			universal_location.clone(),
+			token_uri.clone(),
 		)
 		.map_err(revert_dispatch_error)?;
 
@@ -162,6 +161,13 @@ where
 			.record(handle)?;
 
 		Ok(succeed(sp_std::vec![]))
+	}
+
+	fn read_bounded_vec<Bound: Get<u32>>(
+		mut input: EvmDataReader,
+	) -> Result<BoundedVec<u8, Bound>, ()> {
+		let raw_vec = input.read::<Bytes>().map_err(|_| ())?.0;
+		raw_vec.try_into().map_err(|_| ())
 	}
 
 	fn get_ul_from_input(mut input: EvmDataReader) -> EvmResult<UniversalLocationOf<Runtime>> {
