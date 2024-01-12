@@ -5404,6 +5404,7 @@ dependencies = [
  "orml-xcm-support",
  "orml-xtokens",
  "ownership-parachain-primitives",
+ "pallet-asset-metadata-extender",
  "pallet-assets",
  "pallet-aura",
  "pallet-authorship",
@@ -7097,6 +7098,7 @@ dependencies = [
 name = "pallet-asset-metadata-extender"
 version = "0.1.0"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "parity-scale-codec",
@@ -7104,6 +7106,7 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]

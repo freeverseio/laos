@@ -2,12 +2,12 @@
 use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
 use laos_precompile_utils::{
 	keccak256, revert_dispatch_error, succeed, Bytes, EvmDataReader, EvmDataWriter, EvmResult,
-	FunctionModifier, LogExt, LogsBuilder, PrecompileHandleExt,
+	FunctionModifier, GasCalculator, LogExt, LogsBuilder, PrecompileHandleExt,
 };
 use pallet_asset_metadata_extender::{
 	traits::AssetMetadataExtender as AssetMetadataExtenderT,
-	types::{TokenUriOf, UniversalLocationOf},
-	Pallet as AssetMetadataExtender,
+	weights::{SubstrateWeight as AssetMetadataExtenderWeights, WeightInfo},
+	Pallet as AssetMetadataExtender, TokenUriOf, UniversalLocationOf,
 };
 use parity_scale_codec::Encode;
 use precompile_utils::solidity::revert::revert;
@@ -77,20 +77,59 @@ where
 {
 	fn extend(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
 		let context = handle.context();
+		let claimer = context.caller;
 
-		let input = handle.read_input()?;
+		let mut input = handle.read_input()?;
 		input.expect_arguments(2)?;
-		let universal_location = Self::get_ul_from_input(input)?;
-		let token_uri = Self::get_token_uri_from_input(input)?;
 
-		match AssetMetadataExtender::<Runtime>::create_token_uri_extension(
-			context.caller.into(),
-			universal_location.into(),
-			token_uri.into(),
-		) {
-			Ok(_) => Ok(succeed(sp_std::vec![])),
-			Err(err) => Err(revert_dispatch_error(err)),
-		}
+		// get universal location from input
+		let universal_location_raw = input.read::<Bytes>()?.0;
+		let universal_location = universal_location_raw
+			.clone()
+			.try_into()
+			.map_err(|_| revert("invalid universal location length"))?;
+
+		// get token uri from input
+		let token_uri_raw = input.read::<Bytes>()?.0;
+		let token_uri = token_uri_raw
+			.clone()
+			.try_into()
+			.map_err(|_| revert("invalid token uri length"))?;
+
+		AssetMetadataExtender::<Runtime>::create_token_uri_extension(
+			claimer.into(),
+			universal_location,
+			token_uri,
+		)
+		.map_err(revert_dispatch_error)?;
+
+		let consumed_weight = AssetMetadataExtenderWeights::<Runtime>::create_token_uri_extension(
+			token_uri_raw.len() as u32,
+			universal_location_raw.len() as u32,
+		);
+
+		let ul_hash = keccak_256(&universal_location_raw);
+
+		LogsBuilder::new(context.address)
+			.log3(
+				SELECTOR_LOG_TOKEN_URI_EXTENDED,
+				claimer,
+				ul_hash,
+				EvmDataWriter::new()
+					.write(Bytes(universal_location_raw))
+					.write(Bytes(token_uri_raw))
+					.build(),
+			)
+			.record(handle)?;
+
+		// Record EVM cost
+		handle.record_cost(GasCalculator::<Runtime>::weight_to_gas(consumed_weight))?;
+
+		// Record Substrate related costs
+		// TODO: Add `ref_time` when precompiles are benchmarked
+		handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
+
+		Ok(succeed(sp_std::vec![]))
 	}
 
 	fn update(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
