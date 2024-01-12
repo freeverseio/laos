@@ -159,7 +159,7 @@ fn update_inexistent_extension_should_fail() {
 }
 
 #[test]
-fn update_of_extension_should_success() {
+fn update_of_extension_should_succeed() {
 	new_test_ext().execute_with(|| {
 		let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
 		let token_uri = Bytes("my_awesome_token_uri".as_bytes().to_vec());
