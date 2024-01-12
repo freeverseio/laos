@@ -18,4 +18,9 @@ pub trait AssetMetadataExtender<T: Config> {
 		universal_location: UniversalLocationOf<T>,
 		token_uri: TokenUriOf<T>,
 	) -> DispatchResult;
+
+	fn extension_by_location_and_claimer(
+		universal_location: UniversalLocationOf<T>,
+		claimer: AccountIdOf<T>,
+	) -> Option<TokenUriOf<T>>;
 }
