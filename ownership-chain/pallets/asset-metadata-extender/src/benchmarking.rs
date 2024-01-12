@@ -23,7 +23,6 @@ mod benchmarks {
 		u: Linear<0, { <T as Config>::MaxUniversalLocationLength::get() }>,
 	) {
 		let claimer: T::AccountId = whitelisted_caller();
-		let index = 0;
 
 		#[block]
 		{
@@ -33,18 +32,13 @@ mod benchmarks {
 				vec![1u8; u as usize].try_into().unwrap(),
 			)
 			.unwrap();
-
-			// TODO uncomment and fix error
-			// assert_eq!(
-			// 	AssetMetadataExtender::<T>::indexed_metadata_extensions(
-			// 		vec![1u8; u as usize].try_into().unwrap(),
-			// 		index
-			// 	),
-			// 	Some(MetadataExtensionDetails {
-			// 		claimer: claimer.clone(),
-			// 		token_uri: vec![1u8; t as usize].try_into().unwrap()
-			// 	})
-			// );
 		};
+
+		let ul: UniversalLocationOf<T> = vec![1u8; u as usize].try_into().unwrap();
+
+		assert_eq!(
+			AssetMetadataExtender::<T>::token_uris_by_claimer_and_location(claimer, ul,),
+			Some(vec![1u8; t as usize].try_into().unwrap())
+		);
 	}
 }

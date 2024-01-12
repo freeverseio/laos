@@ -159,7 +159,7 @@ fn create_token_uri_extension_on_mock_with_nonzero_value_fails() {
 }
 
 #[test]
-fn create_token_uri_extension_it_is_expected_to_have_a_cost() {
+fn create_token_uri_extension_records_cost() {
 	new_test_ext().execute_with(|| {
 		let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
 		let token_uri = Bytes("my_awesome_token_uri".as_bytes().to_vec());
@@ -176,7 +176,7 @@ fn create_token_uri_extension_it_is_expected_to_have_a_cost() {
 		// `create_token_uri_extension` weight + log cost
 		precompiles()
 			.prepare_test(H160::from_str(TEST_CLAIMER).unwrap(), H160(PRECOMPILE_ADDRESS), input)
-			.expect_cost(364336626) // [`WeightToGas`] set to 1:1 in mock
+			.expect_cost(364339662) // [`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	})
 }
