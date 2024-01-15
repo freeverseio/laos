@@ -41,4 +41,33 @@ mod benchmarks {
 			Some(vec![1u8; t as usize].try_into().unwrap())
 		);
 	}
+
+	#[benchmark]
+	fn update_token_uri_extension(
+		t: Linear<0, { <T as Config>::MaxTokenUriLength::get() }>,
+		u: Linear<0, { <T as Config>::MaxUniversalLocationLength::get() }>,
+	) {
+		let claimer: T::AccountId = whitelisted_caller();
+		let universal_location: UniversalLocationOf<T> = vec![1u8; u as usize].try_into().unwrap();
+		let token_uri: TokenUriOf<T> = vec![1u8; t as usize].try_into().unwrap();
+
+		{
+			AssetMetadataExtender::<T>::create_token_uri_extension(
+				claimer.clone(),
+				universal_location.clone(),
+				token_uri.clone(),
+			)
+			.unwrap();
+		};
+
+		#[block]
+		{
+			AssetMetadataExtender::<T>::update_token_uri_extension(
+				claimer,
+				universal_location,
+				token_uri,
+			)
+			.unwrap();
+		};
+	}
 }
