@@ -25,21 +25,22 @@ mod benchmarks {
 	) {
 		let claimer: T::AccountId = whitelisted_caller();
 
+		let ul: UniversalLocationOf<T> = vec![1u8; u as usize].try_into().unwrap();
+		let token_uri: TokenUriOf<T> = vec![1u8; t as usize].try_into().unwrap();
+
 		#[block]
 		{
 			AssetMetadataExtender::<T>::create_token_uri_extension(
 				claimer.clone(),
-				vec![1u8; t as usize].try_into().unwrap(),
-				vec![1u8; u as usize].try_into().unwrap(),
+				ul.clone(),
+				token_uri.clone(),
 			)
 			.unwrap();
 		};
 
-		let ul: UniversalLocationOf<T> = vec![1u8; u as usize].try_into().unwrap();
-
 		assert_eq!(
 			AssetMetadataExtender::<T>::token_uris_by_claimer_and_location(claimer, ul,),
-			Some(vec![1u8; t as usize].try_into().unwrap())
+			Some(token_uri)
 		);
 	}
 }
