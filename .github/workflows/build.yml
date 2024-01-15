@@ -3,8 +3,6 @@ name: Build
 # Controls when the action will run.
 on:
   push:
-  pull_request:
-    types: [opened, synchronize]
   workflow_dispatch:
 
 jobs:
