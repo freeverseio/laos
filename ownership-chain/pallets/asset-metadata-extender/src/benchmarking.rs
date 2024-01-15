@@ -66,11 +66,12 @@ mod benchmarks {
 
 		#[block]
 		{
-			let _ = AssetMetadataExtender::<T>::update_token_uri_extension(
+			AssetMetadataExtender::<T>::update_token_uri_extension(
 				claimer,
 				universal_location,
 				new_token_uri,
-			);
+			)
+			.unwrap();
 		};
 	}
 }
