@@ -309,6 +309,7 @@ fn has_extension_should_return_false_if_it_does_not_exist() {
 
 		assert_eq!(AssetMetadataExtender::has_extension(universal_location, claimer), false);
 	});
+}
 
 fn balance_of_works() {
 	new_test_ext().execute_with(|| {
