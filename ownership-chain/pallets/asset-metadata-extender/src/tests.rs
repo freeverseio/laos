@@ -279,7 +279,7 @@ fn get_extension_by_location_and_claimer_works() {
 
 		create_token_uri_extension(claimer.clone(), universal_location.clone(), token_uri.clone());
 		assert_eq!(
-			AssetMetadataExtender::token_uris_by_claimer_and_location(
+			AssetMetadataExtender::extension_by_location_and_claimer(
 				claimer.clone(),
 				universal_location.clone()
 			)
