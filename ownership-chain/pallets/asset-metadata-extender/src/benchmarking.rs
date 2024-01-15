@@ -2,6 +2,7 @@
 #![cfg(feature = "runtime-benchmarks")]
 use super::*;
 
+use crate::traits::AssetMetadataExtender as AssetMetadataExtenderT;
 #[allow(unused)]
 use crate::Pallet as AssetMetadataExtender;
 use frame_benchmarking::v2::*;
