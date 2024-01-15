@@ -12,7 +12,7 @@ use sp_runtime::{
 	traits::{Convert, One},
 	ArithmeticError, DispatchResult,
 };
-pub use traits::AssetMetadataExtender as AssetMetadataExtenderT;
+pub use traits::AssetMetadataExtender;
 pub use types::*;
 
 #[frame_support::pallet]
@@ -104,7 +104,7 @@ pub mod pallet {
 	}
 }
 
-impl<T: Config> AssetMetadataExtenderT<T> for Pallet<T> {
+impl<T: Config> AssetMetadataExtender<T> for Pallet<T> {
 	fn create_token_uri_extension(
 		claimer: AccountIdOf<T>,
 		universal_location: UniversalLocationOf<T>,
