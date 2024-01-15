@@ -227,7 +227,7 @@ fn update_token_uri_extension_records_cost() {
 		// `create_token_uri_extension` weight + log cost
 		precompiles()
 			.prepare_test(H160::from_str(TEST_CLAIMER).unwrap(), H160(PRECOMPILE_ADDRESS), input)
-			.expect_cost(3036) // [`WeightToGas`] set to 1:1 in mock
+			.expect_cost(136659074) // [`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	})
 }
