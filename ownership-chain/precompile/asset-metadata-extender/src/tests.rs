@@ -198,13 +198,12 @@ fn create_token_uri_extension_records_cost() {
 	})
 }
 
-
 #[test]
 fn update_token_uri_extension_records_cost() {
 	new_test_ext().execute_with(|| {
 		let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
 		let token_uri = Bytes("my_awesome_token_uri".as_bytes().to_vec());
-		
+
 		let input = EvmDataWriter::new_with_selector(Action::Extend)
 			.write(universal_location.clone())
 			.write(token_uri.clone())
@@ -219,7 +218,6 @@ fn update_token_uri_extension_records_cost() {
 			.write(universal_location)
 			.write(new_token_uri)
 			.build();
-
 
 		// Expected weight of the precompile call implementation.
 		// Since benchmarking precompiles is not supported yet, we are benchmarking
