@@ -17,7 +17,7 @@ interface AssetMetadataExtender {
 
     /// @notice Emitted when an extended token's URI is updated
     /// @param _claimer The address of the user who updated the token URI
-    /// @param _universelLocationHash keccak256 hash of the universal location 
+    /// @param _universelLocationHash keccak256 hash of the universal location
     /// @param _universalLocation The universal location of the token
     /// @param _tokenURI The new token URI after the update
     event ExtendedTokenURIUpdated(
@@ -52,4 +52,27 @@ interface AssetMetadataExtender {
         string calldata _universalLocation,
         address _claimer
     ) external view returns (bool);
+    
+    /// @notice Returns the number of extensions made about a UL
+    /// @param uloc The Universal Location as a string identifying the asset
+    /// @return The number of extensions
+    function balanceOfUL(string calldata uloc) external view returns (uint256);
+
+    /// @notice Returns the claimer for an extension at a given index
+    /// @param uloc The Universal Location string identifying the asset
+    /// @param index The index of the extension
+    /// @return The address of the claimer
+    function claimerOfULByIndex(
+        string calldata uloc,
+        uint256 index
+    ) external view returns (address);
+
+    /// @notice Returns the tokenURI for an extension at a given index
+    /// @param uloc The Universal Location string identifying the asset
+    /// @param index The index of the extension
+    /// @return The tokenURI of the extension
+    function extensionOfULByIndex(
+        string calldata uloc,
+        uint256 index
+    ) external view returns (string memory);
 }

@@ -1,9 +1,9 @@
 use super::*;
 use crate::mock::*;
 use core::str::FromStr;
-use fp_evm::Log;
+use fp_evm::{Context, Log, PrecompileSet};
 use laos_precompile_utils::EvmDataWriter;
-use precompile_utils::testing::PrecompileTesterExt;
+use precompile_utils::testing::{MockHandle, PrecompileTesterExt};
 use sp_core::{H160, H256, U256};
 
 /// Fixed precompile address for testing.
@@ -12,6 +12,23 @@ const PRECOMPILE_ADDRESS: [u8; 20] = [5u8; 20];
 /// Get precompiles from the mock.
 fn precompiles() -> MockPrecompileSet<Test> {
 	MockPrecompiles::get()
+}
+
+/// Extend asset metadata (token uri)
+fn extend(claimer: H160, ul: Vec<u8>, token_uri: Vec<u8>) -> EvmResult<PrecompileOutput> {
+	let input = EvmDataWriter::new_with_selector(Action::Extend)
+		.write(ul)
+		.write(token_uri)
+		.build();
+
+	let mut handle = MockHandle::new(
+		[1u8; 20].into(),
+		Context { address: [1u8; 20].into(), caller: claimer, apparent_value: U256::zero() },
+	);
+
+	handle.input = input;
+
+	precompiles().execute(&mut handle).unwrap()
 }
 
 const TEST_CLAIMER: &str = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
@@ -267,15 +284,51 @@ fn update_of_extension_should_emit_a_log() {
 }
 
 #[test]
-#[ignore]
-fn create_token_uri_extension_it_is_expected_to_have_a_cost() {
-	todo!();
-}
+fn claimer_by_index_invalid_index_fails() {
+	new_test_ext().execute_with(|| {
+		let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
+		let input = EvmDataWriter::new_with_selector(Action::Claimer)
+			.write(universal_location.clone())
+			.write(0u32)
+			.build();
 
-#[test]
-#[ignore]
-fn claimer_of_ul_by_index_given_unexistent_index_returns_empty_address() {
-	todo!();
+		precompiles()
+			.prepare_test(
+				H160::from_str(TEST_CLAIMER).unwrap(),
+				H160(PRECOMPILE_ADDRESS),
+				input.clone(),
+			)
+			.execute_reverts(|r| r == b"invalid index");
+
+		extend(H160::from_str(TEST_CLAIMER).unwrap(), universal_location.clone().0, vec![1u8; 10])
+			.unwrap();
+
+		let input = EvmDataWriter::new_with_selector(Action::Claimer)
+			.write(universal_location.clone())
+			.write(0u32)
+			.build();
+
+		precompiles()
+			.prepare_test(
+				H160::from_str(TEST_CLAIMER).unwrap(),
+				H160(PRECOMPILE_ADDRESS),
+				input.clone(),
+			)
+			.execute_returns(H256(H160::from_str(TEST_CLAIMER).unwrap()));
+
+		let input = EvmDataWriter::new_with_selector(Action::Claimer)
+			.write(universal_location)
+			.write(2u32)
+			.build();
+
+		precompiles()
+			.prepare_test(
+				H160::from_str(TEST_CLAIMER).unwrap(),
+				H160(PRECOMPILE_ADDRESS),
+				input.clone(),
+			)
+			.execute_reverts(|r| r == b"invalid index");
+	});
 }
 
 #[test]

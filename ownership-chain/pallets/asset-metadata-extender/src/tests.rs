@@ -309,4 +309,70 @@ fn has_extension_should_return_false_if_it_does_not_exist() {
 
 		assert_eq!(AssetMetadataExtender::has_extension(universal_location, claimer), false);
 	});
+
+fn balance_of_works() {
+	new_test_ext().execute_with(|| {
+		let universal_location: UniversalLocationOf<Test> = bounded_vec![1; 10];
+		let token_uri: TokenUriOf<Test> = bounded_vec![2; 10];
+
+		assert_eq!(AssetMetadataExtender::balance_of(universal_location.clone()), 0);
+		create_token_uri_extension(H160::zero(), universal_location.clone(), token_uri.clone());
+		assert_eq!(AssetMetadataExtender::balance_of(universal_location.clone()), 1);
+	});
+}
+
+#[test]
+fn claimer_by_index_works() {
+	new_test_ext().execute_with(|| {
+		let universal_location: UniversalLocationOf<Test> = bounded_vec![1; 10];
+
+		assert_eq!(AssetMetadataExtender::claimer_by_index(universal_location.clone(), 0), None);
+
+		let token_uri: TokenUriOf<Test> = bounded_vec![2; 10];
+
+		let n = 10_u32;
+		for i in 0..n {
+			let claimer = H160::from_low_u64_be(i as u64);
+			create_token_uri_extension(
+				claimer.clone(),
+				universal_location.clone(),
+				token_uri.clone(),
+			);
+		}
+
+		for i in 0..n {
+			let claimer = AssetMetadataExtender::claimer_by_index(universal_location.clone(), i);
+			assert_eq!(claimer, Some(H160::from_low_u64_be(i as u64)));
+		}
+	});
+}
+
+#[test]
+fn token_uri_extension_by_index_works() {
+	new_test_ext().execute_with(|| {
+		let universal_location: UniversalLocationOf<Test> = bounded_vec![1; 10];
+
+		assert_eq!(
+			AssetMetadataExtender::token_uri_extension_by_index(universal_location.clone(), 0),
+			None
+		);
+
+		let token_uri_expected: TokenUriOf<Test> = bounded_vec![2; 10];
+
+		let n = 10_u32;
+		for i in 0..n {
+			let claimer = H160::from_low_u64_be(i as u64);
+			create_token_uri_extension(
+				claimer.clone(),
+				universal_location.clone(),
+				token_uri_expected.clone(),
+			);
+		}
+
+		for i in 0..n {
+			let token_uri =
+				AssetMetadataExtender::token_uri_extension_by_index(universal_location.clone(), i);
+			assert_eq!(token_uri, Some(token_uri_expected.clone()));
+		}
+	});
 }
