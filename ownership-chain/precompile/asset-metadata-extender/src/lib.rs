@@ -152,17 +152,27 @@ where
 		)
 		.map_err(revert_dispatch_error)?;
 
+		let universal_location_raw = universal_location.into_inner();
+		let token_uri_raw = token_uri.into_inner();
+		let consumed_weight = AssetMetadataExtenderWeights::<Runtime>::update_token_uri_extension(
+			universal_location_raw.len() as u32,
+			token_uri_raw.len() as u32,
+		);
+
 		LogsBuilder::new(context.address)
 			.log3(
 				SELECTOR_LOG_EXTENDED_TOKEN_URI_UPDATED,
 				claimer,
 				universal_location_hash,
 				EvmDataWriter::new()
-					.write(Bytes(universal_location.into()))
-					.write(Bytes(token_uri.into()))
+					.write(Bytes(universal_location_raw))
+					.write(Bytes(token_uri_raw))
 					.build(),
 			)
 			.record(handle)?;
+
+		// Record EVM cost
+		handle.record_cost(GasCalculator::<Runtime>::weight_to_gas(consumed_weight))?;
 
 		Ok(succeed(sp_std::vec![]))
 	}
