@@ -55,17 +55,19 @@ mod benchmarks {
 			AssetMetadataExtender::<T>::create_token_uri_extension(
 				claimer.clone(),
 				universal_location.clone(),
-				token_uri.clone(),
+				token_uri,
 			)
 			.unwrap();
 		};
+
+		let new_token_uri: TokenUriOf<T> = vec![2u8; t as usize].try_into().unwrap();
 
 		#[block]
 		{
 			let _ = AssetMetadataExtender::<T>::update_token_uri_extension(
 				claimer,
 				universal_location,
-				token_uri,
+				new_token_uri,
 			);
 		};
 	}
