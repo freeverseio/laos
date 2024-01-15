@@ -10,7 +10,7 @@ use pallet_asset_metadata_extender::{
 	Pallet as AssetMetadataExtender, TokenUriOf, UniversalLocationOf,
 };
 use parity_scale_codec::Encode;
-use precompile_utils::solidity::revert::revert;
+use precompile_utils::solidity::{codec::Address, revert::revert};
 
 use sp_core::{Get, H160};
 use sp_io::hashing::keccak_256;
@@ -84,25 +84,26 @@ where
 		input.expect_arguments(2)?;
 
 		// get universal location from input
-		let universal_location_raw = input.read::<Bytes>()?.0;
 		let universal_location = Self::read_bounded_vec(&mut input)
 			.map_err(|_| revert("invalid universal location length"))?;
 
 		// get token uri from input
-		let token_uri_raw = input.read::<Bytes>()?.0;
 		let token_uri =
 			Self::read_bounded_vec(&mut input).map_err(|_| revert("invalid token uri length"))?;
 
 		AssetMetadataExtender::<Runtime>::create_token_uri_extension(
 			claimer.into(),
-			universal_location,
-			token_uri,
+			universal_location.clone(),
+			token_uri.clone(),
 		)
 		.map_err(revert_dispatch_error)?;
 
+		let universal_location_raw = universal_location.into_inner();
+		let token_uri_raw = token_uri.into_inner();
+
 		let consumed_weight = AssetMetadataExtenderWeights::<Runtime>::create_token_uri_extension(
-			token_uri_raw.len() as u32,
 			universal_location_raw.len() as u32,
+			token_uri_raw.len() as u32,
 		);
 
 		let ul_hash = keccak_256(&universal_location_raw);
@@ -172,7 +173,7 @@ where
 
 		let balance = AssetMetadataExtender::<Runtime>::balance_of(universal_location);
 
-		Ok(succeed(balance.encode()))
+		Ok(succeed(balance.to_be_bytes()))
 	}
 
 	fn claimer_by_index(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
@@ -184,10 +185,15 @@ where
 
 		let index = input.read::<u32>()?;
 
-		let claimer =
-			AssetMetadataExtender::<Runtime>::claimer_by_index(universal_location.clone(), index);
+		if AssetMetadataExtender::balance_of(universal_location.clone()) <= index {
+			return Err(revert("invalid index"));
+		}
 
-		Ok(succeed(claimer.encode()))
+		let claimer =
+			AssetMetadataExtender::<Runtime>::claimer_by_index(universal_location.clone(), index)
+				.ok_or_else(|| revert("invalid ul"))?;
+
+		Ok(succeed(Address(claimer.into()).0 .0))
 	}
 
 	fn extension_by_index(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
@@ -199,12 +205,17 @@ where
 
 		let index = input.read::<u32>()?;
 
+		if AssetMetadataExtender::balance_of(universal_location.clone()) <= index {
+			return Err(revert("invalid index"));
+		}
+
 		let token_uri = AssetMetadataExtender::<Runtime>::token_uri_extension_by_index(
 			universal_location.clone(),
 			index,
-		);
+		)
+		.ok_or_else(|| revert("invalid ul"))?;
 
-		Ok(succeed(token_uri.encode()))
+		Ok(succeed(token_uri.into_inner()))
 	}
 
 	fn read_bounded_vec<Bound: Get<u32>>(
