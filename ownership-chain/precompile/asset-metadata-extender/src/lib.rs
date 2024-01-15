@@ -7,7 +7,7 @@ use laos_precompile_utils::{
 use pallet_asset_metadata_extender::{
 	traits::AssetMetadataExtender as AssetMetadataExtenderT,
 	weights::{SubstrateWeight as AssetMetadataExtenderWeights, WeightInfo},
-	Pallet as AssetMetadataExtender, TokenUriOf, UniversalLocationOf,
+	Pallet as AssetMetadataExtender,
 };
 use parity_scale_codec::Encode;
 use precompile_utils::solidity::{codec::Address, revert::revert};
@@ -133,11 +133,14 @@ where
 	fn update(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
 		let context = handle.context();
 
-		let input = handle.read_input()?;
+		let mut input = handle.read_input()?;
 		input.expect_arguments(2)?;
 
-		let universal_location = Self::get_ul_from_input(input.clone())?;
-		let token_uri = Self::get_token_uri_from_input(input)?;
+		let universal_location = Self::read_bounded_vec(&mut input)
+			.map_err(|_| revert("invalid universal location length"))?;
+
+		let token_uri =
+			Self::read_bounded_vec(&mut input).map_err(|_| revert("invalid token uri length"))?;
 
 		let claimer = context.caller;
 		let universal_location_hash = keccak_256(&universal_location);
@@ -218,27 +221,12 @@ where
 		Ok(succeed(token_uri.into_inner()))
 	}
 
+	/// Generic function to read a bounded vector from the input.
 	fn read_bounded_vec<Bound: Get<u32>>(
 		input: &mut EvmDataReader,
 	) -> Result<BoundedVec<u8, Bound>, ()> {
 		let raw_vec = input.read::<Bytes>().map_err(|_| ())?.0;
 		raw_vec.try_into().map_err(|_| ())
-	}
-
-	fn get_ul_from_input(mut input: EvmDataReader) -> EvmResult<UniversalLocationOf<Runtime>> {
-		let universal_location = input.read::<Bytes>()?.0;
-		let universal_location = universal_location
-			.clone()
-			.try_into()
-			.map_err(|_| revert("invalid universal location length"))?;
-		Ok(universal_location)
-	}
-
-	fn get_token_uri_from_input(mut input: EvmDataReader) -> EvmResult<TokenUriOf<Runtime>> {
-		let token_uri = input.read::<Bytes>()?.0;
-		let token_uri =
-			token_uri.clone().try_into().map_err(|_| revert("invalid token uri length"))?;
-		Ok(token_uri)
 	}
 }
 
