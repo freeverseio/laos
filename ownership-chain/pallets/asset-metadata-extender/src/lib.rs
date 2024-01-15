@@ -1,13 +1,19 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+mod benchmarking;
 pub mod traits;
 pub mod types;
+pub mod weights;
 
 use frame_support::pallet_prelude::*;
 pub use pallet::*;
-use sp_runtime::{traits::One, ArithmeticError, DispatchResult};
-use traits::AssetMetadataExtender;
-use types::*;
+use sp_core::H160;
+use sp_runtime::{
+	traits::{Convert, One},
+	ArithmeticError, DispatchResult,
+};
+pub use traits::AssetMetadataExtender;
+pub use types::*;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -29,6 +35,9 @@ pub mod pallet {
 		/// Limit for the length of `universal_location`
 		#[pallet::constant]
 		type MaxUniversalLocationLength: Get<u32>;
+
+		/// Converts `Self::AccountId` to `H160`
+		type AccountIdToH160: Convert<Self::AccountId, H160>;
 	}
 
 	/// Extensions counter for a given location
@@ -146,6 +155,25 @@ impl<T: Config> AssetMetadataExtender<T> for Pallet<T> {
 		Self::deposit_event(Event::ExtensionUpdated { claimer, universal_location, token_uri });
 
 		Ok(())
+	}
+
+	fn balance_of(universal_location: UniversalLocationOf<T>) -> u32 {
+		ExtensionsCounter::<T>::get(universal_location)
+	}
+
+	fn claimer_by_index(
+		universal_location: UniversalLocationOf<T>,
+		index: u32,
+	) -> Option<AccountIdOf<T>> {
+		ClaimersByLocationAndIndex::<T>::get(universal_location, index)
+	}
+
+	fn token_uri_extension_by_index(
+		universal_location: UniversalLocationOf<T>,
+		index: u32,
+	) -> Option<TokenUriOf<T>> {
+		let claimer = Self::claimer_by_index(universal_location.clone(), index)?;
+		TokenUrisByClaimerAndLocation::<T>::get(claimer, universal_location)
 	}
 }
 

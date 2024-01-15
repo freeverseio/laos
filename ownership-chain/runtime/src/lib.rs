@@ -480,6 +480,11 @@ parameter_types! {
 	pub const MaxTokenUriLength: u32 = 512;
 }
 
+parameter_types! {
+	/// Max length of the `UniversalLocation`
+	pub const MaxUniversalLocationLength: u32 = 512;
+}
+
 /// Converts [`AccountId`] to [`H160`]
 pub struct AccountIdToH160;
 
@@ -493,6 +498,13 @@ impl pallet_laos_evolution::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type AccountIdToH160 = AccountIdToH160;
 	type MaxTokenUriLength = MaxTokenUriLength;
+}
+
+impl pallet_asset_metadata_extender::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type AccountIdToH160 = AccountIdToH160;
+	type MaxTokenUriLength = MaxTokenUriLength;
+	type MaxUniversalLocationLength = MaxUniversalLocationLength;
 }
 
 impl pallet_sudo::Config for Runtime {
@@ -727,6 +739,7 @@ construct_runtime!(
 		Sudo: pallet_sudo = 40,
 
 		LaosEvolution: pallet_laos_evolution = 42,
+		AssetMetadataExtender: pallet_asset_metadata_extender = 43,
 
 		// Frontier
 		Ethereum: pallet_ethereum = 50,
@@ -860,6 +873,7 @@ mod benches {
 		[pallet_collator_selection, CollatorSelection]
 		[cumulus_pallet_xcmp_queue, XcmpQueue]
 		[pallet_laos_evolution, LaosEvolution]
+		[pallet_asset_metadata_extender, AssetMetadataExtender]
 	);
 }
 
