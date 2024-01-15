@@ -311,6 +311,7 @@ fn has_extension_should_return_false_if_it_does_not_exist() {
 	});
 }
 
+#[test]
 fn balance_of_works() {
 	new_test_ext().execute_with(|| {
 		let universal_location: UniversalLocationOf<Test> = bounded_vec![1; 10];
