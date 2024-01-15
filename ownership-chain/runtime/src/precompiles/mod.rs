@@ -7,6 +7,7 @@ use pallet_evm::{
 use sp_core::H160;
 use sp_std::marker::PhantomData;
 
+use pallet_evm_asset_metadata_extender::AssetMetadataExtenderPrecompile;
 use pallet_evm_evolution_collection::EvolutionCollectionPrecompile;
 use pallet_evm_evolution_collection_factory::EvolutionCollectionFactoryPrecompile;
 use pallet_evm_precompile_blake2::Blake2F;
@@ -26,7 +27,7 @@ where
 	pub fn new() -> Self {
 		Self(Default::default())
 	}
-	pub fn used_addresses() -> [H160; 10] {
+	pub fn used_addresses() -> [H160; 11] {
 		[
 			hash(1),
 			hash(2),
@@ -38,6 +39,7 @@ where
 			hash(8),
 			hash(9),
 			hash(1027),
+			hash(1028),
 		]
 	}
 
@@ -62,6 +64,8 @@ where
 		false
 	}
 }
+
+type AssetMetadataExtender = AssetMetadataExtenderPrecompile<Runtime>;
 
 type EvolutionCollectionFactory = EvolutionCollectionFactoryPrecompile<Runtime>;
 
@@ -93,6 +97,7 @@ where
 			a if a == hash(8) => Some(Bn128Pairing::execute(handle)),
 			a if a == hash(9) => Some(Blake2F::execute(handle)),
 			a if a == hash(1027) => Some(EvolutionCollectionFactory::execute(handle)),
+			a if a == hash(1028) => Some(AssetMetadataExtender::execute(handle)),
 			a if address_to_collection_id(a).is_ok() => Some(EvolutionCollection::execute(handle)),
 			_ => None,
 		}
