@@ -366,7 +366,7 @@ fn has_extension_should_return_true_if_it_exists() {
 		let token_uri: TokenUriOf<Test> = bounded_vec![2; 10];
 
 		create_token_uri_extension(claimer.clone(), universal_location.clone(), token_uri.clone());
-		assert_eq!(AssetMetadataExtender::has_extension(universal_location, claimer), true);
+		assert!(AssetMetadataExtender::has_extension(universal_location, claimer));
 	});
 }
 
