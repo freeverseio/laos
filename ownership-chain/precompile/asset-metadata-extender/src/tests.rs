@@ -572,7 +572,7 @@ fn has_extension_by_claim_of_existent_claim_should_return_true() {
 }
 
 #[test]
-fn has_extension_by_claimer_of_unexistent_claim_should_return_false() {
+fn has_extension_by_claimer_of_inexistent_claim_returns_false() {
 	new_test_ext().execute_with(|| {
 		let universal_location = Bytes("some_universal_location".as_bytes().to_vec());
 		let claimer = H160::from_str(TEST_CLAIMER).unwrap();
