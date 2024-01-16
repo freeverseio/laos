@@ -39,6 +39,8 @@ pub enum Action {
 	Update = "updateTokenURI(string,string)",
 	/// Get claimer of a given universal location using claimer
 	ExtensionOfULByClaimer = "extensionOfULByClaimer(string,address)",
+	/// Check if a given universal location has an extension
+	HasExtension = "hasExtensionByClaimer(string,address)",
 }
 
 pub struct AssetMetadataExtenderPrecompile<Runtime>(PhantomData<Runtime>)
@@ -61,6 +63,7 @@ where
 			Action::Extension => FunctionModifier::View,
 			Action::Update => FunctionModifier::NonPayable,
 			Action::ExtensionOfULByClaimer => FunctionModifier::View,
+			Action::HasExtension => FunctionModifier::View,
 		})?;
 
 		match selector {
@@ -70,6 +73,7 @@ where
 			Action::Extension => Self::extension_by_index(handle),
 			Action::Update => Self::update(handle),
 			Action::ExtensionOfULByClaimer => Self::extension_by_location_and_claimer(handle),
+			Action::HasExtension => Self::has_extension_by_claimer(handle),
 		}
 	}
 }
@@ -261,6 +265,23 @@ where
 		.ok_or_else(|| revert("invalid ul"))?;
 
 		Ok(succeed(token_uri.into_inner()))
+	}
+
+	fn has_extension_by_claimer(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
+		let mut input = handle.read_input()?;
+		input.expect_arguments(2)?;
+
+		let universal_location = Self::read_bounded_vec(&mut input)
+			.map_err(|_| revert("invalid universal location length"))?;
+
+		let claimer = input.read::<Address>().map_err(|_| revert("invalid claimer"))?.0;
+
+		let has_extension = AssetMetadataExtender::<Runtime>::has_extension(
+			universal_location.clone(),
+			claimer.into(),
+		);
+
+		Ok(success(has_extension))	
 	}
 }
 
