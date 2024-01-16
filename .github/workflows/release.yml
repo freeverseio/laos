@@ -16,7 +16,7 @@ jobs:
       - id: check_version
         run: |
           VERSION=$(grep -m1 version Cargo.toml | sed -E 's/.*"(.*)".*/\1/')
-          if [ "$VERSION" == "${{ github.ref_name }}" ]; then
+          if [ "v$VERSION" == "${{ github.ref_name }}" ]; then
             echo "::set-output name=proceed::true"
           else
             echo "Version in Cargo.toml ($VERSION) does not match current tag ${{ github.ref_name }}. Canceling release..."
