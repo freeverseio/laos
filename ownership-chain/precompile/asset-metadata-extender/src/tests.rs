@@ -3,7 +3,7 @@ use crate::mock::*;
 use core::str::FromStr;
 use fp_evm::Log;
 use laos_precompile_utils::EvmDataWriter;
-use precompile_utils::testing::PrecompileTesterExt;
+use precompile_utils::{solidity::codec::BoundedBytes, testing::PrecompileTesterExt};
 use sp_core::{H160, H256, U256};
 
 /// Fixed precompile address for testing.
@@ -34,7 +34,7 @@ fn function_selectors() {
 	assert_eq!(Action::Balance as u32, 0x7B65DED5);
 	assert_eq!(Action::Claimer as u32, 0xA565BB04);
 	assert_eq!(Action::Extension as u32, 0xB2B7C05A);
-	assert_eq!(Action::Update as u32, 0xC7108F8);
+	assert_eq!(Action::Update as u32, 0xEA4E9B36);
 }
 
 #[test]
@@ -366,7 +366,9 @@ fn claimer_by_index_works() {
 				H160(PRECOMPILE_ADDRESS),
 				input.clone(),
 			)
-			.execute_returns_raw(H160::from_str(TEST_CLAIMER).unwrap().0.to_vec());
+			.execute_returns(precompile_utils::prelude::Address(
+				H160::from_str(TEST_CLAIMER).unwrap(),
+			));
 	});
 }
 
@@ -395,7 +397,7 @@ fn extension_by_index_works() {
 
 		precompiles()
 			.prepare_test(H160::from_str(TEST_CLAIMER).unwrap(), H160(PRECOMPILE_ADDRESS), input)
-			.execute_returns_raw(vec![1u8; 10]);
+			.execute_returns(BoundedBytes::<MaxTokenUriLength>::from(vec![1u8; 10]));
 	});
 }
 
@@ -475,7 +477,7 @@ fn balance_of_works() {
 				H160(PRECOMPILE_ADDRESS),
 				input.clone(),
 			)
-			.execute_returns_raw(0_u32.to_be_bytes().to_vec());
+			.execute_returns(0_u32);
 
 		let input = EvmDataWriter::new_with_selector(Action::Extend)
 			.write(universal_location.clone())
@@ -496,7 +498,7 @@ fn balance_of_works() {
 
 		precompiles()
 			.prepare_test(H160::from_str(TEST_CLAIMER).unwrap(), H160(PRECOMPILE_ADDRESS), input)
-			.execute_returns_raw(1_u32.to_be_bytes().to_vec());
+			.execute_returns(1_u32);
 	});
 }
 

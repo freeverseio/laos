@@ -36,7 +36,7 @@ pub enum Action {
 	/// Get token uri of a given universal location using indexation
 	Extension = "extensionOfULByIndex(string,uint32)", // TODO rename `extension` for `tokenURI`?
 	/// Update token uri of a given universal location using indexation
-	Update = "updateTokenURI(string,string)",
+  Update = "updateExtendedTokenURI(string,string)",
 	/// Get claimer of a given universal location using claimer
 	ExtensionOfULByClaimer = "extensionOfULByClaimer(string,address)",
 	/// Check if a given universal location has an extension
@@ -135,7 +135,7 @@ where
 		// TODO: Add `ref_time` when precompiles are benchmarked
 		handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
 
-		Ok(succeed(sp_std::vec![]))
+		Ok(succeed(EvmDataWriter::new().build()))
 	}
 
 	fn update(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
@@ -182,7 +182,7 @@ where
 		// Record EVM cost
 		handle.record_cost(GasCalculator::<Runtime>::weight_to_gas(consumed_weight))?;
 
-		Ok(succeed(sp_std::vec![]))
+		Ok(succeed(EvmDataWriter::new().build()))
 	}
 
 	fn balance_of(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
@@ -194,7 +194,7 @@ where
 
 		let balance = AssetMetadataExtender::<Runtime>::balance_of(universal_location);
 
-		Ok(succeed(balance.to_be_bytes()))
+		Ok(succeed(EvmDataWriter::new().write(balance).build()))
 	}
 
 	fn claimer_by_index(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
@@ -214,7 +214,7 @@ where
 			AssetMetadataExtender::<Runtime>::claimer_by_index(universal_location.clone(), index)
 				.ok_or_else(|| revert("invalid ul"))?;
 
-		Ok(succeed(Address(claimer.into()).0 .0))
+		Ok(succeed(EvmDataWriter::new().write(Address(claimer.into())).build()))
 	}
 
 	fn extension_by_index(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
@@ -236,7 +236,7 @@ where
 		)
 		.ok_or_else(|| revert("invalid ul"))?;
 
-		Ok(succeed(token_uri.into_inner()))
+		Ok(succeed(EvmDataWriter::new().write(Bytes(token_uri.into_inner())).build()))
 	}
 
 	/// Generic function to read a bounded vector from the input.
