@@ -2,6 +2,7 @@ import BN from "bn.js";
 import { AbiItem } from "web3-utils";
 import EvolutionCollection from "../build/contracts/EvolutionCollection.json";
 import EvolutionCollectionFactory from "../build/contracts/EvolutionCollectionFactory.json";
+import AssetMetadataExtender from "../build/contracts/AssetMetadataExtender.json";
 
 // Node config
 export const RUNTIME_SPEC_NAME = "frontier-template";
@@ -26,9 +27,15 @@ export const EVOLUTION_COLLECTION_ABI = EvolutionCollection.abi as AbiItem[];
 export const CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000403";
 export const SELECTOR_LOG_NEW_COLLECTION = "0x5b84d9550adb7000df7bee717735ecd3af48ea3f66c6886d52e8227548fb228c";
 export const SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI =
-	"0xa7135052b348b0b4e9943bae82d8ef1c5ac225e594ef4271d12f0744cfc98348";
+"0xa7135052b348b0b4e9943bae82d8ef1c5ac225e594ef4271d12f0744cfc98348";
 export const SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI =
-	"0xdde18ad2fe10c12a694de65b920c02b851c382cf63115967ea6f7098902fa1c8";
+"0xdde18ad2fe10c12a694de65b920c02b851c382cf63115967ea6f7098902fa1c8";
+
+// Asset Metadata Extender Contract
+export const ASSET_METADATA_EXTENDER_ADDRESS = "0x0000000000000000000000000000000000000404";
+export const ASSET_METADATA_EXTENDER_ABI = AssetMetadataExtender.abi as AbiItem[];
+export const SELECTOR_LOG_EXTENDED_TOKEN_URI_UPDATED =
+"0x5b84d9550adb7000df7bee717735ecd3af48ea3f66c6886d52e8227548fb228c";
 
 // Constants
 export const MAX_U96 = new BN("79228162514264337593543950336"); // 2^96 - 1
