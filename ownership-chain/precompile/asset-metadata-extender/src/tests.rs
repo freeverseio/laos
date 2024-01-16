@@ -34,7 +34,7 @@ fn function_selectors() {
 	assert_eq!(Action::Balance as u32, 0x7B65DED5);
 	assert_eq!(Action::Claimer as u32, 0xC050D9BE);
 	assert_eq!(Action::Extension as u32, 0x4322DE03);
-	assert_eq!(Action::Update as u32, 0xC7108F8);
+	assert_eq!(Action::Update as u32, 0xEA4E9B36);
 }
 
 #[test]
