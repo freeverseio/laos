@@ -8,31 +8,33 @@ pragma solidity >=0.8.3;
 interface AssetMetadataExtender {
     /// @notice Emitted when a token metadata is extended
     /// @param _claimer the address of the caller
-    /// @param _universalLocation the universal location of the token
+    /// @param _universalLocationHash keccak256 hash of the universal location
+    /// @param _universalLocation The universal location of the token
     /// @param _tokenURI the extended URI of the token
     event TokenURIExtended(
         address indexed _claimer,
-        uint256 indexed _universalLocation,
-        string _tokenURI
-    );
-
-    /// @notice Emitted when an extended token's URI is updated
-    /// @param _claimer The address of the user who updated the token URI
-    /// @param _universelLocationHash keccak256 hash of the universal location
-    /// @param _universalLocation The universal location of the token
-    /// @param _tokenURI The new token URI after the update
-    event ExtendedTokenURIUpdated(
-        address indexed _claimer,
-        uint256 indexed _universelLocationHash,
+        bytes32 indexed _universalLocationHash,
         string _universalLocation,
         string _tokenURI
     );
 
-    /// @notice Extends the metadata of a token.
-    /// @dev Emits the TokenURIExtended event upon success.
-    /// @dev Reverts if the UL has been extended previously.
-    /// @param uloc The Universal Location as a string identifying the token.
-    /// @param tokenURI The URI of the metadata to be extended.
+    /// @notice Emitted when an extended token's URI is updated
+    /// @param _claimer the address of the user who updated the token URI
+    /// @param _universalLocationHash keccak256 hash of the universal location
+    /// @param _universalLocation the universal location of the token
+    /// @param _tokenURI the URI of the extension after the update
+    event ExtendedTokenURIUpdated(
+        address indexed _claimer,
+        bytes32 indexed _universalLocationHash,
+        string _universalLocation,
+        string _tokenURI
+    );
+
+    /// @notice Extends the metadata of a token
+    /// @dev Emits the TokenURIExtended event upon success
+    /// @dev Reverts if the UL has been extended previously
+    /// @param uloc the Universal Location as a string identifying the token
+    /// @param tokenURI the URI of the extended metadata
     function extendTokenURI(
         string calldata uloc,
         string calldata tokenURI
@@ -49,7 +51,7 @@ interface AssetMetadataExtender {
     /// @notice Returns the number of extensions made about a UL
     /// @param uloc The Universal Location as a string identifying the asset
     /// @return The number of extensions
-    function balanceOfUL(string calldata uloc) external view returns (uint256);
+    function balanceOfUL(string calldata uloc) external view returns (uint32);
 
     /// @notice Returns the claimer for an extension at a given index
     /// @param uloc The Universal Location string identifying the asset
@@ -57,7 +59,7 @@ interface AssetMetadataExtender {
     /// @return The address of the claimer
     function claimerOfULByIndex(
         string calldata uloc,
-        uint256 index
+        uint32 index
     ) external view returns (address);
 
     /// @notice Returns the tokenURI for an extension at a given index
@@ -66,6 +68,6 @@ interface AssetMetadataExtender {
     /// @return The tokenURI of the extension
     function extensionOfULByIndex(
         string calldata uloc,
-        uint256 index
+        uint32 index
     ) external view returns (string memory);
 }

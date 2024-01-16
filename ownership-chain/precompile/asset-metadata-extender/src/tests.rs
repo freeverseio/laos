@@ -20,11 +20,11 @@ const TEST_CLAIMER: &str = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
 fn check_log_selectors() {
 	assert_eq!(
 		hex::encode(SELECTOR_LOG_TOKEN_URI_EXTENDED),
-		"f46176c5100037c043791a91ccf3a737b3c8b2d240c695679518d3b5efa72680"
+		"44d9bb9793c31f7dc7f090f5715faafc1fe974fbf538ed47dd8502e73e43310d"
 	);
 	assert_eq!(
 		hex::encode(SELECTOR_LOG_EXTENDED_TOKEN_URI_UPDATED),
-		"f6dbda042628e46f998e12b6aa1e1c46f496c3553a2b6f1b836ae1e680a75ab2"
+		"f83ff23b3566a6c25903f59140d36828f146b3e22e38c38133006a92c62a75e3"
 	);
 }
 
@@ -32,8 +32,8 @@ fn check_log_selectors() {
 fn function_selectors() {
 	assert_eq!(Action::Extend as u32, 0xB5A72BFF);
 	assert_eq!(Action::Balance as u32, 0x7B65DED5);
-	assert_eq!(Action::Claimer as u32, 0xC050D9BE);
-	assert_eq!(Action::Extension as u32, 0x4322DE03);
+	assert_eq!(Action::Claimer as u32, 0xA565BB04);
+	assert_eq!(Action::Extension as u32, 0xB2B7C05A);
 	assert_eq!(Action::Update as u32, 0xC7108F8);
 }
 
