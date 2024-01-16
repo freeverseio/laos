@@ -71,19 +71,20 @@ interface AssetMetadataExtender {
         uint32 index
     ) external view returns (string memory);
 
-    /// @notice Retrieves the extension of a token's universal location by a claimer
-    /// @param _universalLocation Universal location of the token
-    /// @param _claimer Address of the claimer
-    /// @return Extension of the token's universal location
+    /// @notice Returns the extension of a Universal Location made by a claimer
+    /// @dev Reverts if the Universal Location has no extension by the provided claimer
+    /// @param _universalLocation The Universal Location
+    /// @param _claimer The address of the claimer
+    /// @return The tokenURI of the extension by the provided claimer
     function extensionOfULByClaimer(
         string calldata _universalLocation,
         address _claimer
     ) external view returns (string memory);
 
-    /// @notice Checks if a token's universal location has an extension by a claimer
-    /// @param _universalLocation Universal location of the token
-    /// @param _claimer Address of the claimer
-    /// @return True if there is an extension, false otherwise
+    /// @notice Checks if a Universal Location has an extension by a claimer
+    /// @param _universalLocation The Universal Location
+    /// @param _claimer The address of the claimer
+    /// @return True if the Universal Location has an extension by the provided claimer, false otherwise
     function hasExtensionByClaimer(
         string calldata _universalLocation,
         address _claimer
