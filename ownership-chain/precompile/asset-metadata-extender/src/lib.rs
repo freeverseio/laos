@@ -36,7 +36,7 @@ pub enum Action {
 	/// Get token uri of a given universal location using indexation
 	Extension = "extensionOfULByIndex(string,uint32)", // TODO rename `extension` for `tokenURI`?
 	/// Update token uri of a given universal location using indexation
-	Update = "updateTokenURI(string,string)",
+	Update = "updateExtendedTokenURI(string,string)",
 }
 
 pub struct AssetMetadataExtenderPrecompile<Runtime>(PhantomData<Runtime>)
