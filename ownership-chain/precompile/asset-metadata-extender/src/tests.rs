@@ -525,7 +525,7 @@ fn extension_by_location_and_claimer_works() {
 
 		precompiles()
 			.prepare_test(claimer, H160(PRECOMPILE_ADDRESS), input)
-			.execute_returns_raw(claim.into());
+			.execute_returns(BoundedBytes::<MaxTokenUriLength>::from(vec![1u8; 10]));
 	});
 }
 
@@ -547,7 +547,7 @@ fn extension_by_location_and_claimer_of_inexistent_claim_reverts() {
 }
 
 #[test]
-fn has_extension_by_claim_of_existent_claim_should_return_true() {
+fn has_extension_by_claim_of_existent_claim_returns_true() {
 	new_test_ext().execute_with(|| {
 		let universal_location = Bytes("some_universal_location".as_bytes().to_vec());
 		let claimer = H160::from_str(TEST_CLAIMER).unwrap();

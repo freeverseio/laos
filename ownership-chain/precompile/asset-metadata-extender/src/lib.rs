@@ -264,7 +264,7 @@ where
 		)
 		.ok_or_else(|| revert("invalid ul"))?;
 
-		Ok(succeed(token_uri.into_inner()))
+		Ok(succeed(EvmDataWriter::new().write(Bytes(token_uri.into_inner())).build()))
 	}
 
 	fn has_extension_by_claimer(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
