@@ -19,10 +19,10 @@ interface AssetMetadataExtender {
     );
 
     /// @notice Emitted when an extended token's URI is updated
-    /// @param _claimer The address of the user who updated the token URI
+    /// @param _claimer the address of the user who updated the token URI
     /// @param _universalLocationHash keccak256 hash of the universal location
-    /// @param _universalLocation The universal location of the token
-    /// @param _tokenURI The new token URI after the update
+    /// @param _universalLocation the universal location of the token
+    /// @param _tokenURI the URI of the extension after the update
     event ExtendedTokenURIUpdated(
         address indexed _claimer,
         bytes32 indexed _universalLocationHash,
@@ -30,11 +30,11 @@ interface AssetMetadataExtender {
         string _tokenURI
     );
 
-    /// @notice Extends the metadata of a token.
-    /// @dev Emits the TokenURIExtended event upon success.
-    /// @dev Reverts if the UL has been extended previously.
-    /// @param uloc The Universal Location as a string identifying the token.
-    /// @param tokenURI The URI of the metadata to be extended.
+    /// @notice Extends the metadata of a token
+    /// @dev Emits the TokenURIExtended event upon success
+    /// @dev Reverts if the UL has been extended previously
+    /// @param uloc the Universal Location as a string identifying the token
+    /// @param tokenURI the URI of the extended metadata
     function extendTokenURI(
         string calldata uloc,
         string calldata tokenURI
