@@ -13,7 +13,7 @@ interface AssetMetadataExtender {
     /// @param _tokenURI the extended URI of the token
     event TokenURIExtended(
         address indexed _claimer,
-        uint256 indexed _universalLocationHash,
+        bytes32 indexed _universalLocationHash,
         string _universalLocation,
         string _tokenURI
     );
@@ -25,7 +25,7 @@ interface AssetMetadataExtender {
     /// @param _tokenURI The new token URI after the update
     event ExtendedTokenURIUpdated(
         address indexed _claimer,
-        uint256 indexed _universalLocationHash,
+        bytes32 indexed _universalLocationHash,
         string _universalLocation,
         string _tokenURI
     );
