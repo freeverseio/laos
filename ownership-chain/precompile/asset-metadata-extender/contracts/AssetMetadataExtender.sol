@@ -28,6 +28,16 @@ interface AssetMetadataExtender {
         string _tokenURI
     );
 
+    /// @notice Extends the metadata of a token.
+    /// @dev Emits the TokenURIExtended event upon success.
+    /// @dev Reverts if the UL has been extended previously.
+    /// @param uloc The Universal Location as a string identifying the token.
+    /// @param tokenURI The URI of the metadata to be extended.
+    function extendTokenURI(
+        string calldata uloc,
+        string calldata tokenURI
+    ) external;
+
     /// @notice Updates the URI of an extended token
     /// @param _uloc The universal location identifier of the token
     /// @param _tokenURI The new URI to be set for the token
