@@ -513,11 +513,7 @@ fn extension_by_location_and_claimer_works() {
 			.build();
 
 		precompiles()
-			.prepare_test(
-				claimer.clone(),
-				H160(PRECOMPILE_ADDRESS),
-				input.clone(),
-			)
+			.prepare_test(claimer.clone(), H160(PRECOMPILE_ADDRESS), input.clone())
 			.execute_returns_raw(sp_std::vec![]);
 
 		let input = EvmDataWriter::new_with_selector(Action::ExtensionOfULByClaimer)
@@ -561,11 +557,7 @@ fn has_extension_by_claim_of_existent_claim_should_return_true() {
 			.build();
 
 		precompiles()
-			.prepare_test(
-				claimer.clone(),
-				H160(PRECOMPILE_ADDRESS),
-				input.clone(),
-			)
+			.prepare_test(claimer.clone(), H160(PRECOMPILE_ADDRESS), input.clone())
 			.execute_returns_raw(sp_std::vec![]);
 
 		let input = EvmDataWriter::new_with_selector(Action::HasExtension)
@@ -580,7 +572,7 @@ fn has_extension_by_claim_of_existent_claim_should_return_true() {
 }
 
 #[test]
-fn has_extension_by_claimer_of_unexistent_claim_should_return_false(){
+fn has_extension_by_claimer_of_unexistent_claim_should_return_false() {
 	new_test_ext().execute_with(|| {
 		let universal_location = Bytes("some_universal_location".as_bytes().to_vec());
 		let claimer = H160::from_str(TEST_CLAIMER).unwrap();

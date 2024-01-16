@@ -281,14 +281,14 @@ where
 			claimer.into(),
 		);
 
-		Ok(succeed(bool_to_32_bytes(has_extension)))	
+		Ok(succeed(bool_to_32_bytes(has_extension)))
 	}
 }
 
 fn bool_to_32_bytes(value: bool) -> [u8; 32] {
-    let mut output = [0u8; 32]; // Create a 32-byte array initialized with zeros
-    output[31] = value as u8;   // Set the last byte to the boolean value
-    output
+	let mut output = [0u8; 32]; // Create a 32-byte array initialized with zeros
+	output[31] = value as u8; // Set the last byte to the boolean value
+	output
 }
 
 #[cfg(test)]
