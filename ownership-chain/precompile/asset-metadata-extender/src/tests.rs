@@ -530,7 +530,7 @@ fn extension_by_location_and_claimer_works() {
 }
 
 #[test]
-fn extension_by_location_and_claimer_of_inexistent_claim_reverts() {
+fn extension_by_location_and_claimer_of_unexistent_claim_reverts() {
 	new_test_ext().execute_with(|| {
 		let universal_location = Bytes("some_universal_location".as_bytes().to_vec());
 		let claimer = H160::from_str(TEST_CLAIMER).unwrap();
@@ -574,7 +574,7 @@ fn has_extension_by_claim_of_existent_claim_returns_true() {
 }
 
 #[test]
-fn has_extension_by_claimer_of_inexistent_claim_returns_false() {
+fn has_extension_by_claimer_of_unexistent_claim_returns_false() {
 	new_test_ext().execute_with(|| {
 		let universal_location = Bytes("some_universal_location".as_bytes().to_vec());
 		let claimer = H160::from_str(TEST_CLAIMER).unwrap();
