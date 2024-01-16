@@ -52,7 +52,31 @@ describeWithExistingNode("Frontier RPC (Update Extended Token URI)", (context) =
 
 		const got = await contract.methods.extensionOfULByIndex(uloc, 0).call();
 		expect(got).to.be.eq(newTokenURI);
-
 		expect(udpateResult.status).to.be.eq(true);
+		expect(Object.keys(udpateResult.events).length).to.be.eq(1);
+
+		// data returned within the event
+		expect(udpateResult.events.ExtendedTokenURIUpdated.returnValues._claimer).to.be.eq(GENESIS_ACCOUNT);
+		expect(udpateResult.events.ExtendedTokenURIUpdated.returnValues._universalLocationHash).to.be.eq(context.web3.utils.soliditySha3(uloc));
+		expect(udpateResult.events.ExtendedTokenURIUpdated.returnValues._universalLocation).to.be.eq(uloc);
+		expect(udpateResult.events.ExtendedTokenURIUpdated.returnValues._tokenURI).to.be.eq(newTokenURI);
+
+		// event topics
+		expect(udpateResult.events.ExtendedTokenURIUpdated.raw.topics.length).to.be.eq(3);
+		expect(udpateResult.events.ExtendedTokenURIUpdated.raw.topics[0]).to.be.eq(SELECTOR_LOG_EXTENDED_TOKEN_URI_UPDATED);
+		expect(udpateResult.events.ExtendedTokenURIUpdated.raw.topics[1]).to.be.eq(
+			context.web3.utils.padLeft(GENESIS_ACCOUNT.toLowerCase(), 64)
+		);
+		expect(udpateResult.events.ExtendedTokenURIUpdated.raw.topics[2]).to.be.eq(
+			context.web3.utils.padLeft(context.web3.utils.soliditySha3(uloc), 64)
+		);
+
+		// event data
+		expect(udpateResult.events.ExtendedTokenURIUpdated.raw.data).to.be.eq(
+			context.web3.eth.abi.encodeParameters(
+				["string", "string"],
+				[uloc, newTokenURI]
+			)
+		);
 	});
 });
