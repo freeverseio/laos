@@ -1,8 +1,8 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
 use laos_precompile_utils::{
-	keccak256, revert_dispatch_error, succeed, Bytes, EvmDataReader, EvmDataWriter, EvmResult,
-	FunctionModifier, GasCalculator, LogExt, LogsBuilder, PrecompileHandleExt,
+	keccak256, revert_dispatch_error, succeed, Address, Bytes, EvmDataReader, EvmDataWriter,
+	EvmResult, FunctionModifier, GasCalculator, LogExt, LogsBuilder, PrecompileHandleExt,
 };
 use pallet_asset_metadata_extender::{
 	traits::AssetMetadataExtender as AssetMetadataExtenderT,
@@ -10,7 +10,7 @@ use pallet_asset_metadata_extender::{
 	Pallet as AssetMetadataExtender,
 };
 use parity_scale_codec::Encode;
-use precompile_utils::solidity::{codec::Address, revert::revert};
+use precompile_utils::solidity::revert::revert;
 
 use sp_core::{Get, H160};
 use sp_io::hashing::keccak_256;
@@ -37,6 +37,8 @@ pub enum Action {
 	Extension = "extensionOfULByIndex(string,uint256)", // TODO rename `extension` for `tokenURI`?
 	/// Update token uri of a given universal location using indexation
 	Update = "updateTokenURI(string,string)",
+	/// Get claimer of a given universal location using claimer
+	ExtensionOfULByClaimer = "extensionOfULByClaimer(string,address)",
 }
 
 pub struct AssetMetadataExtenderPrecompile<Runtime>(PhantomData<Runtime>)
@@ -58,6 +60,7 @@ where
 			Action::Claimer => FunctionModifier::View,
 			Action::Extension => FunctionModifier::View,
 			Action::Update => FunctionModifier::NonPayable,
+			Action::ExtensionOfULByClaimer => FunctionModifier::View,
 		})?;
 
 		match selector {
@@ -66,6 +69,7 @@ where
 			Action::Claimer => Self::claimer_by_index(handle),
 			Action::Extension => Self::extension_by_index(handle),
 			Action::Update => Self::update(handle),
+			Action::ExtensionOfULByClaimer => Self::extension_by_location_and_claimer(handle),
 		}
 	}
 }
@@ -237,6 +241,26 @@ where
 	) -> Result<BoundedVec<u8, Bound>, ()> {
 		let raw_vec = input.read::<Bytes>().map_err(|_| ())?.0;
 		raw_vec.try_into().map_err(|_| ())
+	}
+
+	fn extension_by_location_and_claimer(
+		handle: &mut impl PrecompileHandle,
+	) -> EvmResult<PrecompileOutput> {
+		let mut input = handle.read_input()?;
+		input.expect_arguments(2)?;
+
+		let universal_location = Self::read_bounded_vec(&mut input)
+			.map_err(|_| revert("invalid universal location length"))?;
+
+		let claimer = input.read::<Address>().map_err(|_| revert("invalid claimer"))?.0;
+
+		let token_uri = AssetMetadataExtender::<Runtime>::extension_by_location_and_claimer(
+			claimer.into(),
+			universal_location.clone(),
+		)
+		.ok_or_else(|| revert("invalid ul"))?;
+
+		Ok(succeed(token_uri.into_inner()))
 	}
 }
 
