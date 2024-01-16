@@ -37,7 +37,7 @@ pub enum Action {
 	Extension = "extensionOfULByIndex(string,uint32)", // TODO rename `extension` for `tokenURI`?
 	/// Update token uri of a given universal location using indexation
 	Update = "updateExtendedTokenURI(string,string)",
-	/// Get claimer of a given universal location using claimer
+	/// Get extension of a given universal location using claimer
 	ExtensionOfULByClaimer = "extensionOfULByClaimer(string,address)",
 	/// Check if a given universal location has an extension
 	HasExtension = "hasExtensionByClaimer(string,address)",
