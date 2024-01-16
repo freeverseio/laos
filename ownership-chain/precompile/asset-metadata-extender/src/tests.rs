@@ -499,3 +499,51 @@ fn balance_of_works() {
 			.execute_returns_raw(1_u32.to_be_bytes().to_vec());
 	});
 }
+
+#[test]
+fn extension_by_location_and_claimer_works() {
+	new_test_ext().execute_with(|| {
+		let universal_location = Bytes("some_universal_location".as_bytes().to_vec());
+		let claimer = H160::from_str(TEST_CLAIMER).unwrap();
+		let claim = Bytes(vec![1u8; 10]);
+
+		let input = EvmDataWriter::new_with_selector(Action::Extend)
+			.write(universal_location.clone())
+			.write(claim.clone())
+			.build();
+
+		precompiles()
+			.prepare_test(
+				claimer.clone(),
+				H160(PRECOMPILE_ADDRESS),
+				input.clone(),
+			)
+			.execute_returns_raw(sp_std::vec![]);
+
+		let input = EvmDataWriter::new_with_selector(Action::ExtensionOfULByClaimer)
+			.write(universal_location.clone())
+			.write(Address::from(claimer.clone()))
+			.build();
+
+		precompiles()
+			.prepare_test(claimer, H160(PRECOMPILE_ADDRESS), input)
+			.execute_returns_raw(claim.into());
+	});
+}
+
+#[test]
+fn extension_by_location_and_claimer_of_unexistent_claim_should_revert() {
+	new_test_ext().execute_with(|| {
+		let universal_location = Bytes("some_universal_location".as_bytes().to_vec());
+		let claimer = H160::from_str(TEST_CLAIMER).unwrap();
+
+		let input = EvmDataWriter::new_with_selector(Action::ExtensionOfULByClaimer)
+			.write(universal_location.clone())
+			.write(Address::from(claimer.clone()))
+			.build();
+
+		precompiles()
+			.prepare_test(claimer, H160(PRECOMPILE_ADDRESS), input)
+			.execute_reverts(|r| r == b"invalid ul");
+	});
+}
