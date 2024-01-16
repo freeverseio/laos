@@ -35,4 +35,13 @@ pub trait AssetMetadataExtender<T: Config> {
 		universal_location: UniversalLocationOf<T>,
 		index: u32,
 	) -> Option<TokenUriOf<T>>;
+
+	/// Retrieves the token URI extension based on the claimer and universal location.
+	fn extension_by_location_and_claimer(
+		universal_location: UniversalLocationOf<T>,
+		claimer: AccountIdOf<T>,
+	) -> Option<TokenUriOf<T>>;
+
+	/// Checks if a token URI extension exists for the given universal location and claimer.
+	fn has_extension(universal_location: UniversalLocationOf<T>, claimer: AccountIdOf<T>) -> bool;
 }

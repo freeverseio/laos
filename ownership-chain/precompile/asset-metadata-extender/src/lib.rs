@@ -37,6 +37,10 @@ pub enum Action {
 	Extension = "extensionOfULByIndex(string,uint32)", // TODO rename `extension` for `tokenURI`?
 	/// Update token uri of a given universal location using indexation
 	Update = "updateExtendedTokenURI(string,string)",
+	/// Get extension of a given universal location using claimer
+	ExtensionOfULByClaimer = "extensionOfULByClaimer(string,address)",
+	/// Check if a given universal location has an extension
+	HasExtension = "hasExtensionByClaimer(string,address)",
 }
 
 pub struct AssetMetadataExtenderPrecompile<Runtime>(PhantomData<Runtime>)
@@ -58,6 +62,8 @@ where
 			Action::Claimer => FunctionModifier::View,
 			Action::Extension => FunctionModifier::View,
 			Action::Update => FunctionModifier::NonPayable,
+			Action::ExtensionOfULByClaimer => FunctionModifier::View,
+			Action::HasExtension => FunctionModifier::View,
 		})?;
 
 		match selector {
@@ -66,6 +72,8 @@ where
 			Action::Claimer => Self::claimer_by_index(handle),
 			Action::Extension => Self::extension_by_index(handle),
 			Action::Update => Self::update(handle),
+			Action::ExtensionOfULByClaimer => Self::extension_by_location_and_claimer(handle),
+			Action::HasExtension => Self::has_extension_by_claimer(handle),
 		}
 	}
 }
@@ -237,6 +245,43 @@ where
 	) -> Result<BoundedVec<u8, Bound>, ()> {
 		let raw_vec = input.read::<Bytes>().map_err(|_| ())?.0;
 		raw_vec.try_into().map_err(|_| ())
+	}
+
+	fn extension_by_location_and_claimer(
+		handle: &mut impl PrecompileHandle,
+	) -> EvmResult<PrecompileOutput> {
+		let mut input = handle.read_input()?;
+		input.expect_arguments(2)?;
+
+		let universal_location = Self::read_bounded_vec(&mut input)
+			.map_err(|_| revert("invalid universal location length"))?;
+
+		let claimer = input.read::<Address>().map_err(|_| revert("invalid claimer"))?.0;
+
+		let token_uri = AssetMetadataExtender::<Runtime>::extension_by_location_and_claimer(
+			universal_location.clone(),
+			claimer.into(),
+		)
+		.ok_or_else(|| revert("invalid ul"))?;
+
+		Ok(succeed(EvmDataWriter::new().write(Bytes(token_uri.into_inner())).build()))
+	}
+
+	fn has_extension_by_claimer(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
+		let mut input = handle.read_input()?;
+		input.expect_arguments(2)?;
+
+		let universal_location = Self::read_bounded_vec(&mut input)
+			.map_err(|_| revert("invalid universal location length"))?;
+
+		let claimer = input.read::<Address>().map_err(|_| revert("invalid claimer"))?.0;
+
+		let has_extension = AssetMetadataExtender::<Runtime>::has_extension(
+			universal_location.clone(),
+			claimer.into(),
+		);
+
+		Ok(succeed(EvmDataWriter::new().write(has_extension).build()))
 	}
 }
 

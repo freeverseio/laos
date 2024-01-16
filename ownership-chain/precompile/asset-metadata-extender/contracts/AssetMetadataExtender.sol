@@ -70,4 +70,23 @@ interface AssetMetadataExtender {
         string calldata uloc,
         uint32 index
     ) external view returns (string memory);
+
+    /// @notice Returns the extension of a Universal Location made by a claimer
+    /// @dev Reverts if the Universal Location has no extension by the provided claimer
+    /// @param _universalLocation The Universal Location
+    /// @param _claimer The address of the claimer
+    /// @return The tokenURI of the extension by the provided claimer
+    function extensionOfULByClaimer(
+        string calldata _universalLocation,
+        address _claimer
+    ) external view returns (string memory);
+
+    /// @notice Checks if a Universal Location has an extension by a claimer
+    /// @param _universalLocation The Universal Location
+    /// @param _claimer The address of the claimer
+    /// @return True if the Universal Location has an extension by the provided claimer, false otherwise
+    function hasExtensionByClaimer(
+        string calldata _universalLocation,
+        address _claimer
+    ) external view returns (bool);
 }
