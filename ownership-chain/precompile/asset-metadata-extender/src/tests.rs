@@ -528,7 +528,7 @@ fn extension_by_location_and_claimer_works() {
 }
 
 #[test]
-fn extension_by_location_and_claimer_of_unexistent_claim_should_revert() {
+fn extension_by_location_and_claimer_of_inexistent_claim_reverts() {
 	new_test_ext().execute_with(|| {
 		let universal_location = Bytes("some_universal_location".as_bytes().to_vec());
 		let claimer = H160::from_str(TEST_CLAIMER).unwrap();
