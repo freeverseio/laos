@@ -331,8 +331,8 @@ fn get_unexistent_extension_by_location_and_claimer_fails() {
 
 		assert_eq!(
 			AssetMetadataExtender::extension_by_location_and_claimer(
-				claimer.clone(),
 				universal_location.clone()
+				claimer.clone(),
 			),
 			None
 		);
@@ -349,8 +349,8 @@ fn get_extension_by_location_and_claimer_works() {
 		create_token_uri_extension(claimer.clone(), universal_location.clone(), token_uri.clone());
 		assert_eq!(
 			AssetMetadataExtender::extension_by_location_and_claimer(
-				claimer.clone(),
 				universal_location.clone()
+				claimer.clone(),
 			)
 			.unwrap(),
 			token_uri

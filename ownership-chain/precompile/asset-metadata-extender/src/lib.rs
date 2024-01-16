@@ -259,8 +259,8 @@ where
 		let claimer = input.read::<Address>().map_err(|_| revert("invalid claimer"))?.0;
 
 		let token_uri = AssetMetadataExtender::<Runtime>::extension_by_location_and_claimer(
-			claimer.into(),
 			universal_location.clone(),
+			claimer.into(),
 		)
 		.ok_or_else(|| revert("invalid ul"))?;
 
