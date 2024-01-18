@@ -242,6 +242,7 @@ orml-xcm-support = { git = "https://github.com/open-web3-stack/open-runtime-modu
 orml-xtokens = { git = "https://github.com/open-web3-stack/open-runtime-module-library", branch = "polkadot-v1.1.0", default-features = false }
 
 # LAOS pallets
+pallet-collator-rewards = { path = "./ownership-chain/pallets/collator-rewards", default-features = false }
 pallet-laos-evolution = { path = "./ownership-chain/pallets/laos-evolution", default-features = false }
 pallet-evm-evolution-collection-factory = { path = "./ownership-chain/precompile/evolution-collection-factory", default-features = false }
 pallet-evm-evolution-collection = { path = "./ownership-chain/precompile/evolution-collection", default-features = false }

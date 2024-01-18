@@ -50,6 +50,7 @@ sp-transaction-pool = { workspace = true }
 sp-version = { workspace = true }
 
 pallet-asset-metadata-extender = { workspace = true }
+pallet-collator-rewards = { workspace = true }
 pallet-laos-evolution = { workspace = true }
 
 pallet-evm-evolution-collection-factory = { workspace = true }
@@ -129,6 +130,7 @@ std = [
 	"pallet-aura/std",
 	"pallet-authorship/std",
 	"pallet-balances/std",
+	"pallet-collator-rewards/std",
 	"pallet-collator-selection/std",
 	"pallet-session/std",
 	"pallet-sudo/std",
@@ -190,6 +192,7 @@ runtime-benchmarks = [
 	"frame-system/runtime-benchmarks",
 	"pallet-assets/runtime-benchmarks",
 	"pallet-balances/runtime-benchmarks",
+	"pallet-collator-rewards/runtime-benchmarks",
 	"pallet-collator-selection/runtime-benchmarks",
 	"pallet-laos-evolution/runtime-benchmarks",
 	"pallet-multisig/runtime-benchmarks",
@@ -222,6 +225,7 @@ try-runtime = [
 	"pallet-aura/try-runtime",
 	"pallet-authorship/try-runtime",
 	"pallet-balances/try-runtime",
+	"pallet-collator-rewards/try-runtime",
 	"pallet-collator-selection/try-runtime",
 	"pallet-session/try-runtime",
 	"pallet-sudo/try-runtime",

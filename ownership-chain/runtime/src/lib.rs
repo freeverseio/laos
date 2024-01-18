@@ -18,19 +18,16 @@ use ownership_parachain_primitives::{MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO
 use parity_scale_codec::{Decode, Encode};
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
-use sp_core::{
-	crypto::{ByteArray, KeyTypeId},
-	OpaqueMetadata, H160, H256, U256,
-};
+use sp_core::{crypto::KeyTypeId, OpaqueMetadata, H160, H256, U256};
 
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{
-		BlakeTwo256, Block as BlockT, Convert, DispatchInfoOf, Dispatchable, Get, IdentityLookup,
-		PostDispatchInfoOf, UniqueSaturatedInto,
+		AccountIdConversion, BlakeTwo256, Block as BlockT, Convert, DispatchInfoOf, Dispatchable,
+		Get, IdentityLookup, PostDispatchInfoOf, UniqueSaturatedInto,
 	},
 	transaction_validity::{TransactionSource, TransactionValidity, TransactionValidityError},
-	ApplyExtrinsicResult, ConsensusEngineId,
+	ApplyExtrinsicResult,
 };
 
 use sp_std::prelude::*;
@@ -41,8 +38,8 @@ use sp_version::RuntimeVersion;
 use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{
-		ConstBool, ConstU32, ConstU64, ConstU8, Currency, EitherOfDiverse, Everything, FindAuthor,
-		Hooks, Imbalance, OnUnbalanced,
+		ConstBool, ConstU32, ConstU64, ConstU8, Currency, EitherOfDiverse, Everything, Hooks,
+		Imbalance, OnUnbalanced,
 	},
 	weights::{
 		constants::WEIGHT_REF_TIME_PER_SECOND, ConstantMultiplier, Weight, WeightToFeeCoefficient,
@@ -327,7 +324,7 @@ impl pallet_timestamp::Config for Runtime {
 
 impl pallet_authorship::Config for Runtime {
 	type FindAuthor = pallet_session::FindAccountFromAuthorIndex<Self, Aura>;
-	type EventHandler = (CollatorSelection,);
+	type EventHandler = (CollatorSelection, CollatorRewards);
 }
 
 parameter_types! {
@@ -471,6 +468,21 @@ impl pallet_collator_selection::Config for Runtime {
 }
 
 parameter_types! {
+	/// Community incentives account
+	pub CommunityIncentivesAccountId: AccountId = PalletId(*b"laos/inc").into_account_truncating();
+	/// Reward given to block author per block
+	pub const RewardPerBlock: Balance = UNIT / 10;
+}
+
+impl pallet_collator_rewards::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Currency = Balances;
+	type CommunityIncentivesAccountId = CommunityIncentivesAccountId;
+	type RewardPerBlock = RewardPerBlock;
+	type WeightInfo = pallet_collator_rewards::weights::SubstrateWeight<Runtime>;
+}
+
+parameter_types! {
 	/// Null address
 	pub NullAddress: AccountId = [0u8; 20].into();
 }
@@ -529,20 +541,6 @@ impl Convert<U256, AccountId> for AssetIdToInitialOwner {
 
 // Frontier
 impl pallet_evm_chain_id::Config for Runtime {}
-
-pub struct FindAuthorTruncated<F>(PhantomData<F>);
-impl<F: FindAuthor<u32>> FindAuthor<H160> for FindAuthorTruncated<F> {
-	fn find_author<'a, I>(digests: I) -> Option<H160>
-	where
-		I: 'a + IntoIterator<Item = (ConsensusEngineId, &'a [u8])>,
-	{
-		if let Some(author_index) = F::find_author(digests) {
-			let authority_id = Aura::authorities()[author_index as usize].clone();
-			return Some(H160::from_slice(&authority_id.to_raw_vec()[4..24]))
-		}
-		None
-	}
-}
 
 /// Handles transaction fees from the EVM, depositing priority fee in a staking pot
 pub struct EVMDealWithFees<R>(PhantomData<R>);
@@ -740,6 +738,7 @@ construct_runtime!(
 
 		LaosEvolution: pallet_laos_evolution = 42,
 		AssetMetadataExtender: pallet_asset_metadata_extender = 43,
+		CollatorRewards: pallet_collator_rewards = 44,
 
 		// Frontier
 		Ethereum: pallet_ethereum = 50,
@@ -874,6 +873,7 @@ mod benches {
 		[cumulus_pallet_xcmp_queue, XcmpQueue]
 		[pallet_laos_evolution, LaosEvolution]
 		[pallet_asset_metadata_extender, AssetMetadataExtender]
+		[pallet_collator_rewards, CollatorRewards]
 	);
 }
 
