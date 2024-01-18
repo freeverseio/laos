@@ -22,6 +22,13 @@ fn create_collection(owner: &str) -> CollectionId {
 	collection_id
 }
 
+/// Utility function to create a collection and return its ID
+fn create_collection_new(owner: H160) -> CollectionId {
+	let collection_id = LaosEvolution::collection_counter();
+	assert_ok!(LaosEvolution::create_collection(owner));
+	collection_id
+}
+
 #[test]
 fn owner_of_inexistent_collection() {
 	new_test_ext().execute_with(|| {
@@ -521,21 +528,77 @@ fn disable_twice_has_no_effect() {
 }
 
 #[test]
-#[ignore]
 fn non_collection_owner_can_mint_when_public_minting_is_enabled() {
-	todo!("implement");
+	new_test_ext().execute_with(|| {
+		let collection_id = LaosEvolution::collection_counter();
+		let token_uri: TokenUriOf<Test> =
+			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
+		let owner = AccountId::from_str(ALICE).unwrap();
+		let non_owner = AccountId::from_str(BOB).unwrap();
+
+		create_collection_new(owner);
+		assert_ok!(LaosEvolution::enable_public_minting(owner, collection_id));
+		assert_ok!(LaosEvolution::mint_with_external_uri(
+			non_owner,
+			collection_id,
+			0,
+			non_owner,
+			token_uri.clone()
+		));
+	});
 }
 
 #[test]
-#[ignore]
 fn collection_owner_can_mint_when_public_minting_is_enabled() {
-	todo!("implement");
+	new_test_ext().execute_with(|| {
+		let collection_id = LaosEvolution::collection_counter();
+		let token_uri: TokenUriOf<Test> =
+			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
+		let owner = AccountId::from_str(ALICE).unwrap();
+		let non_owner = AccountId::from_str(BOB).unwrap();
+
+		create_collection_new(owner);
+		assert_ok!(LaosEvolution::enable_public_minting(owner, collection_id));
+		assert_ok!(LaosEvolution::mint_with_external_uri(
+			owner,
+			collection_id,
+			0,
+			non_owner,
+			token_uri.clone()
+		));
+	});
 }
 
 #[test]
-#[ignore]
 fn non_collection_owner_cannot_evolve_when_public_minting_is_enabled() {
-	todo!("implement");
+	new_test_ext().execute_with(|| {
+		let collection_id = LaosEvolution::collection_counter();
+		let token_uri: TokenUriOf<Test> =
+			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
+		let owner = AccountId::from_str(ALICE).unwrap();
+		let non_owner = AccountId::from_str(BOB).unwrap();
+		let slot = 0;
+		let token_id = slot_and_owner_to_token_id(slot, non_owner).unwrap();
+
+		create_collection_new(owner);
+		assert_ok!(LaosEvolution::enable_public_minting(owner, collection_id));
+		assert_ok!(LaosEvolution::mint_with_external_uri(
+			non_owner,
+			collection_id,
+			slot,
+			non_owner,
+			token_uri.clone()
+		));
+		assert_noop!(
+			LaosEvolution::evolve_with_external_uri(
+				non_owner,
+				collection_id,
+				token_id,
+				token_uri.clone()
+			),
+			Error::<Test>::NoPermission
+		);
+	});
 }
 
 mod collection_id_conversion {

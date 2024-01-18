@@ -154,7 +154,12 @@ impl<T: Config> EvolutionCollection<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T>
 			CollectionOwner::<T>::contains_key(collection_id),
 			Error::<T>::CollectionDoesNotExist
 		);
-		ensure!(CollectionOwner::<T>::get(collection_id) == Some(who), Error::<T>::NoPermission);
+		if !CollectionPublicMintingEnabled::<T>::get(collection_id) {
+			ensure!(
+				CollectionOwner::<T>::get(collection_id) == Some(who),
+				Error::<T>::NoPermission
+			);
+		}
 
 		let to_as_h160 = T::AccountIdToH160::convert(to.clone());
 		// compose asset_id	from slot and owner
