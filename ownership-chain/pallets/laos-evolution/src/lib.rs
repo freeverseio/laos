@@ -57,7 +57,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn collection_public_minting_enabled)]
 	pub type CollectionPublicMintingEnabled<T: Config> =
-		StorageMap<_, Blake2_128Concat, CollectionId, bool, ValueQuery>;
+		StorageMap<_, Blake2_128Concat, CollectionId, (), OptionQuery>;
 
 	/// Token URI which can override the default URI scheme and set explicitly
 	/// This will contain external URI in a raw form
@@ -154,7 +154,7 @@ impl<T: Config> EvolutionCollection<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T>
 			CollectionOwner::<T>::contains_key(collection_id),
 			Error::<T>::CollectionDoesNotExist
 		);
-		if !CollectionPublicMintingEnabled::<T>::get(collection_id) {
+		if CollectionPublicMintingEnabled::<T>::get(collection_id).is_none() {
 			ensure!(
 				CollectionOwner::<T>::get(collection_id) == Some(who),
 				Error::<T>::NoPermission
@@ -218,7 +218,7 @@ impl<T: Config> EvolutionCollection<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T>
 			Error::<T>::CollectionDoesNotExist
 		);
 		ensure!(CollectionOwner::<T>::get(collection_id) == Some(who), Error::<T>::NoPermission);
-		CollectionPublicMintingEnabled::<T>::insert(collection_id, true);
+		CollectionPublicMintingEnabled::<T>::insert(collection_id, ());
 		Self::deposit_event(Event::PublicMintingEnabled { collection_id });
 		Ok(())
 	}
@@ -229,7 +229,7 @@ impl<T: Config> EvolutionCollection<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T>
 			Error::<T>::CollectionDoesNotExist
 		);
 		ensure!(CollectionOwner::<T>::get(collection_id) == Some(who), Error::<T>::NoPermission);
-		CollectionPublicMintingEnabled::<T>::insert(collection_id, false);
+		CollectionPublicMintingEnabled::<T>::remove(collection_id);
 		Self::deposit_event(Event::PublicMintingDisabled { collection_id });
 		Ok(())
 	}
@@ -239,7 +239,7 @@ impl<T: Config> EvolutionCollection<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T>
 			CollectionOwner::<T>::contains_key(collection_id),
 			Error::<T>::CollectionDoesNotExist
 		);
-		Ok(CollectionPublicMintingEnabled::<T>::get(collection_id))
+		Ok(CollectionPublicMintingEnabled::<T>::get(collection_id).is_some())
 	}
 }
 
