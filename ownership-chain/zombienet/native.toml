@@ -1,5 +1,5 @@
 [relaychain]
-default_command = "{{ZOMBIENET_RELAYCHAIN_COMMAND}}"
+default_command = "/home/asini/.local/bin/polkadot"
 chain = "rococo-local"
 
   [[relaychain.nodes]]
