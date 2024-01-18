@@ -466,7 +466,7 @@ fn disable_public_minting_for_nonexistent_collection_fails() {
 }
 
 #[test]
-fn is_public_minting_enabled_for_unexistent_returns_false() {
+fn is_public_minting_enabled_for_nonexistent_returns_false() {
 	new_test_ext().execute_with(|| {
 		assert_eq!(LaosEvolution::is_public_minting_enabled(0), false);
 	});
@@ -526,6 +526,37 @@ fn anyone_can_mint_when_public_minting_is_enabled() {
 			AccountId::from_str(non_owner).unwrap(),
 			token_uri.clone()
 		));
+	});
+}
+
+#[test]
+fn nobody_can_mint_when_public_minting_is_disabled() {
+	new_test_ext().execute_with(|| {
+		let collection_id = LaosEvolution::collection_counter();
+		let token_uri: TokenUriOf<Test> =
+			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
+		let owner = ALICE;
+		let non_owner = BOB;
+
+		create_collection(owner);
+		assert_ok!(LaosEvolution::enable_public_minting(
+			AccountId::from_str(owner).unwrap(),
+			collection_id
+		));
+		assert_ok!(LaosEvolution::disable_public_minting(
+			AccountId::from_str(owner).unwrap(),
+			collection_id
+		));
+		assert_noop!(
+			LaosEvolution::mint_with_external_uri(
+				AccountId::from_str(non_owner).unwrap(),
+				collection_id,
+				0,
+				AccountId::from_str(non_owner).unwrap(),
+				token_uri.clone()
+			),
+			Error::<Test>::NoPermission
+		);
 	});
 }
 
