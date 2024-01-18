@@ -370,11 +370,6 @@ fn when_disable_public_minting_reverts_should_return_error() {
 }
 
 #[test]
-fn when_is_public_minting_enabled_reverts_should_return_error() {
-	todo!("unimplemented")
-}
-
-#[test]
 fn test_expected_cost_token_uri() {
 	new_test_ext().execute_with(|| {
 		let alice = H160::from_str(ALICE).unwrap();

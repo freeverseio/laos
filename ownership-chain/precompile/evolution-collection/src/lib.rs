@@ -305,14 +305,10 @@ where
 		let collection_id = address_to_collection_id(context.address)
 			.map_err(|_| revert("invalid collection address"))?;
 
-		match LaosEvolution::<Runtime>::is_public_minting_enabled(collection_id) {
-			Ok(is_enabled) => {
-				let consumed_gas: u64 = GasCalculator::<Runtime>::db_read_gas_cost(1);
-				handle.record_cost(consumed_gas)?;
-				Ok(succeed(EvmDataWriter::new().write(is_enabled).build()))
-			},
-			Err(err) => Err(revert_dispatch_error(err)),
-		}
+		let is_enabled = LaosEvolution::<Runtime>::is_public_minting_enabled(collection_id);
+		let consumed_gas: u64 = GasCalculator::<Runtime>::db_read_gas_cost(1);
+		handle.record_cost(consumed_gas)?;
+		Ok(succeed(EvmDataWriter::new().write(is_enabled).build()))
 	}
 }
 
