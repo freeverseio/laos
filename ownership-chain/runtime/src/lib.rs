@@ -26,8 +26,8 @@ use sp_core::{
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{
-		BlakeTwo256, Block as BlockT, Convert, DispatchInfoOf, Dispatchable, Get, IdentityLookup,
-		PostDispatchInfoOf, UniqueSaturatedInto, ConvertInto
+		BlakeTwo256, Block as BlockT, Convert, ConvertInto, DispatchInfoOf, Dispatchable, Get,
+		IdentityLookup, PostDispatchInfoOf, UniqueSaturatedInto,
 	},
 	transaction_validity::{TransactionSource, TransactionValidity, TransactionValidityError},
 	ApplyExtrinsicResult, ConsensusEngineId,
@@ -712,7 +712,7 @@ impl pallet_multisig::Config for Runtime {
 parameter_types! {
 	pub const MinVestedTransfer: Balance = UNIT;
 	pub UnvestedFundsAllowedWithdrawReasons: WithdrawReasons =
-        WithdrawReasons::except(WithdrawReasons::TRANSFER | WithdrawReasons::RESERVE);
+		WithdrawReasons::except(WithdrawReasons::TRANSFER | WithdrawReasons::RESERVE);
 }
 
 impl pallet_vesting::Config for Runtime {
