@@ -406,7 +406,7 @@ fn test_expected_cost_mint_with_external_uri() {
 		// `mint_with_external_uri` weight + log cost
 		precompiles()
 			.prepare_test(owner, collection_address, input)
-			.expect_cost(190104055) // [`WeightToGas`] set to 1:1 in mock
+			.expect_cost(165102973) // [`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	})
 }
@@ -431,7 +431,7 @@ fn test_expected_cost_evolve_with_external_uri() {
 		// `evolve_with_external_uri` weight + log cost
 		precompiles()
 			.prepare_test(alice, collection_address, input)
-			.expect_cost(163256735) // [`WeightToGas`] set to 1:1 in mock
+			.expect_cost(163849607) // [`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	})
 }
