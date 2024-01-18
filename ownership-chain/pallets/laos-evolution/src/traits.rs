@@ -3,10 +3,17 @@
 use crate::types::{CollectionId, Slot, TokenId};
 use sp_runtime::DispatchError;
 
-/// `EvolutionCollectionFactory` trait for creating collections
+/// `EvolutionCollectionFactory` trait for managing collections
 pub trait EvolutionCollectionFactory<AccountId> {
 	/// Creates new collection
 	fn create_collection(owner: AccountId) -> Result<CollectionId, DispatchError>;
+
+	/// Transfer ownership of the collection
+	fn transfer_collection(
+		from: AccountId,
+		to: AccountId,
+		collection_id: CollectionId,
+	) -> Result<(), DispatchError>;
 }
 
 /// `EvolutionCollection` trait for managing living assets within a collection

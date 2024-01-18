@@ -128,6 +128,21 @@ impl<T: Config> EvolutionCollectionFactory<AccountIdOf<T>> for Pallet<T> {
 
 		Ok(collection_id)
 	}
+
+	fn transfer_collection(
+		from: AccountIdOf<T>,
+		to: AccountIdOf<T>,
+		collection_id: CollectionId,
+	) -> Result<(), DispatchError> {
+		CollectionOwner::<T>::try_mutate(collection_id, |owner| -> Result<(), DispatchError> {
+			ensure!(owner.is_some(), Error::<T>::CollectionDoesNotExist);
+			ensure!(owner.clone() == Some(from), Error::<T>::NoPermission);
+
+			*owner = Some(to);
+
+			Ok(())
+		})
+	}
 }
 
 impl<T: Config> EvolutionCollection<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T> {
