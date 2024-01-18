@@ -601,6 +601,34 @@ fn non_collection_owner_cannot_evolve_when_public_minting_is_enabled() {
 	});
 }
 
+#[test]
+fn enabling_public_minting_for_one_collection_does_not_affect_other_collections() {
+	new_test_ext().execute_with(|| {
+		let collection_id_1 = create_collection(ALICE);
+		let collection_id_2 = create_collection(BOB);
+		let owner_collection_1 = AccountId::from_str(ALICE).unwrap();
+		let owner_collection_2 = AccountId::from_str(BOB).unwrap();
+		assert_ok!(LaosEvolution::enable_public_minting(owner_collection_1, collection_id_1));
+		assert_ok!(LaosEvolution::mint_with_external_uri(
+			owner_collection_2,
+			collection_id_1,
+			0,
+			owner_collection_2,
+			vec![1u8; MaxTokenUriLength::get() as usize].try_into().unwrap()
+		));
+		assert_noop!(
+			LaosEvolution::mint_with_external_uri(
+				owner_collection_1,
+				collection_id_2,
+				0,
+				owner_collection_1,
+				vec![1u8; MaxTokenUriLength::get() as usize].try_into().unwrap()
+			),
+			Error::<Test>::NoPermission
+		);
+	});
+}
+
 mod collection_id_conversion {
 	use core::str::FromStr;
 
