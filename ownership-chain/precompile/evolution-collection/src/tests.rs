@@ -101,7 +101,7 @@ fn function_selectors() {
 }
 
 #[test]
-fn mint_with_external_uri_should_generate_log() {
+fn mint_should_generate_log() {
 	new_test_ext().execute_with(|| {
 		let owner = H160([1u8; 20]);
 		let collection_address = create_collection(owner);
@@ -142,7 +142,7 @@ fn mint_with_external_uri_should_generate_log() {
 }
 
 #[test]
-fn call_unexistent_selector_should_fail() {
+fn unexistent_selector_should_revert() {
 	new_test_ext().execute_with(|| {
 		let input = EvmDataWriter::new_with_selector(0x12345678 as u32).build();
 
@@ -153,7 +153,7 @@ fn call_unexistent_selector_should_fail() {
 }
 
 #[test]
-fn call_owner_of_non_existent_collection() {
+fn owner_of_non_existent_collection_should_revert() {
 	new_test_ext().execute_with(|| {
 		let alice = H160::from_str(ALICE).unwrap();
 		let collection_address =
@@ -168,7 +168,7 @@ fn call_owner_of_non_existent_collection() {
 }
 
 #[test]
-fn call_owner_of_invalid_collection_address() {
+fn owner_of_invalid_collection_address() {
 	new_test_ext().execute_with(|| {
 		let _invalid_address = H160::from_str("0000000000000000000000000000000000000005").unwrap();
 
@@ -183,7 +183,7 @@ fn call_owner_of_invalid_collection_address() {
 }
 
 #[test]
-fn call_owner_of_collection_works() {
+fn owner_of_collection_works() {
 	new_test_ext().execute_with(|| {
 		let alice = H160::from_str(ALICE).unwrap();
 		let collection_address = create_collection(alice);
@@ -231,7 +231,7 @@ fn token_uri_returns_the_result_from_source() {
 }
 
 #[test]
-fn mint_works() {
+fn mint_asset_in_an_existing_collection_works() {
 	new_test_ext().execute_with(|| {
 		let to = H160::from_str(ALICE).unwrap();
 		let collection_address = create_collection(to);
@@ -254,7 +254,7 @@ fn mint_works() {
 }
 
 #[test]
-fn failing_mint_should_return_error() {
+fn when_mint_reverts_should_return_error() {
 	new_test_ext().execute_with(|| {
 		let to = H160::from_str(ALICE).unwrap();
 		let collection_address = create_collection(to);
@@ -274,7 +274,7 @@ fn failing_mint_should_return_error() {
 }
 
 #[test]
-fn evolve_works() {
+fn evolve_a_minted_asset_works() {
 	new_test_ext().execute_with(|| {
 		let alice = H160::from_str(ALICE).unwrap();
 		let collection_address = create_collection(alice);
@@ -292,7 +292,7 @@ fn evolve_works() {
 }
 
 #[test]
-fn evolve_with_external_uri_generates_log() {
+fn evolve_generates_log() {
 	new_test_ext().execute_with(|| {
 		let alice = H160::from_str(ALICE).unwrap();
 		let collection_address = create_collection(alice);
@@ -330,7 +330,7 @@ fn evolve_with_external_uri_generates_log() {
 }
 
 #[test]
-fn when_fails_should_return_error() {
+fn when_evolve_reverts_should_return_error() {
 	new_test_ext().execute_with(|| {
 		let alice = H160::from_str(ALICE).unwrap();
 		let collection_address = create_collection(alice);
@@ -345,6 +345,33 @@ fn when_fails_should_return_error() {
 			.prepare_test(alice, collection_address, input)
 			.execute_reverts(|r| r == b"AssetDoesNotExist");
 	});
+}
+
+#[test]
+fn enable_public_minting_generates_log() {
+	// check also is_public_minting_enabled
+	todo!("unimplemented")
+}
+
+#[test]
+fn when_enable_public_minting_reverts_should_return_error() {
+	todo!("unimplemented")
+}
+
+#[test]
+fn disable_public_minting_generates_log() {
+	// check also is_public_minting_enabled
+	todo!("unimplemented")
+}
+
+#[test]
+fn when_disable_public_minting_reverts_should_return_error() {
+	todo!("unimplemented")
+}
+
+#[test]
+fn when_is_public_minting_enabled_reverts_should_return_error() {
+	todo!("unimplemented")
 }
 
 #[test]
@@ -364,6 +391,21 @@ fn test_expected_cost_token_uri() {
 			.expect_cost(25000000) //  [`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	})
+}
+
+#[test]
+fn enable_public_minting_has_a_cost() {
+	todo!("unimplemented")
+}
+
+#[test]
+fn disable_public_minting_has_a_cost() {
+	todo!("unimplemented")
+}
+
+#[test]
+fn is_public_minting_enabled_has_a_cost() {
+	todo!("unimplemented")
 }
 
 #[test]
