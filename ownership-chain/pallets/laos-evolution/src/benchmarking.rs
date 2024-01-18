@@ -90,7 +90,7 @@ mod benchmarks {
 		{
 			LaosEvolution::<T>::enable_public_minting(owner, collection_id).unwrap();
 		}
-		assert!(CollectionPublicMintingEnabled::<T>::get(collection_id).is_some());
+		assert!(CollectionPublicMintingEnabled::<T>::contains_key(collection_id));
 	}
 
 	#[benchmark]
@@ -104,6 +104,6 @@ mod benchmarks {
 		{
 			LaosEvolution::<T>::disable_public_minting(owner, collection_id).unwrap();
 		}
-		assert!(CollectionPublicMintingEnabled::<T>::get(collection_id).is_none());
+		assert!(!CollectionPublicMintingEnabled::<T>::contains_key(collection_id));
 	}
 }
