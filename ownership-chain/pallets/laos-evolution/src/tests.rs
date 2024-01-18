@@ -7,7 +7,7 @@ use crate::{
 	types::{TokenId, TokenUriOf, MAX_U96},
 	CollectionId, Error, Event,
 };
-use frame_support::{assert_noop, assert_ok};
+use frame_support::{assert_noop, assert_ok, assert_storage_noop};
 use parity_scale_codec::Encode;
 use sp_core::{H160, U256};
 
@@ -406,6 +406,136 @@ fn evolve_with_external_uri_happy_path() {
 			.into(),
 		);
 	});
+}
+
+#[test]
+fn collection_owner_can_enable_public_minting() {
+	new_test_ext().execute_with(|| {
+		System::set_block_number(1);
+		let collection_id = create_collection(ALICE);
+		let who = AccountId::from_str(ALICE).unwrap();
+		assert_ok!(LaosEvolution::enable_public_minting(who, collection_id));
+		System::assert_has_event(Event::PublicMintingEnabled { collection_id }.into());
+	});
+}
+
+#[test]
+fn collection_owner_can_disable_public_minting() {
+	new_test_ext().execute_with(|| {
+		System::set_block_number(1);
+		let collection_id = create_collection(ALICE);
+		let who = AccountId::from_str(ALICE).unwrap();
+		assert_ok!(LaosEvolution::enable_public_minting(who, collection_id));
+		assert_ok!(LaosEvolution::disable_public_minting(who, collection_id));
+		System::assert_has_event(Event::PublicMintingDisabled { collection_id }.into());
+	});
+}
+
+#[test]
+fn non_collection_owner_cannot_enable_public_minting() {
+	new_test_ext().execute_with(|| {
+		let collection_id = create_collection(ALICE);
+		let who = AccountId::from_str(BOB).unwrap();
+		assert_noop!(
+			LaosEvolution::enable_public_minting(who, collection_id),
+			Error::<Test>::NoPermission
+		);
+	});
+}
+
+#[test]
+fn non_collection_owner_cannot_disable_public_minting() {
+	new_test_ext().execute_with(|| {
+		let collection_id = create_collection(ALICE);
+		let who = AccountId::from_str(BOB).unwrap();
+		assert_noop!(
+			LaosEvolution::disable_public_minting(who, collection_id),
+			Error::<Test>::NoPermission
+		);
+	});
+}
+
+#[test]
+fn enable_public_minting_for_unexistent_collection_fails() {
+	new_test_ext().execute_with(|| {
+		let who = AccountId::from_str(ALICE).unwrap();
+		assert_noop!(
+			LaosEvolution::enable_public_minting(who, 0),
+			Error::<Test>::CollectionDoesNotExist
+		);
+	});
+}
+
+#[test]
+fn disable_public_minting_for_unexistent_collection_fails() {
+	new_test_ext().execute_with(|| {
+		let who = AccountId::from_str(ALICE).unwrap();
+		assert_noop!(
+			LaosEvolution::disable_public_minting(who, 0),
+			Error::<Test>::CollectionDoesNotExist
+		);
+	});
+}
+
+#[test]
+fn is_public_minting_enabled_for_unexistent_collection_fails() {
+	new_test_ext().execute_with(|| {
+		assert_noop!(
+			LaosEvolution::is_public_minting_enabled(0),
+			Error::<Test>::CollectionDoesNotExist
+		);
+	});
+}
+
+#[test]
+fn is_public_minting_enabled_returns_updated_value() {
+	new_test_ext().execute_with(|| {
+		let collection_id = create_collection(ALICE);
+		let who = AccountId::from_str(ALICE).unwrap();
+		assert_eq!(LaosEvolution::is_public_minting_enabled(collection_id), Ok(false));
+		assert_ok!(LaosEvolution::enable_public_minting(who, collection_id));
+		assert_eq!(LaosEvolution::is_public_minting_enabled(collection_id), Ok(true));
+		assert_ok!(LaosEvolution::disable_public_minting(who, collection_id));
+		assert_eq!(LaosEvolution::is_public_minting_enabled(collection_id), Ok(false));
+	});
+}
+
+#[test]
+fn enable_twice_has_no_effect() {
+	new_test_ext().execute_with(|| {
+		let collection_id = create_collection(ALICE);
+		let who = AccountId::from_str(ALICE).unwrap();
+		assert_ok!(LaosEvolution::enable_public_minting(who, collection_id));
+		assert_storage_noop!(LaosEvolution::enable_public_minting(who, collection_id).unwrap());
+	});
+}
+
+#[test]
+fn disable_twice_has_no_effect() {
+	new_test_ext().execute_with(|| {
+		let collection_id = create_collection(ALICE);
+		let who = AccountId::from_str(ALICE).unwrap();
+		assert_ok!(LaosEvolution::disable_public_minting(who, collection_id));
+		assert_storage_noop!(LaosEvolution::disable_public_minting(who, collection_id).unwrap());
+	});
+}
+
+#[test]
+#[ignore]
+fn non_collection_owner_can_mint_when_public_minting_is_enabled() {
+	todo!("implement");
+}
+
+#[test]
+#[ignore]
+fn collection_owner_can_mint_when_public_minting_is_enabled() {
+	todo!("implement");
+}
+
+#[test]
+#[ignore]
+fn non_collection_owner_cannot_evolve_when_public_minting_is_enabled() {
+	todo!("implement");
 }
 
 mod collection_id_conversion {

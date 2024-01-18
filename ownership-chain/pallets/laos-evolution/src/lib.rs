@@ -53,6 +53,12 @@ pub mod pallet {
 	pub type CollectionOwner<T: Config> =
 		StorageMap<_, Blake2_128Concat, CollectionId, AccountIdOf<T>, OptionQuery>;
 
+	/// Storage for the public minting status of collections
+	#[pallet::storage]
+	#[pallet::getter(fn collection_public_minting_enabled)]
+	pub type CollectionPublicMintingEnabled<T: Config> =
+		StorageMap<_, Blake2_128Concat, CollectionId, bool, ValueQuery>;
+
 	/// Token URI which can override the default URI scheme and set explicitly
 	/// This will contain external URI in a raw form
 	#[pallet::storage]
@@ -90,6 +96,12 @@ pub mod pallet {
 			token_id: TokenId,
 			token_uri: TokenUriOf<T>,
 		},
+		/// Public minting enabled
+		/// [collection_id]
+		PublicMintingEnabled { collection_id: CollectionId },
+		/// Public minting disabled
+		/// [collection_id]
+		PublicMintingDisabled { collection_id: CollectionId },
 	}
 
 	// Errors inform users that something went wrong.
@@ -193,6 +205,36 @@ impl<T: Config> EvolutionCollection<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T>
 		Self::deposit_event(Event::EvolvedWithExternalURI { collection_id, token_id, token_uri });
 
 		Ok(())
+	}
+
+	fn enable_public_minting(who: AccountIdOf<T>, collection_id: CollectionId) -> DispatchResult {
+		ensure!(
+			CollectionOwner::<T>::contains_key(collection_id),
+			Error::<T>::CollectionDoesNotExist
+		);
+		ensure!(CollectionOwner::<T>::get(collection_id) == Some(who), Error::<T>::NoPermission);
+		CollectionPublicMintingEnabled::<T>::insert(collection_id, true);
+		Self::deposit_event(Event::PublicMintingEnabled { collection_id });
+		Ok(())
+	}
+
+	fn disable_public_minting(who: AccountIdOf<T>, collection_id: CollectionId) -> DispatchResult {
+		ensure!(
+			CollectionOwner::<T>::contains_key(collection_id),
+			Error::<T>::CollectionDoesNotExist
+		);
+		ensure!(CollectionOwner::<T>::get(collection_id) == Some(who), Error::<T>::NoPermission);
+		CollectionPublicMintingEnabled::<T>::insert(collection_id, false);
+		Self::deposit_event(Event::PublicMintingDisabled { collection_id });
+		Ok(())
+	}
+
+	fn is_public_minting_enabled(collection_id: CollectionId) -> Result<bool, DispatchError> {
+		ensure!(
+			CollectionOwner::<T>::contains_key(collection_id),
+			Error::<T>::CollectionDoesNotExist
+		);
+		Ok(CollectionPublicMintingEnabled::<T>::get(collection_id))
 	}
 }
 

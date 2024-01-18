@@ -1,6 +1,7 @@
 //! Traits for this pallet
 
 use crate::types::{CollectionId, Slot, TokenId};
+use frame_support::pallet_prelude::DispatchResult;
 use sp_runtime::DispatchError;
 
 /// `EvolutionCollectionFactory` trait for creating collections
@@ -33,4 +34,13 @@ pub trait EvolutionCollection<AccountId, TokenUri> {
 		token_id: TokenId,
 		token_uri: TokenUri,
 	) -> Result<(), DispatchError>;
+
+	/// Enables public minting for a specific collection.
+	fn enable_public_minting(who: AccountId, collection_id: CollectionId) -> DispatchResult;
+
+	/// Disables public minting for a specific collection.
+	fn disable_public_minting(who: AccountId, collection_id: CollectionId) -> DispatchResult;
+
+	/// Checks if public minting is enabled for a specific collection.
+	fn is_public_minting_enabled(collection_id: CollectionId) -> Result<bool, DispatchError>;
 }
