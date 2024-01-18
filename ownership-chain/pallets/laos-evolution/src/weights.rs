@@ -54,15 +54,15 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 		// Proof Size summary in bytes:
 		//  Measured:  `42`
 		//  Estimated: `1493`
-		// Minimum execution time: 6_838_000 picoseconds.
-		Weight::from_parts(7_192_000, 1493)
+		// Minimum execution time: 6_906_000 picoseconds.
+		Weight::from_parts(7_089_000, 1493)
 			.saturating_add(T::DbWeight::get().reads(1_u64))
 			.saturating_add(T::DbWeight::get().writes(2_u64))
 	}
 	/// Storage: `LaosEvolution::CollectionOwner` (r:1 w:0)
 	/// Proof: `LaosEvolution::CollectionOwner` (`max_values`: None, `max_size`: Some(44), added: 2519, mode: `MaxEncodedLen`)
 	/// Storage: `LaosEvolution::CollectionPublicMintingEnabled` (r:1 w:0)
-	/// Proof: `LaosEvolution::CollectionPublicMintingEnabled` (`max_values`: None, `max_size`: Some(25), added: 2500, mode: `MaxEncodedLen`)
+	/// Proof: `LaosEvolution::CollectionPublicMintingEnabled` (`max_values`: None, `max_size`: Some(24), added: 2499, mode: `MaxEncodedLen`)
 	/// Storage: `LaosEvolution::TokenURI` (r:1 w:1)
 	/// Proof: `LaosEvolution::TokenURI` (`max_values`: None, `max_size`: Some(586), added: 3061, mode: `MaxEncodedLen`)
 	/// The range of component `s` is `[0, 512]`.
@@ -70,10 +70,10 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 		// Proof Size summary in bytes:
 		//  Measured:  `139`
 		//  Estimated: `4051`
-		// Minimum execution time: 14_296_000 picoseconds.
-		Weight::from_parts(15_653_137, 4051)
-			// Standard Error: 92
-			.saturating_add(Weight::from_parts(1_412, 0).saturating_mul(s.into()))
+		// Minimum execution time: 13_852_000 picoseconds.
+		Weight::from_parts(15_092_426, 4051)
+			// Standard Error: 175
+			.saturating_add(Weight::from_parts(2_306, 0).saturating_mul(s.into()))
 			.saturating_add(T::DbWeight::get().reads(3_u64))
 			.saturating_add(T::DbWeight::get().writes(1_u64))
 	}
@@ -86,36 +86,36 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 		// Proof Size summary in bytes:
 		//  Measured:  `264`
 		//  Estimated: `4051`
-		// Minimum execution time: 12_798_000 picoseconds.
-		Weight::from_parts(13_584_918, 4051)
-			// Standard Error: 74
-			.saturating_add(Weight::from_parts(922, 0).saturating_mul(s.into()))
+		// Minimum execution time: 12_526_000 picoseconds.
+		Weight::from_parts(13_243_362, 4051)
+			// Standard Error: 95
+			.saturating_add(Weight::from_parts(574, 0).saturating_mul(s.into()))
 			.saturating_add(T::DbWeight::get().reads(2_u64))
 			.saturating_add(T::DbWeight::get().writes(1_u64))
 	}
 	/// Storage: `LaosEvolution::CollectionOwner` (r:1 w:0)
 	/// Proof: `LaosEvolution::CollectionOwner` (`max_values`: None, `max_size`: Some(44), added: 2519, mode: `MaxEncodedLen`)
 	/// Storage: `LaosEvolution::CollectionPublicMintingEnabled` (r:0 w:1)
-	/// Proof: `LaosEvolution::CollectionPublicMintingEnabled` (`max_values`: None, `max_size`: Some(25), added: 2500, mode: `MaxEncodedLen`)
+	/// Proof: `LaosEvolution::CollectionPublicMintingEnabled` (`max_values`: None, `max_size`: Some(24), added: 2499, mode: `MaxEncodedLen`)
 	fn enable_public_minting() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `139`
 		//  Estimated: `3509`
-		// Minimum execution time: 9_330_000 picoseconds.
-		Weight::from_parts(9_782_000, 3509)
+		// Minimum execution time: 8_798_000 picoseconds.
+		Weight::from_parts(9_167_000, 3509)
 			.saturating_add(T::DbWeight::get().reads(1_u64))
 			.saturating_add(T::DbWeight::get().writes(1_u64))
 	}
 	/// Storage: `LaosEvolution::CollectionOwner` (r:1 w:0)
 	/// Proof: `LaosEvolution::CollectionOwner` (`max_values`: None, `max_size`: Some(44), added: 2519, mode: `MaxEncodedLen`)
 	/// Storage: `LaosEvolution::CollectionPublicMintingEnabled` (r:0 w:1)
-	/// Proof: `LaosEvolution::CollectionPublicMintingEnabled` (`max_values`: None, `max_size`: Some(25), added: 2500, mode: `MaxEncodedLen`)
+	/// Proof: `LaosEvolution::CollectionPublicMintingEnabled` (`max_values`: None, `max_size`: Some(24), added: 2499, mode: `MaxEncodedLen`)
 	fn disable_public_minting() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `172`
 		//  Estimated: `3509`
-		// Minimum execution time: 9_241_000 picoseconds.
-		Weight::from_parts(9_596_000, 3509)
+		// Minimum execution time: 8_758_000 picoseconds.
+		Weight::from_parts(9_130_000, 3509)
 			.saturating_add(T::DbWeight::get().reads(1_u64))
 			.saturating_add(T::DbWeight::get().writes(1_u64))
 	}
@@ -131,15 +131,15 @@ impl WeightInfo for () {
 		// Proof Size summary in bytes:
 		//  Measured:  `42`
 		//  Estimated: `1493`
-		// Minimum execution time: 6_838_000 picoseconds.
-		Weight::from_parts(7_192_000, 1493)
+		// Minimum execution time: 6_906_000 picoseconds.
+		Weight::from_parts(7_089_000, 1493)
 			.saturating_add(RocksDbWeight::get().reads(1_u64))
 			.saturating_add(RocksDbWeight::get().writes(2_u64))
 	}
 	/// Storage: `LaosEvolution::CollectionOwner` (r:1 w:0)
 	/// Proof: `LaosEvolution::CollectionOwner` (`max_values`: None, `max_size`: Some(44), added: 2519, mode: `MaxEncodedLen`)
 	/// Storage: `LaosEvolution::CollectionPublicMintingEnabled` (r:1 w:0)
-	/// Proof: `LaosEvolution::CollectionPublicMintingEnabled` (`max_values`: None, `max_size`: Some(25), added: 2500, mode: `MaxEncodedLen`)
+	/// Proof: `LaosEvolution::CollectionPublicMintingEnabled` (`max_values`: None, `max_size`: Some(24), added: 2499, mode: `MaxEncodedLen`)
 	/// Storage: `LaosEvolution::TokenURI` (r:1 w:1)
 	/// Proof: `LaosEvolution::TokenURI` (`max_values`: None, `max_size`: Some(586), added: 3061, mode: `MaxEncodedLen`)
 	/// The range of component `s` is `[0, 512]`.
@@ -147,10 +147,10 @@ impl WeightInfo for () {
 		// Proof Size summary in bytes:
 		//  Measured:  `139`
 		//  Estimated: `4051`
-		// Minimum execution time: 14_296_000 picoseconds.
-		Weight::from_parts(15_653_137, 4051)
-			// Standard Error: 92
-			.saturating_add(Weight::from_parts(1_412, 0).saturating_mul(s.into()))
+		// Minimum execution time: 13_852_000 picoseconds.
+		Weight::from_parts(15_092_426, 4051)
+			// Standard Error: 175
+			.saturating_add(Weight::from_parts(2_306, 0).saturating_mul(s.into()))
 			.saturating_add(RocksDbWeight::get().reads(3_u64))
 			.saturating_add(RocksDbWeight::get().writes(1_u64))
 	}
@@ -163,36 +163,36 @@ impl WeightInfo for () {
 		// Proof Size summary in bytes:
 		//  Measured:  `264`
 		//  Estimated: `4051`
-		// Minimum execution time: 12_798_000 picoseconds.
-		Weight::from_parts(13_584_918, 4051)
-			// Standard Error: 74
-			.saturating_add(Weight::from_parts(922, 0).saturating_mul(s.into()))
+		// Minimum execution time: 12_526_000 picoseconds.
+		Weight::from_parts(13_243_362, 4051)
+			// Standard Error: 95
+			.saturating_add(Weight::from_parts(574, 0).saturating_mul(s.into()))
 			.saturating_add(RocksDbWeight::get().reads(2_u64))
 			.saturating_add(RocksDbWeight::get().writes(1_u64))
 	}
 	/// Storage: `LaosEvolution::CollectionOwner` (r:1 w:0)
 	/// Proof: `LaosEvolution::CollectionOwner` (`max_values`: None, `max_size`: Some(44), added: 2519, mode: `MaxEncodedLen`)
 	/// Storage: `LaosEvolution::CollectionPublicMintingEnabled` (r:0 w:1)
-	/// Proof: `LaosEvolution::CollectionPublicMintingEnabled` (`max_values`: None, `max_size`: Some(25), added: 2500, mode: `MaxEncodedLen`)
+	/// Proof: `LaosEvolution::CollectionPublicMintingEnabled` (`max_values`: None, `max_size`: Some(24), added: 2499, mode: `MaxEncodedLen`)
 	fn enable_public_minting() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `139`
 		//  Estimated: `3509`
-		// Minimum execution time: 9_330_000 picoseconds.
-		Weight::from_parts(9_782_000, 3509)
+		// Minimum execution time: 8_798_000 picoseconds.
+		Weight::from_parts(9_167_000, 3509)
 			.saturating_add(RocksDbWeight::get().reads(1_u64))
 			.saturating_add(RocksDbWeight::get().writes(1_u64))
 	}
 	/// Storage: `LaosEvolution::CollectionOwner` (r:1 w:0)
 	/// Proof: `LaosEvolution::CollectionOwner` (`max_values`: None, `max_size`: Some(44), added: 2519, mode: `MaxEncodedLen`)
 	/// Storage: `LaosEvolution::CollectionPublicMintingEnabled` (r:0 w:1)
-	/// Proof: `LaosEvolution::CollectionPublicMintingEnabled` (`max_values`: None, `max_size`: Some(25), added: 2500, mode: `MaxEncodedLen`)
+	/// Proof: `LaosEvolution::CollectionPublicMintingEnabled` (`max_values`: None, `max_size`: Some(24), added: 2499, mode: `MaxEncodedLen`)
 	fn disable_public_minting() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `172`
 		//  Estimated: `3509`
-		// Minimum execution time: 9_241_000 picoseconds.
-		Weight::from_parts(9_596_000, 3509)
+		// Minimum execution time: 8_758_000 picoseconds.
+		Weight::from_parts(9_130_000, 3509)
 			.saturating_add(RocksDbWeight::get().reads(1_u64))
 			.saturating_add(RocksDbWeight::get().writes(1_u64))
 	}

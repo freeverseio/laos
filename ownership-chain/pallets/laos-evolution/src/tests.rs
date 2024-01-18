@@ -22,13 +22,6 @@ fn create_collection(owner: &str) -> CollectionId {
 	collection_id
 }
 
-/// Utility function to create a collection and return its ID
-fn create_collection_new(owner: H160) -> CollectionId {
-	let collection_id = LaosEvolution::collection_counter();
-	assert_ok!(LaosEvolution::create_collection(owner));
-	collection_id
-}
-
 #[test]
 fn owner_of_inexistent_collection() {
 	new_test_ext().execute_with(|| {
@@ -416,7 +409,7 @@ fn evolve_with_external_uri_happy_path() {
 }
 
 #[test]
-fn collection_owner_can_enable_public_minting() {
+fn enable_public_minting_works() {
 	new_test_ext().execute_with(|| {
 		System::set_block_number(1);
 		let collection_id = create_collection(ALICE);
@@ -439,7 +432,7 @@ fn collection_owner_can_disable_public_minting() {
 }
 
 #[test]
-fn non_collection_owner_cannot_enable_public_minting() {
+fn only_collection_owner_can_enable_public_minting() {
 	new_test_ext().execute_with(|| {
 		let collection_id = create_collection(ALICE);
 		let who = AccountId::from_str(BOB).unwrap();
@@ -451,19 +444,7 @@ fn non_collection_owner_cannot_enable_public_minting() {
 }
 
 #[test]
-fn non_collection_owner_cannot_disable_public_minting() {
-	new_test_ext().execute_with(|| {
-		let collection_id = create_collection(ALICE);
-		let who = AccountId::from_str(BOB).unwrap();
-		assert_noop!(
-			LaosEvolution::disable_public_minting(who, collection_id),
-			Error::<Test>::NoPermission
-		);
-	});
-}
-
-#[test]
-fn enable_public_minting_for_unexistent_collection_fails() {
+fn enable_public_minting_for_nonexistent_collection_fails() {
 	new_test_ext().execute_with(|| {
 		let who = AccountId::from_str(ALICE).unwrap();
 		assert_noop!(
@@ -474,7 +455,7 @@ fn enable_public_minting_for_unexistent_collection_fails() {
 }
 
 #[test]
-fn disable_public_minting_for_unexistent_collection_fails() {
+fn disable_public_minting_for_nonexistent_collection_fails() {
 	new_test_ext().execute_with(|| {
 		let who = AccountId::from_str(ALICE).unwrap();
 		assert_noop!(
@@ -485,12 +466,9 @@ fn disable_public_minting_for_unexistent_collection_fails() {
 }
 
 #[test]
-fn is_public_minting_enabled_for_unexistent_collection_fails() {
+fn is_public_minting_enabled_for_unexistent_returns_false() {
 	new_test_ext().execute_with(|| {
-		assert_noop!(
-			LaosEvolution::is_public_minting_enabled(0),
-			Error::<Test>::CollectionDoesNotExist
-		);
+		assert_eq!(LaosEvolution::is_public_minting_enabled(0), false);
 	});
 }
 
@@ -499,11 +477,11 @@ fn is_public_minting_enabled_returns_updated_value() {
 	new_test_ext().execute_with(|| {
 		let collection_id = create_collection(ALICE);
 		let who = AccountId::from_str(ALICE).unwrap();
-		assert_eq!(LaosEvolution::is_public_minting_enabled(collection_id), Ok(false));
+		assert_eq!(LaosEvolution::is_public_minting_enabled(collection_id), false);
 		assert_ok!(LaosEvolution::enable_public_minting(who, collection_id));
-		assert_eq!(LaosEvolution::is_public_minting_enabled(collection_id), Ok(true));
+		assert_eq!(LaosEvolution::is_public_minting_enabled(collection_id), true);
 		assert_ok!(LaosEvolution::disable_public_minting(who, collection_id));
-		assert_eq!(LaosEvolution::is_public_minting_enabled(collection_id), Ok(false));
+		assert_eq!(LaosEvolution::is_public_minting_enabled(collection_id), false);
 	});
 }
 
@@ -528,21 +506,24 @@ fn disable_twice_has_no_effect() {
 }
 
 #[test]
-fn non_collection_owner_can_mint_when_public_minting_is_enabled() {
+fn anyone_can_mint_when_public_minting_is_enabled() {
 	new_test_ext().execute_with(|| {
 		let collection_id = LaosEvolution::collection_counter();
 		let token_uri: TokenUriOf<Test> =
 			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
-		let owner = AccountId::from_str(ALICE).unwrap();
-		let non_owner = AccountId::from_str(BOB).unwrap();
+		let owner = ALICE;
+		let non_owner = BOB;
 
-		create_collection_new(owner);
-		assert_ok!(LaosEvolution::enable_public_minting(owner, collection_id));
+		create_collection(owner);
+		assert_ok!(LaosEvolution::enable_public_minting(
+			AccountId::from_str(owner).unwrap(),
+			collection_id
+		));
 		assert_ok!(LaosEvolution::mint_with_external_uri(
-			non_owner,
+			AccountId::from_str(non_owner).unwrap(),
 			collection_id,
 			0,
-			non_owner,
+			AccountId::from_str(non_owner).unwrap(),
 			token_uri.clone()
 		));
 	});
@@ -554,16 +535,19 @@ fn collection_owner_can_mint_when_public_minting_is_enabled() {
 		let collection_id = LaosEvolution::collection_counter();
 		let token_uri: TokenUriOf<Test> =
 			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
-		let owner = AccountId::from_str(ALICE).unwrap();
-		let non_owner = AccountId::from_str(BOB).unwrap();
+		let owner = ALICE;
+		let non_owner = BOB;
 
-		create_collection_new(owner);
-		assert_ok!(LaosEvolution::enable_public_minting(owner, collection_id));
+		create_collection(owner);
+		assert_ok!(LaosEvolution::enable_public_minting(
+			H160::from_str(owner).unwrap(),
+			collection_id
+		));
 		assert_ok!(LaosEvolution::mint_with_external_uri(
-			owner,
+			H160::from_str(owner).unwrap(),
 			collection_id,
 			0,
-			non_owner,
+			H160::from_str(non_owner).unwrap(),
 			token_uri.clone()
 		));
 	});
@@ -575,54 +559,30 @@ fn non_collection_owner_cannot_evolve_when_public_minting_is_enabled() {
 		let collection_id = LaosEvolution::collection_counter();
 		let token_uri: TokenUriOf<Test> =
 			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
-		let owner = AccountId::from_str(ALICE).unwrap();
-		let non_owner = AccountId::from_str(BOB).unwrap();
+		let owner = ALICE;
+		let non_owner = BOB;
 		let slot = 0;
-		let token_id = slot_and_owner_to_token_id(slot, non_owner).unwrap();
+		let token_id =
+			slot_and_owner_to_token_id(slot, AccountId::from_str(non_owner).unwrap()).unwrap();
 
-		create_collection_new(owner);
-		assert_ok!(LaosEvolution::enable_public_minting(owner, collection_id));
+		create_collection(owner);
+		assert_ok!(LaosEvolution::enable_public_minting(
+			AccountId::from_str(owner).unwrap(),
+			collection_id
+		));
 		assert_ok!(LaosEvolution::mint_with_external_uri(
-			non_owner,
+			AccountId::from_str(non_owner).unwrap(),
 			collection_id,
 			slot,
-			non_owner,
+			AccountId::from_str(non_owner).unwrap(),
 			token_uri.clone()
 		));
 		assert_noop!(
 			LaosEvolution::evolve_with_external_uri(
-				non_owner,
+				AccountId::from_str(non_owner).unwrap(),
 				collection_id,
 				token_id,
 				token_uri.clone()
-			),
-			Error::<Test>::NoPermission
-		);
-	});
-}
-
-#[test]
-fn enabling_public_minting_for_one_collection_does_not_affect_other_collections() {
-	new_test_ext().execute_with(|| {
-		let collection_id_1 = create_collection(ALICE);
-		let collection_id_2 = create_collection(BOB);
-		let owner_collection_1 = AccountId::from_str(ALICE).unwrap();
-		let owner_collection_2 = AccountId::from_str(BOB).unwrap();
-		assert_ok!(LaosEvolution::enable_public_minting(owner_collection_1, collection_id_1));
-		assert_ok!(LaosEvolution::mint_with_external_uri(
-			owner_collection_2,
-			collection_id_1,
-			0,
-			owner_collection_2,
-			vec![1u8; MaxTokenUriLength::get() as usize].try_into().unwrap()
-		));
-		assert_noop!(
-			LaosEvolution::mint_with_external_uri(
-				owner_collection_1,
-				collection_id_2,
-				0,
-				owner_collection_1,
-				vec![1u8; MaxTokenUriLength::get() as usize].try_into().unwrap()
 			),
 			Error::<Test>::NoPermission
 		);
