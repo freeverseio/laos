@@ -122,6 +122,12 @@ pub mod pallet {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {}
+
+	impl<T: Config> Pallet<T> {
+		pub fn is_owner(collection_id: CollectionId, who: T::AccountId) -> bool {
+			CollectionOwner::<T>::get(collection_id) == Some(who)
+		}
+	}
 }
 
 impl<T: Config> EvolutionCollectionFactory<AccountIdOf<T>> for Pallet<T> {
@@ -155,7 +161,7 @@ impl<T: Config> EvolutionCollection<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T>
 			Error::<T>::CollectionDoesNotExist
 		);
 		ensure!(
-			is_owner::<T>(collection_id, who) ||
+			Self::is_owner(collection_id, who) ||
 				CollectionPublicMintingEnabled::<T>::contains_key(collection_id),
 			Error::<T>::NoPermission
 		);
@@ -198,7 +204,7 @@ impl<T: Config> EvolutionCollection<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T>
 			CollectionOwner::<T>::contains_key(collection_id),
 			Error::<T>::CollectionDoesNotExist
 		);
-		ensure!(is_owner::<T>(collection_id, who), Error::<T>::NoPermission);
+		ensure!(Self::is_owner(collection_id, who), Error::<T>::NoPermission);
 		ensure!(
 			TokenURI::<T>::contains_key(collection_id, token_id),
 			Error::<T>::AssetDoesNotExist
@@ -216,7 +222,7 @@ impl<T: Config> EvolutionCollection<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T>
 			CollectionOwner::<T>::contains_key(collection_id),
 			Error::<T>::CollectionDoesNotExist
 		);
-		ensure!(is_owner::<T>(collection_id, who), Error::<T>::NoPermission);
+		ensure!(Self::is_owner(collection_id, who), Error::<T>::NoPermission);
 		CollectionPublicMintingEnabled::<T>::insert(collection_id, ());
 		Self::deposit_event(Event::PublicMintingEnabled { collection_id });
 		Ok(())
@@ -227,7 +233,7 @@ impl<T: Config> EvolutionCollection<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T>
 			CollectionOwner::<T>::contains_key(collection_id),
 			Error::<T>::CollectionDoesNotExist
 		);
-		ensure!(is_owner::<T>(collection_id, who), Error::<T>::NoPermission);
+		ensure!(Self::is_owner(collection_id, who), Error::<T>::NoPermission);
 		CollectionPublicMintingEnabled::<T>::remove(collection_id);
 		Self::deposit_event(Event::PublicMintingDisabled { collection_id });
 		Ok(())
@@ -324,21 +330,4 @@ where
 	id_bytes.copy_from_slice(&address_bytes[12..]);
 
 	Ok(CollectionId::from_be_bytes(id_bytes))
-}
-
-/// Checks if the given account is the owner of the specified collection.
-///
-/// This function retrieves the owner of the collection specified by `collection_id` from the
-/// `CollectionOwner` storage item, and checks if it's equal to `who`.
-///
-/// # Arguments
-///
-/// * `collection_id` - The ID of the collection.
-/// * `who` - The account to check.
-///
-/// # Returns
-///
-/// * `bool` - Returns `true` if `who` is the owner of the collection, and `false` otherwise.
-fn is_owner<T: Config>(collection_id: CollectionId, who: AccountIdOf<T>) -> bool {
-	CollectionOwner::<T>::get(collection_id) == Some(who)
 }
