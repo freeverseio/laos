@@ -471,7 +471,7 @@ parameter_types! {
 	/// Community incentives account
 	pub CommunityIncentivesAccountId: AccountId = PalletId(*b"laos/inc").into_account_truncating();
 	/// Reward given to block author per block
-	pub const RewardPerBlock: Balance = UNIT / 10;
+	pub const RewardPerBlock: Balance = UNIT / 1000;
 }
 
 impl pallet_collator_rewards::Config for Runtime {
