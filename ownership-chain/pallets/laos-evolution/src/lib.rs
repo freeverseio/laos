@@ -339,17 +339,6 @@ where
 /// # Returns
 ///
 /// * `bool` - Returns `true` if `who` is the owner of the collection, and `false` otherwise.
-///
-/// # Example
-///
-/// ```
-/// let is_owner = is_owner(collection_id, &account_id);
-/// if is_owner {
-///     println!("The account is the owner of the collection.");
-/// } else {
-///     println!("The account is not the owner of the collection.");
-/// }
-/// ```
 fn is_owner<T: Config>(collection_id: CollectionId, who: AccountIdOf<T>) -> bool {
 	CollectionOwner::<T>::get(collection_id) == Some(who)
 }
