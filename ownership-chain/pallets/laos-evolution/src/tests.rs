@@ -22,13 +22,6 @@ fn create_collection(owner: &str) -> CollectionId {
 	collection_id
 }
 
-/// Utility function to create a collection and return its ID
-fn create_collection_new(owner: H160) -> CollectionId {
-	let collection_id = LaosEvolution::collection_counter();
-	assert_ok!(LaosEvolution::create_collection(owner));
-	collection_id
-}
-
 #[test]
 fn owner_of_inexistent_collection() {
 	new_test_ext().execute_with(|| {
@@ -536,7 +529,7 @@ fn non_collection_owner_can_mint_when_public_minting_is_enabled() {
 		let owner = AccountId::from_str(ALICE).unwrap();
 		let non_owner = AccountId::from_str(BOB).unwrap();
 
-		create_collection_new(owner);
+		create_collection(&owner.to_string());
 		assert_ok!(LaosEvolution::enable_public_minting(owner, collection_id));
 		assert_ok!(LaosEvolution::mint_with_external_uri(
 			non_owner,
@@ -557,7 +550,7 @@ fn collection_owner_can_mint_when_public_minting_is_enabled() {
 		let owner = AccountId::from_str(ALICE).unwrap();
 		let non_owner = AccountId::from_str(BOB).unwrap();
 
-		create_collection_new(owner);
+		create_collection(&owner.to_string());
 		assert_ok!(LaosEvolution::enable_public_minting(owner, collection_id));
 		assert_ok!(LaosEvolution::mint_with_external_uri(
 			owner,
@@ -580,7 +573,7 @@ fn non_collection_owner_cannot_evolve_when_public_minting_is_enabled() {
 		let slot = 0;
 		let token_id = slot_and_owner_to_token_id(slot, non_owner).unwrap();
 
-		create_collection_new(owner);
+		create_collection(&owner.to_string());
 		assert_ok!(LaosEvolution::enable_public_minting(owner, collection_id));
 		assert_ok!(LaosEvolution::mint_with_external_uri(
 			non_owner,
