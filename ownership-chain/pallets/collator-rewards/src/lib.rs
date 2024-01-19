@@ -44,11 +44,11 @@ pub mod pallet {
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
 		/// Currency type for this pallet.
-		type Currency: Currency<Self::AccountId>;
+		type Currency: Currency<AccountIdOf<Self>>;
 
 		/// Community incentives account
 		#[pallet::constant]
-		type CommunityIncentivesAccountId: Get<Self::AccountId>;
+		type CommunityIncentivesAccountId: Get<AccountIdOf<Self>>;
 
 		/// Reward per block
 		#[pallet::constant]
