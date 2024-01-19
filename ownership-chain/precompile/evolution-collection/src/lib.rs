@@ -247,7 +247,7 @@ where
 				let consumed_weight = LaosEvolutionWeights::<Runtime>::enable_public_minting();
 
 				LogsBuilder::new(context.address)
-					.log1(SELECTOR_LOG_ENABLED_PUBLIC_MINTING, vec![])
+					.log1(SELECTOR_LOG_ENABLED_PUBLIC_MINTING, sp_std::vec![])
 					.record(handle)?;
 
 				// Record EVM cost
@@ -278,7 +278,7 @@ where
 				let consumed_weight = LaosEvolutionWeights::<Runtime>::enable_public_minting();
 
 				LogsBuilder::new(context.address)
-					.log1(SELECTOR_LOG_DISABLED_PUBLIC_MINTING, vec![])
+					.log1(SELECTOR_LOG_DISABLED_PUBLIC_MINTING, sp_std::vec![])
 					.record(handle)?;
 
 				// Record EVM cost
