@@ -7,7 +7,7 @@ use crate::{
 	types::{TokenId, TokenUriOf, MAX_U96},
 	CollectionId, Error, Event,
 };
-use frame_support::{assert_noop, assert_ok};
+use frame_support::{assert_noop, assert_ok, assert_storage_noop};
 use parity_scale_codec::Encode;
 use sp_core::{H160, U256};
 
@@ -404,6 +404,218 @@ fn evolve_with_external_uri_happy_path() {
 				token_uri: new_token_uri.clone(),
 			}
 			.into(),
+		);
+	});
+}
+
+#[test]
+fn enable_public_minting_works() {
+	new_test_ext().execute_with(|| {
+		System::set_block_number(1);
+		let collection_id = create_collection(ALICE);
+		let who = AccountId::from_str(ALICE).unwrap();
+		assert_ok!(LaosEvolution::enable_public_minting(who, collection_id));
+		System::assert_has_event(Event::PublicMintingEnabled { collection_id }.into());
+	});
+}
+
+#[test]
+fn collection_owner_can_disable_public_minting() {
+	new_test_ext().execute_with(|| {
+		System::set_block_number(1);
+		let collection_id = create_collection(ALICE);
+		let who = AccountId::from_str(ALICE).unwrap();
+		assert_ok!(LaosEvolution::enable_public_minting(who, collection_id));
+		assert_ok!(LaosEvolution::disable_public_minting(who, collection_id));
+		System::assert_has_event(Event::PublicMintingDisabled { collection_id }.into());
+	});
+}
+
+#[test]
+fn only_collection_owner_can_enable_public_minting() {
+	new_test_ext().execute_with(|| {
+		let collection_id = create_collection(ALICE);
+		let who = AccountId::from_str(BOB).unwrap();
+		assert_noop!(
+			LaosEvolution::enable_public_minting(who, collection_id),
+			Error::<Test>::NoPermission
+		);
+	});
+}
+
+#[test]
+fn enable_public_minting_for_nonexistent_collection_fails() {
+	new_test_ext().execute_with(|| {
+		let who = AccountId::from_str(ALICE).unwrap();
+		assert_noop!(
+			LaosEvolution::enable_public_minting(who, 0),
+			Error::<Test>::CollectionDoesNotExist
+		);
+	});
+}
+
+#[test]
+fn disable_public_minting_for_nonexistent_collection_fails() {
+	new_test_ext().execute_with(|| {
+		let who = AccountId::from_str(ALICE).unwrap();
+		assert_noop!(
+			LaosEvolution::disable_public_minting(who, 0),
+			Error::<Test>::CollectionDoesNotExist
+		);
+	});
+}
+
+#[test]
+fn is_public_minting_enabled_for_nonexistent_returns_false() {
+	new_test_ext().execute_with(|| {
+		assert_eq!(LaosEvolution::is_public_minting_enabled(0), false);
+	});
+}
+
+#[test]
+fn is_public_minting_enabled_returns_updated_value() {
+	new_test_ext().execute_with(|| {
+		let collection_id = create_collection(ALICE);
+		let who = AccountId::from_str(ALICE).unwrap();
+		assert_eq!(LaosEvolution::is_public_minting_enabled(collection_id), false);
+		assert_ok!(LaosEvolution::enable_public_minting(who, collection_id));
+		assert_eq!(LaosEvolution::is_public_minting_enabled(collection_id), true);
+		assert_ok!(LaosEvolution::disable_public_minting(who, collection_id));
+		assert_eq!(LaosEvolution::is_public_minting_enabled(collection_id), false);
+	});
+}
+
+#[test]
+fn enable_twice_has_no_effect() {
+	new_test_ext().execute_with(|| {
+		let collection_id = create_collection(ALICE);
+		let who = AccountId::from_str(ALICE).unwrap();
+		assert_ok!(LaosEvolution::enable_public_minting(who, collection_id));
+		assert_storage_noop!(LaosEvolution::enable_public_minting(who, collection_id).unwrap());
+	});
+}
+
+#[test]
+fn disable_twice_has_no_effect() {
+	new_test_ext().execute_with(|| {
+		let collection_id = create_collection(ALICE);
+		let who = AccountId::from_str(ALICE).unwrap();
+		assert_ok!(LaosEvolution::disable_public_minting(who, collection_id));
+		assert_storage_noop!(LaosEvolution::disable_public_minting(who, collection_id).unwrap());
+	});
+}
+
+#[test]
+fn anyone_can_mint_when_public_minting_is_enabled() {
+	new_test_ext().execute_with(|| {
+		let collection_id = LaosEvolution::collection_counter();
+		let token_uri: TokenUriOf<Test> =
+			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
+		let owner = ALICE;
+		let non_owner = BOB;
+
+		create_collection(owner);
+		assert_ok!(LaosEvolution::enable_public_minting(
+			AccountId::from_str(owner).unwrap(),
+			collection_id
+		));
+		assert_ok!(LaosEvolution::mint_with_external_uri(
+			AccountId::from_str(non_owner).unwrap(),
+			collection_id,
+			0,
+			AccountId::from_str(non_owner).unwrap(),
+			token_uri.clone()
+		));
+	});
+}
+
+#[test]
+fn nobody_can_mint_when_public_minting_is_disabled() {
+	new_test_ext().execute_with(|| {
+		let collection_id = LaosEvolution::collection_counter();
+		let token_uri: TokenUriOf<Test> =
+			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
+		let owner = ALICE;
+		let non_owner = BOB;
+
+		create_collection(owner);
+		assert_ok!(LaosEvolution::enable_public_minting(
+			AccountId::from_str(owner).unwrap(),
+			collection_id
+		));
+		assert_ok!(LaosEvolution::disable_public_minting(
+			AccountId::from_str(owner).unwrap(),
+			collection_id
+		));
+		assert_noop!(
+			LaosEvolution::mint_with_external_uri(
+				AccountId::from_str(non_owner).unwrap(),
+				collection_id,
+				0,
+				AccountId::from_str(non_owner).unwrap(),
+				token_uri.clone()
+			),
+			Error::<Test>::NoPermission
+		);
+	});
+}
+
+#[test]
+fn collection_owner_can_mint_when_public_minting_is_enabled() {
+	new_test_ext().execute_with(|| {
+		let collection_id = LaosEvolution::collection_counter();
+		let token_uri: TokenUriOf<Test> =
+			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
+		let owner = ALICE;
+		let non_owner = BOB;
+
+		create_collection(owner);
+		assert_ok!(LaosEvolution::enable_public_minting(
+			H160::from_str(owner).unwrap(),
+			collection_id
+		));
+		assert_ok!(LaosEvolution::mint_with_external_uri(
+			H160::from_str(owner).unwrap(),
+			collection_id,
+			0,
+			H160::from_str(non_owner).unwrap(),
+			token_uri.clone()
+		));
+	});
+}
+
+#[test]
+fn non_collection_owner_cannot_evolve_when_public_minting_is_enabled() {
+	new_test_ext().execute_with(|| {
+		let collection_id = LaosEvolution::collection_counter();
+		let token_uri: TokenUriOf<Test> =
+			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
+		let owner = ALICE;
+		let non_owner = BOB;
+		let slot = 0;
+		let token_id =
+			slot_and_owner_to_token_id(slot, AccountId::from_str(non_owner).unwrap()).unwrap();
+
+		create_collection(owner);
+		assert_ok!(LaosEvolution::enable_public_minting(
+			AccountId::from_str(owner).unwrap(),
+			collection_id
+		));
+		assert_ok!(LaosEvolution::mint_with_external_uri(
+			AccountId::from_str(non_owner).unwrap(),
+			collection_id,
+			slot,
+			AccountId::from_str(non_owner).unwrap(),
+			token_uri.clone()
+		));
+		assert_noop!(
+			LaosEvolution::evolve_with_external_uri(
+				AccountId::from_str(non_owner).unwrap(),
+				collection_id,
+				token_id,
+				token_uri.clone()
+			),
+			Error::<Test>::NoPermission
 		);
 	});
 }

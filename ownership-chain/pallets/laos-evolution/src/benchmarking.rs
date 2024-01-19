@@ -79,4 +79,31 @@ mod benchmarks {
 			Some(vec![1u8; s as usize].try_into().unwrap())
 		);
 	}
+
+	#[benchmark]
+	fn enable_public_minting() {
+		let caller: T::AccountId = whitelisted_caller();
+		let owner = caller.clone();
+		let collection_id = LaosEvolution::<T>::create_collection(owner.clone()).unwrap();
+
+		#[block]
+		{
+			LaosEvolution::<T>::enable_public_minting(owner, collection_id).unwrap();
+		}
+		assert!(CollectionPublicMintingEnabled::<T>::contains_key(collection_id));
+	}
+
+	#[benchmark]
+	fn disable_public_minting() {
+		let caller: T::AccountId = whitelisted_caller();
+		let owner = caller.clone();
+		let collection_id = LaosEvolution::<T>::create_collection(owner.clone()).unwrap();
+		let _ = LaosEvolution::<T>::enable_public_minting(owner.clone(), collection_id).unwrap();
+
+		#[block]
+		{
+			LaosEvolution::<T>::disable_public_minting(owner, collection_id).unwrap();
+		}
+		assert!(!CollectionPublicMintingEnabled::<T>::contains_key(collection_id));
+	}
 }
