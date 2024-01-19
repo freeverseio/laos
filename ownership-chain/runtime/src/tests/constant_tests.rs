@@ -7,7 +7,7 @@ use frame_support::{
 	assert_ok,
 	traits::{
 		tokens::{fungible::Balanced, Precision},
-		Currency,
+		Currency, WithdrawReasons,
 	},
 };
 use sp_core::U256;
@@ -55,4 +55,14 @@ fn send_1_minimum_unit_to_wallet_with_0_wei_balance_should_increase_balance_by_1
 
 		assert_eq!(Runtime::account_basic(alice.into()).balance, 1.into());
 	})
+}
+
+#[test]
+fn check_pallet_vesting_configuration() {
+	assert_eq!(<Runtime as pallet_vesting::Config>::MinVestedTransfer::get(), UNIT);
+	assert_eq!(
+		<Runtime as pallet_vesting::Config>::UnvestedFundsAllowedWithdrawReasons::get(),
+		WithdrawReasons::except(WithdrawReasons::TRANSFER | WithdrawReasons::RESERVE)
+	);
+	assert_eq!(<Runtime as pallet_vesting::Config>::MAX_VESTING_SCHEDULES, 28);
 }
