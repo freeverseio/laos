@@ -26,6 +26,12 @@ interface EvolutionCollection {
         string _tokenURI
     );
 
+    /// @notice Emitted when public minting is enabled for the collection
+    event PublicMintingEnabled();
+
+    /// @notice Emitted when public minting is disabled for the collection
+    event PublicMintingDisabled();
+
     /// @notice Owner of the collection
     /// @dev Call this function to get the owner of a collection
     /// @return the owner of the collection
@@ -57,4 +63,19 @@ interface EvolutionCollection {
         uint256 _tokenId,
         string calldata _tokenURI
     ) external;
+
+    /// @notice Enables public minting for the collection
+    /// When enabled, any address is allowed to mint on this collection
+    /// This does not affect evolution: only the owner of the collection can continue evolving assets
+    /// @dev Call this function to enable public minting for the collection, the caller must be the owner of the collection
+    function enablePublicMinting() external;
+
+    /// @notice Disables public minting for the collection
+    /// @dev Call this function to disable public minting for the collection, the caller must be the owner of the collection
+    function disablePublicMinting() external;
+
+    /// @notice Checks if public minting is enabled for the collection
+    /// @dev Call this function to check if public minting is enabled for the collection
+    /// @return true if public minting is enabled for the collection, false otherwise
+    function isPublicMintingEnabled() external view returns(bool);
 }
