@@ -65,6 +65,8 @@ interface EvolutionCollection {
     ) external;
 
     /// @notice Enables public minting for the collection
+    /// When enabled, any address is allowed to mint on this collection
+    /// This does not affect evolution: only the owner of the collection can continue evolving assets
     /// @dev Call this function to enable public minting for the collection, the caller must be the owner of the collection
     function enablePublicMinting() external;
 

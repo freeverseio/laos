@@ -257,7 +257,7 @@ where
 				// TODO: Add `ref_time` when precompiles are benchmarked
 				handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
 
-				Ok(succeed(sp_std::vec![]))
+				Ok(succeed(EvmDataWriter::new().build()))
 			},
 			Err(err) => Err(revert_dispatch_error(err)),
 		}
@@ -288,7 +288,7 @@ where
 				// TODO: Add `ref_time` when precompiles are benchmarked
 				handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
 
-				Ok(succeed(sp_std::vec![]))
+				Ok(succeed(EvmDataWriter::new().build()))
 			},
 			Err(err) => Err(revert_dispatch_error(err)),
 		}
