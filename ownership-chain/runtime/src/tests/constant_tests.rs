@@ -1,7 +1,7 @@
 use core::str::FromStr;
 
 use super::*;
-use crate::{AccountId, Balances, Runtime, UNIT};
+use crate::{AccountId, Balances, Runtime, UNIT, Vesting, RuntimeOrigin};
 use fp_rpc::runtime_decl_for_ethereum_runtime_rpc_api::EthereumRuntimeRPCApiV5;
 use frame_support::{
 	assert_ok,
@@ -69,31 +69,38 @@ fn check_pallet_vesting_configuration() {
 }
 
 #[test]
-fn account_should_have_a_clief_of_24_blocks_and_vests_over_24x4_blocks_after_cliff() {
-	new_test_ext().execute_with(|| {
-		let alice = AccountId::from_str(ALICE).unwrap();
-		let bob = AccountId::from_str(BOB).unwrap();
-		let starting_block = 24_u32;
-		let vesting_period = 24 * 4;
-		let per_block = UNIT;
-		let total_amount = vesting_period * per_block;
-		let alice_origin = <Runtime as frame_system::Config>::RuntimeOrigin::signed(alice);
-		let bob_origin = <Runtime as frame_system::Config>::RuntimeOrigin::signed(bob);
+fn account_vests_correctly_over_time() {
+    new_test_ext().execute_with(|| {
+        let alice = AccountId::from_str(ALICE).unwrap();
+        let bob = AccountId::from_str(BOB).unwrap();
+        let cliff_duration = 24_u32;
+        let vesting_duration = 24 * 4; // 4 times the cliff duration
+        let per_block = UNIT; // Amount vested per block
+        let total_vested_amount = vesting_duration * per_block;
 
-		assert!(Balances::deposit(&alice, total_amount, Precision::Exact).is_ok());
-		assert_eq!(Balances::total_balance(&alice), total_amount);
-		assert_eq!(Balances::total_balance(&bob), 0);
+        // Deposit the total vested amount to Alice's account and validate balances
+        assert!(Balances::deposit(&alice, total_vested_amount, Precision::Exact).is_ok());
+        assert_eq!(Balances::total_balance(&alice), total_vested_amount);
+        assert_eq!(Balances::total_balance(&bob), 0);
 
-		let vesting_info = pallet_vesting::VestingInfo::new(total_amount, per_block, starting_block); 
-		assert!(vesting_info.clone().is_valid());
+        // Create a vesting schedule for Bob
+        let vesting_info = pallet_vesting::VestingInfo::new(total_vested_amount, per_block, cliff_duration);
+        assert!(vesting_info.is_valid());
 
-		assert_ok!(pallet_vesting::Pallet::<Runtime>::vested_transfer(alice_origin, bob.clone(), vesting_info));
+        // Transfer vested funds from Alice to Bob
+        assert_ok!(Vesting::vested_transfer(
+            RuntimeOrigin::signed(alice),
+            bob.clone(),
+            vesting_info
+        ));
 
-		for i in 24..=starting_block + vesting_period as u32 {
-			frame_system::Pallet::<Runtime>::set_block_number(i);
-			assert_ok!(pallet_vesting::Pallet::<Runtime>::vest(bob_origin.clone()));
-			assert_eq!(Balances::usable_balance(&bob), (i - starting_block) as u128 * UNIT);
-			assert_eq!(Balances::total_balance(&bob), total_amount);
-		}
-	});
-} 
+        // Simulate block progression and check Bob's balance each block
+        for block_num in cliff_duration..=cliff_duration + vesting_duration as u32 {
+            frame_system::Pallet::<Runtime>::set_block_number(block_num);
+            assert_ok!(Vesting::vest(RuntimeOrigin::signed(bob.clone())));
+            let vested_amount = (block_num - cliff_duration) as u128 * per_block;
+            assert_eq!(Balances::usable_balance(&bob), vested_amount);
+            assert_eq!(Balances::total_balance(&bob), total_vested_amount);
+        }
+    });
+}
