@@ -74,9 +74,9 @@ fn account_vests_correctly_over_time() {
 		let alice = AccountId::from_str(ALICE).unwrap();
 		let bob = AccountId::from_str(BOB).unwrap();
 		let cliff_duration = 24_u32;
-		let vesting_duration = cliff_duration * 4; // 4 times the cliff duration
+		let vesting_duration = (cliff_duration * 4) as u128; // 4 times the cliff duration
 		let amount_per_block = UNIT; // Amount vested per block
-		let total_vested_amount = vesting_duration * per_block;
+		let total_vested_amount = vesting_duration * amount_per_block;
 
 		// Deposit the total vested amount to Alice's account and validate balances
 		assert!(Balances::deposit(&alice, total_vested_amount, Precision::Exact).is_ok());
@@ -85,7 +85,7 @@ fn account_vests_correctly_over_time() {
 
 		// Create a vesting schedule for Bob
 		let vesting_info =
-			pallet_vesting::VestingInfo::new(total_vested_amount, per_block, cliff_duration);
+			pallet_vesting::VestingInfo::new(total_vested_amount, amount_per_block, cliff_duration);
 		assert!(vesting_info.is_valid());
 
 		// Transfer vested funds from Alice to Bob
@@ -99,7 +99,7 @@ fn account_vests_correctly_over_time() {
 		for block_num in cliff_duration..=cliff_duration + vesting_duration as u32 {
 			frame_system::Pallet::<Runtime>::set_block_number(block_num);
 			assert_ok!(Vesting::vest(RuntimeOrigin::signed(bob.clone())));
-			let vested_amount = (block_num - cliff_duration) as u128 * per_block;
+			let vested_amount = (block_num - cliff_duration) as u128 * amount_per_block;
 			assert_eq!(Balances::usable_balance(&bob), vested_amount);
 			assert_eq!(Balances::total_balance(&bob), total_vested_amount);
 		}
