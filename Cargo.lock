@@ -5304,7 +5304,7 @@ dependencies = [
 
 [[package]]
 name = "laos-ownership"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "clap",
  "cumulus-client-cli",
@@ -5377,7 +5377,7 @@ dependencies = [
 
 [[package]]
 name = "laos-ownership-runtime"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "cumulus-pallet-aura-ext",
  "cumulus-pallet-dmp-queue",
