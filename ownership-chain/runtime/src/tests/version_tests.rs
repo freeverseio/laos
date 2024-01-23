@@ -43,7 +43,7 @@ fn standard_version() {
 }
 
 #[test]
-fn version_with_mejor_zero() {
+fn version_with_major_zero() {
 	assert_eq!(parse_semantic_version("0.9.0"), 900);
 }
 
