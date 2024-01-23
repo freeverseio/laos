@@ -75,7 +75,7 @@ fn account_vests_correctly_over_time() {
 		let bob = AccountId::from_str(BOB).unwrap();
 		let cliff_duration = 24_u32;
 		let vesting_duration = (cliff_duration * 4) as u128;
-		let amount_vested_per_block = UNIT; 
+		let amount_vested_per_block = UNIT;
 		let total_vested_amount = vesting_duration * amount_vested_per_block;
 
 		// Deposit the total vested amount to Alice's account and validate balances
