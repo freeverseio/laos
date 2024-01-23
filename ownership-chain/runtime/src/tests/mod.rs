@@ -3,6 +3,7 @@
 #![cfg(test)]
 mod constant_tests;
 mod precompile_tests;
+mod version_tests;
 mod xcm_mock;
 mod xcm_tests;
 
