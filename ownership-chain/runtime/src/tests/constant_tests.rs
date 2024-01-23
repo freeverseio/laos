@@ -74,7 +74,7 @@ fn account_vests_correctly_over_time() {
 		let alice = AccountId::from_str(ALICE).unwrap();
 		let bob = AccountId::from_str(BOB).unwrap();
 		let cliff_duration = 24_u32;
-		let vesting_duration = (cliff_duration * 4) as u128; // 4 times the cliff duration
+		let vesting_duration = (cliff_duration * 4) as u128;
 		let amount_per_block = UNIT; // Amount vested per block
 		let total_vested_amount = vesting_duration * amount_per_block;
 
