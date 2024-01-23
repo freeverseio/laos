@@ -128,6 +128,10 @@ fn account_vests_correctly_over_time() {
 			vesting_info
 		));
 
+		assert_eq!(Balances::total_balance(&alice), 0);
+		assert_eq!(Balances::total_balance(&bob), total_vested_amount);
+		assert_eq!(Balances::usable_balance(&bob), 0);
+
 		// Simulate block progression and check Bob's balance each block
 		for block_num in cliff_duration..=cliff_duration + vesting_duration as u32 {
 			frame_system::Pallet::<Runtime>::set_block_number(block_num);
