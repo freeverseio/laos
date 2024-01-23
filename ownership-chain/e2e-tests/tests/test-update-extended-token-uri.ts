@@ -8,7 +8,7 @@ import {
 	GAS_PRICE,
 	GENESIS_ACCOUNT,
 	GENESIS_ACCOUNT_PRIVATE_KEY,
-	SELECTOR_LOG_EXTENDED_TOKEN_URI_UPDATED,
+	SELECTOR_LOG_UPDATED_EXTENDED_UL_WITH_EXTERNAL_URI,
 } from "./config";
 import { describeWithExistingNode } from "./util";
 
@@ -63,7 +63,7 @@ describeWithExistingNode("Frontier RPC (Update Extended Token URI)", (context) =
 
 		// event topics
 		expect(udpateResult.events.UpdatedExtendedULWithExternalURI.raw.topics.length).to.be.eq(3);
-		expect(udpateResult.events.UpdatedExtendedULWithExternalURI.raw.topics[0]).to.be.eq(SELECTOR_LOG_EXTENDED_TOKEN_URI_UPDATED);
+		expect(udpateResult.events.UpdatedExtendedULWithExternalURI.raw.topics[0]).to.be.eq(SELECTOR_LOG_UPDATED_EXTENDED_UL_WITH_EXTERNAL_URI);
 		expect(udpateResult.events.UpdatedExtendedULWithExternalURI.raw.topics[1]).to.be.eq(
 			context.web3.utils.padLeft(GENESIS_ACCOUNT.toLowerCase(), 64)
 		);

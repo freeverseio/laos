@@ -19,11 +19,11 @@ const TEST_CLAIMER: &str = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
 #[test]
 fn check_log_selectors() {
 	assert_eq!(
-		hex::encode(SELECTOR_LOG_TOKEN_URI_EXTENDED),
+		hex::encode(SELECTOR_LOG_EXTENDED_UL_WITH_EXTERNAL_URI),
 		"f744da499cb735a8fc987aa2a331a1cbeca79e449e4c04eeccfe57c538e79070"
 	);
 	assert_eq!(
-		hex::encode(SELECTOR_LOG_EXTENDED_TOKEN_URI_UPDATED),
+		hex::encode(SELECTOR_LOG_UPDATED_EXTENDED_UL_WITH_EXTERNAL_URI),
 		"e7ebe38355126fe0c3eab0ec03eb1b94ff501458a80713c9eb8b737334a651ff"
 	);
 }
@@ -57,7 +57,7 @@ fn create_token_uri_extension_should_emit_log() {
 		let expected_log = Log {
 			address: H160(PRECOMPILE_ADDRESS),
 			topics: vec![
-				SELECTOR_LOG_TOKEN_URI_EXTENDED.into(),
+				SELECTOR_LOG_EXTENDED_UL_WITH_EXTERNAL_URI.into(),
 				H256::from_str(
 					format!("000000000000000000000000{}", TEST_CLAIMER.trim_start_matches("0x"))
 						.as_str(),
@@ -285,7 +285,7 @@ fn update_of_extension_should_emit_a_log() {
 		let expected_log = Log {
 			address: H160(PRECOMPILE_ADDRESS),
 			topics: vec![
-				SELECTOR_LOG_EXTENDED_TOKEN_URI_UPDATED.into(),
+				SELECTOR_LOG_UPDATED_EXTENDED_UL_WITH_EXTERNAL_URI.into(),
 				H160::from_str(TEST_CLAIMER).unwrap().into(),
 				keccak256!("my_awesome_universal_location").into(),
 			],

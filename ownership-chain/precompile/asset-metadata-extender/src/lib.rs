@@ -19,11 +19,11 @@ use sp_std::{fmt::Debug, marker::PhantomData};
 
 /// Solidity selector of the ExtendedULWithExternalURI log, which is the Keccak of the Log
 /// signature.
-pub const SELECTOR_LOG_TOKEN_URI_EXTENDED: [u8; 32] =
+pub const SELECTOR_LOG_EXTENDED_UL_WITH_EXTERNAL_URI: [u8; 32] =
 	keccak256!("ExtendedULWithExternalURI(address,bytes32,string,string)");
 /// Solidity selector of the UpdatedExtendedULWithExternalURI log, which is the Keccak of the Log
 /// signature.
-pub const SELECTOR_LOG_EXTENDED_TOKEN_URI_UPDATED: [u8; 32] =
+pub const SELECTOR_LOG_UPDATED_EXTENDED_UL_WITH_EXTERNAL_URI: [u8; 32] =
 	keccak256!("UpdatedExtendedULWithExternalURI(address,bytes32,string,string)");
 
 #[laos_precompile_utils_macro::generate_function_selector]
@@ -120,7 +120,7 @@ where
 
 		LogsBuilder::new(context.address)
 			.log3(
-				SELECTOR_LOG_TOKEN_URI_EXTENDED,
+				SELECTOR_LOG_EXTENDED_UL_WITH_EXTERNAL_URI,
 				claimer,
 				ul_hash,
 				EvmDataWriter::new()
@@ -171,7 +171,7 @@ where
 
 		LogsBuilder::new(context.address)
 			.log3(
-				SELECTOR_LOG_EXTENDED_TOKEN_URI_UPDATED,
+				SELECTOR_LOG_UPDATED_EXTENDED_UL_WITH_EXTERNAL_URI,
 				claimer,
 				universal_location_hash,
 				EvmDataWriter::new()
