@@ -105,5 +105,8 @@ fn account_vests_correctly_over_time() {
 			let vested_amount = (block_num - cliff_duration) as u128 * amount_vested_per_block;
 			assert_eq!(Balances::usable_balance(&bob), vested_amount);
 		}
+
+		// Check that Bob's balance is now the total vested amount
+		assert_eq!(Balances::usable_balance(&bob), total_vested_amount);
 	});
 }
