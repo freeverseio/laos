@@ -140,5 +140,3 @@ fn account_vests_correctly_over_time() {
 		assert_eq!(Balances::usable_balance(&bob), total_vested_amount);
 	});
 }
-
-
