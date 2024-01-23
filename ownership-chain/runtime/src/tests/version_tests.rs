@@ -49,7 +49,6 @@ fn version_with_mejor_zero() {
 
 #[test]
 #[should_panic(expected = "Invalid version format")]
-
 fn version_with_more_than_three_parts() {
 	parse_semantic_version("1.2.3.4");
 }
