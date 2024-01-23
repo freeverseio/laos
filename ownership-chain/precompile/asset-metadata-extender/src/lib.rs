@@ -17,18 +17,20 @@ use sp_io::hashing::keccak_256;
 use sp_runtime::BoundedVec;
 use sp_std::{fmt::Debug, marker::PhantomData};
 
-/// Solidity selector of the TokenURIExtended log, which is the Keccak of the Log signature.
+/// Solidity selector of the ExtendedULWithExternalURI log, which is the Keccak of the Log
+/// signature.
 pub const SELECTOR_LOG_TOKEN_URI_EXTENDED: [u8; 32] =
-	keccak256!("TokenURIExtended(address,bytes32,string,string)");
-/// Solidity selector of the ExtendedTokenURIUpdated log, which is the Keccak of the Log signature.
+	keccak256!("ExtendedULWithExternalURI(address,bytes32,string,string)");
+/// Solidity selector of the UpdatedExtendedULWithExternalURI log, which is the Keccak of the Log
+/// signature.
 pub const SELECTOR_LOG_EXTENDED_TOKEN_URI_UPDATED: [u8; 32] =
-	keccak256!("ExtendedTokenURIUpdated(address,bytes32,string,string)");
+	keccak256!("UpdatedExtendedULWithExternalURI(address,bytes32,string,string)");
 
 #[laos_precompile_utils_macro::generate_function_selector]
 #[derive(Debug, PartialEq)]
 pub enum Action {
 	/// Extend asset metadata (token uri)
-	Extend = "extendTokenURI(string,string)",
+	Extend = "extendULWithExternalURI(string,string)",
 	/// Get extensions balance for a given universal location
 	Balance = "balanceOfUL(string)",
 	/// Get claimer of a given universal location using indexation
@@ -36,7 +38,7 @@ pub enum Action {
 	/// Get token uri of a given universal location using indexation
 	Extension = "extensionOfULByIndex(string,uint32)", // TODO rename `extension` for `tokenURI`?
 	/// Update token uri of a given universal location using indexation
-	Update = "updateExtendedTokenURI(string,string)",
+	Update = "updateExtendedULWithExternalURI(string,string)",
 	/// Get extension of a given universal location using claimer
 	ExtensionOfULByClaimer = "extensionOfULByClaimer(string,address)",
 	/// Check if a given universal location has an extension

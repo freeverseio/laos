@@ -39,7 +39,8 @@ where
 			hash(8),
 			hash(9),
 			hash(1027),
-			hash(1028),
+			hash(1028), // This will be deprecated in the future
+			hash(1029),
 		]
 	}
 
