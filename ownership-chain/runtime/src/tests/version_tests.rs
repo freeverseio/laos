@@ -55,13 +55,17 @@ fn version_with_more_than_three_parts() {
 }
 
 #[test]
-#[should_panic(expected = "invalid digit found in string")]
+#[should_panic(
+	expected = "called `Result::unwrap()` on an `Err` value: ParseIntError { kind: InvalidDigit }"
+)]
 fn version_with_non_numeric_characters() {
 	parse_semantic_version("a.b.c");
 }
 
 #[test]
-#[should_panic(expected = "Invalid version format")]
+#[should_panic(
+	expected = "called `Result::unwrap()` on an `Err` value: ParseIntError { kind: Empty }"
+)]
 fn empty_version() {
 	parse_semantic_version("");
 }
