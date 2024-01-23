@@ -1,8 +1,4 @@
 use crate::VERSION;
-use std::{
-	io::{Error, ErrorKind},
-	num::ParseIntError,
-};
 
 /// Converts a version string in the format "major.minor.patch" to an integer.
 /// Each part of the version (major, minor, patch) must be a number less than 100.
@@ -19,75 +15,60 @@ use std::{
 /// # Examples
 /// ```
 /// let version = "1.2.3";
-/// let int_version = version_to_int(version).unwrap();
+/// let int_version = version_to_int(version);
 /// assert_eq!(int_version, 10203);
 /// ```
-fn parse_semantic_version(version: &str) -> Result<u32, Error> {
-	let parts: Vec<&str> = version.split('.').collect();
-	if parts.len() != 3 {
-		return Err(Error::new(ErrorKind::InvalidInput, "Invalid version format"));
-	}
+fn parse_semantic_version(version: &str) -> u32 {
+	let parts: Vec<u32> = version.split('.').map(|part| part.parse::<u32>().unwrap()).collect();
+	assert!(parts.len() == 3, "Invalid version format");
 
-	let major = parts[0]
-		.parse::<u32>()
-		.map_err(|e: ParseIntError| Error::new(ErrorKind::InvalidInput, e))?;
-	let minor = parts[1]
-		.parse::<u32>()
-		.map_err(|e: ParseIntError| Error::new(ErrorKind::InvalidInput, e))?;
-	let patch = parts[2]
-		.parse::<u32>()
-		.map_err(|e: ParseIntError| Error::new(ErrorKind::InvalidInput, e))?;
+	let major = parts[0];
+	let minor = parts[1];
+	let patch = parts[2];
 
-	// Check all the numbers are less than 100
-	if major >= 100 || minor >= 100 || patch >= 100 {
-		return Err(Error::new(ErrorKind::InvalidInput, "Version number must be less than 100"));
-	}
+	assert!(major < 100 && minor < 100 && patch < 100, "Version number must be less than 100");
 
-	Ok(major * 10000 + minor * 100 + patch)
+	major * 10000 + minor * 100 + patch
 }
 
 #[test]
+#[should_panic(expected = "Version number must be less than 100")]
 fn version_member_is_100_should_error() {
-	assert_eq!(
-		parse_semantic_version("100.0.0").unwrap_err().to_string(),
-		"Version number must be less than 100"
-	);
+	parse_semantic_version("100.0.0");
 }
 
 #[test]
 fn standard_version() {
-	assert_eq!(parse_semantic_version("1.2.3").unwrap(), 10203);
+	assert_eq!(parse_semantic_version("1.2.3"), 10203);
 }
 
 #[test]
-fn version_with_leading_zeros() {
-	assert_eq!(parse_semantic_version("0.9.0").unwrap(), 900);
+fn version_with_mejor_zero() {
+	assert_eq!(parse_semantic_version("0.9.0"), 900);
 }
 
 #[test]
+#[should_panic(expected = "Invalid version format")]
+
 fn version_with_more_than_three_parts() {
-	assert_eq!(
-		parse_semantic_version("1.2.3.4").unwrap_err().to_string(),
-		"Invalid version format"
-	);
+	parse_semantic_version("1.2.3.4");
 }
 
 #[test]
+#[should_panic(expected = "invalid digit found in string")]
 fn version_with_non_numeric_characters() {
-	assert_eq!(
-		parse_semantic_version("a.b.c").unwrap_err().to_string(),
-		"invalid digit found in string"
-	);
+	parse_semantic_version("a.b.c");
 }
 
 #[test]
+#[should_panic(expected = "Invalid version format")]
 fn empty_version() {
-	assert_eq!(parse_semantic_version("").unwrap_err().to_string(), "Invalid version format");
+	parse_semantic_version("");
 }
 
 #[test]
 fn version_001_should_be_1() {
-	assert_eq!(parse_semantic_version("0.0.1").unwrap(), 1);
+	assert_eq!(parse_semantic_version("0.0.1"), 1);
 }
 
 #[test]
@@ -95,11 +76,8 @@ fn runtime_version_should_be_derived_from_package_version() {
 	let package_version = env!("CARGO_PKG_VERSION");
 	let derived_runtime_version = parse_semantic_version(package_version);
 
-	assert!(derived_runtime_version.is_ok(), "Version conversion failed");
-
 	assert_eq!(
-		derived_runtime_version.unwrap(),
-		VERSION.spec_version,
+		derived_runtime_version, VERSION.spec_version,
 		"Derived runtime version does not match expected spec_version"
 	);
 }
