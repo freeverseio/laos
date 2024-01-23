@@ -24,6 +24,10 @@ pub const SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
 /// Solidity selector of the EvolvedWithExternalURI log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
 	keccak256!("EvolvedWithExternalURI(uint256,string)");
+/// Solidity selector of the EnabledPublicMinting log, which is the Keccak of the Log signature.
+pub const SELECTOR_LOG_ENABLED_PUBLIC_MINTING: [u8; 32] = keccak256!("EnabledPublicMinting()");
+/// Solidity selector of the DisabledPublicMinting log, which is the Keccak of the Log signature.
+pub const SELECTOR_LOG_DISABLED_PUBLIC_MINTING: [u8; 32] = keccak256!("DisabledPublicMinting()");
 
 #[laos_precompile_utils_macro::generate_function_selector]
 #[derive(Debug, PartialEq)]
@@ -36,6 +40,12 @@ pub enum Action {
 	Mint = "mintWithExternalURI(address,uint96,string)",
 	/// Evolve token
 	Evolve = "evolveWithExternalURI(uint256,string)",
+	/// Enable public minting
+	EnablePublicMinting = "enablePublicMinting()",
+	/// Disable public minting
+	DisablePublicMinting = "disablePublicMinting()",
+	/// Check if public minting is enabled
+	IsPublicMintingEnabled = "isPublicMintingEnabled()",
 }
 
 impl<Runtime> Precompile for EvolutionCollectionPrecompile<Runtime>
@@ -52,6 +62,9 @@ where
 			Action::Owner => FunctionModifier::View,
 			Action::TokenURI => FunctionModifier::View,
 			Action::Evolve => FunctionModifier::NonPayable,
+			Action::EnablePublicMinting => FunctionModifier::NonPayable,
+			Action::DisablePublicMinting => FunctionModifier::NonPayable,
+			Action::IsPublicMintingEnabled => FunctionModifier::View,
 		})?;
 
 		match selector {
@@ -59,6 +72,9 @@ where
 			Action::TokenURI => Self::token_uri(handle),
 			Action::Mint => Self::mint(handle),
 			Action::Evolve => Self::evolve(handle),
+			Action::EnablePublicMinting => Self::enable_public_minting(handle),
+			Action::DisablePublicMinting => Self::disable_public_minting(handle),
+			Action::IsPublicMintingEnabled => Self::is_public_minting_enabled(handle),
 		}
 	}
 }
@@ -214,6 +230,85 @@ where
 			},
 			Err(err) => Err(revert_dispatch_error(err)),
 		}
+	}
+
+	fn enable_public_minting(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
+		let input = handle.read_input()?;
+		input.expect_arguments(0)?;
+		let context = handle.context();
+		let caller = context.caller;
+
+		// collection id is encoded into the contract address
+		let collection_id = address_to_collection_id(context.address)
+			.map_err(|_| revert("invalid collection address"))?;
+
+		match LaosEvolution::<Runtime>::enable_public_minting(caller.into(), collection_id) {
+			Ok(()) => {
+				let consumed_weight = LaosEvolutionWeights::<Runtime>::enable_public_minting();
+
+				LogsBuilder::new(context.address)
+					.log1(SELECTOR_LOG_ENABLED_PUBLIC_MINTING, sp_std::vec![])
+					.record(handle)?;
+
+				// Record EVM cost
+				handle.record_cost(GasCalculator::<Runtime>::weight_to_gas(consumed_weight))?;
+
+				// Record Substrate related costs
+				// TODO: Add `ref_time` when precompiles are benchmarked
+				handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
+
+				Ok(succeed(EvmDataWriter::new().build()))
+			},
+			Err(err) => Err(revert_dispatch_error(err)),
+		}
+	}
+
+	fn disable_public_minting(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
+		let input = handle.read_input()?;
+		input.expect_arguments(0)?;
+		let context = handle.context();
+		let caller = context.caller;
+
+		// collection id is encoded into the contract address
+		let collection_id = address_to_collection_id(context.address)
+			.map_err(|_| revert("invalid collection address"))?;
+
+		match LaosEvolution::<Runtime>::disable_public_minting(caller.into(), collection_id) {
+			Ok(()) => {
+				let consumed_weight = LaosEvolutionWeights::<Runtime>::enable_public_minting();
+
+				LogsBuilder::new(context.address)
+					.log1(SELECTOR_LOG_DISABLED_PUBLIC_MINTING, sp_std::vec![])
+					.record(handle)?;
+
+				// Record EVM cost
+				handle.record_cost(GasCalculator::<Runtime>::weight_to_gas(consumed_weight))?;
+
+				// Record Substrate related costs
+				// TODO: Add `ref_time` when precompiles are benchmarked
+				handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
+
+				Ok(succeed(EvmDataWriter::new().build()))
+			},
+			Err(err) => Err(revert_dispatch_error(err)),
+		}
+	}
+
+	fn is_public_minting_enabled(
+		handle: &mut impl PrecompileHandle,
+	) -> EvmResult<PrecompileOutput> {
+		let input = handle.read_input()?;
+		input.expect_arguments(0)?;
+		let context = handle.context();
+
+		// collection id is encoded into the contract address
+		let collection_id = address_to_collection_id(context.address)
+			.map_err(|_| revert("invalid collection address"))?;
+
+		let is_enabled = LaosEvolution::<Runtime>::is_public_minting_enabled(collection_id);
+		let consumed_gas: u64 = GasCalculator::<Runtime>::db_read_gas_cost(1);
+		handle.record_cost(consumed_gas)?;
+		Ok(succeed(EvmDataWriter::new().write(is_enabled).build()))
 	}
 }
 

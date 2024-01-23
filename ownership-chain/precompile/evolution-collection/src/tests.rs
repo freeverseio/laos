@@ -101,7 +101,7 @@ fn function_selectors() {
 }
 
 #[test]
-fn mint_with_external_uri_should_generate_log() {
+fn mint_should_generate_log() {
 	new_test_ext().execute_with(|| {
 		let owner = H160([1u8; 20]);
 		let collection_address = create_collection(owner);
@@ -142,7 +142,7 @@ fn mint_with_external_uri_should_generate_log() {
 }
 
 #[test]
-fn call_unexistent_selector_should_fail() {
+fn unexistent_selector_should_revert() {
 	new_test_ext().execute_with(|| {
 		let input = EvmDataWriter::new_with_selector(0x12345678 as u32).build();
 
@@ -153,7 +153,7 @@ fn call_unexistent_selector_should_fail() {
 }
 
 #[test]
-fn call_owner_of_non_existent_collection() {
+fn owner_of_non_existent_collection_should_revert() {
 	new_test_ext().execute_with(|| {
 		let alice = H160::from_str(ALICE).unwrap();
 		let collection_address =
@@ -168,7 +168,7 @@ fn call_owner_of_non_existent_collection() {
 }
 
 #[test]
-fn call_owner_of_invalid_collection_address() {
+fn owner_of_invalid_collection_address() {
 	new_test_ext().execute_with(|| {
 		let _invalid_address = H160::from_str("0000000000000000000000000000000000000005").unwrap();
 
@@ -183,7 +183,7 @@ fn call_owner_of_invalid_collection_address() {
 }
 
 #[test]
-fn call_owner_of_collection_works() {
+fn owner_of_collection_works() {
 	new_test_ext().execute_with(|| {
 		let alice = H160::from_str(ALICE).unwrap();
 		let collection_address = create_collection(alice);
@@ -231,7 +231,7 @@ fn token_uri_returns_the_result_from_source() {
 }
 
 #[test]
-fn mint_works() {
+fn mint_asset_in_an_existing_collection_works() {
 	new_test_ext().execute_with(|| {
 		let to = H160::from_str(ALICE).unwrap();
 		let collection_address = create_collection(to);
@@ -254,7 +254,7 @@ fn mint_works() {
 }
 
 #[test]
-fn failing_mint_should_return_error() {
+fn when_mint_reverts_should_return_error() {
 	new_test_ext().execute_with(|| {
 		let to = H160::from_str(ALICE).unwrap();
 		let collection_address = create_collection(to);
@@ -274,7 +274,7 @@ fn failing_mint_should_return_error() {
 }
 
 #[test]
-fn evolve_works() {
+fn evolve_a_minted_asset_works() {
 	new_test_ext().execute_with(|| {
 		let alice = H160::from_str(ALICE).unwrap();
 		let collection_address = create_collection(alice);
@@ -292,7 +292,7 @@ fn evolve_works() {
 }
 
 #[test]
-fn evolve_with_external_uri_generates_log() {
+fn evolve_generates_log() {
 	new_test_ext().execute_with(|| {
 		let alice = H160::from_str(ALICE).unwrap();
 		let collection_address = create_collection(alice);
@@ -330,7 +330,7 @@ fn evolve_with_external_uri_generates_log() {
 }
 
 #[test]
-fn when_fails_should_return_error() {
+fn when_evolve_reverts_should_return_error() {
 	new_test_ext().execute_with(|| {
 		let alice = H160::from_str(ALICE).unwrap();
 		let collection_address = create_collection(alice);
@@ -348,6 +348,78 @@ fn when_fails_should_return_error() {
 }
 
 #[test]
+fn enable_public_minting_generates_log() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let collection_address = create_collection(alice);
+		let input = EvmDataWriter::new_with_selector(Action::EnablePublicMinting).build();
+		let expected_log = Log {
+			address: collection_address,
+			topics: vec![SELECTOR_LOG_ENABLED_PUBLIC_MINTING.into()],
+			data: vec![],
+		};
+		precompiles()
+			.prepare_test(alice, collection_address, input)
+			.expect_log(expected_log)
+			.execute_some();
+
+		let input = EvmDataWriter::new_with_selector(Action::IsPublicMintingEnabled).build();
+		precompiles()
+			.prepare_test(alice, collection_address, input)
+			.execute_returns(true);
+	})
+}
+
+#[test]
+fn when_enable_public_minting_reverts_should_return_error() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let collection_address = create_collection(alice);
+		let input = EvmDataWriter::new_with_selector(Action::EnablePublicMinting).build();
+
+		precompiles()
+			.prepare_test(collection_address, collection_address, input)
+			.execute_reverts(|r| r == b"NoPermission");
+	})
+}
+
+#[test]
+fn disable_public_minting_generates_log() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let collection_address = create_collection(alice);
+		let input = EvmDataWriter::new_with_selector(Action::DisablePublicMinting).build();
+		let expected_log = Log {
+			address: collection_address,
+			topics: vec![SELECTOR_LOG_DISABLED_PUBLIC_MINTING.into()],
+			data: vec![],
+		};
+		precompiles()
+			.prepare_test(alice, collection_address, input)
+			.expect_log(expected_log)
+			.execute_some();
+
+		let input = EvmDataWriter::new_with_selector(Action::IsPublicMintingEnabled).build();
+		precompiles()
+			.prepare_test(alice, collection_address, input)
+			.execute_returns(false);
+	})
+}
+
+#[test]
+fn when_disable_public_minting_reverts_should_return_error() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let collection_address = create_collection(alice);
+		let input = EvmDataWriter::new_with_selector(Action::DisablePublicMinting).build();
+
+		precompiles()
+			.prepare_test(collection_address, collection_address, input)
+			.execute_reverts(|r| r == b"NoPermission");
+	})
+}
+
+#[test]
 fn test_expected_cost_token_uri() {
 	new_test_ext().execute_with(|| {
 		let alice = H160::from_str(ALICE).unwrap();
@@ -355,6 +427,60 @@ fn test_expected_cost_token_uri() {
 		let token_id = mint(alice, collection_address, 0, Vec::new());
 
 		let input = EvmDataWriter::new_with_selector(Action::TokenURI).write(token_id).build();
+
+		// Expected weight of the precompile call implementation.
+		// Since benchmarking precompiles is not supported yet, we are benchmarking
+		// functions that precompile calls internally.
+		precompiles()
+			.prepare_test(alice, collection_address, input)
+			.expect_cost(25000000) //  [`WeightToGas`] set to 1:1 in mock
+			.execute_some();
+	})
+}
+
+#[test]
+fn enable_public_minting_has_a_cost() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let collection_address = create_collection(alice);
+
+		let input = EvmDataWriter::new_with_selector(Action::EnablePublicMinting).build();
+
+		// Expected weight of the precompile call implementation.
+		// Since benchmarking precompiles is not supported yet, we are benchmarking
+		// functions that precompile calls internally.
+		precompiles()
+			.prepare_test(alice, collection_address, input)
+			.expect_cost(134186750) //  [`WeightToGas`] set to 1:1 in mock
+			.execute_some();
+	})
+}
+
+#[test]
+fn disable_public_minting_has_a_cost() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let collection_address = create_collection(alice);
+
+		let input = EvmDataWriter::new_with_selector(Action::DisablePublicMinting).build();
+
+		// Expected weight of the precompile call implementation.
+		// Since benchmarking precompiles is not supported yet, we are benchmarking
+		// functions that precompile calls internally.
+		precompiles()
+			.prepare_test(alice, collection_address, input)
+			.expect_cost(134186750) //  [`WeightToGas`] set to 1:1 in mock
+			.execute_some();
+	})
+}
+
+#[test]
+fn is_public_minting_enabled_has_a_cost() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let collection_address = create_collection(alice);
+
+		let input = EvmDataWriter::new_with_selector(Action::IsPublicMintingEnabled).build();
 
 		// Expected weight of the precompile call implementation.
 		// Since benchmarking precompiles is not supported yet, we are benchmarking
@@ -406,7 +532,7 @@ fn test_expected_cost_mint_with_external_uri() {
 		// `mint_with_external_uri` weight + log cost
 		precompiles()
 			.prepare_test(owner, collection_address, input)
-			.expect_cost(170960430) // [`WeightToGas`] set to 1:1 in mock
+			.expect_cost(165102973) // [`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	})
 }
@@ -431,7 +557,7 @@ fn test_expected_cost_evolve_with_external_uri() {
 		// `evolve_with_external_uri` weight + log cost
 		precompiles()
 			.prepare_test(alice, collection_address, input)
-			.expect_cost(169493154) // [`WeightToGas`] set to 1:1 in mock
+			.expect_cost(163849607) // [`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	})
 }

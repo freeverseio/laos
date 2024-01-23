@@ -53,6 +53,12 @@ pub mod pallet {
 	pub type CollectionOwner<T: Config> =
 		StorageMap<_, Blake2_128Concat, CollectionId, AccountIdOf<T>, OptionQuery>;
 
+	/// Storage for the public minting policy of collections  
+	#[pallet::storage]
+	#[pallet::getter(fn collection_public_minting_enabled)]
+	pub type CollectionPublicMintingEnabled<T: Config> =
+		StorageMap<_, Blake2_128Concat, CollectionId, (), OptionQuery>;
+
 	/// Token URI which can override the default URI scheme and set explicitly
 	/// This will contain external URI in a raw form
 	#[pallet::storage]
@@ -90,6 +96,12 @@ pub mod pallet {
 			token_id: TokenId,
 			token_uri: TokenUriOf<T>,
 		},
+		/// Public minting enabled
+		/// [collection_id]
+		PublicMintingEnabled { collection_id: CollectionId },
+		/// Public minting disabled
+		/// [collection_id]
+		PublicMintingDisabled { collection_id: CollectionId },
 	}
 
 	// Errors inform users that something went wrong.
@@ -110,6 +122,12 @@ pub mod pallet {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {}
+
+	impl<T: Config> Pallet<T> {
+		pub fn is_owner(collection_id: CollectionId, who: T::AccountId) -> bool {
+			CollectionOwner::<T>::get(collection_id) == Some(who)
+		}
+	}
 }
 
 impl<T: Config> EvolutionCollectionFactory<AccountIdOf<T>> for Pallet<T> {
@@ -142,7 +160,11 @@ impl<T: Config> EvolutionCollection<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T>
 			CollectionOwner::<T>::contains_key(collection_id),
 			Error::<T>::CollectionDoesNotExist
 		);
-		ensure!(CollectionOwner::<T>::get(collection_id) == Some(who), Error::<T>::NoPermission);
+		ensure!(
+			Self::is_owner(collection_id, who) ||
+				CollectionPublicMintingEnabled::<T>::contains_key(collection_id),
+			Error::<T>::NoPermission
+		);
 
 		let to_as_h160 = T::AccountIdToH160::convert(to.clone());
 		// compose asset_id	from slot and owner
@@ -182,7 +204,7 @@ impl<T: Config> EvolutionCollection<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T>
 			CollectionOwner::<T>::contains_key(collection_id),
 			Error::<T>::CollectionDoesNotExist
 		);
-		ensure!(CollectionOwner::<T>::get(collection_id) == Some(who), Error::<T>::NoPermission);
+		ensure!(Self::is_owner(collection_id, who), Error::<T>::NoPermission);
 		ensure!(
 			TokenURI::<T>::contains_key(collection_id, token_id),
 			Error::<T>::AssetDoesNotExist
@@ -193,6 +215,32 @@ impl<T: Config> EvolutionCollection<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T>
 		Self::deposit_event(Event::EvolvedWithExternalURI { collection_id, token_id, token_uri });
 
 		Ok(())
+	}
+
+	fn enable_public_minting(who: AccountIdOf<T>, collection_id: CollectionId) -> DispatchResult {
+		ensure!(
+			CollectionOwner::<T>::contains_key(collection_id),
+			Error::<T>::CollectionDoesNotExist
+		);
+		ensure!(Self::is_owner(collection_id, who), Error::<T>::NoPermission);
+		CollectionPublicMintingEnabled::<T>::insert(collection_id, ());
+		Self::deposit_event(Event::PublicMintingEnabled { collection_id });
+		Ok(())
+	}
+
+	fn disable_public_minting(who: AccountIdOf<T>, collection_id: CollectionId) -> DispatchResult {
+		ensure!(
+			CollectionOwner::<T>::contains_key(collection_id),
+			Error::<T>::CollectionDoesNotExist
+		);
+		ensure!(Self::is_owner(collection_id, who), Error::<T>::NoPermission);
+		CollectionPublicMintingEnabled::<T>::remove(collection_id);
+		Self::deposit_event(Event::PublicMintingDisabled { collection_id });
+		Ok(())
+	}
+
+	fn is_public_minting_enabled(collection_id: CollectionId) -> bool {
+		CollectionPublicMintingEnabled::<T>::contains_key(collection_id)
 	}
 }
 
