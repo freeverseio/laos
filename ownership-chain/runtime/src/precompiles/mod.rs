@@ -27,7 +27,7 @@ where
 	pub fn new() -> Self {
 		Self(Default::default())
 	}
-	pub fn used_addresses() -> [H160; 12] {
+	pub fn used_addresses() -> [H160; 11] {
 		[
 			hash(1),
 			hash(2),
@@ -39,7 +39,6 @@ where
 			hash(8),
 			hash(9),
 			hash(1027),
-			hash(1028), // This will be deprecated in the future
 			hash(1029),
 		]
 	}
@@ -98,7 +97,7 @@ where
 			a if a == hash(8) => Some(Bn128Pairing::execute(handle)),
 			a if a == hash(9) => Some(Blake2F::execute(handle)),
 			a if a == hash(1027) => Some(EvolutionCollectionFactory::execute(handle)),
-			a if a == hash(1028) => Some(AssetMetadataExtender::execute(handle)), /* This will be deprecated in the future */
+			// hash(1028) address belonged to previous version of asset metadata extender
 			a if a == hash(1029) => Some(AssetMetadataExtender::execute(handle)),
 			a if address_to_collection_id(a).is_ok() => Some(EvolutionCollection::execute(handle)),
 			_ => None,
