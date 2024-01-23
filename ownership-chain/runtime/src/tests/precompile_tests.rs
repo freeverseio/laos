@@ -26,7 +26,7 @@ fn is_precompile(address: H160) -> Result<bool, &'static str> {
 fn check_custom_precompiled_addresses() {
 	// Test specific custom precompiled addresses
 	assert!(is_precompile(hash(1027)).unwrap());
-	assert!(is_precompile(hash(1028)).unwrap());
+	assert!(is_precompile(hash(1029)).unwrap());
 	assert!(is_precompile(H160::from_str("0xfffffffffffffffffffffffe0000000000000005").unwrap())
 		.unwrap());
 }
