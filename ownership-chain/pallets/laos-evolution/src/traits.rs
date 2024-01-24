@@ -1,19 +1,13 @@
 //! Traits for this pallet
 
 use crate::types::{CollectionId, Slot, TokenId};
+use frame_support::pallet_prelude::DispatchResult;
 use sp_runtime::DispatchError;
 
 /// `EvolutionCollectionFactory` trait for managing collections
 pub trait EvolutionCollectionFactory<AccountId> {
 	/// Creates new collection
 	fn create_collection(owner: AccountId) -> Result<CollectionId, DispatchError>;
-
-	/// Transfer ownership of the collection
-	fn transfer_collection(
-		from: AccountId,
-		to: AccountId,
-		collection_id: CollectionId,
-	) -> Result<(), DispatchError>;
 }
 
 /// `EvolutionCollection` trait for managing living assets within a collection
@@ -40,4 +34,11 @@ pub trait EvolutionCollection<AccountId, TokenUri> {
 		token_id: TokenId,
 		token_uri: TokenUri,
 	) -> Result<(), DispatchError>;
+
+	/// Transfer ownership of the collection
+	fn transfer_ownership(
+		from: AccountId,
+		to: AccountId,
+		collection_id: CollectionId,
+	) -> DispatchResult;
 }

@@ -21,9 +21,14 @@ use sp_std::{fmt::Debug, marker::PhantomData};
 /// Solidity selector of the MintedWithExternalURI log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
 	keccak256!("MintedWithExternalURI(address,uint96,uint256,string)");
+
 /// Solidity selector of the EvolvedWithExternalURI log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
 	keccak256!("EvolvedWithExternalURI(uint256,string)");
+
+/// Solidity selector of the `OwnershipTransferred` log, which is the Keccak of the Log signature.
+pub const SELECTOR_LOG_OWNERSHIP_TRANSFERRED: [u8; 32] =
+	keccak256!("OwnershipTransferred(address,address)");
 
 #[laos_precompile_utils_macro::generate_function_selector]
 #[derive(Debug, PartialEq)]
@@ -36,6 +41,8 @@ pub enum Action {
 	Mint = "mintWithExternalURI(address,uint96,string)",
 	/// Evolve token
 	Evolve = "evolveWithExternalURI(uint256,string)",
+	/// Transfer ownership of the collection
+	TransferOwnership = "transferOwnership(address)",
 }
 
 impl<Runtime> Precompile for EvolutionCollectionPrecompile<Runtime>
@@ -52,6 +59,7 @@ where
 			Action::Owner => FunctionModifier::View,
 			Action::TokenURI => FunctionModifier::View,
 			Action::Evolve => FunctionModifier::NonPayable,
+			Action::TransferOwnership => FunctionModifier::NonPayable,
 		})?;
 
 		match selector {
@@ -59,6 +67,7 @@ where
 			Action::TokenURI => Self::token_uri(handle),
 			Action::Mint => Self::mint(handle),
 			Action::Evolve => Self::evolve(handle),
+			Action::TransferOwnership => Self::transfer_ownership(handle),
 		}
 	}
 }
@@ -214,6 +223,37 @@ where
 			},
 			Err(err) => Err(revert_dispatch_error(err)),
 		}
+	}
+
+	fn transfer_ownership(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
+		let context = handle.context();
+		let caller = context.caller;
+
+		// collection id is encoded into the contract address
+		let collection_id = address_to_collection_id(context.address)
+			.map_err(|_| revert("invalid collection address"))?;
+
+		let mut input = handle.read_input()?;
+		input.expect_arguments(1)?;
+
+		let to = input.read::<Address>()?.0;
+
+		LaosEvolution::<Runtime>::transfer_ownership(caller.into(), to.into(), collection_id)
+			.map_err(revert_dispatch_error)?;
+
+		let consumed_weight = LaosEvolutionWeights::<Runtime>::transfer_ownership();
+
+		LogsBuilder::new(context.address)
+			.log3(SELECTOR_LOG_OWNERSHIP_TRANSFERRED, caller, to, EvmDataWriter::new().build())
+			.record(handle)?;
+
+		// Record EVM cost
+		handle.record_cost(GasCalculator::<Runtime>::weight_to_gas(consumed_weight))?;
+
+		// Record Substrate related costs
+		handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
+
+		Ok(succeed(EvmDataWriter::new().build()))
 	}
 }
 

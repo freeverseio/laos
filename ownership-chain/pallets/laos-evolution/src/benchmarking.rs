@@ -79,4 +79,19 @@ mod benchmarks {
 			Some(vec![1u8; s as usize].try_into().unwrap())
 		);
 	}
+
+	#[benchmark]
+	fn transfer_ownership() {
+		let caller: T::AccountId = whitelisted_caller();
+		let owner = caller.clone();
+		let collection_id = LaosEvolution::<T>::create_collection(owner.clone()).unwrap();
+
+		#[block]
+		{
+			LaosEvolution::<T>::transfer_ownership(owner.clone(), owner.clone(), collection_id)
+				.unwrap();
+		}
+
+		assert_eq!(CollectionOwner::<T>::get(collection_id), Some(owner));
+	}
 }

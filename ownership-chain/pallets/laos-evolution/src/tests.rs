@@ -79,7 +79,7 @@ fn transfer_collection_works() {
 	new_test_ext().execute_with(|| {
 		// non-existent collection
 		assert_noop!(
-			LaosEvolution::transfer_collection(
+			LaosEvolution::transfer_ownership(
 				AccountId::from_str(ALICE).unwrap(),
 				AccountId::from_str(BOB).unwrap(),
 				0_u64
@@ -90,8 +90,9 @@ fn transfer_collection_works() {
 		let collection_id = create_collection(ALICE);
 		let new_owner = AccountId::from_str(BOB).unwrap();
 
+		// Non-owner cannot transfer collection
 		assert_noop!(
-			LaosEvolution::transfer_collection(
+			LaosEvolution::transfer_ownership(
 				AccountId::from_str(BOB).unwrap(),
 				new_owner,
 				collection_id
@@ -99,13 +100,40 @@ fn transfer_collection_works() {
 			Error::<Test>::NoPermission
 		);
 
-		assert_ok!(LaosEvolution::transfer_collection(
+		assert_ok!(LaosEvolution::transfer_ownership(
 			AccountId::from_str(ALICE).unwrap(),
 			new_owner,
 			collection_id
 		));
 
 		assert_eq!(LaosEvolution::collection_owner(collection_id), Some(new_owner));
+	});
+}
+
+#[test]
+fn transfer_collection_emits_event() {
+	new_test_ext().execute_with(|| {
+		// Go past genesis block so events get deposited
+		System::set_block_number(1);
+
+		let collection_id = create_collection(ALICE);
+		let new_owner = AccountId::from_str(BOB).unwrap();
+
+		assert_ok!(LaosEvolution::transfer_ownership(
+			AccountId::from_str(ALICE).unwrap(),
+			new_owner,
+			collection_id
+		));
+
+		// Assert that the correct event was deposited
+		System::assert_has_event(
+			Event::CollectionTransferred {
+				collection_id,
+				from: AccountId::from_str(ALICE).unwrap(),
+				to: new_owner,
+			}
+			.into(),
+		);
 	});
 }
 

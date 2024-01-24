@@ -21,9 +21,14 @@ interface EvolutionCollection {
     /// @notice Emitted when a token metadata is updated
     /// @param _tokenId the id of the token for which the metadata has changed
     /// @param _tokenURI the new URI of the token
-    event EvolvedWithExternalURI(
-        uint256 indexed _tokenId,
-        string _tokenURI
+    event EvolvedWithExternalURI(uint256 indexed _tokenId, string _tokenURI);
+
+    /// @notice Emitted when ownership of the collection changes
+    /// @param previousOwner the previous owner of the collection
+    /// @param newOwner the new owner of the collection
+    event OwnershipTransferred(
+        address indexed previousOwner,
+        address indexed newOwner
     );
 
     /// @notice Owner of the collection
@@ -57,4 +62,9 @@ interface EvolutionCollection {
         uint256 _tokenId,
         string calldata _tokenURI
     ) external;
+
+    /// @notice Transfers ownership of the collection to a new account (`newOwner`).
+    /// @dev Call this function to transfer ownership of the collection, the caller must be the owner of the collection
+    /// @param newOwner The address to transfer ownership to.
+    function transferOwnership(address newOwner) external;
 }
