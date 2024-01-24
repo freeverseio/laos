@@ -1,6 +1,6 @@
 # DPoS Pallet for Parachain Staking
 
-This pallet is forked from `moonbeam` to avoid dependency on it.
+This pallet is forked from `moonbeam` to avoid dependency on it. The exact commit hash of the fork is [`9e6b8b5`](https://github.com/moonbeam-foundation/moonbeam/commit/9e6b8b5f08bf2b2c91ced8324ec17b6357f3124e);
 
 ## Formatting Rules
 
