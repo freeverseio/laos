@@ -200,6 +200,22 @@ impl_opaque_keys! {
 		pub aura: Aura,
 	}
 }
+
+/// temporary solution to try-runtime not fails before update spec_name
+/// will be deleted after runtime upgrade
+#[cfg(feature = "try-runtime")]
+#[sp_version::runtime_version]
+pub const VERSION: RuntimeVersion = RuntimeVersion {
+	spec_name: create_runtime_str!("frontier-template"),
+	impl_name: create_runtime_str!("frontier-template"),
+	authoring_version: 1,
+	spec_version: 1001,
+	impl_version: 0,
+	apis: RUNTIME_API_VERSIONS,
+	transaction_version: 1,
+	state_version: 1,
+};
+
 #[cfg(not(feature = "try-runtime"))]
 #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
