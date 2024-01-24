@@ -204,9 +204,9 @@ impl_opaque_keys! {
 #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("laos"),
-	impl_name: create_runtime_str!("laos"),
+	impl_name: create_runtime_str!("freeverse-laos"),
 	authoring_version: 1,
-	spec_version: 1001,
+	spec_version: 1100,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
