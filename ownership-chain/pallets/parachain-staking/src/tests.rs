@@ -658,6 +658,18 @@ fn cannot_join_candidates_without_min_bond() {
 }
 
 #[test]
+fn can_force_join_candidates_without_min_bond() {
+	ExtBuilder::default().with_balances(vec![(1, 10)]).build().execute_with(|| {
+		assert_ok!(ParachainStaking::force_join_candidates(RuntimeOrigin::root(), 1, 9, 100u32));
+		assert_events_eq!(Event::JoinedCollatorCandidates {
+			account: 1,
+			amount_locked: 9u128,
+			new_total_amt_locked: 9u128,
+		});
+	});
+}
+
+#[test]
 fn cannot_join_candidates_with_more_than_available_balance() {
 	ExtBuilder::default().with_balances(vec![(1, 500)]).build().execute_with(|| {
 		assert_noop!(
@@ -6618,7 +6630,7 @@ fn test_on_initialize_weights() {
 			let weight = ParachainStaking::on_initialize(1);
 
 			// TODO: build this with proper db reads/writes
-			assert_eq!(Weight::from_parts(277027000, 0), weight);
+			assert_eq!(Weight::from_parts(277168000, 0), weight);
 
 			// roll to the end of the round, then run on_init again, we should see round change...
 			roll_to_round_end(3);
@@ -6632,7 +6644,7 @@ fn test_on_initialize_weights() {
 			//
 			// following this assertion, we add individual weights together to show that we can
 			// derive this number independently.
-			let expected_on_init = 2491581615;
+			let expected_on_init = 2479547135;
 			assert_eq!(Weight::from_parts(expected_on_init, 32562), weight);
 
 			// assemble weight manually to ensure it is well understood

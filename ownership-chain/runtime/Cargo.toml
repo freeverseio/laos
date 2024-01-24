@@ -248,4 +248,5 @@ try-runtime = [
 	"sp-runtime/try-runtime",
 	"pallet-asset-metadata-extender/try-runtime",
 	"pallet-vesting/try-runtime",
+	"pallet-parachain-staking/try-runtime",
 ]
