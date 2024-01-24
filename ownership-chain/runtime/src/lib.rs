@@ -201,8 +201,8 @@ impl_opaque_keys! {
 	}
 }
 
-/// temporary solution to try-runtime not fails before update spec_name
-/// will be deleted after runtime upgrade
+/// temporary solution to try-runtime does not fail before updating spec_name
+/// it will be deleted after runtime upgrade
 #[cfg(feature = "try-runtime")]
 #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
@@ -220,7 +220,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("laos"),
-	impl_name: create_runtime_str!("freeverse-laos"),
+	impl_name: create_runtime_str!("laos"),
 	authoring_version: 1,
 	spec_version: 1001,
 	impl_version: 0,
