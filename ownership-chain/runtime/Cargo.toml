@@ -36,6 +36,7 @@ pallet-sudo = { workspace = true }
 pallet-timestamp = { workspace = true }
 pallet-transaction-payment = { workspace = true }
 pallet-transaction-payment-rpc-runtime-api = { workspace = true }
+pallet-vesting = { workspace = true }
 sp-api = { workspace = true }
 sp-io = { workspace = true }
 sp-block-builder = { workspace = true }
@@ -137,6 +138,7 @@ std = [
 	"pallet-multisig/std",
 	"pallet-timestamp/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
+	"pallet-vesting/std",
 	"pallet-transaction-payment/std",
 	"pallet-xcm/std",
 	"parachain-info/std",
@@ -208,6 +210,7 @@ runtime-benchmarks = [
 	"polkadot-runtime-common/runtime-benchmarks",
 	"staging-xcm-executor/runtime-benchmarks",
 	"pallet-asset-metadata-extender/runtime-benchmarks",
+	"pallet-vesting/runtime-benchmarks",
 ]
 
 try-runtime = [
@@ -240,4 +243,5 @@ try-runtime = [
 	"polkadot-runtime-common/try-runtime",
 	"sp-runtime/try-runtime",
 	"pallet-asset-metadata-extender/try-runtime",
+	"pallet-vesting/try-runtime",
 ]
