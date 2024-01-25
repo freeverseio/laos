@@ -348,6 +348,88 @@ fn when_fails_should_return_error() {
 }
 
 #[test]
+fn collection_transfer_of_ownership_works() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let bob = H160([2u8; 20]);
+
+		// non existing collection address
+		let non_existing_collection_address =
+			H160::from_str("fffffffffffffffffffffffe0000000000000000").unwrap();
+
+		let input = EvmDataWriter::new_with_selector(Action::TransferOwnership)
+			.write(Address(bob))
+			.build();
+
+		precompiles()
+			.prepare_test(alice, non_existing_collection_address, input)
+			.execute_reverts(|r| r == b"CollectionDoesNotExist");
+
+		let collection_address = create_collection(alice);
+
+		// non owner cannot transfer ownership
+		let invalid_input = EvmDataWriter::new_with_selector(Action::TransferOwnership)
+			.write(Address(alice))
+			.build();
+
+		precompiles()
+			.prepare_test(bob, collection_address, invalid_input)
+			.execute_reverts(|r| r == b"NoPermission");
+
+		let input = EvmDataWriter::new_with_selector(Action::TransferOwnership)
+			.write(Address(bob))
+			.build();
+
+		precompiles().prepare_test(alice, collection_address, input).execute_some();
+	});
+}
+
+#[test]
+fn collection_transfer_of_ownership_emits_log() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let bob = H160([2u8; 20]);
+
+		let collection_address = create_collection(alice);
+
+		let input = EvmDataWriter::new_with_selector(Action::TransferOwnership)
+			.write(Address(bob))
+			.build();
+
+		let expected_log = Log {
+			address: collection_address,
+			topics: vec![SELECTOR_LOG_OWNERSHIP_TRANSFERRED.into(), alice.into(), bob.into()],
+			data: vec![],
+		};
+
+		precompiles()
+			.prepare_test(alice, collection_address, input)
+			.expect_log(expected_log)
+			.execute_some();
+	});
+}
+
+#[test]
+fn collection_transfer_of_ownership_records_costs() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let bob = H160([2u8; 20]);
+
+		let collection_address = create_collection(alice);
+
+		let input = EvmDataWriter::new_with_selector(Action::TransferOwnership)
+			.write(Address(bob))
+			.build();
+
+		// 1 read and 1 write
+		precompiles()
+			.prepare_test(alice, collection_address, input)
+			.expect_cost(136001500) //  [`WeightToGas`] set to 1:1 in mock
+			.execute_some();
+	});
+}
+
+#[test]
 fn test_expected_cost_token_uri() {
 	new_test_ext().execute_with(|| {
 		let alice = H160::from_str(ALICE).unwrap();
@@ -406,7 +488,7 @@ fn test_expected_cost_mint_with_external_uri() {
 		// `mint_with_external_uri` weight + log cost
 		precompiles()
 			.prepare_test(owner, collection_address, input)
-			.expect_cost(170960430) // [`WeightToGas`] set to 1:1 in mock
+			.expect_cost(169875638) // [`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	})
 }
@@ -431,7 +513,7 @@ fn test_expected_cost_evolve_with_external_uri() {
 		// `evolve_with_external_uri` weight + log cost
 		precompiles()
 			.prepare_test(alice, collection_address, input)
-			.expect_cost(169493154) // [`WeightToGas`] set to 1:1 in mock
+			.expect_cost(168544624) // [`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	})
 }
