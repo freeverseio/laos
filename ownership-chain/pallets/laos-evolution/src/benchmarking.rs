@@ -106,4 +106,20 @@ mod benchmarks {
 		}
 		assert!(!CollectionPublicMintingEnabled::<T>::contains_key(collection_id));
 	}
+
+	#[benchmark]
+	fn transfer_ownership() {
+		let caller: T::AccountId = whitelisted_caller();
+		let owner = caller.clone();
+		let new_owner: T::AccountId = account("new_owner", 0, 0);
+		let collection_id = LaosEvolution::<T>::create_collection(owner.clone()).unwrap();
+
+		#[block]
+		{
+			LaosEvolution::<T>::transfer_ownership(owner.clone(), new_owner.clone(), collection_id)
+				.unwrap();
+		}
+
+		assert_eq!(CollectionOwner::<T>::get(collection_id), Some(new_owner));
+	}
 }

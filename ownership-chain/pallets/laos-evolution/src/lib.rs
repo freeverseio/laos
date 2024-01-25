@@ -96,6 +96,13 @@ pub mod pallet {
 			token_id: TokenId,
 			token_uri: TokenUriOf<T>,
 		},
+		/// Ownership of collection was transferred
+		/// [collection_id, from, to]
+		CollectionTransferred {
+			collection_id: CollectionId,
+			from: AccountIdOf<T>,
+			to: AccountIdOf<T>,
+		},
 		/// Public minting enabled
 		/// [collection_id]
 		PublicMintingEnabled { collection_id: CollectionId },
@@ -215,6 +222,23 @@ impl<T: Config> EvolutionCollection<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T>
 		Self::deposit_event(Event::EvolvedWithExternalURI { collection_id, token_id, token_uri });
 
 		Ok(())
+	}
+
+	fn transfer_ownership(
+		from: AccountIdOf<T>,
+		to: AccountIdOf<T>,
+		collection_id: CollectionId,
+	) -> DispatchResult {
+		CollectionOwner::<T>::mutate(collection_id, |owner| -> DispatchResult {
+			ensure!(owner.is_some(), Error::<T>::CollectionDoesNotExist);
+			ensure!(owner.clone() == Some(from.clone()), Error::<T>::NoPermission);
+
+			*owner = Some(to.clone());
+
+			Self::deposit_event(Event::CollectionTransferred { collection_id, from, to });
+
+			Ok(())
+		})
 	}
 
 	fn enable_public_minting(who: AccountIdOf<T>, collection_id: CollectionId) -> DispatchResult {

@@ -4,7 +4,7 @@ use crate::types::{CollectionId, Slot, TokenId};
 use frame_support::pallet_prelude::DispatchResult;
 use sp_runtime::DispatchError;
 
-/// `EvolutionCollectionFactory` trait for creating collections
+/// `EvolutionCollectionFactory` trait for managing collections
 pub trait EvolutionCollectionFactory<AccountId> {
 	/// Creates new collection
 	fn create_collection(owner: AccountId) -> Result<CollectionId, DispatchError>;
@@ -34,6 +34,13 @@ pub trait EvolutionCollection<AccountId, TokenUri> {
 		token_id: TokenId,
 		token_uri: TokenUri,
 	) -> Result<(), DispatchError>;
+
+	/// Transfer ownership of the collection
+	fn transfer_ownership(
+		from: AccountId,
+		to: AccountId,
+		collection_id: CollectionId,
+	) -> DispatchResult;
 
 	/// Enables public minting for a specific collection.
 	fn enable_public_minting(who: AccountId, collection_id: CollectionId) -> DispatchResult;
