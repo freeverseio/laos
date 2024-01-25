@@ -24,11 +24,11 @@ interface EvolutionCollection {
     event EvolvedWithExternalURI(uint256 indexed _tokenId, string _tokenURI);
 
     /// @notice Emitted when ownership of the collection changes
-    /// @param previousOwner the previous owner of the collection
-    /// @param newOwner the new owner of the collection
+    /// @param _previousOwner the previous owner of the collection
+    /// @param _newOwner the new owner of the collection
     event OwnershipTransferred(
-        address indexed previousOwner,
-        address indexed newOwner
+        address indexed _previousOwner,
+        address indexed _newOwner
     );
 
     /// @notice Emitted when public minting is enabled for the collection
@@ -71,8 +71,8 @@ interface EvolutionCollection {
 
     /// @notice Transfers ownership of the collection to a new account (`newOwner`).
     /// @dev Call this function to transfer ownership of the collection, the caller must be the owner of the collection
-    /// @param newOwner The address to transfer ownership to.
-    function transferOwnership(address newOwner) external;
+    /// @param _newOwner The address to transfer ownership to.
+    function transferOwnership(address _newOwner) external;
 
     /// @notice Enables public minting for the collection
     /// When enabled, any address is allowed to mint on this collection

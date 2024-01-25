@@ -567,6 +567,22 @@ fn collection_transfer_of_ownership_works() {
 		let alice = H160::from_str(ALICE).unwrap();
 		let bob = H160([2u8; 20]);
 
+		let collection_address = create_collection(alice);
+
+		let input = EvmDataWriter::new_with_selector(Action::TransferOwnership)
+			.write(Address(bob))
+			.build();
+
+		precompiles().prepare_test(alice, collection_address, input).execute_some();
+	});
+}
+
+#[test]
+fn non_existent_collection_cannot_be_transferred() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let bob = H160([2u8; 20]);
+
 		// non existing collection address
 		let non_existing_collection_address =
 			H160::from_str("fffffffffffffffffffffffe0000000000000000").unwrap();
@@ -578,6 +594,14 @@ fn collection_transfer_of_ownership_works() {
 		precompiles()
 			.prepare_test(alice, non_existing_collection_address, input)
 			.execute_reverts(|r| r == b"CollectionDoesNotExist");
+	})
+}
+
+#[test]
+fn non_owner_cannot_transfer_collection_ownership() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let bob = H160([2u8; 20]);
 
 		let collection_address = create_collection(alice);
 
@@ -589,12 +613,6 @@ fn collection_transfer_of_ownership_works() {
 		precompiles()
 			.prepare_test(bob, collection_address, invalid_input)
 			.execute_reverts(|r| r == b"NoPermission");
-
-		let input = EvmDataWriter::new_with_selector(Action::TransferOwnership)
-			.write(Address(bob))
-			.build();
-
-		precompiles().prepare_test(alice, collection_address, input).execute_some();
 	});
 }
 
