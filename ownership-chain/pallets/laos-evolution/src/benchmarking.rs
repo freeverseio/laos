@@ -111,9 +111,10 @@ mod benchmarks {
 	fn transfer_ownership() {
 		let caller: T::AccountId = whitelisted_caller();
 		let owner = caller.clone();
-		let new_owner: T::AccountId = account("new_owner", 0, SEED);
+		let new_owner: T::AccountId = account("new_owner", 0, 0);
 		let collection_id = LaosEvolution::<T>::create_collection(owner.clone()).unwrap();
 
+		#[block]
 		{
 			LaosEvolution::<T>::transfer_ownership(owner.clone(), new_owner.clone(), collection_id)
 				.unwrap();
