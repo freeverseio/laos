@@ -23,12 +23,12 @@ use sp_runtime::{
 pub use traits::{EvolutionCollection, EvolutionCollectionFactory};
 pub use types::*;
 
-/// The current storage version.
-const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
-
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
+
+	/// The current storage version.
+	const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
 
 	#[pallet::pallet]
 	#[pallet::storage_version(STORAGE_VERSION)]
