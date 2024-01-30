@@ -15,6 +15,7 @@ hex-literal = { workspace = true }
 hex = { workspace = true }
 scale-info = { workspace = true, features = ["derive"] }
 smallvec = { workspace = true }
+log = { workspace = true }
 
 # Runtime primitives
 ownership-parachain-primitives = { workspace = true }
@@ -22,7 +23,7 @@ ownership-parachain-primitives = { workspace = true }
 # Substrate
 frame-benchmarking = { workspace = true, optional = true }
 frame-executive = { workspace = true }
-frame-support = { workspace = true }
+frame-support = { workspace = true,  features=["experimental"] }
 frame-system = { workspace = true }
 frame-system-benchmarking = { workspace = true, optional = true }
 frame-system-rpc-runtime-api = { workspace = true }
