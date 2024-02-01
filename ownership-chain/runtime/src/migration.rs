@@ -1,20 +1,17 @@
-use super::*;
 use frame_support::{
-	ensure, storage_alias,
-	traits::{Get, GetStorageVersion, OnRuntimeUpgrade, StorageVersion},
+	ensure,
+	traits::{Get, OnRuntimeUpgrade, StorageVersion},
 	weights::Weight,
 };
+use pallet_evm::Pallet as Evm;
 use sp_core::H160;
-
-/// Unchecked version migration logic.
-use super::*;
 
 #[cfg(feature = "try-runtime")]
 use sp_std::vec::Vec;
 
-pub struct VersionUncheckedMigratePrecompileDummyCode<T>(sp_std::marker::PhantomData<T>);
+pub struct AddPrecompileDummyCode<T>(sp_std::marker::PhantomData<T>);
 
-impl<T> OnRuntimeUpgrade for VersionUncheckedMigratePrecompileDummyCode<T>
+impl<T> OnRuntimeUpgrade for AddPrecompileDummyCode<T>
 where
 	T: pallet_evm::Config,
 {
@@ -29,40 +26,39 @@ where
 	}
 
 	fn on_runtime_upgrade() -> Weight {
-		// TODO check storage version
-		// let db_weight = <T as frame_system::Config>::DbWeight::get();
-		// let mut consumed_weight = Default::default();
+		if StorageVersion::get::<Evm<T>>() == 0 {
+			let db_weight = <T as frame_system::Config>::DbWeight::get();
+			let mut consumed_weight = Default::default();
 
-		let asset_metadata_extender_address = H160::from_low_u64_be(1029); // TODO resuse it
-																   // consumed_weight += db_weight.writes(1);
-		Evm::<T>::create_account(
-			asset_metadata_extender_address,
-			pallet_evm_evolution_collection_factory::REVERT_BYTECODE.into(),
-		);
+			let asset_metadata_extender_address = H160::from_low_u64_be(1029); // TODO resuse it
+			Evm::<T>::create_account(
+				asset_metadata_extender_address,
+				pallet_evm_evolution_collection_factory::REVERT_BYTECODE.into(),
+			);
+			consumed_weight += db_weight.writes(1);
+			log::info!(target: "runtime::evm", "AddPrecompileDummyCode migration executed successfully");
 
-		log::info!(target: "runtime::evm", "MigratePrecompileDummyCode executed successfully");
+			// check new version
+			StorageVersion::new(1).put::<Evm<T>>();
+			consumed_weight += db_weight.writes(1);
 
-		// consumed_weight
-		Weight::zero() // TODO return actual weight
+			log::info!(target: "runtime::evm", "Evm migrated to {:#?}", StorageVersion::get::<Evm<T>>());
+			consumed_weight += db_weight.reads(1);
+
+			consumed_weight
+		} else {
+			log::warn!(target: "runtime::evm", "AddPrecompileDummyCode migration already executed");
+			T::DbWeight::get().reads(1)
+		}
 	}
 
 	#[cfg(feature = "try-runtime")]
 	fn post_upgrade(_state: Vec<u8>) -> Result<(), sp_runtime::TryRuntimeError> {
 		let asset_metadata_extender_address = H160::from_low_u64_be(1029);
 		ensure!(
-			Evm::<T>::account_code_metadata(asset_metadata_extender_address).size != 0, /* check
-			                                                                             * real value */
+			Evm::<T>::account_code_metadata(asset_metadata_extender_address).size != 0,
 			"account code metadata is zero"
 		);
 		Ok(())
 	}
 }
-
-// WIP
-pub type VersionCheckeMigratePrecompileDummyCode<T> = frame_support::migrations::VersionedMigration<
-	0,
-	1,
-	VersionUncheckedMigratePrecompileDummyCode<T>,
-	frame_system::Config,
-	<T as frame_system::Config>::DbWeight,
->;
