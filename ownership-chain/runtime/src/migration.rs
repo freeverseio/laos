@@ -23,7 +23,7 @@ where
 	fn pre_upgrade() -> Result<Vec<u8>, sp_runtime::TryRuntimeError> {
 		let asset_metadata_extender_address: H160 = H160::from_low_u64_be(1029);
 		ensure!(
-			is_bytecode_stored::<T>(asset_metadata_extender_address),
+			!is_bytecode_stored::<T>(asset_metadata_extender_address),
 			"account code metadata is not zero, i.e. bytecode is already stored"
 		);
 		Ok(Vec::new())
