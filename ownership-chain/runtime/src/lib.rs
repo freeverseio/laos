@@ -206,7 +206,6 @@ impl_opaque_keys! {
 }
 
 /// Version of the runtime
-#[cfg(feature = "try-runtime")]
 #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("laos"),
