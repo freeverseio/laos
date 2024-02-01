@@ -451,7 +451,7 @@ fn enable_public_minting_has_a_cost() {
 		// functions that precompile calls internally.
 		precompiles()
 			.prepare_test(alice, collection_address, input)
-			.expect_cost(134186750) //  [`WeightToGas`] set to 1:1 in mock
+			.expect_cost(139000750) //  [`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	})
 }
@@ -469,7 +469,7 @@ fn disable_public_minting_has_a_cost() {
 		// functions that precompile calls internally.
 		precompiles()
 			.prepare_test(alice, collection_address, input)
-			.expect_cost(134186750) //  [`WeightToGas`] set to 1:1 in mock
+			.expect_cost(139000750) //  [`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	})
 }
@@ -532,7 +532,7 @@ fn test_expected_cost_mint_with_external_uri() {
 		// `mint_with_external_uri` weight + log cost
 		precompiles()
 			.prepare_test(owner, collection_address, input)
-			.expect_cost(165102973) // [`WeightToGas`] set to 1:1 in mock
+			.expect_cost(170215238) // [`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	})
 }
@@ -557,7 +557,106 @@ fn test_expected_cost_evolve_with_external_uri() {
 		// `evolve_with_external_uri` weight + log cost
 		precompiles()
 			.prepare_test(alice, collection_address, input)
-			.expect_cost(163849607) // [`WeightToGas`] set to 1:1 in mock
+			.expect_cost(168955770) // [`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	})
+}
+#[test]
+fn collection_transfer_of_ownership_works() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let bob = H160([2u8; 20]);
+
+		let collection_address = create_collection(alice);
+
+		let input = EvmDataWriter::new_with_selector(Action::TransferOwnership)
+			.write(Address(bob))
+			.build();
+
+		precompiles().prepare_test(alice, collection_address, input).execute_some();
+	});
+}
+
+#[test]
+fn non_existent_collection_cannot_be_transferred() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let bob = H160([2u8; 20]);
+
+		// non existing collection address
+		let non_existing_collection_address =
+			H160::from_str("fffffffffffffffffffffffe0000000000000000").unwrap();
+
+		let input = EvmDataWriter::new_with_selector(Action::TransferOwnership)
+			.write(Address(bob))
+			.build();
+
+		precompiles()
+			.prepare_test(alice, non_existing_collection_address, input)
+			.execute_reverts(|r| r == b"CollectionDoesNotExist");
+	})
+}
+
+#[test]
+fn non_owner_cannot_transfer_collection_ownership() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let bob = H160([2u8; 20]);
+
+		let collection_address = create_collection(alice);
+
+		// non owner cannot transfer ownership
+		let invalid_input = EvmDataWriter::new_with_selector(Action::TransferOwnership)
+			.write(Address(alice))
+			.build();
+
+		precompiles()
+			.prepare_test(bob, collection_address, invalid_input)
+			.execute_reverts(|r| r == b"NoPermission");
+	});
+}
+
+#[test]
+fn collection_transfer_of_ownership_emits_log() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let bob = H160([2u8; 20]);
+
+		let collection_address = create_collection(alice);
+
+		let input = EvmDataWriter::new_with_selector(Action::TransferOwnership)
+			.write(Address(bob))
+			.build();
+
+		let expected_log = Log {
+			address: collection_address,
+			topics: vec![SELECTOR_LOG_OWNERSHIP_TRANSFERRED.into(), alice.into(), bob.into()],
+			data: vec![],
+		};
+
+		precompiles()
+			.prepare_test(alice, collection_address, input)
+			.expect_log(expected_log)
+			.execute_some();
+	});
+}
+
+#[test]
+fn collection_transfer_of_ownership_records_costs() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let bob = H160([2u8; 20]);
+
+		let collection_address = create_collection(alice);
+
+		let input = EvmDataWriter::new_with_selector(Action::TransferOwnership)
+			.write(Address(bob))
+			.build();
+
+		// 1 read and 1 write
+		precompiles()
+			.prepare_test(alice, collection_address, input)
+			.expect_cost(137001500) //  [`WeightToGas`] set to 1:1 in mock
+			.execute_some();
+	});
 }

@@ -27,7 +27,7 @@
 				"type": "string"
 			}
 		],
-		"name": "ExtendedTokenURIUpdated",
+		"name": "ExtendedULWithExternalURI",
 		"type": "event"
 	},
 	{
@@ -58,14 +58,14 @@
 				"type": "string"
 			}
 		],
-		"name": "TokenURIExtended",
+		"name": "UpdatedExtendedULWithExternalURI",
 		"type": "event"
 	},
 	{
 		"inputs": [
 			{
 				"internalType": "string",
-				"name": "uloc",
+				"name": "_uloc",
 				"type": "string"
 			}
 		],
@@ -84,12 +84,12 @@
 		"inputs": [
 			{
 				"internalType": "string",
-				"name": "uloc",
+				"name": "_uloc",
 				"type": "string"
 			},
 			{
 				"internalType": "uint32",
-				"name": "index",
+				"name": "_index",
 				"type": "uint32"
 			}
 		],
@@ -108,16 +108,16 @@
 		"inputs": [
 			{
 				"internalType": "string",
-				"name": "uloc",
+				"name": "_uloc",
 				"type": "string"
 			},
 			{
 				"internalType": "string",
-				"name": "tokenURI",
+				"name": "_tokenURI",
 				"type": "string"
 			}
 		],
-		"name": "extendTokenURI",
+		"name": "extendULWithExternalURI",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -150,12 +150,12 @@
 		"inputs": [
 			{
 				"internalType": "string",
-				"name": "uloc",
+				"name": "_uloc",
 				"type": "string"
 			},
 			{
 				"internalType": "uint32",
-				"name": "index",
+				"name": "_index",
 				"type": "uint32"
 			}
 		],
@@ -207,7 +207,7 @@
 				"type": "string"
 			}
 		],
-		"name": "updateExtendedTokenURI",
+		"name": "updateExtendedULWithExternalURI",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"

@@ -21,9 +21,14 @@ interface EvolutionCollection {
     /// @notice Emitted when a token metadata is updated
     /// @param _tokenId the id of the token for which the metadata has changed
     /// @param _tokenURI the new URI of the token
-    event EvolvedWithExternalURI(
-        uint256 indexed _tokenId,
-        string _tokenURI
+    event EvolvedWithExternalURI(uint256 indexed _tokenId, string _tokenURI);
+
+    /// @notice Emitted when ownership of the collection changes
+    /// @param _previousOwner the previous owner of the collection
+    /// @param _newOwner the new owner of the collection
+    event OwnershipTransferred(
+        address indexed _previousOwner,
+        address indexed _newOwner
     );
 
     /// @notice Emitted when public minting is enabled for the collection
@@ -64,6 +69,11 @@ interface EvolutionCollection {
         string calldata _tokenURI
     ) external;
 
+    /// @notice Transfers ownership of the collection to a new account (`newOwner`).
+    /// @dev Call this function to transfer ownership of the collection, the caller must be the owner of the collection
+    /// @param _newOwner The address to transfer ownership to.
+    function transferOwnership(address _newOwner) external;
+
     /// @notice Enables public minting for the collection
     /// When enabled, any address is allowed to mint on this collection
     /// This does not affect evolution: only the owner of the collection can continue evolving assets
@@ -77,5 +87,5 @@ interface EvolutionCollection {
     /// @notice Checks if public minting is enabled for the collection
     /// @dev Call this function to check if public minting is enabled for the collection
     /// @return true if public minting is enabled for the collection, false otherwise
-    function isPublicMintingEnabled() external view returns(bool);
+    function isPublicMintingEnabled() external view returns (bool);
 }
