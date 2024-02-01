@@ -141,7 +141,7 @@ pub type UncheckedExtrinsic =
 pub type CheckedExtrinsic =
 	fp_self_contained::CheckedExtrinsic<AccountId, RuntimeCall, SignedExtra, H160>;
 
-type Migrations = migration::VersionCheckeMigratePrecompileDummyCode<Runtime>;
+type Migrations = migration::AddPrecompileDummyCode<Runtime>;
 
 /// Executive: handles dispatch to the various modules.
 pub type Executive = frame_executive::Executive<
@@ -205,23 +205,8 @@ impl_opaque_keys! {
 	}
 }
 
-/// temporary solution to try-runtime does not fail before updating spec_name
-/// it will be deleted after runtime upgrade
-#[cfg(feature = "try-runtime")]
-#[sp_version::runtime_version]
-pub const VERSION: RuntimeVersion = RuntimeVersion {
-	spec_name: create_runtime_str!("frontier-template"),
-	impl_name: create_runtime_str!("frontier-template"),
-	authoring_version: 1,
-	spec_version: 1001,
-	impl_version: 0,
-	apis: RUNTIME_API_VERSIONS,
-	transaction_version: 1,
-	state_version: 1,
-};
-
 /// Version of the runtime
-#[cfg(not(feature = "try-runtime"))]
+#[cfg(feature = "try-runtime")]
 #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("laos"),
