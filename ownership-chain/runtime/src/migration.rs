@@ -9,13 +9,13 @@ use sp_core::H160;
 #[cfg(feature = "try-runtime")]
 use sp_std::vec::Vec;
 
-pub struct AddPrecompileDummyCode<T>(sp_std::marker::PhantomData<T>);
+pub struct AddPrecompileBytecode<T>(sp_std::marker::PhantomData<T>);
 
 fn is_bytecode_stored<T: pallet_evm::Config>(address: H160) -> bool {
 	Evm::<T>::account_code_metadata(address).size != 0
 }
 
-impl<T> OnRuntimeUpgrade for AddPrecompileDummyCode<T>
+impl<T> OnRuntimeUpgrade for AddPrecompileBytecode<T>
 where
 	T: pallet_evm::Config,
 {
@@ -34,7 +34,7 @@ where
 
 		// early return if bytecode is already stored, it prevents from running migration twice
 		if is_bytecode_stored::<T>(asset_metadata_extender_address) {
-			log::info!(target: "runtime::evm", "AddPrecompileDummyCode migration already executed");
+			log::info!(target: "runtime::evm", "AddPrecompileBytecode migration already executed");
 			return Default::default();
 		}
 
@@ -46,7 +46,7 @@ where
 			pallet_evm_evolution_collection_factory::REVERT_BYTECODE.into(),
 		);
 		consumed_weight += db_weight.writes(1);
-		log::info!(target: "runtime::evm", "AddPrecompileDummyCode migration executed successfully");
+		log::info!(target: "runtime::evm", "AddPrecompileBytecode migration executed successfully");
 
 		consumed_weight
 	}

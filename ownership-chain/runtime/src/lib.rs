@@ -141,7 +141,7 @@ pub type UncheckedExtrinsic =
 pub type CheckedExtrinsic =
 	fp_self_contained::CheckedExtrinsic<AccountId, RuntimeCall, SignedExtra, H160>;
 
-type Migrations = migration::AddPrecompileDummyCode<Runtime>;
+type Migrations = migration::AddPrecompileBytecode<Runtime>;
 
 /// Executive: handles dispatch to the various modules.
 pub type Executive = frame_executive::Executive<
