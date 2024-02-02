@@ -1,5 +1,7 @@
 #![allow(clippy::new_without_default)]
 
+pub mod migration;
+
 use pallet_evm::{
 	ExitRevert, IsPrecompileResult, Precompile, PrecompileFailure, PrecompileHandle,
 	PrecompileResult, PrecompileSet,
