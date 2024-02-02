@@ -5,6 +5,7 @@ use frame_support::{
 };
 use pallet_evm::Pallet as Evm;
 
+#[cfg(feature = "try-runtime")]
 use frame_support::ensure;
 #[cfg(feature = "try-runtime")]
 use sp_std::vec::Vec;
