@@ -1,11 +1,11 @@
 use crate::precompiles;
 use frame_support::{
-	ensure,
 	traits::{Get, OnRuntimeUpgrade},
 	weights::Weight,
 };
 use pallet_evm::Pallet as Evm;
 
+use frame_support::ensure;
 #[cfg(feature = "try-runtime")]
 use sp_std::vec::Vec;
 
