@@ -19,7 +19,7 @@ where
 {
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<Vec<u8>, sp_runtime::TryRuntimeError> {
-		let asset_metadata_extender_address: H160 = precompiles::hash(1029);
+		let asset_metadata_extender_address = precompiles::hash(1029);
 		ensure!(
 			Evm::<T>::is_account_empty(&asset_metadata_extender_address),
 			"account es not empty, i.e. bytecode is already stored"
@@ -51,7 +51,7 @@ where
 
 	#[cfg(feature = "try-runtime")]
 	fn post_upgrade(_state: Vec<u8>) -> Result<(), sp_runtime::TryRuntimeError> {
-		let asset_metadata_extender_address = H160::from_low_u64_be(1029);
+		let asset_metadata_extender_address = precompiles::hash(1029);
 		ensure!(
 			!Evm::<T>::is_account_empty(&asset_metadata_extender_address),
 			"account is empty, i.e. bytecode is not stored"
