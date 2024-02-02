@@ -9,44 +9,44 @@ use sp_core::H160;
 #[cfg(feature = "try-runtime")]
 use sp_std::vec::Vec;
 
-pub struct AddPrecompileBytecode<T>(sp_std::marker::PhantomData<T>);
+/// This struct is used to inject precompiled bytecode into the EVM for Asset Metadata Extender
+/// precompile during a runtime upgrade.
+pub struct InjectDamePrecompileBytecode<T>(sp_std::marker::PhantomData<T>);
 
-fn is_bytecode_stored<T: pallet_evm::Config>(address: H160) -> bool {
-	Evm::<T>::account_code_metadata(address).size != 0
-}
-
-impl<T> OnRuntimeUpgrade for AddPrecompileBytecode<T>
+impl<T> OnRuntimeUpgrade for InjectDamePrecompileBytecode<T>
 where
 	T: pallet_evm::Config,
 {
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<Vec<u8>, sp_runtime::TryRuntimeError> {
-		let asset_metadata_extender_address: H160 = H160::from_low_u64_be(1029);
+		use crate::precompiles;
+
+		let asset_metadata_extender_address: H160 = precompiles::hash(1029);
 		ensure!(
-			!is_bytecode_stored::<T>(asset_metadata_extender_address),
-			"account code metadata is not zero, i.e. bytecode is already stored"
+			Evm::<T>::is_account_empty(&asset_metadata_extender_address),
+			"account es not empty, i.e. bytecode is already stored"
 		);
 		Ok(Vec::new())
 	}
 
 	fn on_runtime_upgrade() -> Weight {
-		let asset_metadata_extender_address = H160::from_low_u64_be(1029);
+		let mut consumed_weight = Default::default();
+		let asset_metadata_extender_address = precompiles::hash(1029);
 
 		// early return if bytecode is already stored, it prevents from running migration twice
-		if is_bytecode_stored::<T>(asset_metadata_extender_address) {
-			log::info!(target: "runtime::evm", "AddPrecompileBytecode migration already executed");
-			return Default::default();
+		if !Evm::<T>::is_account_empty(&asset_metadata_extender_address) {
+			log::info!(target: "runtime::evm", "InjectDamePrecompileBytecode migration already executed");
+			return consumed_weight;
 		}
 
 		let db_weight = <T as frame_system::Config>::DbWeight::get();
-		let mut consumed_weight = Default::default();
 
 		Evm::<T>::create_account(
 			asset_metadata_extender_address,
 			pallet_evm_evolution_collection_factory::REVERT_BYTECODE.into(),
 		);
-		consumed_weight += db_weight.writes(1);
-		log::info!(target: "runtime::evm", "AddPrecompileBytecode migration executed successfully");
+		consumed_weight += db_weight.reads_writes(2, 2);
+		log::info!(target: "runtime::evm", "InjectDamePrecompileBytecode migration executed successfully");
 
 		consumed_weight
 	}
@@ -55,8 +55,8 @@ where
 	fn post_upgrade(_state: Vec<u8>) -> Result<(), sp_runtime::TryRuntimeError> {
 		let asset_metadata_extender_address = H160::from_low_u64_be(1029);
 		ensure!(
-			is_bytecode_stored::<T>(asset_metadata_extender_address),
-			"account code metadata is zero, i.e. bytecode is not stored"
+			!Evm::<T>::is_account_empty(&asset_metadata_extender_address),
+			"account is empty, i.e. bytecode is not stored"
 		);
 		Ok(())
 	}
