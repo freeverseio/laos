@@ -5400,6 +5400,7 @@ dependencies = [
  "frame-try-runtime",
  "hex",
  "hex-literal",
+ "log",
  "orml-traits",
  "orml-xcm-support",
  "orml-xtokens",

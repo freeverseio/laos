@@ -15,6 +15,7 @@ hex-literal = { workspace = true }
 hex = { workspace = true }
 scale-info = { workspace = true, features = ["derive"] }
 smallvec = { workspace = true }
+log = { workspace = true }
 
 # Runtime primitives
 ownership-parachain-primitives = { workspace = true }

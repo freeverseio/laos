@@ -1,5 +1,7 @@
 #![allow(clippy::new_without_default)]
 
+pub mod migration;
+
 use pallet_evm::{
 	ExitRevert, IsPrecompileResult, Precompile, PrecompileFailure, PrecompileHandle,
 	PrecompileResult, PrecompileSet,
@@ -116,7 +118,7 @@ where
 	}
 }
 
-fn hash(a: u64) -> H160 {
+pub(crate) fn hash(a: u64) -> H160 {
 	H160::from_low_u64_be(a)
 }
 
