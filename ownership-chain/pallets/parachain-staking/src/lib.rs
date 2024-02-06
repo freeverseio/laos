@@ -50,6 +50,7 @@
 
 mod auto_compound;
 mod delegation_requests;
+pub mod impls;
 pub mod inflation;
 pub mod traits;
 pub mod types;
@@ -93,7 +94,7 @@ pub mod pallet {
 	};
 	use frame_system::pallet_prelude::*;
 	use sp_runtime::{
-		traits::{Saturating, Zero},
+		traits::{SaturatedConversion, Saturating, Zero},
 		DispatchErrorWithPostInfo, Perbill, Percent,
 	};
 	use sp_std::{collections::btree_map::BTreeMap, prelude::*};
@@ -128,7 +129,7 @@ pub mod pallet {
 		type MonetaryGovernanceOrigin: EnsureOrigin<Self::RuntimeOrigin>;
 		/// Minimum number of blocks per round
 		#[pallet::constant]
-		type MinBlocksPerRound: Get<u32>;
+		type MinBlocksPerRound: Get<BlockNumberFor<T>>;
 		/// If a collator doesn't produce any block on this number of rounds, it is notified as
 		/// inactive. This value must be less than or equal to RewardPaymentDelay.
 		#[pallet::constant]
@@ -169,8 +170,6 @@ pub mod pallet {
 		/// Minimum stake for any registered on-chain account to delegate
 		#[pallet::constant]
 		type MinDelegation: Get<BalanceOf<Self>>;
-		/// Get the current block author
-		type BlockAuthor: Get<Self::AccountId>;
 		/// Handler to notify the runtime when a collator is paid.
 		/// If you don't need it, you can specify the type `()`.
 		type OnCollatorPayout: OnCollatorPayout<Self::AccountId, BalanceOf<Self>>;
@@ -416,8 +415,8 @@ pub mod pallet {
 		BlocksPerRoundSet {
 			current_round: RoundIndex,
 			first_block: BlockNumberFor<T>,
-			old: u32,
-			new: u32,
+			old: BlockNumberFor<T>,
+			new: BlockNumberFor<T>,
 			new_per_round_inflation_min: Perbill,
 			new_per_round_inflation_ideal: Perbill,
 			new_per_round_inflation_max: Perbill,
@@ -466,9 +465,6 @@ pub mod pallet {
 			//   write: Points, AwardedPts
 			weight = weight.saturating_add(T::DbWeight::get().reads_writes(3, 2));
 			weight
-		}
-		fn on_finalize(_n: BlockNumberFor<T>) {
-			Self::award_points_to_block_author();
 		}
 	}
 
@@ -661,7 +657,7 @@ pub mod pallet {
 		/// Default percent of inflation set aside for parachain bond every round
 		pub parachain_bond_reserve_percent: Percent,
 		/// Default number of blocks in a round
-		pub blocks_per_round: u32,
+		pub blocks_per_round: BlockNumberFor<T>,
 		/// Number of selected candidates every round. Cannot be lower than MinSelectedCandidates
 		pub num_selected_candidates: u32,
 	}
@@ -674,7 +670,7 @@ pub mod pallet {
 				inflation_config: Default::default(),
 				collator_commission: Default::default(),
 				parachain_bond_reserve_percent: Default::default(),
-				blocks_per_round: 1u32,
+				blocks_per_round: T::MinBlocksPerRound::get().saturated_into(),
 				num_selected_candidates: T::MinSelectedCandidates::get(),
 			}
 		}
@@ -683,7 +679,7 @@ pub mod pallet {
 	#[pallet::genesis_build]
 	impl<T: Config> BuildGenesisConfig for GenesisConfig<T> {
 		fn build(&self) {
-			assert!(self.blocks_per_round > 0, "Blocks per round must be > 0");
+			assert!(self.blocks_per_round > Zero::zero(), "Blocks per round must be > 0");
 			<InflationConfig<T>>::put(self.inflation_config.clone());
 			let mut candidate_count = 0u32;
 			// Initialize the candidates
@@ -905,20 +901,23 @@ pub mod pallet {
 		/// - also updates per-round inflation config
 		#[pallet::call_index(6)]
 		#[pallet::weight(<T as Config>::WeightInfo::set_blocks_per_round())]
-		pub fn set_blocks_per_round(origin: OriginFor<T>, new: u32) -> DispatchResultWithPostInfo {
+		pub fn set_blocks_per_round(
+			origin: OriginFor<T>,
+			new: BlockNumberFor<T>,
+		) -> DispatchResultWithPostInfo {
 			frame_system::ensure_root(origin)?;
 			ensure!(new >= T::MinBlocksPerRound::get(), Error::<T>::CannotSetBelowMin);
 			let mut round = <Round<T>>::get();
 			let (now, first, old) = (round.current, round.first, round.length);
 			ensure!(old != new, Error::<T>::NoWritingSameValue);
 			ensure!(
-				new > <TotalSelected<T>>::get(),
+				new > <TotalSelected<T>>::get().into(),
 				Error::<T>::RoundLengthMustBeGreaterThanTotalSelectedCollators,
 			);
 			round.length = new;
 			// update per-round inflation given new rounds per year
 			let mut inflation_config = <InflationConfig<T>>::get();
-			inflation_config.reset_round(new);
+			inflation_config.reset_round(new.saturated_into());
 			<Round<T>>::put(round);
 			Self::deposit_event(Event::BlocksPerRoundSet {
 				current_round: now,
@@ -2171,18 +2170,11 @@ pub mod pallet {
 	/// Add reward points to block authors:
 	/// * 20 points to the block producer for producing a block in the chain
 	impl<T: Config> Pallet<T> {
-		fn award_points_to_block_author() {
-			let author = T::BlockAuthor::get();
+		pub(crate) fn award_points_to_block_author(author: &AccountIdOf<T>) {
 			let now = <Round<T>>::get().current;
-			let score_plus_20 = <AwardedPts<T>>::get(now, &author).saturating_add(20);
+			let score_plus_20 = <AwardedPts<T>>::get(now, author).saturating_add(20);
 			<AwardedPts<T>>::insert(now, author, score_plus_20);
 			<Points<T>>::mutate(now, |x| *x = x.saturating_add(20));
-		}
-	}
-
-	impl<T: Config> Get<Vec<T::AccountId>> for Pallet<T> {
-		fn get() -> Vec<T::AccountId> {
-			Self::selected_candidates().into_inner()
 		}
 	}
 }

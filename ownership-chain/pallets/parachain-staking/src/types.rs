@@ -32,6 +32,9 @@ use sp_runtime::{
 };
 use sp_std::{cmp::Ordering, collections::btree_map::BTreeMap, prelude::*};
 
+/// Type alias for the account id type
+pub(crate) type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
+
 pub struct CountedDelegations<T: Config> {
 	pub uncounted_stake: BalanceOf<T>,
 	pub rewardable_delegations: Vec<Bond<T::AccountId, BalanceOf<T>>>,
@@ -1573,20 +1576,6 @@ pub struct Nominator2<AccountId, Balance> {
 	pub status: DelegatorStatus,
 }
 
-// /// Temporary function to migrate state
-// pub(crate) fn migrate_nominator_to_delegator_state<T: Config>(
-// 	id: T::AccountId,
-// 	nominator: Nominator2<T::AccountId, BalanceOf<T>>,
-// ) -> Delegator<T::AccountId, BalanceOf<T>> {
-// 	Delegator {
-// 		id,
-// 		delegations: nominator.delegations,
-// 		total: nominator.total,
-// 		requests: PendingDelegationRequests::new(),
-// 		status: nominator.status,
-// 	}
-// }
-
 #[derive(Copy, Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
 /// The current round index and transition information
 pub struct RoundInfo<BlockNumber> {
@@ -1595,25 +1584,28 @@ pub struct RoundInfo<BlockNumber> {
 	/// The first block of the current round
 	pub first: BlockNumber,
 	/// The length of the current round in number of blocks
-	pub length: u32,
+	pub length: BlockNumber,
 }
 impl<
 		B: Copy + sp_std::ops::Add<Output = B> + sp_std::ops::Sub<Output = B> + From<u32> + PartialOrd,
 	> RoundInfo<B>
 {
-	pub fn new(current: RoundIndex, first: B, length: u32) -> RoundInfo<B> {
+	pub fn new(current: RoundIndex, first: B, length: B) -> RoundInfo<B> {
 		RoundInfo { current, first, length }
 	}
+
 	/// Check if the round should be updated
 	pub fn should_update(&self, now: B) -> bool {
 		now - self.first >= self.length.into()
 	}
+
 	/// New round
 	pub fn update(&mut self, now: B) {
 		self.current = self.current.saturating_add(1u32);
 		self.first = now;
 	}
 }
+
 impl<
 		B: Copy + sp_std::ops::Add<Output = B> + sp_std::ops::Sub<Output = B> + From<u32> + PartialOrd,
 	> Default for RoundInfo<B>

@@ -13,9 +13,12 @@ serde = { workspace = true }
 frame-benchmarking = { workspace = true, optional = true }
 frame-support = { workspace = true }
 frame-system = { workspace = true }
+pallet-authorship = { workspace = true }
+pallet-session = { workspace = true }
 parity-scale-codec = { workspace = true, features = [ "derive" ] }
 scale-info = { workspace = true, features = [ "derive" ] }
 sp-runtime = { workspace = true, features = ["serde"] }
+sp-staking = { workspace = true }
 sp-std = { workspace = true }
 substrate-fixed = { workspace = true }
 
@@ -32,9 +35,12 @@ std = [
 	"frame-benchmarking",
 	"frame-support/std",
 	"frame-system/std",
+	"pallet-authorship/std",
+	"pallet-session/std",
 	"parity-scale-codec/std",
 	"scale-info/std",
 	"sp-runtime/std",
+	"sp-staking/std",
 	"sp-std/std",
 	"substrate-fixed/std",
 	"log/std",

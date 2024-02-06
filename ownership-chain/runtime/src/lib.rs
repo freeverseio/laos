@@ -725,18 +725,6 @@ impl pallet_vesting::Config for Runtime {
 	const MAX_VESTING_SCHEDULES: u32 = 28;
 }
 
-/// Gets the current block author
-///
-/// `Authorship::author()` first tries to read from the `Author` storage, then reads from the
-/// runtime digests.
-pub struct CurrentAuthor;
-
-impl Get<AccountId> for CurrentAuthor {
-	fn get() -> AccountId {
-		Authorship::author().expect("Block author is not updated")
-	}
-}
-
 /// Pays out collator rewards
 pub struct PayoutCollatorReward;
 
@@ -786,7 +774,6 @@ impl pallet_parachain_staking::Config for Runtime {
 	type MinCandidateStk = ConstU128<{ UNIT }>;
 	/// Minimum stake required to be reserved to be a delegator
 	type MinDelegation = ConstU128<{ MILLIUNIT }>;
-	type BlockAuthor = CurrentAuthor;
 	/// Handler to notify the runtime when a collator is paid.
 	/// If you don't need it, you can specify the type `()`.
 	type OnCollatorPayout = ();
