@@ -96,8 +96,13 @@ pub mod module {
 	/// SessionDurationChanges: map BlockNumber => (SessionIndex, SessionDuration)
 	#[pallet::storage]
 	#[pallet::getter(fn session_duration_changes)]
-	pub type SessionDurationChanges<T: Config> =
-		StorageMap<_, Twox64Concat, BlockNumberFor<T>, (SessionIndex, BlockNumberFor<T>), ValueQuery>;
+	pub type SessionDurationChanges<T: Config> = StorageMap<
+		_,
+		Twox64Concat,
+		BlockNumberFor<T>,
+		(SessionIndex, BlockNumberFor<T>),
+		ValueQuery,
+	>;
 
 	#[pallet::genesis_config]
 	#[derive(frame_support::DefaultNoBound)]
@@ -181,10 +186,11 @@ impl<T: Config> Pallet<T> {
 		let next_session = Self::estimate_next_session_rotation(block_number)
 			.0
 			.ok_or(Error::<T>::EstimateNextSessionFailed)?;
-		let target_block_number =
-			Into::<BlockNumberFor<T>>::into(start_session.saturating_sub(current_session).saturating_sub(1))
-				.saturating_mul(Self::session_duration())
-				.saturating_add(next_session);
+		let target_block_number = Into::<BlockNumberFor<T>>::into(
+			start_session.saturating_sub(current_session).saturating_sub(1),
+		)
+		.saturating_mul(Self::session_duration())
+		.saturating_add(next_session);
 
 		SessionDurationChanges::<T>::insert(target_block_number, (start_session, duration));
 
@@ -231,7 +237,9 @@ impl<T: Config> EstimateNextSessionRotation<BlockNumberFor<T>> for Pallet<T> {
 		(progress, T::WeightInfo::estimate_next_session_rotation())
 	}
 
-	fn estimate_next_session_rotation(now: BlockNumberFor<T>) -> (Option<BlockNumberFor<T>>, Weight) {
+	fn estimate_next_session_rotation(
+		now: BlockNumberFor<T>,
+	) -> (Option<BlockNumberFor<T>>, Weight) {
 		let offset = Self::duration_offset();
 		let period = Self::session_duration();
 

@@ -77,7 +77,12 @@ pub struct TestSessionHandler;
 impl pallet_session::SessionHandler<u64> for TestSessionHandler {
 	const KEY_TYPE_IDS: &'static [sp_runtime::KeyTypeId] = &[UintAuthorityId::ID];
 	fn on_genesis_session<T: OpaqueKeys>(_validators: &[(u64, T)]) {}
-	fn on_new_session<T: OpaqueKeys>(_changed: bool, _validators: &[(u64, T)], _queued_validators: &[(u64, T)]) {}
+	fn on_new_session<T: OpaqueKeys>(
+		_changed: bool,
+		_validators: &[(u64, T)],
+		_queued_validators: &[(u64, T)],
+	) {
+	}
 	fn on_disabled(_validator_index: u32) {}
 }
 
@@ -111,9 +116,7 @@ construct_runtime!(
 );
 
 pub fn new_test_ext() -> sp_io::TestExternalities {
-	let mut t = frame_system::GenesisConfig::<Runtime>::default()
-		.build_storage()
-		.unwrap();
+	let mut t = frame_system::GenesisConfig::<Runtime>::default().build_storage().unwrap();
 	session_manager::GenesisConfig::<Runtime> { session_duration: 10 }
 		.assimilate_storage(&mut t)
 		.unwrap();

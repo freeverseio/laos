@@ -41,17 +41,21 @@ fn schedule_session_duration_work() {
 		);
 
 		assert_ok!(SessionManager::schedule_session_duration(RuntimeOrigin::root(), 1, 10));
-		System::assert_last_event(RuntimeEvent::SessionManager(crate::Event::ScheduledSessionDuration {
-			block_number: 1,
-			session_index: 1,
-			session_duration: 10,
-		}));
+		System::assert_last_event(RuntimeEvent::SessionManager(
+			crate::Event::ScheduledSessionDuration {
+				block_number: 1,
+				session_index: 1,
+				session_duration: 10,
+			},
+		));
 		assert_ok!(SessionManager::schedule_session_duration(RuntimeOrigin::root(), 1, 11));
-		System::assert_last_event(RuntimeEvent::SessionManager(crate::Event::ScheduledSessionDuration {
-			block_number: 10,
-			session_index: 1,
-			session_duration: 11,
-		}));
+		System::assert_last_event(RuntimeEvent::SessionManager(
+			crate::Event::ScheduledSessionDuration {
+				block_number: 10,
+				session_index: 1,
+				session_duration: 11,
+			},
+		));
 
 		SessionDuration::<Runtime>::put(0);
 		assert_noop!(
@@ -69,11 +73,13 @@ fn on_initialize_work() {
 		assert_eq!(SessionManager::duration_offset(), 0);
 
 		assert_ok!(SessionManager::schedule_session_duration(RuntimeOrigin::root(), 1, 11));
-		System::assert_last_event(RuntimeEvent::SessionManager(crate::Event::ScheduledSessionDuration {
-			block_number: 10,
-			session_index: 1,
-			session_duration: 11,
-		}));
+		System::assert_last_event(RuntimeEvent::SessionManager(
+			crate::Event::ScheduledSessionDuration {
+				block_number: 10,
+				session_index: 1,
+				session_duration: 11,
+			},
+		));
 		assert_eq!(SessionDurationChanges::<Runtime>::iter().count(), 1);
 
 		SessionManager::on_initialize(9);
