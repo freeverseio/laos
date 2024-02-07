@@ -344,6 +344,49 @@ fn invalid_monetary_origin_fails() {
 	});
 }
 
+#[test]
+fn send_rewards_with_inflation_activated_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		// let account = 1;
+		// let amount = 100;
+		// assert_ok!(ParachainStaking::send_rewards(&account, amount));
+		// total issuance increases
+		// ci account doesnt decrease
+	});
+}
+
+#[test]
+fn send_rewards_without_inflation_activated_works() {
+	unimplemented!();
+	// total issuance stays the same
+	// ci account decreases
+}
+
+#[test]
+fn send_rewards_without_inflation_activate_does_not_increase_total_issuance() {
+	unimplemented!();
+}
+
+#[test]
+fn only_sudo_can_activate_inflation() {
+	unimplemented!();
+}
+
+#[test]
+fn only_sudo_can_setup_community_incentives_account() {
+	unimplemented!();
+}
+
+#[test]
+fn send_rewards_when_community_incentives_account_is_not_setup() {
+	unimplemented!();
+}
+
+#[test]
+fn send_rewards_when_community_incentives_account_has_no_enough_funds() {
+	unimplemented!();
+}
+
 // SET STAKING EXPECTATIONS
 
 #[test]
