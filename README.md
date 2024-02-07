@@ -6,7 +6,7 @@ LAOS is the Universal layer 1 for digital assets across all blockchains, introdu
 
 LAOS's main documentation can be found here:
 - **[LAOS Whitepaper](https://github.com/freeverseio/laos-whitepaper/blob/main/laos.pdf)**, for an in-depth, fully detailed description.
-- **[LAOS Litepaper](https://spaces.gorengine.com/laos/LAOS_litepaper.pdf)**, for a high-level, use case oriented description.
+- **[LAOS Litepaper](https://laosnetwork.io/downloads/LAOS_litepaper.pdf)**, for a high-level, use case oriented description.
 - **[SBP Roadmap](https://github.com/freeverseio/laos-roadmap)**, the engineering roadmap within the Substrate Builders Program, ending on Q1 2024.
 
 LAOS is fully open source and decentralized. The main code repositories are:
