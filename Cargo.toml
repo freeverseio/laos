@@ -75,6 +75,7 @@ sp-externalities = { git = "https://github.com/paritytech/polkadot-sdk", branch 
 sp-consensus-grandpa = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
 sp-keyring = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
 sp-state-machine = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
+sp-staking = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
 
 # (native)
 sp-blockchain = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
@@ -254,6 +255,7 @@ pallet-evm-erc721 = { path = "./ownership-chain/precompile/erc721", default-feat
 pallet-asset-metadata-extender = { path = "./ownership-chain/pallets/asset-metadata-extender", default-features = false }
 pallet-evm-asset-metadata-extender = { path = "./ownership-chain/precompile/asset-metadata-extender", default-features = false }
 pallet-parachain-staking = { path = "./ownership-chain/pallets/parachain-staking", default-features = false }
+module-session-manager = { path = "./ownership-chain/pallets/session-manager", default-features = false }
 
 # Precompiles
 laos-precompile-utils-macro = { path = "./ownership-chain/precompile/utils/macro", default-features = false }

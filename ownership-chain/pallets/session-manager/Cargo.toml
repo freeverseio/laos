@@ -1,0 +1,38 @@
+[package]
+name = "module-session-manager"
+version = "2.23.0"
+authors = ["Acala Developers"]
+edition = "2021"
+
+[dependencies]
+log = { workspace = true }
+parity-scale-codec = { workspace = true }
+scale-info = { workspace = true }
+sp-runtime = { workspace = true }
+sp-std= { workspace = true }
+sp-staking = { workspace = true }
+frame-support = { workspace = true }
+frame-system = { workspace = true }
+pallet-session = { workspace = true }
+
+[dev-dependencies]
+sp-io = { workspace = true, features = ["std"] }
+
+[features]
+default = ["std"]
+std = [
+	"parity-scale-codec/std",
+	"frame-support/std",
+	"frame-system/std",
+	"log/std",
+	"pallet-session/std",
+	"scale-info/std",
+	"sp-runtime/std",
+	"sp-staking/std",
+	"sp-std/std",
+]
+try-runtime = [
+	"frame-support/try-runtime",
+	"frame-system/try-runtime",
+	"pallet-session/try-runtime",
+]

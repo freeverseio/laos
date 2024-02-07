@@ -195,6 +195,9 @@ fn testnet_genesis(
 		// of this.
 		aura: Default::default(),
 		aura_ext: Default::default(),
+		session_manager: laos_ownership_runtime::SessionManagerConfig {
+			session_duration: 5,
+		},
 		parachain_system: Default::default(),
 		polkadot_xcm: laos_ownership_runtime::PolkadotXcmConfig {
 			safe_xcm_version: Some(SAFE_XCM_VERSION),

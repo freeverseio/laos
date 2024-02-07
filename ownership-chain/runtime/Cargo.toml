@@ -96,6 +96,7 @@ pallet-evm-precompile-bn128 = { workspace = true }
 pallet-evm-precompile-blake2 = { workspace = true }
 
 pallet-parachain-staking = { workspace = true }
+module-session-manager = { workspace = true }
 
 [dev-dependencies]
 static_assertions = { workspace = true }
@@ -187,6 +188,7 @@ std = [
 	"ownership-parachain-primitives/std",
 	"hex/std",
 	"pallet-parachain-staking/std",
+	"module-session-manager/std",
 ]
 
 runtime-benchmarks = [
@@ -250,4 +252,5 @@ try-runtime = [
 	"pallet-asset-metadata-extender/try-runtime",
 	"pallet-vesting/try-runtime",
 	"pallet-parachain-staking/try-runtime",
+	"module-session-manager/try-runtime",
 ]

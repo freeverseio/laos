@@ -5401,6 +5401,7 @@ dependencies = [
  "hex",
  "hex-literal",
  "log",
+ "module-session-manager",
  "orml-traits",
  "orml-xcm-support",
  "orml-xtokens",
@@ -6460,6 +6461,22 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "module-session-manager"
+version = "2.23.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "log",
+ "pallet-session",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-io",
+ "sp-runtime",
+ "sp-staking",
+ "sp-std",
 ]
 
 [[package]]
