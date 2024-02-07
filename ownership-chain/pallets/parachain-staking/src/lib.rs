@@ -674,7 +674,7 @@ pub mod pallet {
 				inflation_config: Default::default(),
 				collator_commission: Default::default(),
 				parachain_bond_reserve_percent: Default::default(),
-				blocks_per_round: 1u32,
+				blocks_per_round: T::MinBlocksPerRound::get(),
 				num_selected_candidates: T::MinSelectedCandidates::get(),
 			}
 		}
