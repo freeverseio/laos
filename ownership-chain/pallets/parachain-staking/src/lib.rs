@@ -510,6 +510,11 @@ pub mod pallet {
 	pub(crate) type CandidateInfo<T: Config> =
 		StorageMap<_, Twox64Concat, T::AccountId, CandidateMetadata<BalanceOf<T>>, OptionQuery>;
 
+	/// Stores whether inflation is activated
+	#[pallet::storage]
+	#[pallet::getter(fn inflation_activated)]
+	pub type InflationActivated<T: Config> = StorageValue<_, (), OptionQuery>;
+
 	pub struct AddGet<T, R> {
 		_phantom: PhantomData<(T, R)>,
 	}
@@ -1392,6 +1397,26 @@ pub mod pallet {
 		) -> DispatchResultWithPostInfo {
 			T::MonetaryGovernanceOrigin::ensure_origin(origin.clone())?;
 			Self::join_candidates_inner(account, bond, candidate_count)
+		}
+
+		/// Activate inflation so rewards are created from inflation
+		/// Only `sudo` can call this function
+		#[pallet::call_index(32)]
+		#[pallet::weight(Weight::from_parts(3_000_000u64, 4_000u64))] // TODO
+		pub fn activate_inflation(origin: OriginFor<T>) -> DispatchResult {
+			ensure_root(origin)?;
+			<InflationActivated<T>>::put(());
+			Ok(())
+		}
+
+		/// Deactivate inflation so rewards are created from inflation
+		/// Only `sudo` can call this function
+		#[pallet::call_index(33)]
+		#[pallet::weight(Weight::from_parts(3_000_000u64, 4_000u64))] // TODO
+		pub fn deactivate_inflation(origin: OriginFor<T>) -> DispatchResult {
+			ensure_root(origin)?;
+			<InflationActivated<T>>::kill();
+			Ok(())
 		}
 	}
 

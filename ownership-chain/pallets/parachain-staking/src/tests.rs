@@ -368,8 +368,30 @@ fn send_rewards_without_inflation_activate_does_not_increase_total_issuance() {
 }
 
 #[test]
-fn only_sudo_can_activate_inflation() {
-	unimplemented!();
+fn only_sudo_can_change_activate_inflation() {
+	ExtBuilder::default().build().execute_with(|| {
+		assert!(ParachainStaking::inflation_activated().is_none());
+		assert_noop!(
+			ParachainStaking::activate_inflation(RuntimeOrigin::signed(1)),
+			sp_runtime::DispatchError::BadOrigin
+		);
+		assert_ok!(ParachainStaking::activate_inflation(RuntimeOrigin::root()));
+		assert!(ParachainStaking::inflation_activated().is_some());
+	});
+}
+
+#[test]
+fn only_sudo_can_deactivate_inflation() {
+	ExtBuilder::default().build().execute_with(|| {
+		assert_ok!(ParachainStaking::activate_inflation(RuntimeOrigin::root()));
+		assert!(ParachainStaking::inflation_activated().is_some());
+		assert_noop!(
+			ParachainStaking::deactivate_inflation(RuntimeOrigin::signed(1)),
+			sp_runtime::DispatchError::BadOrigin
+		);
+		assert_ok!(ParachainStaking::deactivate_inflation(RuntimeOrigin::root()));
+		assert!(ParachainStaking::inflation_activated().is_none());
+	});
 }
 
 #[test]
