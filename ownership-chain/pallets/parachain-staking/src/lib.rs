@@ -2215,33 +2215,52 @@ pub mod pallet {
 			};
 		}
 
+		/// Sends rewards to a given account.
+		///
+		/// There are three possible cases:
+		/// 1. If inflation is activated, the rewards are deposited into the account from minting
+		///
+		/// 2. If inflation is not activated and the community incentives account exists, the
+		///    rewards are transferred from the community incentives account to the account. In case
+		///    of an underflow error during the transfer because the community incentives account
+		///    does not have enough balance, a zero balance is returned.
+		///
+		/// 3. If inflation is not activated and the community incentives account does not exist, a
+		///    zero balance is returned.
+		///
+		/// Then the possible returns values are:
+		/// - The function returns `RewardSource::Inflation` with the imbalance of the deposit.
+		/// - The function returns `RewardSource::IncentiveAccount` with the transferred amount.
+		/// - The function returns `RewardSource::IncentiveAccount` with a zero balance.
 		pub fn send_rewards(
 			account: &T::AccountId,
 			amount: BalanceOf<T>,
 		) -> Result<RewardSource<T>, DispatchError> {
-			match <InflationActivated<T>>::get() {
-				Some(()) => T::Currency::deposit_into_existing(&account, amount)
-					.map(|imbalance| RewardSource::Inflation(imbalance))
-					.map_err(|e| e.into()),
-				None => {
-					if let Some(community_incentives_account) =
-						<CommunityIncentivesAccount<T>>::get()
-					{
-						match T::Currency::transfer(
-							&community_incentives_account,
-							account,
-							amount,
-							KeepAlive,
-						) {
-							Ok(_) => return Ok(RewardSource::IncentiveAccount(amount)),
-							Err(DispatchError::Arithmetic(ArithmeticError::Underflow)) =>
-								return Ok(RewardSource::IncentiveAccount(Default::default())),
-							Err(e) => return Err(e.into()), // Handle other errors normally.
-						}
-					}
-					return Ok(RewardSource::IncentiveAccount(Default::default()));
-				},
+			// Check if inflation is activated and directly attempt to deposit into existing account
+			if InflationActivated::<T>::get().is_some() {
+				return T::Currency::deposit_into_existing(account, amount)
+					.map(RewardSource::Inflation)
+					.map_err(Into::into);
 			}
+
+			// Handle the case when inflation is not activated.
+			if let Some(community_incentives_account) = CommunityIncentivesAccount::<T>::get() {
+				return T::Currency::transfer(
+					&community_incentives_account,
+					account,
+					amount,
+					KeepAlive,
+				)
+				.map(|_| RewardSource::IncentiveAccount(amount))
+				.or_else(|e| match e {
+					DispatchError::Arithmetic(ArithmeticError::Underflow) =>
+						Ok(RewardSource::IncentiveAccount(Default::default())),
+					_ => Err(e.into()),
+				});
+			}
+
+			// Default return when CommunityIncentivesAccount is not set.
+			Ok(RewardSource::IncentiveAccount(Default::default()))
 		}
 	}
 
