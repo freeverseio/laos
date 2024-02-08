@@ -510,16 +510,6 @@ pub mod pallet {
 	pub(crate) type CandidateInfo<T: Config> =
 		StorageMap<_, Twox64Concat, T::AccountId, CandidateMetadata<BalanceOf<T>>, OptionQuery>;
 
-	/// Stores unit value when inflation is activated
-	#[pallet::storage]
-	#[pallet::getter(fn inflation_activated)]
-	pub type InflationActivated<T: Config> = StorageValue<_, (), OptionQuery>;
-
-	/// Stores Community Incentives account acocount
-	#[pallet::storage]
-	#[pallet::getter(fn community_incentives_account)]
-	pub type CommunityIncentivesAccount<T: Config> = StorageValue<_, T::AccountId, OptionQuery>;
-
 	pub struct AddGet<T, R> {
 		_phantom: PhantomData<(T, R)>,
 	}
@@ -654,6 +644,16 @@ pub mod pallet {
 	#[pallet::getter(fn marking_offline)]
 	/// Killswitch to enable/disable marking offline feature.
 	pub type EnableMarkingOffline<T: Config> = StorageValue<_, bool, ValueQuery>;
+
+	/// Stores unit value when inflation is activated
+	#[pallet::storage]
+	#[pallet::getter(fn inflation_activated)]
+	pub type InflationActivated<T: Config> = StorageValue<_, (), OptionQuery>;
+
+	/// Stores Community Incentives account acocount
+	#[pallet::storage]
+	#[pallet::getter(fn community_incentives_account)]
+	pub type CommunityIncentivesAccount<T: Config> = StorageValue<_, T::AccountId, OptionQuery>;
 
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T: Config> {
@@ -2220,7 +2220,10 @@ pub mod pallet {
 			amount: BalanceOf<T>,
 		) -> Result<RewardSource<T>, DispatchError> {
 			match <InflationActivated<T>>::get() {
-				Some(()) => {
+				Some(()) => T::Currency::deposit_into_existing(&account, amount)
+					.map(|imbalance| RewardSource::Inflation(imbalance))
+					.map_err(|e| e.into()),
+				None => {
 					if let Some(community_incentives_account) =
 						<CommunityIncentivesAccount<T>>::get()
 					{
@@ -2238,9 +2241,6 @@ pub mod pallet {
 					}
 					return Ok(RewardSource::IncentiveAccount(Default::default()));
 				},
-				None => T::Currency::deposit_into_existing(&account, amount)
-					.map(|imbalance| RewardSource::Inflation(imbalance))
-					.map_err(|e| e.into()),
 			}
 		}
 	}

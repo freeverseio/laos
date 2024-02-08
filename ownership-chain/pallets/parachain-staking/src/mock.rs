@@ -160,6 +160,8 @@ pub(crate) struct ExtBuilder {
 	delegations: Vec<(AccountId, AccountId, Balance, Percent)>,
 	// inflation config
 	inflation: InflationInfo<Balance>,
+	// is inflation activated
+	inflation_activated: bool,
 }
 
 impl Default for ExtBuilder {
@@ -183,6 +185,8 @@ impl Default for ExtBuilder {
 					max: Perbill::from_percent(5),
 				},
 			},
+			// inflation is activated by default so we keep retrocompatibility with existing tests
+			inflation_activated: true,
 		}
 	}
 }
@@ -221,6 +225,11 @@ impl ExtBuilder {
 		self
 	}
 
+	pub(crate) fn with_inflation_activated(mut self, activated: bool) -> Self {
+		self.inflation_activated = activated;
+		self
+	}
+
 	pub(crate) fn build(self) -> sp_io::TestExternalities {
 		let mut t = frame_system::GenesisConfig::<Test>::default()
 			.build_storage()
@@ -243,6 +252,11 @@ impl ExtBuilder {
 
 		let mut ext = sp_io::TestExternalities::new(t);
 		ext.execute_with(|| System::set_block_number(1));
+		if self.inflation_activated {
+			ext.execute_with(|| {
+				pallet_parachain_staking::InflationActivated::<Test>::put(());
+			});
+		}
 		ext
 	}
 }
