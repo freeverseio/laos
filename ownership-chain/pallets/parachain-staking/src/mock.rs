@@ -20,16 +20,14 @@ use crate::{
 	pallet, AwardedPts, Config, Event as ParachainStakingEvent, InflationInfo, Points, Range,
 	COLLATOR_LOCK_ID, DELEGATOR_LOCK_ID,
 };
+use block_author::BlockAuthor as BlockAuthorMap;
 use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{Everything, LockIdentifier, OnFinalize, OnInitialize},
 	weights::{constants::RocksDbWeight, Weight},
 };
 use frame_system::pallet_prelude::BlockNumberFor;
-use sp_core::{ConstBool, H256};
-use sp_io;
-use sp_runtime::impl_opaque_keys;
-use sp_runtime::traits::{ConvertInto, OpaqueKeys};
+use sp_core::H256;
 use sp_runtime::{
 	traits::{BlakeTwo256, IdentityLookup},
 	BuildStorage, Perbill, Percent,
@@ -47,10 +45,12 @@ construct_runtime!(
 	{
 		System: frame_system,
 		Balances: pallet_balances,
-		Aura: pallet_aura,
-		Session: pallet_session,
+		// Timestamp: pallet_timestamp,
+		// Aura: pallet_aura,
+		// Session: pallet_session,
 		ParachainStaking: pallet_parachain_staking,
-		Authorship: pallet_authorship,
+		BlockAuthor: block_author,
+		// Authorship: pallet_authorship,
 	}
 );
 
@@ -61,6 +61,7 @@ parameter_types! {
 	pub const AvailableBlockRatio: Perbill = Perbill::one();
 	pub const SS58Prefix: u8 = 42;
 }
+
 impl frame_system::Config for Test {
 	type BaseCallFilter = Everything;
 	type DbWeight = RocksDbWeight;
@@ -86,9 +87,11 @@ impl frame_system::Config for Test {
 	type OnSetCode = ();
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
+
 parameter_types! {
 	pub const ExistentialDeposit: u128 = 0;
 }
+
 impl pallet_balances::Config for Test {
 	type MaxReserves = ();
 	type ReserveIdentifier = [u8; 4];
@@ -105,42 +108,53 @@ impl pallet_balances::Config for Test {
 	type MaxFreezes = ();
 }
 
+// // Pallet Timestamp
+// parameter_types! {
+// 	pub const MinimumPeriod: u64 = 1000;
+// }
 
-impl pallet_aura::Config for Test {
-	type AuthorityId = sp_consensus_aura::sr25519::AuthorityId; 
-	type DisabledValidators = (); 
-	type MaxAuthorities = MaxCollatorCandidates;
-	type AllowMultipleBlocksPerSlot = ConstBool<false>
-}
+// impl pallet_timestamp::Config for Test {
+// 	type Moment = u64;
+// 	type OnTimestampSet = ();
+// 	type MinimumPeriod = MinimumPeriod;
+// 	type WeightInfo = ();
+// }
 
-impl pallet_authorship::Config for Test {
-	type FindAuthor = pallet_session::FindAccountFromAuthorIndex<Self, Aura>;
-	type EventHandler = ParachainStaking;
-}
+// impl pallet_aura::Config for Test {
+// 	type AuthorityId = sp_consensus_aura::sr25519::AuthorityId;
+// 	type DisabledValidators = ();
+// 	type MaxAuthorities = MaxCandidates;
+// 	type AllowMultipleBlocksPerSlot = ConstBool<false>;
+// }
 
-impl_opaque_keys! {
-	pub struct MockSessionKeys {
-		pub aura: Aura,
-	}
-}
+// impl pallet_authorship::Config for Test {
+// 	type FindAuthor = pallet_session::FindAccountFromAuthorIndex<Self, Aura>;
+// 	type EventHandler = ParachainStaking;
+// }
 
-impl pallet_session::Config for Test { 
-	type RuntimeEvent = RuntimeEvent;
-	type ValidatorId = AccountId;
-	type ValidatorIdOf = ConvertInto;
-	type ShouldEndSession = ParachainStaking;
-	type NextSessionRotation = ParachainStaking;
-	type SessionManager = ParachainStaking;
-	type SessionHandler = <MockSessionKeys as OpaqueKeys>::KeyTypeIdProviders;
-	type Keys = MockSessionKeys; 
-	type WeightInfo = (); 
-}
+// impl_opaque_keys! {
+// 	pub struct MockSessionKeys {
+// 		pub aura: Aura,
+// 	}
+// }
+
+// impl pallet_session::Config for Test {
+// 	type RuntimeEvent = RuntimeEvent;
+// 	type ValidatorId = AccountId;
+// 	type ValidatorIdOf = ConvertInto;
+// 	type ShouldEndSession = ParachainStaking;
+// 	type NextSessionRotation = ParachainStaking;
+// 	type SessionManager = ParachainStaking;
+// 	type SessionHandler = <MockSessionKeys as OpaqueKeys>::KeyTypeIdProviders;
+// 	type Keys = MockSessionKeys;
+// 	type WeightInfo = ();
+// }
 
 const GENESIS_BLOCKS_PER_ROUND: BlockNumber = 5;
 const GENESIS_COLLATOR_COMMISSION: Perbill = Perbill::from_percent(20);
 const GENESIS_PARACHAIN_BOND_RESERVE_PERCENT: Percent = Percent::from_percent(30);
-const GENESIS_NUM_SELECTED_CANDIDATES: u32 = 2;
- 
+const GENESIS_NUM_SELECTED_CANDIDATES: u32 = 5;
+
 parameter_types! {
 	pub const MinBlocksPerRound: u32 = 3;
 	pub const MaxOfflineRounds: u32 = 1;
@@ -156,9 +170,8 @@ parameter_types! {
 	pub const MaxDelegationsPerDelegator: u32 = 4;
 	pub const MinCandidateStk: u128 = 10;
 	pub const MinDelegation: u128 = 3;
-	pub const MaxCandidates: u32 = 20;
+	pub const MaxCandidates: u32 = 200;
 }
-
 
 impl Config for Test {
 	type RuntimeEvent = RuntimeEvent;
@@ -185,6 +198,8 @@ impl Config for Test {
 	type WeightInfo = ();
 	type MaxCandidates = MaxCandidates;
 }
+
+impl block_author::Config for Test {}
 
 pub(crate) struct ExtBuilder {
 	// endowed accounts with balances
@@ -292,6 +307,33 @@ fn roll_one_block() -> BlockNumber {
 	Balances::on_initialize(System::block_number());
 	ParachainStaking::on_initialize(System::block_number());
 	System::block_number()
+}
+
+// Allows to change the block author (default is always 0)
+pub(crate) fn set_block_author(acc: u64) {
+	<BlockAuthorMap<Test>>::set(acc);
+}
+
+#[frame_support::pallet]
+pub(crate) mod block_author {
+	use super::*;
+	use frame_support::{pallet_prelude::*, traits::Get};
+
+	#[pallet::config]
+	pub trait Config: frame_system::Config {}
+
+	#[pallet::pallet]
+	pub struct Pallet<T>(_);
+
+	#[pallet::storage]
+	#[pallet::getter(fn block_author)]
+	pub(super) type BlockAuthor<T> = StorageValue<_, AccountId, ValueQuery>;
+
+	impl<T: Config> Get<AccountId> for Pallet<T> {
+		fn get() -> AccountId {
+			<BlockAuthor<T>>::get()
+		}
+	}
 }
 
 /// Rolls to the desired block. Returns the number of blocks played.
