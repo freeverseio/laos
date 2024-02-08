@@ -395,8 +395,26 @@ fn only_sudo_can_deactivate_inflation() {
 }
 
 #[test]
-fn only_sudo_can_setup_community_incentives_account() {
-	unimplemented!();
+fn only_sudo_can_set_community_incentives_account() {
+	ExtBuilder::default().build().execute_with(|| {
+		assert!(ParachainStaking::community_incentives_account().is_none());
+		let community_incentives_account = 1;
+		assert_noop!(
+			ParachainStaking::set_community_incentives_account(
+				RuntimeOrigin::signed(1),
+				community_incentives_account
+			),
+			sp_runtime::DispatchError::BadOrigin
+		);
+		assert_ok!(ParachainStaking::set_community_incentives_account(
+			RuntimeOrigin::root(),
+			community_incentives_account
+		));
+		assert!(
+			ParachainStaking::community_incentives_account().unwrap() ==
+				community_incentives_account
+		);
+	});
 }
 
 #[test]

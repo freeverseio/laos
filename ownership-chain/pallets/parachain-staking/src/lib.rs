@@ -510,10 +510,15 @@ pub mod pallet {
 	pub(crate) type CandidateInfo<T: Config> =
 		StorageMap<_, Twox64Concat, T::AccountId, CandidateMetadata<BalanceOf<T>>, OptionQuery>;
 
-	/// Stores whether inflation is activated
+	/// Stores unit value when inflation is activated
 	#[pallet::storage]
 	#[pallet::getter(fn inflation_activated)]
 	pub type InflationActivated<T: Config> = StorageValue<_, (), OptionQuery>;
+
+	/// Stores Community Incentives account acocount
+	#[pallet::storage]
+	#[pallet::getter(fn community_incentives_account)]
+	pub type CommunityIncentivesAccount<T: Config> = StorageValue<_, T::AccountId, OptionQuery>;
 
 	pub struct AddGet<T, R> {
 		_phantom: PhantomData<(T, R)>,
@@ -1418,6 +1423,19 @@ pub mod pallet {
 			<InflationActivated<T>>::kill();
 			Ok(())
 		}
+
+		/// Set community incentives account
+		/// Only `sudo` can call this function
+		#[pallet::call_index(34)]
+		#[pallet::weight(Weight::from_parts(3_000_000u64, 4_000u64))] // TODO
+		pub fn set_community_incentives_account(
+			origin: OriginFor<T>,
+			account: T::AccountId,
+		) -> DispatchResult {
+			ensure_root(origin)?;
+			<CommunityIncentivesAccount<T>>::put(account);
+			Ok(())
+		}
 	}
 
 	/// Represents a payout made via `pay_one_collator_reward`.
@@ -2201,9 +2219,12 @@ pub mod pallet {
 			account: &T::AccountId,
 			amount: BalanceOf<T>,
 		) -> Result<RewardSource<T>, DispatchError> {
-			T::Currency::deposit_into_existing(&account, amount)
-				.map(|imbalance| RewardSource::Inflation(imbalance))
-				.map_err(|e| e.into())
+			match <InflationActivated<T>>::get() {
+				Some(()) => unimplemented!("inflation rewards not yet implemented"),
+				None => T::Currency::deposit_into_existing(&account, amount)
+					.map(|imbalance| RewardSource::Inflation(imbalance))
+					.map_err(|e| e.into()),
+			}
 		}
 	}
 
