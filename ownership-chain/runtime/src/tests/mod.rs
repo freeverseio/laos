@@ -145,3 +145,8 @@ fn account_vests_correctly_over_time() {
 		assert_eq!(Balances::usable_balance(&bob), total_vested_amount);
 	});
 }
+
+#[test]
+fn staking_inflation_rewards_is_deactivated_by_default() {
+	new_test_ext().execute_with(|| assert!(ParachainStaking::inflation_activated().is_none()));
+}
