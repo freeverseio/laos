@@ -42,8 +42,8 @@ use sp_version::RuntimeVersion;
 use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{
-		ConstBool, ConstU128, ConstU32, ConstU64, ConstU8, Currency, Everything, FindAuthor, Hooks,
-		Imbalance, OnUnbalanced, WithdrawReasons,
+		fungible::Balanced, ConstBool, ConstU32, ConstU64, ConstU8, Currency, Everything,
+		FindAuthor, Hooks, Imbalance, OnUnbalanced, WithdrawReasons,
 	},
 	weights::{
 		constants::WEIGHT_REF_TIME_PER_SECOND, ConstantMultiplier, Weight, WeightToFeeCoefficient,
@@ -528,7 +528,8 @@ where
 {
 	fn on_nonzero_unbalanced(amount: CreditOf<R, ()>) {
 		if let Some(account) = <pallet_sudo::Pallet<R>>::key() {
-			<pallet_balances::Pallet<R>>::resolve(&account, amount);
+			let result = <pallet_balances::Pallet<R>>::resolve(&account, amount);
+			debug_assert!(result.is_ok(), "Should not fail to transfer; qed");
 		}
 	}
 }

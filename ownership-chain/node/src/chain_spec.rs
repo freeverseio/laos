@@ -185,10 +185,6 @@ fn testnet_genesis(
 				})
 				.collect(),
 		},
-		parachain_staking: laos_ownership_runtime::ParachainStakingConfig {
-			candidates: vec![],
-			..Default::default()
-		},
 		// no need to pass anything to aura, in fact it will panic if we do. Session will take care
 		// of this.
 		aura: Default::default(),
