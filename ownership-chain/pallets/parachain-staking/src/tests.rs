@@ -31,7 +31,7 @@ use crate::{
 		Balances, BlockNumber, ExtBuilder, ParachainStaking, RuntimeOrigin, Test,
 	},
 	AtStake, Bond, CollatorStatus, DelegationScheduledRequests, DelegatorAdded,
-	EnableMarkingOffline, Error, Event, Range, DELEGATOR_LOCK_ID,
+	EnableMarkingOffline, Error, Event, Range, RewardSource, DELEGATOR_LOCK_ID,
 };
 use frame_support::{assert_err, assert_noop, assert_ok, pallet_prelude::*, BoundedVec};
 use sp_runtime::{traits::Zero, DispatchError, ModuleError, Perbill, Percent};
@@ -357,14 +357,13 @@ fn send_rewards_with_inflation_activated_works() {
 
 #[test]
 fn send_rewards_without_inflation_activated_works() {
-	unimplemented!();
-	// total issuance stays the same
-	// ci account decreases
-}
+	ExtBuilder::default().build().execute_with(|| {
+		assert!(ParachainStaking::inflation_activated().is_none());
 
-#[test]
-fn send_rewards_without_inflation_activate_does_not_increase_total_issuance() {
-	unimplemented!();
+		unimplemented!();
+		// total issuance stays the same
+		// ci account decreases
+	});
 }
 
 #[test]
@@ -418,13 +417,44 @@ fn only_sudo_can_set_community_incentives_account() {
 }
 
 #[test]
-fn send_rewards_when_community_incentives_account_is_not_setup() {
-	unimplemented!();
+fn send_rewards_when_community_incentives_account_is_not_set() {
+	ExtBuilder::default().build().execute_with(|| {
+		let collator = 2;
+		assert!(ParachainStaking::inflation_activated().is_some());
+		assert!(ParachainStaking::community_incentives_account().is_none());
+
+		match ParachainStaking::send_rewards(&collator, 100).unwrap() {
+			RewardSource::IncentiveAccount(amount_rewarded) => {
+				assert_eq!(amount_rewarded, 0);
+			},
+			_ => panic!("unexpected reward source"),
+		}
+	});
 }
 
 #[test]
 fn send_rewards_when_community_incentives_account_has_no_enough_funds() {
-	unimplemented!();
+	ExtBuilder::default().build().execute_with(|| {
+		let community_incentives_account = 1;
+		let collator = 2;
+		assert_ok!(ParachainStaking::activate_inflation(RuntimeOrigin::root()));
+		assert!(ParachainStaking::inflation_activated().is_some());
+		assert_ok!(ParachainStaking::set_community_incentives_account(
+			RuntimeOrigin::root(),
+			community_incentives_account
+		));
+		assert!(
+			ParachainStaking::community_incentives_account().unwrap() ==
+				community_incentives_account
+		);
+
+		match ParachainStaking::send_rewards(&collator, 100).unwrap() {
+			RewardSource::IncentiveAccount(amount_rewarded) => {
+				assert_eq!(amount_rewarded, 0);
+			},
+			_ => panic!("unexpected reward source"),
+		}
+	});
 }
 
 // SET STAKING EXPECTATIONS

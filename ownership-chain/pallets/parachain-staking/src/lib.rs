@@ -87,14 +87,14 @@ pub mod pallet {
 		fail,
 		pallet_prelude::*,
 		traits::{
-			tokens::WithdrawReasons, Currency, Get, Imbalance, LockIdentifier, LockableCurrency,
-			ReservableCurrency,
+			tokens::WithdrawReasons, Currency, ExistenceRequirement::KeepAlive, Get, Imbalance,
+			LockIdentifier, LockableCurrency, ReservableCurrency,
 		},
 	};
 	use frame_system::pallet_prelude::*;
 	use sp_runtime::{
 		traits::{Saturating, Zero},
-		DispatchErrorWithPostInfo, Perbill, Percent,
+		ArithmeticError, DispatchErrorWithPostInfo, Perbill, Percent,
 	};
 	use sp_std::{collections::btree_map::BTreeMap, prelude::*};
 
@@ -2220,7 +2220,24 @@ pub mod pallet {
 			amount: BalanceOf<T>,
 		) -> Result<RewardSource<T>, DispatchError> {
 			match <InflationActivated<T>>::get() {
-				Some(()) => unimplemented!("inflation rewards not yet implemented"),
+				Some(()) => {
+					if let Some(community_incentives_account) =
+						<CommunityIncentivesAccount<T>>::get()
+					{
+						match T::Currency::transfer(
+							&community_incentives_account,
+							account,
+							amount,
+							KeepAlive,
+						) {
+							Ok(_) => return Ok(RewardSource::IncentiveAccount(amount)),
+							Err(DispatchError::Arithmetic(ArithmeticError::Underflow)) =>
+								return Ok(RewardSource::IncentiveAccount(Default::default())),
+							Err(e) => return Err(e.into()), // Handle other errors normally.
+						}
+					}
+					return Ok(RewardSource::IncentiveAccount(Default::default()));
+				},
 				None => T::Currency::deposit_into_existing(&account, amount)
 					.map(|imbalance| RewardSource::Inflation(imbalance))
 					.map_err(|e| e.into()),
