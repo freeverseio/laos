@@ -20,7 +20,7 @@ use frame_support::traits::Currency;
 use parity_scale_codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
-use sp_runtime::{PerThing, Perbill, RuntimeDebug};
+use sp_runtime::{PerThing, Perbill, RuntimeDebug, SaturatedConversion};
 use substrate_fixed::{transcendental::pow as floatpow, types::I64F64};
 
 const SECONDS_PER_YEAR: u32 = 31557600;
@@ -29,7 +29,7 @@ pub const BLOCKS_PER_YEAR: u32 = SECONDS_PER_YEAR / SECONDS_PER_BLOCK;
 
 fn rounds_per_year<T: Config>() -> u32 {
 	let blocks_per_round = <Pallet<T>>::round().length;
-	BLOCKS_PER_YEAR / blocks_per_round
+	BLOCKS_PER_YEAR / blocks_per_round.saturated_into::<u32>()
 }
 
 #[derive(

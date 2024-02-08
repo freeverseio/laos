@@ -41,23 +41,20 @@ use sp_version::RuntimeVersion;
 use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{
-		ConstBool, ConstU128, ConstU32, ConstU64, ConstU8, Currency, EitherOfDiverse, Everything,
-		FindAuthor, Hooks, Imbalance, OnUnbalanced, WithdrawReasons,
+		ConstBool, ConstU128, ConstU32, ConstU64, ConstU8, Currency, Everything, FindAuthor, Hooks,
+		Imbalance, OnUnbalanced, WithdrawReasons,
 	},
 	weights::{
 		constants::WEIGHT_REF_TIME_PER_SECOND, ConstantMultiplier, Weight, WeightToFeeCoefficient,
 		WeightToFeeCoefficients, WeightToFeePolynomial,
 	},
-	PalletId,
 };
 use frame_system::EnsureRoot;
-use pallet_balances::NegativeImbalance;
 pub use pallet_evm_evolution_collection_factory::REVERT_BYTECODE;
-use pallet_xcm::{EnsureXcm, IsVoiceOfBody};
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 pub use sp_runtime::{Perbill, Permill};
 
-use xcm_config::{OurLocation, XcmConfig, XcmOriginToTransactDispatchOrigin};
+use xcm_config::{XcmConfig, XcmOriginToTransactDispatchOrigin};
 
 pub use pallet_xcm::Call as XcmCall;
 
@@ -68,12 +65,11 @@ pub use sp_runtime::BuildStorage;
 pub use parachains_common::impls::DealWithFees;
 
 // Polkadot imports
-use polkadot_runtime_common::{BlockHashCount, SlowAdjustingFeeUpdate};
+use polkadot_runtime_common::{prod_or_fast, BlockHashCount, SlowAdjustingFeeUpdate};
 
 use weights::{ExtrinsicBaseWeight, RocksDbWeight};
 
 // XCM Imports
-use staging_xcm::latest::prelude::BodyId;
 use staging_xcm_executor::XcmExecutor;
 
 // Frontier
@@ -327,7 +323,7 @@ impl pallet_timestamp::Config for Runtime {
 
 impl pallet_authorship::Config for Runtime {
 	type FindAuthor = pallet_session::FindAccountFromAuthorIndex<Self, Aura>;
-	type EventHandler = (CollatorSelection,);
+	type EventHandler = ParachainStaking;
 }
 
 parameter_types! {
@@ -421,14 +417,14 @@ impl pallet_session::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type ValidatorId = <Self as frame_system::Config>::AccountId;
 	// we don't have stash and controller, thus we don't need the convert as well.
-	type ValidatorIdOf = pallet_collator_selection::IdentityCollator;
-	type ShouldEndSession = pallet_session::PeriodicSessions<Period, Offset>;
-	type NextSessionRotation = pallet_session::PeriodicSessions<Period, Offset>;
-	type SessionManager = CollatorSelection;
+	type ValidatorIdOf = ConvertInto;
+	type ShouldEndSession = ParachainStaking;
+	type NextSessionRotation = ParachainStaking;
+	type SessionManager = ParachainStaking;
 	// Essentially just Aura, but let's be pedantic.
 	type SessionHandler = <SessionKeys as sp_runtime::traits::OpaqueKeys>::KeyTypeIdProviders;
 	type Keys = SessionKeys;
-	type WeightInfo = ();
+	type WeightInfo = pallet_session::weights::SubstrateWeight<Runtime>;
 }
 
 impl pallet_aura::Config for Runtime {
@@ -439,48 +435,8 @@ impl pallet_aura::Config for Runtime {
 }
 
 parameter_types! {
-	pub const PotId: PalletId = PalletId(*b"PotStake");
-	pub const MaxCandidates: u32 = 1000;
-	pub const MinCandidates: u32 = 5;
-	pub const SessionLength: BlockNumber = 6 * HOURS;
-	pub const MaxInvulnerables: u32 = 100;
-	// StakingAdmin pluralistic body.
-	pub const StakingAdminBodyId: BodyId = BodyId::Defense;
-}
-
-/// We allow root and the StakingAdmin to execute privileged collator selection operations.
-pub type CollatorSelectionUpdateOrigin = EitherOfDiverse<
-	EnsureRoot<AccountId>,
-	EnsureXcm<IsVoiceOfBody<OurLocation, StakingAdminBodyId>>,
->;
-
-impl pallet_collator_selection::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type Currency = Balances;
-	type UpdateOrigin = CollatorSelectionUpdateOrigin;
-	type PotId = PotId;
-	type MaxCandidates = MaxCandidates;
-	type MaxInvulnerables = MaxInvulnerables;
-	// should be a multiple of session or things will get inconsistent
-	type KickThreshold = Period;
-	type ValidatorId = <Self as frame_system::Config>::AccountId;
-	type ValidatorIdOf = pallet_collator_selection::IdentityCollator;
-	type ValidatorRegistration = Session;
-	type WeightInfo = ();
-	type MinEligibleCollators = ConstU32<4>;
-}
-
-parameter_types! {
-	/// Null address
-	pub NullAddress: AccountId = [0u8; 20].into();
-}
-
-parameter_types! {
 	/// Max length of the `TokenUri`
 	pub const MaxTokenUriLength: u32 = 512;
-}
-
-parameter_types! {
 	/// Max length of the `UniversalLocation`
 	pub const MaxUniversalLocationLength: u32 = 512;
 }
@@ -544,18 +500,22 @@ impl<F: FindAuthor<u32>> FindAuthor<H160> for FindAuthorTruncated<F> {
 	}
 }
 
-/// Handles transaction fees from the EVM, depositing priority fee in a staking pot
-pub struct EVMDealWithFees<R>(PhantomData<R>);
+/// Logic for sending fees to the sudo account. On every unbalanced change (i.e transaction fees),
+/// the amount is transferred to the sudo account.
+/// TODO: temporary solution until we have a treasury.
+/// TODO: replace this with CI account once we have it in the `pallet_staking` storage
+pub struct ToSudo<R>(PhantomData<R>);
 
-impl<R> OnUnbalanced<NegativeImbalance<R>> for EVMDealWithFees<R>
+type NegativeImbalanceOfBalances<T> = pallet_balances::NegativeImbalance<T>;
+
+impl<R> OnUnbalanced<NegativeImbalanceOfBalances<R>> for ToSudo<R>
 where
-	R: pallet_balances::Config + pallet_collator_selection::Config + core::fmt::Debug,
-	<R as frame_system::Config>::RuntimeEvent: From<pallet_balances::Event<R>>,
+	R: pallet_balances::Config + pallet_sudo::Config,
 {
-	fn on_nonzero_unbalanced(amount: NegativeImbalance<R>) {
-		// deposit the fee into the collator_selection reward pot
-		let staking_pot = <pallet_collator_selection::Pallet<R>>::account_id();
-		<pallet_balances::Pallet<R>>::resolve_creating(&staking_pot, amount);
+	fn on_nonzero_unbalanced(amount: NegativeImbalanceOfBalances<R>) {
+		if let Some(account) = <pallet_sudo::Pallet<R>>::key() {
+			<pallet_balances::Pallet<R>>::resolve_creating(&account, amount);
+		}
 	}
 }
 
@@ -640,7 +600,7 @@ impl pallet_evm::Config for Runtime {
 	type FindAuthor = CustomFindAuthor<pallet_session::FindAccountFromAuthorIndex<Self, Aura>>;
 	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
-	type OnChargeTransaction = EVMCurrencyAdapter<Balances, EVMDealWithFees<Runtime>>;
+	type OnChargeTransaction = EVMCurrencyAdapter<Balances, ToSudo<Runtime>>;
 	type OnCreate = ();
 	type PrecompilesType = FrontierPrecompiles<Self>;
 	type PrecompilesValue = PrecompilesValue;
@@ -742,12 +702,21 @@ impl pallet_parachain_staking::PayoutCollatorReward<Runtime> for PayoutCollatorR
 	}
 }
 
+parameter_types! {
+	/// Minimum number of selected candidates
+	/// 1 for test environment, to make it easier to test
+	pub const MinSelectedCandidates: u32 = prod_or_fast!(8, 1);
+	/// Minimum number of blocks per round
+	/// 5 for test environment, to make it easier to test
+	pub const MinBlocksPerRound: u32 = prod_or_fast!(10, 5);
+}
+
 impl pallet_parachain_staking::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
 	type MonetaryGovernanceOrigin = EnsureRoot<AccountId>;
 	/// Minimum round length is 2 minutes (10 * 12 second block times)
-	type MinBlocksPerRound = ConstU32<10>;
+	type MinBlocksPerRound = MinBlocksPerRound;
 	/// If a collator doesn't produce any block on this number of rounds, it is notified as inactive
 	type MaxOfflineRounds = ConstU32<1>;
 	/// Rounds before the collator leaving the candidates request can be executed
@@ -763,7 +732,7 @@ impl pallet_parachain_staking::Config for Runtime {
 	/// Rounds before the reward is paid
 	type RewardPaymentDelay = ConstU32<2>;
 	/// Minimum collators selected per round, default at genesis and minimum forever after
-	type MinSelectedCandidates = ConstU32<8>;
+	type MinSelectedCandidates = MinSelectedCandidates;
 	/// Maximum top delegations per candidate
 	type MaxTopDelegationsPerCandidate = ConstU32<300>;
 	/// Maximum bottom delegations per candidate
@@ -804,7 +773,6 @@ construct_runtime!(
 		// Collator support. The order of these 5 are important and shall not change.
 		ParachainStaking: pallet_parachain_staking = 19,
 		Authorship: pallet_authorship = 20,
-		CollatorSelection: pallet_collator_selection = 21,
 		Session: pallet_session = 22,
 		Aura: pallet_aura = 23,
 		AuraExt: cumulus_pallet_aura_ext = 24,
@@ -950,7 +918,6 @@ mod benches {
 		[pallet_balances, Balances]
 		[pallet_session, SessionBench::<Runtime>]
 		[pallet_timestamp, Timestamp]
-		[pallet_collator_selection, CollatorSelection]
 		[cumulus_pallet_xcmp_queue, XcmpQueue]
 		[pallet_laos_evolution, LaosEvolution]
 		[pallet_asset_metadata_extender, AssetMetadataExtender]

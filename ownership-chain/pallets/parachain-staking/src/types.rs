@@ -540,6 +540,7 @@ impl<
 			bottom_delegations.highest_delegation_amount().into();
 		self.bottom_capacity = bottom_delegations.bottom_capacity::<T>();
 	}
+
 	/// Add delegation
 	/// Returns whether delegator was added and an optional negative total counted remainder
 	/// for if a bottom delegation was kicked
@@ -582,8 +583,10 @@ impl<
 				DelegatorAdded::AddedToTop { new_total: self.total_counted }
 			},
 		};
+
 		Ok((delegator_added, less_total_staked))
 	}
+
 	/// Add delegation to top delegation
 	/// Returns Option<negative_total_staked_remainder>
 	/// Only call if lowest top delegation is less than delegation.amount || !top_full
@@ -1584,13 +1587,14 @@ pub struct RoundInfo<BlockNumber> {
 	/// The first block of the current round
 	pub first: BlockNumber,
 	/// The length of the current round in number of blocks
-	pub length: BlockNumber,
+	pub length: u32,
 }
+
 impl<
 		B: Copy + sp_std::ops::Add<Output = B> + sp_std::ops::Sub<Output = B> + From<u32> + PartialOrd,
 	> RoundInfo<B>
 {
-	pub fn new(current: RoundIndex, first: B, length: B) -> RoundInfo<B> {
+	pub fn new(current: RoundIndex, first: B, length: u32) -> RoundInfo<B> {
 		RoundInfo { current, first, length }
 	}
 
@@ -1611,7 +1615,7 @@ impl<
 	> Default for RoundInfo<B>
 {
 	fn default() -> RoundInfo<B> {
-		RoundInfo::new(1u32, 1u32.into(), 20u32)
+		RoundInfo::new(1u32, 1u32.into(), 20u32.into())
 	}
 }
 

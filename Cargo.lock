@@ -5411,7 +5411,6 @@ dependencies = [
  "pallet-authorship",
  "pallet-balances",
  "pallet-base-fee",
- "pallet-collator-selection",
  "pallet-ethereum",
  "pallet-evm",
  "pallet-evm-asset-metadata-extender",

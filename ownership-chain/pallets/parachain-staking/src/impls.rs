@@ -5,9 +5,10 @@ use frame_support::traits::EstimateNextSessionRotation;
 use frame_system::pallet_prelude::BlockNumberFor;
 use sp_runtime::{
 	traits::{Get, Saturating},
-	Permill,
+	Permill, SaturatedConversion,
 };
 use sp_staking::SessionIndex;
+use sp_std::vec::Vec;
 
 /// Get the selected candidates
 impl<T: Config> Get<Vec<AccountIdOf<T>>> for Pallet<T> {
@@ -47,11 +48,11 @@ impl<T: Config> pallet_session::SessionManager<AccountIdOf<T>> for Pallet<T> {
 		}
 	}
 
-	fn end_session(end_index: SessionIndex) {
+	fn end_session(_end_index: SessionIndex) {
 		// We don't need to do anything here
 	}
 
-	fn start_session(start_index: SessionIndex) {
+	fn start_session(_start_index: SessionIndex) {
 		// We don't need to do anything here
 	}
 }
@@ -71,7 +72,7 @@ impl<T: Config> pallet_session::ShouldEndSession<BlockNumberFor<T>> for Pallet<T
 
 impl<T: Config> EstimateNextSessionRotation<BlockNumberFor<T>> for Pallet<T> {
 	fn average_session_length() -> BlockNumberFor<T> {
-		Round::<T>::get().length
+		Round::<T>::get().length.saturated_into()
 	}
 
 	fn estimate_current_session_progress(
@@ -81,7 +82,7 @@ impl<T: Config> EstimateNextSessionRotation<BlockNumberFor<T>> for Pallet<T> {
 		let passed_blocks = now.saturating_sub(round.first);
 
 		(
-			Some(Permill::from_rational(passed_blocks, round.length)),
+			Some(Permill::from_rational(passed_blocks, round.length.saturated_into())),
 			// For reaading the current round
 			T::DbWeight::get().reads(1),
 		)
@@ -93,7 +94,7 @@ impl<T: Config> EstimateNextSessionRotation<BlockNumberFor<T>> for Pallet<T> {
 		let round = Round::<T>::get();
 
 		(
-			Some(round.first + round.length),
+			Some(round.first + round.length.into()),
 			// For reaading the current round
 			T::DbWeight::get().reads(1),
 		)

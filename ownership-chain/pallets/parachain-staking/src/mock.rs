@@ -103,6 +103,7 @@ impl pallet_balances::Config for Test {
 }
 
 impl block_author::Config for Test {}
+
 const GENESIS_BLOCKS_PER_ROUND: BlockNumber = 5;
 const GENESIS_COLLATOR_COMMISSION: Perbill = Perbill::from_percent(20);
 const GENESIS_PARACHAIN_BOND_RESERVE_PERCENT: Percent = Percent::from_percent(30);
@@ -142,7 +143,6 @@ impl Config for Test {
 	type MaxDelegationsPerDelegator = MaxDelegationsPerDelegator;
 	type MinCandidateStk = MinCandidateStk;
 	type MinDelegation = MinDelegation;
-	type BlockAuthor = BlockAuthor;
 	type OnCollatorPayout = ();
 	type PayoutCollatorReward = ();
 	type OnInactiveCollator = ();
@@ -610,7 +610,7 @@ fn geneses() {
 }
 
 #[frame_support::pallet]
-pub mod block_author {
+mod block_author {
 	use super::*;
 	use frame_support::{pallet_prelude::*, traits::Get};
 

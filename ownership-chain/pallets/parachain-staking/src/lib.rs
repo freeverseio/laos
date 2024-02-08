@@ -129,7 +129,7 @@ pub mod pallet {
 		type MonetaryGovernanceOrigin: EnsureOrigin<Self::RuntimeOrigin>;
 		/// Minimum number of blocks per round
 		#[pallet::constant]
-		type MinBlocksPerRound: Get<BlockNumberFor<T>>;
+		type MinBlocksPerRound: Get<BlockNumberFor<Self>>;
 		/// If a collator doesn't produce any block on this number of rounds, it is notified as
 		/// inactive. This value must be less than or equal to RewardPaymentDelay.
 		#[pallet::constant]
@@ -415,8 +415,8 @@ pub mod pallet {
 		BlocksPerRoundSet {
 			current_round: RoundIndex,
 			first_block: BlockNumberFor<T>,
-			old: BlockNumberFor<T>,
-			new: BlockNumberFor<T>,
+			old: u32,
+			new: u32,
 			new_per_round_inflation_min: Perbill,
 			new_per_round_inflation_ideal: Perbill,
 			new_per_round_inflation_max: Perbill,
@@ -657,7 +657,7 @@ pub mod pallet {
 		/// Default percent of inflation set aside for parachain bond every round
 		pub parachain_bond_reserve_percent: Percent,
 		/// Default number of blocks in a round
-		pub blocks_per_round: BlockNumberFor<T>,
+		pub blocks_per_round: u32,
 		/// Number of selected candidates every round. Cannot be lower than MinSelectedCandidates
 		pub num_selected_candidates: u32,
 	}
@@ -679,7 +679,7 @@ pub mod pallet {
 	#[pallet::genesis_build]
 	impl<T: Config> BuildGenesisConfig for GenesisConfig<T> {
 		fn build(&self) {
-			assert!(self.blocks_per_round > Zero::zero(), "Blocks per round must be > 0");
+			assert!(self.blocks_per_round > 0, "Blocks per round must be > 0");
 			<InflationConfig<T>>::put(self.inflation_config.clone());
 			let mut candidate_count = 0u32;
 			// Initialize the candidates
@@ -901,23 +901,24 @@ pub mod pallet {
 		/// - also updates per-round inflation config
 		#[pallet::call_index(6)]
 		#[pallet::weight(<T as Config>::WeightInfo::set_blocks_per_round())]
-		pub fn set_blocks_per_round(
-			origin: OriginFor<T>,
-			new: BlockNumberFor<T>,
-		) -> DispatchResultWithPostInfo {
+		pub fn set_blocks_per_round(origin: OriginFor<T>, new: u32) -> DispatchResultWithPostInfo {
 			frame_system::ensure_root(origin)?;
-			ensure!(new >= T::MinBlocksPerRound::get(), Error::<T>::CannotSetBelowMin);
+			ensure!(
+				new >= T::MinBlocksPerRound::get().saturated_into::<u32>(),
+				Error::<T>::CannotSetBelowMin
+			);
 			let mut round = <Round<T>>::get();
 			let (now, first, old) = (round.current, round.first, round.length);
 			ensure!(old != new, Error::<T>::NoWritingSameValue);
 			ensure!(
-				new > <TotalSelected<T>>::get().into(),
+				new > <TotalSelected<T>>::get().saturated_into::<u32>(),
 				Error::<T>::RoundLengthMustBeGreaterThanTotalSelectedCollators,
 			);
 			round.length = new;
 			// update per-round inflation given new rounds per year
 			let mut inflation_config = <InflationConfig<T>>::get();
 			inflation_config.reset_round(new.saturated_into());
+
 			<Round<T>>::put(round);
 			Self::deposit_event(Event::BlocksPerRoundSet {
 				current_round: now,
