@@ -645,10 +645,10 @@ pub mod pallet {
 	/// Killswitch to enable/disable marking offline feature.
 	pub type EnableMarkingOffline<T: Config> = StorageValue<_, bool, ValueQuery>;
 
-	/// Stores unit value when inflation is activated
+	/// Switch to enable/disable inflation feature
 	#[pallet::storage]
-	#[pallet::getter(fn inflation_activated)]
-	pub type InflationActivated<T: Config> = StorageValue<_, (), OptionQuery>;
+	#[pallet::getter(fn inflation_enabled)]
+	pub type InflationEnabled<T: Config> = StorageValue<_, bool, ValueQuery>;
 
 	/// Stores Community Incentives account acocount
 	#[pallet::storage]
@@ -1404,23 +1404,16 @@ pub mod pallet {
 			Self::join_candidates_inner(account, bond, candidate_count)
 		}
 
-		/// Activate inflation so rewards are created from inflation
+		/// Enable/Disable inflation so rewards are created from inflation
 		/// Only `sudo` can call this function
 		#[pallet::call_index(32)]
-		#[pallet::weight(Weight::from_parts(3_000_000u64, 4_000u64))] // TODO
-		pub fn activate_inflation(origin: OriginFor<T>) -> DispatchResult {
+		#[pallet::weight(
+			Weight::from_parts(3_000_000u64, 4_000u64)
+				.saturating_add(T::DbWeight::get().writes(1u64))
+		)]
+		pub fn enable_inflation(origin: OriginFor<T>, value: bool) -> DispatchResult {
 			ensure_root(origin)?;
-			<InflationActivated<T>>::put(());
-			Ok(())
-		}
-
-		/// Deactivate inflation so rewards are created from inflation
-		/// Only `sudo` can call this function
-		#[pallet::call_index(33)]
-		#[pallet::weight(Weight::from_parts(3_000_000u64, 4_000u64))] // TODO
-		pub fn deactivate_inflation(origin: OriginFor<T>) -> DispatchResult {
-			ensure_root(origin)?;
-			<InflationActivated<T>>::kill();
+			<InflationEnabled<T>>::set(value);
 			Ok(())
 		}
 
@@ -2215,14 +2208,14 @@ pub mod pallet {
 		/// Sends rewards to a given account.
 		///
 		/// There are three possible cases:
-		/// 1. If inflation is activated, the rewards are deposited into the account from minting
+		/// 1. If inflation is enabled, the rewards are deposited into the account from minting
 		///
-		/// 2. If inflation is not activated and the community incentives account exists, the
-		///    rewards are transferred from the community incentives account to the account. In case
-		///    of an underflow error during the transfer because the community incentives account
-		///    does not have enough balance, a zero balance is returned.
+		/// 2. If inflation is not enabled and the community incentives account exists, the rewards
+		///    are transferred from the community incentives account to the account. In case of an
+		///    underflow error during the transfer because the community incentives account does not
+		///    have enough balance, a zero balance is returned.
 		///
-		/// 3. If inflation is not activated and the community incentives account does not exist, a
+		/// 3. If inflation is not enabled and the community incentives account does not exist, a
 		///    zero balance is returned.
 		///
 		/// Then the possible returns values are:
@@ -2233,14 +2226,14 @@ pub mod pallet {
 			account: &T::AccountId,
 			amount: BalanceOf<T>,
 		) -> Result<RewardSource<T>, DispatchError> {
-			// Check if inflation is activated and directly attempt to deposit into existing account
-			if InflationActivated::<T>::get().is_some() {
+			// Check if inflation is enabled and directly attempt to deposit into existing account
+			if InflationEnabled::<T>::get() {
 				return T::Currency::deposit_into_existing(account, amount)
 					.map(RewardSource::Inflation)
 					.map_err(Into::into);
 			}
 
-			// Handle the case when inflation is not activated.
+			// Handle the case when inflation is not enabled.
 			if let Some(community_incentives_account) = CommunityIncentivesAccount::<T>::get() {
 				return T::Currency::transfer(
 					&community_incentives_account,

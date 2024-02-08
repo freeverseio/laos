@@ -161,7 +161,7 @@ pub(crate) struct ExtBuilder {
 	// inflation config
 	inflation: InflationInfo<Balance>,
 	// is inflation activated
-	inflation_activated: bool,
+	inflation_enabled: bool,
 }
 
 impl Default for ExtBuilder {
@@ -186,7 +186,7 @@ impl Default for ExtBuilder {
 				},
 			},
 			// inflation is activated by default so we keep retrocompatibility with existing tests
-			inflation_activated: true,
+			inflation_enabled: true,
 		}
 	}
 }
@@ -225,8 +225,8 @@ impl ExtBuilder {
 		self
 	}
 
-	pub(crate) fn with_inflation_activated(mut self, activated: bool) -> Self {
-		self.inflation_activated = activated;
+	pub(crate) fn with_inflation_enabled(mut self, enabled: bool) -> Self {
+		self.inflation_enabled = enabled;
 		self
 	}
 
@@ -252,11 +252,9 @@ impl ExtBuilder {
 
 		let mut ext = sp_io::TestExternalities::new(t);
 		ext.execute_with(|| System::set_block_number(1));
-		if self.inflation_activated {
-			ext.execute_with(|| {
-				pallet_parachain_staking::InflationActivated::<Test>::put(());
-			});
-		}
+		ext.execute_with(|| {
+			pallet_parachain_staking::InflationEnabled::<Test>::set(self.inflation_enabled);
+		});
 		ext
 	}
 }

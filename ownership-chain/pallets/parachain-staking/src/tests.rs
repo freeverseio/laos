@@ -349,7 +349,7 @@ fn invalid_monetary_origin_fails() {
 fn send_rewards_with_inflation_activated_works() {
 	ExtBuilder::default().with_balances(vec![(2, 1)]).build().execute_with(|| {
 		let collator = 2;
-		assert!(ParachainStaking::inflation_activated().is_some());
+		assert!(ParachainStaking::inflation_enabled());
 		assert_eq!(Balances::total_issuance(), 1);
 		// assert_eq!(Balances::total_balance(&collator), 1); // TODO
 		match ParachainStaking::send_rewards(&collator, 100).unwrap() {
@@ -366,11 +366,11 @@ fn send_rewards_with_inflation_activated_works() {
 #[test]
 fn send_rewards_without_inflation_activated_works() {
 	ExtBuilder::default()
-		.with_inflation_activated(false)
+		.with_inflation_enabled(false)
 		.with_balances(vec![(2, 1), (1, 100)])
 		.build()
 		.execute_with(|| {
-			assert!(ParachainStaking::inflation_activated().is_none());
+			assert!(ParachainStaking::inflation_enabled() == false);
 			let ci_account = 1;
 			let collator = 2;
 			assert_ok!(ParachainStaking::set_community_incentives_account(
@@ -395,34 +395,34 @@ fn send_rewards_without_inflation_activated_works() {
 
 #[test]
 fn only_sudo_can_change_activate_inflation() {
-	ExtBuilder::default().with_inflation_activated(false).build().execute_with(|| {
-		assert!(ParachainStaking::inflation_activated().is_none());
+	ExtBuilder::default().with_inflation_enabled(false).build().execute_with(|| {
+		assert!(ParachainStaking::inflation_enabled() == false);
 		assert_noop!(
-			ParachainStaking::activate_inflation(RuntimeOrigin::signed(1)),
+			ParachainStaking::enable_inflation(RuntimeOrigin::signed(1), true),
 			sp_runtime::DispatchError::BadOrigin
 		);
-		assert_ok!(ParachainStaking::activate_inflation(RuntimeOrigin::root()));
-		assert!(ParachainStaking::inflation_activated().is_some());
+		assert_ok!(ParachainStaking::enable_inflation(RuntimeOrigin::root(), true));
+		assert!(ParachainStaking::inflation_enabled());
 	});
 }
 
 #[test]
-fn only_sudo_can_deactivate_inflation() {
-	ExtBuilder::default().with_inflation_activated(false).build().execute_with(|| {
-		assert_ok!(ParachainStaking::activate_inflation(RuntimeOrigin::root()));
-		assert!(ParachainStaking::inflation_activated().is_some());
+fn only_sudo_can_disable_inflation() {
+	ExtBuilder::default().with_inflation_enabled(false).build().execute_with(|| {
+		assert_ok!(ParachainStaking::enable_inflation(RuntimeOrigin::root(), true));
+		assert!(ParachainStaking::inflation_enabled());
 		assert_noop!(
-			ParachainStaking::deactivate_inflation(RuntimeOrigin::signed(1)),
+			ParachainStaking::enable_inflation(RuntimeOrigin::signed(1), false),
 			sp_runtime::DispatchError::BadOrigin
 		);
-		assert_ok!(ParachainStaking::deactivate_inflation(RuntimeOrigin::root()));
-		assert!(ParachainStaking::inflation_activated().is_none());
+		assert_ok!(ParachainStaking::enable_inflation(RuntimeOrigin::root(), false));
+		assert!(ParachainStaking::inflation_enabled() == false);
 	});
 }
 
 #[test]
 fn only_sudo_can_set_community_incentives_account() {
-	ExtBuilder::default().with_inflation_activated(false).build().execute_with(|| {
+	ExtBuilder::default().with_inflation_enabled(false).build().execute_with(|| {
 		assert!(ParachainStaking::community_incentives_account().is_none());
 		let community_incentives_account = 1;
 		assert_noop!(
@@ -445,9 +445,9 @@ fn only_sudo_can_set_community_incentives_account() {
 
 #[test]
 fn send_rewards_when_community_incentives_account_is_not_set() {
-	ExtBuilder::default().with_inflation_activated(false).build().execute_with(|| {
+	ExtBuilder::default().with_inflation_enabled(false).build().execute_with(|| {
 		let collator = 2;
-		assert!(ParachainStaking::inflation_activated().is_none());
+		assert!(ParachainStaking::inflation_enabled() == false);
 		assert!(ParachainStaking::community_incentives_account().is_none());
 
 		match ParachainStaking::send_rewards(&collator, 100).unwrap() {
@@ -461,10 +461,10 @@ fn send_rewards_when_community_incentives_account_is_not_set() {
 
 #[test]
 fn send_rewards_when_community_incentives_account_has_no_enough_funds() {
-	ExtBuilder::default().with_inflation_activated(false).build().execute_with(|| {
+	ExtBuilder::default().with_inflation_enabled(false).build().execute_with(|| {
 		let community_incentives_account = 1;
 		let collator = 2;
-		assert!(ParachainStaking::inflation_activated().is_none());
+		assert!(ParachainStaking::inflation_enabled() == false);
 		assert_ok!(ParachainStaking::set_community_incentives_account(
 			RuntimeOrigin::root(),
 			community_incentives_account

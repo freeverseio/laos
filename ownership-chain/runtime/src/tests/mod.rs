@@ -148,5 +148,5 @@ fn account_vests_correctly_over_time() {
 
 #[test]
 fn staking_inflation_rewards_is_deactivated_by_default() {
-	new_test_ext().execute_with(|| assert!(ParachainStaking::inflation_activated().is_none()));
+	new_test_ext().execute_with(|| assert!(ParachainStaking::inflation_enabled() == false));
 }
