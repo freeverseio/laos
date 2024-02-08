@@ -95,7 +95,9 @@ pallet-evm-precompile-simple = { workspace = true }
 pallet-evm-precompile-bn128 = { workspace = true }
 pallet-evm-precompile-blake2 = { workspace = true }
 
+# other
 pallet-parachain-staking = { workspace = true }
+pallet-utility = { workspace = true }
 
 [dev-dependencies]
 static_assertions = { workspace = true }
@@ -187,6 +189,7 @@ std = [
 	"ownership-parachain-primitives/std",
 	"hex/std",
 	"pallet-parachain-staking/std",
+	"pallet-utility/std",
 ]
 
 runtime-benchmarks = [
@@ -216,6 +219,7 @@ runtime-benchmarks = [
 	"pallet-asset-metadata-extender/runtime-benchmarks",
 	"pallet-vesting/runtime-benchmarks",
 	"pallet-parachain-staking/runtime-benchmarks",
+	"pallet-utility/runtime-benchmarks",
 ]
 
 try-runtime = [
@@ -250,4 +254,5 @@ try-runtime = [
 	"pallet-asset-metadata-extender/try-runtime",
 	"pallet-vesting/try-runtime",
 	"pallet-parachain-staking/try-runtime",
+	"pallet-utility/try-runtime",
 ]
