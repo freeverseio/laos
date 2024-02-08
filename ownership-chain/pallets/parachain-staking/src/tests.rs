@@ -31,13 +31,10 @@ use crate::{
 		Balances, BlockNumber, ExtBuilder, ParachainStaking, RuntimeOrigin, Test,
 	},
 	AtStake, Bond, CollatorStatus, DelegationScheduledRequests, DelegatorAdded,
-	EnableMarkingOffline, Error, Event, Range, RewardSource, DELEGATOR_LOCK_ID,
+	EnableMarkingOffline, Error, Event, Range, DELEGATOR_LOCK_ID,
 };
 use frame_support::{
-	assert_err, assert_noop, assert_ok,
-	pallet_prelude::*,
-	traits::{Currency, Imbalance},
-	BoundedVec,
+	assert_err, assert_noop, assert_ok, pallet_prelude::*, traits::Currency, BoundedVec,
 };
 use sp_runtime::{traits::Zero, DispatchError, ModuleError, Perbill, Percent};
 
@@ -358,12 +355,10 @@ fn send_rewards_with_inflation_activated_works() {
 		assert!(ParachainStaking::inflation_enabled());
 		let total_issuance = Balances::total_issuance();
 		assert_eq!(Balances::total_balance(&collator), collator_balance);
-		match ParachainStaking::send_rewards(&collator, reward_amount).unwrap() {
-			RewardSource::Inflation(amount_rewarded) => {
-				assert_eq!(amount_rewarded.peek(), reward_amount);
-			},
-			_ => panic!("unexpected reward source"),
-		}
+		assert_eq!(
+			ParachainStaking::send_rewards(&collator, reward_amount).unwrap(),
+			reward_amount
+		);
 		assert_eq!(Balances::total_balance(&collator), reward_amount + collator_balance);
 		assert_eq!(Balances::total_issuance(), reward_amount + total_issuance);
 	});
@@ -389,12 +384,10 @@ fn send_rewards_without_inflation_activated_works() {
 			assert_eq!(Balances::total_balance(&ci_account), 100);
 			assert_eq!(Balances::total_balance(&collator), collator_balance);
 			let total_issuance = Balances::total_issuance();
-			match ParachainStaking::send_rewards(&collator, reward_amount).unwrap() {
-				RewardSource::IncentiveAccount(amount_rewarded) => {
-					assert_eq!(amount_rewarded, reward_amount);
-				},
-				_ => panic!("unexpected reward source"),
-			}
+			assert_eq!(
+				ParachainStaking::send_rewards(&collator, reward_amount).unwrap(),
+				reward_amount
+			);
 			assert_eq!(Balances::total_balance(&ci_account), 0);
 			assert_eq!(Balances::total_balance(&collator), reward_amount + collator_balance);
 			assert_eq!(Balances::total_issuance(), total_issuance);
@@ -457,13 +450,7 @@ fn send_rewards_when_community_incentives_account_is_not_set() {
 		let collator = 2;
 		assert!(ParachainStaking::inflation_enabled() == false);
 		assert!(ParachainStaking::community_incentives_account().is_none());
-
-		match ParachainStaking::send_rewards(&collator, 100).unwrap() {
-			RewardSource::IncentiveAccount(amount_rewarded) => {
-				assert_eq!(amount_rewarded, 0);
-			},
-			_ => panic!("unexpected reward source"),
-		}
+		assert_eq!(ParachainStaking::send_rewards(&collator, 100).unwrap(), 0);
 	});
 }
 
@@ -481,13 +468,7 @@ fn send_rewards_when_community_incentives_account_has_no_enough_funds() {
 			ParachainStaking::community_incentives_account().unwrap() ==
 				community_incentives_account
 		);
-
-		match ParachainStaking::send_rewards(&collator, 100).unwrap() {
-			RewardSource::IncentiveAccount(amount_rewarded) => {
-				assert_eq!(amount_rewarded, 0);
-			},
-			_ => panic!("unexpected reward source"),
-		}
+		assert_eq!(ParachainStaking::send_rewards(&collator, 100).unwrap(), 0);
 	});
 }
 

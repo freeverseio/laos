@@ -1770,14 +1770,14 @@ pub mod pallet {
 			// reserve portion of issuance for parachain bond account
 			let bond_config = <ParachainBondInfo<T>>::get();
 			let parachain_bond_reserve = bond_config.percent * total_issuance;
-			if let Ok(RewardSource::Inflation(imb)) =
+			if let Ok(amount_transferred) =
 				Self::send_rewards(&bond_config.account, parachain_bond_reserve)
 			{
 				// update round issuance iff transfer succeeds
-				left_issuance = left_issuance.saturating_sub(imb.peek());
+				left_issuance = left_issuance.saturating_sub(amount_transferred);
 				Self::deposit_event(Event::ReservedForParachainBond {
 					account: bond_config.account,
-					value: imb.peek(),
+					value: amount_transferred,
 				});
 			}
 
@@ -2138,10 +2138,10 @@ pub mod pallet {
 
 		/// Mint a specified reward amount to the beneficiary account. Emits the [Rewarded] event.
 		pub fn mint(amt: BalanceOf<T>, to: T::AccountId) {
-			if let Ok(RewardSource::Inflation(amount_transferred)) = Self::send_rewards(&to, amt) {
+			if let Ok(amount_transferred) = Self::send_rewards(&to, amt) {
 				Self::deposit_event(Event::Rewarded {
 					account: to.clone(),
-					rewards: amount_transferred.peek(),
+					rewards: amount_transferred,
 				});
 			}
 		}
@@ -2152,12 +2152,10 @@ pub mod pallet {
 			collator_id: T::AccountId,
 			amt: BalanceOf<T>,
 		) -> Weight {
-			if let Ok(RewardSource::Inflation(amount_transferred)) =
-				Self::send_rewards(&collator_id, amt)
-			{
+			if let Ok(amount_transferred) = Self::send_rewards(&collator_id, amt) {
 				Self::deposit_event(Event::Rewarded {
 					account: collator_id.clone(),
-					rewards: amount_transferred.peek(),
+					rewards: amount_transferred,
 				});
 			}
 			T::WeightInfo::mint_collator_reward()
@@ -2173,15 +2171,13 @@ pub mod pallet {
 			candidate: T::AccountId,
 			delegator: T::AccountId,
 		) {
-			if let Ok(RewardSource::Inflation(amount_transferred)) =
-				Self::send_rewards(&delegator, amt.clone())
-			{
+			if let Ok(amount_transferred) = Self::send_rewards(&delegator, amt.clone()) {
 				Self::deposit_event(Event::Rewarded {
 					account: delegator.clone(),
-					rewards: amount_transferred.peek(),
+					rewards: amount_transferred,
 				});
 
-				let compound_amount = compound_percent.mul_ceil(amount_transferred.peek());
+				let compound_amount = compound_percent.mul_ceil(amount_transferred);
 				if compound_amount.is_zero() {
 					return;
 				}
@@ -2221,18 +2217,15 @@ pub mod pallet {
 		/// 3. If inflation is not enabled and the community incentives account does not exist, a
 		///    zero balance is returned.
 		///
-		/// Then the possible returns values are:
-		/// - The function returns `RewardSource::Inflation` with the imbalance of the deposit.
-		/// - The function returns `RewardSource::IncentiveAccount` with the transferred amount.
-		/// - The function returns `RewardSource::IncentiveAccount` with a zero balance.
+		/// Then the possible returns the amount of rewards sent to the account.
 		pub fn send_rewards(
 			account: &T::AccountId,
 			amount: BalanceOf<T>,
-		) -> Result<RewardSource<T>, DispatchError> {
+		) -> Result<BalanceOf<T>, DispatchError> {
 			// Check if inflation is enabled and directly attempt to deposit into existing account
 			if InflationEnabled::<T>::get() {
 				return T::Currency::deposit_into_existing(account, amount)
-					.map(RewardSource::Inflation)
+					.map(|imbalance| imbalance.peek())
 					.map_err(Into::into);
 			}
 
@@ -2244,25 +2237,16 @@ pub mod pallet {
 					amount,
 					KeepAlive,
 				)
-				.map(|_| RewardSource::IncentiveAccount(amount))
+				.map(|_| amount)
 				.or_else(|e| match e {
-					DispatchError::Arithmetic(ArithmeticError::Underflow) =>
-						Ok(RewardSource::IncentiveAccount(Default::default())),
+					DispatchError::Arithmetic(ArithmeticError::Underflow) => Ok(Default::default()),
 					_ => Err(e.into()),
 				});
 			}
 
 			// Default return when CommunityIncentivesAccount is not set.
-			Ok(RewardSource::IncentiveAccount(Default::default()))
+			Ok(Default::default())
 		}
-	}
-
-	/// The type of reward source
-	pub enum RewardSource<T: Config> {
-		/// The reward is from inflation, i.e. minting new tokens
-		Inflation(<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::PositiveImbalance),
-		/// The reward is from the community incentives account
-		IncentiveAccount(BalanceOf<T>)
 	}
 
 	/// Add reward points to block authors:
