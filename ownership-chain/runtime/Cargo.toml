@@ -95,6 +95,7 @@ pallet-evm-precompile-bn128 = { workspace = true }
 pallet-evm-precompile-blake2 = { workspace = true }
 
 pallet-parachain-staking = { workspace = true }
+laos-runtime-api-staking = { workspace = true }
 
 [dev-dependencies]
 static_assertions = { workspace = true }

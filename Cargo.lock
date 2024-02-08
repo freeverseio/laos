@@ -5400,6 +5400,7 @@ dependencies = [
  "frame-try-runtime",
  "hex",
  "hex-literal",
+ "laos-runtime-api-staking",
  "log",
  "orml-traits",
  "orml-xcm-support",
@@ -5494,6 +5495,16 @@ dependencies = [
  "quote",
  "sha3",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "laos-runtime-api-staking"
+version = "0.1.0"
+dependencies = [
+ "parity-scale-codec",
+ "scale-info",
+ "sp-api",
+ "sp-runtime",
 ]
 
 [[package]]
@@ -7945,20 +7956,22 @@ dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
+ "laos-runtime-api-staking",
  "log",
+ "pallet-aura",
  "pallet-authorship",
  "pallet-balances",
  "pallet-session",
+ "pallet-timestamp",
  "parity-scale-codec",
  "scale-info",
  "serde",
- "similar-asserts",
+ "sp-consensus-aura",
  "sp-core",
  "sp-io",
  "sp-runtime",
  "sp-staking",
  "sp-std",
- "substrate-fixed",
 ]
 
 [[package]]
@@ -14054,17 +14067,6 @@ version = "3.0.0"
 source = "git+https://github.com/paritytech/polkadot-sdk?branch=release-polkadot-v1.1.0#c8d2251cafadc108ba2f1f8a3208dc547ff38901"
 
 [[package]]
-name = "substrate-fixed"
-version = "0.5.9"
-source = "git+https://github.com/encointer/substrate-fixed#a75f3ba3f7c7893fb420500639cc055f964b1b88"
-dependencies = [
- "parity-scale-codec",
- "scale-info",
- "serde",
- "substrate-typenum",
-]
-
-[[package]]
 name = "substrate-frame-rpc-system"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/polkadot-sdk?branch=release-polkadot-v1.1.0#c8d2251cafadc108ba2f1f8a3208dc547ff38901"
@@ -14123,16 +14125,6 @@ dependencies = [
  "sp-state-machine",
  "sp-trie",
  "trie-db",
-]
-
-[[package]]
-name = "substrate-typenum"
-version = "1.16.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f0f0091e93c2c75b233ae39424c52cb8a662c0811fb68add149e20e5d7e8a788"
-dependencies = [
- "parity-scale-codec",
- "scale-info",
 ]
 
 [[package]]

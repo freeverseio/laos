@@ -263,5 +263,8 @@ laos-precompile-utils = { path = "./ownership-chain/precompile/utils", default-f
 # Primitives
 ownership-parachain-primitives = { path = "./ownership-chain/primitives", default-features = false }
 
+# Other crates
+laos-runtime-api-staking = { path = "./ownership-chain/runtime-api/staking", default-features = false }
+
 # runtime
 laos-ownership-runtime = { path = "./ownership-chain/runtime", default-features = false }
