@@ -3698,7 +3698,7 @@ fn parachain_bond_inflation_reserve_matches_config() {
 		});
 }
 
-#[test] // TODO
+#[test]
 fn paid_collator_commission_matches_config() {
 	ExtBuilder::default()
 		.with_balances(vec![(1, 100), (2, 100), (3, 100), (4, 100), (5, 100), (6, 100)])
@@ -3891,7 +3891,7 @@ fn collator_selection_chooses_top_candidates() {
 		});
 }
 
-#[test] // TODO
+#[test]
 fn payout_distribution_to_solo_collators() {
 	ExtBuilder::default()
 		.with_balances(vec![(1, 1000), (2, 1000), (3, 1000), (4, 1000), (7, 33), (8, 33), (9, 33)])
@@ -4739,7 +4739,7 @@ fn delegation_events_convey_correct_position() {
 		});
 }
 
-#[test] // TODO
+#[test]
 fn no_rewards_paid_until_after_reward_payment_delay() {
 	ExtBuilder::default()
 		.with_balances(vec![(1, 20), (2, 20), (3, 20)])
@@ -6217,7 +6217,7 @@ fn test_rewards_do_not_auto_compound_on_payment_if_delegation_scheduled_revoke_e
 		});
 }
 
-#[test] // TODO
+#[test]
 fn test_rewards_auto_compound_on_payment_as_per_auto_compound_config() {
 	ExtBuilder::default()
 		.with_balances(vec![(1, 100), (2, 200), (3, 200), (4, 200), (5, 200)])

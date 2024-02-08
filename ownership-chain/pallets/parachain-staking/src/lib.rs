@@ -1851,10 +1851,7 @@ pub mod pallet {
 			}
 
 			let collator_fee = payout_info.collator_commission;
-			let collator_issuance = collator_fee * payout_info.round_issuance; // 20%
-																   // println!("collator_issuance: {:?}", collator_issuance);
-																   // println!("collator_fee: {:?}", collator_fee);
-																   // println!("payout_info.round_issuance: {:?}", payout_info.round_issuance);
+			let collator_issuance = collator_fee * payout_info.round_issuance;
 			if let Some((collator, state)) =
 				<AtStake<T>>::iter_prefix(paid_for_round).drain().next()
 			{
@@ -1872,7 +1869,7 @@ pub mod pallet {
 				// 'extra_weight' tracks weight returned from fns that we delegate to which can't be
 				// known ahead of time.
 				let mut extra_weight = Weight::zero();
-				let pct_due = Perbill::from_rational(pts, total_points); // 100 / 100
+				let pct_due = Perbill::from_rational(pts, total_points);
 				let total_paid = pct_due * payout_info.total_staking_reward;
 				let mut amt_due = total_paid;
 
