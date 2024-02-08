@@ -23,8 +23,12 @@ sp-std = { workspace = true }
 substrate-fixed = { workspace = true }
 
 [dev-dependencies]
+pallet-aura = { workspace = true }
+pallet-authorship = { workspace = true }
 pallet-balances = { workspace = true, features = [ "insecure_zero_ed", "std" ] }
+pallet-session = { workspace = true }
 similar-asserts = { workspace = true, version = "0.1.0" }
+sp-consensus-aura = { workspace = true }
 sp-core = { workspace = true, features = [ "std" ] }
 sp-io = { workspace = true, features = [ "std" ] }
 sp-runtime = { workspace = true }
@@ -32,7 +36,7 @@ sp-runtime = { workspace = true }
 [features]
 default = [ "std" ]
 std = [
-	"frame-benchmarking",
+	"frame-benchmarking?/std",
 	"frame-support/std",
 	"frame-system/std",
 	"pallet-authorship/std",

@@ -20,15 +20,16 @@ use crate::{
 	pallet, AwardedPts, Config, Event as ParachainStakingEvent, InflationInfo, Points, Range,
 	COLLATOR_LOCK_ID, DELEGATOR_LOCK_ID,
 };
-use block_author::BlockAuthor as BlockAuthorMap;
 use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{Everything, LockIdentifier, OnFinalize, OnInitialize},
 	weights::{constants::RocksDbWeight, Weight},
 };
 use frame_system::pallet_prelude::BlockNumberFor;
-use sp_core::H256;
+use sp_core::{ConstBool, H256};
 use sp_io;
+use sp_runtime::impl_opaque_keys;
+use sp_runtime::traits::{ConvertInto, OpaqueKeys};
 use sp_runtime::{
 	traits::{BlakeTwo256, IdentityLookup},
 	BuildStorage, Perbill, Percent,
@@ -46,8 +47,10 @@ construct_runtime!(
 	{
 		System: frame_system,
 		Balances: pallet_balances,
+		Aura: pallet_aura,
+		Session: pallet_session,
 		ParachainStaking: pallet_parachain_staking,
-		BlockAuthor: block_author,
+		Authorship: pallet_authorship,
 	}
 );
 
@@ -102,12 +105,42 @@ impl pallet_balances::Config for Test {
 	type MaxFreezes = ();
 }
 
-impl block_author::Config for Test {}
+
+impl pallet_aura::Config for Test {
+	type AuthorityId = sp_consensus_aura::sr25519::AuthorityId; 
+	type DisabledValidators = (); 
+	type MaxAuthorities = MaxCollatorCandidates;
+	type AllowMultipleBlocksPerSlot = ConstBool<false>
+}
+
+impl pallet_authorship::Config for Test {
+	type FindAuthor = pallet_session::FindAccountFromAuthorIndex<Self, Aura>;
+	type EventHandler = ParachainStaking;
+}
+
+impl_opaque_keys! {
+	pub struct MockSessionKeys {
+		pub aura: Aura,
+	}
+}
+
+impl pallet_session::Config for Test { 
+	type RuntimeEvent = RuntimeEvent;
+	type ValidatorId = AccountId;
+	type ValidatorIdOf = ConvertInto;
+	type ShouldEndSession = ParachainStaking;
+	type NextSessionRotation = ParachainStaking;
+	type SessionManager = ParachainStaking;
+	type SessionHandler = <MockSessionKeys as OpaqueKeys>::KeyTypeIdProviders;
+	type Keys = MockSessionKeys; 
+	type WeightInfo = (); 
+}
 
 const GENESIS_BLOCKS_PER_ROUND: BlockNumber = 5;
 const GENESIS_COLLATOR_COMMISSION: Perbill = Perbill::from_percent(20);
 const GENESIS_PARACHAIN_BOND_RESERVE_PERCENT: Percent = Percent::from_percent(30);
-const GENESIS_NUM_SELECTED_CANDIDATES: u32 = 5;
+const GENESIS_NUM_SELECTED_CANDIDATES: u32 = 2;
+ 
 parameter_types! {
 	pub const MinBlocksPerRound: u32 = 3;
 	pub const MaxOfflineRounds: u32 = 1;
@@ -123,8 +156,10 @@ parameter_types! {
 	pub const MaxDelegationsPerDelegator: u32 = 4;
 	pub const MinCandidateStk: u128 = 10;
 	pub const MinDelegation: u128 = 3;
-	pub const MaxCandidates: u32 = 200;
+	pub const MaxCandidates: u32 = 20;
 }
+
+
 impl Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
@@ -510,11 +545,6 @@ pub(crate) fn set_author(round: BlockNumber, acc: u64, pts: u32) {
 	<AwardedPts<Test>>::mutate(round, acc, |p| *p += pts);
 }
 
-// Allows to change the block author (default is always 0)
-pub(crate) fn set_block_author(acc: u64) {
-	<BlockAuthorMap<Test>>::set(acc);
-}
-
 /// fn to query the lock amount
 pub(crate) fn query_lock_amount(account_id: u64, id: LockIdentifier) -> Option<Balance> {
 	for lock in Balances::locks(&account_id) {
@@ -607,28 +637,6 @@ fn geneses() {
 				assert_eq!(ParachainStaking::get_delegator_stakable_free_balance(&x), 90);
 			}
 		});
-}
-
-#[frame_support::pallet]
-mod block_author {
-	use super::*;
-	use frame_support::{pallet_prelude::*, traits::Get};
-
-	#[pallet::config]
-	pub trait Config: frame_system::Config {}
-
-	#[pallet::pallet]
-	pub struct Pallet<T>(_);
-
-	#[pallet::storage]
-	#[pallet::getter(fn block_author)]
-	pub(super) type BlockAuthor<T> = StorageValue<_, AccountId, ValueQuery>;
-
-	impl<T: Config> Get<AccountId> for Pallet<T> {
-		fn get() -> AccountId {
-			<BlockAuthor<T>>::get()
-		}
-	}
 }
 
 #[test]
