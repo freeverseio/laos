@@ -1419,8 +1419,11 @@ pub mod pallet {
 
 		/// Set community incentives account
 		/// Only `sudo` can call this function
-		#[pallet::call_index(34)]
-		#[pallet::weight(Weight::from_parts(3_000_000u64, 4_000u64))] // TODO
+		#[pallet::call_index(33)]
+		#[pallet::weight(
+			Weight::from_parts(3_000_000u64, 4_000u64)
+				.saturating_add(T::DbWeight::get().writes(1u64))
+		)]
 		pub fn set_community_incentives_account(
 			origin: OriginFor<T>,
 			account: T::AccountId,
