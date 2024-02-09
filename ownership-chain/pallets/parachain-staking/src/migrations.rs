@@ -18,8 +18,8 @@
 
 use frame_support::{
 	traits::{
-		fungible::freeze::Mutate as MutateFreeze, Get, GetStorageVersion, LockIdentifier, LockableCurrency,
-		OnRuntimeUpgrade, ReservableCurrency, StorageVersion,
+		fungible::freeze::Mutate as MutateFreeze, Get, GetStorageVersion, LockIdentifier,
+		LockableCurrency, OnRuntimeUpgrade, ReservableCurrency, StorageVersion,
 	},
 	weights::Weight,
 };
@@ -126,14 +126,11 @@ where
 {
 	let freezes = Freezes::<T>::get(&user_id);
 
-	let result = if let Some(IdAmount { amount, .. }) = freezes
-		.iter()
-		.find(|freeze| freeze.id == <T as Config>::FreezeIdentifier::from(FreezeReason::Staking).into())
-	{
-		let total_lock = lock
-			.amount
-			.saturated_into::<u128>()
-			.saturating_add((*amount).saturated_into());
+	let result = if let Some(IdAmount { amount, .. }) = freezes.iter().find(|freeze| {
+		freeze.id == <T as Config>::FreezeIdentifier::from(FreezeReason::Staking).into()
+	}) {
+		let total_lock =
+			lock.amount.saturated_into::<u128>().saturating_add((*amount).saturated_into());
 
 		<CurrencyOf<T> as MutateFreeze<AccountIdOf<T>>>::extend_freeze(
 			&<T as crate::Config>::FreezeIdentifier::from(FreezeReason::Staking),

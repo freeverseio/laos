@@ -84,10 +84,7 @@ fn genesis() {
 			// Collators
 			assert_eq!(
 				StakePallet::total_collator_stake(),
-				TotalStake {
-					collators: 700,
-					delegators: 400
-				}
+				TotalStake { collators: 700, delegators: 400 }
 			);
 			assert_eq!(
 				vec![
@@ -105,22 +102,20 @@ fn genesis() {
 			assert!(StakePallet::is_active_candidate(&1).is_some());
 			assert_eq!(
 				StakePallet::candidate_pool(1),
-				Some(
-					Candidate::<AccountId, Balance, <Test as Config>::MaxDelegatorsPerCollator> {
-						id: 1,
-						stake: 500,
-						delegators: OrderedSet::from_sorted_set(
-							vec![
-								StakeOf::<Test> { owner: 3, amount: 100 },
-								StakeOf::<Test> { owner: 4, amount: 100 }
-							]
-							.try_into()
-							.unwrap()
-						),
-						total: 700,
-						status: CandidateStatus::Active,
-					}
-				)
+				Some(Candidate::<AccountId, Balance, <Test as Config>::MaxDelegatorsPerCollator> {
+					id: 1,
+					stake: 500,
+					delegators: OrderedSet::from_sorted_set(
+						vec![
+							StakeOf::<Test> { owner: 3, amount: 100 },
+							StakeOf::<Test> { owner: 4, amount: 100 }
+						]
+						.try_into()
+						.unwrap()
+					),
+					total: 700,
+					status: CandidateStatus::Active,
+				})
 			);
 			// 2
 			assert_eq!(Balances::usable_balance(2), 100);
@@ -128,30 +123,25 @@ fn genesis() {
 			assert!(StakePallet::is_active_candidate(&2).is_some());
 			assert_eq!(
 				StakePallet::candidate_pool(2),
-				Some(
-					Candidate::<AccountId, Balance, <Test as Config>::MaxDelegatorsPerCollator> {
-						id: 2,
-						stake: 200,
-						delegators: OrderedSet::from_sorted_set(
-							vec![
-								StakeOf::<Test> { owner: 5, amount: 100 },
-								StakeOf::<Test> { owner: 6, amount: 100 }
-							]
-							.try_into()
-							.unwrap()
-						),
-						total: 400,
-						status: CandidateStatus::Active,
-					}
-				)
+				Some(Candidate::<AccountId, Balance, <Test as Config>::MaxDelegatorsPerCollator> {
+					id: 2,
+					stake: 200,
+					delegators: OrderedSet::from_sorted_set(
+						vec![
+							StakeOf::<Test> { owner: 5, amount: 100 },
+							StakeOf::<Test> { owner: 6, amount: 100 }
+						]
+						.try_into()
+						.unwrap()
+					),
+					total: 400,
+					status: CandidateStatus::Active,
+				})
 			);
 			// Delegators
 			assert_eq!(
 				StakePallet::total_collator_stake(),
-				TotalStake {
-					collators: 700,
-					delegators: 400,
-				}
+				TotalStake { collators: 700, delegators: 400 }
 			);
 			for x in 3..7 {
 				assert!(StakePallet::is_delegator(&x));
@@ -201,10 +191,7 @@ fn genesis() {
 			// Collators
 			assert_eq!(
 				StakePallet::total_collator_stake(),
-				TotalStake {
-					collators: 40,
-					delegators: 50
-				}
+				TotalStake { collators: 40, delegators: 50 }
 			);
 			assert_eq!(
 				Ok(StakePallet::top_candidates().into_bounded_vec()),

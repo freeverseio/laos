@@ -256,7 +256,10 @@ impl ExtBuilder {
 	}
 
 	#[must_use]
-	pub(crate) fn with_delegators(mut self, delegators: Vec<(AccountId, AccountId, Balance)>) -> Self {
+	pub(crate) fn with_delegators(
+		mut self,
+		delegators: Vec<(AccountId, AccountId, Balance)>,
+	) -> Self {
 		self.delegators = delegators;
 		self
 	}
@@ -293,11 +296,9 @@ impl ExtBuilder {
 			.build_storage()
 			.expect("Frame system builds valid default genesis config");
 
-		pallet_balances::GenesisConfig::<Test> {
-			balances: self.balances.clone(),
-		}
-		.assimilate_storage(&mut t)
-		.expect("Pallet balances storage can be assimilated");
+		pallet_balances::GenesisConfig::<Test> { balances: self.balances.clone() }
+			.assimilate_storage(&mut t)
+			.expect("Pallet balances storage can be assimilated");
 
 		let mut stakers: Vec<(AccountId, Option<AccountId>, Balance)> = Vec::new();
 		for collator in self.collators.clone() {
@@ -318,15 +319,7 @@ impl ExtBuilder {
 		let session_keys: Vec<_> = self
 			.collators
 			.iter()
-			.map(|(k, _)| {
-				(
-					*k,
-					*k,
-					MockSessionKeys {
-						aura: UintAuthorityId(*k).to_public_key(),
-					},
-				)
-			})
+			.map(|(k, _)| (*k, *k, MockSessionKeys { aura: UintAuthorityId(*k).to_public_key() }))
 			.collect();
 
 		// NOTE: this will initialize the aura authorities
@@ -351,7 +344,8 @@ impl ExtBuilder {
 	pub fn build_and_execute_with_sanity_tests(self, test: impl FnOnce()) {
 		self.build().execute_with(|| {
 			test();
-			crate::try_state::do_try_state::<Test>().expect("Sanity test for parachain staking failed.");
+			crate::try_state::do_try_state::<Test>()
+				.expect("Sanity test for parachain staking failed.");
 		})
 	}
 }
@@ -401,7 +395,8 @@ pub(crate) fn roll_to_claim_rewards(n: BlockNumber, authors: Vec<Option<AccountI
 			assert_ok!(StakePallet::claim_rewards(RuntimeOrigin::signed(*author)));
 
 			// claim rewards for delegators
-			let col_state = StakePallet::candidate_pool(author).expect("Block author must be candidate");
+			let col_state =
+				StakePallet::candidate_pool(author).expect("Block author must be candidate");
 			for delegation in col_state.delegators {
 				// delegator has to increment rewards before claiming
 				StakePallet::increment_delegator_rewards(RuntimeOrigin::signed(delegation.owner));
@@ -424,12 +419,6 @@ pub(crate) fn events() -> Vec<pallet::Event<Test>> {
 	System::events()
 		.into_iter()
 		.map(|r| r.event)
-		.filter_map(|e| {
-			if let RuntimeEvent::StakePallet(inner) = e {
-				Some(inner)
-			} else {
-				None
-			}
-		})
+		.filter_map(|e| if let RuntimeEvent::StakePallet(inner) = e { Some(inner) } else { None })
 		.collect::<Vec<_>>()
 }

@@ -24,8 +24,8 @@ use sp_runtime::{traits::Zero, Perbill, Perquintill};
 
 use crate::{
 	mock::{
-		almost_equal, roll_to, roll_to_claim_rewards, AccountId, Balance, Balances, BlockNumber, ExtBuilder,
-		RuntimeOrigin, StakePallet, System, Test, DECIMALS, TREASURY_ACC,
+		almost_equal, roll_to, roll_to_claim_rewards, AccountId, Balance, Balances, BlockNumber,
+		ExtBuilder, RuntimeOrigin, StakePallet, System, Test, DECIMALS, TREASURY_ACC,
 	},
 	types::{BalanceOf, StakeOf},
 	Config, Error, InflationInfo,
@@ -55,15 +55,17 @@ fn coinbase_rewards_few_blocks_detailed_check() {
 
 			// compute rewards
 			let c_staking_rate = Perquintill::from_rational(16_000_000 * DECIMALS, total_issuance);
-			let c_rewards: BalanceOf<Test> =
-				inflation
-					.collator
-					.compute_reward::<Test>(16_000_000 * DECIMALS, c_staking_rate, 1u128);
+			let c_rewards: BalanceOf<Test> = inflation.collator.compute_reward::<Test>(
+				16_000_000 * DECIMALS,
+				c_staking_rate,
+				1u128,
+			);
 			let d_staking_rate = Perquintill::from_rational(64_000_000 * DECIMALS, total_issuance);
-			let d_rewards: BalanceOf<Test> =
-				inflation
-					.delegator
-					.compute_reward::<Test>(64_000_000 * DECIMALS, d_staking_rate, 2u128);
+			let d_rewards: BalanceOf<Test> = inflation.delegator.compute_reward::<Test>(
+				64_000_000 * DECIMALS,
+				d_staking_rate,
+				2u128,
+			);
 
 			// set 1 to be author for blocks 1-3, then 2 for blocks 4-5
 			let authors: Vec<Option<AccountId>> =
@@ -191,7 +193,8 @@ fn coinbase_rewards_many_blocks_simple_check() {
 			assert_eq!(total_issuance, 160_000_000 * DECIMALS);
 			let end_block: BlockNumber = num_of_years * Test::BLOCKS_PER_YEAR as BlockNumber;
 			// set round robin authoring
-			let authors: Vec<Option<AccountId>> = (0u64..=end_block).map(|i| Some(i % 2 + 1)).collect();
+			let authors: Vec<Option<AccountId>> =
+				(0u64..=end_block).map(|i| Some(i % 2 + 1)).collect();
 			roll_to_claim_rewards(end_block, authors);
 
 			let rewards_1 = Balances::balance(&1).saturating_sub(40_000_000 * DECIMALS);
@@ -281,18 +284,18 @@ fn should_not_reward_delegators_below_min_stake() {
 		.build()
 		.execute_with(|| {
 			// impossible but lets assume it happened
-			let mut state = StakePallet::candidate_pool(1).expect("CollatorState cannot be missing");
+			let mut state =
+				StakePallet::candidate_pool(1).expect("CollatorState cannot be missing");
 			let delegator_stake_below_min = <Test as Config>::MinDelegatorStake::get() - 1;
 			state.stake += delegator_stake_below_min;
 			state.total += delegator_stake_below_min;
-			let impossible_bond = StakeOf::<Test> {
-				owner: 4u64,
-				amount: delegator_stake_below_min,
-			};
+			let impossible_bond =
+				StakeOf::<Test> { owner: 4u64, amount: delegator_stake_below_min };
 			assert_eq!(state.delegators.try_insert(impossible_bond), Ok(true));
 			<crate::CandidatePool<Test>>::insert(1u64, state);
 
-			let authors: Vec<Option<AccountId>> = vec![Some(1u64), Some(1u64), Some(1u64), Some(1u64)];
+			let authors: Vec<Option<AccountId>> =
+				vec![Some(1u64), Some(1u64), Some(1u64), Some(1u64)];
 			assert_eq!(Balances::usable_balance(1), Balance::zero());
 			assert_eq!(Balances::usable_balance(2), Balance::zero());
 			assert_eq!(Balances::usable_balance(3), Balance::zero());
@@ -318,7 +321,8 @@ fn adjust_reward_rates() {
 			let inflation_0 = StakePallet::inflation_config();
 			let num_of_years = 3 * <Test as Config>::BLOCKS_PER_YEAR;
 			// 1 authors every block
-			let authors: Vec<Option<AccountId>> = (0u64..=num_of_years).map(|_| Some(1u64)).collect();
+			let authors: Vec<Option<AccountId>> =
+				(0u64..=num_of_years).map(|_| Some(1u64)).collect();
 
 			// reward once in first year
 			roll_to_claim_rewards(2, authors.clone());
@@ -350,12 +354,7 @@ fn adjust_reward_rates() {
 			let d_rewards_1 = Balances::balance(&2)
 				.saturating_sub(90_000_000 * DECIMALS)
 				.saturating_sub(d_rewards_0);
-			assert!(
-				c_rewards_0 > c_rewards_1,
-				"left {:?}, right {:?}",
-				c_rewards_0,
-				c_rewards_1
-			);
+			assert!(c_rewards_0 > c_rewards_1, "left {:?}, right {:?}", c_rewards_0, c_rewards_1);
 			assert!(d_rewards_0 > d_rewards_1);
 
 			// finish 2nd year
@@ -425,16 +424,18 @@ fn adjust_reward_rates() {
 #[test]
 fn network_reward_multiple_blocks() {
 	let max_stake: Balance = 160_000_000 * DECIMALS;
-	let collators: Vec<(AccountId, Balance)> = (1u64..=<Test as Config>::MinCollators::get().saturating_add(1).into())
-		.map(|acc_id| (acc_id, max_stake))
-		.collect();
+	let collators: Vec<(AccountId, Balance)> =
+		(1u64..=<Test as Config>::MinCollators::get().saturating_add(1).into())
+			.map(|acc_id| (acc_id, max_stake))
+			.collect();
 
 	ExtBuilder::default()
 		.with_balances(collators.clone())
 		.with_collators(collators)
 		.build_and_execute_with_sanity_tests(|| {
 			assert_eq!(max_stake, StakePallet::max_candidate_stake());
-			let total_collator_stake = max_stake.saturating_mul(<Test as Config>::MinCollators::get().into());
+			let total_collator_stake =
+				max_stake.saturating_mul(<Test as Config>::MinCollators::get().into());
 			assert_eq!(total_collator_stake, StakePallet::total_collator_stake().collators);
 			assert!(Balances::balance(&TREASURY_ACC).is_zero());
 			let total_issuance = <Test as Config>::Currency::total_issuance();
@@ -463,7 +464,8 @@ fn network_reward_multiple_blocks() {
 				<Test as Config>::Currency::total_issuance()
 			);
 			let inflation_config = StakePallet::inflation_config();
-			let col_rewards = inflation_config.collator.reward_rate.per_block * total_collator_stake;
+			let col_rewards =
+				inflation_config.collator.reward_rate.per_block * total_collator_stake;
 			assert_eq!(network_reward, <Test as Config>::NetworkRewardRate::get() * col_rewards);
 
 			// should mint exactly the same amount
@@ -497,7 +499,8 @@ fn network_reward_multiple_blocks() {
 #[test]
 fn network_reward_increase_max_candidate_stake() {
 	let max_stake: Balance = 160_000_000 * DECIMALS;
-	let collators: Vec<(AccountId, Balance)> = (1u64..=<Test as Config>::MinCollators::get().into())
+	let collators: Vec<(AccountId, Balance)> = (1u64..=<Test as Config>::MinCollators::get()
+		.into())
 		.map(|acc_id| (acc_id, max_stake))
 		.collect();
 
@@ -537,7 +540,8 @@ fn network_reward_increase_max_candidate_stake() {
 #[test]
 fn network_reward_increase_max_collator_count() {
 	let max_stake: Balance = 160_000_000 * DECIMALS;
-	let collators: Vec<(AccountId, Balance)> = (1u64..=<Test as Config>::MinCollators::get().into())
+	let collators: Vec<(AccountId, Balance)> = (1u64..=<Test as Config>::MinCollators::get()
+		.into())
 		.map(|acc_id| (acc_id, max_stake))
 		.collect();
 
@@ -596,11 +600,7 @@ fn rewards_candidate_stake_less() {
 			assert!(!StakePallet::blocks_rewarded(1).is_zero());
 			// delegator reward storage should be untouched
 			(2..=3).for_each(|id| {
-				assert!(
-					StakePallet::rewards(id).is_zero(),
-					"Rewards not zero for acc_id {:?}",
-					id
-				);
+				assert!(StakePallet::rewards(id).is_zero(), "Rewards not zero for acc_id {:?}", id);
 				assert!(
 					StakePallet::blocks_rewarded(id).is_zero(),
 					"BlocksRewaeded not zero for acc_id {:?}",

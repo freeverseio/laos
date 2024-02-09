@@ -20,7 +20,9 @@
 
 use std::convert::TryInto;
 
-use frame_support::{assert_noop, assert_ok, storage::bounded_btree_map::BoundedBTreeMap, traits::fungible::Inspect};
+use frame_support::{
+	assert_noop, assert_ok, storage::bounded_btree_map::BoundedBTreeMap, traits::fungible::Inspect,
+};
 
 use pallet_balances::Error as BalancesError;
 
@@ -28,8 +30,8 @@ use sp_runtime::{traits::Zero, SaturatedConversion};
 
 use crate::{
 	mock::{
-		events, last_event, roll_to, Balances, BlockNumber, ExtBuilder, RuntimeOrigin, StakePallet, System, Test,
-		DECIMALS,
+		events, last_event, roll_to, Balances, BlockNumber, ExtBuilder, RuntimeOrigin, StakePallet,
+		System, Test, DECIMALS,
 	},
 	set::OrderedSet,
 	types::{BalanceOf, DelegationCounter, Stake, StakeOf},
@@ -184,13 +186,23 @@ fn multiple_delegations() {
 
 			roll_to(35, vec![Some(1), Some(2), Some(3), Some(4)]);
 			assert_ok!(StakePallet::execute_leave_candidates(RuntimeOrigin::signed(2), 2));
-			let mut unbonding_8: BoundedBTreeMap<BlockNumber, BalanceOf<Test>, <Test as Config>::MaxUnstakeRequests> =
-				BoundedBTreeMap::new();
-			assert_ok!(unbonding_8.try_insert(35u64 + <Test as Config>::StakeDuration::get() as u64, 10));
+			let mut unbonding_8: BoundedBTreeMap<
+				BlockNumber,
+				BalanceOf<Test>,
+				<Test as Config>::MaxUnstakeRequests,
+			> = BoundedBTreeMap::new();
+			assert_ok!(
+				unbonding_8.try_insert(35u64 + <Test as Config>::StakeDuration::get() as u64, 10)
+			);
 			assert_eq!(StakePallet::unstaking(8), unbonding_8);
-			let mut unbonding_17: BoundedBTreeMap<BlockNumber, BalanceOf<Test>, <Test as Config>::MaxUnstakeRequests> =
-				BoundedBTreeMap::new();
-			assert_ok!(unbonding_17.try_insert(35u64 + <Test as Config>::StakeDuration::get() as u64, 11));
+			let mut unbonding_17: BoundedBTreeMap<
+				BlockNumber,
+				BalanceOf<Test>,
+				<Test as Config>::MaxUnstakeRequests,
+			> = BoundedBTreeMap::new();
+			assert_ok!(
+				unbonding_17.try_insert(35u64 + <Test as Config>::StakeDuration::get() as u64, 11)
+			);
 			assert_eq!(StakePallet::unstaking(17), unbonding_17);
 
 			roll_to(37, vec![Some(1), Some(2)]);
@@ -312,21 +324,12 @@ fn should_deny_low_delegator_stake() {
 #[test]
 fn kick_delegator_with_full_unstaking() {
 	ExtBuilder::default()
-		.with_balances(vec![
-			(1, 200),
-			(2, 200),
-			(3, 200),
-			(4, 200),
-			(5, 420),
-			(6, 200),
-			(7, 100),
-		])
+		.with_balances(vec![(1, 200), (2, 200), (3, 200), (4, 200), (5, 420), (6, 200), (7, 100)])
 		.with_collators(vec![(1, 200), (7, 10)])
 		.with_delegators(vec![(2, 1, 200), (3, 1, 200), (4, 1, 200), (5, 1, 200)])
 		.build_and_execute_with_sanity_tests(|| {
-			let max_unstake_reqs: usize = <Test as Config>::MaxUnstakeRequests::get()
-				.saturating_sub(1)
-				.saturated_into();
+			let max_unstake_reqs: usize =
+				<Test as Config>::MaxUnstakeRequests::get().saturating_sub(1).saturated_into();
 			// Fill unstake requests
 			for block in 1u64..1u64.saturating_add(max_unstake_reqs as u64) {
 				System::set_block_number(block);
@@ -375,16 +378,10 @@ fn exceed_delegations_per_round() {
 
 			// roll to next round to clear DelegationCounter
 			roll_to(5, vec![]);
-			assert_eq!(
-				StakePallet::last_delegation(2),
-				DelegationCounter { round: 0, counter: 2 }
-			);
+			assert_eq!(StakePallet::last_delegation(2), DelegationCounter { round: 0, counter: 2 });
 			assert_ok!(StakePallet::join_delegators(RuntimeOrigin::signed(2), 1, 100));
 			// counter should be reset because the round changed
-			assert_eq!(
-				StakePallet::last_delegation(2),
-				DelegationCounter { round: 1, counter: 1 }
-			);
+			assert_eq!(StakePallet::last_delegation(2), DelegationCounter { round: 1, counter: 1 });
 			// leave and re-join to set counter to 2 (= MaxDelegationsPerRound))
 			assert_ok!(StakePallet::leave_delegators(RuntimeOrigin::signed(2)));
 			assert_ok!(StakePallet::join_delegators(RuntimeOrigin::signed(2), 1, 100));
@@ -397,10 +394,7 @@ fn exceed_delegations_per_round() {
 				StakePallet::join_delegators(RuntimeOrigin::signed(2), 1, 100),
 				Error::<Test>::DelegationsPerRoundExceeded
 			);
-			assert_eq!(
-				StakePallet::last_delegation(2),
-				DelegationCounter { round: 1, counter: 2 }
-			);
+			assert_eq!(StakePallet::last_delegation(2), DelegationCounter { round: 1, counter: 2 });
 		});
 }
 
@@ -500,15 +494,7 @@ fn prioritize_delegators() {
 #[test]
 fn replace_lowest_delegator() {
 	ExtBuilder::default()
-		.with_balances(vec![
-			(1, 100),
-			(2, 100),
-			(3, 100),
-			(4, 100),
-			(5, 100),
-			(6, 100),
-			(7, 100),
-		])
+		.with_balances(vec![(1, 100), (2, 100), (3, 100), (4, 100), (5, 100), (6, 100), (7, 100)])
 		.with_collators(vec![(1, 100), (7, 10)])
 		.with_delegators(vec![(2, 1, 51), (3, 1, 51), (4, 1, 51), (5, 1, 50)])
 		.build_and_execute_with_sanity_tests(|| {

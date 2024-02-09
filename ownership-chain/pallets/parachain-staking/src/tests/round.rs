@@ -23,8 +23,8 @@ use sp_runtime::Perquintill;
 
 use crate::{
 	mock::{
-		events, last_event, roll_to, roll_to_claim_rewards, AccountId, Balances, ExtBuilder, RuntimeOrigin, Session,
-		StakePallet, Test, DECIMALS,
+		events, last_event, roll_to, roll_to_claim_rewards, AccountId, Balances, ExtBuilder,
+		RuntimeOrigin, Session, StakePallet, Test, DECIMALS,
 	},
 	types::RoundInfo,
 	Config, Error, Event, Event as StakeEvent, InflationInfo,
@@ -47,15 +47,7 @@ fn round_transitions() {
 	// round_immediately_jumps_if_current_duration_exceeds_new_blocks_per_round
 	// change from 5 bpr to 3 in block 5 -> 8 should be new round
 	ExtBuilder::default()
-		.with_balances(vec![
-			(1, 100),
-			(2, 100),
-			(3, 100),
-			(4, 100),
-			(5, 100),
-			(6, 100),
-			(7, 100),
-		])
+		.with_balances(vec![(1, 100), (2, 100), (3, 100), (4, 100), (5, 100), (6, 100), (7, 100)])
 		.with_collators(vec![(1, 20), (7, 10)])
 		.with_delegators(vec![(2, 1, 10), (3, 1, 10)])
 		.with_inflation(col_max, col_rewards, d_max, d_rewards, 5)
@@ -84,15 +76,7 @@ fn round_transitions() {
 	// passes
 	// change from 5 bpr to 3 in block 6 -> 8 should be new round
 	ExtBuilder::default()
-		.with_balances(vec![
-			(1, 100),
-			(2, 100),
-			(3, 100),
-			(4, 100),
-			(5, 100),
-			(6, 100),
-			(7, 100),
-		])
+		.with_balances(vec![(1, 100), (2, 100), (3, 100), (4, 100), (5, 100), (6, 100), (7, 100)])
 		.with_collators(vec![(1, 20), (7, 10)])
 		.with_delegators(vec![(2, 1, 10), (3, 1, 10)])
 		.with_inflation(col_max, col_rewards, d_max, d_rewards, 5)
@@ -121,15 +105,7 @@ fn round_transitions() {
 	// round_immediately_jumps_if_current_duration_exceeds_new_blocks_per_round
 	// change from 5 bpr (blocks_per_round) to 3 in block 7 -> 8 should be new round
 	ExtBuilder::default()
-		.with_balances(vec![
-			(1, 100),
-			(2, 100),
-			(3, 100),
-			(4, 100),
-			(5, 100),
-			(6, 100),
-			(7, 100),
-		])
+		.with_balances(vec![(1, 100), (2, 100), (3, 100), (4, 100), (5, 100), (6, 100), (7, 100)])
 		.with_collators(vec![(1, 20), (7, 10)])
 		.with_delegators(vec![(2, 1, 10), (3, 1, 10)])
 		.with_inflation(col_max, col_rewards, d_max, d_rewards, 5)
@@ -185,9 +161,8 @@ fn authorities_per_round() {
 		.build_and_execute_with_sanity_tests(|| {
 			assert_eq!(StakePallet::selected_candidates().into_inner(), vec![1, 2]);
 			// reward 1 once per round
-			let authors: Vec<Option<AccountId>> = (0u64..=100)
-				.map(|i| if i % 5 == 2 { Some(1u64) } else { None })
-				.collect();
+			let authors: Vec<Option<AccountId>> =
+				(0u64..=100).map(|i| if i % 5 == 2 { Some(1u64) } else { None }).collect();
 			let inflation = StakePallet::inflation_config();
 
 			// roll to last block of round 0
@@ -224,11 +199,7 @@ fn force_new_round() {
 		.with_balances(vec![(1, 100), (2, 100), (3, 100), (4, 100), (5, 100), (6, 100)])
 		.with_collators(vec![(1, 100), (2, 100), (3, 100), (4, 100)])
 		.build_and_execute_with_sanity_tests(|| {
-			let mut round = RoundInfo {
-				current: 0,
-				first: 0,
-				length: 5,
-			};
+			let mut round = RoundInfo { current: 0, first: 0, length: 5 };
 			assert_eq!(StakePallet::round(), round);
 			assert_eq!(Session::validators(), vec![1, 2]);
 			assert_eq!(Session::current_index(), 0);
@@ -243,11 +214,7 @@ fn force_new_round() {
 
 			// force new round should become active by starting next block
 			roll_to(2, vec![]);
-			round = RoundInfo {
-				current: 1,
-				first: 2,
-				length: 5,
-			};
+			round = RoundInfo { current: 1, first: 2, length: 5 };
 			assert_eq!(Session::current_index(), 1);
 			assert_eq!(Session::validators(), vec![1, 2]);
 			assert!(!StakePallet::new_round_forced());
@@ -263,11 +230,7 @@ fn force_new_round() {
 
 			// end session 2 naturally
 			roll_to(7, vec![]);
-			round = RoundInfo {
-				current: 2,
-				first: 7,
-				length: 5,
-			};
+			round = RoundInfo { current: 2, first: 7, length: 5 };
 			assert_eq!(StakePallet::round(), round);
 			assert_eq!(Session::current_index(), 2);
 			assert!(!StakePallet::new_round_forced());
@@ -283,11 +246,7 @@ fn force_new_round() {
 
 			// force new round should become active by starting next block
 			roll_to(8, vec![]);
-			round = RoundInfo {
-				current: 3,
-				first: 8,
-				length: 5,
-			};
+			round = RoundInfo { current: 3, first: 8, length: 5 };
 			assert_eq!(Session::current_index(), 3);
 			assert_eq!(StakePallet::round(), round);
 			assert_eq!(Session::validators(), vec![3, 4]);
