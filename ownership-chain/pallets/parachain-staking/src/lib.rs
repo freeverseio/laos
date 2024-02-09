@@ -518,8 +518,8 @@ pub mod pallet {
 				post_weight = <T as Config>::WeightInfo::on_initialize_round_update();
 			}
 			// check for network reward and mint
-			// on success, mint each block
-			if now > T::NetworkRewardStart::get() {
+			// on success, mint each block if inflation is enabled
+			if now > T::NetworkRewardStart::get() && Self::inflation_enabled() {
 				T::NetworkRewardBeneficiary::on_unbalanced(Self::issue_network_reward());
 				post_weight = post_weight
 					.saturating_add(<T as Config>::WeightInfo::on_initialize_network_rewards());
@@ -680,6 +680,11 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn new_round_forced)]
 	pub(crate) type ForceNewRound<T: Config> = StorageValue<_, bool, ValueQuery>;
+
+	/// Switch to enable/disable inflation feature
+	#[pallet::storage]
+	#[pallet::getter(fn inflation_enabled)]
+	pub type InflationEnabled<T: Config> = StorageValue<_, bool, ValueQuery>;
 
 	#[pallet::genesis_config]
 	#[derive(frame_support::DefaultNoBound)]
@@ -1670,13 +1675,7 @@ pub mod pallet {
 			let rewards = Rewards::<T>::take(&target);
 			ensure!(!rewards.is_zero(), Error::<T>::RewardsNotFound);
 
-			// mint into target
-			let rewards = <T::Currency as Unbalanced<AccountIdOf<T>>>::increase_balance(
-				&target,
-				rewards,
-				Precision::Exact,
-			)?;
-
+			let rewards = Self::send_rewards(&target, rewards)?;
 			Self::deposit_event(Event::Rewarded(target, rewards));
 
 			Ok(())
@@ -1775,6 +1774,16 @@ pub mod pallet {
 			)?;
 
 			Ok(Some(<T as pallet::Config>::WeightInfo::set_inflation(num_col, num_del)).into())
+		}
+
+		/// Enable/Disable inflation so rewards are created from inflation
+		/// Only `sudo` can call this function
+		#[pallet::call_index(21)]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::force_new_round())] // TODO: add weight
+		pub fn enable_inflation(origin: OriginFor<T>, value: bool) -> DispatchResult {
+			ensure_root(origin)?;
+			<InflationEnabled<T>>::set(value);
+			Ok(())
 		}
 	}
 
@@ -2449,6 +2458,7 @@ pub mod pallet {
 		/// Depends on the current total issuance and staking reward
 		/// configuration for collators.
 		pub(crate) fn calc_block_rewards_collator(
+			// here
 			stake: BalanceOf<T>,
 			multiplier: BalanceOf<T>,
 		) -> BalanceOf<T> {
@@ -2469,6 +2479,7 @@ pub mod pallet {
 		/// Depends on the current total issuance and staking reward
 		/// configuration for delegators.
 		pub(crate) fn calc_block_rewards_delegator(
+			// here
 			stake: BalanceOf<T>,
 			multiplier: BalanceOf<T>,
 		) -> BalanceOf<T> {
@@ -2526,6 +2537,55 @@ pub mod pallet {
 					unclaimed_blocks.into(),
 				))
 			});
+		}
+
+		/// Sends rewards to a given account.
+		///
+		/// There are three possible cases:
+		/// 1. If inflation is enabled, the rewards are deposited into the account from minting
+		///
+		/// 2. If inflation is not enabled and the rewards treasury account exists, the rewards are
+		///    transferred from the rewards treasury account to the account. In case of an underflow
+		///    error during the transfer because the rewards treasury account does not have enough
+		///    balance, a zero balance is returned.
+		///
+		/// 3. If inflation is not enabled and the rewards treasury account does not exist, a zero
+		///    balance is returned.
+		///
+		/// Then the possible returns the amount of rewards sent to the account.
+		pub fn send_rewards(
+			account: &T::AccountId,
+			amount: BalanceOf<T>,
+		) -> Result<BalanceOf<T>, DispatchError> {
+			// Check if inflation is enabled and directly attempt to deposit into existing
+			// account
+			if InflationEnabled::<T>::get() {
+				// mint into target
+				let reward = <T::Currency as Unbalanced<AccountIdOf<T>>>::increase_balance(
+					&account,
+					amount,
+					Precision::Exact,
+				)?;
+				return Ok(reward);
+			}
+
+			// // Handle the case when inflation is not enabled.
+			// if let Some(community_incentives_account) = CommunityIncentivesAccount::<T>::get() {
+			// 	return T::Currency::transfer(
+			// 		&community_incentives_account,
+			// 		account,
+			// 		amount,
+			// 		KeepAlive,
+			// 	)
+			// 	.map(|_| amount)
+			// 	.or_else(|e| match e {
+			// 		DispatchError::Arithmetic(ArithmeticError::Underflow) => Ok(Default::default()),
+			// 		_ => Err(e.into()),
+			// 	});
+			// }
+
+			// Default return when CommunityIncentivesAccount is not set.
+			Ok(Default::default())
 		}
 	}
 

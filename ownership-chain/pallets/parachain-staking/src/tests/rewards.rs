@@ -18,18 +18,21 @@
 
 //! Unit testing
 
-use frame_support::{assert_noop, assert_ok, traits::fungible::Inspect};
-use pallet_authorship::EventHandler;
-use sp_runtime::{traits::Zero, Perbill, Perquintill};
-
 use crate::{
 	mock::{
-		almost_equal, roll_to, roll_to_claim_rewards, AccountId, Balance, Balances, BlockNumber,
-		ExtBuilder, RuntimeOrigin, StakePallet, System, Test, DECIMALS, TREASURY_ACC,
+		almost_equal, roll_to, roll_to_claim_rewards, AccountId, AllPalletsWithSystem, Balance,
+		Balances, BlockNumber, ExtBuilder, RuntimeOrigin, StakePallet, System, Test, DECIMALS,
+		TREASURY_ACC,
 	},
 	types::{BalanceOf, StakeOf},
 	Config, Error, InflationInfo,
 };
+use frame_support::{
+	assert_noop, assert_ok,
+	traits::{fungible::Inspect, OnFinalize, OnInitialize},
+};
+use pallet_authorship::EventHandler;
+use sp_runtime::{traits::Zero, Perbill, Perquintill};
 
 #[test]
 fn coinbase_rewards_few_blocks_detailed_check() {
@@ -992,5 +995,67 @@ fn api_get_unclaimed_staking_rewards() {
 			assert_ok!(StakePallet::claim_rewards(RuntimeOrigin::signed(3)));
 			assert_eq!(rewards_3 + 98 * stake, Balances::usable_balance(3));
 			assert!(StakePallet::get_unclaimed_staking_rewards(&3).is_zero());
+		});
+}
+
+#[test]
+fn total_issuance_does_not_increase_with_disabled_inflation() {
+	let stake = 100_000 * DECIMALS;
+	ExtBuilder::default()
+		.with_balances(vec![(1, stake)])
+		.with_collators(vec![(1, stake)])
+		.with_inflation_enabled(false)
+		.build()
+		.execute_with(|| {
+			assert!(StakePallet::inflation_enabled() == false);
+			let network_reward_start = <Test as Config>::NetworkRewardStart::get();
+			let previous_total_issuance = <Test as Config>::Currency::total_issuance();
+			System::set_block_number(network_reward_start);
+
+			// shouldn't mint
+			roll_to(network_reward_start + 1, vec![None]);
+			assert!(previous_total_issuance == <Test as Config>::Currency::total_issuance());
+		})
+}
+
+#[test]
+fn total_issuance_increases_with_enabled_inflation() {
+	let stake = 100_000 * DECIMALS;
+	ExtBuilder::default()
+		.with_balances(vec![(1, stake)])
+		.with_collators(vec![(1, stake)])
+		.build()
+		.execute_with(|| {
+			assert!(StakePallet::inflation_enabled());
+			let network_reward_start = <Test as Config>::NetworkRewardStart::get();
+			let previous_total_issuance = <Test as Config>::Currency::total_issuance();
+			System::set_block_number(network_reward_start);
+
+			// should mint
+			roll_to(network_reward_start + 1, vec![None]);
+			assert!(<Test as Config>::Currency::total_issuance() > previous_total_issuance);
+		})
+}
+
+#[test]
+fn send_rewards_with_inflation_enabled_works() {
+	let stake = 100_000 * DECIMALS;
+	let collator = 2;
+	ExtBuilder::default()
+		.with_balances(vec![(collator, stake)])
+		.with_collators(vec![(collator, stake)])
+		.build()
+		.execute_with(|| {
+			assert!(StakePallet::inflation_enabled());
+			let reward_amount = 1000000;
+			let previous_total_issuance = <Test as Config>::Currency::total_issuance();
+			assert_eq!(Balances::total_balance(&collator), stake);
+			assert_eq!(StakePallet::send_rewards(&collator, reward_amount).unwrap(), reward_amount);
+			assert_eq!(Balances::total_balance(&collator), reward_amount + stake);
+			assert_eq!(
+				<Test as Config>::Currency::total_issuance(),
+				previous_total_issuance + reward_amount
+			); // TODO why it didn't increase?
+			 // TODO check CI account ?
 		});
 }

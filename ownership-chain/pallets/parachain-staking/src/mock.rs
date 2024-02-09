@@ -222,6 +222,8 @@ pub(crate) struct ExtBuilder {
 	inflation_config: InflationInfo,
 	// blocks per round
 	blocks_per_round: BlockNumber,
+	// is inflation activated
+	inflation_enabled: bool,
 }
 
 impl Default for ExtBuilder {
@@ -238,6 +240,8 @@ impl Default for ExtBuilder {
 				Perquintill::from_percent(40),
 				Perquintill::from_percent(10),
 			),
+			// inflation is activated by default so we keep retrocompatibility with existing tests
+			inflation_enabled: true,
 		}
 	}
 }
@@ -291,6 +295,11 @@ impl ExtBuilder {
 		self
 	}
 
+	pub(crate) fn with_inflation_enabled(mut self, enabled: bool) -> Self {
+		self.inflation_enabled = enabled;
+		self
+	}
+
 	pub(crate) fn build(self) -> sp_io::TestExternalities {
 		let mut t = frame_system::GenesisConfig::<Test>::default()
 			.build_storage()
@@ -338,6 +347,9 @@ impl ExtBuilder {
 		}
 
 		ext.execute_with(|| System::set_block_number(1));
+		ext.execute_with(|| {
+			stake::InflationEnabled::<Test>::set(self.inflation_enabled);
+		});
 		ext
 	}
 
