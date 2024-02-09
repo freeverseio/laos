@@ -66,7 +66,7 @@ pub use sp_runtime::BuildStorage;
 pub use parachains_common::impls::DealWithFees;
 
 // Polkadot imports
-use polkadot_runtime_common::{prod_or_fast, BlockHashCount, SlowAdjustingFeeUpdate};
+use polkadot_runtime_common::{BlockHashCount, SlowAdjustingFeeUpdate};
 
 use weights::{ExtrinsicBaseWeight, RocksDbWeight};
 
@@ -700,29 +700,43 @@ impl pallet_vesting::Config for Runtime {
 	const MAX_VESTING_SCHEDULES: u32 = 28;
 }
 
+/// Minimum round length is 1 hour (300 * 12 second block times)
+#[cfg(feature = "fast-gov")]
+pub const MIN_BLOCKS_PER_ROUND: BlockNumber = 10;
+#[cfg(not(feature = "fast-gov"))]
+pub const MIN_BLOCKS_PER_ROUND: BlockNumber = HOURS;
+
+#[cfg(feature = "fast-gov")]
+pub const DEFAULT_BLOCKS_PER_ROUND: BlockNumber = 20;
+#[cfg(not(feature = "fast-gov"))]
+pub const DEFAULT_BLOCKS_PER_ROUND: BlockNumber = 2 * HOURS;
+
+#[cfg(feature = "fast-gov")]
+pub const STAKE_DURATION: BlockNumber = 30;
+#[cfg(not(feature = "fast-gov"))]
+pub const STAKE_DURATION: BlockNumber = 7 * DAYS;
+
+#[cfg(feature = "fast-gov")]
+pub const MIN_COLLATORS: u32 = 4;
+#[cfg(not(feature = "fast-gov"))]
+pub const MIN_COLLATORS: u32 = 16;
+
+#[cfg(feature = "fast-gov")]
+pub const MAX_CANDIDATES: u32 = 16;
+#[cfg(not(feature = "fast-gov"))]
+pub const MAX_CANDIDATES: u32 = 75;
+
 parameter_types! {
 	/// Minimum round length is 1 hour
-	#[cfg(not(feature = "fast-gov"))]
-	pub const MinBlocksPerRound: BlockNumber = HOURS;
-	#[cfg(feature = "fast-gov")]
-	pub const MinBlocksPerRound: BlockNumber = 10;
+	pub const MinBlocksPerRound: BlockNumber = MIN_BLOCKS_PER_ROUND;
 	/// Default length of a round/session is 2 hours
-	#[cfg(not(feature = "fast-gov"))]
-	pub const DefaultBlocksPerRound: BlockNumber = 2 * HOURS;
-	#[cfg(feature = "fast-gov")]
-	pub const DefaultBlocksPerRound: BlockNumber = 20;
+	pub const DefaultBlocksPerRound: BlockNumber = DEFAULT_BLOCKS_PER_ROUND;
 	/// Unstaked balance can be unlocked after 7 days
-	#[cfg(not(feature = "fast-gov"))]
-	pub const StakeDuration: BlockNumber = 7 * DAYS;
-	#[cfg(feature = "fast-gov")]
-	pub const StakeDuration: BlockNumber = 30;
+	pub const StakeDuration: BlockNumber = STAKE_DURATION;
 	/// Collator exit requests are delayed by 4 hours (2 rounds/sessions)
 	pub const ExitQueueDelay: u32 = 2;
 	/// Minimum 16 collators selected per round, default at genesis and minimum forever after
-	#[cfg(not(feature = "fast-gov"))]
-	pub const MinCollators: u32 = 16;
-	#[cfg(feature = "fast-gov")]
-	pub const MinCollators: u32 = 4;
+	pub const MinCollators: u32 = MIN_COLLATORS;
 	/// At least 4 candidates which cannot leave the network if there are no other candidates.
 	pub const MinRequiredCollators: u32 = 4;
 	/// We only allow one delegation per round.
@@ -735,12 +749,8 @@ parameter_types! {
 	/// Minimum stake required to be reserved to be a delegator is 1000
 	pub const MinDelegatorStake: Balance = 20 * UNIT;
 	/// Maximum number of collator candidates
-	#[cfg(not(feature = "fast-gov"))]
 	#[derive(Debug, Eq, PartialEq)]
-	pub const MaxCollatorCandidates: u32 = 75;
-	#[cfg(feature = "fast-gov")]
-	#[derive(Debug, Eq, PartialEq)]
-	pub const MaxCollatorCandidates: u32 = 16;
+	pub const MaxCollatorCandidates: u32 = MAX_CANDIDATES;
 	/// Maximum number of concurrent requests to unlock unstaked balance
 	pub const MaxUnstakeRequests: u32 = 10;
 	/// The starting block number for the network rewards
