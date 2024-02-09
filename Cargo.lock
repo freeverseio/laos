@@ -5400,6 +5400,7 @@ dependencies = [
  "frame-try-runtime",
  "hex",
  "hex-literal",
+ "laos-runtime-api-staking",
  "log",
  "orml-traits",
  "orml-xcm-support",
@@ -5411,7 +5412,6 @@ dependencies = [
  "pallet-authorship",
  "pallet-balances",
  "pallet-base-fee",
- "pallet-collator-selection",
  "pallet-ethereum",
  "pallet-evm",
  "pallet-evm-asset-metadata-extender",
@@ -5425,6 +5425,7 @@ dependencies = [
  "pallet-laos-evolution",
  "pallet-message-queue",
  "pallet-multisig",
+ "pallet-parachain-staking",
  "pallet-session",
  "pallet-sudo",
  "pallet-timestamp",
@@ -5494,6 +5495,16 @@ dependencies = [
  "quote",
  "sha3",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "laos-runtime-api-staking"
+version = "0.1.0"
+dependencies = [
+ "parity-scale-codec",
+ "scale-info",
+ "sp-api",
+ "sp-runtime",
 ]
 
 [[package]]
@@ -7933,6 +7944,31 @@ dependencies = [
  "pallet-staking",
  "parity-scale-codec",
  "scale-info",
+ "sp-runtime",
+ "sp-staking",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-parachain-staking"
+version = "3.0.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "laos-runtime-api-staking",
+ "log",
+ "pallet-aura",
+ "pallet-authorship",
+ "pallet-balances",
+ "pallet-session",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-consensus-aura",
+ "sp-core",
+ "sp-io",
  "sp-runtime",
  "sp-staking",
  "sp-std",

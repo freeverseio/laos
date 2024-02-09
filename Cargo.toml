@@ -61,6 +61,7 @@ substrate-wasm-builder = { git = "https://github.com/paritytech/polkadot-sdk", b
 sp-core = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
 sp-io = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
 sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
+sp-staking = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
 sp-std = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
 sp-api = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
 sp-block-builder = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
@@ -253,6 +254,7 @@ pallet-evm-evolution-collection = { path = "./ownership-chain/precompile/evoluti
 pallet-evm-erc721 = { path = "./ownership-chain/precompile/erc721", default-features = false }
 pallet-asset-metadata-extender = { path = "./ownership-chain/pallets/asset-metadata-extender", default-features = false }
 pallet-evm-asset-metadata-extender = { path = "./ownership-chain/precompile/asset-metadata-extender", default-features = false }
+pallet-parachain-staking = { path = "./ownership-chain/pallets/parachain-staking", default-features = false }
 
 # Precompiles
 laos-precompile-utils-macro = { path = "./ownership-chain/precompile/utils/macro", default-features = false }
@@ -260,6 +262,9 @@ laos-precompile-utils = { path = "./ownership-chain/precompile/utils", default-f
 
 # Primitives
 ownership-parachain-primitives = { path = "./ownership-chain/primitives", default-features = false }
+
+# Other crates
+laos-runtime-api-staking = { path = "./ownership-chain/runtime-api/staking", default-features = false }
 
 # runtime
 laos-ownership-runtime = { path = "./ownership-chain/runtime", default-features = false }

@@ -6,7 +6,6 @@ use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
 use sp_core::{Pair, Public, H160, U256};
-use sp_runtime::traits::Zero;
 use std::{collections::BTreeMap, str::FromStr};
 
 /// List of endowed accounts.
@@ -172,11 +171,6 @@ fn testnet_genesis(
 		},
 		parachain_info: laos_ownership_runtime::ParachainInfoConfig {
 			parachain_id: id,
-			..Default::default()
-		},
-		collator_selection: laos_ownership_runtime::CollatorSelectionConfig {
-			invulnerables: invulnerables.iter().cloned().map(|(acc, _)| acc).collect(),
-			candidacy_bond: Zero::zero(),
 			..Default::default()
 		},
 		session: laos_ownership_runtime::SessionConfig {
