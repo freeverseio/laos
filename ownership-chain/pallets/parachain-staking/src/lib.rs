@@ -145,10 +145,6 @@ pub mod pallet {
 				Fortitude, Precision, Preservation,
 			},
 			BuildGenesisConfig, EstimateNextSessionRotation, Get, OnUnbalanced,
-		},
-		BoundedVec,
-	};
-	use frame_system::pallet_prelude::*;
 	use pallet_balances::{Freezes, IdAmount};
 	use pallet_session::ShouldEndSession;
 	use scale_info::TypeInfo;
