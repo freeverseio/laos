@@ -52,6 +52,7 @@ use frame_support::{
 };
 use frame_system::{pallet_prelude::BlockNumberFor, EnsureRoot};
 pub use pallet_evm_evolution_collection_factory::REVERT_BYTECODE;
+pub use pallet_parachain_staking::{InflationInfo, RewardRate, StakingInfo};
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 pub use sp_runtime::{Perbill, Permill, Perquintill};
 
@@ -710,7 +711,7 @@ pub const MIN_BLOCKS_PER_ROUND: BlockNumber = 10;
 pub const MIN_BLOCKS_PER_ROUND: BlockNumber = HOURS;
 
 #[cfg(feature = "fast-gov")]
-pub const DEFAULT_BLOCKS_PER_ROUND: BlockNumber = 20;
+pub const DEFAULT_BLOCKS_PER_ROUND: BlockNumber = 10;
 #[cfg(not(feature = "fast-gov"))]
 pub const DEFAULT_BLOCKS_PER_ROUND: BlockNumber = 2 * HOURS;
 
@@ -720,7 +721,7 @@ pub const STAKE_DURATION: BlockNumber = 30;
 pub const STAKE_DURATION: BlockNumber = 7 * DAYS;
 
 #[cfg(feature = "fast-gov")]
-pub const MIN_COLLATORS: u32 = 2;
+pub const MIN_COLLATORS: u32 = 1;
 #[cfg(not(feature = "fast-gov"))]
 pub const MIN_COLLATORS: u32 = 16;
 
