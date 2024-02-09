@@ -776,7 +776,6 @@ construct_runtime!(
 		Vesting: pallet_vesting = 12,
 
 		// Collator support. The order of these 5 are important and shall not change.
-		ParachainStaking: pallet_parachain_staking = 19,
 		Authorship: pallet_authorship = 20,
 		Session: pallet_session = 22,
 		Aura: pallet_aura = 23,

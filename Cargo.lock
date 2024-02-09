@@ -5425,7 +5425,6 @@ dependencies = [
  "pallet-laos-evolution",
  "pallet-message-queue",
  "pallet-multisig",
- "pallet-parachain-staking",
  "pallet-session",
  "pallet-sudo",
  "pallet-timestamp",
