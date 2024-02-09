@@ -52,6 +52,7 @@ use frame_support::{
 };
 use frame_system::{pallet_prelude::BlockNumberFor, EnsureRoot};
 pub use pallet_evm_evolution_collection_factory::REVERT_BYTECODE;
+pub use pallet_parachain_staking::{InflationInfo, RewardRate, StakingInfo};
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 pub use sp_runtime::{Perbill, Permill, Perquintill};
 
@@ -355,7 +356,7 @@ impl pallet_balances::Config for Runtime {
 	type FreezeIdentifier = RuntimeFreezeReason;
 	type MaxHolds = ConstU32<0>;
 	type RuntimeHoldReason = ();
-	type MaxFreezes = ConstU32<0>;
+	type MaxFreezes = ConstU32<1>;
 }
 
 parameter_types! {
@@ -522,12 +523,15 @@ where
 	}
 }
 
-impl<R> OnUnbalanced<CreditOf<R, ()>> for ToSudo<R>
+/// Resolve issued network reward to the author of the block.
+pub struct ToAuthor<R>(PhantomData<R>);
+
+impl<R> OnUnbalanced<CreditOf<R, ()>> for ToAuthor<R>
 where
-	R: pallet_balances::Config + pallet_sudo::Config,
+	R: pallet_balances::Config + pallet_authorship::Config,
 {
 	fn on_nonzero_unbalanced(amount: CreditOf<R, ()>) {
-		if let Some(account) = <pallet_sudo::Pallet<R>>::key() {
+		if let Some(account) = pallet_authorship::Pallet::<R>::author() {
 			let result = <pallet_balances::Pallet<R>>::resolve(&account, amount);
 			debug_assert!(result.is_ok(), "Should not fail to transfer; qed");
 		}
@@ -707,7 +711,7 @@ pub const MIN_BLOCKS_PER_ROUND: BlockNumber = 10;
 pub const MIN_BLOCKS_PER_ROUND: BlockNumber = HOURS;
 
 #[cfg(feature = "fast-gov")]
-pub const DEFAULT_BLOCKS_PER_ROUND: BlockNumber = 20;
+pub const DEFAULT_BLOCKS_PER_ROUND: BlockNumber = 10;
 #[cfg(not(feature = "fast-gov"))]
 pub const DEFAULT_BLOCKS_PER_ROUND: BlockNumber = 2 * HOURS;
 
@@ -717,7 +721,7 @@ pub const STAKE_DURATION: BlockNumber = 30;
 pub const STAKE_DURATION: BlockNumber = 7 * DAYS;
 
 #[cfg(feature = "fast-gov")]
-pub const MIN_COLLATORS: u32 = 4;
+pub const MIN_COLLATORS: u32 = 1;
 #[cfg(not(feature = "fast-gov"))]
 pub const MIN_COLLATORS: u32 = 16;
 
@@ -745,9 +749,9 @@ parameter_types! {
 	#[derive(Debug, Eq, PartialEq)]
 	pub const MaxDelegatorsPerCollator: u32 = 35;
 	/// Minimum stake required to be reserved to be a collator is 10_000
-	pub const MinCollatorStake: Balance = 10_000 * UNIT;
+	pub const MinCollatorStake: Balance = 10 * UNIT;
 	/// Minimum stake required to be reserved to be a delegator is 1000
-	pub const MinDelegatorStake: Balance = 20 * UNIT;
+	pub const MinDelegatorStake: Balance = 2 * UNIT;
 	/// Maximum number of collator candidates
 	#[derive(Debug, Eq, PartialEq)]
 	pub const MaxCollatorCandidates: u32 = MAX_CANDIDATES;
@@ -779,8 +783,7 @@ impl pallet_parachain_staking::Config for Runtime {
 	type MaxUnstakeRequests = MaxUnstakeRequests;
 	type NetworkRewardRate = NetworkRewardRate;
 	type NetworkRewardStart = NetworkRewardStart;
-	/// Temporary solution until we have a treasury
-	type NetworkRewardBeneficiary = ToSudo<Runtime>;
+	type NetworkRewardBeneficiary = ToAuthor<Runtime>;
 	type WeightInfo = pallet_parachain_staking::default_weights::SubstrateWeight<Runtime>;
 
 	const BLOCKS_PER_YEAR: BlockNumberFor<Self> = BLOCKS_PER_YEAR;
