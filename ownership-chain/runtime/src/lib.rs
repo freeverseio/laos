@@ -355,7 +355,7 @@ impl pallet_balances::Config for Runtime {
 	type FreezeIdentifier = RuntimeFreezeReason;
 	type MaxHolds = ConstU32<0>;
 	type RuntimeHoldReason = ();
-	type MaxFreezes = ConstU32<0>;
+	type MaxFreezes = ConstU32<1>;
 }
 
 parameter_types! {
@@ -717,7 +717,7 @@ pub const STAKE_DURATION: BlockNumber = 30;
 pub const STAKE_DURATION: BlockNumber = 7 * DAYS;
 
 #[cfg(feature = "fast-gov")]
-pub const MIN_COLLATORS: u32 = 4;
+pub const MIN_COLLATORS: u32 = 2;
 #[cfg(not(feature = "fast-gov"))]
 pub const MIN_COLLATORS: u32 = 16;
 
@@ -745,9 +745,9 @@ parameter_types! {
 	#[derive(Debug, Eq, PartialEq)]
 	pub const MaxDelegatorsPerCollator: u32 = 35;
 	/// Minimum stake required to be reserved to be a collator is 10_000
-	pub const MinCollatorStake: Balance = 10_000 * UNIT;
+	pub const MinCollatorStake: Balance = 10 * UNIT;
 	/// Minimum stake required to be reserved to be a delegator is 1000
-	pub const MinDelegatorStake: Balance = 20 * UNIT;
+	pub const MinDelegatorStake: Balance = 2 * UNIT;
 	/// Maximum number of collator candidates
 	#[derive(Debug, Eq, PartialEq)]
 	pub const MaxCollatorCandidates: u32 = MAX_CANDIDATES;

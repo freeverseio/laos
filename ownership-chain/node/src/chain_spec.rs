@@ -1,7 +1,7 @@
 use cumulus_primitives_core::ParaId;
 use fp_evm::GenesisAccount;
 use hex_literal::hex;
-use laos_ownership_runtime::{AccountId, AuraId, Precompiles, REVERT_BYTECODE};
+use laos_ownership_runtime::{AccountId, AuraId, Precompiles, REVERT_BYTECODE, UNIT};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
@@ -199,6 +199,10 @@ fn testnet_genesis(
 		// EVM compatibility
 		evm_chain_id: laos_ownership_runtime::EVMChainIdConfig {
 			chain_id: 667,
+			..Default::default()
+		},
+		parachain_staking: laos_ownership_runtime::ParachainStakingConfig {
+			max_candidate_stake: 10_000 * UNIT,
 			..Default::default()
 		},
 		evm: laos_ownership_runtime::EVMConfig {
