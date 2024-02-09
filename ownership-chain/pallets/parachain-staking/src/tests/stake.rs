@@ -19,14 +19,17 @@
 //! Unit testing
 
 use frame_support::{assert_noop, assert_ok, storage::bounded_btree_map::BoundedBTreeMap};
-use kilt_runtime_api_staking::StakingRates;
+use laos_runtime_api_staking::StakingRates;
 use pallet_authorship::EventHandler;
 use pallet_balances::{Freezes, IdAmount};
 
 use sp_runtime::{traits::Zero, Perquintill};
 
 use crate::{
-	mock::{roll_to, AccountId, Balance, BlockNumber, ExtBuilder, RuntimeOrigin, StakePallet, Test, DECIMALS},
+	mock::{
+		roll_to, AccountId, Balance, BlockNumber, ExtBuilder, RuntimeOrigin, StakePallet, Test,
+		DECIMALS,
+	},
 	types::{BalanceOf, TotalStake},
 	Config, Error, FreezeReason,
 };
@@ -52,30 +55,18 @@ fn should_update_total_stake() {
 		.set_blocks_per_round(5)
 		.build_and_execute_with_sanity_tests(|| {
 			let mut old_stake = StakePallet::total_collator_stake();
-			assert_eq!(
-				old_stake,
-				TotalStake {
-					collators: 40,
-					delegators: 30,
-				}
-			);
+			assert_eq!(old_stake, TotalStake { collators: 40, delegators: 30 });
 			assert_ok!(StakePallet::candidate_stake_more(RuntimeOrigin::signed(1), 50));
 			assert_eq!(
 				StakePallet::total_collator_stake(),
-				TotalStake {
-					collators: old_stake.collators + 50,
-					..old_stake
-				}
+				TotalStake { collators: old_stake.collators + 50, ..old_stake }
 			);
 
 			old_stake = StakePallet::total_collator_stake();
 			assert_ok!(StakePallet::candidate_stake_less(RuntimeOrigin::signed(1), 50));
 			assert_eq!(
 				StakePallet::total_collator_stake(),
-				TotalStake {
-					collators: old_stake.collators - 50,
-					..old_stake
-				}
+				TotalStake { collators: old_stake.collators - 50, ..old_stake }
 			);
 
 			old_stake = StakePallet::total_collator_stake();
@@ -90,30 +81,21 @@ fn should_update_total_stake() {
 			);
 			assert_eq!(
 				StakePallet::total_collator_stake(),
-				TotalStake {
-					delegators: old_stake.delegators + 50,
-					..old_stake
-				}
+				TotalStake { delegators: old_stake.delegators + 50, ..old_stake }
 			);
 
 			old_stake = StakePallet::total_collator_stake();
 			assert_ok!(StakePallet::delegator_stake_less(RuntimeOrigin::signed(7), 50));
 			assert_eq!(
 				StakePallet::total_collator_stake(),
-				TotalStake {
-					delegators: old_stake.delegators - 50,
-					..old_stake
-				}
+				TotalStake { delegators: old_stake.delegators - 50, ..old_stake }
 			);
 
 			old_stake = StakePallet::total_collator_stake();
 			assert_ok!(StakePallet::join_delegators(RuntimeOrigin::signed(11), 1, 200));
 			assert_eq!(
 				StakePallet::total_collator_stake(),
-				TotalStake {
-					delegators: old_stake.delegators + 200,
-					..old_stake
-				}
+				TotalStake { delegators: old_stake.delegators + 200, ..old_stake }
 			);
 
 			old_stake = StakePallet::total_collator_stake();
@@ -121,10 +103,7 @@ fn should_update_total_stake() {
 			assert_ok!(StakePallet::leave_delegators(RuntimeOrigin::signed(11)));
 			assert_eq!(
 				StakePallet::total_collator_stake(),
-				TotalStake {
-					delegators: old_stake.delegators - 200,
-					..old_stake
-				}
+				TotalStake { delegators: old_stake.delegators - 200, ..old_stake }
 			);
 
 			let old_stake = StakePallet::total_collator_stake();
@@ -132,10 +111,7 @@ fn should_update_total_stake() {
 			assert_ok!(StakePallet::leave_delegators(RuntimeOrigin::signed(8)));
 			assert_eq!(
 				StakePallet::total_collator_stake(),
-				TotalStake {
-					delegators: old_stake.delegators - 10,
-					..old_stake
-				}
+				TotalStake { delegators: old_stake.delegators - 10, ..old_stake }
 			);
 
 			// should immediately affect total stake because collator can't be chosen in
@@ -151,8 +127,8 @@ fn should_update_total_stake() {
 			assert_ok!(StakePallet::init_leave_candidates(RuntimeOrigin::signed(2)));
 			let old_stake = TotalStake {
 				delegators: old_stake.delegators - 10,
-				// total active collator stake is unchanged because number of selected candidates is 2 and 2's
-				// replacement has the same self stake as 2
+				// total active collator stake is unchanged because number of selected candidates is
+				// 2 and 2's replacement has the same self stake as 2
 				collators: old_stake.collators,
 			};
 			assert_eq!(StakePallet::selected_candidates().into_inner(), vec![1, 3]);
@@ -179,8 +155,11 @@ fn unlock_unstaked() {
 		.with_delegators(vec![(2, 1, 100)])
 		.build_and_execute_with_sanity_tests(|| {
 			assert_ok!(StakePallet::leave_delegators(RuntimeOrigin::signed(2)));
-			let mut unstaking: BoundedBTreeMap<BlockNumber, BalanceOf<Test>, <Test as Config>::MaxUnstakeRequests> =
-				BoundedBTreeMap::new();
+			let mut unstaking: BoundedBTreeMap<
+				BlockNumber,
+				BalanceOf<Test>,
+				<Test as Config>::MaxUnstakeRequests,
+			> = BoundedBTreeMap::new();
 			assert_ok!(unstaking.try_insert(3, 100));
 			let freeze = IdAmount {
 				id: <Test as Config>::FreezeIdentifier::from(FreezeReason::Staking),
@@ -236,8 +215,11 @@ fn unlock_unstaked() {
 		.with_delegators(vec![(2, 1, 10)])
 		.build_and_execute_with_sanity_tests(|| {
 			assert_ok!(StakePallet::leave_delegators(RuntimeOrigin::signed(2)));
-			let mut unstaking: BoundedBTreeMap<BlockNumber, BalanceOf<Test>, <Test as Config>::MaxUnstakeRequests> =
-				BoundedBTreeMap::new();
+			let mut unstaking: BoundedBTreeMap<
+				BlockNumber,
+				BalanceOf<Test>,
+				<Test as Config>::MaxUnstakeRequests,
+			> = BoundedBTreeMap::new();
 			assert_ok!(unstaking.try_insert(3, 10));
 			let mut lock = IdAmount {
 				id: <Test as Config>::FreezeIdentifier::from(FreezeReason::Staking),
@@ -294,8 +276,11 @@ fn unlock_unstaked() {
 		.with_delegators(vec![(2, 1, 100)])
 		.build_and_execute_with_sanity_tests(|| {
 			assert_ok!(StakePallet::leave_delegators(RuntimeOrigin::signed(2)));
-			let mut unstaking: BoundedBTreeMap<BlockNumber, BalanceOf<Test>, <Test as Config>::MaxUnstakeRequests> =
-				BoundedBTreeMap::new();
+			let mut unstaking: BoundedBTreeMap<
+				BlockNumber,
+				BalanceOf<Test>,
+				<Test as Config>::MaxUnstakeRequests,
+			> = BoundedBTreeMap::new();
 			assert_ok!(unstaking.try_insert(3, 100));
 			let mut lock = IdAmount {
 				id: <Test as Config>::FreezeIdentifier::from(FreezeReason::Staking),
@@ -368,8 +353,11 @@ fn unlock_unstaked() {
 			assert_ok!(StakePallet::delegator_stake_less(RuntimeOrigin::signed(2), 10));
 			assert_ok!(StakePallet::delegator_stake_less(RuntimeOrigin::signed(2), 10));
 			assert_ok!(StakePallet::delegator_stake_less(RuntimeOrigin::signed(2), 10),);
-			let mut unstaking: BoundedBTreeMap<BlockNumber, BalanceOf<Test>, <Test as Config>::MaxUnstakeRequests> =
-				BoundedBTreeMap::new();
+			let mut unstaking: BoundedBTreeMap<
+				BlockNumber,
+				BalanceOf<Test>,
+				<Test as Config>::MaxUnstakeRequests,
+			> = BoundedBTreeMap::new();
 			assert_ok!(unstaking.try_insert(3, 60));
 			let mut lock = IdAmount {
 				id: <Test as Config>::FreezeIdentifier::from(FreezeReason::Staking),
@@ -497,11 +485,7 @@ fn rewards_candidate_stake_more() {
 			assert!(!StakePallet::blocks_rewarded(1).is_zero());
 			// delegator reward storage should be untouched
 			(2..=3).for_each(|id| {
-				assert!(
-					StakePallet::rewards(id).is_zero(),
-					"Rewards not zero for acc_id {:?}",
-					id
-				);
+				assert!(StakePallet::rewards(id).is_zero(), "Rewards not zero for acc_id {:?}", id);
 				assert!(
 					StakePallet::blocks_rewarded(id).is_zero(),
 					"BlocksRewaeded not zero for acc_id {:?}",
@@ -570,46 +554,31 @@ fn set_max_selected_candidates_total_stake() {
 		.build_and_execute_with_sanity_tests(|| {
 			assert_eq!(
 				StakePallet::total_collator_stake(),
-				TotalStake {
-					collators: 35,
-					delegators: 55,
-				}
+				TotalStake { collators: 35, delegators: 55 }
 			);
 
 			assert_ok!(StakePallet::set_max_selected_candidates(RuntimeOrigin::root(), 3));
 			assert_eq!(
 				StakePallet::total_collator_stake(),
-				TotalStake {
-					collators: 51,
-					delegators: 81,
-				}
+				TotalStake { collators: 51, delegators: 81 }
 			);
 
 			assert_ok!(StakePallet::set_max_selected_candidates(RuntimeOrigin::root(), 5));
 			assert_eq!(
 				StakePallet::total_collator_stake(),
-				TotalStake {
-					collators: 80,
-					delegators: 130,
-				}
+				TotalStake { collators: 80, delegators: 130 }
 			);
 
 			assert_ok!(StakePallet::set_max_selected_candidates(RuntimeOrigin::root(), 10));
 			assert_eq!(
 				StakePallet::total_collator_stake(),
-				TotalStake {
-					collators: 116,
-					delegators: 196,
-				}
+				TotalStake { collators: 116, delegators: 196 }
 			);
 
 			assert_ok!(StakePallet::set_max_selected_candidates(RuntimeOrigin::root(), 2));
 			assert_eq!(
 				StakePallet::total_collator_stake(),
-				TotalStake {
-					collators: 35,
-					delegators: 55,
-				}
+				TotalStake { collators: 35, delegators: 55 }
 			);
 		});
 }
