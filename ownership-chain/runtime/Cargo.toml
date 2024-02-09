@@ -95,8 +95,6 @@ pallet-evm-precompile-simple = { workspace = true }
 pallet-evm-precompile-bn128 = { workspace = true }
 pallet-evm-precompile-blake2 = { workspace = true }
 
-pallet-parachain-staking = { workspace = true }
-
 [dev-dependencies]
 static_assertions = { workspace = true }
 precompile-utils = { workspace = true, features = ["testing"] }
@@ -186,7 +184,6 @@ std = [
 	# Bridge deps,
 	"ownership-parachain-primitives/std",
 	"hex/std",
-	"pallet-parachain-staking/std",
 ]
 
 runtime-benchmarks = [
@@ -215,7 +212,6 @@ runtime-benchmarks = [
 	"staging-xcm-executor/runtime-benchmarks",
 	"pallet-asset-metadata-extender/runtime-benchmarks",
 	"pallet-vesting/runtime-benchmarks",
-	"pallet-parachain-staking/runtime-benchmarks",
 ]
 
 try-runtime = [
@@ -249,5 +245,4 @@ try-runtime = [
 	"sp-runtime/try-runtime",
 	"pallet-asset-metadata-extender/try-runtime",
 	"pallet-vesting/try-runtime",
-	"pallet-parachain-staking/try-runtime",
 ]
