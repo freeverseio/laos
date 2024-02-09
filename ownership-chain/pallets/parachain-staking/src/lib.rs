@@ -122,7 +122,6 @@ mod try_state;
 
 pub mod api;
 mod inflation;
-pub mod migrations;
 mod set;
 mod types;
 
@@ -145,7 +144,7 @@ pub mod pallet {
 				fungible::{Inspect, MutateFreeze, Unbalanced},
 				Fortitude, Precision, Preservation,
 			},
-			BuildGenesisConfig, EstimateNextSessionRotation, Get, OnUnbalanced, StorageVersion,
+			BuildGenesisConfig, EstimateNextSessionRotation, Get, OnUnbalanced,
 		},
 		BoundedVec,
 	};
@@ -169,9 +168,6 @@ pub mod pallet {
 		},
 	};
 	use sp_std::{convert::TryInto, fmt::Debug};
-
-	/// The current storage version.
-	pub(crate) const STORAGE_VERSION: StorageVersion = StorageVersion::new(9);
 
 	/// The 5.1% inflation rate of the third year
 	const INFLATION_3RD_YEAR: Perquintill = Perquintill::from_parts(51_000_000_000_000_000);
