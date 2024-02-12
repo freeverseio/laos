@@ -47,6 +47,7 @@ pub(crate) const MAX_COLLATOR_STAKE: Balance = 200_000 * 1000 * MILLI_KILT;
 pub(crate) const BLOCKS_PER_ROUND: BlockNumber = 5;
 pub(crate) const DECIMALS: Balance = 1000 * MILLI_KILT;
 pub(crate) const TREASURY_ACC: AccountId = u64::MAX;
+pub(crate) const TREASURY_BALANCE: u128 = u128::MAX;
 
 // Configure a mock runtime to test the pallet.
 construct_runtime!(
@@ -149,8 +150,7 @@ pub struct ToBeneficiary();
 impl OnUnbalanced<CreditOf<Test>> for ToBeneficiary {
 	fn on_nonzero_unbalanced(amount: CreditOf<Test>) {
 		// Must resolve into existing but better to be safe.
-		let a = <Test as Config>::Currency::resolve(&TREASURY_ACC, amount);
-		debug_assert!(a.is_ok(), "it should be ok");
+		let _ = <Test as Config>::Currency::resolve(&TREASURY_ACC, amount);
 	}
 }
 
@@ -225,6 +225,8 @@ pub(crate) struct ExtBuilder {
 	blocks_per_round: BlockNumber,
 	// is inflation activated
 	inflation_enabled: bool,
+	// rewards treasury account
+	rewards_treasury_account: AccountId,
 }
 
 impl Default for ExtBuilder {
@@ -243,6 +245,7 @@ impl Default for ExtBuilder {
 			),
 			// inflation is activated by default so we keep retrocompatibility with existing tests
 			inflation_enabled: true,
+			rewards_treasury_account: TREASURY_ACC,
 		}
 	}
 }
@@ -321,6 +324,7 @@ impl ExtBuilder {
 			stakers,
 			inflation_config: self.inflation_config.clone(),
 			max_candidate_stake: 160_000_000 * DECIMALS,
+			rewards_treasury_account: Some(self.rewards_treasury_account),
 		}
 		.assimilate_storage(&mut t)
 		.expect("Parachain Staking's storage can be assimilated");

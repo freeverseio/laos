@@ -22,7 +22,7 @@ use crate::{
 	mock::{
 		almost_equal, roll_to, roll_to_claim_rewards, AccountId, AllPalletsWithSystem, Balance,
 		Balances, BlockNumber, ExtBuilder, RuntimeOrigin, StakePallet, System, Test, DECIMALS,
-		TREASURY_ACC,
+		TREASURY_ACC, TREASURY_BALANCE,
 	},
 	types::{BalanceOf, StakeOf},
 	Config, Error, InflationInfo,
@@ -43,6 +43,7 @@ fn coinbase_rewards_few_blocks_detailed_check() {
 			(3, 40_000_000 * DECIMALS),
 			(4, 20_000_000 * DECIMALS),
 			(5, 20_000_000 * DECIMALS),
+			(TREASURY_ACC, TREASURY_BALANCE),
 		])
 		.with_collators(vec![(1, 8_000_000 * DECIMALS), (2, 8_000_000 * DECIMALS)])
 		.with_delegators(vec![
@@ -953,7 +954,12 @@ fn rewards_incrementing_and_claiming() {
 fn api_get_unclaimed_staking_rewards() {
 	let stake = 100_000 * DECIMALS;
 	ExtBuilder::default()
-		.with_balances(vec![(1, stake), (2, stake), (3, 100 * stake)])
+		.with_balances(vec![
+			(1, stake),
+			(2, stake),
+			(3, 100 * stake),
+			(TREASURY_ACC, TREASURY_BALANCE),
+		])
 		.with_collators(vec![(1, stake), (3, 2 * stake)])
 		.with_delegators(vec![(2, 1, stake)])
 		.build_and_execute_with_sanity_tests(|| {

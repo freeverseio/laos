@@ -698,6 +698,7 @@ pub mod pallet {
 		pub stakers: GenesisStaker<T>,
 		pub inflation_config: InflationInfo,
 		pub max_candidate_stake: BalanceOf<T>,
+		pub rewards_treasury_account: Option<T::AccountId>,
 	}
 
 	#[pallet::genesis_build]
@@ -710,6 +711,9 @@ pub mod pallet {
 
 			InflationConfig::<T>::put(self.inflation_config.clone());
 			MaxCollatorCandidateStake::<T>::put(self.max_candidate_stake);
+			if let Some(rewards_treasury_account) = &self.rewards_treasury_account {
+				RewardsTreasuryAccount::<T>::put(rewards_treasury_account.clone());
+			}
 
 			// Setup delegate & collators
 			for &(ref actor, ref opt_val, balance) in &self.stakers {
