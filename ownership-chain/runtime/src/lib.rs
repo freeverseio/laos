@@ -529,6 +529,7 @@ where
 {
 	fn on_nonzero_unbalanced(amount: CreditOf<R, ()>) {
 		if let Some(account) = pallet_sudo::Pallet::<R>::key() {
+			// TODO: replace with CI account
 			let result = <pallet_balances::Pallet<R>>::resolve(&account, amount);
 			debug_assert!(result.is_ok(), "Should not fail to transfer; qed");
 		}

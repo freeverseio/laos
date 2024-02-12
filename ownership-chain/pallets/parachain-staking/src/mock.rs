@@ -23,7 +23,7 @@ use super::*;
 use crate::{self as stake, types::CreditOf};
 use frame_support::{
 	assert_ok, construct_runtime, parameter_types,
-	traits::{fungible::Balanced, OnFinalize, OnInitialize, OnUnbalanced},
+	traits::{fungible::Balanced, Currency, OnFinalize, OnInitialize, OnUnbalanced},
 };
 use frame_system::pallet_prelude::BlockNumberFor;
 use pallet_authorship::EventHandler;
@@ -149,7 +149,8 @@ pub struct ToBeneficiary();
 impl OnUnbalanced<CreditOf<Test>> for ToBeneficiary {
 	fn on_nonzero_unbalanced(amount: CreditOf<Test>) {
 		// Must resolve into existing but better to be safe.
-		let _ = <Test as Config>::Currency::resolve(&TREASURY_ACC, amount);
+		let a = <Test as Config>::Currency::resolve(&TREASURY_ACC, amount);
+		debug_assert!(a.is_ok(), "it should be ok");
 	}
 }
 

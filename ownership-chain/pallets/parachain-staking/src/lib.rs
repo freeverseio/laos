@@ -155,7 +155,7 @@ pub mod pallet {
 	use scale_info::TypeInfo;
 	use sp_runtime::{
 		traits::{Convert, One, SaturatedConversion, Saturating, StaticLookup, Zero},
-		ArithmeticError, Permill, Perquintill,
+		Permill, Perquintill, TokenError,
 	};
 	use sp_staking::SessionIndex;
 	use sp_std::prelude::*;
@@ -204,7 +204,7 @@ pub mod pallet {
 				Balance = Self::CurrencyBalance,
 				Id = <Self as pallet::Config>::FreezeIdentifier,
 			> + Eq
-			+ Currency<Self::AccountId>;
+			+ Currency<Self::AccountId, Balance = Self::CurrencyBalance>;
 
 		type FreezeIdentifier: From<FreezeReason>
 			+ PartialEq
@@ -2557,41 +2557,22 @@ pub mod pallet {
 		}
 
 		/// Sends rewards to a given account.
-		///
-		/// There are three possible cases:
-		/// 1. If inflation is enabled, the rewards are deposited into the account from minting
-		///
-		/// 2. If inflation is not enabled and the rewards treasury account exists, the rewards are
-		///    transferred from the rewards treasury account to the account. In case of an underflow
-		///    error during the transfer because the rewards treasury account does not have enough
-		///    balance, a zero balance is returned.
-		///
-		/// 3. If inflation is not enabled and the rewards treasury account does not exist, a zero
-		///    balance is returned.
+		/// - If rewards treasury account exists, the rewards are transferred from this account
+		/// to the rewarded account. In case of an funds unavailable error during the transfer
+		/// because the rewards treasury account does not have enough balance, a zero balance is
+		/// returned.
+		/// - If the rewards treasury account does not exist, a zero balance is returned.
 		///
 		/// Then the possible returns the amount of rewards sent to the account.
 		pub fn send_rewards(
 			account: &T::AccountId,
 			amount: BalanceOf<T>,
 		) -> Result<BalanceOf<T>, DispatchError> {
-			// Check if inflation is enabled and directly attempt to deposit into existing
-			// account
-			if InflationEnabled::<T>::get() {
-				// mint into target
-				let reward = <T::Currency as Unbalanced<AccountIdOf<T>>>::increase_balance(
-					&account,
-					amount,
-					Precision::Exact,
-				)?;
-				return Ok(reward);
-			}
-
-			// Handle the case when inflation is not enabled.
 			if let Some(rewards_treasury_account) = RewardsTreasuryAccount::<T>::get() {
 				return T::Currency::transfer(&rewards_treasury_account, account, amount, KeepAlive)
 					.map(|_| amount)
 					.or_else(|e| match e {
-						DispatchError::Arithmetic(ArithmeticError::Underflow) =>
+						DispatchError::Token(TokenError::FundsUnavailable) =>
 							Ok(Default::default()),
 						_ => Err(e.into()),
 					});
