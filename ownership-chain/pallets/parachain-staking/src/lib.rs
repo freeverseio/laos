@@ -144,7 +144,9 @@ pub mod pallet {
 				fungible::{Inspect, MutateFreeze, Unbalanced},
 				Fortitude, Precision, Preservation,
 			},
-			BuildGenesisConfig, EstimateNextSessionRotation, Get, OnUnbalanced,
+			BuildGenesisConfig, Currency, EstimateNextSessionRotation,
+			ExistenceRequirement::KeepAlive,
+			Get, OnUnbalanced,
 		},
 	};
 	use frame_system::pallet_prelude::*;
@@ -153,7 +155,7 @@ pub mod pallet {
 	use scale_info::TypeInfo;
 	use sp_runtime::{
 		traits::{Convert, One, SaturatedConversion, Saturating, StaticLookup, Zero},
-		Permill, Perquintill,
+		ArithmeticError, Permill, Perquintill,
 	};
 	use sp_staking::SessionIndex;
 	use sp_std::prelude::*;
@@ -197,7 +199,8 @@ pub mod pallet {
 				Self::AccountId,
 				Balance = Self::CurrencyBalance,
 				Id = <Self as pallet::Config>::FreezeIdentifier,
-			> + Eq;
+			> + Eq
+			+ Currency<Self::AccountId>;
 
 		type FreezeIdentifier: From<FreezeReason>
 			+ PartialEq
@@ -679,6 +682,11 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn inflation_enabled)]
 	pub type InflationEnabled<T: Config> = StorageValue<_, bool, ValueQuery>;
+
+	/// Stores rewards treasury account
+	#[pallet::storage]
+	#[pallet::getter(fn rewards_treasury_account)]
+	pub type RewardsTreasuryAccount<T: Config> = StorageValue<_, T::AccountId, OptionQuery>;
 
 	#[pallet::genesis_config]
 	#[derive(frame_support::DefaultNoBound)]
@@ -1779,6 +1787,19 @@ pub mod pallet {
 			<InflationEnabled<T>>::set(value);
 			Ok(())
 		}
+
+		/// Set rewards treasury account
+		/// Only `sudo` can call this function
+		#[pallet::call_index(33)]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::force_new_round())] // TODO: add weight
+		pub fn set_rewards_treasury_account(
+			origin: OriginFor<T>,
+			account: T::AccountId,
+		) -> DispatchResult {
+			ensure_root(origin)?;
+			<RewardsTreasuryAccount<T>>::put(account);
+			Ok(())
+		}
 	}
 
 	impl<T: Config> Pallet<T> {
@@ -2443,7 +2464,7 @@ pub mod pallet {
 				MaxSelectedCandidates::<T>::get().into();
 			let network_reward = T::NetworkRewardRate::get() * max_col_rewards;
 
-			T::Currency::issue(network_reward)
+			<T::Currency as Balanced<AccountIdOf<T>>>::issue(network_reward)
 		}
 
 		/// Calculates the collator staking rewards for authoring `multiplier`
@@ -2452,7 +2473,6 @@ pub mod pallet {
 		/// Depends on the current total issuance and staking reward
 		/// configuration for collators.
 		pub(crate) fn calc_block_rewards_collator(
-			// here
 			stake: BalanceOf<T>,
 			multiplier: BalanceOf<T>,
 		) -> BalanceOf<T> {
@@ -2473,7 +2493,6 @@ pub mod pallet {
 		/// Depends on the current total issuance and staking reward
 		/// configuration for delegators.
 		pub(crate) fn calc_block_rewards_delegator(
-			// here
 			stake: BalanceOf<T>,
 			multiplier: BalanceOf<T>,
 		) -> BalanceOf<T> {
@@ -2563,22 +2582,18 @@ pub mod pallet {
 				return Ok(reward);
 			}
 
-			// // Handle the case when inflation is not enabled.
-			// if let Some(community_incentives_account) = CommunityIncentivesAccount::<T>::get() {
-			// 	return T::Currency::transfer(
-			// 		&community_incentives_account,
-			// 		account,
-			// 		amount,
-			// 		KeepAlive,
-			// 	)
-			// 	.map(|_| amount)
-			// 	.or_else(|e| match e {
-			// 		DispatchError::Arithmetic(ArithmeticError::Underflow) => Ok(Default::default()),
-			// 		_ => Err(e.into()),
-			// 	});
-			// }
+			// Handle the case when inflation is not enabled.
+			if let Some(rewards_treasury_account) = RewardsTreasuryAccount::<T>::get() {
+				return T::Currency::transfer(&rewards_treasury_account, account, amount, KeepAlive)
+					.map(|_| amount)
+					.or_else(|e| match e {
+						DispatchError::Arithmetic(ArithmeticError::Underflow) =>
+							Ok(Default::default()),
+						_ => Err(e.into()),
+					});
+			}
 
-			// Default return when CommunityIncentivesAccount is not set.
+			// Default return when RewardsTreasuryAccount is not set.
 			Ok(Default::default())
 		}
 	}
