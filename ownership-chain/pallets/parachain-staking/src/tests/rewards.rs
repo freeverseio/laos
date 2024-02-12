@@ -55,7 +55,7 @@ fn coinbase_rewards_few_blocks_detailed_check() {
 		.build_and_execute_with_sanity_tests(|| {
 			let inflation = StakePallet::inflation_config();
 			let total_issuance = <Test as Config>::Currency::total_issuance();
-			assert_eq!(total_issuance, 160_000_000 * DECIMALS);
+			assert_eq!(total_issuance, 160_000_000 * DECIMALS + TREASURY_BALANCE);
 
 			// compute rewards
 			let c_staking_rate = Perquintill::from_rational(16_000_000 * DECIMALS, total_issuance);
