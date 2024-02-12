@@ -1,11 +1,11 @@
 use super::{
 	AccountId, AllPalletsWithSystem, Balances, ParachainInfo, PolkadotXcm, Runtime, RuntimeCall,
-	RuntimeEvent, RuntimeOrigin, WeightToFee,
+	RuntimeEvent, RuntimeOrigin, ToSudo, WeightToFee,
 };
 use core::marker::PhantomData;
 use frame_support::{
 	match_types, parameter_types,
-	traits::{ConstU32, Currency, Everything, Nothing, OnUnbalanced, OriginTrait},
+	traits::{ConstU32, Everything, Nothing, OriginTrait},
 	weights::Weight,
 };
 use frame_system::{EnsureRoot, RawOrigin as SystemRawOrigin};
@@ -215,25 +215,5 @@ where
 			Ok(other) => Err(other.into()),
 			Err(other) => Err(other),
 		})
-	}
-}
-
-/// Logic for sending fees to the sudo account. On every unbalanced change, the amount is
-/// transferred to the sudo account.
-/// TODO: temporary solution until we have a treasury.
-pub struct ToSudo<R>(PhantomData<R>);
-
-type NegativeImbalanceOfBalances<T> = pallet_balances::NegativeImbalance<T>;
-
-impl<R> OnUnbalanced<NegativeImbalanceOfBalances<R>> for ToSudo<R>
-where
-	R: pallet_balances::Config + pallet_sudo::Config,
-	<R as frame_system::Config>::AccountId: From<AccountId>,
-	<R as frame_system::Config>::AccountId: Into<AccountId>,
-{
-	fn on_nonzero_unbalanced(amount: NegativeImbalanceOfBalances<R>) {
-		if let Some(account) = <pallet_sudo::Pallet<R>>::key() {
-			<pallet_balances::Pallet<R>>::resolve_creating(&account, amount);
-		}
 	}
 }

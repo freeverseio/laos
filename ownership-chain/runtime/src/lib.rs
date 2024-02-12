@@ -15,6 +15,7 @@ pub mod xcm_config;
 use core::marker::PhantomData;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 use ownership_parachain_primitives::{MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO};
+use pallet_balances::CreditOf;
 use parity_scale_codec::{Decode, Encode};
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
@@ -41,23 +42,21 @@ use sp_version::RuntimeVersion;
 use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{
-		ConstBool, ConstU128, ConstU32, ConstU64, ConstU8, Currency, EitherOfDiverse, Everything,
+		fungible::Balanced, ConstBool, ConstU32, ConstU64, ConstU8, Currency, Everything,
 		FindAuthor, Hooks, Imbalance, OnUnbalanced, WithdrawReasons,
 	},
 	weights::{
 		constants::WEIGHT_REF_TIME_PER_SECOND, ConstantMultiplier, Weight, WeightToFeeCoefficient,
 		WeightToFeeCoefficients, WeightToFeePolynomial,
 	},
-	PalletId,
 };
-use frame_system::EnsureRoot;
-use pallet_balances::NegativeImbalance;
+use frame_system::{pallet_prelude::BlockNumberFor, EnsureRoot};
 pub use pallet_evm_evolution_collection_factory::REVERT_BYTECODE;
-use pallet_xcm::{EnsureXcm, IsVoiceOfBody};
+pub use pallet_parachain_staking::{InflationInfo, RewardRate, StakingInfo};
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
-pub use sp_runtime::{Perbill, Permill};
+pub use sp_runtime::{Perbill, Permill, Perquintill};
 
-use xcm_config::{OurLocation, XcmConfig, XcmOriginToTransactDispatchOrigin};
+use xcm_config::{XcmConfig, XcmOriginToTransactDispatchOrigin};
 
 pub use pallet_xcm::Call as XcmCall;
 
@@ -73,7 +72,6 @@ use polkadot_runtime_common::{BlockHashCount, SlowAdjustingFeeUpdate};
 use weights::{ExtrinsicBaseWeight, RocksDbWeight};
 
 // XCM Imports
-use staging_xcm::latest::prelude::BodyId;
 use staging_xcm_executor::XcmExecutor;
 
 // Frontier
@@ -233,6 +231,8 @@ pub const SLOT_DURATION: u64 = MILLISECS_PER_BLOCK;
 pub const MINUTES: BlockNumber = 60_000 / (MILLISECS_PER_BLOCK as BlockNumber);
 pub const HOURS: BlockNumber = MINUTES * 60;
 pub const DAYS: BlockNumber = HOURS * 24;
+// Julian year as Substrate handles it
+pub const BLOCKS_PER_YEAR: BlockNumber = DAYS * 36525 / 100;
 
 // Unit = the base number of indivisible units for balances
 // 18 decimals
@@ -327,7 +327,7 @@ impl pallet_timestamp::Config for Runtime {
 
 impl pallet_authorship::Config for Runtime {
 	type FindAuthor = pallet_session::FindAccountFromAuthorIndex<Self, Aura>;
-	type EventHandler = (CollatorSelection,);
+	type EventHandler = ParachainStaking;
 }
 
 parameter_types! {
@@ -353,10 +353,10 @@ impl pallet_balances::Config for Runtime {
 	type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
 	type MaxReserves = ConstU32<50>;
 	type ReserveIdentifier = [u8; 8];
-	type FreezeIdentifier = ();
+	type FreezeIdentifier = RuntimeFreezeReason;
 	type MaxHolds = ConstU32<0>;
 	type RuntimeHoldReason = ();
-	type MaxFreezes = ConstU32<0>;
+	type MaxFreezes = ConstU32<1>;
 }
 
 parameter_types! {
@@ -421,14 +421,14 @@ impl pallet_session::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type ValidatorId = <Self as frame_system::Config>::AccountId;
 	// we don't have stash and controller, thus we don't need the convert as well.
-	type ValidatorIdOf = pallet_collator_selection::IdentityCollator;
-	type ShouldEndSession = pallet_session::PeriodicSessions<Period, Offset>;
-	type NextSessionRotation = pallet_session::PeriodicSessions<Period, Offset>;
-	type SessionManager = CollatorSelection;
+	type ValidatorIdOf = ConvertInto;
+	type ShouldEndSession = ParachainStaking;
+	type NextSessionRotation = ParachainStaking;
+	type SessionManager = ParachainStaking;
 	// Essentially just Aura, but let's be pedantic.
 	type SessionHandler = <SessionKeys as sp_runtime::traits::OpaqueKeys>::KeyTypeIdProviders;
 	type Keys = SessionKeys;
-	type WeightInfo = ();
+	type WeightInfo = pallet_session::weights::SubstrateWeight<Runtime>;
 }
 
 impl pallet_aura::Config for Runtime {
@@ -439,48 +439,8 @@ impl pallet_aura::Config for Runtime {
 }
 
 parameter_types! {
-	pub const PotId: PalletId = PalletId(*b"PotStake");
-	pub const MaxCandidates: u32 = 1000;
-	pub const MinCandidates: u32 = 5;
-	pub const SessionLength: BlockNumber = 6 * HOURS;
-	pub const MaxInvulnerables: u32 = 100;
-	// StakingAdmin pluralistic body.
-	pub const StakingAdminBodyId: BodyId = BodyId::Defense;
-}
-
-/// We allow root and the StakingAdmin to execute privileged collator selection operations.
-pub type CollatorSelectionUpdateOrigin = EitherOfDiverse<
-	EnsureRoot<AccountId>,
-	EnsureXcm<IsVoiceOfBody<OurLocation, StakingAdminBodyId>>,
->;
-
-impl pallet_collator_selection::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type Currency = Balances;
-	type UpdateOrigin = CollatorSelectionUpdateOrigin;
-	type PotId = PotId;
-	type MaxCandidates = MaxCandidates;
-	type MaxInvulnerables = MaxInvulnerables;
-	// should be a multiple of session or things will get inconsistent
-	type KickThreshold = Period;
-	type ValidatorId = <Self as frame_system::Config>::AccountId;
-	type ValidatorIdOf = pallet_collator_selection::IdentityCollator;
-	type ValidatorRegistration = Session;
-	type WeightInfo = ();
-	type MinEligibleCollators = ConstU32<4>;
-}
-
-parameter_types! {
-	/// Null address
-	pub NullAddress: AccountId = [0u8; 20].into();
-}
-
-parameter_types! {
 	/// Max length of the `TokenUri`
 	pub const MaxTokenUriLength: u32 = 512;
-}
-
-parameter_types! {
 	/// Max length of the `UniversalLocation`
 	pub const MaxUniversalLocationLength: u32 = 512;
 }
@@ -544,18 +504,34 @@ impl<F: FindAuthor<u32>> FindAuthor<H160> for FindAuthorTruncated<F> {
 	}
 }
 
-/// Handles transaction fees from the EVM, depositing priority fee in a staking pot
-pub struct EVMDealWithFees<R>(PhantomData<R>);
+/// Logic for sending fees to the sudo account. On every unbalanced change (i.e transaction fees),
+/// the amount is transferred to the sudo account.
+/// TODO: temporary solution until we have a treasury.
+/// TODO: replace this with CI account once we have it in the `pallet_staking` storage
+pub struct ToSudo<R>(PhantomData<R>);
 
-impl<R> OnUnbalanced<NegativeImbalance<R>> for EVMDealWithFees<R>
+type NegativeImbalanceOfBalances<T> = pallet_balances::NegativeImbalance<T>;
+
+impl<R> OnUnbalanced<NegativeImbalanceOfBalances<R>> for ToSudo<R>
 where
-	R: pallet_balances::Config + pallet_collator_selection::Config + core::fmt::Debug,
-	<R as frame_system::Config>::RuntimeEvent: From<pallet_balances::Event<R>>,
+	R: pallet_balances::Config + pallet_sudo::Config,
 {
-	fn on_nonzero_unbalanced(amount: NegativeImbalance<R>) {
-		// deposit the fee into the collator_selection reward pot
-		let staking_pot = <pallet_collator_selection::Pallet<R>>::account_id();
-		<pallet_balances::Pallet<R>>::resolve_creating(&staking_pot, amount);
+	fn on_nonzero_unbalanced(amount: NegativeImbalanceOfBalances<R>) {
+		if let Some(account) = <pallet_sudo::Pallet<R>>::key() {
+			<pallet_balances::Pallet<R>>::resolve_creating(&account, amount);
+		}
+	}
+}
+
+impl<R> OnUnbalanced<CreditOf<R, ()>> for ToSudo<R>
+where
+	R: pallet_balances::Config + pallet_sudo::Config,
+{
+	fn on_nonzero_unbalanced(amount: CreditOf<R, ()>) {
+		if let Some(account) = pallet_sudo::Pallet::<R>::key() {
+			let result = <pallet_balances::Pallet<R>>::resolve(&account, amount);
+			debug_assert!(result.is_ok(), "Should not fail to transfer; qed");
+		}
 	}
 }
 
@@ -640,7 +616,7 @@ impl pallet_evm::Config for Runtime {
 	type FindAuthor = CustomFindAuthor<pallet_session::FindAccountFromAuthorIndex<Self, Aura>>;
 	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
-	type OnChargeTransaction = EVMCurrencyAdapter<Balances, EVMDealWithFees<Runtime>>;
+	type OnChargeTransaction = EVMCurrencyAdapter<Balances, ToSudo<Runtime>>;
 	type OnCreate = ();
 	type PrecompilesType = FrontierPrecompiles<Self>;
 	type PrecompilesValue = PrecompilesValue;
@@ -725,78 +701,89 @@ impl pallet_vesting::Config for Runtime {
 	const MAX_VESTING_SCHEDULES: u32 = 28;
 }
 
-/// Gets the current block author
-///
-/// `Authorship::author()` first tries to read from the `Author` storage, then reads from the
-/// runtime digests.
-pub struct CurrentAuthor;
+/// Minimum round length is 1 hour (300 * 12 second block times)
+#[cfg(feature = "fast-gov")]
+pub const MIN_BLOCKS_PER_ROUND: BlockNumber = 10;
+#[cfg(not(feature = "fast-gov"))]
+pub const MIN_BLOCKS_PER_ROUND: BlockNumber = HOURS;
 
-impl Get<AccountId> for CurrentAuthor {
-	fn get() -> AccountId {
-		Authorship::author().expect("Block author is not updated")
-	}
-}
+#[cfg(feature = "fast-gov")]
+pub const DEFAULT_BLOCKS_PER_ROUND: BlockNumber = 10;
+#[cfg(not(feature = "fast-gov"))]
+pub const DEFAULT_BLOCKS_PER_ROUND: BlockNumber = 2 * HOURS;
 
-/// Pays out collator rewards
-pub struct PayoutCollatorReward;
+#[cfg(feature = "fast-gov")]
+pub const STAKE_DURATION: BlockNumber = 30;
+#[cfg(not(feature = "fast-gov"))]
+pub const STAKE_DURATION: BlockNumber = 7 * DAYS;
 
-impl pallet_parachain_staking::PayoutCollatorReward<Runtime> for PayoutCollatorReward {
-	fn payout_collator_reward(
-		for_round: pallet_parachain_staking::RoundIndex,
-		collator_id: AccountId,
-		amount: Balance,
-	) -> Weight {
-		let extra_weight = ParachainStaking::mint_collator_reward(for_round, collator_id, amount);
+#[cfg(feature = "fast-gov")]
+pub const MIN_COLLATORS: u32 = 1;
+#[cfg(not(feature = "fast-gov"))]
+pub const MIN_COLLATORS: u32 = 16;
 
-		<Runtime as frame_system::Config>::DbWeight::get()
-			.reads(1)
-			.saturating_add(extra_weight)
-	}
+#[cfg(feature = "fast-gov")]
+pub const MAX_CANDIDATES: u32 = 16;
+#[cfg(not(feature = "fast-gov"))]
+pub const MAX_CANDIDATES: u32 = 75;
+
+parameter_types! {
+	/// Minimum round length is 1 hour
+	pub const MinBlocksPerRound: BlockNumber = MIN_BLOCKS_PER_ROUND;
+	/// Default length of a round/session is 2 hours
+	pub const DefaultBlocksPerRound: BlockNumber = DEFAULT_BLOCKS_PER_ROUND;
+	/// Unstaked balance can be unlocked after 7 days
+	pub const StakeDuration: BlockNumber = STAKE_DURATION;
+	/// Collator exit requests are delayed by 4 hours (2 rounds/sessions)
+	pub const ExitQueueDelay: u32 = 2;
+	/// Minimum 16 collators selected per round, default at genesis and minimum forever after
+	pub const MinCollators: u32 = MIN_COLLATORS;
+	/// At least 4 candidates which cannot leave the network if there are no other candidates.
+	pub const MinRequiredCollators: u32 = 4;
+	/// We only allow one delegation per round.
+	pub const MaxDelegationsPerRound: u32 = 1;
+	/// Maximum 25 delegators per collator at launch, might be increased later
+	#[derive(Debug, Eq, PartialEq)]
+	pub const MaxDelegatorsPerCollator: u32 = 35;
+	/// Minimum stake required to be reserved to be a collator is 10_000
+	pub const MinCollatorStake: Balance = 10 * UNIT;
+	/// Minimum stake required to be reserved to be a delegator is 1000
+	pub const MinDelegatorStake: Balance = 2 * UNIT;
+	/// Maximum number of collator candidates
+	#[derive(Debug, Eq, PartialEq)]
+	pub const MaxCollatorCandidates: u32 = MAX_CANDIDATES;
+	/// Maximum number of concurrent requests to unlock unstaked balance
+	pub const MaxUnstakeRequests: u32 = 10;
+	/// The starting block number for the network rewards
+	pub const NetworkRewardStart: BlockNumber = BLOCKS_PER_YEAR.saturating_mul(1);
+	/// The rate in percent for the network rewards
+	pub const NetworkRewardRate: Perquintill = Perquintill::from_percent(10);
 }
 
 impl pallet_parachain_staking::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
-	type MonetaryGovernanceOrigin = EnsureRoot<AccountId>;
-	/// Minimum round length is 2 minutes (10 * 12 second block times)
-	type MinBlocksPerRound = ConstU32<10>;
-	/// If a collator doesn't produce any block on this number of rounds, it is notified as inactive
-	type MaxOfflineRounds = ConstU32<1>;
-	/// Rounds before the collator leaving the candidates request can be executed
-	type LeaveCandidatesDelay = ConstU32<{ 4 * 7 }>;
-	/// Rounds before the candidate bond increase/decrease can be executed
-	type CandidateBondLessDelay = ConstU32<{ 4 * 7 }>;
-	/// Rounds before the delegator exit can be executed
-	type LeaveDelegatorsDelay = ConstU32<{ 4 * 7 }>;
-	/// Rounds before the delegator revocation can be executed
-	type RevokeDelegationDelay = ConstU32<{ 4 * 7 }>;
-	/// Rounds before the delegator bond increase/decrease can be executed
-	type DelegationBondLessDelay = ConstU32<{ 4 * 7 }>;
-	/// Rounds before the reward is paid
-	type RewardPaymentDelay = ConstU32<2>;
-	/// Minimum collators selected per round, default at genesis and minimum forever after
-	type MinSelectedCandidates = ConstU32<8>;
-	/// Maximum top delegations per candidate
-	type MaxTopDelegationsPerCandidate = ConstU32<300>;
-	/// Maximum bottom delegations per candidate
-	type MaxBottomDelegationsPerCandidate = ConstU32<50>;
-	/// Maximum delegations per delegator
-	type MaxDelegationsPerDelegator = ConstU32<100>;
-	/// Minimum stake required to be reserved to be a candidate
-	type MinCandidateStk = ConstU128<{ UNIT }>;
-	/// Minimum stake required to be reserved to be a delegator
-	type MinDelegation = ConstU128<{ MILLIUNIT }>;
-	type BlockAuthor = CurrentAuthor;
-	/// Handler to notify the runtime when a collator is paid.
-	/// If you don't need it, you can specify the type `()`.
-	type OnCollatorPayout = ();
-	type PayoutCollatorReward = PayoutCollatorReward;
-	/// Handler to notify the runtime when a collator is inactive. The default behavior is to mark
-	/// the collator as offline. If you need to use the default implementation, specify the type ().
-	type OnInactiveCollator = ();
-	type OnNewRound = ();
-	type WeightInfo = pallet_parachain_staking::weights::SubstrateWeight<Runtime>;
-	type MaxCandidates = ConstU32<200>;
+	type CurrencyBalance = Balance;
+	type FreezeIdentifier = RuntimeFreezeReason;
+	type MinBlocksPerRound = MinBlocksPerRound;
+	type DefaultBlocksPerRound = DefaultBlocksPerRound;
+	type StakeDuration = StakeDuration;
+	type ExitQueueDelay = ExitQueueDelay;
+	type MinCollators = MinCollators;
+	type MinRequiredCollators = MinRequiredCollators;
+	type MaxDelegationsPerRound = MaxDelegationsPerRound;
+	type MaxDelegatorsPerCollator = MaxDelegatorsPerCollator;
+	type MinCollatorStake = MinCollatorStake;
+	type MinCollatorCandidateStake = MinCollatorStake;
+	type MaxTopCandidates = MaxCollatorCandidates;
+	type MinDelegatorStake = MinDelegatorStake;
+	type MaxUnstakeRequests = MaxUnstakeRequests;
+	type NetworkRewardRate = NetworkRewardRate;
+	type NetworkRewardStart = NetworkRewardStart;
+	type NetworkRewardBeneficiary = ToSudo<Runtime>;
+	type WeightInfo = pallet_parachain_staking::default_weights::SubstrateWeight<Runtime>;
+
+	const BLOCKS_PER_YEAR: BlockNumberFor<Self> = BLOCKS_PER_YEAR;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -814,13 +801,14 @@ construct_runtime!(
 		TransactionPayment: pallet_transaction_payment = 11,
 		Vesting: pallet_vesting = 12,
 
-		// Collator support. The order of these 5 are important and shall not change.
-		ParachainStaking: pallet_parachain_staking = 19,
+		// Consensus support.
+		// The following order MUST NOT be changed: Aura -> Session -> Staking -> Authorship -> AuraExt
+		// Dependencies: AuraExt on Aura, Authorship and Session on ParachainStaking
 		Authorship: pallet_authorship = 20,
-		CollatorSelection: pallet_collator_selection = 21,
 		Session: pallet_session = 22,
 		Aura: pallet_aura = 23,
 		AuraExt: cumulus_pallet_aura_ext = 24,
+		ParachainStaking: pallet_parachain_staking = 25,
 
 		// XCM helpers.
 		XcmpQueue: cumulus_pallet_xcmp_queue = 30,
@@ -963,7 +951,6 @@ mod benches {
 		[pallet_balances, Balances]
 		[pallet_session, SessionBench::<Runtime>]
 		[pallet_timestamp, Timestamp]
-		[pallet_collator_selection, CollatorSelection]
 		[cumulus_pallet_xcmp_queue, XcmpQueue]
 		[pallet_laos_evolution, LaosEvolution]
 		[pallet_asset_metadata_extender, AssetMetadataExtender]
@@ -1283,6 +1270,16 @@ impl_runtime_apis! {
 	impl cumulus_primitives_core::CollectCollationInfo<Block> for Runtime {
 		fn collect_collation_info(header: &<Block as BlockT>::Header) -> cumulus_primitives_core::CollationInfo {
 			ParachainSystem::collect_collation_info(header)
+		}
+	}
+
+	impl laos_runtime_api_staking::Staking<Block, AccountId, Balance> for Runtime {
+		fn get_unclaimed_staking_rewards(account: &AccountId) -> Balance {
+			ParachainStaking::get_unclaimed_staking_rewards(account)
+		}
+
+		fn get_staking_rates() -> laos_runtime_api_staking::StakingRates {
+			ParachainStaking::get_staking_rates()
 		}
 	}
 

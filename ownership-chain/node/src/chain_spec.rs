@@ -1,12 +1,15 @@
 use cumulus_primitives_core::ParaId;
 use fp_evm::GenesisAccount;
 use hex_literal::hex;
-use laos_ownership_runtime::{AccountId, AuraId, Precompiles, REVERT_BYTECODE};
+use laos_ownership_runtime::{
+	AccountId, AuraId, InflationInfo, Precompiles, RewardRate, StakingInfo, BLOCKS_PER_YEAR,
+	REVERT_BYTECODE, UNIT,
+};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
 use sp_core::{Pair, Public, H160, U256};
-use sp_runtime::traits::Zero;
+use sp_runtime::Perquintill;
 use std::{collections::BTreeMap, str::FromStr};
 
 /// List of endowed accounts.
@@ -174,11 +177,6 @@ fn testnet_genesis(
 			parachain_id: id,
 			..Default::default()
 		},
-		collator_selection: laos_ownership_runtime::CollatorSelectionConfig {
-			invulnerables: invulnerables.iter().cloned().map(|(acc, _)| acc).collect(),
-			candidacy_bond: Zero::zero(),
-			..Default::default()
-		},
 		session: laos_ownership_runtime::SessionConfig {
 			keys: invulnerables
 				.into_iter()
@@ -205,6 +203,26 @@ fn testnet_genesis(
 		// EVM compatibility
 		evm_chain_id: laos_ownership_runtime::EVMChainIdConfig {
 			chain_id: 667,
+			..Default::default()
+		},
+		parachain_staking: laos_ownership_runtime::ParachainStakingConfig {
+			max_candidate_stake: 10_000 * UNIT,
+			inflation_config: InflationInfo {
+				collator: StakingInfo {
+					max_rate: Perquintill::from_rational(80_u64, 100_u64),
+					reward_rate: RewardRate::new(
+						BLOCKS_PER_YEAR as u64,
+						Perquintill::from_rational(10_u64, 100_u64),
+					),
+				},
+				delegator: StakingInfo {
+					max_rate: Perquintill::from_rational(80_u64, 100_u64),
+					reward_rate: RewardRate::new(
+						BLOCKS_PER_YEAR as u64,
+						Perquintill::from_rational(10_u64, 100_u64),
+					),
+				},
+			},
 			..Default::default()
 		},
 		evm: laos_ownership_runtime::EVMConfig {
