@@ -47,7 +47,7 @@ pub(crate) const MAX_COLLATOR_STAKE: Balance = 200_000 * 1000 * MILLI_KILT;
 pub(crate) const BLOCKS_PER_ROUND: BlockNumber = 5;
 pub(crate) const DECIMALS: Balance = 1000 * MILLI_KILT;
 pub(crate) const TREASURY_ACC: AccountId = u64::MAX;
-pub(crate) const TREASURY_BALANCE: u128 = u128::MAX;
+pub(crate) const TREASURY_BALANCE: u128 = 200_000;
 
 // Configure a mock runtime to test the pallet.
 construct_runtime!(
