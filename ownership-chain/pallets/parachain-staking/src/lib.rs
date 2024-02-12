@@ -141,7 +141,7 @@ pub mod pallet {
 		traits::{
 			fungible::Balanced,
 			tokens::{
-				fungible::{Inspect, MutateFreeze, Unbalanced},
+				fungible::{Inspect, MutateFreeze},
 				Fortitude, Precision, Preservation,
 			},
 			BuildGenesisConfig, Currency, EstimateNextSessionRotation,

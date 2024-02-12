@@ -18,8 +18,8 @@ use fp_rpc::runtime_decl_for_ethereum_runtime_rpc_api::EthereumRuntimeRPCApiV5;
 use frame_support::{
 	assert_ok,
 	traits::{
-		tokens::{fungible::Balanced, Precision},
-		Currency,
+		tokens::{fungible::Balanced, Precision, Preservation},
+		Currency, ExistenceRequirement,
 	},
 };
 use sp_core::U256;
@@ -149,4 +149,22 @@ fn account_vests_correctly_over_time() {
 #[test]
 fn staking_inflation_rewards_is_deactivated_by_default() {
 	new_test_ext().execute_with(|| assert!(ParachainStaking::inflation_enabled() == false));
+}
+
+#[test]
+fn fees_go_to_rewards_treasury_account() {
+	new_test_ext().execute_with(|| {
+		let alice = AccountId::from_str(ALICE).unwrap();
+		Balances::make_free_balance_be(&alice, 10);
+		{
+			let _ = <Balances as Currency<AccountId>>::withdraw(
+				&alice,
+				10,
+				WithdrawReasons::FEE,
+				ExistenceRequirement::KeepAlive,
+			);
+		}
+		assert_eq!(Balances::total_balance(&alice), 0);
+		assert_eq!(Balances::total_balance(&Sudo::key().unwrap()), 10);
+	});
 }
