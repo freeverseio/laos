@@ -523,15 +523,12 @@ where
 	}
 }
 
-/// Resolve issued network reward to the author of the block.
-pub struct ToAuthor<R>(PhantomData<R>);
-
-impl<R> OnUnbalanced<CreditOf<R, ()>> for ToAuthor<R>
+impl<R> OnUnbalanced<CreditOf<R, ()>> for ToSudo<R>
 where
-	R: pallet_balances::Config + pallet_authorship::Config,
+	R: pallet_balances::Config + pallet_sudo::Config,
 {
 	fn on_nonzero_unbalanced(amount: CreditOf<R, ()>) {
-		if let Some(account) = pallet_authorship::Pallet::<R>::author() {
+		if let Some(account) = pallet_sudo::Pallet::<R>::key() {
 			let result = <pallet_balances::Pallet<R>>::resolve(&account, amount);
 			debug_assert!(result.is_ok(), "Should not fail to transfer; qed");
 		}
@@ -783,7 +780,7 @@ impl pallet_parachain_staking::Config for Runtime {
 	type MaxUnstakeRequests = MaxUnstakeRequests;
 	type NetworkRewardRate = NetworkRewardRate;
 	type NetworkRewardStart = NetworkRewardStart;
-	type NetworkRewardBeneficiary = ToAuthor<Runtime>;
+	type NetworkRewardBeneficiary = ToSudo<Runtime>;
 	type WeightInfo = pallet_parachain_staking::default_weights::SubstrateWeight<Runtime>;
 
 	const BLOCKS_PER_YEAR: BlockNumberFor<Self> = BLOCKS_PER_YEAR;
