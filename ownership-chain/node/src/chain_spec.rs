@@ -163,6 +163,24 @@ fn testnet_genesis(
 	root_key: Option<AccountId>,
 	id: ParaId,
 ) -> laos_ownership_runtime::RuntimeGenesisConfig {
+
+	// Reward configuration used in the genesis config
+	// This defines the rate at which rewards are distributed to collators and delegators
+	let reward_configuration = InflationInfo {
+		InflationInfo::new(
+			BLOCKS_PER_YEAR,
+			// max collator staking rate
+			Perquintill::from_percent(40),
+			// collator reward rate
+			Perquintill::from_percent(10),
+			// max delegator staking rate
+			Perquintill::from_percent(10),
+			// delegator reward rate
+			Perquintill::from_percent(8),
+		)
+	};
+	
+
 	laos_ownership_runtime::RuntimeGenesisConfig {
 		system: laos_ownership_runtime::SystemConfig {
 			code: laos_ownership_runtime::WASM_BINARY
@@ -207,22 +225,7 @@ fn testnet_genesis(
 		},
 		parachain_staking: laos_ownership_runtime::ParachainStakingConfig {
 			max_candidate_stake: 10_000 * UNIT,
-			inflation_config: InflationInfo {
-				collator: StakingInfo {
-					max_rate: Perquintill::from_rational(80_u64, 100_u64),
-					reward_rate: RewardRate::new(
-						BLOCKS_PER_YEAR as u64,
-						Perquintill::from_rational(10_u64, 100_u64),
-					),
-				},
-				delegator: StakingInfo {
-					max_rate: Perquintill::from_rational(80_u64, 100_u64),
-					reward_rate: RewardRate::new(
-						BLOCKS_PER_YEAR as u64,
-						Perquintill::from_rational(10_u64, 100_u64),
-					),
-				},
-			},
+			inflation_config: reward_configuration,
 			..Default::default()
 		},
 		evm: laos_ownership_runtime::EVMConfig {
