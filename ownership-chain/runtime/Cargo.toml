@@ -179,13 +179,15 @@ std = [
 	"pallet-evm-precompile-bn128/std",
 	"pallet-evm-precompile-blake2/std",	
 	"cumulus-pallet-session-benchmarking/std",
-	"frame-benchmarking",
-	"frame-system-benchmarking",
+	"frame-benchmarking?/std",
+	"frame-system-benchmarking?/std",
 	"frame-try-runtime",
 	# Bridge deps,
 	"ownership-parachain-primitives/std",
 	"hex/std",
 	"pallet-parachain-staking/std",
+	"laos-runtime-api-staking/std",
+	"log/std",
 ]
 
 runtime-benchmarks = [

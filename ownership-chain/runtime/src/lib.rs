@@ -956,6 +956,7 @@ mod benches {
 		[cumulus_pallet_xcmp_queue, XcmpQueue]
 		[pallet_laos_evolution, LaosEvolution]
 		[pallet_asset_metadata_extender, AssetMetadataExtender]
+		[pallet_parachain_staking, ParachainStaking]
 	);
 }
 
