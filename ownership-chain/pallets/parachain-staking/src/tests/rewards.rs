@@ -1029,7 +1029,7 @@ fn api_get_unclaimed_staking_rewards() {
 }
 
 #[test]
-fn only_sudo_can_enable_inflation() {
+fn only_sudo_can_toggle_inflation() {
 	let stake = 100_000 * DECIMALS;
 	ExtBuilder::default()
 		.with_balances(vec![(1, stake)])
@@ -1039,10 +1039,10 @@ fn only_sudo_can_enable_inflation() {
 		.execute_with(|| {
 			assert!(StakePallet::inflation_enabled() == false);
 			assert_noop!(
-				StakePallet::enable_inflation(RuntimeOrigin::signed(1), true),
+				StakePallet::toggle_inflation(RuntimeOrigin::signed(1)),
 				sp_runtime::DispatchError::BadOrigin
 			);
-			assert_ok!(StakePallet::enable_inflation(RuntimeOrigin::root(), true));
+			assert_ok!(StakePallet::toggle_inflation(RuntimeOrigin::root()));
 			assert!(StakePallet::inflation_enabled());
 		});
 }
@@ -1058,10 +1058,10 @@ fn only_sudo_can_disable_inflation() {
 		.execute_with(|| {
 			assert!(StakePallet::inflation_enabled());
 			assert_noop!(
-				StakePallet::enable_inflation(RuntimeOrigin::signed(1), false),
+				StakePallet::toggle_inflation(RuntimeOrigin::signed(1)),
 				sp_runtime::DispatchError::BadOrigin
 			);
-			assert_ok!(StakePallet::enable_inflation(RuntimeOrigin::root(), false));
+			assert_ok!(StakePallet::toggle_inflation(RuntimeOrigin::root()));
 			assert!(StakePallet::inflation_enabled() == false);
 		});
 }
