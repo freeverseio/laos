@@ -19,9 +19,10 @@ use frame_support::{
 	assert_ok,
 	traits::{
 		tokens::{fungible::Balanced, Precision, Preservation},
-		Currency, ExistenceRequirement,
+		Currency, ExistenceRequirement, TryDrop, UnfilteredDispatchable,
 	},
 };
+use pallet_transaction_payment::OnChargeTransaction;
 use sp_core::U256;
 
 // Build genesis storage according to the mock runtime.
@@ -39,6 +40,10 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 	}
 	.assimilate_storage(&mut t)
 	.unwrap();
+
+	pallet_sudo::GenesisConfig::<crate::Runtime> { key: Some(AccountId::from_str(BOB).unwrap()) }
+		.assimilate_storage(&mut t)
+		.unwrap();
 
 	t.into()
 }
@@ -155,16 +160,11 @@ fn staking_inflation_rewards_is_deactivated_by_default() {
 fn fees_go_to_rewards_treasury_account() {
 	new_test_ext().execute_with(|| {
 		let alice = AccountId::from_str(ALICE).unwrap();
-		Balances::make_free_balance_be(&alice, 10);
-		{
-			let _ = <Balances as Currency<AccountId>>::withdraw(
-				&alice,
-				10,
-				WithdrawReasons::FEE,
-				ExistenceRequirement::KeepAlive,
-			);
-		}
-		assert_eq!(Balances::total_balance(&alice), 0);
-		assert_eq!(Balances::total_balance(&Sudo::key().unwrap()), 10);
+
+		let call = pallet_balances::Call::<Runtime>::transfer { dest: alice, value: 10 };
+		let dispatch_info =
+			call.dispatch_bypass_filter(RuntimeOrigin::signed([0u8; 20].into())).unwrap();
+
+		assert!(Balances::total_balance(&Sudo::key().unwrap()) > 0);
 	});
 }

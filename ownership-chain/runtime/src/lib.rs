@@ -42,8 +42,9 @@ use sp_version::RuntimeVersion;
 use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{
-		fungible::Balanced, ConstBool, ConstU32, ConstU64, ConstU8, Currency, Everything,
-		FindAuthor, Hooks, Imbalance, OnUnbalanced, WithdrawReasons,
+		fungible::{Balanced, Credit},
+		ConstBool, ConstU32, ConstU64, ConstU8, Currency, Everything, FindAuthor, Hooks, Imbalance,
+		OnUnbalanced, WithdrawReasons,
 	},
 	weights::{
 		constants::WEIGHT_REF_TIME_PER_SECOND, ConstantMultiplier, Weight, WeightToFeeCoefficient,
@@ -366,7 +367,8 @@ parameter_types! {
 
 impl pallet_transaction_payment::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type OnChargeTransaction = pallet_transaction_payment::CurrencyAdapter<Balances, ()>;
+	type OnChargeTransaction =
+		pallet_transaction_payment::CurrencyAdapter<Balances, ToSudo<Runtime>>;
 	type WeightToFee = WeightToFee;
 	type LengthToFee = ConstantMultiplier<Balance, TransactionByteFee>;
 	type FeeMultiplierUpdate = SlowAdjustingFeeUpdate<Self>;
@@ -517,17 +519,22 @@ where
 	R: pallet_balances::Config + pallet_sudo::Config,
 {
 	fn on_nonzero_unbalanced(amount: NegativeImbalanceOfBalances<R>) {
+		debug_assert!(false, "failed");
 		if let Some(account) = <pallet_sudo::Pallet<R>>::key() {
 			<pallet_balances::Pallet<R>>::resolve_creating(&account, amount);
 		}
 	}
 }
 
-impl<R> OnUnbalanced<CreditOf<R, ()>> for ToSudo<R>
+impl<R> OnUnbalanced<Credit<<R as frame_system::Config>::AccountId, pallet_balances::Pallet<R, ()>>>
+	for ToSudo<R>
 where
 	R: pallet_balances::Config + pallet_sudo::Config,
 {
-	fn on_nonzero_unbalanced(amount: CreditOf<R, ()>) {
+	fn on_nonzero_unbalanced(
+		amount: Credit<<R as frame_system::Config>::AccountId, pallet_balances::Pallet<R, ()>>,
+	) {
+		debug_assert!(false, "failed");
 		if let Some(account) = pallet_sudo::Pallet::<R>::key() {
 			// TODO: replace with CI account
 			let result = <pallet_balances::Pallet<R>>::resolve(&account, amount);
@@ -758,7 +765,7 @@ parameter_types! {
 	/// The starting block number for the network rewards
 	pub const NetworkRewardStart: BlockNumber = BLOCKS_PER_YEAR.saturating_mul(1);
 	/// The rate in percent for the network rewards
-	pub const NetworkRewardRate: Perquintill = Perquintill::from_percent(10);
+	pub const NetworkRewardRate: Perquintill = Perquintill::from_percent(10);	 // pub RewardsTreasuryAccount: AccountId =
 }
 
 impl pallet_parachain_staking::Config for Runtime {
