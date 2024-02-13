@@ -18,7 +18,7 @@ jobs:
           cache-key: build_and_push
       - name: Check
         run: |
-          cargo check --all-targets --release --features runtime-benchmarks --features try-runtime
+          cargo check --all-targets --release --features runtime-benchmarks --features try-runtime --features fast-runtime
 
   build_and_push:
     runs-on: 
