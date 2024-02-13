@@ -2,8 +2,7 @@ use cumulus_primitives_core::ParaId;
 use fp_evm::GenesisAccount;
 use hex_literal::hex;
 use laos_ownership_runtime::{
-	AccountId, AuraId, InflationInfo, Precompiles, RewardRate, StakingInfo, BLOCKS_PER_YEAR,
-	REVERT_BYTECODE, UNIT,
+	AccountId, AuraId, InflationInfo, Precompiles, BLOCKS_PER_YEAR, REVERT_BYTECODE, UNIT,
 };
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
@@ -163,23 +162,19 @@ fn testnet_genesis(
 	root_key: Option<AccountId>,
 	id: ParaId,
 ) -> laos_ownership_runtime::RuntimeGenesisConfig {
-
 	// Reward configuration used in the genesis config
 	// This defines the rate at which rewards are distributed to collators and delegators
-	let reward_configuration = InflationInfo {
-		InflationInfo::new(
-			BLOCKS_PER_YEAR,
-			// max collator staking rate
-			Perquintill::from_percent(40),
-			// collator reward rate
-			Perquintill::from_percent(10),
-			// max delegator staking rate
-			Perquintill::from_percent(10),
-			// delegator reward rate
-			Perquintill::from_percent(8),
-		)
-	};
-	
+	let reward_configuration = InflationInfo::new(
+		BLOCKS_PER_YEAR.into(),
+		// max collator staking rate
+		Perquintill::from_percent(40),
+		// collator reward rate
+		Perquintill::from_percent(10),
+		// max delegator staking rate
+		Perquintill::from_percent(10),
+		// delegator reward rate
+		Perquintill::from_percent(8),
+	);
 
 	laos_ownership_runtime::RuntimeGenesisConfig {
 		system: laos_ownership_runtime::SystemConfig {
