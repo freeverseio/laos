@@ -15,7 +15,6 @@ pub mod xcm_config;
 use core::marker::PhantomData;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 use ownership_parachain_primitives::{MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO};
-use pallet_balances::CreditOf;
 use parity_scale_codec::{Decode, Encode};
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
@@ -519,7 +518,6 @@ where
 	R: pallet_balances::Config + pallet_sudo::Config,
 {
 	fn on_nonzero_unbalanced(amount: NegativeImbalanceOfBalances<R>) {
-		debug_assert!(false, "failed");
 		if let Some(account) = <pallet_sudo::Pallet<R>>::key() {
 			<pallet_balances::Pallet<R>>::resolve_creating(&account, amount);
 		}
@@ -534,7 +532,6 @@ where
 	fn on_nonzero_unbalanced(
 		amount: Credit<<R as frame_system::Config>::AccountId, pallet_balances::Pallet<R, ()>>,
 	) {
-		debug_assert!(false, "failed");
 		if let Some(account) = pallet_sudo::Pallet::<R>::key() {
 			// TODO: replace with CI account
 			let result = <pallet_balances::Pallet<R>>::resolve(&account, amount);
@@ -962,6 +959,7 @@ mod benches {
 		[cumulus_pallet_xcmp_queue, XcmpQueue]
 		[pallet_laos_evolution, LaosEvolution]
 		[pallet_asset_metadata_extender, AssetMetadataExtender]
+		[pallet_parachain_staking, ParachainStaking]
 	);
 }
 

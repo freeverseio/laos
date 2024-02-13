@@ -142,7 +142,7 @@ pub mod pallet {
 			fungible::Balanced,
 			tokens::{
 				fungible::{Inspect, MutateFreeze},
-				Fortitude, Precision, Preservation,
+				Fortitude, Preservation,
 			},
 			BuildGenesisConfig, Currency, EstimateNextSessionRotation,
 			ExistenceRequirement::KeepAlive,
@@ -1786,20 +1786,22 @@ pub mod pallet {
 			Ok(Some(<T as pallet::Config>::WeightInfo::set_inflation(num_col, num_del)).into())
 		}
 
-		/// Enable/Disable inflation so rewards are created from inflation
-		/// Only `sudo` can call this function
+		/// Enable/Disable inflation for the network.
+		///
+		/// Only `Root` origin can call this function.
 		#[pallet::call_index(21)]
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::force_new_round())] // TODO: add weight
-		pub fn enable_inflation(origin: OriginFor<T>, value: bool) -> DispatchResult {
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::toggle_inflation())]
+		pub fn toggle_inflation(origin: OriginFor<T>) -> DispatchResult {
 			ensure_root(origin)?;
-			<InflationEnabled<T>>::set(value);
+			<InflationEnabled<T>>::put(!InflationEnabled::<T>::get());
 			Ok(())
 		}
 
 		/// Set rewards treasury account
-		/// Only `sudo` can call this function
+		///
+		/// Only `Root` origin can call this function.
 		#[pallet::call_index(33)]
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::force_new_round())] // TODO: add weight
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::set_rewards_treasury_account())]
 		pub fn set_rewards_treasury_account(
 			origin: OriginFor<T>,
 			account: T::AccountId,
