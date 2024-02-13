@@ -142,7 +142,7 @@ pub mod pallet {
 			fungible::Balanced,
 			tokens::{
 				fungible::{Inspect, MutateFreeze},
-				Fortitude, Precision, Preservation,
+				Fortitude, Preservation,
 			},
 			BuildGenesisConfig, Currency, EstimateNextSessionRotation,
 			ExistenceRequirement::KeepAlive,

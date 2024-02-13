@@ -15,7 +15,6 @@ pub mod xcm_config;
 use core::marker::PhantomData;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 use ownership_parachain_primitives::{MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO};
-use pallet_balances::CreditOf;
 use parity_scale_codec::{Decode, Encode};
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
@@ -368,7 +367,7 @@ parameter_types! {
 impl pallet_transaction_payment::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type OnChargeTransaction =
-		pallet_transaction_payment::CurrencyAdapter<Balances, ToSudo<Runtime>>;
+		pallet_transaction_payment::CurrencyAdapter<Balances, ToRewardsTreasury<Runtime>>;
 	type WeightToFee = WeightToFee;
 	type LengthToFee = ConstantMultiplier<Balance, TransactionByteFee>;
 	type FeeMultiplierUpdate = SlowAdjustingFeeUpdate<Self>;
@@ -506,37 +505,32 @@ impl<F: FindAuthor<u32>> FindAuthor<H160> for FindAuthorTruncated<F> {
 	}
 }
 
-/// Logic for sending fees to the sudo account. On every unbalanced change (i.e transaction fees),
-/// the amount is transferred to the sudo account.
-/// TODO: temporary solution until we have a treasury.
-/// TODO: replace this with CI account once we have it in the `pallet_staking` storage
-pub struct ToSudo<R>(PhantomData<R>);
+/// Logic for sending fees to the rewards treasury account. On every unbalanced change (i.e
+/// transaction fees), the amount is transferred to the rewards treasury account.
+pub struct ToRewardsTreasury<R>(PhantomData<R>);
 
 type NegativeImbalanceOfBalances<T> = pallet_balances::NegativeImbalance<T>;
 
-impl<R> OnUnbalanced<NegativeImbalanceOfBalances<R>> for ToSudo<R>
+impl<R> OnUnbalanced<NegativeImbalanceOfBalances<R>> for ToRewardsTreasury<R>
 where
-	R: pallet_balances::Config + pallet_sudo::Config,
+	R: pallet_balances::Config + pallet_parachain_staking::Config,
 {
 	fn on_nonzero_unbalanced(amount: NegativeImbalanceOfBalances<R>) {
-		debug_assert!(false, "failed");
-		if let Some(account) = <pallet_sudo::Pallet<R>>::key() {
+		if let Some(account) = <pallet_parachain_staking::Pallet<R>>::rewards_treasury_account() {
 			<pallet_balances::Pallet<R>>::resolve_creating(&account, amount);
 		}
 	}
 }
 
 impl<R> OnUnbalanced<Credit<<R as frame_system::Config>::AccountId, pallet_balances::Pallet<R, ()>>>
-	for ToSudo<R>
+	for ToRewardsTreasury<R>
 where
-	R: pallet_balances::Config + pallet_sudo::Config,
+	R: pallet_balances::Config + pallet_parachain_staking::Config,
 {
 	fn on_nonzero_unbalanced(
 		amount: Credit<<R as frame_system::Config>::AccountId, pallet_balances::Pallet<R, ()>>,
 	) {
-		debug_assert!(false, "failed");
-		if let Some(account) = pallet_sudo::Pallet::<R>::key() {
-			// TODO: replace with CI account
+		if let Some(account) = <pallet_parachain_staking::Pallet<R>>::rewards_treasury_account() {
 			let result = <pallet_balances::Pallet<R>>::resolve(&account, amount);
 			debug_assert!(result.is_ok(), "Should not fail to transfer; qed");
 		}
@@ -624,7 +618,7 @@ impl pallet_evm::Config for Runtime {
 	type FindAuthor = CustomFindAuthor<pallet_session::FindAccountFromAuthorIndex<Self, Aura>>;
 	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
-	type OnChargeTransaction = EVMCurrencyAdapter<Balances, ToSudo<Runtime>>;
+	type OnChargeTransaction = EVMCurrencyAdapter<Balances, ToRewardsTreasury<Runtime>>;
 	type OnCreate = ();
 	type PrecompilesType = FrontierPrecompiles<Self>;
 	type PrecompilesValue = PrecompilesValue;
@@ -788,7 +782,7 @@ impl pallet_parachain_staking::Config for Runtime {
 	type MaxUnstakeRequests = MaxUnstakeRequests;
 	type NetworkRewardRate = NetworkRewardRate;
 	type NetworkRewardStart = NetworkRewardStart;
-	type NetworkRewardBeneficiary = ToSudo<Runtime>;
+	type NetworkRewardBeneficiary = ToRewardsTreasury<Runtime>;
 	type WeightInfo = pallet_parachain_staking::default_weights::SubstrateWeight<Runtime>;
 
 	const BLOCKS_PER_YEAR: BlockNumberFor<Self> = BLOCKS_PER_YEAR;
