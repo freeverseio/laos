@@ -249,4 +249,4 @@ try-runtime = [
 	"pallet-parachain-staking/try-runtime",
 ]
 
-fast-gov = []
+fast-runtime = []
