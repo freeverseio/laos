@@ -67,7 +67,7 @@ pub use sp_runtime::BuildStorage;
 pub use parachains_common::impls::DealWithFees;
 
 // Polkadot imports
-use polkadot_runtime_common::{BlockHashCount, SlowAdjustingFeeUpdate};
+use polkadot_runtime_common::{prod_or_fast, BlockHashCount, SlowAdjustingFeeUpdate};
 
 use weights::{ExtrinsicBaseWeight, RocksDbWeight};
 
@@ -701,43 +701,17 @@ impl pallet_vesting::Config for Runtime {
 	const MAX_VESTING_SCHEDULES: u32 = 28;
 }
 
-/// Minimum round length is 1 hour (300 * 12 second block times)
-#[cfg(feature = "fast-gov")]
-pub const MIN_BLOCKS_PER_ROUND: BlockNumber = 10;
-#[cfg(not(feature = "fast-gov"))]
-pub const MIN_BLOCKS_PER_ROUND: BlockNumber = HOURS;
-
-#[cfg(feature = "fast-gov")]
-pub const DEFAULT_BLOCKS_PER_ROUND: BlockNumber = 10;
-#[cfg(not(feature = "fast-gov"))]
-pub const DEFAULT_BLOCKS_PER_ROUND: BlockNumber = 2 * HOURS;
-
-#[cfg(feature = "fast-gov")]
-pub const STAKE_DURATION: BlockNumber = 30;
-#[cfg(not(feature = "fast-gov"))]
-pub const STAKE_DURATION: BlockNumber = 7 * DAYS;
-
-#[cfg(feature = "fast-gov")]
-pub const MIN_COLLATORS: u32 = 1;
-#[cfg(not(feature = "fast-gov"))]
-pub const MIN_COLLATORS: u32 = 16;
-
-#[cfg(feature = "fast-gov")]
-pub const MAX_CANDIDATES: u32 = 16;
-#[cfg(not(feature = "fast-gov"))]
-pub const MAX_CANDIDATES: u32 = 75;
-
 parameter_types! {
 	/// Minimum round length is 1 hour
-	pub const MinBlocksPerRound: BlockNumber = MIN_BLOCKS_PER_ROUND;
+	pub const MinBlocksPerRound: BlockNumber = prod_or_fast!(HOURS, 10);
 	/// Default length of a round/session is 2 hours
-	pub const DefaultBlocksPerRound: BlockNumber = DEFAULT_BLOCKS_PER_ROUND;
+	pub const DefaultBlocksPerRound: BlockNumber = prod_or_fast!(2 * HOURS, 10);
 	/// Unstaked balance can be unlocked after 7 days
-	pub const StakeDuration: BlockNumber = STAKE_DURATION;
+	pub const StakeDuration: BlockNumber = prod_or_fast!(7 * DAYS, 30);
 	/// Collator exit requests are delayed by 4 hours (2 rounds/sessions)
 	pub const ExitQueueDelay: u32 = 2;
 	/// Minimum 16 collators selected per round, default at genesis and minimum forever after
-	pub const MinCollators: u32 = MIN_COLLATORS;
+	pub const MinCollators: u32 = prod_or_fast!(16, 1);
 	/// At least 4 candidates which cannot leave the network if there are no other candidates.
 	pub const MinRequiredCollators: u32 = 4;
 	/// We only allow one delegation per round.
@@ -751,7 +725,7 @@ parameter_types! {
 	pub const MinDelegatorStake: Balance = 2 * UNIT;
 	/// Maximum number of collator candidates
 	#[derive(Debug, Eq, PartialEq)]
-	pub const MaxCollatorCandidates: u32 = MAX_CANDIDATES;
+	pub const MaxCollatorCandidates: u32 = prod_or_fast!(75, 16);
 	/// Maximum number of concurrent requests to unlock unstaked balance
 	pub const MaxUnstakeRequests: u32 = 10;
 	/// The starting block number for the network rewards
