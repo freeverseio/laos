@@ -8,7 +8,7 @@ mod xcm_tests;
 
 pub use xcm_mock::ParachainXcmRouter;
 
-use sp_runtime::BuildStorage;
+use sp_runtime::{traits::SignedExtension, BuildStorage};
 
 use core::str::FromStr;
 
@@ -17,12 +17,13 @@ use crate::{AccountId, Balances, Runtime, UNIT};
 use fp_rpc::runtime_decl_for_ethereum_runtime_rpc_api::EthereumRuntimeRPCApiV5;
 use frame_support::{
 	assert_ok,
+	dispatch::GetDispatchInfo,
 	traits::{
-		tokens::{fungible::Balanced, Precision, Preservation},
-		Currency, ExistenceRequirement, TryDrop, UnfilteredDispatchable,
+		tokens::{fungible::Balanced, Precision},
+		Currency, UnfilteredDispatchable,
 	},
 };
-use pallet_transaction_payment::OnChargeTransaction;
+use pallet_transaction_payment::ChargeTransactionPayment;
 use sp_core::U256;
 
 // Build genesis storage according to the mock runtime.
@@ -157,14 +158,42 @@ fn staking_inflation_rewards_is_deactivated_by_default() {
 }
 
 #[test]
+fn rewards_treasury_account_is_not_set_by_default() {
+	new_test_ext().execute_with(|| assert!(ParachainStaking::rewards_treasury_account().is_none()));
+}
+
+#[test]
 fn fees_go_to_rewards_treasury_account() {
 	new_test_ext().execute_with(|| {
 		let alice = AccountId::from_str(ALICE).unwrap();
+		let from = [0u8; 20].into();
+		let rewards_treasury_account = [2u8; 20].into();
+
+		// We need to set since by default is None
+		assert_ok!(ParachainStaking::set_rewards_treasury_account(
+			RuntimeOrigin::root(),
+			rewards_treasury_account,
+		));
 
 		let call = pallet_balances::Call::<Runtime>::transfer { dest: alice, value: 10 };
-		let dispatch_info =
-			call.dispatch_bypass_filter(RuntimeOrigin::signed([0u8; 20].into())).unwrap();
+		let info = call.get_dispatch_info();
+		let len = call.encode().len();
+		let pre_dispatch = ChargeTransactionPayment::<Runtime>::from(0)
+			.pre_dispatch(&from, &call.clone().into(), &info, len)
+			.expect("pre_dispatch error");
+		let post_result = call
+			.dispatch_bypass_filter(RuntimeOrigin::signed(from.clone()))
+			.expect("dispatch failure");
+		assert_ok!(ChargeTransactionPayment::<Runtime>::post_dispatch(
+			Some(pre_dispatch),
+			&info,
+			&post_result,
+			len,
+			&Ok(())
+		));
 
-		assert!(Balances::total_balance(&Sudo::key().unwrap()) > 0);
+		let actual_fee =
+			TransactionPayment::compute_actual_fee(len.try_into().unwrap(), &info, &post_result, 0);
+		assert_eq!(Balances::total_balance(&rewards_treasury_account), actual_fee);
 	});
 }
