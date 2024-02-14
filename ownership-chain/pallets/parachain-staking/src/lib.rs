@@ -1693,15 +1693,15 @@ pub mod pallet {
 
 				ensure!(!rewards.is_zero(), Error::<T>::RewardsNotFound);
 
-				let sent_rewards = Self::send_rewards(&target, rewards)?;
+				let rewards_sent = Self::send_rewards(&target, rewards)?;
 
-				if sent_rewards == rewards {
+				if rewards_sent == rewards {
 					*maybe_rewards = None;
 				} else {
-					*maybe_rewards = Some(rewards.saturating_sub(sent_rewards));
+					*maybe_rewards = Some(rewards.saturating_sub(rewards_sent));
 				}
 
-				Self::deposit_event(Event::Rewarded(target, sent_rewards));
+				Self::deposit_event(Event::Rewarded(target, rewards_sent));
 
 				Ok(())
 			})
