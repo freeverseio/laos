@@ -1099,6 +1099,7 @@ fn only_sudo_can_toggle_inflation() {
 		.with_inflation_enabled(false)
 		.build()
 		.execute_with(|| {
+			System::set_block_number(1);
 			assert!(StakePallet::inflation_enabled() == false);
 			assert_noop!(
 				StakePallet::toggle_inflation(RuntimeOrigin::signed(1)),
@@ -1106,6 +1107,10 @@ fn only_sudo_can_toggle_inflation() {
 			);
 			assert_ok!(StakePallet::toggle_inflation(RuntimeOrigin::root()));
 			assert!(StakePallet::inflation_enabled());
+			// assert event is emitted
+			System::assert_has_event(crate::mock::RuntimeEvent::StakePallet(
+				crate::Event::InflationEnabled(StakePallet::inflation_enabled()),
+			));
 		});
 }
 
@@ -1137,6 +1142,7 @@ fn only_sudo_can_set_rewards_treasury_account() {
 		.with_inflation_enabled(false)
 		.build()
 		.execute_with(|| {
+			System::set_block_number(1);
 			assert!(StakePallet::rewards_treasury_account() == Some(TREASURY_ACC));
 			let rewards_treasury_account = 1;
 			assert_noop!(
@@ -1151,6 +1157,11 @@ fn only_sudo_can_set_rewards_treasury_account() {
 				rewards_treasury_account
 			));
 			assert!(StakePallet::rewards_treasury_account().unwrap() == rewards_treasury_account);
+
+			// assert event is emitted
+			System::assert_has_event(crate::mock::RuntimeEvent::StakePallet(
+				crate::Event::RewardsTreasuryAccountSet(rewards_treasury_account),
+			));
 		});
 }
 

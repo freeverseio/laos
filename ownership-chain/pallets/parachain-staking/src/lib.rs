@@ -500,6 +500,12 @@ pub mod pallet {
 		/// \[round number, first block in the current round, old value, new
 		/// value\]
 		BlocksPerRoundSet(SessionIndex, BlockNumberFor<T>, BlockNumberFor<T>, BlockNumberFor<T>),
+		/// New treasury rewards account has been set.
+		/// \[new account\]
+		RewardsTreasuryAccountSet(T::AccountId),
+		/// Inflation feature is toggled.
+		/// \[enabled\]
+		InflationEnabled(bool),
 	}
 
 	#[pallet::hooks]
@@ -1804,6 +1810,7 @@ pub mod pallet {
 		pub fn toggle_inflation(origin: OriginFor<T>) -> DispatchResult {
 			ensure_root(origin)?;
 			<InflationEnabled<T>>::put(!InflationEnabled::<T>::get());
+			Self::deposit_event(Event::InflationEnabled(InflationEnabled::<T>::get()));
 			Ok(())
 		}
 
@@ -1817,7 +1824,8 @@ pub mod pallet {
 			account: T::AccountId,
 		) -> DispatchResult {
 			ensure_root(origin)?;
-			<RewardsTreasuryAccount<T>>::put(account);
+			<RewardsTreasuryAccount<T>>::put(account.clone());
+			Self::deposit_event(Event::RewardsTreasuryAccountSet(account));
 			Ok(())
 		}
 	}
