@@ -500,6 +500,12 @@ pub mod pallet {
 		/// \[round number, first block in the current round, old value, new
 		/// value\]
 		BlocksPerRoundSet(SessionIndex, BlockNumberFor<T>, BlockNumberFor<T>, BlockNumberFor<T>),
+		/// New treasury rewards account has been set.
+		/// \[new account\]
+		RewardsTreasuryAccountSet(T::AccountId),
+		/// Inflation feature is toggled.
+		/// \[enabled\]
+		InflationEnabled(bool),
 	}
 
 	#[pallet::hooks]
@@ -1682,13 +1688,23 @@ pub mod pallet {
 			let target = ensure_signed(origin)?;
 
 			// reset rewards
-			let rewards = Rewards::<T>::take(&target);
-			ensure!(!rewards.is_zero(), Error::<T>::RewardsNotFound);
+			Rewards::<T>::try_mutate_exists(target.clone(), |maybe_rewards| {
+				let rewards = maybe_rewards.take().ok_or(Error::<T>::RewardsNotFound)?;
 
-			let rewards = Self::send_rewards(&target, rewards)?;
-			Self::deposit_event(Event::Rewarded(target, rewards));
+				ensure!(!rewards.is_zero(), Error::<T>::RewardsNotFound);
 
-			Ok(())
+				let rewards_sent = Self::send_rewards(&target, rewards)?;
+
+				if rewards_sent == rewards {
+					*maybe_rewards = None;
+				} else {
+					*maybe_rewards = Some(rewards.saturating_sub(rewards_sent));
+				}
+
+				Self::deposit_event(Event::Rewarded(target, rewards_sent));
+
+				Ok(())
+			})
 		}
 
 		/// Actively increment the rewards of a collator.
@@ -1793,7 +1809,9 @@ pub mod pallet {
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::toggle_inflation())]
 		pub fn toggle_inflation(origin: OriginFor<T>) -> DispatchResult {
 			ensure_root(origin)?;
-			<InflationEnabled<T>>::put(!InflationEnabled::<T>::get());
+			let inflation_enabled = InflationEnabled::<T>::get();
+			<InflationEnabled<T>>::put(!inflation_enabled);
+			Self::deposit_event(Event::InflationEnabled(!inflation_enabled));
 			Ok(())
 		}
 
@@ -1807,7 +1825,8 @@ pub mod pallet {
 			account: T::AccountId,
 		) -> DispatchResult {
 			ensure_root(origin)?;
-			<RewardsTreasuryAccount<T>>::put(account);
+			<RewardsTreasuryAccount<T>>::put(account.clone());
+			Self::deposit_event(Event::RewardsTreasuryAccountSet(account));
 			Ok(())
 		}
 	}
