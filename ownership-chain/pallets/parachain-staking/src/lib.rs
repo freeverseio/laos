@@ -1809,8 +1809,9 @@ pub mod pallet {
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::toggle_inflation())]
 		pub fn toggle_inflation(origin: OriginFor<T>) -> DispatchResult {
 			ensure_root(origin)?;
-			<InflationEnabled<T>>::put(!InflationEnabled::<T>::get());
-			Self::deposit_event(Event::InflationEnabled(InflationEnabled::<T>::get()));
+			let inflation_enabled = InflationEnabled::<T>::get();
+			<InflationEnabled<T>>::put(!inflation_enabled);
+			Self::deposit_event(Event::InflationEnabled(!inflation_enabled));
 			Ok(())
 		}
 
