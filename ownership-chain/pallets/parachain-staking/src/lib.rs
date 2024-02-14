@@ -1682,13 +1682,23 @@ pub mod pallet {
 			let target = ensure_signed(origin)?;
 
 			// reset rewards
-			let rewards = Rewards::<T>::take(&target);
-			ensure!(!rewards.is_zero(), Error::<T>::RewardsNotFound);
+			Rewards::<T>::try_mutate_exists(target.clone(), |maybe_rewards| {
+				let rewards = maybe_rewards.take().ok_or(Error::<T>::RewardsNotFound)?;
 
-			let rewards = Self::send_rewards(&target, rewards)?;
-			Self::deposit_event(Event::Rewarded(target, rewards));
+				ensure!(!rewards.is_zero(), Error::<T>::RewardsNotFound);
 
-			Ok(())
+				let sent_rewards = Self::send_rewards(&target, rewards)?;
+
+				if sent_rewards == rewards {
+					*maybe_rewards = None;
+				} else {
+					*maybe_rewards = Some(rewards.saturating_sub(sent_rewards));
+				}
+
+				Self::deposit_event(Event::Rewarded(target, sent_rewards));
+
+				Ok(())
+			})
 		}
 
 		/// Actively increment the rewards of a collator.

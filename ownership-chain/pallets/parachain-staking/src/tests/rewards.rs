@@ -20,17 +20,14 @@
 
 use crate::{
 	mock::{
-		almost_equal, roll_to, roll_to_claim_rewards, AccountId, AllPalletsWithSystem, Balance,
-		Balances, BlockNumber, ExtBuilder, RuntimeOrigin, StakePallet, System, Test, DECIMALS,
-		TREASURY_ACC, TREASURY_BALANCE,
+		almost_equal, roll_to, roll_to_claim_rewards, AccountId, Balance, Balances, BlockNumber,
+		ExtBuilder, RuntimeOrigin, StakePallet, System, Test, DECIMALS, TREASURY_ACC,
+		TREASURY_BALANCE,
 	},
 	types::{BalanceOf, StakeOf},
 	Config, Error, InflationInfo, RewardsTreasuryAccount,
 };
-use frame_support::{
-	assert_noop, assert_ok,
-	traits::{fungible::Inspect, OnFinalize, OnInitialize},
-};
+use frame_support::{assert_noop, assert_ok, traits::fungible::Inspect};
 use pallet_authorship::EventHandler;
 use sp_runtime::{traits::Zero, Perbill, Perquintill};
 
@@ -971,6 +968,71 @@ fn rewards_incrementing_and_claiming() {
 				StakePallet::increment_delegator_rewards(RuntimeOrigin::signed(1)),
 				Error::<Test>::DelegatorNotFound
 			);
+		});
+}
+
+#[test]
+fn claiming_rewards_while_no_treasury_does_not_reset_rewards() {
+	ExtBuilder::default()
+		.with_balances(vec![(1, DECIMALS), (2, DECIMALS), (3, DECIMALS), (4, 100)])
+		.with_collators(vec![(1, DECIMALS), (4, 10)])
+		.with_delegators(vec![(2, 1, DECIMALS), (3, 1, DECIMALS)])
+		.build_and_execute_with_sanity_tests(|| {
+			// claiming should not be possible with zero counters
+			(1..=4).for_each(|id| {
+				assert_noop!(
+					StakePallet::claim_rewards(RuntimeOrigin::signed(id)),
+					Error::<Test>::RewardsNotFound,
+				);
+			});
+
+			// note once to set counter to 1
+			StakePallet::note_author(1);
+			assert_eq!(StakePallet::blocks_authored(1), 2);
+			assert!(StakePallet::blocks_rewarded(2).is_zero());
+
+			// claiming should not be possible before incrementing rewards
+			(1..=4).for_each(|id| {
+				assert_noop!(
+					StakePallet::claim_rewards(RuntimeOrigin::signed(id)),
+					Error::<Test>::RewardsNotFound
+				);
+			});
+
+			// increment rewards for 2 and match counter to collator
+			assert_ok!(StakePallet::increment_delegator_rewards(RuntimeOrigin::signed(2)));
+			assert_eq!(StakePallet::blocks_rewarded(2), 2);
+			let rewards_2 = StakePallet::rewards(2);
+
+			// should only update rewards for collator as well
+			assert_ok!(StakePallet::increment_collator_rewards(RuntimeOrigin::signed(1)));
+			assert_eq!(StakePallet::blocks_rewarded(1), StakePallet::blocks_authored(1));
+			assert!(!StakePallet::rewards(1).is_zero());
+			// rewards of 2 should not be changed
+			assert_eq!(StakePallet::rewards(2), rewards_2);
+			// 3 should still not have blocks rewarded bumped
+			assert!(StakePallet::blocks_rewarded(3).is_zero());
+
+			// one can claim rewards, but since there is no treasury, rewards are not set
+			// they are not reset either
+			assert_ok!(StakePallet::claim_rewards(RuntimeOrigin::signed(1)),);
+			assert!(!StakePallet::rewards(1).is_zero());
+
+			// set treasury account
+			assert_ok!(StakePallet::set_rewards_treasury_account(
+				RuntimeOrigin::root(),
+				TREASURY_ACC
+			));
+
+			// Give treasury some balance
+			<Balances as frame_support::traits::Currency<AccountId>>::make_free_balance_be(
+				&TREASURY_ACC,
+				1000 * DECIMALS,
+			);
+
+			// one can claim rewards, and rewards are reset
+			assert_ok!(StakePallet::claim_rewards(RuntimeOrigin::signed(1)),);
+			assert!(StakePallet::rewards(1).is_zero());
 		});
 }
 

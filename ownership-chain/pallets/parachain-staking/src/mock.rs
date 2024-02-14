@@ -23,7 +23,7 @@ use super::*;
 use crate::{self as stake, types::CreditOf};
 use frame_support::{
 	assert_ok, construct_runtime, parameter_types,
-	traits::{fungible::Balanced, Currency, OnFinalize, OnInitialize, OnUnbalanced},
+	traits::{fungible::Balanced, OnFinalize, OnInitialize, OnUnbalanced},
 };
 use frame_system::pallet_prelude::BlockNumberFor;
 use pallet_authorship::EventHandler;
