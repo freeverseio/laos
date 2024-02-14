@@ -54,7 +54,7 @@ std = [
   "laos-runtime-api-staking/std",
 ]
 runtime-benchmarks = [
-  "frame-benchmarking",
+  "frame-benchmarking/runtime-benchmarks",
   "frame-support/runtime-benchmarks",
   "frame-system/runtime-benchmarks",
   "pallet-balances/runtime-benchmarks",
@@ -67,4 +67,5 @@ try-runtime = [
   "pallet-authorship/try-runtime",
   "pallet-balances/try-runtime",
   "pallet-session/try-runtime",
+  "sp-runtime/try-runtime",
 ]

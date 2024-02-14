@@ -23,7 +23,7 @@ use super::*;
 use crate::{self as stake, types::CreditOf};
 use frame_support::{
 	assert_ok, construct_runtime, parameter_types,
-	traits::{fungible::Balanced, OnFinalize, OnInitialize, OnUnbalanced},
+	traits::{fungible::Balanced, Currency, OnFinalize, OnInitialize, OnUnbalanced},
 };
 use frame_system::pallet_prelude::BlockNumberFor;
 use pallet_authorship::EventHandler;
@@ -47,6 +47,7 @@ pub(crate) const MAX_COLLATOR_STAKE: Balance = 200_000 * 1000 * MILLI_KILT;
 pub(crate) const BLOCKS_PER_ROUND: BlockNumber = 5;
 pub(crate) const DECIMALS: Balance = 1000 * MILLI_KILT;
 pub(crate) const TREASURY_ACC: AccountId = u64::MAX;
+pub(crate) const TREASURY_BALANCE: u128 = 100_000 * DECIMALS;
 
 // Configure a mock runtime to test the pallet.
 construct_runtime!(
@@ -222,6 +223,10 @@ pub(crate) struct ExtBuilder {
 	inflation_config: InflationInfo,
 	// blocks per round
 	blocks_per_round: BlockNumber,
+	// is inflation activated
+	inflation_enabled: bool,
+	// rewards treasury account
+	rewards_treasury_account: AccountId,
 }
 
 impl Default for ExtBuilder {
@@ -238,6 +243,9 @@ impl Default for ExtBuilder {
 				Perquintill::from_percent(40),
 				Perquintill::from_percent(10),
 			),
+			// inflation is activated by default so we keep retrocompatibility with existing tests
+			inflation_enabled: true,
+			rewards_treasury_account: TREASURY_ACC,
 		}
 	}
 }
@@ -291,6 +299,11 @@ impl ExtBuilder {
 		self
 	}
 
+	pub(crate) fn with_inflation_enabled(mut self, enabled: bool) -> Self {
+		self.inflation_enabled = enabled;
+		self
+	}
+
 	pub(crate) fn build(self) -> sp_io::TestExternalities {
 		let mut t = frame_system::GenesisConfig::<Test>::default()
 			.build_storage()
@@ -311,6 +324,7 @@ impl ExtBuilder {
 			stakers,
 			inflation_config: self.inflation_config.clone(),
 			max_candidate_stake: 160_000_000 * DECIMALS,
+			rewards_treasury_account: Some(self.rewards_treasury_account),
 		}
 		.assimilate_storage(&mut t)
 		.expect("Parachain Staking's storage can be assimilated");
@@ -338,6 +352,9 @@ impl ExtBuilder {
 		}
 
 		ext.execute_with(|| System::set_block_number(1));
+		ext.execute_with(|| {
+			stake::InflationEnabled::<Test>::set(self.inflation_enabled);
+		});
 		ext
 	}
 

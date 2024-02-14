@@ -141,10 +141,12 @@ pub mod pallet {
 		traits::{
 			fungible::Balanced,
 			tokens::{
-				fungible::{Inspect, MutateFreeze, Unbalanced},
-				Fortitude, Precision, Preservation,
+				fungible::{Inspect, MutateFreeze},
+				Fortitude, Preservation,
 			},
-			BuildGenesisConfig, EstimateNextSessionRotation, Get, OnUnbalanced,
+			BuildGenesisConfig, Currency, EstimateNextSessionRotation,
+			ExistenceRequirement::KeepAlive,
+			Get, OnUnbalanced,
 		},
 	};
 	use frame_system::pallet_prelude::*;
@@ -153,7 +155,7 @@ pub mod pallet {
 	use scale_info::TypeInfo;
 	use sp_runtime::{
 		traits::{Convert, One, SaturatedConversion, Saturating, StaticLookup, Zero},
-		Permill, Perquintill,
+		Permill, Perquintill, TokenError,
 	};
 	use sp_staking::SessionIndex;
 	use sp_std::prelude::*;
@@ -201,7 +203,8 @@ pub mod pallet {
 				Self::AccountId,
 				Balance = Self::CurrencyBalance,
 				Id = <Self as pallet::Config>::FreezeIdentifier,
-			> + Eq;
+			> + Eq
+			+ Currency<Self::AccountId, Balance = Self::CurrencyBalance>;
 
 		type FreezeIdentifier: From<FreezeReason>
 			+ PartialEq
@@ -516,8 +519,8 @@ pub mod pallet {
 				post_weight = <T as Config>::WeightInfo::on_initialize_round_update();
 			}
 			// check for network reward and mint
-			// on success, mint each block
-			if now > T::NetworkRewardStart::get() {
+			// on success, mint each block if inflation is enabled
+			if now > T::NetworkRewardStart::get() && Self::inflation_enabled() {
 				T::NetworkRewardBeneficiary::on_unbalanced(Self::issue_network_reward());
 				post_weight = post_weight
 					.saturating_add(<T as Config>::WeightInfo::on_initialize_network_rewards());
@@ -679,12 +682,23 @@ pub mod pallet {
 	#[pallet::getter(fn new_round_forced)]
 	pub(crate) type ForceNewRound<T: Config> = StorageValue<_, bool, ValueQuery>;
 
+	/// Switch to enable/disable inflation feature
+	#[pallet::storage]
+	#[pallet::getter(fn inflation_enabled)]
+	pub type InflationEnabled<T: Config> = StorageValue<_, bool, ValueQuery>;
+
+	/// Stores rewards treasury account
+	#[pallet::storage]
+	#[pallet::getter(fn rewards_treasury_account)]
+	pub type RewardsTreasuryAccount<T: Config> = StorageValue<_, T::AccountId, OptionQuery>;
+
 	#[pallet::genesis_config]
 	#[derive(frame_support::DefaultNoBound)]
 	pub struct GenesisConfig<T: Config> {
 		pub stakers: GenesisStaker<T>,
 		pub inflation_config: InflationInfo,
 		pub max_candidate_stake: BalanceOf<T>,
+		pub rewards_treasury_account: Option<T::AccountId>,
 	}
 
 	#[pallet::genesis_build]
@@ -697,6 +711,9 @@ pub mod pallet {
 
 			InflationConfig::<T>::put(self.inflation_config.clone());
 			MaxCollatorCandidateStake::<T>::put(self.max_candidate_stake);
+			if let Some(rewards_treasury_account) = &self.rewards_treasury_account {
+				RewardsTreasuryAccount::<T>::put(rewards_treasury_account.clone());
+			}
 
 			// Setup delegate & collators
 			for &(ref actor, ref opt_val, balance) in &self.stakers {
@@ -1668,13 +1685,7 @@ pub mod pallet {
 			let rewards = Rewards::<T>::take(&target);
 			ensure!(!rewards.is_zero(), Error::<T>::RewardsNotFound);
 
-			// mint into target
-			let rewards = <T::Currency as Unbalanced<AccountIdOf<T>>>::increase_balance(
-				&target,
-				rewards,
-				Precision::Exact,
-			)?;
-
+			let rewards = Self::send_rewards(&target, rewards)?;
 			Self::deposit_event(Event::Rewarded(target, rewards));
 
 			Ok(())
@@ -1773,6 +1784,31 @@ pub mod pallet {
 			)?;
 
 			Ok(Some(<T as pallet::Config>::WeightInfo::set_inflation(num_col, num_del)).into())
+		}
+
+		/// Enable/Disable inflation for the network.
+		///
+		/// Only `Root` origin can call this function.
+		#[pallet::call_index(21)]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::toggle_inflation())]
+		pub fn toggle_inflation(origin: OriginFor<T>) -> DispatchResult {
+			ensure_root(origin)?;
+			<InflationEnabled<T>>::put(!InflationEnabled::<T>::get());
+			Ok(())
+		}
+
+		/// Set rewards treasury account
+		///
+		/// Only `Root` origin can call this function.
+		#[pallet::call_index(33)]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::set_rewards_treasury_account())]
+		pub fn set_rewards_treasury_account(
+			origin: OriginFor<T>,
+			account: T::AccountId,
+		) -> DispatchResult {
+			ensure_root(origin)?;
+			<RewardsTreasuryAccount<T>>::put(account);
+			Ok(())
 		}
 	}
 
@@ -2438,7 +2474,7 @@ pub mod pallet {
 				MaxSelectedCandidates::<T>::get().into();
 			let network_reward = T::NetworkRewardRate::get() * max_col_rewards;
 
-			T::Currency::issue(network_reward)
+			<T::Currency as Balanced<AccountIdOf<T>>>::issue(network_reward)
 		}
 
 		/// Calculates the collator staking rewards for authoring `multiplier`
@@ -2524,6 +2560,32 @@ pub mod pallet {
 					unclaimed_blocks.into(),
 				))
 			});
+		}
+
+		/// Sends rewards to a given account.
+		/// - If rewards treasury account exists, the rewards are transferred from this account
+		/// to the rewarded account. In case of an funds unavailable error during the transfer
+		/// because the rewards treasury account does not have enough balance, a zero balance is
+		/// returned.
+		/// - If the rewards treasury account does not exist, a zero balance is returned.
+		///
+		/// Then the possible returns the amount of rewards sent to the account.
+		pub fn send_rewards(
+			account: &T::AccountId,
+			amount: BalanceOf<T>,
+		) -> Result<BalanceOf<T>, DispatchError> {
+			if let Some(rewards_treasury_account) = RewardsTreasuryAccount::<T>::get() {
+				return T::Currency::transfer(&rewards_treasury_account, account, amount, KeepAlive)
+					.map(|_| amount)
+					.or_else(|e| match e {
+						DispatchError::Token(TokenError::FundsUnavailable) =>
+							Ok(Default::default()),
+						_ => Err(e.into()),
+					});
+			}
+
+			// Default return when RewardsTreasuryAccount is not set.
+			Ok(Default::default())
 		}
 	}
 

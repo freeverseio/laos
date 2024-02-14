@@ -18,18 +18,21 @@
 
 //! Unit testing
 
-use frame_support::{assert_noop, assert_ok, traits::fungible::Inspect};
-use pallet_authorship::EventHandler;
-use sp_runtime::{traits::Zero, Perbill, Perquintill};
-
 use crate::{
 	mock::{
-		almost_equal, roll_to, roll_to_claim_rewards, AccountId, Balance, Balances, BlockNumber,
-		ExtBuilder, RuntimeOrigin, StakePallet, System, Test, DECIMALS, TREASURY_ACC,
+		almost_equal, roll_to, roll_to_claim_rewards, AccountId, AllPalletsWithSystem, Balance,
+		Balances, BlockNumber, ExtBuilder, RuntimeOrigin, StakePallet, System, Test, DECIMALS,
+		TREASURY_ACC, TREASURY_BALANCE,
 	},
 	types::{BalanceOf, StakeOf},
-	Config, Error, InflationInfo,
+	Config, Error, InflationInfo, RewardsTreasuryAccount,
 };
+use frame_support::{
+	assert_noop, assert_ok,
+	traits::{fungible::Inspect, OnFinalize, OnInitialize},
+};
+use pallet_authorship::EventHandler;
+use sp_runtime::{traits::Zero, Perbill, Perquintill};
 
 #[test]
 fn coinbase_rewards_few_blocks_detailed_check() {
@@ -40,6 +43,7 @@ fn coinbase_rewards_few_blocks_detailed_check() {
 			(3, 40_000_000 * DECIMALS),
 			(4, 20_000_000 * DECIMALS),
 			(5, 20_000_000 * DECIMALS),
+			(TREASURY_ACC, TREASURY_BALANCE),
 		])
 		.with_collators(vec![(1, 8_000_000 * DECIMALS), (2, 8_000_000 * DECIMALS)])
 		.with_delegators(vec![
@@ -51,7 +55,7 @@ fn coinbase_rewards_few_blocks_detailed_check() {
 		.build_and_execute_with_sanity_tests(|| {
 			let inflation = StakePallet::inflation_config();
 			let total_issuance = <Test as Config>::Currency::total_issuance();
-			assert_eq!(total_issuance, 160_000_000 * DECIMALS);
+			assert_eq!(total_issuance, 160_000_000 * DECIMALS + TREASURY_BALANCE);
 
 			// compute rewards
 			let c_staking_rate = Perquintill::from_rational(16_000_000 * DECIMALS, total_issuance);
@@ -131,7 +135,12 @@ fn coinbase_rewards_few_blocks_detailed_check() {
 fn delegator_should_not_receive_rewards_after_revoking() {
 	// test edge case of 1 delegator
 	ExtBuilder::default()
-		.with_balances(vec![(1, 10_000_000 * DECIMALS), (2, 10_000_000 * DECIMALS), (3, 100)])
+		.with_balances(vec![
+			(1, 10_000_000 * DECIMALS),
+			(2, 10_000_000 * DECIMALS),
+			(3, 100),
+			(TREASURY_ACC, TREASURY_BALANCE),
+		])
 		.with_collators(vec![(1, 10_000_000 * DECIMALS), (3, 10)])
 		.with_delegators(vec![(2, 1, 10_000_000 * DECIMALS)])
 		.with_inflation(10, 15, 40, 15, 5)
@@ -152,6 +161,7 @@ fn delegator_should_not_receive_rewards_after_revoking() {
 			(2, 10_000_000 * DECIMALS),
 			(3, 10_000_000 * DECIMALS),
 			(4, 100),
+			(TREASURY_ACC, TREASURY_BALANCE),
 		])
 		.with_collators(vec![(1, 10_000_000 * DECIMALS), (4, 10)])
 		.with_delegators(vec![(2, 1, 10_000_000 * DECIMALS), (3, 1, 10_000_000 * DECIMALS)])
@@ -179,6 +189,7 @@ fn coinbase_rewards_many_blocks_simple_check() {
 			(3, 40_000_000 * DECIMALS),
 			(4, 20_000_000 * DECIMALS),
 			(5, 20_000_000 * DECIMALS),
+			(TREASURY_ACC, TREASURY_BALANCE),
 		])
 		.with_collators(vec![(1, 8_000_000 * DECIMALS), (2, 8_000_000 * DECIMALS)])
 		.with_delegators(vec![
@@ -190,7 +201,7 @@ fn coinbase_rewards_many_blocks_simple_check() {
 		.build_and_execute_with_sanity_tests(|| {
 			let inflation = StakePallet::inflation_config();
 			let total_issuance = <Test as Config>::Currency::total_issuance();
-			assert_eq!(total_issuance, 160_000_000 * DECIMALS);
+			assert_eq!(total_issuance, 160_000_000 * DECIMALS + TREASURY_BALANCE);
 			let end_block: BlockNumber = num_of_years * Test::BLOCKS_PER_YEAR as BlockNumber;
 			// set round robin authoring
 			let authors: Vec<Option<AccountId>> =
@@ -277,7 +288,13 @@ fn coinbase_rewards_many_blocks_simple_check() {
 #[test]
 fn should_not_reward_delegators_below_min_stake() {
 	ExtBuilder::default()
-		.with_balances(vec![(1, 10 * DECIMALS), (2, 10 * DECIMALS), (3, 10 * DECIMALS), (4, 5)])
+		.with_balances(vec![
+			(1, 10 * DECIMALS),
+			(2, 10 * DECIMALS),
+			(3, 10 * DECIMALS),
+			(4, 5),
+			(TREASURY_ACC, TREASURY_BALANCE),
+		])
 		.with_collators(vec![(1, 10 * DECIMALS), (2, 10 * DECIMALS)])
 		.with_delegators(vec![(3, 2, 10 * DECIMALS)])
 		.with_inflation(10, 15, 40, 15, 5)
@@ -313,7 +330,12 @@ fn should_not_reward_delegators_below_min_stake() {
 #[test]
 fn adjust_reward_rates() {
 	ExtBuilder::default()
-		.with_balances(vec![(1, 10_000_000 * DECIMALS), (2, 90_000_000 * DECIMALS), (3, 100)])
+		.with_balances(vec![
+			(1, 10_000_000 * DECIMALS),
+			(2, 90_000_000 * DECIMALS),
+			(3, 100),
+			(TREASURY_ACC, TREASURY_BALANCE),
+		])
 		.with_collators(vec![(1, 10_000_000 * DECIMALS), (3, 10)])
 		.with_delegators(vec![(2, 1, 40_000_000 * DECIMALS)])
 		.with_inflation(10, 10, 40, 8, 5)
@@ -874,7 +896,13 @@ fn rewards_delegator_leaves() {
 #[test]
 fn rewards_incrementing_and_claiming() {
 	ExtBuilder::default()
-		.with_balances(vec![(1, DECIMALS), (2, DECIMALS), (3, DECIMALS), (4, 100)])
+		.with_balances(vec![
+			(1, DECIMALS),
+			(2, DECIMALS),
+			(3, DECIMALS),
+			(4, 100),
+			(TREASURY_ACC, TREASURY_BALANCE),
+		])
 		.with_collators(vec![(1, DECIMALS), (4, 10)])
 		.with_delegators(vec![(2, 1, DECIMALS), (3, 1, DECIMALS)])
 		.build_and_execute_with_sanity_tests(|| {
@@ -950,7 +978,12 @@ fn rewards_incrementing_and_claiming() {
 fn api_get_unclaimed_staking_rewards() {
 	let stake = 100_000 * DECIMALS;
 	ExtBuilder::default()
-		.with_balances(vec![(1, stake), (2, stake), (3, 100 * stake)])
+		.with_balances(vec![
+			(1, stake),
+			(2, stake),
+			(3, 100 * stake),
+			(TREASURY_ACC, TREASURY_BALANCE),
+		])
 		.with_collators(vec![(1, stake), (3, 2 * stake)])
 		.with_delegators(vec![(2, 1, stake)])
 		.build_and_execute_with_sanity_tests(|| {
@@ -992,5 +1025,188 @@ fn api_get_unclaimed_staking_rewards() {
 			assert_ok!(StakePallet::claim_rewards(RuntimeOrigin::signed(3)));
 			assert_eq!(rewards_3 + 98 * stake, Balances::usable_balance(3));
 			assert!(StakePallet::get_unclaimed_staking_rewards(&3).is_zero());
+		});
+}
+
+#[test]
+fn only_sudo_can_toggle_inflation() {
+	let stake = 100_000 * DECIMALS;
+	ExtBuilder::default()
+		.with_balances(vec![(1, stake)])
+		.with_collators(vec![(1, stake)])
+		.with_inflation_enabled(false)
+		.build()
+		.execute_with(|| {
+			assert!(StakePallet::inflation_enabled() == false);
+			assert_noop!(
+				StakePallet::toggle_inflation(RuntimeOrigin::signed(1)),
+				sp_runtime::DispatchError::BadOrigin
+			);
+			assert_ok!(StakePallet::toggle_inflation(RuntimeOrigin::root()));
+			assert!(StakePallet::inflation_enabled());
+		});
+}
+
+#[test]
+fn only_sudo_can_disable_inflation() {
+	let stake = 100_000 * DECIMALS;
+	ExtBuilder::default()
+		.with_balances(vec![(1, stake)])
+		.with_collators(vec![(1, stake)])
+		.with_inflation_enabled(true)
+		.build()
+		.execute_with(|| {
+			assert!(StakePallet::inflation_enabled());
+			assert_noop!(
+				StakePallet::toggle_inflation(RuntimeOrigin::signed(1)),
+				sp_runtime::DispatchError::BadOrigin
+			);
+			assert_ok!(StakePallet::toggle_inflation(RuntimeOrigin::root()));
+			assert!(StakePallet::inflation_enabled() == false);
+		});
+}
+
+#[test]
+fn only_sudo_can_set_rewards_treasury_account() {
+	let stake = 100_000 * DECIMALS;
+	ExtBuilder::default()
+		.with_balances(vec![(1, stake)])
+		.with_collators(vec![(1, stake)])
+		.with_inflation_enabled(false)
+		.build()
+		.execute_with(|| {
+			assert!(StakePallet::rewards_treasury_account() == Some(TREASURY_ACC));
+			let rewards_treasury_account = 1;
+			assert_noop!(
+				StakePallet::set_rewards_treasury_account(
+					RuntimeOrigin::signed(1),
+					rewards_treasury_account
+				),
+				sp_runtime::DispatchError::BadOrigin
+			);
+			assert_ok!(StakePallet::set_rewards_treasury_account(
+				RuntimeOrigin::root(),
+				rewards_treasury_account
+			));
+			assert!(StakePallet::rewards_treasury_account().unwrap() == rewards_treasury_account);
+		});
+}
+
+#[test]
+fn total_issuance_does_not_increase_with_disabled_inflation() {
+	let stake = 100_000 * DECIMALS;
+	ExtBuilder::default()
+		.with_balances(vec![(1, stake)])
+		.with_collators(vec![(1, stake)])
+		.with_inflation_enabled(false)
+		.build()
+		.execute_with(|| {
+			assert!(StakePallet::inflation_enabled() == false);
+			let network_reward_start = <Test as Config>::NetworkRewardStart::get();
+			let previous_total_issuance = <Test as Config>::Currency::total_issuance();
+			System::set_block_number(network_reward_start);
+
+			// shouldn't mint
+			roll_to(network_reward_start + 1, vec![None]);
+			assert!(previous_total_issuance == <Test as Config>::Currency::total_issuance());
+		})
+}
+
+#[test]
+fn total_issuance_increases_with_enabled_inflation() {
+	let stake = 100_000 * DECIMALS;
+	ExtBuilder::default()
+		.with_balances(vec![(1, stake)])
+		.with_collators(vec![(1, stake)])
+		.build()
+		.execute_with(|| {
+			assert!(StakePallet::inflation_enabled());
+			let network_reward_start = <Test as Config>::NetworkRewardStart::get();
+			let previous_total_issuance = <Test as Config>::Currency::total_issuance();
+			System::set_block_number(network_reward_start);
+
+			// should mint
+			roll_to(network_reward_start + 1, vec![None]);
+			assert!(<Test as Config>::Currency::total_issuance() > previous_total_issuance);
+		})
+}
+
+#[test]
+fn send_rewards_with_inflation_disabled_works() {
+	let rewards_treasury_account = 1;
+	let rewards_treasury_account_balance = 101;
+	let collator_account = 2;
+	let reward_amount = 100;
+	let stake = 100_000 * DECIMALS;
+	let collator_balance = stake;
+	ExtBuilder::default()
+		.with_inflation_enabled(false)
+		.with_balances(vec![
+			(collator_account, collator_balance),
+			(rewards_treasury_account, rewards_treasury_account_balance),
+		])
+		.with_collators(vec![(collator_account, collator_balance)])
+		.build()
+		.execute_with(|| {
+			assert!(StakePallet::inflation_enabled() == false);
+			assert_ok!(StakePallet::set_rewards_treasury_account(
+				RuntimeOrigin::root(),
+				rewards_treasury_account
+			));
+			assert!(StakePallet::rewards_treasury_account().unwrap() == rewards_treasury_account);
+			assert_eq!(
+				Balances::total_balance(&rewards_treasury_account),
+				rewards_treasury_account_balance
+			);
+			assert_eq!(Balances::total_balance(&collator_account), collator_balance);
+			let previous_total_issuance = Balances::total_issuance();
+			assert_eq!(
+				StakePallet::send_rewards(&collator_account, reward_amount).unwrap(),
+				reward_amount
+			);
+			assert_eq!(Balances::total_balance(&rewards_treasury_account), 1);
+			assert_eq!(
+				Balances::total_balance(&collator_account),
+				reward_amount + collator_balance
+			);
+			assert_eq!(Balances::total_issuance(), previous_total_issuance);
+		});
+}
+
+#[test]
+fn send_rewards_when_rewards_treasury_account_is_not_set() {
+	let collator = 2;
+	let stake = 100_000 * DECIMALS;
+	ExtBuilder::default()
+		.with_balances(vec![(1, stake)])
+		.with_collators(vec![(1, stake)])
+		.with_inflation_enabled(false)
+		.build()
+		.execute_with(|| {
+			assert!(StakePallet::inflation_enabled() == false);
+			RewardsTreasuryAccount::<Test>::kill();
+			assert!(StakePallet::rewards_treasury_account().is_none());
+			assert_eq!(StakePallet::send_rewards(&collator, 100).unwrap(), 0);
+		});
+}
+
+#[test]
+fn send_rewards_when_rewards_treasury_account_has_no_enough_funds() {
+	let rewards_treasury_account = 1;
+	let collator = 2;
+	let stake = 100_000 * DECIMALS;
+	ExtBuilder::default()
+		.with_balances(vec![(collator, stake)])
+		.with_collators(vec![(collator, stake)])
+		.with_inflation_enabled(false)
+		.build()
+		.execute_with(|| {
+			assert!(StakePallet::inflation_enabled() == false);
+			assert_ok!(StakePallet::set_rewards_treasury_account(
+				RuntimeOrigin::root(),
+				rewards_treasury_account
+			));
+			assert!(StakePallet::rewards_treasury_account().unwrap() == rewards_treasury_account);
+			assert_eq!(StakePallet::send_rewards(&collator, 100).unwrap(), 0);
 		});
 }
