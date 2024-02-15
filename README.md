@@ -46,14 +46,6 @@ $ docker run freeverseio/laos-ownership-node:<release> --chain=<chain_name>
 ```
 using either `klaos` or `caladan` for `chain_name`. Available releases are published [here](https://github.com/freeverseio/laos/releases).
 
-### Collators / Delegators
-
-In the Proof of Staking system, you can become a block producer (also known as a collator) based on your stake and earn rewards for producing blocks. Additionally, you can stake your funds in one collator and earn rewards when your collator produces a block.
-
-If the collator goes offline or misbehaves (fails to provide proof of validity, produces an invalid block, etc.), it will not be rewarded. Consequently, the delegators who staked their funds in that collator will not receive any rewards either.
-
-The governance could decide to offboard collators that misbehave.
-
 # Contributing
 
 Contributions to the LAOS Parachain project are highly appreciated. Please adhere to [GitHub's contribution guidelines](https://docs.github.com/en/get-started/quickstart/contributing-to-projects) to ensure a smooth collaboration process.
