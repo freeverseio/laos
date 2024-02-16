@@ -6,6 +6,9 @@ on:
       - 'v*.*.*'
   workflow_dispatch:
 
+env:
+  SUBWASM_VERSION: 0.20.0
+
 jobs:
   check-version:
     runs-on: ubuntu-latest
@@ -45,10 +48,29 @@ jobs:
           chain: ${{ matrix.chain }}
           runtime_dir: ownership-chain/runtime
       - name: Summary
+        id: summary
         run: |
           echo '${{ steps.srtool_build.outputs.json }}' | jq . > ${{ matrix.chain }}-srtool-digest.json
           cat ${{ matrix.chain }}-srtool-digest.json
           echo "Runtime location: ${{ steps.srtool_build.outputs.wasm }}"
+          RUSTC_VERSION=$(jq '.info.rustc' < ${{ matrix.chain }}-srtool-digest.json)
+          SRTOOL_VERSION=$(jq '.info.generator.version' < ${{ matrix.chain }}-srtool-digest.json)
+          echo "rustc_version=$RUSTC_VERSION" >> $GITHUB_OUTPUT
+          echo "srtool_version=$SRTOOL_VERSION" >> $GITHUB_OUTPUT
+      - name: Install subwasm ${{ env.SUBWASM_VERSION }}
+        run: |
+          wget https://github.com/chevdor/subwasm/releases/download/v${{ env.SUBWASM_VERSION }}/subwasm_linux_amd64_v${{ env.SUBWASM_VERSION }}.deb
+          sudo dpkg -i subwasm_linux_amd64_v${{ env.SUBWASM_VERSION }}.deb
+          subwasm --version
+      - name: Extract metadata
+        run: |
+          subwasm  --json info ${{ steps.srtool_build.outputs.wasm }} > laos-info.json
+          subwasm info ${{ steps.srtool_build.outputs.wasm }} > laos-info.txt
+          cat laos-info.txt
+
+          subwasm  --json info ${{ steps.srtool_build.outputs.wasm_compressed }} > laos-subwam-info.json
+          subwasm info ${{ steps.srtool_build.outputs.wasm_compressed }} > laos-subwam-info.txt
+          cat laos-subwam-info.txt
       - name: Log in to Docker Hub
         uses: docker/login-action@v2.1.0
         with:
@@ -61,60 +83,22 @@ jobs:
           push: true
           file: ./docker/ownership-node.local.Dockerfile
           tags: freeverseio/laos-ownership-node:${{ github.ref_name }}
-      - name: Extract Release Info
-        id: extract_info
+      - name: Update Release With subwasm
         run: |
-          RUNTIME_SIZE_BYTES=$(jq '.runtimes.compact.size' < ${{ matrix.chain }}-srtool-digest.json)
-          RUNTIME_SIZE_MB=$(echo "scale=3; $RUNTIME_SIZE_BYTES / 1024 / 1024" | bc)
-          COMPRESSED=$(jq '.runtimes.compact.compression.compressed' < ${{ matrix.chain }}-srtool-digest.json)
-          COMPRESSED_PERCENTAGE=$(echo "scale=2; ($RUNTIME_SIZE_BYTES / $(jq '.runtimes.compact.compression.size_decompressed' < ${{ matrix.chain }}-srtool-digest.json)) * 100" | bc)
-          METADATA_VERSION=$(jq '.info.metadata_version' < ${{ matrix.chain }}-srtool-digest.json)
-          CORE_VERSION=$(jq '.info.core_version.specName' < ${{ matrix.chain }}-srtool-digest.json)
-          SYSTEM_SET_CODE_HASH=$(jq '.runtimes.compact.prop' < ${{ matrix.chain }}-srtool-digest.json)
-          AUTHORIZE_UPGRADE_HASH=$(jq '.runtimes.compact.authorize_upgrade_prop' < ${{ matrix.chain }}-srtool-digest.json)
-          BLAKE2_256_HASH=$(jq '.runtimes.compact.blake2_256' < ${{ matrix.chain }}-srtool-digest.json)
-          IPFS_HASH=$(jq '.runtimes.compact.ipfs' < ${{ matrix.chain }}-srtool-digest.json)
-          RUSTC_VERSION=$(jq '.info.rustc' < ${{ matrix.chain }}-srtool-digest.json)
-          SRTOOL_VERSION=$(jq '.info.generator.version' < ${{ matrix.chain }}-srtool-digest.json)
-          
-          echo "runtime_size_mb=$RUNTIME_SIZE_MB" >> $GITHUB_OUTPUT
-          echo "compressed=$COMPRESSED" >> $GITHUB_OUTPUT
-          echo "compressed_percentage=$COMPRESSED_PERCENTAGE" >> $GITHUB_OUTPUT
-          echo "metadata_version=$METADATA_VERSION" >> $GITHUB_OUTPUT
-          echo "core_version=$CORE_VERSION" >> $GITHUB_OUTPUT
-          echo "system_set_code_hash=$SYSTEM_SET_CODE_HASH" >> $GITHUB_OUTPUT
-          echo "authorize_upgrade_hash=$AUTHORIZE_UPGRADE_HASH" >> $GITHUB_OUTPUT
-          echo "blake2_256_hash=$BLAKE2_256_HASH" >> $GITHUB_OUTPUT
-          echo "ipfs_hash=$IPFS_HASH" >> $GITHUB_OUTPUT
-          echo "rustc_version=$RUSTC_VERSION" >> $GITHUB_OUTPUT
-          echo "srtool_version=$SRTOOL_VERSION" >> $GITHUB_OUTPUT
-      - name: Update Release Description with Extracted Info
-        run: |
-          # Construye la nueva descripción utilizando la información extraída
-          NEW_DESC="
+            NEW_DESC="
 
-          ## Runtime info
-          This runtime was built using ${{ steps.extract_info.outputs.rustc_version }} with srtool ${{ steps.extract_info.outputs.srtool_version }}
-
-          # LAOS
-          \`\`\`🏋️ Runtime size: ${{ steps.extract_info.outputs.runtime_size_mb }} MB
-          🗜 Compressed: ${{ steps.extract_info.outputs.compressed }}
-          ✨ Compression Percentage: ${{ steps.extract_info.outputs.compressed_percentage }}%
-          🎁 Metadata version: V${{ steps.extract_info.outputs.metadata_version }}
-          🔥 Core version: ${{ steps.extract_info.outputs.core_version }}
-          🗳️ system.setCode hash: ${{ steps.extract_info.outputs.system_set_code_hash }}
-          🗳️ authorizeUpgrade hash: ${{ steps.extract_info.outputs.authorize_upgrade_hash }}
-          🗳️ Blake2-256 hash: ${{ steps.extract_info.outputs.blake2_256_hash }}
-          📦 IPFS: https://www.ipfs.io/ipfs/${{ steps.extract_info.outputs.ipfs_hash }}"
-      
-          # Obtén la descripción actual de la release (opcional, si quieres añadir en vez de reemplazar)
-          CURRENT_DESC=$(gh release view ${{ github.ref_name }} --json body -q .body)
-      
-          # Combina la descripción actual con la nueva información (opcional)
-          COMBINED_DESC="$CURRENT_DESC$NEW_DESC"
-      
-          # Actualiza la release con la nueva descripción
-          echo "$COMBINED_DESC" | gh release edit ${{ github.ref_name }} --notes-file -
+            ## Runtime info
+            This runtime was built using ${{ steps.summary.outputs.rustc_version }} with srtool ${{ steps.summary.outputs.srtool_version }}  
+            
+            ### LAOS
+            \`\`\`
+            $(cat laos-subwam-info.txt) "
+        
+            CURRENT_DESC=$(gh release view ${{ github.ref_name }} --json body -q .body)
+        
+            COMBINED_DESC="$CURRENT_DESC$NEW_DESC"
+        
+            echo "$COMBINED_DESC" | gh release edit ${{ github.ref_name }} --notes-file -
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload Ownership Wasm Binaries
