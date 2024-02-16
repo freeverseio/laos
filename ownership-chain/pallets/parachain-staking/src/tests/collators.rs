@@ -25,7 +25,7 @@ use frame_support::{
 };
 use pallet_balances::Error as BalancesError;
 
-use sp_runtime::SaturatedConversion;
+use sp_runtime::{traits::BadOrigin, SaturatedConversion};
 
 use crate::{
 	mock::{
@@ -102,6 +102,58 @@ fn join_collator_candidates() {
 			assert_eq!(
 				last_event(),
 				StakeEvent::JoinedCollatorCandidates(10, StakePallet::max_candidate_stake(),)
+			);
+		});
+}
+
+#[test]
+fn force_join_collator_candidates() {
+	ExtBuilder::default()
+		.with_balances(vec![
+			(1, 1000),
+			(2, 300),
+			(3, 100),
+			(4, 100),
+			(5, 100),
+			(6, 100),
+			(7, 100),
+			(8, 9),
+			(9, 4),
+			(10, 161_000_000 * DECIMALS),
+		])
+		.with_collators(vec![(1, 500), (2, 200)])
+		.with_delegators(vec![(3, 1, 100), (4, 1, 100), (5, 2, 100)])
+		.build_and_execute_with_sanity_tests(|| {
+			assert_eq!(CandidatePool::<Test>::count(), 2);
+			assert_eq!(
+				StakePallet::total_collator_stake(),
+				TotalStake { collators: 700, delegators: 300 }
+			);
+			assert_noop!(
+				StakePallet::force_join_candidates(RuntimeOrigin::signed(123), 123, 11u128,),
+				BadOrigin,
+			);
+			assert_ok!(StakePallet::force_join_candidates(RuntimeOrigin::root(), 7, 11u128));
+			assert_eq!(CandidatePool::<Test>::count(), 3);
+			assert_eq!(last_event(), StakeEvent::JoinedCollatorCandidates(7, 11u128,));
+
+			// delegator can delegate to force added candidate
+			assert_ok!(StakePallet::join_delegators(RuntimeOrigin::signed(8), 7, 9u128));
+
+			// insufficient balance
+			assert_noop!(
+				StakePallet::force_join_candidates(RuntimeOrigin::root(), 6, 101u128,),
+				BalancesError::<Test>::InsufficientBalance
+			);
+
+			// MaxCollatorCandidateStake
+			assert_noop!(
+				StakePallet::force_join_candidates(
+					RuntimeOrigin::root(),
+					10,
+					161_000_000 * DECIMALS
+				),
+				Error::<Test>::ValStakeAboveMax
 			);
 		});
 }

@@ -136,7 +136,7 @@ pub mod pallet {
 
 	use core::cmp::Ordering;
 	use frame_support::{
-		pallet_prelude::*,
+		pallet_prelude::{DispatchResult, *},
 		storage::bounded_btree_map::BoundedBTreeMap,
 		traits::{
 			fungible::Balanced,
@@ -1019,37 +1019,8 @@ pub mod pallet {
 			stake: BalanceOf<T>,
 		) -> DispatchResultWithPostInfo {
 			let sender = ensure_signed(origin)?;
-			if let Some(is_active_candidate) = Self::is_active_candidate(&sender) {
-				ensure!(is_active_candidate, Error::<T>::AlreadyLeaving);
-				ensure!(!is_active_candidate, Error::<T>::CandidateExists);
-			}
-			ensure!(!Self::is_delegator(&sender), Error::<T>::DelegatorExists);
-			ensure!(stake >= T::MinCollatorCandidateStake::get(), Error::<T>::ValStakeBelowMin);
-			ensure!(stake <= MaxCollatorCandidateStake::<T>::get(), Error::<T>::ValStakeAboveMax);
-			ensure!(
-				Unstaking::<T>::get(&sender).len().saturated_into::<u32>() <
-					T::MaxUnstakeRequests::get(),
-				Error::<T>::CannotJoinBeforeUnlocking
-			);
 
-			Self::increase_lock(&sender, stake, BalanceOf::<T>::zero())?;
-
-			let candidate = Candidate::new(sender.clone(), stake);
-			let n = Self::update_top_candidates(
-				sender.clone(),
-				BalanceOf::<T>::zero(),
-				BalanceOf::<T>::zero(),
-				stake,
-				BalanceOf::<T>::zero(),
-			);
-			CandidatePool::<T>::insert(&sender, candidate);
-
-			Self::deposit_event(Event::JoinedCollatorCandidates(sender, stake));
-			Ok(Some(<T as pallet::Config>::WeightInfo::join_candidates(
-				n,
-				T::MaxDelegatorsPerCollator::get(),
-			))
-			.into())
+			Self::do_join_candidates(&sender, stake)
 		}
 
 		/// Request to leave the set of collator candidates.
@@ -1829,6 +1800,23 @@ pub mod pallet {
 			Self::deposit_event(Event::RewardsTreasuryAccountSet(account));
 			Ok(())
 		}
+
+		/// Force join a candidate, exactly as if they had called `join_candidates`.
+		///
+		/// Only `Root` origin can call this function.
+		#[pallet::call_index(34)]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::join_candidates(
+			T::MaxTopCandidates::get(),
+			T::MaxDelegatorsPerCollator::get()
+		))]
+		pub fn force_join_candidates(
+			origin: OriginFor<T>,
+			candidate: T::AccountId,
+			stake: BalanceOf<T>,
+		) -> DispatchResultWithPostInfo {
+			ensure_root(origin)?;
+			Self::do_join_candidates(&candidate, stake)
+		}
 	}
 
 	impl<T: Config> Pallet<T> {
@@ -2605,6 +2593,47 @@ pub mod pallet {
 
 			// Default return when RewardsTreasuryAccount is not set.
 			Ok(Default::default())
+		}
+
+		/// Do join the candidate pool.
+		///
+		/// This function is called when a new candidate is added to the candidate pool.
+		/// It updates the candidate pool and the total collator stake.
+		pub(crate) fn do_join_candidates(
+			who: &T::AccountId,
+			stake: BalanceOf<T>,
+		) -> DispatchResultWithPostInfo {
+			if let Some(is_active_candidate) = Self::is_active_candidate(who) {
+				ensure!(is_active_candidate, Error::<T>::AlreadyLeaving);
+				ensure!(!is_active_candidate, Error::<T>::CandidateExists);
+			}
+			ensure!(!Self::is_delegator(who), Error::<T>::DelegatorExists);
+			ensure!(stake >= T::MinCollatorCandidateStake::get(), Error::<T>::ValStakeBelowMin);
+			ensure!(stake <= MaxCollatorCandidateStake::<T>::get(), Error::<T>::ValStakeAboveMax);
+			ensure!(
+				Unstaking::<T>::get(who).len().saturated_into::<u32>() <
+					T::MaxUnstakeRequests::get(),
+				Error::<T>::CannotJoinBeforeUnlocking
+			);
+
+			Self::increase_lock(&who, stake, BalanceOf::<T>::zero())?;
+
+			let candidate = Candidate::new(who.clone(), stake);
+			let n = Self::update_top_candidates(
+				who.clone(),
+				BalanceOf::<T>::zero(),
+				BalanceOf::<T>::zero(),
+				stake,
+				BalanceOf::<T>::zero(),
+			);
+			CandidatePool::<T>::insert(who, candidate);
+
+			Self::deposit_event(Event::JoinedCollatorCandidates(who.clone(), stake));
+			Ok(Some(<T as pallet::Config>::WeightInfo::join_candidates(
+				n,
+				T::MaxDelegatorsPerCollator::get(),
+			))
+			.into())
 		}
 	}
 
