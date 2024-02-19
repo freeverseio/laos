@@ -159,7 +159,7 @@ fn staking_inflation_rewards_is_deactivated_by_default() {
 
 #[test]
 fn rewards_treasury_account_is_not_set_by_default() {
-	new_test_ext().execute_with(|| assert!(ParachainStaking::rewards_treasury_account().is_none()));
+	new_test_ext().execute_with(|| assert!(ParachainStaking::collator_rewards_account().is_none()));
 }
 
 #[test]
@@ -167,12 +167,12 @@ fn fees_go_to_rewards_treasury_account() {
 	new_test_ext().execute_with(|| {
 		let alice = AccountId::from_str(ALICE).unwrap();
 		let from = [0u8; 20].into();
-		let rewards_treasury_account = [2u8; 20].into();
+		let collator_rewards_account = [2u8; 20].into();
 
 		// We need to set since by default is None
-		assert_ok!(ParachainStaking::set_rewards_treasury_account(
+		assert_ok!(ParachainStaking::set_collator_rewards_account(
 			RuntimeOrigin::root(),
-			rewards_treasury_account,
+			collator_rewards_account,
 		));
 
 		let call = pallet_balances::Call::<Runtime>::transfer { dest: alice, value: 10 };
@@ -194,6 +194,6 @@ fn fees_go_to_rewards_treasury_account() {
 
 		let actual_fee =
 			TransactionPayment::compute_actual_fee(len.try_into().unwrap(), &info, &post_result, 0);
-		assert_eq!(Balances::total_balance(&rewards_treasury_account), actual_fee);
+		assert_eq!(Balances::total_balance(&collator_rewards_account), actual_fee);
 	});
 }
