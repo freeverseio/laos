@@ -27,7 +27,7 @@ use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{
 		BlakeTwo256, Block as BlockT, Convert, ConvertInto, DispatchInfoOf, Dispatchable, Get,
-		IdentityLookup, PostDispatchInfoOf, UniqueSaturatedInto, 
+		IdentityLookup, PostDispatchInfoOf, UniqueSaturatedInto,
 	},
 	transaction_validity::{TransactionSource, TransactionValidity, TransactionValidityError},
 	ApplyExtrinsicResult, ConsensusEngineId,
@@ -42,8 +42,8 @@ use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{
 		fungible::{Balanced, Credit},
-		ConstBool, ConstU32, ConstU64, ConstU8, Currency, FindAuthor, Hooks, Imbalance,
-		OnUnbalanced, WithdrawReasons, Contains,
+		ConstBool, ConstU32, ConstU64, ConstU8, Contains, Currency, FindAuthor, Hooks, Imbalance,
+		OnUnbalanced, WithdrawReasons,
 	},
 	weights::{
 		constants::WEIGHT_REF_TIME_PER_SECOND, ConstantMultiplier, Weight, WeightToFeeCoefficient,
@@ -274,7 +274,7 @@ impl Contains<RuntimeCall> for BaseCallFilter {
 
 		match c {
 			RuntimeCall::ParachainStaking(inner_call) => match inner_call {
-				// Staking is not allowed.
+				// join as candidate is not allowed
 				join_candidates { .. } => false,
 				_ => true,
 			},
