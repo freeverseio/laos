@@ -21,11 +21,11 @@
 use std::{convert::TryInto, iter};
 
 use frame_support::{
-	assert_noop, assert_ok, storage::bounded_btree_map::BoundedBTreeMap, BadOrigin, BoundedVec,
+	assert_noop, assert_ok, storage::bounded_btree_map::BoundedBTreeMap, BoundedVec,
 };
 use pallet_balances::Error as BalancesError;
 
-use sp_runtime::SaturatedConversion;
+use sp_runtime::{traits::BadOrigin, SaturatedConversion};
 
 use crate::{
 	mock::{
