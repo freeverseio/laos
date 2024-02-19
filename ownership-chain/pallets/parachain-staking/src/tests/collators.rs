@@ -61,7 +61,7 @@ fn join_collator_candidates() {
 				TotalStake { collators: 700, delegators: 400 }
 			);
 			assert_noop!(
-				StakePallet::join_candidates(RuntimeOrigin::signed(1), 11u128,),
+				StakePallet::do_join_candidates(&1, 11u128,),
 				Error::<Test>::CandidateExists
 			);
 			assert_noop!(
@@ -69,15 +69,15 @@ fn join_collator_candidates() {
 				Error::<Test>::CandidateExists
 			);
 			assert_noop!(
-				StakePallet::join_candidates(RuntimeOrigin::signed(3), 11u128,),
+				StakePallet::do_join_candidates(&3, 11u128,),
 				Error::<Test>::DelegatorExists
 			);
 			assert_noop!(
-				StakePallet::join_candidates(RuntimeOrigin::signed(7), 9u128,),
+				StakePallet::do_join_candidates(&7, 9u128,),
 				Error::<Test>::ValStakeBelowMin
 			);
 			assert_noop!(
-				StakePallet::join_candidates(RuntimeOrigin::signed(8), 10u128,),
+				StakePallet::do_join_candidates(&8, 10u128,),
 				BalancesError::<Test>::InsufficientBalance
 			);
 
@@ -85,18 +85,15 @@ fn join_collator_candidates() {
 			assert!(System::events().is_empty());
 
 			assert_ok!(StakePallet::set_max_selected_candidates(RuntimeOrigin::root(), 5));
-			assert_ok!(StakePallet::join_candidates(RuntimeOrigin::signed(7), 10u128,));
+			assert_ok!(StakePallet::do_join_candidates(&7, 10u128,));
 			assert_eq!(last_event(), StakeEvent::JoinedCollatorCandidates(7, 10u128));
 
 			// MaxCollatorCandidateStake
 			assert_noop!(
-				StakePallet::join_candidates(RuntimeOrigin::signed(10), 161_000_000 * DECIMALS),
+				StakePallet::do_join_candidates(&10, 161_000_000 * DECIMALS),
 				Error::<Test>::ValStakeAboveMax
 			);
-			assert_ok!(StakePallet::join_candidates(
-				RuntimeOrigin::signed(10),
-				StakePallet::max_candidate_stake()
-			));
+			assert_ok!(StakePallet::do_join_candidates(&10, StakePallet::max_candidate_stake()));
 			assert_eq!(CandidatePool::<Test>::count(), 4);
 
 			assert_eq!(
@@ -269,7 +266,7 @@ fn collator_selection_chooses_top_candidates() {
 			assert_eq!(StakePallet::selected_candidates().into_inner(), vec![1, 2, 3, 4, 5]);
 
 			roll_to(21, vec![]);
-			assert_ok!(StakePallet::join_candidates(RuntimeOrigin::signed(6), 69u128));
+			assert_ok!(StakePallet::do_join_candidates(&6, 69u128));
 			assert_eq!(StakePallet::selected_candidates().into_inner(), vec![1, 2, 3, 4, 6]);
 			assert_eq!(last_event(), StakeEvent::JoinedCollatorCandidates(6, 69u128));
 
@@ -631,10 +628,7 @@ fn collators_bond() {
 			assert_ok!(StakePallet::candidate_stake_less(RuntimeOrigin::signed(4), 10));
 
 			// MaxCollatorCandidateStake
-			assert_ok!(StakePallet::join_candidates(
-				RuntimeOrigin::signed(11),
-				StakePallet::max_candidate_stake()
-			));
+			assert_ok!(StakePallet::do_join_candidates(&11, StakePallet::max_candidate_stake()));
 			assert_noop!(
 				StakePallet::candidate_stake_more(RuntimeOrigin::signed(11), 1u128),
 				Error::<Test>::ValStakeAboveMax,
@@ -688,11 +682,11 @@ fn kick_candidate_with_full_unstaking() {
 			// Cannot join with full unstaking
 			assert_eq!(StakePallet::unstaking(3).into_inner().len(), max_unstake_reqs + 1);
 			assert_noop!(
-				StakePallet::join_candidates(RuntimeOrigin::signed(3), 100),
+				StakePallet::do_join_candidates(&3, 100),
 				Error::<Test>::CannotJoinBeforeUnlocking
 			);
 			assert_ok!(StakePallet::unlock_unstaked(RuntimeOrigin::signed(3), 3));
-			assert_ok!(StakePallet::join_candidates(RuntimeOrigin::signed(3), 100));
+			assert_ok!(StakePallet::do_join_candidates(&3, 100));
 		});
 }
 
@@ -718,7 +712,7 @@ fn candidate_leaves() {
 			);
 			// add five more collator to max fill TopCandidates
 			for candidate in 3u64..11u64 {
-				assert_ok!(StakePallet::join_candidates(RuntimeOrigin::signed(candidate), 100));
+				assert_ok!(StakePallet::do_join_candidates(&candidate, 100));
 			}
 			assert_eq!(
 				StakePallet::top_candidates().into_iter().map(|s| s.owner).collect::<Vec<u64>>(),
@@ -771,7 +765,7 @@ fn candidate_leaves() {
 			);
 			// add 11 as candidate to reach max size for TopCandidates and then try leave
 			// again as 1 which should not be possible
-			assert_ok!(StakePallet::join_candidates(RuntimeOrigin::signed(11), 100));
+			assert_ok!(StakePallet::do_join_candidates(&11, 100));
 			assert_eq!(
 				StakePallet::top_candidates().into_iter().map(|s| s.owner).collect::<Vec<u64>>(),
 				(2u64..12u64).collect::<Vec<u64>>()
@@ -998,7 +992,7 @@ fn prioritize_collators() {
 				)
 			);
 			assert_eq!(StakePallet::selected_candidates().into_inner(), vec![2, 3]);
-			assert_ok!(StakePallet::join_candidates(RuntimeOrigin::signed(1), 100));
+			assert_ok!(StakePallet::do_join_candidates(&1, 100));
 			assert_eq!(
 				StakePallet::top_candidates(),
 				OrderedSet::from_sorted_set(
@@ -1018,7 +1012,7 @@ fn prioritize_collators() {
 			assert_eq!(StakePallet::selected_candidates().into_inner(), vec![1, 3]);
 
 			// add 6
-			assert_ok!(StakePallet::join_candidates(RuntimeOrigin::signed(6), 100));
+			assert_ok!(StakePallet::do_join_candidates(&6, 100));
 			assert_eq!(StakePallet::selected_candidates().into_inner(), vec![1, 6]);
 			assert_eq!(
 				StakePallet::top_candidates(),
@@ -1034,7 +1028,7 @@ fn prioritize_collators() {
 			);
 
 			// add 4
-			assert_ok!(StakePallet::join_candidates(RuntimeOrigin::signed(4), 100));
+			assert_ok!(StakePallet::do_join_candidates(&4, 100));
 			assert_eq!(StakePallet::selected_candidates().into_inner(), vec![1, 6]);
 			assert_eq!(
 				StakePallet::top_candidates(),
@@ -1050,7 +1044,7 @@ fn prioritize_collators() {
 			);
 
 			// add 5
-			assert_ok!(StakePallet::join_candidates(RuntimeOrigin::signed(5), 100));
+			assert_ok!(StakePallet::do_join_candidates(&5, 100));
 			assert_eq!(StakePallet::selected_candidates().into_inner(), vec![1, 6]);
 			assert_eq!(
 				StakePallet::top_candidates(),
@@ -1227,7 +1221,7 @@ fn update_total_stake_displace_collators() {
 			);
 
 			// 1 is pushed out by new candidate
-			assert_ok!(StakePallet::join_candidates(RuntimeOrigin::signed(1337), 100));
+			assert_ok!(StakePallet::do_join_candidates(&1337, 100));
 			assert_eq!(
 				StakePallet::total_collator_stake(),
 				TotalStake { collators: 120, delegators: 50 }
@@ -1246,7 +1240,7 @@ fn update_total_stake_new_collators() {
 				StakePallet::total_collator_stake(),
 				TotalStake { collators: 100, delegators: 100 }
 			);
-			assert_ok!(StakePallet::join_candidates(RuntimeOrigin::signed(2), 100));
+			assert_ok!(StakePallet::do_join_candidates(&2, 100));
 			assert_eq!(
 				StakePallet::total_collator_stake(),
 				TotalStake { collators: 200, delegators: 100 }
@@ -1423,13 +1417,13 @@ fn reach_max_top_candidates() {
 				<Test as Config>::MaxTopCandidates::get()
 			);
 			// should not be possible to join candidate pool, even with more stake
-			assert_ok!(StakePallet::join_candidates(RuntimeOrigin::signed(11), 11));
+			assert_ok!(StakePallet::do_join_candidates(&11, 11));
 			assert_eq!(
 				StakePallet::top_candidates().into_iter().map(|s| s.owner).collect::<Vec<u64>>(),
 				vec![2, 11, 1, 3, 4, 5, 6, 7, 8, 9]
 			);
 			// last come, last one in the list
-			assert_ok!(StakePallet::join_candidates(RuntimeOrigin::signed(12), 11));
+			assert_ok!(StakePallet::do_join_candidates(&12, 11));
 			assert_eq!(
 				StakePallet::top_candidates().into_iter().map(|s| s.owner).collect::<Vec<u64>>(),
 				vec![2, 11, 12, 1, 3, 4, 5, 6, 7, 8]
