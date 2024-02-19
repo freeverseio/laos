@@ -27,7 +27,7 @@ use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{
 		BlakeTwo256, Block as BlockT, Convert, ConvertInto, DispatchInfoOf, Dispatchable, Get,
-		IdentityLookup, PostDispatchInfoOf, UniqueSaturatedInto,
+		IdentityLookup, PostDispatchInfoOf, UniqueSaturatedInto, 
 	},
 	transaction_validity::{TransactionSource, TransactionValidity, TransactionValidityError},
 	ApplyExtrinsicResult, ConsensusEngineId,
@@ -42,8 +42,8 @@ use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{
 		fungible::{Balanced, Credit},
-		ConstBool, ConstU32, ConstU64, ConstU8, Currency, Everything, FindAuthor, Hooks, Imbalance,
-		OnUnbalanced, WithdrawReasons,
+		ConstBool, ConstU32, ConstU64, ConstU8, Currency, FindAuthor, Hooks, Imbalance,
+		OnUnbalanced, WithdrawReasons, Contains,
 	},
 	weights::{
 		constants::WEIGHT_REF_TIME_PER_SECOND, ConstantMultiplier, Weight, WeightToFeeCoefficient,
@@ -267,6 +267,22 @@ parameter_types! {
 	pub const SS58Prefix: u16 = 42;
 }
 
+pub struct BaseCallFilter;
+impl Contains<RuntimeCall> for BaseCallFilter {
+	fn contains(c: &RuntimeCall) -> bool {
+		use pallet_parachain_staking::Call::*;
+
+		match c {
+			RuntimeCall::ParachainStaking(inner_call) => match inner_call {
+				// Staking is not allowed.
+				join_candidates { .. } => false,
+				_ => true,
+			},
+			_ => true,
+		}
+	}
+}
+
 // Configure FRAME pallets to include in runtime.
 
 impl frame_system::Config for Runtime {
@@ -303,7 +319,7 @@ impl frame_system::Config for Runtime {
 	/// The weight of database operations that the runtime can invoke.
 	type DbWeight = RocksDbWeight;
 	/// The basic call filter to use in dispatchable.
-	type BaseCallFilter = Everything;
+	type BaseCallFilter = BaseCallFilter;
 	/// Weight information for the extrinsics of this pallet.
 	type SystemWeightInfo = ();
 	/// Block & extrinsics weights: base values and limits.
