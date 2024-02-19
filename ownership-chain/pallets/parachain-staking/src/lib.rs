@@ -1018,7 +1018,7 @@ pub mod pallet {
 		) -> DispatchResultWithPostInfo {
 			let sender = ensure_signed(origin)?;
 
-			Self::do_join_candidates(&_sender, stake)
+			Self::do_join_candidates(&sender, stake)
 		}
 
 		/// Request to leave the set of collator candidates.
