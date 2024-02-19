@@ -413,9 +413,6 @@ pub mod pallet {
 		UnstakingIsEmpty,
 		/// Cannot claim rewards if empty.
 		RewardsNotFound,
-		/// Joining candidates is not allowed at the moment.
-		/// TODO: remove it once we use tx-pause pallet
-		JoiningCandidatesNotAllowed,
 	}
 
 	#[pallet::event]
@@ -1019,9 +1016,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			stake: BalanceOf<T>,
 		) -> DispatchResultWithPostInfo {
-			// TODO: remove this once we have the tx-pause pallet
-			fail!(Error::<T>::JoiningCandidatesNotAllowed);
-			let _sender = ensure_signed(origin)?;
+			let sender = ensure_signed(origin)?;
 
 			Self::do_join_candidates(&_sender, stake)
 		}

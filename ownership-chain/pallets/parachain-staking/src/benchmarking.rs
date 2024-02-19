@@ -52,7 +52,10 @@ where
 
 	for acc in collators.iter() {
 		let _ = T::Currency::make_free_balance_be(acc, amount);
-		assert_ok!(Pallet::<T>::do_join_candidates(&acc, amount,));
+		assert_ok!(Pallet::<T>::join_candidates(
+			T::RuntimeOrigin::from(Some(acc.clone()).into()),
+			amount,
+		));
 		assert_eq!(CandidatePool::<T>::get(acc).unwrap().stake, amount);
 	}
 
@@ -260,7 +263,9 @@ benchmarks! {
 
 		let new_candidate = account("new_collator", u32::MAX , COLLATOR_ACCOUNT_SEED);
 		T::Currency::make_free_balance_be(&new_candidate, min_candidate_stake);
-	}: force_join_candidates(RawOrigin::Root, new_candidate.clone(), min_candidate_stake) // TODO: replace with `_(origin, min_candidate_stake)`
+
+		let origin = RawOrigin::Signed(new_candidate.clone());
+	}: _(origin, min_candidate_stake)
 	verify {
 		let candidates = TopCandidates::<T>::get();
 		assert!(candidates.into_iter().any(|other| other.owner == new_candidate));
@@ -539,8 +544,8 @@ benchmarks! {
 		let free_balance = T::CurrencyBalance::from(10u128.pow(20));
 		let stake = T::MinCollatorCandidateStake::get();
 		T::Currency::make_free_balance_be(&candidate, free_balance);
-		assert_ok!(Pallet::<T>::do_join_candidates(
-			&candidate,
+		assert_ok!(Pallet::<T>::join_candidates(
+			T::RuntimeOrigin::from(Some(candidate.clone()).into()),
 			stake,
 		));
 		assert_eq!(pallet_balances::Pallet::<T>::usable_balance(&candidate), (free_balance - T::MinCollatorCandidateStake::get()).into());
