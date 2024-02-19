@@ -21,15 +21,14 @@ use crate::{pallet::Config, types::BalanceOf};
 use parity_scale_codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
-use sp_runtime::{traits::Saturating, Perquintill, RuntimeDebug};
-
+use sp_runtime::{Perquintill, RuntimeDebug};
+use sp_runtime::traits::{Saturating, Zero, SaturatedConversion};
 #[derive(
 	Eq, PartialEq, Clone, Encode, Decode, Default, RuntimeDebug, TypeInfo, Deserialize, Serialize,
 )]
 pub struct RewardRate {
-	pub annual: Perquintill,
-	pub per_block: Perquintill,
-	pub fixed_per_block: Perquintill,
+    pub annual: u64, // Recompensa total anual fija en tokens
+    pub per_block: u64, // Cantidad fija de tokens a distribuir por bloque
 }
 
 impl MaxEncodedLen for RewardRate {
@@ -44,23 +43,25 @@ fn annual_to_per_block(blocks_per_year: u64, rate: Perquintill) -> Perquintill {
 	rate / blocks_per_year.max(1)
 }
 
-// change here
-impl RewardRate {
-	pub fn new(blocks_per_year: u64, rate: Perquintill, fixed_per_block: Perquintill) -> Self {
-		RewardRate { annual: rate, per_block: annual_to_per_block(blocks_per_year, rate), fixed_per_block }
-	}
-}
 
+
+impl RewardRate {
+    pub fn new(annual_reward: u64, blocks_per_year: u64) -> Self {
+        let per_block_reward = annual_reward / blocks_per_year.max(1);
+        RewardRate {
+            annual: annual_reward,
+            per_block: per_block_reward,
+        }
+    }
+}
 /// Staking info (staking rate and reward rate) for collators and delegators.
 
 #[derive(
 	Eq, PartialEq, Clone, Encode, Decode, Default, RuntimeDebug, TypeInfo, Serialize, Deserialize,
 )]
 pub struct StakingInfo {
-	/// Maximum staking rate.
-	pub max_rate: Perquintill,
-	/// Reward rate annually and per_block.
-	pub reward_rate: RewardRate,
+    pub max_rate: Perquintill,
+    pub reward_rate: RewardRate,
 }
 
 impl MaxEncodedLen for StakingInfo {
@@ -71,15 +72,16 @@ impl MaxEncodedLen for StakingInfo {
 }
 
 impl StakingInfo {
-	//here
 	pub fn new(
-		blocks_per_year: u64,
-		max_rate: Perquintill,
-		annual_reward_rate: Perquintill,
-		fixed_reward_per_block: Perquintill,
-	) -> Self {
-		StakingInfo { max_rate, reward_rate: RewardRate::new(blocks_per_year, annual_reward_rate, fixed_reward_per_block) }
-	}
+        max_rate: Perquintill,
+        annual_reward: u64,
+        blocks_per_year: u64,
+    ) -> Self {
+        StakingInfo {
+            max_rate,
+            reward_rate: RewardRate::new(annual_reward, blocks_per_year),
+        }
+    }
 
 	/// Calculate newly minted rewards on coinbase, e.g.,
 	/// reward = rewards_per_block * staking_rate.
@@ -93,15 +95,17 @@ impl StakingInfo {
 		current_staking_rate: Perquintill,
 		authors_per_round: BalanceOf<T>,
 	) -> BalanceOf<T> {
-		// Perquintill automatically bounds to [0, 100]% in case staking_rate is greater
-		// than self.max_rate
-		let reduction = Perquintill::from_rational(
-			self.max_rate.deconstruct(),
-			current_staking_rate.deconstruct(),
-		);
-		// multiplication with perbill cannot overflow
-		let reward = (self.reward_rate.fixed_per_block * stake).saturating_mul(authors_per_round);
-		reduction * reward
+		let per_block_reward: BalanceOf<T> = self.reward_rate.per_block.saturated_into();
+		let reward = per_block_reward.saturating_mul(stake).saturating_mul(authors_per_round);
+		
+		// Ajusta la recompensa si la tasa de apuesta actual supera la tasa máxima permitida
+		if current_staking_rate > self.max_rate {
+			let reduction_rate = self.max_rate / current_staking_rate;
+			let reduced_reward = reward.saturating_mul(reduction_rate.deconstruct().saturated_into());
+			reduced_reward
+		} else {
+			reward
+		}
 	}
 }
 
@@ -132,47 +136,36 @@ impl InflationInfo {
 	pub fn new(
 		blocks_per_year: u64,
 		collator_max_rate_percentage: Perquintill,
-		collator_annual_reward_rate_percentage: Perquintill,
+		collator_annual_reward_absolute: u64,
 		delegator_max_rate_percentage: Perquintill,
-		delegator_annual_reward_rate_percentage: Perquintill,
-		collator_reward_per_block: Perquintill,
-		delegator_reward_per_block: Perquintill,
+		delegator_annual_reward_absolute: u64,
 	) -> Self {
 		Self {
 			collator: StakingInfo::new(
-				blocks_per_year,
 				collator_max_rate_percentage,
-				collator_annual_reward_rate_percentage,
-				collator_reward_per_block,
+				collator_annual_reward_absolute,
+				blocks_per_year,
+
 			),
 			delegator: StakingInfo::new(
-				blocks_per_year,
 				delegator_max_rate_percentage,
-				delegator_annual_reward_rate_percentage,
-				delegator_reward_per_block,
+				delegator_annual_reward_absolute,
+				blocks_per_year,
 			),
 		}
 	}
 
-	/// Check whether the annual reward rate is approx. the per_block reward
+	/// Check whether the annual reward rate is exactly the per_block reward
 	/// rate multiplied with the number of blocks per year
-	pub fn is_valid(&self, blocks_per_year: u64) -> bool {
-		self.collator.reward_rate.annual >=
-			Perquintill::from_parts(
-				self.collator
-					.reward_rate
-					.per_block
-					.deconstruct()
-					.saturating_mul(blocks_per_year),
-			) && self.delegator.reward_rate.annual >=
-			Perquintill::from_parts(
-				self.delegator
-					.reward_rate
-					.per_block
-					.deconstruct()
-					.saturating_mul(blocks_per_year),
-			)
-	}
+    pub fn is_valid(&self, blocks_per_year: u64) -> bool {
+        // Verifica si la recompensa anual esperada coincide con la recompensa por bloque multiplicada
+        // por el número de bloques por año para collator y delegator.
+        let collator_annual_expected = self.collator.reward_rate.per_block * blocks_per_year;
+        let delegator_annual_expected = self.delegator.reward_rate.per_block * blocks_per_year;
+
+        (self.collator.reward_rate.annual == collator_annual_expected) &&
+        (self.delegator.reward_rate.annual == delegator_annual_expected)
+    }
 }
 
 #[cfg(test)]
@@ -208,11 +201,9 @@ mod tests {
 		let inflation = InflationInfo::new(
 			<Test as Config>::BLOCKS_PER_YEAR,
 			Perquintill::from_percent(10),
-			Perquintill::from_percent(10),
+			37500000u64,
 			Perquintill::from_percent(40),
-			Perquintill::from_percent(8),
-			Perquintill::from_parts(7_135_000),
-			Perquintill::from_parts(7_135_000),
+			37500000u64,
 		);
 		let reward = inflation.collator.compute_reward::<Test>(
 			MAX_COLLATOR_STAKE,
@@ -240,38 +231,36 @@ mod tests {
 				let inflation = InflationInfo::new(
 					<Test as Config>::BLOCKS_PER_YEAR,
 					Perquintill::from_percent(10),
-					Perquintill::from_percent(15),
+					37500000u64,
 					Perquintill::from_percent(40),
-					Perquintill::from_percent(10),
-							Perquintill::from_parts(7_135_000),
-					Perquintill::from_parts(7_135_000),
+					37500000u64,
 				);
 				let years_u128: BalanceOf<Test> = <Test as Config>::BLOCKS_PER_YEAR as u128;
-
+				let collator_per_block_reward_u128: u128 = inflation.collator.reward_rate.per_block as u128;
+				let delegator_per_block_reward_u128: u128 = inflation.delegator.reward_rate.per_block as u128;
+				let decimals_u128: u128 = DECIMALS as u128;
 				// Dummy checks for correct instantiation
 				assert!(inflation.is_valid(<Test as Config>::BLOCKS_PER_YEAR));
 				assert_eq!(inflation.collator.max_rate, Perquintill::from_percent(10));
-				assert_eq!(inflation.collator.reward_rate.annual, Perquintill::from_percent(15));
 				assert!(
 					almost_equal(
-						inflation.collator.reward_rate.per_block * DECIMALS * 10_000,
-						Perquintill::from_percent(15) * 10_000 * DECIMALS / years_u128,
+						collator_per_block_reward_u128 * decimals_u128 * 10_000,
+						Perquintill::from_percent(15).deconstruct() as u128 * decimals_u128 * 10_000 / years_u128,
 						precision
 					),
 					"left = {:?}, right = {:?}",
-					inflation.collator.reward_rate.per_block * 10_000 * DECIMALS,
+					collator_per_block_reward_u128 * decimals_u128 * 10_000,
 					Perquintill::from_percent(15) * 10_000 * DECIMALS / years_u128,
 				);
 				assert_eq!(inflation.delegator.max_rate, Perquintill::from_percent(40));
-				assert_eq!(inflation.delegator.reward_rate.annual, Perquintill::from_percent(10));
 				assert!(
 					almost_equal(
-						inflation.delegator.reward_rate.per_block * DECIMALS * 10_000,
+						delegator_per_block_reward_u128 * decimals_u128 * 10_000,
 						Perquintill::from_percent(10) * 10_000 * DECIMALS / years_u128,
 						precision
 					),
 					"left = {:?}, right = {:?}",
-					inflation.delegator.reward_rate.per_block * DECIMALS * 10_000,
+					delegator_per_block_reward_u128 * decimals_u128 * 10_000,
 					Perquintill::from_percent(10) * 10_000 * DECIMALS / years_u128,
 				);
 

@@ -1870,11 +1870,9 @@ pub mod pallet {
 		fn do_set_inflation(
 			blocks_per_year: BlockNumberFor<T>,
 			col_max_rate: Perquintill,
-			col_reward_rate: Perquintill,
+			col_reward_rate: u64,
 			del_max_rate: Perquintill,
-			del_reward_rate: Perquintill,
-			col_reward_per_block: Perquintill,
-			del_reward_per_block: Perquintill,
+			del_reward_rate: u64,
 		) -> Result<(u32, u32), DispatchError> {
 			// Check validity of new inflation
 			let inflation = InflationInfo::new(
@@ -1883,8 +1881,6 @@ pub mod pallet {
 				col_reward_rate,
 				del_max_rate,
 				del_reward_rate,
-				col_reward_per_block,
-				del_reward_per_block,
 			);
 			ensure!(
 				inflation.is_valid(T::BLOCKS_PER_YEAR.saturated_into()),
