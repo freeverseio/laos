@@ -29,6 +29,7 @@ use sp_runtime::{traits::Saturating, Perquintill, RuntimeDebug};
 pub struct RewardRate {
 	pub annual: Perquintill,
 	pub per_block: Perquintill,
+	pub fixed_per_block: Perquintill,
 }
 
 impl MaxEncodedLen for RewardRate {
@@ -43,9 +44,10 @@ fn annual_to_per_block(blocks_per_year: u64, rate: Perquintill) -> Perquintill {
 	rate / blocks_per_year.max(1)
 }
 
+// change here
 impl RewardRate {
-	pub fn new(blocks_per_year: u64, rate: Perquintill) -> Self {
-		RewardRate { annual: rate, per_block: annual_to_per_block(blocks_per_year, rate) }
+	pub fn new(blocks_per_year: u64, rate: Perquintill, fixed_per_block: Perquintill) -> Self {
+		RewardRate { annual: rate, per_block: annual_to_per_block(blocks_per_year, rate), fixed_per_block }
 	}
 }
 
@@ -69,12 +71,14 @@ impl MaxEncodedLen for StakingInfo {
 }
 
 impl StakingInfo {
+	//here
 	pub fn new(
 		blocks_per_year: u64,
 		max_rate: Perquintill,
 		annual_reward_rate: Perquintill,
+		fixed_reward_per_block: Perquintill,
 	) -> Self {
-		StakingInfo { max_rate, reward_rate: RewardRate::new(blocks_per_year, annual_reward_rate) }
+		StakingInfo { max_rate, reward_rate: RewardRate::new(blocks_per_year, annual_reward_rate, fixed_reward_per_block) }
 	}
 
 	/// Calculate newly minted rewards on coinbase, e.g.,
@@ -82,6 +86,7 @@ impl StakingInfo {
 	///
 	/// NOTE: If we exceed the max staking rate, the reward will be reduced by
 	/// max_rate / current_rate.
+	/// change here
 	pub fn compute_reward<T: Config>(
 		&self,
 		stake: BalanceOf<T>,
@@ -95,7 +100,7 @@ impl StakingInfo {
 			current_staking_rate.deconstruct(),
 		);
 		// multiplication with perbill cannot overflow
-		let reward = (self.reward_rate.per_block * stake).saturating_mul(authors_per_round);
+		let reward = (self.reward_rate.fixed_per_block * stake).saturating_mul(authors_per_round);
 		reduction * reward
 	}
 }
@@ -123,23 +128,28 @@ impl InflationInfo {
 	/// rates for collators and delegators.
 	///
 	/// Example: InflationInfo::new(Perquintill_from_percent(10), ...)
+	/// //Change here
 	pub fn new(
 		blocks_per_year: u64,
 		collator_max_rate_percentage: Perquintill,
 		collator_annual_reward_rate_percentage: Perquintill,
 		delegator_max_rate_percentage: Perquintill,
 		delegator_annual_reward_rate_percentage: Perquintill,
+		collator_reward_per_block: Perquintill,
+		delegator_reward_per_block: Perquintill,
 	) -> Self {
 		Self {
 			collator: StakingInfo::new(
 				blocks_per_year,
 				collator_max_rate_percentage,
 				collator_annual_reward_rate_percentage,
+				collator_reward_per_block,
 			),
 			delegator: StakingInfo::new(
 				blocks_per_year,
 				delegator_max_rate_percentage,
 				delegator_annual_reward_rate_percentage,
+				delegator_reward_per_block,
 			),
 		}
 	}
@@ -201,6 +211,8 @@ mod tests {
 			Perquintill::from_percent(10),
 			Perquintill::from_percent(40),
 			Perquintill::from_percent(8),
+			Perquintill::from_parts(7_135_000),
+			Perquintill::from_parts(7_135_000),
 		);
 		let reward = inflation.collator.compute_reward::<Test>(
 			MAX_COLLATOR_STAKE,
@@ -231,6 +243,8 @@ mod tests {
 					Perquintill::from_percent(15),
 					Perquintill::from_percent(40),
 					Perquintill::from_percent(10),
+							Perquintill::from_parts(7_135_000),
+					Perquintill::from_parts(7_135_000),
 				);
 				let years_u128: BalanceOf<Test> = <Test as Config>::BLOCKS_PER_YEAR as u128;
 

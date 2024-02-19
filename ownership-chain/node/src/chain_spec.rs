@@ -164,6 +164,7 @@ fn testnet_genesis(
 ) -> laos_ownership_runtime::RuntimeGenesisConfig {
 	// Reward configuration used in the genesis config
 	// This defines the rate at which rewards are distributed to collators and delegators
+	// Change here
 	let reward_configuration = InflationInfo::new(
 		BLOCKS_PER_YEAR.into(),
 		// max collator staking rate
@@ -174,6 +175,8 @@ fn testnet_genesis(
 		Perquintill::from_percent(10),
 		// delegator reward rate
 		Perquintill::from_percent(8),
+		Perquintill::from_parts(7_135_000),
+		Perquintill::from_parts(7_135_000),
 	);
 
 	laos_ownership_runtime::RuntimeGenesisConfig {

@@ -242,6 +242,8 @@ impl Default for ExtBuilder {
 				Perquintill::from_percent(15),
 				Perquintill::from_percent(40),
 				Perquintill::from_percent(10),
+				Perquintill::from_parts(7_135_000),
+			Perquintill::from_parts(7_135_000),
 			),
 			// inflation is activated by default so we keep retrocompatibility with existing tests
 			inflation_enabled: true,
@@ -287,6 +289,8 @@ impl ExtBuilder {
 			Perquintill::from_percent(col_rewards),
 			Perquintill::from_percent(d_max),
 			Perquintill::from_percent(d_rewards),
+			Perquintill::from_parts(7_135_000),
+			Perquintill::from_parts(7_135_000),
 		);
 		self.blocks_per_round = blocks_per_round;
 
