@@ -12,23 +12,20 @@ env:
 jobs:
   check-version:
     runs-on: ubuntu-latest
-    outputs:
-      proceed: ${{ steps.check_version.outputs.proceed }}
     steps:
       - uses: actions/checkout@v4.1.1
       - id: check_version
         run: |
           VERSION=$(grep -m1 version Cargo.toml | sed -E 's/.*"(.*)".*/\1/')
           if [ "v$VERSION" == "${{ github.ref_name }}" ]; then
-            echo "proceed=true" >> $GITHUB_OUTPUT
+            echo "Proceeding...""
           else
             echo "Version in Cargo.toml ($VERSION) does not match current tag ${{ github.ref_name }}. Canceling release..."
-            echo "proceed=false" >> $GITHUB_OUTPUT
+            exit 1
           fi
 
-  dockerize:
+  prepare-release:
     needs: check-version
-    if: needs.check-version.outputs.proceed == 'true'
     runs-on: 
       group: laos
       labels: ubuntu-16-cores
