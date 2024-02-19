@@ -136,7 +136,6 @@ pub mod pallet {
 
 	use core::cmp::Ordering;
 	use frame_support::{
-		fail,
 		pallet_prelude::{DispatchResult, *},
 		storage::bounded_btree_map::BoundedBTreeMap,
 		traits::{

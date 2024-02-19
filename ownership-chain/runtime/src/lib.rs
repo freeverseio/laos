@@ -26,8 +26,8 @@ use sp_core::{
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{
-		BlakeTwo256, Block as BlockT, Contains, Convert, ConvertInto, DispatchInfoOf, Dispatchable,
-		Get, IdentityLookup, PostDispatchInfoOf, UniqueSaturatedInto,
+		BlakeTwo256, Block as BlockT, Convert, ConvertInto, DispatchInfoOf, Dispatchable, Get,
+		IdentityLookup, PostDispatchInfoOf, UniqueSaturatedInto,
 	},
 	transaction_validity::{TransactionSource, TransactionValidity, TransactionValidityError},
 	ApplyExtrinsicResult, ConsensusEngineId,
@@ -42,7 +42,7 @@ use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{
 		fungible::{Balanced, Credit},
-		ConstBool, ConstU32, ConstU64, ConstU8, Currency, Everything, FindAuthor, Hooks, Imbalance,
+		ConstBool, ConstU32, ConstU64, ConstU8, Contains, Currency, FindAuthor, Hooks, Imbalance,
 		OnUnbalanced, WithdrawReasons,
 	},
 	weights::{
