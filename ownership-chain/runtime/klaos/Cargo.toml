@@ -1,5 +1,5 @@
 [package]
-name = "laos-ownership-runtime"
+name = "klaos-ownership-runtime"
 edition = "2021"
 version = { workspace = true }
 
