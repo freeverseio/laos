@@ -116,7 +116,7 @@ fn update_inflation() {
 					reward_rate: RewardRate {
 						annual: Perquintill::from_percent(99),
 						per_block: Perquintill::from_percent(1),
-						annual_absolute: 37500000u64,
+						annual_absolute: 0u64,
 						use_absolute: true,
 					},
 				},
@@ -125,7 +125,7 @@ fn update_inflation() {
 					reward_rate: RewardRate {
 						annual: Perquintill::from_percent(99),
 						per_block: Perquintill::from_percent(1),
-						annual_absolute: 37500000u64,
+						annual_absolute: 0u64,
 						use_absolute: true,
 					},
 				},
@@ -144,8 +144,8 @@ fn update_inflation() {
 				Perquintill::from_percent(100),
 				Perquintill::from_percent(100),
 				Perquintill::from_percent(100),
-				37500000u64,
-				37500000u64,
+				0u64,
+				0u64,
 				false,
 			));
 			assert_ok!(StakePallet::set_inflation(
@@ -154,8 +154,8 @@ fn update_inflation() {
 				Perquintill::from_percent(0),
 				Perquintill::from_percent(100),
 				Perquintill::from_percent(100),
-				37500000u64,
-				37500000u64,
+				0u64,
+				0u64,
 				false,
 			));
 			assert_ok!(StakePallet::set_inflation(
@@ -164,8 +164,8 @@ fn update_inflation() {
 				Perquintill::from_percent(100),
 				Perquintill::from_percent(0),
 				Perquintill::from_percent(100),
-				37500000u64,
-				37500000u64,
+				0u64,
+				0u64,
 				false,
 			));
 			assert_ok!(StakePallet::set_inflation(
@@ -174,8 +174,8 @@ fn update_inflation() {
 				Perquintill::from_percent(100),
 				Perquintill::from_percent(100),
 				Perquintill::from_percent(0),
-				37500000u64,
-				37500000u64,
+				0u64,
+				0u64,
 				false,
 			));
 		});
