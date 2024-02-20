@@ -29,6 +29,7 @@ pub struct RewardRate {
 	pub annual: Perquintill,
 	pub per_block: Perquintill,
 	pub annual_absolute: u64,
+	pub blocks_per_year: u64,
 	pub use_absolute: bool,
 }
 
@@ -55,6 +56,7 @@ impl RewardRate {
 			annual: rate,
 			per_block: annual_to_per_block(blocks_per_year, rate),
 			annual_absolute,
+			blocks_per_year,
 			use_absolute,
 		}
 	}
@@ -117,11 +119,12 @@ impl StakingInfo {
 			current_staking_rate.deconstruct(),
 		);
 		if self.reward_rate.use_absolute {
-			let reward_rate_annual_absolute_u128 = self.reward_rate.annual_absolute as u128;
-			let reward_per_block_absolute = Perquintill::from_rational(
-				reward_rate_annual_absolute_u128,
+			let reward_annual_absolute_u128 = self.reward_rate.annual_absolute as u128;
+			let reward_annual_rate = Perquintill::from_rational(
+				reward_annual_absolute_u128,
 				total_issuance.saturated_into::<u128>(),
 			);
+			let reward_per_block_absolute = annual_to_per_block(self.reward_rate.blocks_per_year, reward_annual_rate);
 			// multiplication with perbill cannot overflow
 			let reward = (reward_per_block_absolute * stake).saturating_mul(authors_per_round);
 			reduction * reward
