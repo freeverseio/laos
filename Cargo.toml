@@ -10,7 +10,7 @@ resolver = "2"
 
 members = [
    "ownership-chain/node",
-   "ownership-chain/runtime",
+   "ownership-chain/runtime/*",
    "ownership-chain/precompile/*",
    "ownership-chain/pallets/*",
    "ownership-chain/primitives",
@@ -267,4 +267,5 @@ ownership-parachain-primitives = { path = "./ownership-chain/primitives", defaul
 laos-runtime-api-staking = { path = "./ownership-chain/runtime-api/staking", default-features = false }
 
 # runtime
-laos-ownership-runtime = { path = "./ownership-chain/runtime", default-features = false }
+laos-ownership-runtime = { path = "./ownership-chain/runtime/laos", default-features = false }
+klaos-ownership-runtime = { path = "./ownership-chain/runtime/klaos", default-features = false }
