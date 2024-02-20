@@ -186,22 +186,61 @@ impl InflationInfo {
 
 	/// Check whether the annual reward rate is approx. the per_block reward
 	/// rate multiplied with the number of blocks per year
-	pub fn is_valid(&self, blocks_per_year: u64) -> bool {
-		self.collator.reward_rate.annual >=
-			Perquintill::from_parts(
-				self.collator
-					.reward_rate
-					.per_block
-					.deconstruct()
-					.saturating_mul(blocks_per_year),
-			) && self.delegator.reward_rate.annual >=
-			Perquintill::from_parts(
-				self.delegator
-					.reward_rate
-					.per_block
-					.deconstruct()
-					.saturating_mul(blocks_per_year),
-			)
+	pub fn is_valid_genesis(&self, blocks_per_year: u64) -> bool {
+		if self.collator.reward_rate.use_absolute || self.delegator.reward_rate.use_absolute {
+			// When using absolute rewards, skip detailed validation
+			true
+		} else {
+			self.collator.reward_rate.annual >=
+				Perquintill::from_parts(
+					self.collator
+						.reward_rate
+						.per_block
+						.deconstruct()
+						.saturating_mul(blocks_per_year),
+				) && self.delegator.reward_rate.annual >=
+				Perquintill::from_parts(
+					self.delegator
+						.reward_rate
+						.per_block
+						.deconstruct()
+						.saturating_mul(blocks_per_year),
+				)
+		}
+	}
+
+	/// Check whether the annual reward rate is approx. the per_block reward
+	/// rate multiplied with the number of blocks per year, or if using absolute,
+	/// it checks if the absolute annual reward is properly set.
+	pub fn is_valid<T: Config>(&self, blocks_per_year: u64, total_issuance: BalanceOf<T>) -> bool {
+		let validate_reward_rate = |info: &StakingInfo| {
+			if info.reward_rate.use_absolute {
+				// When using absolute rewards, validate against total issuance
+				let expected_per_block_reward = Perquintill::from_rational(
+					info.reward_rate.annual_absolute as u128,
+					blocks_per_year as u128,
+				);
+
+				let total_issuance_as_perquintill = Perquintill::from_rational(
+					info.reward_rate.annual_absolute as u128,
+					total_issuance.saturated_into::<u128>(),
+				);
+
+				// Check if the per_block calculation matches the expected rate based on annual
+				// absolute
+				expected_per_block_reward == info.reward_rate.per_block &&
+					total_issuance_as_perquintill >= info.reward_rate.annual
+			} else {
+				// When not using absolute, validate that annual is approx per_block *
+				// blocks_per_year
+				let expected_annual = Perquintill::from_parts(
+					info.reward_rate.per_block.deconstruct().saturating_mul(blocks_per_year),
+				);
+				info.reward_rate.annual >= expected_annual
+			}
+		};
+
+		validate_reward_rate(&self.collator) && validate_reward_rate(&self.delegator)
 	}
 }
 
@@ -291,7 +330,9 @@ mod tests {
 				let total_issuance = <Test as Config>::Currency::total_issuance();
 
 				// Dummy checks for correct instantiation
-				assert!(inflation.is_valid(<Test as Config>::BLOCKS_PER_YEAR));
+				assert!(
+					inflation.is_valid::<Test>(<Test as Config>::BLOCKS_PER_YEAR, total_issuance)
+				);
 				assert_eq!(inflation.collator.max_rate, Perquintill::from_percent(10));
 				assert_eq!(inflation.collator.reward_rate.annual, Perquintill::from_percent(15));
 				assert!(

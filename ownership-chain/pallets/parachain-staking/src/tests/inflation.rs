@@ -130,9 +130,13 @@ fn update_inflation() {
 					},
 				},
 			};
-			assert!(!invalid_inflation.is_valid(<Test as Config>::BLOCKS_PER_YEAR));
+			let total_issuance = <Test as Config>::Currency::total_issuance();
+
+			assert!(!invalid_inflation
+				.is_valid::<Test>(<Test as Config>::BLOCKS_PER_YEAR, total_issuance));
 			invalid_inflation.collator.reward_rate.per_block = Perquintill::zero();
-			assert!(!invalid_inflation.is_valid(<Test as Config>::BLOCKS_PER_YEAR));
+			assert!(!invalid_inflation
+				.is_valid::<Test>(<Test as Config>::BLOCKS_PER_YEAR, total_issuance));
 
 			assert_ok!(StakePallet::set_inflation(
 				RuntimeOrigin::root(),
@@ -142,7 +146,7 @@ fn update_inflation() {
 				Perquintill::from_percent(100),
 				37500000u64,
 				37500000u64,
-				true,
+				false,
 			));
 			assert_ok!(StakePallet::set_inflation(
 				RuntimeOrigin::root(),
@@ -152,7 +156,7 @@ fn update_inflation() {
 				Perquintill::from_percent(100),
 				37500000u64,
 				37500000u64,
-				true,
+				false,
 			));
 			assert_ok!(StakePallet::set_inflation(
 				RuntimeOrigin::root(),
@@ -162,7 +166,7 @@ fn update_inflation() {
 				Perquintill::from_percent(100),
 				37500000u64,
 				37500000u64,
-				true,
+				false,
 			));
 			assert_ok!(StakePallet::set_inflation(
 				RuntimeOrigin::root(),
@@ -172,7 +176,7 @@ fn update_inflation() {
 				Perquintill::from_percent(0),
 				37500000u64,
 				37500000u64,
-				true,
+				false,
 			));
 		});
 }

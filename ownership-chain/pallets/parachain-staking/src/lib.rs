@@ -711,7 +711,7 @@ pub mod pallet {
 	impl<T: Config> BuildGenesisConfig for GenesisConfig<T> {
 		fn build(&self) {
 			assert!(
-				self.inflation_config.is_valid(T::BLOCKS_PER_YEAR.saturated_into()),
+				self.inflation_config.is_valid_genesis(T::BLOCKS_PER_YEAR.saturated_into()),
 				"Invalid inflation configuration"
 			);
 
@@ -1892,8 +1892,10 @@ pub mod pallet {
 				del_annual_reward_absolute,
 				use_absolute,
 			);
+			let total_issuance = <T::Currency as Inspect<AccountIdOf<T>>>::total_issuance();
+
 			ensure!(
-				inflation.is_valid(T::BLOCKS_PER_YEAR.saturated_into()),
+				inflation.is_valid::<T>(T::BLOCKS_PER_YEAR.saturated_into(), total_issuance),
 				Error::<T>::InvalidSchedule
 			);
 
