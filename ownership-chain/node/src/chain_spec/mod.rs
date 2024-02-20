@@ -1,6 +1,7 @@
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use serde::{Deserialize, Serialize};
 
+pub mod klaos;
 pub mod laos;
 
 /// Specialized `ChainSpec` for the normal parachain runtime.

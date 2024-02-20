@@ -2,12 +2,10 @@ use super::Extensions;
 use cumulus_primitives_core::ParaId;
 use fp_evm::GenesisAccount;
 use hex_literal::hex;
-use laos_ownership_runtime::{
-	AccountId, AuraId, InflationInfo, Precompiles, BLOCKS_PER_YEAR, REVERT_BYTECODE, UNIT,
-};
+use klaos_ownership_runtime::{AccountId, AuraId, Precompiles, REVERT_BYTECODE};
 use sc_service::ChainType;
 use sp_core::{Pair, Public, H160, U256};
-use sp_runtime::Perquintill;
+use sp_runtime::traits::Zero;
 use std::{collections::BTreeMap, str::FromStr};
 
 /// List of endowed accounts.
@@ -30,7 +28,7 @@ fn endowed_accounts() -> Vec<AccountId> {
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
 pub type ChainSpec =
-	sc_service::GenericChainSpec<laos_ownership_runtime::RuntimeGenesisConfig, Extensions>;
+	sc_service::GenericChainSpec<klaos_ownership_runtime::RuntimeGenesisConfig, Extensions>;
 
 /// The default XCM version to set in genesis config.
 const SAFE_XCM_VERSION: u32 = staging_xcm::prelude::XCM_VERSION;
@@ -52,8 +50,8 @@ pub fn get_collator_keys_from_seed(seed: &str) -> AuraId {
 /// Generate the session keys from individual elements.
 ///
 /// The input must be a tuple of individual keys (a single arg for now since we have just one key).
-pub fn template_session_keys(keys: AuraId) -> laos_ownership_runtime::SessionKeys {
-	laos_ownership_runtime::SessionKeys { aura: keys }
+pub fn template_session_keys(keys: AuraId) -> klaos_ownership_runtime::SessionKeys {
+	klaos_ownership_runtime::SessionKeys { aura: keys }
 }
 
 pub fn development_config() -> ChainSpec {
@@ -143,36 +141,27 @@ fn testnet_genesis(
 	endowed_accounts: Vec<AccountId>,
 	root_key: Option<AccountId>,
 	id: ParaId,
-) -> laos_ownership_runtime::RuntimeGenesisConfig {
-	// Reward configuration used in the genesis config
-	// This defines the rate at which rewards are distributed to collators and delegators
-	let reward_configuration = InflationInfo::new(
-		BLOCKS_PER_YEAR.into(),
-		// max collator staking rate
-		Perquintill::from_percent(40),
-		// collator reward rate
-		Perquintill::from_percent(10),
-		// max delegator staking rate
-		Perquintill::from_percent(10),
-		// delegator reward rate
-		Perquintill::from_percent(8),
-	);
-
-	laos_ownership_runtime::RuntimeGenesisConfig {
-		system: laos_ownership_runtime::SystemConfig {
-			code: laos_ownership_runtime::WASM_BINARY
+) -> klaos_ownership_runtime::RuntimeGenesisConfig {
+	klaos_ownership_runtime::RuntimeGenesisConfig {
+		system: klaos_ownership_runtime::SystemConfig {
+			code: klaos_ownership_runtime::WASM_BINARY
 				.expect("WASM binary was not build, please build it!")
 				.to_vec(),
 			..Default::default()
 		},
-		balances: laos_ownership_runtime::BalancesConfig {
+		balances: klaos_ownership_runtime::BalancesConfig {
 			balances: endowed_accounts.iter().cloned().map(|k| (k, 1e24 as u128)).collect(),
 		},
-		parachain_info: laos_ownership_runtime::ParachainInfoConfig {
+		parachain_info: klaos_ownership_runtime::ParachainInfoConfig {
 			parachain_id: id,
 			..Default::default()
 		},
-		session: laos_ownership_runtime::SessionConfig {
+		collator_selection: klaos_ownership_runtime::CollatorSelectionConfig {
+			invulnerables: invulnerables.iter().cloned().map(|(acc, _)| acc).collect(),
+			candidacy_bond: Zero::zero(),
+			..Default::default()
+		},
+		session: klaos_ownership_runtime::SessionConfig {
 			keys: invulnerables
 				.into_iter()
 				.map(|(acc, aura)| {
@@ -189,23 +178,18 @@ fn testnet_genesis(
 		aura: Default::default(),
 		aura_ext: Default::default(),
 		parachain_system: Default::default(),
-		polkadot_xcm: laos_ownership_runtime::PolkadotXcmConfig {
+		polkadot_xcm: klaos_ownership_runtime::PolkadotXcmConfig {
 			safe_xcm_version: Some(SAFE_XCM_VERSION),
 			..Default::default()
 		},
-		sudo: laos_ownership_runtime::SudoConfig { key: root_key },
+		sudo: klaos_ownership_runtime::SudoConfig { key: root_key },
 		transaction_payment: Default::default(),
 		// EVM compatibility
-		evm_chain_id: laos_ownership_runtime::EVMChainIdConfig {
+		evm_chain_id: klaos_ownership_runtime::EVMChainIdConfig {
 			chain_id: 667,
 			..Default::default()
 		},
-		parachain_staking: laos_ownership_runtime::ParachainStakingConfig {
-			max_candidate_stake: 10_000 * UNIT,
-			inflation_config: reward_configuration,
-			..Default::default()
-		},
-		evm: laos_ownership_runtime::EVMConfig {
+		evm: klaos_ownership_runtime::EVMConfig {
 			accounts: {
 				let mut map: BTreeMap<_, _> = Precompiles::used_addresses()
 					.iter()

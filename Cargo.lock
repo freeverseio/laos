@@ -5075,6 +5075,7 @@ dependencies = [
  "futures",
  "hex-literal",
  "jsonrpsee",
+ "klaos-ownership-runtime",
  "laos-ownership-runtime",
  "log",
  "pallet-transaction-payment-rpc",
