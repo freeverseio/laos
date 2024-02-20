@@ -158,12 +158,12 @@ fn staking_inflation_rewards_is_deactivated_by_default() {
 }
 
 #[test]
-fn rewards_treasury_account_is_not_set_by_default() {
+fn collator_rewards_account_is_not_set_by_default() {
 	new_test_ext().execute_with(|| assert!(ParachainStaking::collator_rewards_account().is_none()));
 }
 
 #[test]
-fn fees_go_to_rewards_treasury_account() {
+fn fees_go_to_collator_rewards_account() {
 	new_test_ext().execute_with(|| {
 		let alice = AccountId::from_str(ALICE).unwrap();
 		let from = [0u8; 20].into();
