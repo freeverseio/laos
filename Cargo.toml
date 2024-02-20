@@ -239,9 +239,9 @@ polkadot-service = { git = "https://github.com/paritytech/polkadot-sdk", branch 
 
 # Orml
 # (wasm)
-orml-traits = { git = "https://github.com/open-web3-stack/open-runtime-module-library", branch = "polkadot-v1.3.0", default-features = false }
-orml-xcm-support = { git = "https://github.com/open-web3-stack/open-runtime-module-library", branch = "polkadot-v1.3.0", default-features = false }
-orml-xtokens = { git = "https://github.com/open-web3-stack/open-runtime-module-library", branch = "polkadot-v1.3.0", default-features = false }
+#orml-traits = { git = "https://github.com/open-web3-stack/open-runtime-module-library", branch = "polkadot-v1.3.0", default-features = false }
+#orml-xcm-support = { git = "https://github.com/open-web3-stack/open-runtime-module-library", branch = "polkadot-v1.3.0", default-features = false }
+#orml-xtokens = { git = "https://github.com/open-web3-stack/open-runtime-module-library", branch = "polkadot-v1.3.0", default-features = false }
 
 # Other pallets
 # (wasm)
