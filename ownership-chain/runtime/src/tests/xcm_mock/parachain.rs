@@ -630,24 +630,6 @@ where
 	}
 }
 
-/// Logic for sending fees to the treasury account. On every unbalanced change, the amount is
-/// transferred to the treasury account.
-pub struct ToTreasury<R>(PhantomData<R>);
-
-type NegativeImbalanceOfBalances<T> = pallet_balances::NegativeImbalance<T>;
-
-impl<R> OnUnbalanced<NegativeImbalanceOfBalances<R>> for ToTreasury<R>
-where
-	R: pallet_balances::Config,
-	<R as frame_system::Config>::AccountId: From<AccountId>,
-	<R as frame_system::Config>::AccountId: Into<AccountId>,
-{
-	fn on_nonzero_unbalanced(amount: NegativeImbalanceOfBalances<R>) {
-		let treasury = PalletId(*b"py/trsry").into_account_truncating();
-		<pallet_balances::Pallet<R>>::resolve_creating(&treasury, amount);
-	}
-}
-
 parameter_type_with_key! {
 	pub ParachainMinFee: |location: MultiLocation| -> Option<u128> {
 		match (location.parents, location.first_interior()) {

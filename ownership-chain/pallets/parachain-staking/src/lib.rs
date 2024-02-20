@@ -500,9 +500,9 @@ pub mod pallet {
 		/// \[round number, first block in the current round, old value, new
 		/// value\]
 		BlocksPerRoundSet(SessionIndex, BlockNumberFor<T>, BlockNumberFor<T>, BlockNumberFor<T>),
-		/// New treasury rewards account has been set.
+		/// New collator rewards account has been set.
 		/// \[new account\]
-		RewardsTreasuryAccountSet(T::AccountId),
+		CollatorRewardsAccountSet(T::AccountId),
 		/// Inflation feature is toggled.
 		/// \[enabled\]
 		InflationEnabled(bool),
@@ -693,10 +693,10 @@ pub mod pallet {
 	#[pallet::getter(fn inflation_enabled)]
 	pub type InflationEnabled<T: Config> = StorageValue<_, bool, ValueQuery>;
 
-	/// Stores rewards treasury account
+	/// Source of rewards for collators
 	#[pallet::storage]
-	#[pallet::getter(fn rewards_treasury_account)]
-	pub type RewardsTreasuryAccount<T: Config> = StorageValue<_, T::AccountId, OptionQuery>;
+	#[pallet::getter(fn collator_rewards_account)]
+	pub type CollatorRewardsAccount<T: Config> = StorageValue<_, T::AccountId, OptionQuery>;
 
 	#[pallet::genesis_config]
 	#[derive(frame_support::DefaultNoBound)]
@@ -704,7 +704,7 @@ pub mod pallet {
 		pub stakers: GenesisStaker<T>,
 		pub inflation_config: InflationInfo,
 		pub max_candidate_stake: BalanceOf<T>,
-		pub rewards_treasury_account: Option<T::AccountId>,
+		pub collator_rewards_account: Option<T::AccountId>,
 	}
 
 	#[pallet::genesis_build]
@@ -717,8 +717,8 @@ pub mod pallet {
 
 			InflationConfig::<T>::put(self.inflation_config.clone());
 			MaxCollatorCandidateStake::<T>::put(self.max_candidate_stake);
-			if let Some(rewards_treasury_account) = &self.rewards_treasury_account {
-				RewardsTreasuryAccount::<T>::put(rewards_treasury_account.clone());
+			if let Some(collator_rewards_account) = &self.collator_rewards_account {
+				CollatorRewardsAccount::<T>::put(collator_rewards_account.clone());
 			}
 
 			// Setup delegate & collators
@@ -1815,18 +1815,18 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// Set rewards treasury account
+		/// Set collator rewards account.
 		///
 		/// Only `Root` origin can call this function.
 		#[pallet::call_index(33)]
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::set_rewards_treasury_account())]
-		pub fn set_rewards_treasury_account(
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::set_collator_rewards_account())]
+		pub fn set_collator_rewards_account(
 			origin: OriginFor<T>,
 			account: T::AccountId,
 		) -> DispatchResult {
 			ensure_root(origin)?;
-			<RewardsTreasuryAccount<T>>::put(account.clone());
-			Self::deposit_event(Event::RewardsTreasuryAccountSet(account));
+			<CollatorRewardsAccount<T>>::put(account.clone());
+			Self::deposit_event(Event::CollatorRewardsAccountSet(account));
 			Ok(())
 		}
 	}
@@ -2582,29 +2582,28 @@ pub mod pallet {
 		}
 
 		/// Sends rewards to a given account.
-		/// - If rewards treasury account exists, the rewards are transferred from this account
-		/// to the rewarded account. In case of an funds unavailable error during the transfer
-		/// because the rewards treasury account does not have enough balance, a zero balance is
-		/// returned.
-		/// - If the rewards treasury account does not exist, a zero balance is returned.
+		///
+		/// - If collator rewards account exists, the rewards are transferred from this account
+		/// to the rewarded account. In case collator rewards account does not have enough balance,
+		/// a zero balance is returned.
+		/// - If the collator rewards account does not exist, a zero balance is returned.
 		///
 		/// Then the possible returns the amount of rewards sent to the account.
 		pub fn send_rewards(
 			account: &T::AccountId,
 			amount: BalanceOf<T>,
 		) -> Result<BalanceOf<T>, DispatchError> {
-			if let Some(rewards_treasury_account) = RewardsTreasuryAccount::<T>::get() {
-				return T::Currency::transfer(&rewards_treasury_account, account, amount, KeepAlive)
+			if let Some(collator_rewards_account) = CollatorRewardsAccount::<T>::get() {
+				return T::Currency::transfer(&collator_rewards_account, account, amount, KeepAlive)
 					.map(|_| amount)
 					.or_else(|e| match e {
-						DispatchError::Token(TokenError::FundsUnavailable) =>
-							Ok(Default::default()),
+						DispatchError::Token(TokenError::FundsUnavailable) => Ok(Zero::zero()),
 						_ => Err(e.into()),
 					});
 			}
 
-			// Default return when RewardsTreasuryAccount is not set.
-			Ok(Default::default())
+			// Default return when CollatorRewardsAccount is not set.
+			Ok(Zero::zero())
 		}
 	}
 

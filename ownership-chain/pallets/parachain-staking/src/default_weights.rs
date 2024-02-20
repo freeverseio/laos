@@ -56,7 +56,7 @@ pub trait WeightInfo {
 	fn increment_collator_rewards() -> Weight;
 	fn claim_rewards() -> Weight;
 	fn execute_scheduled_reward_change(n: u32, m: u32, ) -> Weight;
-	fn set_rewards_treasury_account() -> Weight;
+	fn set_collator_rewards_account() -> Weight;
 	fn toggle_inflation() -> Weight;
 }
 
@@ -655,8 +655,8 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	}
 	/// Storage: `ParachainStaking::Rewards` (r:1 w:1)
 	/// Proof: `ParachainStaking::Rewards` (`max_values`: None, `max_size`: Some(44), added: 2519, mode: `MaxEncodedLen`)
-	/// Storage: `ParachainStaking::RewardsTreasuryAccount` (r:1 w:0)
-	/// Proof: `ParachainStaking::RewardsTreasuryAccount` (`max_values`: Some(1), `max_size`: Some(20), added: 515, mode: `MaxEncodedLen`)
+	/// Storage: `ParachainStaking::CollatorRewardsAccount` (r:1 w:0)
+	/// Proof: `ParachainStaking::CollatorRewardsAccount` (`max_values`: Some(1), `max_size`: Some(20), added: 515, mode: `MaxEncodedLen`)
 	/// Storage: `System::Account` (r:2 w:2)
 	/// Proof: `System::Account` (`max_values`: None, `max_size`: Some(116), added: 2591, mode: `MaxEncodedLen`)
 	fn claim_rewards() -> Weight {
@@ -705,9 +705,9 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 			.saturating_add(Weight::from_parts(0, 65934).saturating_mul(m.into()))
 			.saturating_add(Weight::from_parts(0, 33214).saturating_mul(n.into()))
 	}
-	/// Storage: `ParachainStaking::RewardsTreasuryAccount` (r:0 w:1)
-	/// Proof: `ParachainStaking::RewardsTreasuryAccount` (`max_values`: Some(1), `max_size`: Some(20), added: 515, mode: `MaxEncodedLen`)
-	fn set_rewards_treasury_account() -> Weight {
+	/// Storage: `ParachainStaking::CollatorRewardsAccount` (r:0 w:1)
+	/// Proof: `ParachainStaking::CollatorRewardsAccount` (`max_values`: Some(1), `max_size`: Some(20), added: 515, mode: `MaxEncodedLen`)
+	fn set_collator_rewards_account() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `0`
 		//  Estimated: `0`
@@ -1322,8 +1322,8 @@ impl WeightInfo for () {
 	}
 	/// Storage: `ParachainStaking::Rewards` (r:1 w:1)
 	/// Proof: `ParachainStaking::Rewards` (`max_values`: None, `max_size`: Some(44), added: 2519, mode: `MaxEncodedLen`)
-	/// Storage: `ParachainStaking::RewardsTreasuryAccount` (r:1 w:0)
-	/// Proof: `ParachainStaking::RewardsTreasuryAccount` (`max_values`: Some(1), `max_size`: Some(20), added: 515, mode: `MaxEncodedLen`)
+	/// Storage: `ParachainStaking::CollatorRewardsAccount` (r:1 w:0)
+	/// Proof: `ParachainStaking::CollatorRewardsAccount` (`max_values`: Some(1), `max_size`: Some(20), added: 515, mode: `MaxEncodedLen`)
 	/// Storage: `System::Account` (r:2 w:2)
 	/// Proof: `System::Account` (`max_values`: None, `max_size`: Some(116), added: 2591, mode: `MaxEncodedLen`)
 	fn claim_rewards() -> Weight {
@@ -1372,9 +1372,9 @@ impl WeightInfo for () {
 			.saturating_add(Weight::from_parts(0, 65934).saturating_mul(m.into()))
 			.saturating_add(Weight::from_parts(0, 33214).saturating_mul(n.into()))
 	}
-	/// Storage: `ParachainStaking::RewardsTreasuryAccount` (r:0 w:1)
-	/// Proof: `ParachainStaking::RewardsTreasuryAccount` (`max_values`: Some(1), `max_size`: Some(20), added: 515, mode: `MaxEncodedLen`)
-	fn set_rewards_treasury_account() -> Weight {
+	/// Storage: `ParachainStaking::CollatorRewardsAccount` (r:0 w:1)
+	/// Proof: `ParachainStaking::CollatorRewardsAccount` (`max_values`: Some(1), `max_size`: Some(20), added: 515, mode: `MaxEncodedLen`)
+	fn set_collator_rewards_account() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `0`
 		//  Estimated: `0`

@@ -24,7 +24,7 @@ use sp_runtime::Perquintill;
 use crate::{
 	mock::{
 		events, last_event, roll_to, roll_to_claim_rewards, AccountId, Balances, ExtBuilder,
-		RuntimeOrigin, Session, StakePallet, Test, DECIMALS, TREASURY_ACC, TREASURY_BALANCE,
+		RuntimeOrigin, Session, StakePallet, Test, DECIMALS, REWARDS_ACC, REWARDS_ACCOUNT_BALANCE,
 	},
 	types::RoundInfo,
 	Config, Error, Event, Event as StakeEvent, InflationInfo,
@@ -156,7 +156,7 @@ fn authorities_per_round() {
 			(9, stake),
 			(10, stake),
 			(11, 100 * stake),
-			(TREASURY_ACC, TREASURY_BALANCE),
+			(REWARDS_ACC, REWARDS_ACCOUNT_BALANCE),
 		])
 		.with_collators(vec![(1, stake), (2, stake), (3, stake), (4, stake)])
 		.build_and_execute_with_sanity_tests(|| {
