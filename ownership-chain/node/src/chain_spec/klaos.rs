@@ -27,7 +27,7 @@ fn endowed_accounts() -> Vec<AccountId> {
 }
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
-pub type ChainSpec =
+type ChainSpec =
 	sc_service::GenericChainSpec<klaos_ownership_runtime::RuntimeGenesisConfig, Extensions>;
 
 /// The default XCM version to set in genesis config.
