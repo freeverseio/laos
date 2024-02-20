@@ -21,7 +21,7 @@ use crate::{pallet::Config, types::BalanceOf};
 use parity_scale_codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
-use sp_runtime::{traits::Saturating, SaturatedConversion, Perquintill, RuntimeDebug};
+use sp_runtime::{traits::Saturating, Perquintill, RuntimeDebug, SaturatedConversion};
 #[derive(
 	Eq, PartialEq, Clone, Encode, Decode, Default, RuntimeDebug, TypeInfo, Deserialize, Serialize,
 )]
@@ -45,8 +45,18 @@ fn annual_to_per_block(blocks_per_year: u64, rate: Perquintill) -> Perquintill {
 }
 
 impl RewardRate {
-	pub fn new(blocks_per_year: u64, rate: Perquintill, annual_absolute: u64, use_absolute: bool) -> Self {
-		RewardRate { annual: rate, per_block: annual_to_per_block(blocks_per_year, rate), annual_absolute, use_absolute }
+	pub fn new(
+		blocks_per_year: u64,
+		rate: Perquintill,
+		annual_absolute: u64,
+		use_absolute: bool,
+	) -> Self {
+		RewardRate {
+			annual: rate,
+			per_block: annual_to_per_block(blocks_per_year, rate),
+			annual_absolute,
+			use_absolute,
+		}
 	}
 }
 
@@ -77,7 +87,15 @@ impl StakingInfo {
 		annual_absolute: u64,
 		use_absolute: bool,
 	) -> Self {
-		StakingInfo { max_rate, reward_rate: RewardRate::new(blocks_per_year, annual_reward_rate, annual_absolute, use_absolute) }
+		StakingInfo {
+			max_rate,
+			reward_rate: RewardRate::new(
+				blocks_per_year,
+				annual_reward_rate,
+				annual_absolute,
+				use_absolute,
+			),
+		}
 	}
 
 	/// Calculate newly minted rewards on coinbase, e.g.,
@@ -92,7 +110,6 @@ impl StakingInfo {
 		authors_per_round: BalanceOf<T>,
 		total_issuance: BalanceOf<T>,
 	) -> BalanceOf<T> {
-		
 		// Perquintill automatically bounds to [0, 100]% in case staking_rate is greater
 		// than self.max_rate
 		let reduction = Perquintill::from_rational(
@@ -101,7 +118,10 @@ impl StakingInfo {
 		);
 		if self.reward_rate.use_absolute {
 			let reward_rate_annual_absolute_u128 = self.reward_rate.annual_absolute as u128;
-			let reward_per_block_absolute =  Perquintill::from_rational(reward_rate_annual_absolute_u128, total_issuance.saturated_into::<u128>());
+			let reward_per_block_absolute = Perquintill::from_rational(
+				reward_rate_annual_absolute_u128,
+				total_issuance.saturated_into::<u128>(),
+			);
 			// multiplication with perbill cannot overflow
 			let reward = (reward_per_block_absolute * stake).saturating_mul(authors_per_round);
 			reduction * reward
@@ -221,31 +241,31 @@ mod tests {
 			.with_collators(vec![(1, 10)])
 			.build()
 			.execute_with(|| {
-		let inflation = InflationInfo::new(
-			<Test as Config>::BLOCKS_PER_YEAR,
-			Perquintill::from_percent(10),
-			Perquintill::from_percent(10),
-			Perquintill::from_percent(40),
-			Perquintill::from_percent(8),
-			0u64,
-			0u64,
-			false,
-		);
-		let total_issuance = <Test as Config>::Currency::total_issuance();
-		let reward = inflation.collator.compute_reward::<Test>(
-			MAX_COLLATOR_STAKE,
-			Perquintill::from_percent(9),
-			2,
-			total_issuance,
-		);
-		let expected = <Test as Config>::CurrencyBalance::from(15210282150733u64);
-		assert!(
-			almost_equal(reward, expected, Perbill::from_perthousand(1)),
-			"left {:?}, right {:?}",
-			reward,
-			expected
-		);
-	});
+				let inflation = InflationInfo::new(
+					<Test as Config>::BLOCKS_PER_YEAR,
+					Perquintill::from_percent(10),
+					Perquintill::from_percent(10),
+					Perquintill::from_percent(40),
+					Perquintill::from_percent(8),
+					0u64,
+					0u64,
+					false,
+				);
+				let total_issuance = <Test as Config>::Currency::total_issuance();
+				let reward = inflation.collator.compute_reward::<Test>(
+					MAX_COLLATOR_STAKE,
+					Perquintill::from_percent(9),
+					2,
+					total_issuance,
+				);
+				let expected = <Test as Config>::CurrencyBalance::from(15210282150733u64);
+				assert!(
+					almost_equal(reward, expected, Perbill::from_perthousand(1)),
+					"left {:?}, right {:?}",
+					reward,
+					expected
+				);
+			});
 	}
 
 	#[test]

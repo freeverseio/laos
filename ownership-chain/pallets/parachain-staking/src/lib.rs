@@ -1805,7 +1805,8 @@ pub mod pallet {
 				d_reward_rate,
 				inflation.collator.reward_rate.annual_absolute,
 				inflation.delegator.reward_rate.annual_absolute,
-				inflation.collator.reward_rate.use_absolute && inflation.delegator.reward_rate.use_absolute,
+				inflation.collator.reward_rate.use_absolute &&
+					inflation.delegator.reward_rate.use_absolute,
 			)?;
 
 			Ok(Some(<T as pallet::Config>::WeightInfo::set_inflation(num_col, num_del)).into())
