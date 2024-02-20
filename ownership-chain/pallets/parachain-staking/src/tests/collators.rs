@@ -275,7 +275,7 @@ fn execute_leave_candidates_with_delay() {
 			(10, 100),
 		])
 		.with_delegators(vec![(11, 1, 110), (12, 1, 120), (13, 2, 130), (14, 2, 140)])
-		.with_inflation(100, 15, 40, 10, BLOCKS_PER_ROUND)
+		.with_inflation(100, 15, 40, 10, BLOCKS_PER_ROUND, 0, 0, false)
 		.build_and_execute_with_sanity_tests(|| {
 			assert_eq!(CandidatePool::<Test>::count(), 10);
 			assert_eq!(
@@ -1271,7 +1271,7 @@ fn exit_queue_with_events() {
 			(9, 33),
 		])
 		.with_collators(vec![(1, 100), (2, 90), (3, 80), (4, 70), (5, 60), (6, 50)])
-		.with_inflation(100, 15, 40, 10, BLOCKS_PER_ROUND)
+		.with_inflation(100, 15, 40, 10, BLOCKS_PER_ROUND, 0, 0, false)
 		.build_and_execute_with_sanity_tests(|| {
 			assert_eq!(CandidatePool::<Test>::count(), 6);
 			assert_eq!(StakePallet::selected_candidates().into_inner(), vec![1, 2]);

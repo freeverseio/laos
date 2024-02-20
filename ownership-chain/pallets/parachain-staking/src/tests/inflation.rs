@@ -52,7 +52,10 @@ fn rewards_set_inflation() {
 				hundred,
 				hundred,
 				hundred,
-				hundred
+				hundred,
+				0u64,
+				0u64,
+				false,
 			));
 			// rewards and counters should be set
 			(1..=5).for_each(|id| {
@@ -113,6 +116,8 @@ fn update_inflation() {
 					reward_rate: RewardRate {
 						annual: Perquintill::from_percent(99),
 						per_block: Perquintill::from_percent(1),
+						annual_absolute: 37500000u64,
+						use_absolute: true,
 					},
 				},
 				delegator: StakingInfo {
@@ -120,6 +125,8 @@ fn update_inflation() {
 					reward_rate: RewardRate {
 						annual: Perquintill::from_percent(99),
 						per_block: Perquintill::from_percent(1),
+						annual_absolute: 37500000u64,
+						use_absolute: true,
 					},
 				},
 			};
@@ -133,6 +140,9 @@ fn update_inflation() {
 				Perquintill::from_percent(100),
 				Perquintill::from_percent(100),
 				Perquintill::from_percent(100),
+				37500000u64,
+				37500000u64,
+				true,
 			));
 			assert_ok!(StakePallet::set_inflation(
 				RuntimeOrigin::root(),
@@ -140,6 +150,9 @@ fn update_inflation() {
 				Perquintill::from_percent(0),
 				Perquintill::from_percent(100),
 				Perquintill::from_percent(100),
+				37500000u64,
+				37500000u64,
+				true,
 			));
 			assert_ok!(StakePallet::set_inflation(
 				RuntimeOrigin::root(),
@@ -147,6 +160,9 @@ fn update_inflation() {
 				Perquintill::from_percent(100),
 				Perquintill::from_percent(0),
 				Perquintill::from_percent(100),
+				37500000u64,
+				37500000u64,
+				true,
 			));
 			assert_ok!(StakePallet::set_inflation(
 				RuntimeOrigin::root(),
@@ -154,6 +170,9 @@ fn update_inflation() {
 				Perquintill::from_percent(100),
 				Perquintill::from_percent(100),
 				Perquintill::from_percent(0),
+				37500000u64,
+				37500000u64,
+				true,
 			));
 		});
 }

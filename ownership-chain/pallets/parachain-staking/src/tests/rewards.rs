@@ -48,7 +48,7 @@ fn coinbase_rewards_few_blocks_detailed_check() {
 			(4, 1, 16_000_000 * DECIMALS),
 			(5, 2, 16_000_000 * DECIMALS),
 		])
-		.with_inflation(10, 15, 40, 15, 5)
+		.with_inflation(10, 15, 40, 15, 5, 0, 0, false)
 		.build_and_execute_with_sanity_tests(|| {
 			let inflation = StakePallet::inflation_config();
 			let total_issuance = <Test as Config>::Currency::total_issuance();
@@ -60,12 +60,14 @@ fn coinbase_rewards_few_blocks_detailed_check() {
 				16_000_000 * DECIMALS,
 				c_staking_rate,
 				1u128,
+				total_issuance,
 			);
 			let d_staking_rate = Perquintill::from_rational(64_000_000 * DECIMALS, total_issuance);
 			let d_rewards: BalanceOf<Test> = inflation.delegator.compute_reward::<Test>(
 				64_000_000 * DECIMALS,
 				d_staking_rate,
 				2u128,
+				total_issuance,
 			);
 
 			// set 1 to be author for blocks 1-3, then 2 for blocks 4-5
@@ -140,7 +142,7 @@ fn delegator_should_not_receive_rewards_after_revoking() {
 		])
 		.with_collators(vec![(1, 10_000_000 * DECIMALS), (3, 10)])
 		.with_delegators(vec![(2, 1, 10_000_000 * DECIMALS)])
-		.with_inflation(10, 15, 40, 15, 5)
+		.with_inflation(10, 15, 40, 15, 5, 0, 0, false)
 		.build_and_execute_with_sanity_tests(|| {
 			assert_ok!(StakePallet::leave_delegators(RuntimeOrigin::signed(2)));
 			let authors: Vec<Option<AccountId>> = (1u64..100u64).map(|_| Some(1u64)).collect();
@@ -162,7 +164,7 @@ fn delegator_should_not_receive_rewards_after_revoking() {
 		])
 		.with_collators(vec![(1, 10_000_000 * DECIMALS), (4, 10)])
 		.with_delegators(vec![(2, 1, 10_000_000 * DECIMALS), (3, 1, 10_000_000 * DECIMALS)])
-		.with_inflation(10, 15, 40, 15, 5)
+		.with_inflation(10, 15, 40, 15, 5, 0, 0, false)
 		.build_and_execute_with_sanity_tests(|| {
 			assert_ok!(StakePallet::leave_delegators(RuntimeOrigin::signed(3)));
 			let authors: Vec<Option<AccountId>> = (1u64..100u64).map(|_| Some(1u64)).collect();
@@ -194,7 +196,7 @@ fn coinbase_rewards_many_blocks_simple_check() {
 			(4, 1, 16_000_000 * DECIMALS),
 			(5, 2, 16_000_000 * DECIMALS),
 		])
-		.with_inflation(10, 15, 40, 15, 5)
+		.with_inflation(10, 15, 40, 15, 5, 0, 0, false)
 		.build_and_execute_with_sanity_tests(|| {
 			let inflation = StakePallet::inflation_config();
 			let total_issuance = <Test as Config>::Currency::total_issuance();
@@ -294,7 +296,7 @@ fn should_not_reward_delegators_below_min_stake() {
 		])
 		.with_collators(vec![(1, 10 * DECIMALS), (2, 10 * DECIMALS)])
 		.with_delegators(vec![(3, 2, 10 * DECIMALS)])
-		.with_inflation(10, 15, 40, 15, 5)
+		.with_inflation(10, 15, 40, 15, 5, 0, 0, false)
 		.build()
 		.execute_with(|| {
 			// impossible but lets assume it happened
@@ -335,7 +337,7 @@ fn adjust_reward_rates() {
 		])
 		.with_collators(vec![(1, 10_000_000 * DECIMALS), (3, 10)])
 		.with_delegators(vec![(2, 1, 40_000_000 * DECIMALS)])
-		.with_inflation(10, 10, 40, 8, 5)
+		.with_inflation(10, 10, 40, 8, 5, 0, 0, false)
 		.build_and_execute_with_sanity_tests(|| {
 			let inflation_0 = StakePallet::inflation_config();
 			let num_of_years = 3 * <Test as Config>::BLOCKS_PER_YEAR;
@@ -363,6 +365,9 @@ fn adjust_reward_rates() {
 				Perquintill::from_parts(98000000000000000),
 				inflation_0.delegator.max_rate,
 				Perquintill::from_percent(6),
+				0,
+				0,
+				false,
 			);
 			assert_eq!(StakePallet::inflation_config(), inflation_1);
 			// reward once in 2nd year
@@ -389,6 +394,9 @@ fn adjust_reward_rates() {
 				Perquintill::from_parts(96040000000000000),
 				inflation_0.delegator.max_rate,
 				Perquintill::from_float(0.051),
+				0,
+				0,
+				false,
 			);
 			assert_eq!(StakePallet::inflation_config(), inflation_2);
 			// reward once in 3rd year
@@ -419,6 +427,9 @@ fn adjust_reward_rates() {
 				Perquintill::from_parts(94119200000000000),
 				inflation_0.delegator.max_rate,
 				Perquintill::zero(),
+				0,
+				0,
+				false,
 			);
 			assert_eq!(StakePallet::inflation_config(), inflation_3);
 			// reward once in 4th year

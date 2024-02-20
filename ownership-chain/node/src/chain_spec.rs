@@ -174,6 +174,9 @@ fn testnet_genesis(
 		Perquintill::from_percent(10),
 		// delegator reward rate
 		Perquintill::from_percent(8),
+		0,
+		0,
+		false,
 	);
 
 	laos_ownership_runtime::RuntimeGenesisConfig {

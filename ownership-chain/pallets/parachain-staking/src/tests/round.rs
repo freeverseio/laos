@@ -42,6 +42,9 @@ fn round_transitions() {
 		Perquintill::from_percent(col_rewards),
 		Perquintill::from_percent(d_max),
 		Perquintill::from_percent(d_rewards),
+		0u64,
+		0u64,
+		false,
 	);
 
 	// round_immediately_jumps_if_current_duration_exceeds_new_blocks_per_round
@@ -50,7 +53,7 @@ fn round_transitions() {
 		.with_balances(vec![(1, 100), (2, 100), (3, 100), (4, 100), (5, 100), (6, 100), (7, 100)])
 		.with_collators(vec![(1, 20), (7, 10)])
 		.with_delegators(vec![(2, 1, 10), (3, 1, 10)])
-		.with_inflation(col_max, col_rewards, d_max, d_rewards, 5)
+		.with_inflation(col_max, col_rewards, d_max, d_rewards, 5, 0u64, 0u64, false)
 		.build_and_execute_with_sanity_tests(|| {
 			assert_eq!(inflation, StakePallet::inflation_config());
 			roll_to(5, vec![]);
@@ -79,7 +82,7 @@ fn round_transitions() {
 		.with_balances(vec![(1, 100), (2, 100), (3, 100), (4, 100), (5, 100), (6, 100), (7, 100)])
 		.with_collators(vec![(1, 20), (7, 10)])
 		.with_delegators(vec![(2, 1, 10), (3, 1, 10)])
-		.with_inflation(col_max, col_rewards, d_max, d_rewards, 5)
+		.with_inflation(col_max, col_rewards, d_max, d_rewards, 5, 0u64, 0u64, false)
 		.build_and_execute_with_sanity_tests(|| {
 			assert_eq!(inflation, StakePallet::inflation_config());
 			// Default round every 5 blocks, but MinBlocksPerRound is 3 and we set it to min
@@ -108,7 +111,7 @@ fn round_transitions() {
 		.with_balances(vec![(1, 100), (2, 100), (3, 100), (4, 100), (5, 100), (6, 100), (7, 100)])
 		.with_collators(vec![(1, 20), (7, 10)])
 		.with_delegators(vec![(2, 1, 10), (3, 1, 10)])
-		.with_inflation(col_max, col_rewards, d_max, d_rewards, 5)
+		.with_inflation(col_max, col_rewards, d_max, d_rewards, 5, 0u64, 0u64, false)
 		.build_and_execute_with_sanity_tests(|| {
 			// Default round every 5 blocks, but MinBlocksPerRound is 3 and we set it to min
 			// 3 blocks
@@ -129,7 +132,10 @@ fn round_transitions() {
 					Perquintill::from_percent(col_max),
 					Perquintill::from_percent(col_rewards),
 					Perquintill::from_percent(d_max),
-					Perquintill::from_percent(d_rewards)
+					Perquintill::from_percent(d_rewards),
+					0u64,
+					0u64,
+					false,
 				)
 			);
 			assert_eq!(last_event(), StakeEvent::BlocksPerRoundSet(1, 5, 5, 3));

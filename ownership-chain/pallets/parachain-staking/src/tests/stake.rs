@@ -502,7 +502,7 @@ fn api_get_staking_rates() {
 		.with_balances(vec![(1, stake), (2, stake), (3, 2 * stake)])
 		.with_collators(vec![(1, stake), (2, stake)])
 		.with_delegators(vec![(3, 1, stake)])
-		.with_inflation(25, 10, 25, 8, <Test as Config>::BLOCKS_PER_YEAR)
+		.with_inflation(25, 10, 25, 8, <Test as Config>::BLOCKS_PER_YEAR, 0, 0, false)
 		.build_and_execute_with_sanity_tests(|| {
 			let mut rates = StakingRates {
 				collator_staking_rate: Perquintill::from_percent(50),

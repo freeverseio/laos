@@ -800,6 +800,9 @@ pub mod pallet {
 			collator_annual_reward_rate_percentage: Perquintill,
 			delegator_max_rate_percentage: Perquintill,
 			delegator_annual_reward_rate_percentage: Perquintill,
+			col_annual_reward_absolute: u64,
+			del_annual_reward_absolute: u64,
+			use_absolute: bool,
 		) -> DispatchResultWithPostInfo {
 			ensure_root(origin)?;
 
@@ -810,6 +813,9 @@ pub mod pallet {
 				collator_annual_reward_rate_percentage,
 				delegator_max_rate_percentage,
 				delegator_annual_reward_rate_percentage,
+				col_annual_reward_absolute,
+				del_annual_reward_absolute,
+				use_absolute,
 			)?;
 
 			Ok(Some(<T as pallet::Config>::WeightInfo::set_inflation(num_col, num_del)).into())
@@ -1797,6 +1803,9 @@ pub mod pallet {
 				c_reward_rate,
 				inflation.delegator.max_rate,
 				d_reward_rate,
+				inflation.collator.reward_rate.annual_absolute,
+				inflation.delegator.reward_rate.annual_absolute,
+				inflation.collator.reward_rate.use_absolute && inflation.delegator.reward_rate.use_absolute,
 			)?;
 
 			Ok(Some(<T as pallet::Config>::WeightInfo::set_inflation(num_col, num_del)).into())
@@ -1867,6 +1876,9 @@ pub mod pallet {
 			col_reward_rate: Perquintill,
 			del_max_rate: Perquintill,
 			del_reward_rate: Perquintill,
+			col_annual_reward_absolute: u64,
+			del_annual_reward_absolute: u64,
+			use_absolute: bool,
 		) -> Result<(u32, u32), DispatchError> {
 			// Check validity of new inflation
 			let inflation = InflationInfo::new(
@@ -1875,6 +1887,9 @@ pub mod pallet {
 				col_reward_rate,
 				del_max_rate,
 				del_reward_rate,
+				col_annual_reward_absolute,
+				del_annual_reward_absolute,
+				use_absolute,
 			);
 			ensure!(
 				inflation.is_valid(T::BLOCKS_PER_YEAR.saturated_into()),
@@ -2513,6 +2528,7 @@ pub mod pallet {
 				stake,
 				staking_rate,
 				multiplier,
+				total_issuance,
 			)
 		}
 
@@ -2533,6 +2549,7 @@ pub mod pallet {
 				stake,
 				staking_rate,
 				multiplier,
+				total_issuance,
 			)
 		}
 

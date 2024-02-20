@@ -242,6 +242,9 @@ impl Default for ExtBuilder {
 				Perquintill::from_percent(15),
 				Perquintill::from_percent(40),
 				Perquintill::from_percent(10),
+				0u64,
+				0u64,
+				false,
 			),
 			// inflation is activated by default so we keep retrocompatibility with existing tests
 			inflation_enabled: true,
@@ -280,6 +283,9 @@ impl ExtBuilder {
 		d_max: u64,
 		d_rewards: u64,
 		blocks_per_round: BlockNumber,
+		col_annual_reward_absolute: u64,
+		del_annual_reward_absolute: u64,
+		use_absolute: bool,
 	) -> Self {
 		self.inflation_config = InflationInfo::new(
 			<Test as Config>::BLOCKS_PER_YEAR,
@@ -287,6 +293,9 @@ impl ExtBuilder {
 			Perquintill::from_percent(col_rewards),
 			Perquintill::from_percent(d_max),
 			Perquintill::from_percent(d_rewards),
+			col_annual_reward_absolute,
+			del_annual_reward_absolute,
+			use_absolute,
 		);
 		self.blocks_per_round = blocks_per_round;
 
