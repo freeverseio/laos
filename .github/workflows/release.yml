@@ -81,22 +81,18 @@ jobs:
           push: true
           file: ./docker/ownership-node.local.Dockerfile
           tags: freeverseio/laos-ownership-node:${{ github.ref_name }}
-      - name: Update Release With subwasm
+      - name: Update Release Description with subwasm info
         run: |
-            NEW_DESC="
-
-            ## Runtime info
-            This runtime was built using ${{ steps.summary.outputs.rustc_version }} with srtool ${{ steps.summary.outputs.srtool_version }}  
+            gh release view ${{ github.ref_name }} --json body -q .body > description.txt
+                
+            printf "\n\n## Runtime info\nThis runtime was built using %s with srtool %s\n" "${{ steps.summary.outputs.rustc_version }}" "${{ steps.summary.outputs.srtool_version }}" >> description.txt
+            echo '```' >> description.txt
             
-            ### LAOS
-            \`\`\`
-            $(cat laos-subwam-info.txt) "
-        
-            CURRENT_DESC=$(gh release view ${{ github.ref_name }} --json body -q .body)
-        
-            COMBINED_DESC="$CURRENT_DESC$NEW_DESC"
-        
-            echo "$COMBINED_DESC" | gh release edit ${{ github.ref_name }} --notes-file -
+            cat laos-subwam-info.txt >> description.txt
+            
+            echo '```' >> description.txt
+            
+            gh release edit ${{ github.ref_name }} --notes-file description.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload Ownership Wasm Binaries
