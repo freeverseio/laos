@@ -367,7 +367,7 @@ parameter_types! {
 impl pallet_transaction_payment::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type OnChargeTransaction =
-		pallet_transaction_payment::CurrencyAdapter<Balances, ToRewardsTreasury<Runtime>>;
+		pallet_transaction_payment::CurrencyAdapter<Balances, ToCollatorRewards<Runtime>>;
 	type WeightToFee = WeightToFee;
 	type LengthToFee = ConstantMultiplier<Balance, TransactionByteFee>;
 	type FeeMultiplierUpdate = SlowAdjustingFeeUpdate<Self>;
@@ -505,32 +505,32 @@ impl<F: FindAuthor<u32>> FindAuthor<H160> for FindAuthorTruncated<F> {
 	}
 }
 
-/// Logic for sending fees to the rewards treasury account. On every unbalanced change (i.e
-/// transaction fees), the amount is transferred to the rewards treasury account.
-pub struct ToRewardsTreasury<R>(PhantomData<R>);
+/// Logic for sending fees to the collator rewards account. On every unbalanced change (f.e
+/// transaction fees), the amount is transferred to the collator rewards account.
+pub struct ToCollatorRewards<R>(PhantomData<R>);
 
 type NegativeImbalanceOfBalances<T> = pallet_balances::NegativeImbalance<T>;
 
-impl<R> OnUnbalanced<NegativeImbalanceOfBalances<R>> for ToRewardsTreasury<R>
+impl<R> OnUnbalanced<NegativeImbalanceOfBalances<R>> for ToCollatorRewards<R>
 where
 	R: pallet_balances::Config + pallet_parachain_staking::Config,
 {
 	fn on_nonzero_unbalanced(amount: NegativeImbalanceOfBalances<R>) {
-		if let Some(account) = <pallet_parachain_staking::Pallet<R>>::rewards_treasury_account() {
+		if let Some(account) = <pallet_parachain_staking::Pallet<R>>::collator_rewards_account() {
 			<pallet_balances::Pallet<R>>::resolve_creating(&account, amount);
 		}
 	}
 }
 
 impl<R> OnUnbalanced<Credit<<R as frame_system::Config>::AccountId, pallet_balances::Pallet<R, ()>>>
-	for ToRewardsTreasury<R>
+	for ToCollatorRewards<R>
 where
 	R: pallet_balances::Config + pallet_parachain_staking::Config,
 {
 	fn on_nonzero_unbalanced(
 		amount: Credit<<R as frame_system::Config>::AccountId, pallet_balances::Pallet<R, ()>>,
 	) {
-		if let Some(account) = <pallet_parachain_staking::Pallet<R>>::rewards_treasury_account() {
+		if let Some(account) = <pallet_parachain_staking::Pallet<R>>::collator_rewards_account() {
 			let result = <pallet_balances::Pallet<R>>::resolve(&account, amount);
 			debug_assert!(result.is_ok(), "Should not fail to transfer; qed");
 		}
@@ -618,7 +618,7 @@ impl pallet_evm::Config for Runtime {
 	type FindAuthor = CustomFindAuthor<pallet_session::FindAccountFromAuthorIndex<Self, Aura>>;
 	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
-	type OnChargeTransaction = EVMCurrencyAdapter<Balances, ToRewardsTreasury<Runtime>>;
+	type OnChargeTransaction = EVMCurrencyAdapter<Balances, ToCollatorRewards<Runtime>>;
 	type OnCreate = ();
 	type PrecompilesType = FrontierPrecompiles<Self>;
 	type PrecompilesValue = PrecompilesValue;
@@ -733,7 +733,7 @@ parameter_types! {
 	/// The starting block number for the network rewards
 	pub const NetworkRewardStart: BlockNumber = BLOCKS_PER_YEAR.saturating_mul(1);
 	/// The rate in percent for the network rewards
-	pub const NetworkRewardRate: Perquintill = Perquintill::from_percent(10);	 // pub RewardsTreasuryAccount: AccountId =
+	pub const NetworkRewardRate: Perquintill = Perquintill::from_percent(10);	 // pub CollatorRewardsAccount: AccountId =
 }
 
 impl pallet_parachain_staking::Config for Runtime {
@@ -756,7 +756,7 @@ impl pallet_parachain_staking::Config for Runtime {
 	type MaxUnstakeRequests = MaxUnstakeRequests;
 	type NetworkRewardRate = NetworkRewardRate;
 	type NetworkRewardStart = NetworkRewardStart;
-	type NetworkRewardBeneficiary = ToRewardsTreasury<Runtime>;
+	type NetworkRewardBeneficiary = ToCollatorRewards<Runtime>;
 	type WeightInfo = pallet_parachain_staking::default_weights::SubstrateWeight<Runtime>;
 
 	const BLOCKS_PER_YEAR: BlockNumberFor<Self> = BLOCKS_PER_YEAR;

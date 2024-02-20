@@ -610,10 +610,10 @@ benchmarks! {
 	claim_rewards {
 		let beneficiary = account("beneficiary", 0, 0);
 		let amount = T::MinCollatorCandidateStake::get();
-		let treasury: T::AccountId = account("treasury", 0, 0);
-		RewardsTreasuryAccount::<T>::put(treasury.clone());
+		let rewards_source: T::AccountId = account("rewards_source", 0, 0);
+		CollatorRewardsAccount::<T>::put(rewards_source.clone());
 
-		T::Currency::make_free_balance_be(&treasury, amount * T::CurrencyBalance::from(3u32));
+		T::Currency::make_free_balance_be(&rewards_source, amount * T::CurrencyBalance::from(3u32));
 		T::Currency::make_free_balance_be(&beneficiary, amount);
 		Rewards::<T>::insert(&beneficiary, amount);
 		assert_eq!(pallet_balances::Pallet::<T>::usable_balance(&beneficiary), amount.into());
@@ -649,11 +649,11 @@ benchmarks! {
 		assert!(new.collator.reward_rate.annual < old.collator.reward_rate.annual);
 		assert!(new.delegator.reward_rate.annual < old.delegator.reward_rate.annual);
 	}
-	set_rewards_treasury_account {
+	set_collator_rewards_account {
 		let new_account: T::AccountId = account("new_account", 0, 0);
 	}: _(RawOrigin::Root, new_account.clone())
 	verify {
-		assert_eq!(RewardsTreasuryAccount::<T>::get(), Some(new_account));
+		assert_eq!(CollatorRewardsAccount::<T>::get(), Some(new_account));
 	}
 	toggle_inflation {
 		let previous_status = InflationEnabled::<T>::get();

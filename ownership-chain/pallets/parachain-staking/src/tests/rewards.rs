@@ -21,11 +21,11 @@
 use crate::{
 	mock::{
 		almost_equal, roll_to, roll_to_claim_rewards, AccountId, Balance, Balances, BlockNumber,
-		ExtBuilder, RuntimeOrigin, StakePallet, System, Test, DECIMALS, TREASURY_ACC,
-		TREASURY_BALANCE,
+		ExtBuilder, RuntimeOrigin, StakePallet, System, Test, DECIMALS, REWARDS_ACC,
+		REWARDS_ACCOUNT_BALANCE,
 	},
 	types::{BalanceOf, StakeOf},
-	Config, Error, InflationInfo, RewardsTreasuryAccount,
+	CollatorRewardsAccount, Config, Error, InflationInfo,
 };
 use frame_support::{assert_noop, assert_ok, traits::fungible::Inspect};
 use pallet_authorship::EventHandler;
@@ -40,7 +40,7 @@ fn coinbase_rewards_few_blocks_detailed_check() {
 			(3, 40_000_000 * DECIMALS),
 			(4, 20_000_000 * DECIMALS),
 			(5, 20_000_000 * DECIMALS),
-			(TREASURY_ACC, TREASURY_BALANCE),
+			(REWARDS_ACC, REWARDS_ACCOUNT_BALANCE),
 		])
 		.with_collators(vec![(1, 8_000_000 * DECIMALS), (2, 8_000_000 * DECIMALS)])
 		.with_delegators(vec![
@@ -52,7 +52,7 @@ fn coinbase_rewards_few_blocks_detailed_check() {
 		.build_and_execute_with_sanity_tests(|| {
 			let inflation = StakePallet::inflation_config();
 			let total_issuance = <Test as Config>::Currency::total_issuance();
-			assert_eq!(total_issuance, 160_000_000 * DECIMALS + TREASURY_BALANCE);
+			assert_eq!(total_issuance, 160_000_000 * DECIMALS + REWARDS_ACCOUNT_BALANCE);
 
 			// compute rewards
 			let c_staking_rate = Perquintill::from_rational(16_000_000 * DECIMALS, total_issuance);
@@ -136,7 +136,7 @@ fn delegator_should_not_receive_rewards_after_revoking() {
 			(1, 10_000_000 * DECIMALS),
 			(2, 10_000_000 * DECIMALS),
 			(3, 100),
-			(TREASURY_ACC, TREASURY_BALANCE),
+			(REWARDS_ACC, REWARDS_ACCOUNT_BALANCE),
 		])
 		.with_collators(vec![(1, 10_000_000 * DECIMALS), (3, 10)])
 		.with_delegators(vec![(2, 1, 10_000_000 * DECIMALS)])
@@ -158,7 +158,7 @@ fn delegator_should_not_receive_rewards_after_revoking() {
 			(2, 10_000_000 * DECIMALS),
 			(3, 10_000_000 * DECIMALS),
 			(4, 100),
-			(TREASURY_ACC, TREASURY_BALANCE),
+			(REWARDS_ACC, REWARDS_ACCOUNT_BALANCE),
 		])
 		.with_collators(vec![(1, 10_000_000 * DECIMALS), (4, 10)])
 		.with_delegators(vec![(2, 1, 10_000_000 * DECIMALS), (3, 1, 10_000_000 * DECIMALS)])
@@ -186,7 +186,7 @@ fn coinbase_rewards_many_blocks_simple_check() {
 			(3, 40_000_000 * DECIMALS),
 			(4, 20_000_000 * DECIMALS),
 			(5, 20_000_000 * DECIMALS),
-			(TREASURY_ACC, TREASURY_BALANCE),
+			(REWARDS_ACC, REWARDS_ACCOUNT_BALANCE),
 		])
 		.with_collators(vec![(1, 8_000_000 * DECIMALS), (2, 8_000_000 * DECIMALS)])
 		.with_delegators(vec![
@@ -198,7 +198,7 @@ fn coinbase_rewards_many_blocks_simple_check() {
 		.build_and_execute_with_sanity_tests(|| {
 			let inflation = StakePallet::inflation_config();
 			let total_issuance = <Test as Config>::Currency::total_issuance();
-			assert_eq!(total_issuance, 160_000_000 * DECIMALS + TREASURY_BALANCE);
+			assert_eq!(total_issuance, 160_000_000 * DECIMALS + REWARDS_ACCOUNT_BALANCE);
 			let end_block: BlockNumber = num_of_years * Test::BLOCKS_PER_YEAR as BlockNumber;
 			// set round robin authoring
 			let authors: Vec<Option<AccountId>> =
@@ -290,7 +290,7 @@ fn should_not_reward_delegators_below_min_stake() {
 			(2, 10 * DECIMALS),
 			(3, 10 * DECIMALS),
 			(4, 5),
-			(TREASURY_ACC, TREASURY_BALANCE),
+			(REWARDS_ACC, REWARDS_ACCOUNT_BALANCE),
 		])
 		.with_collators(vec![(1, 10 * DECIMALS), (2, 10 * DECIMALS)])
 		.with_delegators(vec![(3, 2, 10 * DECIMALS)])
@@ -331,7 +331,7 @@ fn adjust_reward_rates() {
 			(1, 10_000_000 * DECIMALS),
 			(2, 90_000_000 * DECIMALS),
 			(3, 100),
-			(TREASURY_ACC, TREASURY_BALANCE),
+			(REWARDS_ACC, REWARDS_ACCOUNT_BALANCE),
 		])
 		.with_collators(vec![(1, 10_000_000 * DECIMALS), (3, 10)])
 		.with_delegators(vec![(2, 1, 40_000_000 * DECIMALS)])
@@ -456,13 +456,13 @@ fn network_reward_multiple_blocks() {
 			let total_collator_stake =
 				max_stake.saturating_mul(<Test as Config>::MinCollators::get().into());
 			assert_eq!(total_collator_stake, StakePallet::total_collator_stake().collators);
-			assert!(Balances::balance(&TREASURY_ACC).is_zero());
+			assert!(Balances::balance(&REWARDS_ACC).is_zero());
 			let total_issuance = <Test as Config>::Currency::total_issuance();
 
 			// total issuance should not increase when not noting authors because we haven't
 			// reached NetworkRewardStart yet
 			roll_to(10, vec![None]);
-			assert!(Balances::balance(&TREASURY_ACC).is_zero());
+			assert!(Balances::balance(&REWARDS_ACC).is_zero());
 			assert_eq!(total_issuance, <Test as Config>::Currency::total_issuance());
 
 			// set current block to one block before NetworkRewardStart
@@ -471,12 +471,12 @@ fn network_reward_multiple_blocks() {
 
 			// network rewards should only appear 1 block after start
 			roll_to(network_reward_start, vec![None]);
-			assert!(Balances::balance(&TREASURY_ACC).is_zero());
+			assert!(Balances::balance(&REWARDS_ACC).is_zero());
 			assert_eq!(total_issuance, <Test as Config>::Currency::total_issuance());
 
-			// should mint to treasury now
+			// should mint to rewards acc now
 			roll_to(network_reward_start + 1, vec![None]);
-			let network_reward = Balances::balance(&TREASURY_ACC);
+			let network_reward = Balances::balance(&REWARDS_ACC);
 			assert!(!network_reward.is_zero());
 			assert_eq!(
 				total_issuance + network_reward,
@@ -489,7 +489,7 @@ fn network_reward_multiple_blocks() {
 
 			// should mint exactly the same amount
 			roll_to(network_reward_start + 2, vec![None]);
-			assert_eq!(2 * network_reward, Balances::balance(&TREASURY_ACC));
+			assert_eq!(2 * network_reward, Balances::balance(&REWARDS_ACC));
 			assert_eq!(
 				total_issuance + 2 * network_reward,
 				<Test as Config>::Currency::total_issuance()
@@ -497,7 +497,7 @@ fn network_reward_multiple_blocks() {
 
 			// should mint exactly the same amount in each block
 			roll_to(network_reward_start + 100, vec![None]);
-			assert_eq!(100 * network_reward, Balances::balance(&TREASURY_ACC));
+			assert_eq!(100 * network_reward, Balances::balance(&REWARDS_ACC));
 			assert_eq!(
 				total_issuance + 100 * network_reward,
 				<Test as Config>::Currency::total_issuance()
@@ -507,7 +507,7 @@ fn network_reward_multiple_blocks() {
 			// based on MaxCollatorCandidateStake and MaxSelectedCandidates
 			assert_ok!(StakePallet::init_leave_candidates(RuntimeOrigin::signed(1)));
 			roll_to(network_reward_start + 101, vec![None]);
-			assert_eq!(101 * network_reward, Balances::balance(&TREASURY_ACC));
+			assert_eq!(101 * network_reward, Balances::balance(&REWARDS_ACC));
 			assert_eq!(
 				total_issuance + 101 * network_reward,
 				<Test as Config>::Currency::total_issuance()
@@ -531,9 +531,9 @@ fn network_reward_increase_max_candidate_stake() {
 			let total_issuance = <Test as Config>::Currency::total_issuance();
 			System::set_block_number(network_reward_start);
 
-			// should mint to treasury now
+			// should mint to rewards account now
 			roll_to(network_reward_start + 1, vec![None]);
-			let reward_before = Balances::balance(&TREASURY_ACC);
+			let reward_before = Balances::balance(&REWARDS_ACC);
 			assert!(!reward_before.is_zero());
 			assert_eq!(
 				total_issuance + reward_before,
@@ -548,7 +548,7 @@ fn network_reward_increase_max_candidate_stake() {
 				max_stake_doubled
 			));
 			roll_to(network_reward_start + 2, vec![None]);
-			assert_eq!(reward_before + reward_after, Balances::balance(&TREASURY_ACC));
+			assert_eq!(reward_before + reward_after, Balances::balance(&REWARDS_ACC));
 			assert_eq!(
 				reward_before + reward_after + total_issuance,
 				<Test as Config>::Currency::total_issuance()
@@ -572,9 +572,9 @@ fn network_reward_increase_max_collator_count() {
 			let total_issuance = <Test as Config>::Currency::total_issuance();
 			System::set_block_number(network_reward_start);
 
-			// should mint to treasury now
+			// should mint to rewards account now
 			roll_to(network_reward_start + 1, vec![None]);
-			let reward_before = Balances::balance(&TREASURY_ACC);
+			let reward_before = Balances::balance(&REWARDS_ACC);
 			assert!(!reward_before.is_zero());
 			assert_eq!(
 				total_issuance + reward_before,
@@ -588,7 +588,7 @@ fn network_reward_increase_max_collator_count() {
 				<Test as Config>::MinCollators::get() * 3
 			));
 			roll_to(network_reward_start + 2, vec![None]);
-			assert_eq!(reward_before + reward_after, Balances::balance(&TREASURY_ACC));
+			assert_eq!(reward_before + reward_after, Balances::balance(&REWARDS_ACC));
 			assert_eq!(
 				reward_before + reward_after + total_issuance,
 				<Test as Config>::Currency::total_issuance()
@@ -898,7 +898,7 @@ fn rewards_incrementing_and_claiming() {
 			(2, DECIMALS),
 			(3, DECIMALS),
 			(4, 100),
-			(TREASURY_ACC, TREASURY_BALANCE),
+			(REWARDS_ACC, REWARDS_ACCOUNT_BALANCE),
 		])
 		.with_collators(vec![(1, DECIMALS), (4, 10)])
 		.with_delegators(vec![(2, 1, DECIMALS), (3, 1, DECIMALS)])
@@ -972,7 +972,7 @@ fn rewards_incrementing_and_claiming() {
 }
 
 #[test]
-fn claiming_rewards_while_no_treasury_does_not_reset_rewards() {
+fn claiming_rewards_while_no_rewards_account_does_not_reset_rewards() {
 	ExtBuilder::default()
 		.with_balances(vec![(1, DECIMALS), (2, DECIMALS), (3, DECIMALS), (4, 100)])
 		.with_collators(vec![(1, DECIMALS), (4, 10)])
@@ -1013,20 +1013,20 @@ fn claiming_rewards_while_no_treasury_does_not_reset_rewards() {
 			// 3 should still not have blocks rewarded bumped
 			assert!(StakePallet::blocks_rewarded(3).is_zero());
 
-			// one can claim rewards, but since there is no treasury, rewards are not set
-			// they are not reset either
+			// one can claim rewards, but since there is no collator rewards account, rewards are
+			// not set they are not reset either
 			assert_ok!(StakePallet::claim_rewards(RuntimeOrigin::signed(1)),);
 			assert!(!StakePallet::rewards(1).is_zero());
 
-			// set treasury account
-			assert_ok!(StakePallet::set_rewards_treasury_account(
+			// set collator rewards account
+			assert_ok!(StakePallet::set_collator_rewards_account(
 				RuntimeOrigin::root(),
-				TREASURY_ACC
+				REWARDS_ACC
 			));
 
-			// Give treasury some balance
+			// Give collator rewards account some balance
 			<Balances as frame_support::traits::Currency<AccountId>>::make_free_balance_be(
-				&TREASURY_ACC,
+				&REWARDS_ACC,
 				1000 * DECIMALS,
 			);
 
@@ -1044,7 +1044,7 @@ fn api_get_unclaimed_staking_rewards() {
 			(1, stake),
 			(2, stake),
 			(3, 100 * stake),
-			(TREASURY_ACC, TREASURY_BALANCE),
+			(REWARDS_ACC, REWARDS_ACCOUNT_BALANCE),
 		])
 		.with_collators(vec![(1, stake), (3, 2 * stake)])
 		.with_delegators(vec![(2, 1, stake)])
@@ -1134,7 +1134,7 @@ fn only_sudo_can_disable_inflation() {
 }
 
 #[test]
-fn only_sudo_can_set_rewards_treasury_account() {
+fn only_sudo_can_set_collator_rewards_account() {
 	let stake = 100_000 * DECIMALS;
 	ExtBuilder::default()
 		.with_balances(vec![(1, stake)])
@@ -1143,24 +1143,24 @@ fn only_sudo_can_set_rewards_treasury_account() {
 		.build()
 		.execute_with(|| {
 			System::set_block_number(1);
-			assert!(StakePallet::rewards_treasury_account() == Some(TREASURY_ACC));
-			let rewards_treasury_account = 1;
+			assert!(StakePallet::collator_rewards_account() == Some(REWARDS_ACC));
+			let collator_rewards_account = 1;
 			assert_noop!(
-				StakePallet::set_rewards_treasury_account(
+				StakePallet::set_collator_rewards_account(
 					RuntimeOrigin::signed(1),
-					rewards_treasury_account
+					collator_rewards_account
 				),
 				sp_runtime::DispatchError::BadOrigin
 			);
-			assert_ok!(StakePallet::set_rewards_treasury_account(
+			assert_ok!(StakePallet::set_collator_rewards_account(
 				RuntimeOrigin::root(),
-				rewards_treasury_account
+				collator_rewards_account
 			));
-			assert!(StakePallet::rewards_treasury_account().unwrap() == rewards_treasury_account);
+			assert!(StakePallet::collator_rewards_account().unwrap() == collator_rewards_account);
 
 			// assert event is emitted
 			System::assert_has_event(crate::mock::RuntimeEvent::StakePallet(
-				crate::Event::RewardsTreasuryAccountSet(rewards_treasury_account),
+				crate::Event::CollatorRewardsAccountSet(collator_rewards_account),
 			));
 		});
 }
@@ -1206,8 +1206,8 @@ fn total_issuance_increases_with_enabled_inflation() {
 
 #[test]
 fn send_rewards_with_inflation_disabled_works() {
-	let rewards_treasury_account = 1;
-	let rewards_treasury_account_balance = 101;
+	let collator_rewards_account = 1;
+	let collator_rewards_account_balance = 101;
 	let collator_account = 2;
 	let reward_amount = 100;
 	let stake = 100_000 * DECIMALS;
@@ -1216,20 +1216,20 @@ fn send_rewards_with_inflation_disabled_works() {
 		.with_inflation_enabled(false)
 		.with_balances(vec![
 			(collator_account, collator_balance),
-			(rewards_treasury_account, rewards_treasury_account_balance),
+			(collator_rewards_account, collator_rewards_account_balance),
 		])
 		.with_collators(vec![(collator_account, collator_balance)])
 		.build()
 		.execute_with(|| {
 			assert!(StakePallet::inflation_enabled() == false);
-			assert_ok!(StakePallet::set_rewards_treasury_account(
+			assert_ok!(StakePallet::set_collator_rewards_account(
 				RuntimeOrigin::root(),
-				rewards_treasury_account
+				collator_rewards_account
 			));
-			assert!(StakePallet::rewards_treasury_account().unwrap() == rewards_treasury_account);
+			assert!(StakePallet::collator_rewards_account().unwrap() == collator_rewards_account);
 			assert_eq!(
-				Balances::total_balance(&rewards_treasury_account),
-				rewards_treasury_account_balance
+				Balances::total_balance(&collator_rewards_account),
+				collator_rewards_account_balance
 			);
 			assert_eq!(Balances::total_balance(&collator_account), collator_balance);
 			let previous_total_issuance = Balances::total_issuance();
@@ -1237,7 +1237,7 @@ fn send_rewards_with_inflation_disabled_works() {
 				StakePallet::send_rewards(&collator_account, reward_amount).unwrap(),
 				reward_amount
 			);
-			assert_eq!(Balances::total_balance(&rewards_treasury_account), 1);
+			assert_eq!(Balances::total_balance(&collator_rewards_account), 1);
 			assert_eq!(
 				Balances::total_balance(&collator_account),
 				reward_amount + collator_balance
@@ -1247,7 +1247,7 @@ fn send_rewards_with_inflation_disabled_works() {
 }
 
 #[test]
-fn send_rewards_when_rewards_treasury_account_is_not_set() {
+fn send_rewards_when_collator_rewards_account_is_not_set() {
 	let collator = 2;
 	let stake = 100_000 * DECIMALS;
 	ExtBuilder::default()
@@ -1257,15 +1257,15 @@ fn send_rewards_when_rewards_treasury_account_is_not_set() {
 		.build()
 		.execute_with(|| {
 			assert!(StakePallet::inflation_enabled() == false);
-			RewardsTreasuryAccount::<Test>::kill();
-			assert!(StakePallet::rewards_treasury_account().is_none());
+			CollatorRewardsAccount::<Test>::kill();
+			assert!(StakePallet::collator_rewards_account().is_none());
 			assert_eq!(StakePallet::send_rewards(&collator, 100).unwrap(), 0);
 		});
 }
 
 #[test]
-fn send_rewards_when_rewards_treasury_account_has_no_enough_funds() {
-	let rewards_treasury_account = 1;
+fn send_rewards_when_collator_rewards_account_has_no_enough_funds() {
+	let collator_rewards_account = 1;
 	let collator = 2;
 	let stake = 100_000 * DECIMALS;
 	ExtBuilder::default()
@@ -1275,11 +1275,11 @@ fn send_rewards_when_rewards_treasury_account_has_no_enough_funds() {
 		.build()
 		.execute_with(|| {
 			assert!(StakePallet::inflation_enabled() == false);
-			assert_ok!(StakePallet::set_rewards_treasury_account(
+			assert_ok!(StakePallet::set_collator_rewards_account(
 				RuntimeOrigin::root(),
-				rewards_treasury_account
+				collator_rewards_account
 			));
-			assert!(StakePallet::rewards_treasury_account().unwrap() == rewards_treasury_account);
+			assert!(StakePallet::collator_rewards_account().unwrap() == collator_rewards_account);
 			assert_eq!(StakePallet::send_rewards(&collator, 100).unwrap(), 0);
 		});
 }
