@@ -124,7 +124,8 @@ impl StakingInfo {
 				reward_annual_absolute_u128,
 				total_issuance.saturated_into::<u128>(),
 			);
-			let reward_per_block_absolute = annual_to_per_block(self.reward_rate.blocks_per_year, reward_annual_rate);
+			let reward_per_block_absolute =
+				annual_to_per_block(self.reward_rate.blocks_per_year, reward_annual_rate);
 			// multiplication with perbill cannot overflow
 			let reward = (reward_per_block_absolute * stake).saturating_mul(authors_per_round);
 			reduction * reward
