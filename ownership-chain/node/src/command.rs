@@ -44,19 +44,29 @@ fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 		"dev" => Box::new(chain_spec::laos::development_config()),
 		"local" | "local-v" => Box::new(chain_spec::laos::local_testnet_config()),
 		path => {
-			let chain_spec = chain_spec::laos::ChainSpec::from_json_file(std::path::PathBuf::from(path))?;
+			let chain_spec =
+				chain_spec::laos::ChainSpec::from_json_file(std::path::PathBuf::from(path))?;
 			if chain_spec.id().starts_with("klaos") {
-				Box::new(chain_spec::klaos::ChainSpec::from_json_file(std::path::PathBuf::from(path))?)
+				Box::new(chain_spec::klaos::ChainSpec::from_json_file(std::path::PathBuf::from(
+					path,
+				))?)
 			} else if chain_spec.id().starts_with("giedi") {
-				Box::new(chain_spec::klaos::ChainSpec::from_json_file(std::path::PathBuf::from(path))?)
+				Box::new(chain_spec::klaos::ChainSpec::from_json_file(std::path::PathBuf::from(
+					path,
+				))?)
 			} else if chain_spec.id().starts_with("caladan") {
-				Box::new(chain_spec::klaos::ChainSpec::from_json_file(std::path::PathBuf::from(path))?)
+				Box::new(chain_spec::klaos::ChainSpec::from_json_file(std::path::PathBuf::from(
+					path,
+				))?)
 			} else if chain_spec.id().starts_with("laos") {
 				Box::new(chain_spec)
 			} else {
-				Err(format!("Unclear which chain spec to base this chain on. Provided chain spec ID: {}", chain_spec.id()))?
-            }
-		}
+				Err(format!(
+					"Unclear which chain spec to base this chain on. Provided chain spec ID: {}",
+					chain_spec.id()
+				))?
+			}
+		},
 	})
 }
 
