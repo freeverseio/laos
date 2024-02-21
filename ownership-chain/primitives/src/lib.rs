@@ -11,6 +11,9 @@ use sp_runtime::{
 	Perbill,
 };
 
+/// Authority ID used in parachain.
+pub type AuraId = sp_consensus_aura::sr25519::AuthorityId;
+
 /// Maximal weight of single OwnershipParachain block.
 ///
 /// This represents 0.5 seconds of compute assuming a target block time of 12 seconds.
@@ -49,6 +52,9 @@ pub type Moment = u64;
 
 /// Nonce of a transaction in the parachain.
 pub type Nonce = u32;
+
+/// Index of a transaction in the parachain.
+pub type Index = u32;
 
 /// Weight-to-Fee type used by Ownership parachain.
 pub type WeightToFee = IdentityFee<Balance>;

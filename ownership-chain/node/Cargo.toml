@@ -58,6 +58,7 @@ polkadot-cli = { workspace = true, features = ["rococo-native"] }
 polkadot-service = { workspace = true, features = ["rococo-native"] }
 polkadot-primitives = { workspace = true }
 staging-xcm = { workspace = true }
+ownership-parachain-primitives = { workspace = true }
 
 # Cumulus
 cumulus-client-cli = { workspace = true }

@@ -14,6 +14,9 @@ pub mod xcm_config;
 
 use core::marker::PhantomData;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
+pub use ownership_parachain_primitives::{
+	AccountId, AuraId, Balance, BlockNumber, Hash, Index, Nonce, Signature,
+};
 use ownership_parachain_primitives::{MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO};
 use parity_scale_codec::{Decode, Encode};
 use smallvec::smallvec;
@@ -54,7 +57,6 @@ use frame_system::EnsureRoot;
 use pallet_balances::NegativeImbalance;
 pub use pallet_evm_evolution_collection_factory::REVERT_BYTECODE;
 use pallet_xcm::{EnsureXcm, IsVoiceOfBody};
-pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 pub use sp_runtime::{Perbill, Permill};
 
 use xcm_config::{OurLocation, XcmConfig, XcmOriginToTransactDispatchOrigin};
@@ -85,28 +87,6 @@ use pallet_evm::{
 
 mod precompiles;
 use precompiles::FrontierPrecompiles;
-
-/// Alias to 512-bit hash when used in the context of a transaction signature on the chain.
-pub type Signature = ownership_parachain_primitives::Signature;
-
-/// Some way of identifying an account on the chain. We intentionally make it equivalent
-/// to the public key of our transaction signing scheme.
-pub type AccountId = ownership_parachain_primitives::AccountId;
-
-/// Balance of an account.
-pub type Balance = ownership_parachain_primitives::Balance;
-
-/// Index of a transaction in the chain.
-pub type Index = ownership_parachain_primitives::Nonce;
-
-/// A hash of some data used by the chain.
-pub type Hash = ownership_parachain_primitives::Hash;
-
-/// An index to a block.
-pub type BlockNumber = ownership_parachain_primitives::BlockNumber;
-
-/// The type for storing how many extrinsics an account has signed.
-pub type Nonce = ownership_parachain_primitives::Nonce;
 
 /// Block header type as expected by this runtime.
 pub type Header = generic::Header<BlockNumber, ownership_parachain_primitives::Hasher>;
