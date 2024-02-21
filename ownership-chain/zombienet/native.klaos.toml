@@ -14,7 +14,7 @@ chain = "rococo-local"
 [[parachains]]
 id = 2900
 cumulus_based = true
-chain = "local-v"
+chain = "klaos-local-v"
 
   [[parachains.collators]]
   name = "ownership"
