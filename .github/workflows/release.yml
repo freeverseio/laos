@@ -101,6 +101,6 @@ jobs:
       - name: Upload Ownership Wasm Binaries
         run: |
             echo "Uploading ownership wasm binary for release ${{ github.ref_name }}"
-            gh release upload ${{ github.ref_name }} ${{ steps.srtool_build.outputs.wasm }}
+            gh release upload ${{ github.ref_name }} ${{ steps.srtool_build.outputs.wasm_compressed }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
