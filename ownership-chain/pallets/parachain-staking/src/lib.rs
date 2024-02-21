@@ -142,7 +142,7 @@ pub mod pallet {
 			fungible::Balanced,
 			tokens::{
 				fungible::{Inspect, MutateFreeze},
-				Fortitude, Preservation,
+				Balance as BalanceT, Fortitude, Preservation,
 			},
 			BuildGenesisConfig, Currency, EstimateNextSessionRotation,
 			ExistenceRequirement::KeepAlive,
@@ -214,19 +214,12 @@ pub mod pallet {
 		/// Just the `Currency::Balance` type; we have this item to allow us to
 		/// constrain it to `From<u64>`.
 		/// Note: Definition taken from pallet_gilt
-		type CurrencyBalance: sp_runtime::traits::AtLeast32BitUnsigned
-			+ parity_scale_codec::FullCodec
-			+ Copy
-			+ MaybeSerializeDeserialize
-			+ sp_std::fmt::Debug
-			+ Default
+		type CurrencyBalance: BalanceT
 			+ From<u64>
 			+ From<u128>
 			+ Into<<Self as pallet_balances::Config>::Balance>
 			+ From<<Self as pallet_balances::Config>::Balance>
-			+ From<BlockNumberFor<Self>>
-			+ TypeInfo
-			+ MaxEncodedLen;
+			+ From<BlockNumberFor<Self>>;
 
 		/// Minimum number of blocks validation rounds can last.
 		#[pallet::constant]
@@ -539,6 +532,10 @@ pub mod pallet {
 			crate::try_state::do_try_state::<T>()
 		}
 	}
+
+	#[pallet::storage]
+	pub(crate) type RewardPerBlock<T: Config> =
+		StorageValue<_, (BalanceOf<T>, BalanceOf<T>), ValueQuery>;
 
 	/// The maximum number of collator candidates selected at each round.
 	#[pallet::storage]

@@ -31,6 +31,7 @@ frame-try-runtime = { workspace = true, optional = true }
 pallet-aura = { workspace = true }
 pallet-authorship = { workspace = true }
 pallet-balances = { workspace = true , features = ["insecure_zero_ed"] }
+pallet-message-queue = { workspace = true }
 pallet-multisig = { workspace = true }
 pallet-session = { workspace = true }
 pallet-sudo = { workspace = true }
@@ -77,7 +78,7 @@ cumulus-pallet-xcmp-queue = { workspace = true }
 cumulus-primitives-core = { workspace = true }
 cumulus-primitives-timestamp = { workspace = true }
 cumulus-primitives-utility = { workspace = true }
-parachain-info = { workspace = true }
+staging-parachain-info = { workspace = true }
 parachains-common = { workspace = true }
 
 # Frontier
@@ -143,7 +144,7 @@ std = [
 	"pallet-vesting/std",
 	"pallet-transaction-payment/std",
 	"pallet-xcm/std",
-	"parachain-info/std",
+	"staging-parachain-info/std",
 	"polkadot-parachain-primitives/std",
 	"polkadot-primitives/std",
 	"polkadot-runtime-common/std",
@@ -188,6 +189,7 @@ std = [
 	"pallet-parachain-staking/std",
 	"laos-runtime-api-staking/std",
 	"log/std",
+	"pallet-message-queue/std",
 ]
 
 runtime-benchmarks = [
@@ -216,6 +218,7 @@ runtime-benchmarks = [
 	"pallet-asset-metadata-extender/runtime-benchmarks",
 	"pallet-vesting/runtime-benchmarks",
 	"pallet-parachain-staking/runtime-benchmarks",
+	"pallet-message-queue/runtime-benchmarks",
 ]
 
 try-runtime = [
@@ -237,7 +240,7 @@ try-runtime = [
 	"pallet-timestamp/try-runtime",
 	"pallet-transaction-payment/try-runtime",
 	"pallet-xcm/try-runtime",
-	"parachain-info/try-runtime",
+	"staging-parachain-info/try-runtime",
 	"pallet-evm/try-runtime",
 	"pallet-evm-chain-id/try-runtime",
 	"pallet-ethereum/try-runtime",
@@ -249,6 +252,7 @@ try-runtime = [
 	"pallet-asset-metadata-extender/try-runtime",
 	"pallet-vesting/try-runtime",
 	"pallet-parachain-staking/try-runtime",
+	"pallet-message-queue/try-runtime",
 ]
 
 fast-runtime = []

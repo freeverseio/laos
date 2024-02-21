@@ -100,8 +100,11 @@ where
 						handle.record_cost(consumed_gas)?;
 
 						// Record Substrate related costs
-						// TODO: Add `ref_time` when precompiles are benchmarked
-						handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
+						handle.record_external_cost(
+							Some(consumed_weight.ref_time()),
+							Some(consumed_weight.proof_size()),
+							None,
+						)?;
 
 						Ok(succeed(
 							EvmDataWriter::new().write(Address(collection_address.into())).build(),

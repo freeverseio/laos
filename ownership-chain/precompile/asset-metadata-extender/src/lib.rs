@@ -134,8 +134,11 @@ where
 		handle.record_cost(GasCalculator::<Runtime>::weight_to_gas(consumed_weight))?;
 
 		// Record Substrate related costs
-		// TODO: Add `ref_time` when precompiles are benchmarked
-		handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
+		handle.record_external_cost(
+			Some(consumed_weight.ref_time()),
+			Some(consumed_weight.proof_size()),
+			None,
+		)?;
 
 		Ok(succeed(EvmDataWriter::new().build()))
 	}

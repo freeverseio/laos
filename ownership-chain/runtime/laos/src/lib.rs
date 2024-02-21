@@ -315,6 +315,7 @@ impl frame_system::Config for Runtime {
 	/// The action to take on a Runtime Upgrade
 	type OnSetCode = cumulus_pallet_parachain_system::ParachainSetCode<Self>;
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
+	type RuntimeTask = ();
 }
 
 impl pallet_timestamp::Config for Runtime {
@@ -356,6 +357,7 @@ impl pallet_balances::Config for Runtime {
 	type FreezeIdentifier = RuntimeFreezeReason;
 	type MaxHolds = ConstU32<0>;
 	type RuntimeHoldReason = ();
+	type RuntimeFreezeReason = ();
 	type MaxFreezes = ConstU32<1>;
 }
 
@@ -382,35 +384,52 @@ parameter_types! {
 impl cumulus_pallet_parachain_system::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type OnSystemEvent = ();
-	type SelfParaId = parachain_info::Pallet<Runtime>;
+	type SelfParaId = staging_parachain_info::Pallet<Runtime>;
 	type OutboundXcmpMessageSource = XcmpQueue;
-	type DmpMessageHandler = DmpQueue;
 	type ReservedDmpWeight = ReservedDmpWeight;
+	type DmpQueue = DmpQueue;
 	type XcmpMessageHandler = XcmpQueue;
 	type ReservedXcmpWeight = ReservedXcmpWeight;
 	type CheckAssociatedRelayNumber = RelayNumberStrictlyIncreases;
+	type WeightInfo = cumulus_pallet_parachain_system::weights::SubstrateWeight<Runtime>;
 }
 
-impl parachain_info::Config for Runtime {}
+impl staging_parachain_info::Config for Runtime {}
+
+impl pallet_message_queue::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type WeightInfo = ();
+	#[cfg(feature = "runtime-benchmarks")]
+	type MessageProcessor = pallet_message_queue::mock_helpers::NoopMessageProcessor<
+		cumulus_primitives_core::AggregateMessageOrigin,
+	>;
+	#[cfg(not(feature = "runtime-benchmarks"))]
+	type MessageProcessor = xcm_builder::ProcessXcmMessage<
+		AggregateMessageOrigin,
+		xcm_executor::XcmExecutor<xcm_config::XcmConfig>,
+		RuntimeCall,
+	>;
+	type Size = u32;
+	// The XCMP queue pallet is only ever able to handle the `Sibling(ParaId)` origin:
+	type QueueChangeHandler = NarrowOriginToSibling<XcmpQueue>;
+	type QueuePausedQuery = NarrowOriginToSibling<XcmpQueue>;
+	type HeapSize = sp_core::ConstU32<{ 64 * 1024 }>;
+	type MaxStale = sp_core::ConstU32<8>;
+	type ServiceWeight = MessageQueueServiceWeight;
+}
 
 impl cumulus_pallet_aura_ext::Config for Runtime {}
 
 impl cumulus_pallet_xcmp_queue::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type XcmExecutor = XcmExecutor<XcmConfig>;
 	type ChannelInfo = ParachainSystem;
 	type VersionWrapper = ();
-	type ExecuteOverweightOrigin = EnsureRoot<AccountId>;
+	type XcmpQueue = TransformOrigin<MessageQueue, AggregateMessageOrigin, ParaId, ParaIdToSibling>;;
 	type ControllerOrigin = EnsureRoot<AccountId>;
 	type ControllerOriginConverter = XcmOriginToTransactDispatchOrigin;
 	type WeightInfo = ();
 	type PriceForSiblingDelivery = ();
-}
-
-impl cumulus_pallet_dmp_queue::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type XcmExecutor = XcmExecutor<XcmConfig>;
-	type ExecuteOverweightOrigin = EnsureRoot<AccountId>;
+	type MaxInboundSuspended = ConstU32<128>;
 }
 
 parameter_types! {
@@ -628,6 +647,7 @@ impl pallet_evm::Config for Runtime {
 	type WeightInfo = pallet_evm::weights::SubstrateWeight<Runtime>;
 	type WeightPerGas = WeightPerGas;
 	type WithdrawOrigin = pallet_evm::EnsureAddressNever<AccountId>;
+	type SuicideQuickClearLimit = ();
 }
 
 parameter_types! {
@@ -700,6 +720,7 @@ impl pallet_vesting::Config for Runtime {
 	type WeightInfo = pallet_vesting::weights::SubstrateWeight<Runtime>;
 	type MinVestedTransfer = MinVestedTransfer;
 	type UnvestedFundsAllowedWithdrawReasons = UnvestedFundsAllowedWithdrawReasons;
+	type BlockNumberProvider = System;
 	const MAX_VESTING_SCHEDULES: u32 = 28;
 }
 
@@ -733,7 +754,7 @@ parameter_types! {
 	/// The starting block number for the network rewards
 	pub const NetworkRewardStart: BlockNumber = BLOCKS_PER_YEAR.saturating_mul(1);
 	/// The rate in percent for the network rewards
-	pub const NetworkRewardRate: Perquintill = Perquintill::from_percent(10);	 // pub CollatorRewardsAccount: AccountId =
+	pub const NetworkRewardRate: Perquintill = Perquintill::from_percent(10);
 }
 
 impl pallet_parachain_staking::Config for Runtime {
@@ -770,7 +791,7 @@ construct_runtime!(
 		System: frame_system = 0,
 		ParachainSystem: cumulus_pallet_parachain_system = 1,
 		Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent} = 2,
-		ParachainInfo: parachain_info = 3,
+		ParachainInfo: staging_parachain_info = 3,
 
 		// Monetary stuff.
 		Balances: pallet_balances = 10,
@@ -790,7 +811,7 @@ construct_runtime!(
 		XcmpQueue: cumulus_pallet_xcmp_queue = 30,
 		PolkadotXcm: pallet_xcm = 31,
 		CumulusXcm: cumulus_pallet_xcm = 32,
-		DmpQueue: cumulus_pallet_dmp_queue = 33,
+		MessageQueue: pallet_message_queue = 34,
 
 		// Sudo
 		Sudo: pallet_sudo = 40,
