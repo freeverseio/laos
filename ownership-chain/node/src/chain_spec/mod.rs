@@ -14,6 +14,9 @@ const DOROTHY : [u8; 20] = hex!("773539d4Ac0e786233D90A233654ccEE26a613D9");
 const ETHAN : [u8; 20] = hex!("Ff64d3F6efE2317EE2807d223a0Bdc4c0c49dfDB");
 const FAITH : [u8; 20] = hex!("C0F0f4ab324C46e55D02D0033343B4Be8A55532d");
 
+/// The default XCM version to set in genesis config.
+const SAFE_XCM_VERSION: u32 = staging_xcm::prelude::XCM_VERSION;
+
 /// List of endowed accounts.
 fn endowed_accounts() -> Vec<AccountId> {
 	vec![
@@ -26,8 +29,7 @@ fn endowed_accounts() -> Vec<AccountId> {
 	]
 }
 
-/// The default XCM version to set in genesis config.
-const SAFE_XCM_VERSION: u32 = staging_xcm::prelude::XCM_VERSION;
+
 
 /// Helper function to generate a crypto pair from seed
 pub fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public {
