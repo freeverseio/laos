@@ -83,16 +83,19 @@ jobs:
           tags: freeverseio/laos-ownership-node:${{ github.ref_name }}
       - name: Update Release Description with subwasm info
         run: |
-            gh release view ${{ github.ref_name }} --json body -q .body > description.txt
-                
-            printf "\n\n## Runtime info\nThis runtime was built using %s with srtool %s\n" "${{ steps.summary.outputs.rustc_version }}" "${{ steps.summary.outputs.srtool_version }}" >> description.txt
-            echo '```' >> description.txt
-            
-            cat laos-subwam-info.txt >> description.txt
-            
-            echo '```' >> description.txt
-            
-            gh release edit ${{ github.ref_name }} --notes-file description.txt
+          gh release view ${{ github.ref_name }} --json body -q .body > description.txt
+              
+          RUSTC_VERSION=$(echo ${{ steps.summary.outputs.rustc_version }} | tr -d '"')
+          SRTOOL_VERSION=${{ steps.summary.outputs.srtool_version }}
+          
+          printf "\n\n## Runtime info\nThis runtime was built using %s with srtool %s\n" "$RUSTC_VERSION" "$SRTOOL_VERSION" >> description.txt
+          echo '```' >> description.txt
+          
+          cat laos-subwam-info.txt >> description.txt
+          
+          echo '```' >> description.txt
+          
+          gh release edit ${{ github.ref_name }} --notes-file description.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload Ownership Wasm Binaries
