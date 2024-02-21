@@ -1,4 +1,6 @@
-use super::{ALITH, FAITH, endowed_accounts, get_collator_keys_from_seed, Extensions, SAFE_XCM_VERSION};
+use super::{
+	endowed_accounts, get_collator_keys_from_seed, Extensions, ALITH, FAITH, SAFE_XCM_VERSION,
+};
 use cumulus_primitives_core::ParaId;
 use fp_evm::GenesisAccount;
 use klaos_ownership_runtime::{AccountId, AuraId, Precompiles, REVERT_BYTECODE};
@@ -34,10 +36,7 @@ pub fn development_config() -> ChainSpec {
 		move || {
 			testnet_genesis(
 				// initial collators.
-				vec![(
-					ALITH.into(),
-					get_collator_keys_from_seed("Alice"),
-				)],
+				vec![(ALITH.into(), get_collator_keys_from_seed("Alice"))],
 				endowed_accounts(),
 				// Give Alice root privileges
 				Some(ALITH.into()),
@@ -72,10 +71,7 @@ pub fn local_testnet_config() -> ChainSpec {
 		move || {
 			testnet_genesis(
 				// initial collators.
-				vec![(
-					ALITH.into(),
-					get_collator_keys_from_seed("Alice"),
-				)],
+				vec![(ALITH.into(), get_collator_keys_from_seed("Alice"))],
 				endowed_accounts(),
 				// Give Alice root privileges
 				Some(ALITH.into()),
