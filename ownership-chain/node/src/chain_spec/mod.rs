@@ -7,21 +7,22 @@ use sp_core::{Pair, Public};
 pub mod klaos;
 pub mod laos;
 
+const ALITH : [u8; 20] = hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac");
+const BALTATHAR : [u8; 20] = hex!("3Cd0A705a2DC65e5b1E1205896BaA2be8A07c6e0");
+const CHARLETH : [u8; 20] = hex!("798d4Ba9baf0064Ec19eB4F0a1a45785ae9D6DFc");
+const DOROTHY : [u8; 20] = hex!("773539d4Ac0e786233D90A233654ccEE26a613D9");
+const ETHAN : [u8; 20] = hex!("Ff64d3F6efE2317EE2807d223a0Bdc4c0c49dfDB");
+const FAITH : [u8; 20] = hex!("C0F0f4ab324C46e55D02D0033343B4Be8A55532d");
+
 /// List of endowed accounts.
 fn endowed_accounts() -> Vec<AccountId> {
 	vec![
-		// ALITH
-		hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").into(),
-		// BALTATHAR
-		hex!("3Cd0A705a2DC65e5b1E1205896BaA2be8A07c6e0").into(),
-		// CHARLETH
-		hex!("798d4Ba9baf0064Ec19eB4F0a1a45785ae9D6DFc").into(),
-		// DOROTHY
-		hex!("773539d4Ac0e786233D90A233654ccEE26a613D9").into(),
-		// ETHAN
-		hex!("Ff64d3F6efE2317EE2807d223a0Bdc4c0c49dfDB").into(),
-		// FAITH
-		hex!("C0F0f4ab324C46e55D02D0033343B4Be8A55532d").into(),
+		ALITH.into(),
+		BALTATHAR.into(),
+		CHARLETH.into(),
+		DOROTHY.into(),	
+		ETHAN.into(),
+		FAITH.into(),
 	]
 }
 

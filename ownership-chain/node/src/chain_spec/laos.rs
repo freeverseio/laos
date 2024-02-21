@@ -1,7 +1,6 @@
-use super::{endowed_accounts, get_collator_keys_from_seed, Extensions, SAFE_XCM_VERSION};
+use super::{ALITH, FAITH, endowed_accounts, get_collator_keys_from_seed, Extensions, SAFE_XCM_VERSION};
 use cumulus_primitives_core::ParaId;
 use fp_evm::GenesisAccount;
-use hex_literal::hex;
 use laos_ownership_runtime::{
 	AccountId, AuraId, InflationInfo, Precompiles, BLOCKS_PER_YEAR, REVERT_BYTECODE, UNIT,
 };
@@ -38,12 +37,12 @@ pub fn development_config() -> ChainSpec {
 			testnet_genesis(
 				// initial collators.
 				vec![(
-					hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").into(),
+					ALITH.into(),
 					get_collator_keys_from_seed("Alice"),
 				)],
 				endowed_accounts(),
 				// Give Alice root privileges
-				Some(hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").into()),
+				Some(ALITH.into()),
 				2001.into(),
 			)
 		},
@@ -76,12 +75,12 @@ pub fn local_testnet_config() -> ChainSpec {
 			testnet_genesis(
 				// initial collators.
 				vec![(
-					hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").into(),
+					ALITH.into(),
 					get_collator_keys_from_seed("Alice"),
 				)],
 				endowed_accounts(),
 				// Give Alice root privileges
-				Some(hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").into()),
+				Some(ALITH.into()),
 				2001.into(),
 			)
 		},
@@ -231,8 +230,7 @@ fn testnet_genesis(
 					// H160 address of dev account
 					// Private key :
 					// 0xb9d2ea9a615f3165812e8d44de0d24da9bbd164b65c4f0573e1ce2c8dbd9c8df
-					H160::from_str("C0F0f4ab324C46e55D02D0033343B4Be8A55532d")
-						.expect("internal H160 is valid; qed"),
+					FAITH.into(),
 					fp_evm::GenesisAccount {
 						balance: U256::from_str("0xef000000000000000000000000000")
 							.expect("internal U256 is valid; qed"),
