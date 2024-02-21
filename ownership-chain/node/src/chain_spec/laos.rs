@@ -105,7 +105,7 @@ pub fn local_testnet_config() -> ChainSpec {
 		// Name
 		"Local Testnet",
 		// ID
-		"local_testnet",
+		"laos_local_testnet",
 		ChainType::Local,
 		move || {
 			testnet_genesis(
