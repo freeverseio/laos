@@ -1,77 +1,23 @@
+use super::{
+	endowed_accounts, get_collator_keys_from_seed, Extensions, ALITH, FAITH, SAFE_XCM_VERSION,
+};
 use cumulus_primitives_core::ParaId;
 use fp_evm::GenesisAccount;
-use hex_literal::hex;
-use laos_ownership_runtime::{
-	AccountId, AuraId, InflationInfo, Precompiles, BLOCKS_PER_YEAR, REVERT_BYTECODE, UNIT,
-};
-use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
+use klaos_ownership_runtime::{AccountId, AuraId, Precompiles, REVERT_BYTECODE};
 use sc_service::ChainType;
-use serde::{Deserialize, Serialize};
-use sp_core::{Pair, Public, H160, U256};
-use sp_runtime::Perquintill;
+use sp_core::{H160, U256};
+use sp_runtime::traits::Zero;
 use std::{collections::BTreeMap, str::FromStr};
-
-/// List of endowed accounts.
-fn endowed_accounts() -> Vec<AccountId> {
-	vec![
-		// ALITH
-		hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").into(),
-		// BALTATHAR
-		hex!("3Cd0A705a2DC65e5b1E1205896BaA2be8A07c6e0").into(),
-		// CHARLETH
-		hex!("798d4Ba9baf0064Ec19eB4F0a1a45785ae9D6DFc").into(),
-		// DOROTHY
-		hex!("773539d4Ac0e786233D90A233654ccEE26a613D9").into(),
-		// ETHAN
-		hex!("Ff64d3F6efE2317EE2807d223a0Bdc4c0c49dfDB").into(),
-		// FAITH
-		hex!("C0F0f4ab324C46e55D02D0033343B4Be8A55532d").into(),
-	]
-}
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
 pub type ChainSpec =
-	sc_service::GenericChainSpec<laos_ownership_runtime::RuntimeGenesisConfig, Extensions>;
-
-/// The default XCM version to set in genesis config.
-const SAFE_XCM_VERSION: u32 = staging_xcm::prelude::XCM_VERSION;
-
-/// Helper function to generate a crypto pair from seed
-pub fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public {
-	TPublic::Pair::from_string(&format!("//{seed}"), None)
-		.expect("static values are valid; qed")
-		.public()
-}
-
-/// The extensions for the [`ChainSpec`].
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ChainSpecGroup, ChainSpecExtension)]
-#[serde(deny_unknown_fields)]
-pub struct Extensions {
-	/// The relay chain of the Parachain.
-	pub relay_chain: String,
-	/// The id of the Parachain.
-	pub para_id: u32,
-}
-
-impl Extensions {
-	/// Try to get the extension from the given `ChainSpec`.
-	pub fn try_get(chain_spec: &dyn sc_service::ChainSpec) -> Option<&Self> {
-		sc_chain_spec::get_extension(chain_spec.extensions())
-	}
-}
-
-/// Generate collator keys from seed.
-///
-/// This function's return type must always match the session keys of the chain in tuple format.
-pub fn get_collator_keys_from_seed(seed: &str) -> AuraId {
-	get_from_seed::<AuraId>(seed)
-}
+	sc_service::GenericChainSpec<klaos_ownership_runtime::RuntimeGenesisConfig, Extensions>;
 
 /// Generate the session keys from individual elements.
 ///
 /// The input must be a tuple of individual keys (a single arg for now since we have just one key).
-pub fn template_session_keys(keys: AuraId) -> laos_ownership_runtime::SessionKeys {
-	laos_ownership_runtime::SessionKeys { aura: keys }
+pub fn template_session_keys(keys: AuraId) -> klaos_ownership_runtime::SessionKeys {
+	klaos_ownership_runtime::SessionKeys { aura: keys }
 }
 
 pub fn development_config() -> ChainSpec {
@@ -90,13 +36,10 @@ pub fn development_config() -> ChainSpec {
 		move || {
 			testnet_genesis(
 				// initial collators.
-				vec![(
-					hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").into(),
-					get_collator_keys_from_seed("Alice"),
-				)],
+				vec![(ALITH.into(), get_collator_keys_from_seed("Alice"))],
 				endowed_accounts(),
 				// Give Alice root privileges
-				Some(hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").into()),
+				Some(ALITH.into()),
 				2001.into(),
 			)
 		},
@@ -123,18 +66,15 @@ pub fn local_testnet_config() -> ChainSpec {
 		// Name
 		"Local Testnet",
 		// ID
-		"local_testnet",
+		"klaos_local_testnet",
 		ChainType::Local,
 		move || {
 			testnet_genesis(
 				// initial collators.
-				vec![(
-					hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").into(),
-					get_collator_keys_from_seed("Alice"),
-				)],
+				vec![(ALITH.into(), get_collator_keys_from_seed("Alice"))],
 				endowed_accounts(),
 				// Give Alice root privileges
-				Some(hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").into()),
+				Some(ALITH.into()),
 				2001.into(),
 			)
 		},
@@ -161,36 +101,27 @@ fn testnet_genesis(
 	endowed_accounts: Vec<AccountId>,
 	root_key: Option<AccountId>,
 	id: ParaId,
-) -> laos_ownership_runtime::RuntimeGenesisConfig {
-	// Reward configuration used in the genesis config
-	// This defines the rate at which rewards are distributed to collators and delegators
-	let reward_configuration = InflationInfo::new(
-		BLOCKS_PER_YEAR.into(),
-		// max collator staking rate
-		Perquintill::from_percent(40),
-		// collator reward rate
-		Perquintill::from_percent(10),
-		// max delegator staking rate
-		Perquintill::from_percent(10),
-		// delegator reward rate
-		Perquintill::from_percent(8),
-	);
-
-	laos_ownership_runtime::RuntimeGenesisConfig {
-		system: laos_ownership_runtime::SystemConfig {
-			code: laos_ownership_runtime::WASM_BINARY
+) -> klaos_ownership_runtime::RuntimeGenesisConfig {
+	klaos_ownership_runtime::RuntimeGenesisConfig {
+		system: klaos_ownership_runtime::SystemConfig {
+			code: klaos_ownership_runtime::WASM_BINARY
 				.expect("WASM binary was not build, please build it!")
 				.to_vec(),
 			..Default::default()
 		},
-		balances: laos_ownership_runtime::BalancesConfig {
+		balances: klaos_ownership_runtime::BalancesConfig {
 			balances: endowed_accounts.iter().cloned().map(|k| (k, 1e24 as u128)).collect(),
 		},
-		parachain_info: laos_ownership_runtime::ParachainInfoConfig {
+		parachain_info: klaos_ownership_runtime::ParachainInfoConfig {
 			parachain_id: id,
 			..Default::default()
 		},
-		session: laos_ownership_runtime::SessionConfig {
+		collator_selection: klaos_ownership_runtime::CollatorSelectionConfig {
+			invulnerables: invulnerables.iter().cloned().map(|(acc, _)| acc).collect(),
+			candidacy_bond: Zero::zero(),
+			..Default::default()
+		},
+		session: klaos_ownership_runtime::SessionConfig {
 			keys: invulnerables
 				.into_iter()
 				.map(|(acc, aura)| {
@@ -207,23 +138,18 @@ fn testnet_genesis(
 		aura: Default::default(),
 		aura_ext: Default::default(),
 		parachain_system: Default::default(),
-		polkadot_xcm: laos_ownership_runtime::PolkadotXcmConfig {
+		polkadot_xcm: klaos_ownership_runtime::PolkadotXcmConfig {
 			safe_xcm_version: Some(SAFE_XCM_VERSION),
 			..Default::default()
 		},
-		sudo: laos_ownership_runtime::SudoConfig { key: root_key },
+		sudo: klaos_ownership_runtime::SudoConfig { key: root_key },
 		transaction_payment: Default::default(),
 		// EVM compatibility
-		evm_chain_id: laos_ownership_runtime::EVMChainIdConfig {
+		evm_chain_id: klaos_ownership_runtime::EVMChainIdConfig {
 			chain_id: 667,
 			..Default::default()
 		},
-		parachain_staking: laos_ownership_runtime::ParachainStakingConfig {
-			max_candidate_stake: 10_000 * UNIT,
-			inflation_config: reward_configuration,
-			..Default::default()
-		},
-		evm: laos_ownership_runtime::EVMConfig {
+		evm: klaos_ownership_runtime::EVMConfig {
 			accounts: {
 				let mut map: BTreeMap<_, _> = Precompiles::used_addresses()
 					.iter()
@@ -284,8 +210,7 @@ fn testnet_genesis(
 					// H160 address of dev account
 					// Private key :
 					// 0xb9d2ea9a615f3165812e8d44de0d24da9bbd164b65c4f0573e1ce2c8dbd9c8df
-					H160::from_str("C0F0f4ab324C46e55D02D0033343B4Be8A55532d")
-						.expect("internal H160 is valid; qed"),
+					FAITH.into(),
 					fp_evm::GenesisAccount {
 						balance: U256::from_str("0xef000000000000000000000000000")
 							.expect("internal U256 is valid; qed"),

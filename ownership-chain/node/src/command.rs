@@ -30,22 +30,43 @@ use crate::{
 
 fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 	Ok(match id {
-		"klaos" => Box::new(chain_spec::ChainSpec::from_json_bytes(
+		"klaos" => Box::new(chain_spec::klaos::ChainSpec::from_json_bytes(
 			&include_bytes!("../../specs/klaos.raw.json")[..],
 		)?),
-		"arrakis" => Box::new(chain_spec::ChainSpec::from_json_bytes(
-			&include_bytes!("../../specs/arrakis-frontier.json")[..],
+		"caladan" => Box::new(chain_spec::klaos::ChainSpec::from_json_bytes(
+			&include_bytes!("../../specs/caladan.raw.json")[..],
 		)?),
-		"caladan" => Box::new(chain_spec::ChainSpec::from_json_bytes(
-			&include_bytes!("../../specs/caladan-raw.json")[..],
-		)?),
-		"giedi" => Box::new(chain_spec::ChainSpec::from_json_bytes(
+		"giedi" => Box::new(chain_spec::klaos::ChainSpec::from_json_bytes(
 			&include_bytes!("../../specs/giedi.raw.json")[..],
 		)?),
-		"dev" => Box::new(chain_spec::development_config()),
-		"template-rococo" => Box::new(chain_spec::local_testnet_config()),
-		"" | "local" | "local-v" => Box::new(chain_spec::local_testnet_config()),
-		path => Box::new(chain_spec::ChainSpec::from_json_file(std::path::PathBuf::from(path))?),
+		"klaos-dev" => Box::new(chain_spec::klaos::development_config()),
+		"klaos-local" | "klaos-local-v" => Box::new(chain_spec::klaos::local_testnet_config()),
+		"dev" => Box::new(chain_spec::laos::development_config()),
+		"local" | "local-v" => Box::new(chain_spec::laos::local_testnet_config()),
+		path => {
+			let chain_spec =
+				chain_spec::laos::ChainSpec::from_json_file(std::path::PathBuf::from(path))?;
+			if chain_spec.id().starts_with("klaos") {
+				Box::new(chain_spec::klaos::ChainSpec::from_json_file(std::path::PathBuf::from(
+					path,
+				))?)
+			} else if chain_spec.id().starts_with("giedi") {
+				Box::new(chain_spec::klaos::ChainSpec::from_json_file(std::path::PathBuf::from(
+					path,
+				))?)
+			} else if chain_spec.id().starts_with("caladan") {
+				Box::new(chain_spec::klaos::ChainSpec::from_json_file(std::path::PathBuf::from(
+					path,
+				))?)
+			} else if chain_spec.id().starts_with("laos") {
+				Box::new(chain_spec)
+			} else {
+				Err(format!(
+					"Unclear which chain spec to base this chain on. Provided chain spec ID: {}",
+					chain_spec.id()
+				))?
+			}
+		},
 	})
 }
 
@@ -119,7 +140,7 @@ impl SubstrateCli for RelayChainCli {
 	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
 		match id {
 			"rococo_freeverse" => Ok(Box::new(RococoChainSpec::from_json_bytes(
-				&include_bytes!("../../specs/rococo-freeverse-chainspec.json")[..],
+				&include_bytes!("../../specs/rococo-freeverse-chainspec.raw.json")[..],
 			)?)),
 			_ => polkadot_cli::Cli::from_iter([RelayChainCli::executable_name()].iter())
 				.load_spec(id),
