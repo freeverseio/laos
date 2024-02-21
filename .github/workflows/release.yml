@@ -53,7 +53,7 @@ jobs:
           echo "Runtime location: ${{ steps.srtool_build.outputs.wasm }}"
           RUSTC_VERSION=$(jq '.info.rustc' < ${{ matrix.chain }}-srtool-digest.json)
           SRTOOL_VERSION=$(jq '.info.generator.version' < ${{ matrix.chain }}-srtool-digest.json)
-          echo "rustc_version=$RUSTC_VERSION" >> $GITHUB_OUTPUT
+          echo "rustc_version='$RUSTC_VERSION'" >> $GITHUB_OUTPUT
           echo "srtool_version=$SRTOOL_VERSION" >> $GITHUB_OUTPUT
       - name: Install subwasm ${{ env.SUBWASM_VERSION }}
         run: |
