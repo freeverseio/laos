@@ -14,10 +14,13 @@ pub mod xcm_config;
 
 use core::marker::PhantomData;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
+use cumulus_primitives_core::{AggregateMessageOrigin, ParaId};
+use frame_support::traits::TransformOrigin;
 pub use ownership_parachain_primitives::{
 	AccountId, AuraId, Balance, BlockNumber, Hash, Index, Nonce, Signature,
 };
-use ownership_parachain_primitives::{MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO};
+use ownership_parachain_primitives::{BlockWeights, MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO};
+use parachains_common::message_queue::{NarrowOriginToSibling, ParaIdToSibling};
 use parity_scale_codec::{Decode, Encode};
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;

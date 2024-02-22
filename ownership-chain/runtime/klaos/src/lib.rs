@@ -17,7 +17,7 @@ use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 pub use ownership_parachain_primitives::{
 	AccountId, AuraId, Balance, BlockNumber, Hash, Index, Nonce, Signature,
 };
-use ownership_parachain_primitives::{MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO};
+use ownership_parachain_primitives::{BlockWeights, MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO};
 use parity_scale_codec::{Decode, Encode};
 use polkadot_runtime_common::xcm_sender::NoPriceForMessageDelivery;
 use smallvec::smallvec;

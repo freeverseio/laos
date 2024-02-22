@@ -50,6 +50,7 @@ pub fn development_config() -> ChainSpec {
 			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
 			para_id: 2001,
 		},
+		klaos_ownership_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!"), 
 	)
 }
 
@@ -91,6 +92,7 @@ pub fn local_testnet_config() -> ChainSpec {
 			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
 			para_id: 2001,
 		},
+		klaos_ownership_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!"),
 	)
 }
 
@@ -101,12 +103,6 @@ fn testnet_genesis(
 	id: ParaId,
 ) -> klaos_ownership_runtime::RuntimeGenesisConfig {
 	klaos_ownership_runtime::RuntimeGenesisConfig {
-		system: klaos_ownership_runtime::SystemConfig {
-			code: klaos_ownership_runtime::WASM_BINARY
-				.expect("WASM binary was not build, please build it!")
-				.to_vec(),
-			..Default::default()
-		},
 		balances: klaos_ownership_runtime::BalancesConfig {
 			balances: endowed_accounts.iter().cloned().map(|k| (k, 1e24 as u128)).collect(),
 		},
