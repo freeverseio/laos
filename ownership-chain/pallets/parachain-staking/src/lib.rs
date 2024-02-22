@@ -1857,7 +1857,7 @@ pub mod pallet {
 		) -> Result<(u32, u32), DispatchError> {
 			ensure!(
 				(col_reward_rate == Perquintill::from_rational(375u64, 10_000u64)) &&
-				(del_reward_rate == Perquintill::from_rational(375u64, 10_000u64)),
+					(del_reward_rate == Perquintill::from_rational(375u64, 10_000u64)),
 				Error::<T>::InvalidSchedule
 			);
 

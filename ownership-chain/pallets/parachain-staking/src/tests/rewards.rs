@@ -342,7 +342,7 @@ fn adjust_reward_rates() {
 				Perquintill::from_percent(10),
 				Perquintill::from_parts(3_750_000_000_000_000_0),
 				Perquintill::from_percent(40),
-				Perquintill::from_parts(3_750_000_000_000_000_0)
+				Perquintill::from_parts(3_750_000_000_000_000_0),
 			);
 			let num_of_years = 3 * <Test as Config>::BLOCKS_PER_YEAR;
 			// 1 authors every block
