@@ -390,9 +390,9 @@ impl pallet_message_queue::Config for Runtime {
 		cumulus_primitives_core::AggregateMessageOrigin,
 	>;
 	#[cfg(not(feature = "runtime-benchmarks"))]
-	type MessageProcessor = xcm_builder::ProcessXcmMessage<
+	type MessageProcessor = staging_xcm_builder::ProcessXcmMessage<
 		AggregateMessageOrigin,
-		xcm_executor::XcmExecutor<xcm_config::XcmConfig>,
+		staging_xcm_executor::XcmExecutor<xcm_config::XcmConfig>,
 		RuntimeCall,
 	>;
 	type Size = u32;

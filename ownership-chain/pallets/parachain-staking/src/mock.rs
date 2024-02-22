@@ -93,6 +93,7 @@ impl frame_system::Config for Test {
 	type SS58Prefix = SS58Prefix;
 	type OnSetCode = ();
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
+	type RuntimeTask = ();
 }
 parameter_types! {
 	pub const ExistentialDeposit: Balance = 1;
@@ -114,6 +115,7 @@ impl pallet_balances::Config for Test {
 	type ExistentialDeposit = ExistentialDeposit;
 	type AccountStore = System;
 	type WeightInfo = ();
+	type RuntimeFreezeReason = ();
 }
 
 impl pallet_aura::Config for Test {

@@ -50,6 +50,7 @@ impl frame_system::Config for Test {
 	type SS58Prefix = ConstU16<42>;
 	type OnSetCode = ();
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
+	type RuntimeTask = ();
 }
 
 type AccountId = H160;
@@ -98,6 +99,7 @@ impl pallet_evm::Config for Test {
 	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
 	type Timestamp = Timestamp;
 	type WeightInfo = ();
+	type SuicideQuickClearLimit = ();
 }
 
 pub const BLOCK_GAS_LIMIT: u64 = 15_000_000;
@@ -162,6 +164,7 @@ impl pallet_balances::Config for Test {
 	type MaxReserves = ();
 	type MaxHolds = ();
 	type MaxFreezes = ();
+	type RuntimeFreezeReason = ();
 }
 
 parameter_types! {

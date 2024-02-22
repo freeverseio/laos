@@ -2,6 +2,7 @@
 //! NOTE: uses the same XCM configuration as the real runtime, i.e `xcm_config.rs`.
 
 use cumulus_primitives_core::{
+	AggregateMessageOrigin,
 	AssetId::{self as XcmAssetId, Concrete},
 	Fungibility, InteriorMultiLocation,
 	Junction::{self, GlobalConsensus, Parachain},
@@ -10,7 +11,10 @@ use cumulus_primitives_core::{
 };
 use frame_support::{
 	construct_runtime, match_types, parameter_types,
-	traits::{AsEnsureOriginWithArg, ConstU64, Everything, FindAuthor, Nothing, OriginTrait},
+	traits::{
+		AsEnsureOriginWithArg, ConstU64, Everything, FindAuthor, Nothing, OriginTrait,
+		TransformOrigin,
+	},
 	weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight},
 	PalletId,
 };
@@ -27,6 +31,7 @@ use orml_traits::{
 	parameter_type_with_key,
 };
 use pallet_xcm::XcmPassthrough;
+use parachains_common::message_queue::ParaIdToSibling;
 use parity_scale_codec::Encode;
 use polkadot_parachain_primitives::primitives::Sibling;
 use sp_core::{ConstU128, ConstU32, H160, H256, U256};
@@ -52,6 +57,8 @@ use xcm_simulator::PhantomData;
 
 use crate::precompiles::FrontierPrecompiles;
 
+use super::relay_chain::MessageQueue;
+
 pub type Block = frame_system::mocking::MockBlock<Runtime>;
 pub type AccountId = H160;
 pub type Balance = u128;
@@ -62,17 +69,16 @@ construct_runtime!(
 		System: frame_system,
 		Balances: pallet_balances,
 		Timestamp: pallet_timestamp,
-		ParachainInfo: parachain_info = 3,
+		ParachainInfo: staging_parachain_info = 3,
 		EVM: pallet_evm,
 		ParachainSystem: cumulus_pallet_parachain_system,
+		Xtokens: orml_xtokens,
 
 		XcmpQueue: cumulus_pallet_xcmp_queue,
 		PolkadotXcm: pallet_xcm,
 		CumulusXcm: cumulus_pallet_xcm,
-		DmpQueue: cumulus_pallet_dmp_queue,
 
-		Xtokens: orml_xtokens,
-		Assets: pallet_assets = 123,
+		Assets: pallet_assets = 123
 	}
 );
 
@@ -100,6 +106,7 @@ impl frame_system::Config for Runtime {
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 	type Nonce = u64;
 	type Block = Block;
+	type RuntimeTask = ();
 }
 
 parameter_types! {
@@ -120,6 +127,7 @@ impl pallet_balances::Config for Runtime {
 	type MaxHolds = ();
 	type MaxFreezes = ();
 	type RuntimeHoldReason = ();
+	type RuntimeFreezeReason = ();
 }
 
 parameter_types! {
@@ -192,6 +200,7 @@ impl pallet_evm::Config for Runtime {
 	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
 	type Timestamp = Timestamp;
 	type WeightInfo = ();
+	type SuicideQuickClearLimit = ();
 }
 
 pub type AssetId = u32;
@@ -262,41 +271,42 @@ impl pallet_assets::Config for Runtime {
 	type BenchmarkHelper = ();
 }
 
-impl parachain_info::Config for Runtime {}
+impl staging_parachain_info::Config for Runtime {}
 
 parameter_types! {
 	pub const ReservedXcmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT.saturating_div(4);
 	pub const ReservedDmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT.saturating_div(4);
+	pub const RelayOrigin: AggregateMessageOrigin = AggregateMessageOrigin::Parent;
 }
 
 impl cumulus_pallet_parachain_system::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type OnSystemEvent = ();
-	type SelfParaId = parachain_info::Pallet<Runtime>;
+	type SelfParaId = staging_parachain_info::Pallet<Runtime>;
 	type OutboundXcmpMessageSource = XcmpQueue;
-	type DmpMessageHandler = DmpQueue;
 	type ReservedDmpWeight = ReservedDmpWeight;
+	type DmpQueue = frame_support::traits::EnqueueWithOrigin<MessageQueue, RelayOrigin>;
 	type XcmpMessageHandler = XcmpQueue;
 	type ReservedXcmpWeight = ReservedXcmpWeight;
 	type CheckAssociatedRelayNumber = cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
+	type WeightInfo = ();
 }
 
 impl cumulus_pallet_xcmp_queue::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type XcmExecutor = XcmExecutor<XcmConfig>;
 	type ChannelInfo = ParachainSystem;
 	type VersionWrapper = ();
-	type ExecuteOverweightOrigin = EnsureRoot<AccountId>;
+	type XcmpQueue = TransformOrigin<
+		MessageQueue,
+		AggregateMessageOrigin,
+		cumulus_primitives_core::ParaId,
+		ParaIdToSibling,
+	>;
 	type ControllerOrigin = EnsureRoot<AccountId>;
 	type ControllerOriginConverter = XcmOriginToTransactDispatchOrigin;
 	type WeightInfo = ();
 	type PriceForSiblingDelivery = ();
-}
-
-impl cumulus_pallet_dmp_queue::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type XcmExecutor = XcmExecutor<XcmConfig>;
-	type ExecuteOverweightOrigin = EnsureRoot<AccountId>;
+	type MaxInboundSuspended = ConstU32<128>;
 }
 
 // Below is XCM related configuration
@@ -563,11 +573,6 @@ pub type LocalOriginToLocation = SignedToAccountId20<RuntimeOrigin, AccountId, R
 /// queues.
 pub type XcmRouter = super::ParachainXcmRouter<ParachainInfo>;
 
-#[cfg(feature = "runtime-benchmarks")]
-parameter_types! {
-	pub ReachableDest: Option<MultiLocation> = Some(cumulus_primitives_core::Parent.into());
-}
-
 impl pallet_xcm::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type SendXcmOrigin = EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
@@ -592,8 +597,6 @@ impl pallet_xcm::Config for Runtime {
 	type SovereignAccountOf = LocationToAccountId;
 	type MaxLockers = ConstU32<8>;
 	type WeightInfo = pallet_xcm::TestWeightInfo;
-	#[cfg(feature = "runtime-benchmarks")]
-	type ReachableDest = ReachableDest;
 	type AdminOrigin = EnsureRoot<AccountId>;
 	type MaxRemoteLockConsumers = ConstU32<0>;
 	type RemoteLockConsumerIdentifier = ();

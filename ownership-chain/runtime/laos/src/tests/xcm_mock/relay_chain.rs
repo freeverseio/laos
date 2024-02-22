@@ -67,6 +67,7 @@ impl frame_system::Config for Runtime {
 	type OnSetCode = ();
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 	type Block = Block;
+	type RuntimeTask = ();
 }
 
 parameter_types! {
@@ -89,6 +90,7 @@ impl pallet_balances::Config for Runtime {
 	type MaxHolds = ();
 	type MaxFreezes = ();
 	type RuntimeHoldReason = ();
+	type RuntimeFreezeReason = ();
 }
 
 impl shared::Config for Runtime {}

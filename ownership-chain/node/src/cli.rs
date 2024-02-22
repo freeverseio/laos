@@ -26,7 +26,7 @@ pub enum Subcommand {
 	/// Remove the whole chain.
 	PurgeChain(cumulus_client_cli::PurgeChainCmd),
 
-	/// Export the genesis state of the parachain.
+	/// Export the genesis head of the parachain.
 	ExportGenesisHead(cumulus_client_cli::ExportGenesisHeadCommand),
 
 	/// Export the genesis wasm of the parachain.

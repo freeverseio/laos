@@ -6,8 +6,7 @@
 use core::str::FromStr;
 
 use super::*;
-use evm::Context;
-use fp_evm::{Log, PrecompileSet};
+use fp_evm::{Context, Log, PrecompileSet};
 use mock::*;
 use pallet_evm_evolution_collection_factory::Action as CollectionFactoryAction;
 use precompile_utils::{
@@ -36,7 +35,7 @@ fn create_collection(owner: impl Into<H160>) -> H160 {
 
 	let mut handle = MockHandle::new(
 		EVOLUTION_FACTORY_PRECOMPILE_ADDRESS.into(),
-		Context {
+		fp_evm::Context {
 			address: EVOLUTION_FACTORY_PRECOMPILE_ADDRESS.into(),
 			caller: owner,
 			apparent_value: U256::zero(),

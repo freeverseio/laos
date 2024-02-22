@@ -91,7 +91,7 @@ pub fn sibling_para_account_id(para: u32) -> parachain::AccountId {
 /// Prepare parachain test externality
 pub fn para_ext<Runtime>(para_id: u32) -> sp_io::TestExternalities
 where
-	Runtime: pallet_balances::Config + parachain_info::Config + pallet_xcm::Config,
+	Runtime: pallet_balances::Config + staging_parachain_info::Config + pallet_xcm::Config,
 	Runtime::AccountId: From<H160> + Into<H160>,
 	Runtime::Balance: From<u128> + Into<u128>,
 	<Runtime as pallet_balances::Config>::Balance: From<u128> + Into<u128>,
@@ -111,7 +111,7 @@ where
 	.assimilate_storage(&mut t)
 	.unwrap();
 
-	parachain_info::GenesisConfig::<Runtime> {
+	staging_parachain_info::GenesisConfig::<Runtime> {
 		_config: Default::default(),
 		parachain_id: para_id.into(),
 	}

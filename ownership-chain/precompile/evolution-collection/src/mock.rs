@@ -58,6 +58,7 @@ impl frame_system::Config for Test {
 	type SS58Prefix = ConstU16<42>;
 	type OnSetCode = ();
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
+	type RuntimeTask = ();
 }
 
 parameter_types! {
@@ -95,6 +96,7 @@ impl pallet_balances::Config for Test {
 	type MaxReserves = ();
 	type MaxHolds = ();
 	type MaxFreezes = ();
+	type RuntimeFreezeReason = ();
 }
 
 parameter_types! {
@@ -149,6 +151,7 @@ impl pallet_evm::Config for Test {
 	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
 	type Timestamp = Timestamp;
 	type WeightInfo = ();
+	type SuicideQuickClearLimit = ();
 }
 
 pub struct MockPrecompileSet<Test>(sp_std::marker::PhantomData<Test>);

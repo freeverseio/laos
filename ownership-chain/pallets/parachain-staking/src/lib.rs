@@ -532,10 +532,6 @@ pub mod pallet {
 		}
 	}
 
-	#[pallet::storage]
-	pub(crate) type RewardPerBlock<T: Config> =
-		StorageValue<_, (BalanceOf<T>, BalanceOf<T>), ValueQuery>;
-
 	/// The maximum number of collator candidates selected at each round.
 	#[pallet::storage]
 	#[pallet::getter(fn max_selected_candidates)]

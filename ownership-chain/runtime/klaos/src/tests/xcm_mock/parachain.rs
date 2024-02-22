@@ -12,7 +12,7 @@ use frame_support::{
 	construct_runtime, match_types, parameter_types,
 	traits::{
 		AsEnsureOriginWithArg, ConstU64, Currency, Everything, FindAuthor, Nothing, OnUnbalanced,
-		OriginTrait,
+		OriginTrait, TransformOrigin,
 	},
 	weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight},
 	PalletId,
@@ -65,14 +65,13 @@ construct_runtime!(
 		System: frame_system,
 		Balances: pallet_balances,
 		Timestamp: pallet_timestamp,
-		ParachainInfo: parachain_info = 3,
+		ParachainInfo: staging_parachain_info = 3,
 		EVM: pallet_evm,
 		ParachainSystem: cumulus_pallet_parachain_system,
 
 		XcmpQueue: cumulus_pallet_xcmp_queue,
 		PolkadotXcm: pallet_xcm,
 		CumulusXcm: cumulus_pallet_xcm,
-		DmpQueue: cumulus_pallet_dmp_queue,
 
 		Xtokens: orml_xtokens,
 		Assets: pallet_assets = 123,
@@ -103,6 +102,7 @@ impl frame_system::Config for Runtime {
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 	type Nonce = u64;
 	type Block = Block;
+	type RuntimeTask = ();
 }
 
 parameter_types! {
@@ -123,6 +123,7 @@ impl pallet_balances::Config for Runtime {
 	type MaxHolds = ();
 	type MaxFreezes = ();
 	type RuntimeHoldReason = ();
+	type RuntimeFreezeReason = ();
 }
 
 parameter_types! {
@@ -195,6 +196,7 @@ impl pallet_evm::Config for Runtime {
 	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
 	type Timestamp = Timestamp;
 	type WeightInfo = ();
+	type SuicideQuickClearLimit = ();
 }
 
 pub type AssetId = u32;
@@ -265,7 +267,7 @@ impl pallet_assets::Config for Runtime {
 	type BenchmarkHelper = ();
 }
 
-impl parachain_info::Config for Runtime {}
+impl staging_parachain_info::Config for Runtime {}
 
 parameter_types! {
 	pub const ReservedXcmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT.saturating_div(4);
@@ -275,31 +277,31 @@ parameter_types! {
 impl cumulus_pallet_parachain_system::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type OnSystemEvent = ();
-	type SelfParaId = parachain_info::Pallet<Runtime>;
+	type SelfParaId = staging_parachain_info::Pallet<Runtime>;
 	type OutboundXcmpMessageSource = XcmpQueue;
-	type DmpMessageHandler = DmpQueue;
 	type ReservedDmpWeight = ReservedDmpWeight;
+	type DmpQueue = frame_support::traits::EnqueueWithOrigin<(), sp_core::ConstU8<0>>;
 	type XcmpMessageHandler = XcmpQueue;
 	type ReservedXcmpWeight = ReservedXcmpWeight;
 	type CheckAssociatedRelayNumber = cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
+	type WeightInfo = ();
 }
 
 impl cumulus_pallet_xcmp_queue::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type XcmExecutor = XcmExecutor<XcmConfig>;
 	type ChannelInfo = ParachainSystem;
 	type VersionWrapper = ();
-	type ExecuteOverweightOrigin = EnsureRoot<AccountId>;
+	type XcmpQueue = TransformOrigin<
+		MessageQueue,
+		AggregateMessageOrigin,
+		cumulus_primitives_core::ParaId,
+		ParaIdToSibling,
+	>;
 	type ControllerOrigin = EnsureRoot<AccountId>;
 	type ControllerOriginConverter = XcmOriginToTransactDispatchOrigin;
 	type WeightInfo = ();
 	type PriceForSiblingDelivery = ();
-}
-
-impl cumulus_pallet_dmp_queue::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type XcmExecutor = XcmExecutor<XcmConfig>;
-	type ExecuteOverweightOrigin = EnsureRoot<AccountId>;
+	type MaxInboundSuspended = ConstU32<128>;
 }
 
 // Below is XCM related configuration
@@ -566,11 +568,6 @@ pub type LocalOriginToLocation = SignedToAccountId20<RuntimeOrigin, AccountId, R
 /// queues.
 pub type XcmRouter = super::ParachainXcmRouter<ParachainInfo>;
 
-#[cfg(feature = "runtime-benchmarks")]
-parameter_types! {
-	pub ReachableDest: Option<MultiLocation> = Some(cumulus_primitives_core::Parent.into());
-}
-
 impl pallet_xcm::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type SendXcmOrigin = EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
@@ -595,8 +592,6 @@ impl pallet_xcm::Config for Runtime {
 	type SovereignAccountOf = LocationToAccountId;
 	type MaxLockers = ConstU32<8>;
 	type WeightInfo = pallet_xcm::TestWeightInfo;
-	#[cfg(feature = "runtime-benchmarks")]
-	type ReachableDest = ReachableDest;
 	type AdminOrigin = EnsureRoot<AccountId>;
 	type MaxRemoteLockConsumers = ConstU32<0>;
 	type RemoteLockConsumerIdentifier = ();

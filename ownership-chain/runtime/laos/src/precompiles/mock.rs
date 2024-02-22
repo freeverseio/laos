@@ -54,6 +54,7 @@ impl frame_system::Config for Runtime {
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 	type Nonce = u64;
 	type Block = Block;
+	type RuntimeTask = ();
 }
 
 parameter_types! {
@@ -74,6 +75,7 @@ impl pallet_balances::Config for Runtime {
 	type MaxHolds = ();
 	type MaxFreezes = ();
 	type RuntimeHoldReason = ();
+	type RuntimeFreezeReason = ();
 }
 
 parameter_types! {
@@ -146,4 +148,5 @@ impl pallet_evm::Config for Runtime {
 	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
 	type Timestamp = Timestamp;
 	type WeightInfo = ();
+	type SuicideQuickClearLimit = ();
 }
