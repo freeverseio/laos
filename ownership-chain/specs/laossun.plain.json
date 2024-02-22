@@ -34,7 +34,7 @@
             1000000000000000000000
           ],
           [
-            "0x798d4Ba9baf0064Ec19eB4F0a1a45785ae9D6DFc",
+            "0x0000000000000000000000000000000000009001",
             1000000000000000000000
           ]
         ]
@@ -97,7 +97,7 @@
           }
         },
         "maxCandidateStake": 10000000000000000000000,
-        "collatorRewardsAccount": "0x798d4Ba9baf0064Ec19eB4F0a1a45785ae9D6DFc"
+        "collatorRewardsAccount": "0x0000000000000000000000000000000000009001"
       },
       "polkadotXcm": {
         "safeXcmVersion": 3
