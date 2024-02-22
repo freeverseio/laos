@@ -8,7 +8,7 @@ pub const DOROTHY: [u8; 20] = hex!("773539d4Ac0e786233D90A233654ccEE26a613D9");
 pub const ETHAN: [u8; 20] = hex!("Ff64d3F6efE2317EE2807d223a0Bdc4c0c49dfDB");
 pub const FAITH: [u8; 20] = hex!("C0F0f4ab324C46e55D02D0033343B4Be8A55532d");
 
-/// Returns a vector of default endowed accounts.
+/// Returns the accounts that are predefined in the runtime.
 pub fn accounts() -> Vec<AccountId> {
 	vec![
 		ALITH.into(),
