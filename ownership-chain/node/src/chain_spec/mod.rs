@@ -5,7 +5,7 @@ use sp_core::{Pair, Public};
 
 pub mod klaos;
 pub mod laos;
-mod testing_accounts;
+mod predefined_accounts;
 
 /// The default XCM version to set in genesis config.
 const SAFE_XCM_VERSION: u32 = staging_xcm::prelude::XCM_VERSION;

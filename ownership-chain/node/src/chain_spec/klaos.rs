@@ -1,4 +1,4 @@
-use super::{get_collator_keys_from_seed, testing_accounts, Extensions, SAFE_XCM_VERSION};
+use super::{get_collator_keys_from_seed, predefined_accounts, Extensions, SAFE_XCM_VERSION};
 use cumulus_primitives_core::ParaId;
 use fp_evm::GenesisAccount;
 use klaos_ownership_runtime::{AccountId, AuraId, Precompiles, REVERT_BYTECODE};
@@ -34,10 +34,10 @@ pub fn development_config() -> ChainSpec {
 		move || {
 			testnet_genesis(
 				// initial collators.
-				vec![(testing_accounts::ALITH.into(), get_collator_keys_from_seed("Alice"))],
-				testing_accounts::accounts(),
+				vec![(predefined_accounts::ALITH.into(), get_collator_keys_from_seed("Alice"))],
+				predefined_accounts::accounts(),
 				// Give Alice root privileges
-				Some(testing_accounts::ALITH.into()),
+				Some(predefined_accounts::ALITH.into()),
 				2001.into(),
 			)
 		},
@@ -69,10 +69,10 @@ pub fn local_testnet_config() -> ChainSpec {
 		move || {
 			testnet_genesis(
 				// initial collators.
-				vec![(testing_accounts::ALITH.into(), get_collator_keys_from_seed("Alice"))],
-				testing_accounts::accounts(),
+				vec![(predefined_accounts::ALITH.into(), get_collator_keys_from_seed("Alice"))],
+				predefined_accounts::accounts(),
 				// Give Alice root privileges
-				Some(testing_accounts::ALITH.into()),
+				Some(predefined_accounts::ALITH.into()),
 				2001.into(),
 			)
 		},
@@ -208,7 +208,7 @@ fn testnet_genesis(
 					// H160 address of dev account
 					// Private key :
 					// 0xb9d2ea9a615f3165812e8d44de0d24da9bbd164b65c4f0573e1ce2c8dbd9c8df
-					testing_accounts::FAITH.into(),
+					predefined_accounts::FAITH.into(),
 					fp_evm::GenesisAccount {
 						balance: U256::from_str("0xef000000000000000000000000000")
 							.expect("internal U256 is valid; qed"),
