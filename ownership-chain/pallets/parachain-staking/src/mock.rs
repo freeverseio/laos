@@ -142,6 +142,8 @@ parameter_types! {
 	pub const MaxCollatorCandidates: u32 = 10;
 	pub const MinDelegatorStake: Balance = 5;
 	pub const MaxUnstakeRequests: u32 = 6;
+	pub const DefaultCollatorRewardPerBlock: Balance = 1;
+	pub const DefaultDelegatorRewardPerBlock: Balance = 1;
 	pub const NetworkRewardRate: Perquintill = Perquintill::from_percent(10);
 	pub const NetworkRewardStart: BlockNumber = 5 * 5 * 60 * 24 * 36525 / 100;
 }
@@ -173,6 +175,8 @@ impl Config for Test {
 	type MaxUnstakeRequests = MaxUnstakeRequests;
 	type NetworkRewardRate = NetworkRewardRate;
 	type NetworkRewardStart = NetworkRewardStart;
+	type DefaultCollatorRewardPerBlock = DefaultCollatorRewardPerBlock;
+	type DefaultDelegatorRewardPerBlock = DefaultDelegatorRewardPerBlock;
 	type NetworkRewardBeneficiary = ToBeneficiary;
 	type WeightInfo = ();
 	type FreezeIdentifier = RuntimeFreezeReason;
@@ -239,9 +243,7 @@ impl Default for ExtBuilder {
 			inflation_config: InflationInfo::new(
 				<Test as Config>::BLOCKS_PER_YEAR,
 				Perquintill::from_percent(10),
-				Perquintill::from_percent(15),
 				Perquintill::from_percent(40),
-				Perquintill::from_percent(10),
 			),
 			// inflation is activated by default so we keep retrocompatibility with existing tests
 			inflation_enabled: true,
@@ -284,9 +286,7 @@ impl ExtBuilder {
 		self.inflation_config = InflationInfo::new(
 			<Test as Config>::BLOCKS_PER_YEAR,
 			Perquintill::from_percent(col_max),
-			Perquintill::from_percent(col_rewards),
 			Perquintill::from_percent(d_max),
-			Perquintill::from_percent(d_rewards),
 		);
 		self.blocks_per_round = blocks_per_round;
 

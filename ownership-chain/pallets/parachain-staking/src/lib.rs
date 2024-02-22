@@ -132,7 +132,7 @@ pub use crate::{default_weights::WeightInfo, pallet::*};
 #[pallet]
 pub mod pallet {
 	use super::*;
-	pub use crate::inflation::{InflationInfo, RewardRate, StakingInfo};
+	pub use crate::inflation::{InflationInfo, StakingInfo};
 
 	use core::cmp::Ordering;
 	use frame_support::{
@@ -310,6 +310,14 @@ pub mod pallet {
 		/// stake.
 		#[pallet::constant]
 		type NetworkRewardRate: Get<Perquintill>;
+
+		/// Default reward per block for collators
+		#[pallet::constant]
+		type DefaultCollatorRewardPerBlock: Get<BalanceOf<Self>>;
+		
+		/// Default reward per block for delegators
+		#[pallet::constant]
+		type DefaultDelegatorRewardPerBlock: Get<BalanceOf<Self>>;
 
 		/// The beneficiary to receive the network rewards.
 		type NetworkRewardBeneficiary: OnUnbalanced<CreditOf<Self>>;
@@ -492,7 +500,7 @@ pub mod pallet {
 		/// Inflation configuration for future validation rounds has changed.
 		/// \[maximum collator's staking rate, maximum collator's reward rate,
 		/// maximum delegator's staking rate, maximum delegator's reward rate\]
-		RoundInflationSet(Perquintill, Perquintill, Perquintill, Perquintill),
+		RoundInflationSet(Perquintill, BalanceOf<T>, Perquintill, BalanceOf<T>),
 		/// The maximum number of collator candidates selected in future
 		/// validation rounds has changed. \[old value, new value\]
 		MaxSelectedCandidatesSet(u32, u32),
@@ -698,6 +706,16 @@ pub mod pallet {
 	#[pallet::getter(fn collator_rewards_account)]
 	pub type CollatorRewardsAccount<T: Config> = StorageValue<_, T::AccountId, OptionQuery>;
 
+	/// Fixed reward per block for collators
+	#[pallet::storage]
+	#[pallet::getter(fn collator_reward_per_block)]
+	pub type CollatorRewardPerBlock<T: Config> = StorageValue<_, BalanceOf<T>, ValueQuery>;
+
+	/// Fixed reward per block for delegator
+	#[pallet::storage]
+	#[pallet::getter(fn delegator_reward_per_block)]
+	pub type DelegatorRewardPerBlock<T: Config> = StorageValue<_, BalanceOf<T>, ValueQuery>;
+	
 	#[pallet::genesis_config]
 	#[derive(frame_support::DefaultNoBound)]
 	pub struct GenesisConfig<T: Config> {
@@ -711,7 +729,7 @@ pub mod pallet {
 	impl<T: Config> BuildGenesisConfig for GenesisConfig<T> {
 		fn build(&self) {
 			assert!(
-				self.inflation_config.is_valid(T::BLOCKS_PER_YEAR.saturated_into()),
+				self.inflation_config.is_valid::<T>(T::BLOCKS_PER_YEAR.saturated_into(),T::DefaultCollatorRewardPerBlock::get(), T::DefaultDelegatorRewardPerBlock::get()),
 				"Invalid inflation configuration"
 			);
 
@@ -748,6 +766,9 @@ pub mod pallet {
 			MaxSelectedCandidates::<T>::put(T::MinCollators::get());
 
 			Pallet::<T>::update_total_stake();
+
+			CollatorRewardPerBlock::<T>::put(T::DefaultCollatorRewardPerBlock::get());
+			DelegatorRewardPerBlock::<T>::put(T::DefaultDelegatorRewardPerBlock::get());
 
 			// Start Round 0 at Block 0
 			let round: RoundInfo<BlockNumberFor<T>> =
@@ -807,9 +828,7 @@ pub mod pallet {
 			let (num_col, num_del) = Self::do_set_inflation(
 				T::BLOCKS_PER_YEAR,
 				collator_max_rate_percentage,
-				collator_annual_reward_rate_percentage,
 				delegator_max_rate_percentage,
-				delegator_annual_reward_rate_percentage,
 			)?;
 
 			Ok(Some(<T as pallet::Config>::WeightInfo::set_inflation(num_col, num_del)).into())
@@ -1776,27 +1795,12 @@ pub mod pallet {
 			// Calculate new inflation based on last year
 			let inflation = InflationConfig::<T>::get();
 
-			// collator reward rate decreases by 2% p.a. of the previous one
-			let c_reward_rate =
-				inflation.collator.reward_rate.annual * Perquintill::from_percent(98);
-
-			// delegator reward rate should be 6% in 2nd year, 5.1% in 3rd year and 0
-			// afterwards
-			let d_reward_rate = if year == BlockNumberFor::<T>::one() {
-				Perquintill::from_percent(6)
-			} else if year == 2u32.saturated_into() {
-				INFLATION_3RD_YEAR
-			} else {
-				Perquintill::zero()
-			};
 
 			// Update inflation and increment rewards
 			let (num_col, num_del) = Self::do_set_inflation(
 				T::BLOCKS_PER_YEAR,
 				inflation.collator.max_rate,
-				c_reward_rate,
 				inflation.delegator.max_rate,
-				d_reward_rate,
 			)?;
 
 			Ok(Some(<T as pallet::Config>::WeightInfo::set_inflation(num_col, num_del)).into())
@@ -1864,20 +1868,18 @@ pub mod pallet {
 		fn do_set_inflation(
 			blocks_per_year: BlockNumberFor<T>,
 			col_max_rate: Perquintill,
-			col_reward_rate: Perquintill,
 			del_max_rate: Perquintill,
-			del_reward_rate: Perquintill,
 		) -> Result<(u32, u32), DispatchError> {
 			// Check validity of new inflation
 			let inflation = InflationInfo::new(
 				blocks_per_year.saturated_into(),
 				col_max_rate,
-				col_reward_rate,
 				del_max_rate,
-				del_reward_rate,
 			);
+			let collatorRewardPerBlock = CollatorRewardPerBlock::<T>::get();
+			let delegatorRewardPerBlock = DelegatorRewardPerBlock::<T>::get();
 			ensure!(
-				inflation.is_valid(T::BLOCKS_PER_YEAR.saturated_into()),
+				inflation.is_valid::<T>(T::BLOCKS_PER_YEAR.saturated_into(), collatorRewardPerBlock, delegatorRewardPerBlock),
 				Error::<T>::InvalidSchedule
 			);
 
@@ -1902,9 +1904,9 @@ pub mod pallet {
 			InflationConfig::<T>::put(inflation);
 			Self::deposit_event(Event::RoundInflationSet(
 				col_max_rate,
-				col_reward_rate,
+				collatorRewardPerBlock,
 				del_max_rate,
-				del_reward_rate,
+				delegatorRewardPerBlock,
 			));
 
 			Ok((CandidatePool::<T>::count(), num_delegators))
@@ -2487,8 +2489,7 @@ pub mod pallet {
 		/// `col_reward_rate_per_block * col_max_stake * max_num_of_collators *
 		/// NetworkRewardRate`
 		fn issue_network_reward() -> CreditOf<T> {
-			// Multiplication with Perquintill cannot overflow
-			let max_col_rewards = InflationConfig::<T>::get().collator.reward_rate.per_block *
+			let max_col_rewards = CollatorRewardPerBlock::<T>::get() *
 				MaxCollatorCandidateStake::<T>::get() *
 				MaxSelectedCandidates::<T>::get().into();
 			let network_reward = T::NetworkRewardRate::get() * max_col_rewards;
@@ -2510,7 +2511,7 @@ pub mod pallet {
 			let staking_rate = Perquintill::from_rational(total_collators, total_issuance);
 
 			InflationConfig::<T>::get().collator.compute_reward::<T>(
-				stake,
+				CollatorRewardPerBlock::<T>::get(),
 				staking_rate,
 				multiplier,
 			)
@@ -2530,7 +2531,7 @@ pub mod pallet {
 			let staking_rate = Perquintill::from_rational(total_delegators, total_issuance);
 
 			InflationConfig::<T>::get().delegator.compute_reward::<T>(
-				stake,
+				DelegatorRewardPerBlock::<T>::get(),
 				staking_rate,
 				multiplier,
 			)

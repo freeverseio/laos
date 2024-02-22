@@ -55,7 +55,7 @@ use frame_support::{
 };
 use frame_system::{pallet_prelude::BlockNumberFor, EnsureRoot};
 pub use pallet_evm_evolution_collection_factory::REVERT_BYTECODE;
-pub use pallet_parachain_staking::{InflationInfo, RewardRate, StakingInfo};
+pub use pallet_parachain_staking::{InflationInfo, StakingInfo};
 pub use sp_runtime::{Perbill, Permill, Perquintill};
 
 use xcm_config::{XcmConfig, XcmOriginToTransactDispatchOrigin};
@@ -710,6 +710,10 @@ parameter_types! {
 	pub const MaxCollatorCandidates: u32 = prod_or_fast!(75, 16);
 	/// Maximum number of concurrent requests to unlock unstaked balance
 	pub const MaxUnstakeRequests: u32 = 10;
+	/// Default collator reward per block
+	pub const DefaultCollatorRewardPerBlock: Balance = 37_500_000 * UNIT / BLOCKS_PER_YEAR as u128;
+	/// Default delegator reward per block
+	pub const DefaultDelegatorRewardPerBlock: Balance = 37_500_000 * UNIT / BLOCKS_PER_YEAR as u128;
 	/// The starting block number for the network rewards
 	pub const NetworkRewardStart: BlockNumber = BLOCKS_PER_YEAR.saturating_mul(1);
 	/// The rate in percent for the network rewards
@@ -736,6 +740,8 @@ impl pallet_parachain_staking::Config for Runtime {
 	type MaxUnstakeRequests = MaxUnstakeRequests;
 	type NetworkRewardRate = NetworkRewardRate;
 	type NetworkRewardStart = NetworkRewardStart;
+	type DefaultCollatorRewardPerBlock = DefaultCollatorRewardPerBlock;
+	type DefaultDelegatorRewardPerBlock = DefaultDelegatorRewardPerBlock;
 	type NetworkRewardBeneficiary = ToCollatorRewards<Runtime>;
 	type WeightInfo = pallet_parachain_staking::default_weights::SubstrateWeight<Runtime>;
 

@@ -25,9 +25,7 @@ use sp_runtime::Perquintill;
 #[derive(Decode, Encode, TypeInfo, MaxEncodedLen, PartialEq, Eq, Debug)]
 pub struct StakingRates {
 	pub collator_staking_rate: Perquintill,
-	pub collator_reward_rate: Perquintill,
 	pub delegator_staking_rate: Perquintill,
-	pub delegator_reward_rate: Perquintill,
 }
 
 sp_api::decl_runtime_apis! {

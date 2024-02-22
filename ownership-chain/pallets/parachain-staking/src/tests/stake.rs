@@ -506,9 +506,7 @@ fn api_get_staking_rates() {
 		.build_and_execute_with_sanity_tests(|| {
 			let mut rates = StakingRates {
 				collator_staking_rate: Perquintill::from_percent(50),
-				collator_reward_rate: Perquintill::from_percent(5),
 				delegator_staking_rate: Perquintill::from_percent(25),
-				delegator_reward_rate: Perquintill::from_percent(8),
 			};
 			// collators exceed max staking rate
 			assert_eq!(rates, StakePallet::get_staking_rates());
@@ -519,9 +517,7 @@ fn api_get_staking_rates() {
 			// delegator stakes more to exceed
 			assert_ok!(StakePallet::delegator_stake_more(RuntimeOrigin::signed(3), stake));
 			rates.collator_staking_rate = Perquintill::from_percent(25);
-			rates.collator_reward_rate = Perquintill::from_percent(10);
 			rates.delegator_staking_rate = Perquintill::from_percent(50);
-			rates.delegator_reward_rate = Perquintill::from_percent(4);
 			assert_eq!(rates, StakePallet::get_staking_rates());
 		});
 }

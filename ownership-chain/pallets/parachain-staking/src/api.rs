@@ -17,8 +17,7 @@
 // If you feel like getting in touch with us, you can do so at info@botlabs.org
 
 use crate::{
-	types::BalanceOf, BlocksAuthored, BlocksRewarded, CandidatePool, Config, DelegatorState,
-	InflationConfig, Pallet, Rewards, TotalCollatorStake,
+	types::BalanceOf, BlocksAuthored, BlocksRewarded, CandidatePool, CollatorRewardPerBlock, Config, DelegatorRewardPerBlock, DelegatorState, InflationConfig, Pallet, Rewards, TotalCollatorStake
 };
 use frame_support::traits::fungible::Inspect;
 use sp_runtime::{
@@ -74,20 +73,13 @@ impl<T: Config> Pallet<T> {
 			Perquintill::from_rational(total_stake.collators, total_issuance);
 		let delegator_staking_rate =
 			Perquintill::from_rational(total_stake.delegators, total_issuance);
-		let collator_reward_rate = Perquintill::from_rational(
-			inflation_config.collator.max_rate.deconstruct(),
-			collator_staking_rate.deconstruct(),
-		) * inflation_config.collator.reward_rate.annual;
-		let delegator_reward_rate = Perquintill::from_rational(
-			inflation_config.delegator.max_rate.deconstruct(),
-			delegator_staking_rate.deconstruct(),
-		) * inflation_config.delegator.reward_rate.annual;
-
+		let collatorRewardPerBlock = CollatorRewardPerBlock::<T>::get();
+		let delegatorRewardPerBlock = DelegatorRewardPerBlock::<T>::get();
+		//TODO add reward per block to staking rates
 		laos_runtime_api_staking::StakingRates {
 			collator_staking_rate,
-			collator_reward_rate,
 			delegator_staking_rate,
-			delegator_reward_rate,
+
 		}
 	}
 }

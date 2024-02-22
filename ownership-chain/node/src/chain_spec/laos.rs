@@ -110,12 +110,8 @@ fn testnet_genesis(
 		BLOCKS_PER_YEAR.into(),
 		// max collator staking rate
 		Perquintill::from_percent(40),
-		// collator reward rate
-		Perquintill::from_percent(10),
 		// max delegator staking rate
 		Perquintill::from_percent(10),
-		// delegator reward rate
-		Perquintill::from_percent(8),
 	);
 
 	laos_ownership_runtime::RuntimeGenesisConfig {
