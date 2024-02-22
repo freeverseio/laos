@@ -14,10 +14,10 @@ pub mod xcm_config;
 
 use core::marker::PhantomData;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
-use cumulus_primitives_core::{AggregateMessageOrigin, ParaId};
-use frame_support::traits::TransformOrigin;
-use ownership_parachain_primitives::{BlockWeights, MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO};
-use parachains_common::message_queue::{NarrowOriginToSibling, ParaIdToSibling};
+pub use ownership_parachain_primitives::{
+	AccountId, AuraId, Balance, BlockNumber, Hash, Index, Nonce, Signature,
+};
+use ownership_parachain_primitives::{MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO};
 use parity_scale_codec::{Decode, Encode};
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
@@ -55,7 +55,6 @@ use frame_support::{
 use frame_system::{pallet_prelude::BlockNumberFor, EnsureRoot};
 pub use pallet_evm_evolution_collection_factory::REVERT_BYTECODE;
 pub use pallet_parachain_staking::{InflationInfo, RewardRate, StakingInfo};
-pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 pub use sp_runtime::{Perbill, Permill, Perquintill};
 
 use xcm_config::XcmOriginToTransactDispatchOrigin;
@@ -84,28 +83,6 @@ use pallet_evm::{
 
 mod precompiles;
 use precompiles::FrontierPrecompiles;
-
-/// Alias to 512-bit hash when used in the context of a transaction signature on the chain.
-pub type Signature = ownership_parachain_primitives::Signature;
-
-/// Some way of identifying an account on the chain. We intentionally make it equivalent
-/// to the public key of our transaction signing scheme.
-pub type AccountId = ownership_parachain_primitives::AccountId;
-
-/// Balance of an account.
-pub type Balance = ownership_parachain_primitives::Balance;
-
-/// Index of a transaction in the chain.
-pub type Index = ownership_parachain_primitives::Nonce;
-
-/// A hash of some data used by the chain.
-pub type Hash = ownership_parachain_primitives::Hash;
-
-/// An index to a block.
-pub type BlockNumber = ownership_parachain_primitives::BlockNumber;
-
-/// The type for storing how many extrinsics an account has signed.
-pub type Nonce = ownership_parachain_primitives::Nonce;
 
 /// Block header type as expected by this runtime.
 pub type Header = generic::Header<BlockNumber, ownership_parachain_primitives::Hasher>;

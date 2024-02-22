@@ -1,71 +1,17 @@
+use super::{get_collator_keys_from_seed, predefined_accounts, Extensions, SAFE_XCM_VERSION};
 use cumulus_primitives_core::ParaId;
 use fp_evm::GenesisAccount;
-use hex_literal::hex;
 use laos_ownership_runtime::{
 	AccountId, AuraId, InflationInfo, Precompiles, BLOCKS_PER_YEAR, REVERT_BYTECODE, UNIT,
 };
-use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
-use serde::{Deserialize, Serialize};
-use sp_core::{Pair, Public, H160, U256};
+use sp_core::{H160, U256};
 use sp_runtime::Perquintill;
 use std::{collections::BTreeMap, str::FromStr};
-
-/// List of endowed accounts.
-fn endowed_accounts() -> Vec<AccountId> {
-	vec![
-		// ALITH
-		hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").into(),
-		// BALTATHAR
-		hex!("3Cd0A705a2DC65e5b1E1205896BaA2be8A07c6e0").into(),
-		// CHARLETH
-		hex!("798d4Ba9baf0064Ec19eB4F0a1a45785ae9D6DFc").into(),
-		// DOROTHY
-		hex!("773539d4Ac0e786233D90A233654ccEE26a613D9").into(),
-		// ETHAN
-		hex!("Ff64d3F6efE2317EE2807d223a0Bdc4c0c49dfDB").into(),
-		// FAITH
-		hex!("C0F0f4ab324C46e55D02D0033343B4Be8A55532d").into(),
-	]
-}
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
 pub type ChainSpec =
 	sc_service::GenericChainSpec<laos_ownership_runtime::RuntimeGenesisConfig, Extensions>;
-
-/// The default XCM version to set in genesis config.
-const SAFE_XCM_VERSION: u32 = staging_xcm::prelude::XCM_VERSION;
-
-/// Helper function to generate a crypto pair from seed
-pub fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public {
-	TPublic::Pair::from_string(&format!("//{seed}"), None)
-		.expect("static values are valid; qed")
-		.public()
-}
-
-/// The extensions for the [`ChainSpec`].
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ChainSpecGroup, ChainSpecExtension)]
-#[serde(deny_unknown_fields)]
-pub struct Extensions {
-	/// The relay chain of the Parachain.
-	pub relay_chain: String,
-	/// The id of the Parachain.
-	pub para_id: u32,
-}
-
-impl Extensions {
-	/// Try to get the extension from the given `ChainSpec`.
-	pub fn try_get(chain_spec: &dyn sc_service::ChainSpec) -> Option<&Self> {
-		sc_chain_spec::get_extension(chain_spec.extensions())
-	}
-}
-
-/// Generate collator keys from seed.
-///
-/// This function's return type must always match the session keys of the chain in tuple format.
-pub fn get_collator_keys_from_seed(seed: &str) -> AuraId {
-	get_from_seed::<AuraId>(seed)
-}
 
 /// Generate the session keys from individual elements.
 ///
@@ -91,13 +37,10 @@ pub fn development_config() -> ChainSpec {
 		move || {
 			testnet_genesis(
 				// initial collators.
-				vec![(
-					hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").into(),
-					get_collator_keys_from_seed("Alice"),
-				)],
-				endowed_accounts(),
+				vec![(predefined_accounts::ALITH.into(), get_collator_keys_from_seed("Alice"))],
+				predefined_accounts::accounts(),
 				// Give Alice root privileges
-				Some(hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").into()),
+				Some(predefined_accounts::ALITH.into()),
 				2001.into(),
 			)
 		},
@@ -125,18 +68,15 @@ pub fn local_testnet_config() -> ChainSpec {
 		// Name
 		"Local Testnet",
 		// ID
-		"local_testnet",
+		"laos_local_testnet",
 		ChainType::Local,
 		move || {
 			testnet_genesis(
 				// initial collators.
-				vec![(
-					hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").into(),
-					get_collator_keys_from_seed("Alice"),
-				)],
-				endowed_accounts(),
+				vec![(predefined_accounts::ALITH.into(), get_collator_keys_from_seed("Alice"))],
+				predefined_accounts::accounts(),
 				// Give Alice root privileges
-				Some(hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").into()),
+				Some(predefined_accounts::ALITH.into()),
 				2001.into(),
 			)
 		},
@@ -281,8 +221,7 @@ fn testnet_genesis(
 					// H160 address of dev account
 					// Private key :
 					// 0xb9d2ea9a615f3165812e8d44de0d24da9bbd164b65c4f0573e1ce2c8dbd9c8df
-					H160::from_str("C0F0f4ab324C46e55D02D0033343B4Be8A55532d")
-						.expect("internal H160 is valid; qed"),
+					predefined_accounts::FAITH.into(),
 					fp_evm::GenesisAccount {
 						balance: U256::from_str("0xef000000000000000000000000000")
 							.expect("internal U256 is valid; qed"),

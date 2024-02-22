@@ -5470,8 +5470,10 @@ dependencies = [
  "futures",
  "hex-literal",
  "jsonrpsee",
+ "klaos-ownership-runtime",
  "laos-ownership-runtime",
  "log",
+ "ownership-parachain-primitives",
  "pallet-transaction-payment-rpc",
  "parity-scale-codec",
  "polkadot-cli",
@@ -7258,6 +7260,7 @@ dependencies = [
  "fp-account",
  "frame-support 4.0.0-dev",
  "frame-system 4.0.0-dev",
+ "sp-consensus-aura",
  "sp-core 21.0.0",
  "sp-runtime 24.0.0",
 ]

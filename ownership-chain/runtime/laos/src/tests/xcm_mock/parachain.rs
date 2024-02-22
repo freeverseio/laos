@@ -10,10 +10,7 @@ use cumulus_primitives_core::{
 };
 use frame_support::{
 	construct_runtime, match_types, parameter_types,
-	traits::{
-		AsEnsureOriginWithArg, ConstU64, Currency, Everything, FindAuthor, Nothing, OnUnbalanced,
-		OriginTrait,
-	},
+	traits::{AsEnsureOriginWithArg, ConstU64, Everything, FindAuthor, Nothing, OriginTrait},
 	weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight},
 	PalletId,
 };
