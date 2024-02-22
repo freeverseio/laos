@@ -344,7 +344,6 @@ fn adjust_reward_rates() {
 				Perquintill::from_percent(40),
 				Perquintill::from_parts(3_750_000_000_000_000_0)
 			);
-			let inflation_0 = StakePallet::inflation_config();
 			let num_of_years = 3 * <Test as Config>::BLOCKS_PER_YEAR;
 			// 1 authors every block
 			let authors: Vec<Option<AccountId>> =
@@ -364,13 +363,6 @@ fn adjust_reward_rates() {
 			assert_eq!(StakePallet::last_reward_reduction(), 0u64);
 			assert_ok!(StakePallet::execute_scheduled_reward_change(RuntimeOrigin::signed(1)));
 			assert_eq!(StakePallet::last_reward_reduction(), 1u64);
-			let inflation_1 = InflationInfo::new(
-				<Test as Config>::BLOCKS_PER_YEAR,
-				inflation_0.collator.max_rate,
-				Perquintill::from_parts(98000000000000000),
-				inflation_0.delegator.max_rate,
-				Perquintill::from_percent(6),
-			);
 			assert_eq!(StakePallet::inflation_config(), inflation_expected);
 			// reward once in 2nd year
 			roll_to_claim_rewards(<Test as Config>::BLOCKS_PER_YEAR + 2, authors.clone());
@@ -390,13 +382,6 @@ fn adjust_reward_rates() {
 			assert_eq!(StakePallet::last_reward_reduction(), 1u64);
 			assert_ok!(StakePallet::execute_scheduled_reward_change(RuntimeOrigin::signed(1)));
 			assert_eq!(StakePallet::last_reward_reduction(), 2u64);
-			let inflation_2 = InflationInfo::new(
-				<Test as Config>::BLOCKS_PER_YEAR,
-				inflation_0.collator.max_rate,
-				Perquintill::from_parts(96040000000000000),
-				inflation_0.delegator.max_rate,
-				Perquintill::from_float(0.051),
-			);
 			assert_eq!(StakePallet::inflation_config(), inflation_expected);
 			// reward once in 3rd year
 			roll_to_claim_rewards(2 * <Test as Config>::BLOCKS_PER_YEAR + 2, authors.clone());
@@ -421,13 +406,6 @@ fn adjust_reward_rates() {
 			assert_eq!(StakePallet::last_reward_reduction(), 2u64);
 			assert_ok!(StakePallet::execute_scheduled_reward_change(RuntimeOrigin::signed(1)));
 			assert_eq!(StakePallet::last_reward_reduction(), 3u64);
-			let inflation_3 = InflationInfo::new(
-				<Test as Config>::BLOCKS_PER_YEAR,
-				inflation_0.collator.max_rate,
-				Perquintill::from_parts(94119200000000000),
-				inflation_0.delegator.max_rate,
-				Perquintill::zero(),
-			);
 			assert_eq!(StakePallet::inflation_config(), inflation_expected);
 			// reward once in 4th year
 			roll_to_claim_rewards(3 * <Test as Config>::BLOCKS_PER_YEAR + 2, authors);

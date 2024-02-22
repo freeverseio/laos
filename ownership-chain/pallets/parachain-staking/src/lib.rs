@@ -170,9 +170,6 @@ pub mod pallet {
 	};
 	use sp_std::{convert::TryInto, fmt::Debug};
 
-	/// The 5.1% inflation rate of the third year
-	const INFLATION_3RD_YEAR: Perquintill = Perquintill::from_parts(51_000_000_000_000_000);
-
 	/// The current storage version.
 	const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
 
