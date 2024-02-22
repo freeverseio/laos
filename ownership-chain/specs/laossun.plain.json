@@ -11,7 +11,7 @@
     "tokenDecimals": 18,
     "tokenSymbol": "SUN"
   },
-  "relay_chain": "rococo-local",
+  "relay_chain": "rococo-freeverse",
   "para_id": 2012,
   "codeSubstitutes": {},
   "genesis": {
