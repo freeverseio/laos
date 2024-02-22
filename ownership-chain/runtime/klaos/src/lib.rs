@@ -14,7 +14,7 @@ pub mod xcm_config;
 
 use core::marker::PhantomData;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
-use ownership_parachain_primitives::{MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO};
+use ownership_parachain_primitives::{BlockWeights, MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO};
 use parity_scale_codec::{Decode, Encode};
 use polkadot_runtime_common::xcm_sender::NoPriceForMessageDelivery;
 use smallvec::smallvec;
@@ -60,7 +60,7 @@ use pallet_xcm::{EnsureXcm, IsVoiceOfBody};
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 pub use sp_runtime::{Perbill, Permill};
 
-use xcm_config::{OurLocation, XcmConfig, XcmOriginToTransactDispatchOrigin};
+use xcm_config::{OurLocation, XcmOriginToTransactDispatchOrigin};
 
 pub use pallet_xcm::Call as XcmCall;
 
@@ -323,7 +323,7 @@ impl frame_system::Config for Runtime {
 	/// Weight information for the extrinsics of this pallet.
 	type SystemWeightInfo = ();
 	/// Block & extrinsics weights: base values and limits.
-	type BlockWeights = ownership_parachain_primitives::BlockWeights;
+	type BlockWeights = BlockWeights;
 	/// The maximum length of a block (in bytes).
 	type BlockLength = ownership_parachain_primitives::BlockLength;
 	/// This is used as an identifier of the chain. 42 is the generic substrate prefix.

@@ -152,7 +152,6 @@ pub mod pallet {
 	use frame_system::pallet_prelude::*;
 	use pallet_balances::{Freezes, IdAmount};
 	use pallet_session::ShouldEndSession;
-	use scale_info::TypeInfo;
 	use sp_runtime::{
 		traits::{Convert, One, SaturatedConversion, Saturating, StaticLookup, Zero},
 		Permill, Perquintill, TokenError,
@@ -2550,7 +2549,7 @@ pub mod pallet {
 			Rewards::<T>::mutate(acc, |reward| {
 				*reward = reward.saturating_add(Self::calc_block_rewards_collator(
 					stake,
-					unclaimed_blocks.into(),
+					unclaimed_blocks.saturated_into(),
 				));
 			});
 		}
@@ -2573,7 +2572,7 @@ pub mod pallet {
 			Rewards::<T>::mutate(acc, |reward| {
 				*reward = reward.saturating_add(Self::calc_block_rewards_delegator(
 					stake,
-					unclaimed_blocks.into(),
+					unclaimed_blocks.saturated_into(),
 				))
 			});
 		}
