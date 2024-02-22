@@ -25,6 +25,7 @@ pub fn development_config() -> ChainSpec {
 	properties.insert("tokenDecimals".into(), 18.into());
 	properties.insert("ss58Format".into(), 42.into());
 
+	// TODO: `from_genesis` will be deprecated in May 2024, use `GenesisBuilder` instead.
 	ChainSpec::from_genesis(
 		// Name
 		"Development",
@@ -50,7 +51,7 @@ pub fn development_config() -> ChainSpec {
 			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
 			para_id: 2001,
 		},
-		klaos_ownership_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!"), 
+		klaos_ownership_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!"),
 	)
 }
 
