@@ -1858,11 +1858,9 @@ pub mod pallet {
 			del_max_rate: Perquintill,
 			del_reward_rate: Perquintill,
 		) -> Result<(u32, u32), DispatchError> {
-			const ZERO_RATE: Perquintill = Perquintill::from_percent(0);
-			
 			ensure!(
-				(col_reward_rate == Perquintill::from_rational(375u64, 10_000u64) || col_reward_rate == ZERO_RATE) &&
-				(del_reward_rate == Perquintill::from_rational(375u64, 10_000u64) || del_reward_rate == ZERO_RATE),
+				(col_reward_rate == Perquintill::from_rational(375u64, 10_000u64)) &&
+				(del_reward_rate == Perquintill::from_rational(375u64, 10_000u64)),
 				Error::<T>::InvalidSchedule
 			);
 

@@ -137,7 +137,7 @@ fn update_inflation() {
 			assert_ok!(StakePallet::set_inflation(
 				RuntimeOrigin::root(),
 				Perquintill::from_percent(100),
-				Perquintill::from_percent(0),
+				Perquintill::from_rational(375u64, 10_000u64),
 				Perquintill::from_percent(100),
 				Perquintill::from_rational(375u64, 10_000u64),
 			));
@@ -147,13 +147,6 @@ fn update_inflation() {
 				Perquintill::from_rational(375u64, 10_000u64),
 				Perquintill::from_percent(0),
 				Perquintill::from_rational(375u64, 10_000u64),
-			));
-			assert_ok!(StakePallet::set_inflation(
-				RuntimeOrigin::root(),
-				Perquintill::from_percent(100),
-				Perquintill::from_rational(375u64, 10_000u64),
-				Perquintill::from_percent(100),
-				Perquintill::from_percent(0),
 			));
 		});
 }
