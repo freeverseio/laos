@@ -337,6 +337,13 @@ fn adjust_reward_rates() {
 		.with_delegators(vec![(2, 1, 40_000_000 * DECIMALS)])
 		.with_inflation(10, 10, 40, 8, 5)
 		.build_and_execute_with_sanity_tests(|| {
+			let inflation_expected = InflationInfo::new(
+				<Test as Config>::BLOCKS_PER_YEAR,
+				Perquintill::from_percent(10),
+				Perquintill::from_parts(3_750_000_000_000_000_0),
+				Perquintill::from_percent(40),
+				Perquintill::from_parts(3_750_000_000_000_000_0)
+			);
 			let inflation_0 = StakePallet::inflation_config();
 			let num_of_years = 3 * <Test as Config>::BLOCKS_PER_YEAR;
 			// 1 authors every block
@@ -364,7 +371,7 @@ fn adjust_reward_rates() {
 				inflation_0.delegator.max_rate,
 				Perquintill::from_percent(6),
 			);
-			assert_eq!(StakePallet::inflation_config(), inflation_1);
+			assert_eq!(StakePallet::inflation_config(), inflation_expected);
 			// reward once in 2nd year
 			roll_to_claim_rewards(<Test as Config>::BLOCKS_PER_YEAR + 2, authors.clone());
 			let c_rewards_1 = Balances::balance(&1)
@@ -390,21 +397,22 @@ fn adjust_reward_rates() {
 				inflation_0.delegator.max_rate,
 				Perquintill::from_float(0.051),
 			);
-			assert_eq!(StakePallet::inflation_config(), inflation_2);
+			assert_eq!(StakePallet::inflation_config(), inflation_expected);
 			// reward once in 3rd year
 			roll_to_claim_rewards(2 * <Test as Config>::BLOCKS_PER_YEAR + 2, authors.clone());
 			let c_rewards_2 = Balances::balance(&1)
 				.saturating_sub(10_000_000 * DECIMALS)
 				.saturating_sub(c_rewards_0)
 				.saturating_sub(c_rewards_1);
-			assert!(c_rewards_1 > c_rewards_2);
+			assert!(c_rewards_1 == c_rewards_2);
+
 			// should be zero because we set reward rate to zero
 			let d_rewards_2 = Balances::balance(&2)
 				.saturating_sub(90_000_000 * DECIMALS)
 				.saturating_sub(d_rewards_0)
 				.saturating_sub(d_rewards_1);
 			assert!(!d_rewards_2.is_zero());
-			assert!(d_rewards_2 < d_rewards_1);
+			assert!(d_rewards_2 == d_rewards_1);
 
 			// finish 3rd year
 			System::set_block_number(3 * <Test as Config>::BLOCKS_PER_YEAR);
@@ -420,7 +428,7 @@ fn adjust_reward_rates() {
 				inflation_0.delegator.max_rate,
 				Perquintill::zero(),
 			);
-			assert_eq!(StakePallet::inflation_config(), inflation_3);
+			assert_eq!(StakePallet::inflation_config(), inflation_expected);
 			// reward once in 4th year
 			roll_to_claim_rewards(3 * <Test as Config>::BLOCKS_PER_YEAR + 2, authors);
 			let c_rewards_3 = Balances::free_balance(1)

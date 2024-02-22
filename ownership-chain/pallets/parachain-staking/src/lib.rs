@@ -1776,11 +1776,9 @@ pub mod pallet {
 			// Calculate new inflation based on last year
 			let inflation = InflationConfig::<T>::get();
 
-			let c_reward_rate =
-				inflation.collator.reward_rate.annual;
-
-			let d_reward_rate =
-				inflation.delegator.reward_rate.annual;
+			// Assuming total issuance doesn't change we will always want the rates to add to 7.5%
+			let c_reward_rate = Perquintill::from_rational(375u64, 10_000u64);
+			let d_reward_rate = Perquintill::from_rational(375u64, 10_000u64);
 
 			// Update inflation and increment rewards
 			let (num_col, num_del) = Self::do_set_inflation(
