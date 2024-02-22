@@ -50,9 +50,9 @@ fn rewards_set_inflation() {
 			assert_ok!(StakePallet::set_inflation(
 				RuntimeOrigin::root(),
 				hundred,
+				Perquintill::from_rational(375u64, 10_000u64),
 				hundred,
-				hundred,
-				hundred
+				Perquintill::from_rational(375u64, 10_000u64)
 			));
 			// rewards and counters should be set
 			(1..=5).for_each(|id| {
@@ -130,28 +130,28 @@ fn update_inflation() {
 			assert_ok!(StakePallet::set_inflation(
 				RuntimeOrigin::root(),
 				Perquintill::from_percent(0),
+				Perquintill::from_rational(375u64, 10_000u64),
 				Perquintill::from_percent(100),
-				Perquintill::from_percent(100),
-				Perquintill::from_percent(100),
+				Perquintill::from_rational(375u64, 10_000u64),
 			));
 			assert_ok!(StakePallet::set_inflation(
 				RuntimeOrigin::root(),
 				Perquintill::from_percent(100),
 				Perquintill::from_percent(0),
 				Perquintill::from_percent(100),
-				Perquintill::from_percent(100),
+				Perquintill::from_rational(375u64, 10_000u64),
 			));
 			assert_ok!(StakePallet::set_inflation(
 				RuntimeOrigin::root(),
 				Perquintill::from_percent(100),
-				Perquintill::from_percent(100),
+				Perquintill::from_rational(375u64, 10_000u64),
 				Perquintill::from_percent(0),
-				Perquintill::from_percent(100),
+				Perquintill::from_rational(375u64, 10_000u64),
 			));
 			assert_ok!(StakePallet::set_inflation(
 				RuntimeOrigin::root(),
 				Perquintill::from_percent(100),
-				Perquintill::from_percent(100),
+				Perquintill::from_rational(375u64, 10_000u64),
 				Perquintill::from_percent(100),
 				Perquintill::from_percent(0),
 			));
