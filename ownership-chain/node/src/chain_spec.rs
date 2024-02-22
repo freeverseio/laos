@@ -4,7 +4,6 @@ use hex_literal::hex;
 use laos_ownership_runtime::{
 	AccountId, AuraId, InflationInfo, Precompiles, BLOCKS_PER_YEAR, REVERT_BYTECODE, UNIT,
 };
-use polkadot_service::rococo_runtime::WASM_BINARY;
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
@@ -111,7 +110,7 @@ pub fn development_config() -> ChainSpec {
 			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
 			para_id: 2001,
 		},
-		WASM_BINARY.expect("WASM binary was not build, please build it!"),
+		laos_ownership_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!"),
 	)
 }
 
@@ -156,7 +155,7 @@ pub fn local_testnet_config() -> ChainSpec {
 			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
 			para_id: 2001,
 		},
-		WASM_BINARY.expect("WASM binary was not build, please build it!"),
+		laos_ownership_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!"),
 	)
 }
 
