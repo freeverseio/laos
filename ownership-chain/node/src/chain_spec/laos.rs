@@ -4,7 +4,7 @@ use super::{
 use cumulus_primitives_core::ParaId;
 use fp_evm::GenesisAccount;
 use laos_ownership_runtime::{
-	Balance, AccountId, AuraId, InflationInfo, Precompiles, BLOCKS_PER_YEAR, REVERT_BYTECODE, UNIT,
+	Balance, AccountId, AuraId, InflationInfo, Precompiles, BLOCKS_PER_YEAR, REVERT_BYTECODE, UNIT,MinCollatorStake
 };
 use sc_service::ChainType;
 use sp_core::{H160, U256};
@@ -40,15 +40,10 @@ pub fn development_config() -> ChainSpec {
 				// initial collators.
 				vec![
 					(
-						get_account_id_from_seed::<sr25519::Public>("Alice"),
+						ALITH.into(),
 						None,
 						2 * MinCollatorStake::get(),
-					),
-					(
-						get_account_id_from_seed::<sr25519::Public>("Bob"),
-						None,
-						2 * MinCollatorStake::get(),
-					),
+					)
 				],
 				vec![(ALITH.into(), get_collator_keys_from_seed("Alice"))],
 				endowed_accounts(),
@@ -86,15 +81,10 @@ pub fn local_testnet_config() -> ChainSpec {
 			testnet_genesis(
 				vec![
 					(
-						get_account_id_from_seed::<sr25519::Public>("Alice"),
+						ALITH.into(),
 						None,
 						2 * MinCollatorStake::get(),
-					),
-					(
-						get_account_id_from_seed::<sr25519::Public>("Bob"),
-						None,
-						2 * MinCollatorStake::get(),
-					),
+					)
 				],
 				// initial collators.
 				vec![(ALITH.into(), get_collator_keys_from_seed("Alice"))],
