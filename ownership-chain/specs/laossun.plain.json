@@ -5,7 +5,7 @@
   "bootNodes": [
   ],
   "telemetryEndpoints": null,
-  "protocolId": "template-local",
+  "protocolId": "laos_sun_testnet",
   "properties": {
     "ss58Format": 42,
     "tokenDecimals": 18,

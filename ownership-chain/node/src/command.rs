@@ -39,7 +39,7 @@ fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 		"giedi" => Box::new(chain_spec::klaos::ChainSpec::from_json_bytes(
 			&include_bytes!("../../specs/giedi.raw.json")[..],
 		)?),
-		"laossun" => Box::new(chain_spec::klaos::ChainSpec::from_json_bytes(
+		"laossun" => Box::new(chain_spec::laos::ChainSpec::from_json_bytes(
 			&include_bytes!("../../specs/laossun.plain.json")[..],
 		)?),
 		"klaos-dev" => Box::new(chain_spec::klaos::development_config()),
