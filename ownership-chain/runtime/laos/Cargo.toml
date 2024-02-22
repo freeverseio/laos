@@ -103,13 +103,14 @@ static_assertions = { workspace = true }
 precompile-utils = { workspace = true, features = ["testing"] }
 evm = { workspace = true }
 orml-traits = { workspace = true }
-orml-xtokens = { workspace = true, features = ["std"] }
+orml-xtokens = { workspace = true }
 orml-xcm-support = { workspace = true, features = ["std"] }
 xcm-simulator = { workspace = true }
 polkadot-runtime-parachains = { workspace = true }
 pallet-assets = { workspace = true }
-pallet-message-queue = { workspace = true }
 pallet-utility = { workspace = true }
+cumulus-pallet-xcm = { workspace = true, features = ["std"] }
+pallet-message-queue = { workspace = true, features = ["std"] }
 
 [features]
 default = [
