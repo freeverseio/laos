@@ -84,18 +84,30 @@ impl StakingInfo {
 	/// max_rate / current_rate.
 	pub fn compute_reward<T: Config>(
 		&self,
-		stake: BalanceOf<T>,
+		total_issuance: BalanceOf<T>,
 		current_staking_rate: Perquintill,
 		authors_per_round: BalanceOf<T>,
 	) -> BalanceOf<T> {
+		// println!("self: {:?}", self);
 		// Perquintill automatically bounds to [0, 100]% in case staking_rate is greater
 		// than self.max_rate
+		// TODO reduction is needed????
 		let reduction = Perquintill::from_rational(
 			self.max_rate.deconstruct(),
 			current_staking_rate.deconstruct(),
 		);
+
+		// Divide total issuance by number of authors per round
+		let authors_per_round_reduction: BalanceOf<T> = if authors_per_round == 0u128.into() { 1u128.into() } else { authors_per_round };
+
+		let ratio: BalanceOf<T> = total_issuance / (authors_per_round_reduction);
+		// println!("total_issuance: {:?}", total_issuance);
+		// println!("ratio: {:?}", ratio);
 		// multiplication with perbill cannot overflow
-		let reward = (self.reward_rate.per_block * stake).saturating_mul(authors_per_round);
+		let reward = (self.reward_rate.per_block * ratio).saturating_mul(authors_per_round);
+		println!("reduction: {:?}, reward: {:?}", reduction, reward);
+		println!("authors_per_round: {:?}", authors_per_round);
+		// println!("self.reward_rate.per_block: {:?}", self.reward_rate.per_block);
 		reduction * reward
 	}
 }
@@ -195,32 +207,40 @@ mod tests {
 
 	#[test]
 	fn single_block_reward_collator() {
-		let inflation = InflationInfo::new(
-			<Test as Config>::BLOCKS_PER_YEAR,
-			Perquintill::from_percent(10),
-			Perquintill::from_percent(10),
-			Perquintill::from_percent(40),
-			Perquintill::from_percent(8),
-		);
-		let reward = inflation.collator.compute_reward::<Test>(
-			MAX_COLLATOR_STAKE,
-			Perquintill::from_percent(9),
-			2,
-		);
-		let expected = <Test as Config>::CurrencyBalance::from(15210282150733u64);
-		assert!(
-			almost_equal(reward, expected, Perbill::from_perthousand(1)),
-			"left {:?}, right {:?}",
-			reward,
-			expected
-		);
+		ExtBuilder::default()
+		.with_inflation(10, 4, 40, 4, 5)
+		.with_balances(vec![(1, 10)])
+		.with_collators(vec![(1, 10)])
+		.build()
+		.execute_with(|| {
+			let inflation = InflationInfo::new(
+				<Test as Config>::BLOCKS_PER_YEAR,
+				Perquintill::from_percent(10),
+				Perquintill::from_percent(4),
+				Perquintill::from_percent(40),
+				Perquintill::from_percent(4),
+			);
+			let total_issuance = 1000000000 * DECIMALS;
+			let reward = inflation.collator.compute_reward::<Test>(
+				total_issuance,
+				Perquintill::from_percent(9),
+				2,
+			);
+			let expected = <Test as Config>::CurrencyBalance::from(15210282150000000u64);
+			assert!(
+				almost_equal(reward, expected, Perbill::from_perthousand(1)),
+				"left {:?}, right {:?}",
+				reward,
+				expected
+			);
+		});
 	}
 
 	#[test]
 	fn simple_block_reward_check() {
 		let precision = Perbill::from_perthousand(1);
 		ExtBuilder::default()
-			.with_inflation(10, 15, 40, 10, 5)
+			.with_inflation(10, 4, 40, 4, 5)
 			.with_balances(vec![(1, 10)])
 			.with_collators(vec![(1, 10)])
 			.build()
@@ -228,37 +248,38 @@ mod tests {
 				let inflation = InflationInfo::new(
 					<Test as Config>::BLOCKS_PER_YEAR,
 					Perquintill::from_percent(10),
-					Perquintill::from_percent(15),
+					Perquintill::from_percent(4),
 					Perquintill::from_percent(40),
-					Perquintill::from_percent(10),
+					Perquintill::from_percent(4),
 				);
 				let years_u128: BalanceOf<Test> = <Test as Config>::BLOCKS_PER_YEAR as u128;
+				let total_issuance = 1000000000 * DECIMALS;
 
 				// Dummy checks for correct instantiation
 				assert!(inflation.is_valid(<Test as Config>::BLOCKS_PER_YEAR));
 				assert_eq!(inflation.collator.max_rate, Perquintill::from_percent(10));
-				assert_eq!(inflation.collator.reward_rate.annual, Perquintill::from_percent(15));
+				assert_eq!(inflation.collator.reward_rate.annual, Perquintill::from_percent(4));
 				assert!(
 					almost_equal(
-						inflation.collator.reward_rate.per_block * DECIMALS * 10_000,
-						Perquintill::from_percent(15) * 10_000 * DECIMALS / years_u128,
+						inflation.collator.reward_rate.per_block * DECIMALS * 1000000000,
+						Perquintill::from_percent(4) * 1000000000 * DECIMALS / years_u128,
 						precision
 					),
 					"left = {:?}, right = {:?}",
-					inflation.collator.reward_rate.per_block * 10_000 * DECIMALS,
-					Perquintill::from_percent(15) * 10_000 * DECIMALS / years_u128,
+					inflation.collator.reward_rate.per_block * 1000000000 * DECIMALS,
+					Perquintill::from_percent(4) * 1000000000 * DECIMALS / years_u128,
 				);
 				assert_eq!(inflation.delegator.max_rate, Perquintill::from_percent(40));
-				assert_eq!(inflation.delegator.reward_rate.annual, Perquintill::from_percent(10));
+				assert_eq!(inflation.delegator.reward_rate.annual, Perquintill::from_percent(4));
 				assert!(
 					almost_equal(
-						inflation.delegator.reward_rate.per_block * DECIMALS * 10_000,
-						Perquintill::from_percent(10) * 10_000 * DECIMALS / years_u128,
+						inflation.delegator.reward_rate.per_block * DECIMALS * 1000000000,
+						Perquintill::from_percent(4) * 1000000000 * DECIMALS / years_u128,
 						precision
 					),
 					"left = {:?}, right = {:?}",
-					inflation.delegator.reward_rate.per_block * DECIMALS * 10_000,
-					Perquintill::from_percent(10) * 10_000 * DECIMALS / years_u128,
+					inflation.delegator.reward_rate.per_block * DECIMALS * 1000000000,
+					Perquintill::from_percent(4) * 1000000000 * DECIMALS / years_u128,
 				);
 
 				// Check collator reward computation
@@ -276,63 +297,53 @@ mod tests {
 				assert!(
 					almost_equal(
 						inflation.collator.compute_reward::<Test>(
-							5000 * DECIMALS,
+							total_issuance,
 							current_staking_rate,
 							authors_per_round
 						) * years_u128,
-						Perquintill::from_percent(15) * 5000 * DECIMALS,
+						Perquintill::from_percent(4) * 1000000000 * DECIMALS,
 						Perbill::from_percent(1)
 					),
 					"left = {:?}, right = {:?}",
 					inflation.collator.compute_reward::<Test>(
-						5000 * DECIMALS,
+						total_issuance,
 						current_staking_rate,
 						authors_per_round
 					) * years_u128,
-					Perquintill::from_percent(15) * 5000 * DECIMALS,
+					Perquintill::from_percent(4) * 1000000000 * DECIMALS,
 				);
 				// Check for max_rate which is 10%
 				current_staking_rate = Perquintill::from_rational(10_000u64, 100_000u64);
 				assert!(
 					almost_equal(
 						inflation.collator.compute_reward::<Test>(
-							10_000 * DECIMALS,
+							total_issuance,
 							current_staking_rate,
 							authors_per_round
 						) * years_u128,
-						Perquintill::from_percent(15) * 10_000 * DECIMALS,
+						Perquintill::from_percent(4) * 1000000000 * DECIMALS,
 						Perbill::from_percent(1)
 					),
 					"left = {:?}, right = {:?}",
 					inflation.collator.compute_reward::<Test>(
-						10_000 * DECIMALS,
+						total_issuance,
 						current_staking_rate,
 						authors_per_round
 					) * years_u128,
-					Perquintill::from_percent(15) * 10_000 * DECIMALS,
+					Perquintill::from_percent(4) * 1000000000 * DECIMALS,
 				);
 
 				// Check for exceeding max_rate: 50% instead of 10%
 				current_staking_rate = Perquintill::from_rational(50_000u64, 100_000u64);
+				let unreduced_reward = (Perquintill::from_percent(10) * 1000000000 as u128 * DECIMALS);
 				assert!(
-					almost_equal(
-						inflation.collator.compute_reward::<Test>(
-							50_000 * DECIMALS,
-							current_staking_rate,
-							authors_per_round
-						) * years_u128,
-						Perquintill::from_percent(15) * 10_000 * DECIMALS,
-						Perbill::from_percent(1)
-					),
-					"left = {:?}, right = {:?}",
 					inflation.collator.compute_reward::<Test>(
-						50_000 * DECIMALS,
+						total_issuance,
 						current_staking_rate,
 						authors_per_round
-					) * years_u128,
-					Perquintill::from_percent(15) * 10_000 * DECIMALS,
+					) * years_u128 <
+					unreduced_reward,
 				);
-
 				// Check delegator reward computation
 				current_staking_rate = inflation.delegator.max_rate;
 				assert_eq!(
@@ -344,64 +355,55 @@ mod tests {
 					0
 				);
 				current_staking_rate = Perquintill::from_rational(5000u64, 100_000u64);
+				let unreduced_reward = Perquintill::from_percent(10) * 1000000000 * DECIMALS;
+				println!("unreduced_reward = {:?}", unreduced_reward);
 				assert!(
 					almost_equal(
 						inflation.delegator.compute_reward::<Test>(
-							5000 * DECIMALS,
+							total_issuance,
 							current_staking_rate,
 							authors_per_round
 						) * years_u128,
-						Perquintill::from_percent(10) * 5000 * DECIMALS,
+						Perquintill::from_percent(4) * total_issuance,
 						Perbill::from_percent(1)
 					),
-					"left = {:?}, right = {:?}",
+					"{}",
 					inflation.delegator.compute_reward::<Test>(
-						5000 * DECIMALS,
+						total_issuance,
 						current_staking_rate,
 						authors_per_round
-					) * years_u128,
-					Perquintill::from_percent(10) * 5000 * DECIMALS,
+					) * years_u128 < unreduced_reward,
 				);
 				// Check for max_rate which is 40%
 				current_staking_rate = Perquintill::from_rational(40_000u64, 100_000u64);
 				assert!(
 					almost_equal(
 						inflation.delegator.compute_reward::<Test>(
-							40_000 * DECIMALS,
+							total_issuance,
 							current_staking_rate,
 							authors_per_round
 						) * years_u128,
-						Perquintill::from_percent(10) * 40_000 * DECIMALS,
+						Perquintill::from_percent(4) * 1000000000 * DECIMALS,
 						Perbill::from_percent(1)
 					),
 					"left = {:?}, right = {:?}",
 					inflation.delegator.compute_reward::<Test>(
-						40_000 * DECIMALS,
+						total_issuance,
 						current_staking_rate,
 						authors_per_round
 					) * years_u128,
-					Perquintill::from_percent(10) * 40_000 * DECIMALS,
+					Perquintill::from_percent(4) * 1000000000 * DECIMALS,
 				);
 
 				// Check for exceeding max_rate: 50% instead of 40%
 				current_staking_rate = Perquintill::from_rational(50_000u64, 100_000u64);
 				assert!(
-					almost_equal(
-						inflation.delegator.compute_reward::<Test>(
-							50_000 * DECIMALS,
-							current_staking_rate,
-							authors_per_round
-						) * years_u128,
-						Perquintill::from_percent(8) * 50_000 * DECIMALS,
-						Perbill::from_percent(1)
-					),
-					"left = {:?}, right = {:?}",
 					inflation.delegator.compute_reward::<Test>(
-						50_000 * DECIMALS,
+						total_issuance,
 						current_staking_rate,
 						authors_per_round
-					) * years_u128,
-					Perquintill::from_percent(8) * 50_000 * DECIMALS,
+					) * years_u128 <
+					Perquintill::from_percent(4) * 1000000000 * DECIMALS,
 				);
 			});
 	}

@@ -2503,7 +2503,7 @@ pub mod pallet {
 			let staking_rate = Perquintill::from_rational(total_collators, total_issuance);
 
 			InflationConfig::<T>::get().collator.compute_reward::<T>(
-				stake,
+				total_issuance,
 				staking_rate,
 				multiplier,
 			)
@@ -2523,7 +2523,7 @@ pub mod pallet {
 			let staking_rate = Perquintill::from_rational(total_delegators, total_issuance);
 
 			InflationConfig::<T>::get().delegator.compute_reward::<T>(
-				stake,
+				total_issuance,
 				staking_rate,
 				multiplier,
 			)
