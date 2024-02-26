@@ -31,7 +31,9 @@ jobs:
       labels: ubuntu-16-cores
     strategy:
       matrix:
-        chain: ["laos-ownership"]
+        runtime:
+          - { name: "laos", package: "laos-ownership-runtime", path: "ownership-chain/runtime/laos" }
+          - { name: "klaos", package: "klaos-ownership-runtime", path: "ownership-chain/runtime/klaos" }
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup
@@ -42,17 +44,18 @@ jobs:
         id: srtool_build
         uses: chevdor/srtool-actions@v0.9.2
         with:
-          chain: ${{ matrix.chain }}
-          runtime_dir: ownership-chain/runtime/laos
+          chain: ${{ matrix.runtime.name }}
+          package: ${{ matrix.runtime.package }}
+          runtime_dir: ${{ matrix.runtime.path }}
           tag: 1.74.0
       - name: Summary
         id: summary
         run: |
-          echo '${{ steps.srtool_build.outputs.json }}' | jq . > ${{ matrix.chain }}-srtool-digest.json
-          cat ${{ matrix.chain }}-srtool-digest.json
+          echo '${{ steps.srtool_build.outputs.json }}' | jq . > ${{ matrix.runtime.name }}-srtool-digest.json
+          cat ${{ matrix.runtime.name }}-srtool-digest.json
           echo "Runtime location: ${{ steps.srtool_build.outputs.wasm }}"
-          RUSTC_VERSION=$(jq '.info.rustc' < ${{ matrix.chain }}-srtool-digest.json)
-          SRTOOL_VERSION=$(jq '.info.generator.version' < ${{ matrix.chain }}-srtool-digest.json)
+          RUSTC_VERSION=$(jq '.info.rustc' < ${{ matrix.runtime.name }}-srtool-digest.json)
+          SRTOOL_VERSION=$(jq '.info.generator.version' < ${{ matrix.runtime.name }}-srtool-digest.json)
           echo "rustc_version='$RUSTC_VERSION'" >> $GITHUB_OUTPUT
           echo "srtool_version=$SRTOOL_VERSION" >> $GITHUB_OUTPUT
       - name: Install subwasm ${{ env.SUBWASM_VERSION }}
@@ -62,13 +65,13 @@ jobs:
           subwasm --version
       - name: Extract metadata
         run: |
-          subwasm  --json info ${{ steps.srtool_build.outputs.wasm }} > laos-info.json
-          subwasm info ${{ steps.srtool_build.outputs.wasm }} > laos-info.txt
-          cat laos-info.txt
+          subwasm  --json info ${{ steps.srtool_build.outputs.wasm }} > ${{ matrix.runtime.name }}-info.json
+          subwasm info ${{ steps.srtool_build.outputs.wasm }} > ${{ matrix.runtime.name }}-info.txt
+          cat ${{ matrix.runtime.name }}-info.txt
 
-          subwasm  --json info ${{ steps.srtool_build.outputs.wasm_compressed }} > laos-subwam-info.json
-          subwasm info ${{ steps.srtool_build.outputs.wasm_compressed }} > laos-subwam-info.txt
-          cat laos-subwam-info.txt
+          subwasm  --json info ${{ steps.srtool_build.outputs.wasm_compressed }} > ${{ matrix.runtime.name }}-subwam-info.json
+          subwasm info ${{ steps.srtool_build.outputs.wasm_compressed }} > ${{ matrix.runtime.name }}-subwam-info.txt
+          cat ${{ matrix.runtime.name }}-subwam-info.txt
       - name: Log in to Docker Hub
         uses: docker/login-action@v2.1.0
         with:
@@ -88,10 +91,10 @@ jobs:
           RUSTC_VERSION=$(echo ${{ steps.summary.outputs.rustc_version }} | tr -d '"')
           SRTOOL_VERSION=${{ steps.summary.outputs.srtool_version }}
           
-          printf "\n\n## Runtime info\nThis runtime was built using %s with srtool %s\n" "$RUSTC_VERSION" "$SRTOOL_VERSION" >> description.txt
+          printf "\n\n## ${{ matrix.runtime.name }} runtime\nThis runtime was built using %s with srtool %s\n" "$RUSTC_VERSION" "$SRTOOL_VERSION" >> description.txt
           echo '```' >> description.txt
           
-          cat laos-subwam-info.txt >> description.txt
+          cat ${{ matrix.runtime.name }}-subwam-info.txt >> description.txt
           
           echo '```' >> description.txt
           
