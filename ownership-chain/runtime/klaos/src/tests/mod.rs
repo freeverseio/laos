@@ -3,10 +3,11 @@
 #![cfg(test)]
 mod precompile_tests;
 mod version_tests;
-mod xcm_mock;
-mod xcm_tests;
+// TODO: uncomment this once we are using deps from crates.io
+// mod xcm_mock;
+// mod xcm_tests;
 
-pub use xcm_mock::ParachainXcmRouter;
+// pub use xcm_mock::ParachainXcmRouter;
 
 use sp_runtime::BuildStorage;
 

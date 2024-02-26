@@ -2,11 +2,13 @@
 //! NOTE: uses the same XCM configuration as the real runtime, i.e `xcm_config.rs`.
 
 use cumulus_primitives_core::{
+	AggregateMessageOrigin,
 	AssetId::{self as XcmAssetId, Concrete},
-	Fungibility, InteriorMultiLocation,
+	DmpMessageHandler, ExecuteXcm, Fungibility, InteriorMultiLocation,
 	Junction::{self, GlobalConsensus, Parachain},
 	Junctions::{Here, X1, X2},
-	MultiAsset, MultiLocation, NetworkId, Plurality, XcmContext, XcmError,
+	MultiAsset, MultiLocation, NetworkId, Outcome, ParaId, Parent, Plurality, Xcm, XcmContext,
+	XcmError, XcmpMessageFormat, XcmpMessageHandler,
 };
 use frame_support::{
 	construct_runtime, match_types, parameter_types,
@@ -30,6 +32,7 @@ use orml_traits::{
 	parameter_type_with_key,
 };
 use pallet_xcm::XcmPassthrough;
+use parachains_common::message_queue::ParaIdToSibling;
 use parity_scale_codec::Encode;
 use polkadot_parachain_primitives::primitives::Sibling;
 use sp_core::{ConstU128, ConstU32, H160, H256, U256};
@@ -41,7 +44,7 @@ use sp_runtime::{
 	ConsensusEngineId,
 };
 use sp_std::{boxed::Box, prelude::*, str::FromStr};
-use staging_xcm::v3::BodyId;
+use staging_xcm::{prelude::*, v3::BodyId};
 use staging_xcm_builder::{
 	AccountKey20Aliases, AllowExplicitUnpaidExecutionFrom, AllowTopLevelPaidExecutionFrom,
 	ConvertedConcreteId, CurrencyAdapter, DenyReserveTransferToRelayChain, DenyThenTry,
@@ -51,7 +54,7 @@ use staging_xcm_builder::{
 	TakeWeightCredit, TrailingSetTopicAsId, WithComputedOrigin,
 };
 use staging_xcm_executor::{traits::WeightTrader, XcmExecutor};
-use xcm_simulator::PhantomData;
+use xcm_simulator::{PhantomData, RelayBlockNumber};
 
 use crate::precompiles::FrontierPrecompiles;
 
@@ -69,14 +72,174 @@ construct_runtime!(
 		EVM: pallet_evm,
 		ParachainSystem: cumulus_pallet_parachain_system,
 
-		XcmpQueue: cumulus_pallet_xcmp_queue,
-		PolkadotXcm: pallet_xcm,
+		MessageQueue: mock_msg_queue,
 		CumulusXcm: cumulus_pallet_xcm,
 
 		Xtokens: orml_xtokens,
 		Assets: pallet_assets = 123,
+
+		XcmpQueue: cumulus_pallet_xcmp_queue,
+		PolkadotXcm: pallet_xcm,
 	}
 );
+
+#[frame_support::pallet]
+pub mod mock_msg_queue {
+	use super::*;
+	use frame_support::pallet_prelude::*;
+
+	#[pallet::config]
+	pub trait Config: frame_system::Config {
+		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
+		type XcmExecutor: ExecuteXcm<Self::RuntimeCall>;
+	}
+
+	#[pallet::call]
+	impl<T: Config> Pallet<T> {}
+
+	#[pallet::pallet]
+	#[pallet::without_storage_info]
+	pub struct Pallet<T>(_);
+
+	#[pallet::storage]
+	#[pallet::getter(fn parachain_id)]
+	pub(super) type ParachainId<T: Config> = StorageValue<_, ParaId, ValueQuery>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn received_dmp)]
+	/// A queue of received DMP messages
+	pub(super) type ReceivedDmp<T: Config> = StorageValue<_, Vec<Xcm<T::RuntimeCall>>, ValueQuery>;
+
+	impl<T: Config> Get<ParaId> for Pallet<T> {
+		fn get() -> ParaId {
+			Self::parachain_id()
+		}
+	}
+
+	pub type MessageId = [u8; 32];
+
+	#[pallet::event]
+	#[pallet::generate_deposit(pub(super) fn deposit_event)]
+	pub enum Event<T: Config> {
+		// XCMP
+		/// Some XCM was executed OK.
+		Success(Option<T::Hash>),
+		/// Some XCM failed.
+		Fail(Option<T::Hash>, XcmError),
+		/// Bad XCM version used.
+		BadVersion(Option<T::Hash>),
+		/// Bad XCM format used.
+		BadFormat(Option<T::Hash>),
+
+		// DMP
+		/// Downward message is invalid XCM.
+		InvalidFormat(MessageId),
+		/// Downward message is unsupported version of XCM.
+		UnsupportedVersion(MessageId),
+		/// Downward message executed with the given outcome.
+		ExecutedDownward(MessageId, Outcome),
+	}
+
+	impl<T: Config> Pallet<T> {
+		pub fn set_para_id(para_id: ParaId) {
+			ParachainId::<T>::put(para_id);
+		}
+
+		fn handle_xcmp_message(
+			sender: ParaId,
+			_sent_at: RelayBlockNumber,
+			xcm: VersionedXcm<T::RuntimeCall>,
+			max_weight: Weight,
+		) -> Result<Weight, XcmError> {
+			let hash = Encode::using_encoded(&xcm, T::Hashing::hash);
+			let mut message_hash = Encode::using_encoded(&xcm, sp_io::hashing::blake2_256);
+			let (result, event) = match Xcm::<T::RuntimeCall>::try_from(xcm) {
+				Ok(xcm) => {
+					let location = (Parent, Parachain(sender.into()));
+					match T::XcmExecutor::prepare_and_execute(
+						location,
+						xcm,
+						&mut message_hash,
+						max_weight,
+						Weight::zero(),
+					) {
+						Outcome::Error { error } => (Err(error), Event::Fail(Some(hash), error)),
+						Outcome::Complete { used } => (Ok(used), Event::Success(Some(hash))),
+						// As far as the caller is concerned, this was dispatched without error, so
+						// we just report the weight used.
+						Outcome::Incomplete { used, error } =>
+							(Ok(used), Event::Fail(Some(hash), error)),
+					}
+				},
+				Err(()) => (Err(XcmError::UnhandledXcmVersion), Event::BadVersion(Some(hash))),
+			};
+			Self::deposit_event(event);
+			result
+		}
+	}
+
+	impl<T: Config> XcmpMessageHandler for Pallet<T> {
+		fn handle_xcmp_messages<'a, I: Iterator<Item = (ParaId, RelayBlockNumber, &'a [u8])>>(
+			iter: I,
+			max_weight: Weight,
+		) -> Weight {
+			for (sender, sent_at, data) in iter {
+				let mut data_ref = data;
+				let _ = XcmpMessageFormat::decode(&mut data_ref)
+					.expect("Simulator encodes with versioned xcm format; qed");
+
+				let mut remaining_fragments = data_ref;
+				while !remaining_fragments.is_empty() {
+					if let Ok(xcm) =
+						VersionedXcm::<T::RuntimeCall>::decode(&mut remaining_fragments)
+					{
+						let _ = Self::handle_xcmp_message(sender, sent_at, xcm, max_weight);
+					} else {
+						debug_assert!(false, "Invalid incoming XCMP message data");
+					}
+				}
+			}
+			max_weight
+		}
+	}
+
+	impl<T: Config> DmpMessageHandler for Pallet<T> {
+		fn handle_dmp_messages(
+			iter: impl Iterator<Item = (RelayBlockNumber, Vec<u8>)>,
+			limit: Weight,
+		) -> Weight {
+			for (_i, (_sent_at, data)) in iter.enumerate() {
+				let mut id = sp_io::hashing::blake2_256(&data[..]);
+				let maybe_versioned = VersionedXcm::<T::RuntimeCall>::decode(&mut &data[..]);
+				match maybe_versioned {
+					Err(_) => {
+						Self::deposit_event(Event::InvalidFormat(id));
+					},
+					Ok(versioned) => match Xcm::try_from(versioned) {
+						Err(()) => Self::deposit_event(Event::UnsupportedVersion(id)),
+						Ok(x) => {
+							let outcome = T::XcmExecutor::prepare_and_execute(
+								Parent,
+								x.clone(),
+								&mut id,
+								limit,
+								Weight::zero(),
+							);
+							<ReceivedDmp<T>>::append(x);
+							Self::deposit_event(Event::ExecutedDownward(id, outcome));
+						},
+					},
+				}
+			}
+			limit
+		}
+	}
+}
+
+impl mock_msg_queue::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type XcmExecutor = XcmExecutor<XcmConfig>;
+}
 
 impl frame_system::Config for Runtime {
 	type BaseCallFilter = frame_support::traits::Everything;
@@ -280,7 +443,7 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
 	type SelfParaId = staging_parachain_info::Pallet<Runtime>;
 	type OutboundXcmpMessageSource = XcmpQueue;
 	type ReservedDmpWeight = ReservedDmpWeight;
-	type DmpQueue = frame_support::traits::EnqueueWithOrigin<(), sp_core::ConstU8<0>>;
+	type DmpQueue = frame_support::traits::EnqueueWithOrigin<MessageQueue, sp_core::ConstU8<0>>;
 	type XcmpMessageHandler = XcmpQueue;
 	type ReservedXcmpWeight = ReservedXcmpWeight;
 	type CheckAssociatedRelayNumber = cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;

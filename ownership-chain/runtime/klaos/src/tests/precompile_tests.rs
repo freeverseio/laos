@@ -2,7 +2,7 @@ use crate::{precompiles::FrontierPrecompiles, tests::new_test_ext};
 
 use crate::Runtime;
 use core::str::FromStr;
-use evm::Context;
+use fp_evm::Context;
 use frame_support::assert_noop;
 use pallet_evm::{ExitRevert, IsPrecompileResult, PrecompileFailure, PrecompileSet};
 use precompile_utils::testing::MockHandle;

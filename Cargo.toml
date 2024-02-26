@@ -239,9 +239,9 @@ polkadot-service = { git = "https://github.com/paritytech/polkadot-sdk", branch 
 
 # Orml
 # (wasm)
-orml-traits = { version = "0.7.0", default-features = false }
-orml-xcm-support = { version = "0.7.0", default-features = false }
-orml-xtokens = { version = "0.7.0", default-features = false }
+orml-traits = { version = "0.7", default-features = false }
+orml-xcm-support = { version = "0.7", default-features = false }
+orml-xtokens = { version = "0.7", default-features = false }
 
 # Other pallets
 # (wasm)

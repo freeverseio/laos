@@ -98,6 +98,7 @@ pallet-evm-precompile-blake2 = { workspace = true }
 [dev-dependencies]
 static_assertions = { workspace = true }
 precompile-utils = { workspace = true, features = ["testing"] }
+fp-evm = { workspace = true }
 evm = { workspace = true }
 orml-traits = { workspace = true }
 orml-xtokens = { workspace = true, features = ["std"] }
