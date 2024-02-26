@@ -89,14 +89,6 @@ impl StakingInfo {
 		authors_per_round: BalanceOf<T>,
 	) -> BalanceOf<T> {
 		// println!("self: {:?}", self);
-		// Perquintill automatically bounds to [0, 100]% in case staking_rate is greater
-		// than self.max_rate
-		// TODO reduction is needed????
-		let reduction = Perquintill::from_rational(
-			self.max_rate.deconstruct(),
-			current_staking_rate.deconstruct(),
-		);
-
 		// Divide total issuance by number of authors per round
 		let authors_per_round_reduction: BalanceOf<T> = if authors_per_round == 0u128.into() { 1u128.into() } else { authors_per_round };
 
@@ -125,7 +117,6 @@ impl StakingInfo {
 		// println!("self: {:?}", self);
 		// Perquintill automatically bounds to [0, 100]% in case staking_rate is greater
 		// than self.max_rate
-		// TODO reduction is needed????
 		let reduction = Perquintill::from_rational(
 			current_staking_rate.deconstruct(),
 			self.max_rate.deconstruct(),
