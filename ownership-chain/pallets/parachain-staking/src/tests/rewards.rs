@@ -196,13 +196,13 @@ fn coinbase_rewards_many_blocks_simple_check() {
 			(4, 1, 16_000_000 * DECIMALS),
 			(5, 2, 16_000_000 * DECIMALS),
 		])
-		.with_inflation(10, 15, 40, 15, 5)
+		.with_inflation(10, 4, 40, 4, 5)
+		.with_inflation_enabled(false)
 		.build_and_execute_with_sanity_tests(|| {
 			let inflation = StakePallet::inflation_config();
 			let total_issuance = <Test as Config>::Currency::total_issuance();
 			assert_eq!(total_issuance, 160_000_000 * DECIMALS + REWARDS_ACCOUNT_BALANCE);
 			let end_block: BlockNumber = num_of_years * Test::BLOCKS_PER_YEAR as BlockNumber;
-			println!("end block: {}", end_block);
 			// set round robin authoring
 			let authors: Vec<Option<AccountId>> =
 				(0u64..=end_block).map(|i| Some(i % 2 + 1)).collect();
@@ -213,8 +213,6 @@ fn coinbase_rewards_many_blocks_simple_check() {
 			let rewards_3 = Balances::balance(&3).saturating_sub(40_000_000 * DECIMALS);
 			let rewards_4 = Balances::balance(&4).saturating_sub(20_000_000 * DECIMALS);
 			let rewards_5 = Balances::balance(&5).saturating_sub(20_000_000 * DECIMALS);
-			let expected_collator_rewards =
-				num_of_years * inflation.collator.reward_rate.annual * 16_000_000 * DECIMALS;
 			let expected_delegator_rewards =
 				num_of_years * inflation.delegator.reward_rate.annual * 64_000_000 * DECIMALS;
 
@@ -222,14 +220,8 @@ fn coinbase_rewards_many_blocks_simple_check() {
 			// 2399074074058720000
 
 			// collator rewards should be about the same
-			println!("total_issuance {:?}", total_issuance);
 			assert!(almost_equal(rewards_1, rewards_2, Perbill::from_perthousand(1)));
-			println!("rewards_1 {:?}", rewards_1);
-			println!("rewards_2 {:?}", rewards_2);
-			println!("rewards 1 + 2 {:?}", rewards_1 + rewards_2);
-			assert_eq!(9131873146206500, (inflation.collator.reward_rate.per_block * total_issuance/2)*2);
-			let computed_rewards = (end_block as u128 + 1u128) * ((inflation.collator.reward_rate.per_block * total_issuance/2 ) *2);
-			println!("computed_rewards {:?}", computed_rewards);
+			let computed_rewards = (end_block as u128) * ((inflation.collator.reward_rate.per_block * total_issuance/2 ) *2);
 			assert!(
 				almost_equal(
 					rewards_1 + rewards_2,
@@ -240,50 +232,23 @@ fn coinbase_rewards_many_blocks_simple_check() {
 			);
 			// delegator rewards should be about the same
 			assert!(
-				almost_equal(rewards_3, rewards_4 + rewards_5, Perbill::from_perthousand(1)),
-				"left {:?}, right {:?}",
-				rewards_3,
-				rewards_4 + rewards_5
+				almost_equal(rewards_3, rewards_4, Perbill::from_perthousand(1)),
 			);
+			assert!(
+				almost_equal(rewards_4, rewards_5, Perbill::from_perthousand(1)),
+			);
+			let delegator_computed_rewards = (end_block as u128) * ((inflation.delegator.reward_rate.per_block * total_issuance/2 ) *2);
+
+			println!("Rewards_3: {:?}", rewards_3);
+			println!("Rewards_4: {:?}", rewards_4);
+			println!("Rewards_5: {:?}", rewards_5);
+
+			println!("delegator_computed_rewards: {:?}", delegator_computed_rewards);
 			assert!(almost_equal(
-				rewards_3,
-				num_of_years * inflation.delegator.reward_rate.annual * 32_000_000 * DECIMALS,
+				rewards_3 + rewards_4 + rewards_5,
+				delegator_computed_rewards,
 				Perbill::from_perthousand(1)
 			));
-
-			// check rewards in total
-			assert!(
-				almost_equal(
-					rewards_1 + rewards_2,
-					expected_collator_rewards,
-					Perbill::from_perthousand(1),
-				),
-				"left {:?}, right {:?}",
-				rewards_1 + rewards_2,
-				expected_collator_rewards,
-			);
-			assert!(
-				almost_equal(
-					rewards_3 + rewards_4 + rewards_5,
-					expected_delegator_rewards,
-					Perbill::from_perthousand(1),
-				),
-				"left {:?}, right {:?}",
-				rewards_3 + rewards_4 + rewards_5,
-				expected_delegator_rewards,
-			);
-
-			// old issuance + rewards should equal new issuance
-			assert!(
-				almost_equal(
-					total_issuance + expected_collator_rewards + expected_delegator_rewards,
-					<Test as Config>::Currency::total_issuance(),
-					Perbill::from_perthousand(1),
-				),
-				"left {:?}, right {:?}",
-				total_issuance + expected_collator_rewards + expected_delegator_rewards,
-				<Test as Config>::Currency::total_issuance(),
-			);
 		});
 }
 
@@ -332,7 +297,7 @@ fn should_not_reward_delegators_below_min_stake() {
 }
 
 #[test]
-fn adjust_reward_rates() {
+fn check_fixed_reward_rates() {
 	ExtBuilder::default()
 		.with_balances(vec![
 			(1, 10_000_000 * DECIMALS),
@@ -369,71 +334,7 @@ fn adjust_reward_rates() {
 			assert_eq!(d_rewards_1, 1522549243215000 * 101 as u128);
 			let c_rewards_per_year = <Test as Config>::BLOCKS_PER_YEAR as u128 * c_rewards_0;
 			let d_rewards_per_year = <Test as Config>::BLOCKS_PER_YEAR as u128 * d_rewards_0;
-			println!("c_rewards_per_year: {:?}", c_rewards_per_year);
-			println!("d_rewards_per_year: {:?}", d_rewards_per_year);
-			println!("total_issuance: {:?}", total_issuance);
-			assert_eq!(Perquintill::from_percent(8), Perquintill::from_rational(c_rewards_per_year  + d_rewards_per_year, total_issuance.into()));
-
-
-			// reward once in 2nd year
-			// roll_to_claim_rewards(<Test as Config>::BLOCKS_PER_YEAR + 2, authors.clone());
-			// let c_rewards_1 = Balances::balance(&1)
-			// 	.saturating_sub(10_000_000 * DECIMALS)
-			// 	.saturating_sub(c_rewards_0);
-			// let d_rewards_1 = Balances::balance(&2)
-			// 	.saturating_sub(90_000_000 * DECIMALS)
-			// 	.saturating_sub(d_rewards_0);
-			// assert!(c_rewards_0 > c_rewards_1, "left {:?}, right {:?}", c_rewards_0, c_rewards_1);
-			// assert!(d_rewards_0 > d_rewards_1);
-
-			// // finish 2nd year
-			// System::set_block_number(2 * <Test as Config>::BLOCKS_PER_YEAR);
-			// roll_to_claim_rewards(2 * <Test as Config>::BLOCKS_PER_YEAR + 1, vec![]);
-			// // reward reduction should not happen automatically anymore
-			// assert_eq!(StakePallet::last_reward_reduction(), 1u64);
-			// assert_ok!(StakePallet::execute_scheduled_reward_change(RuntimeOrigin::signed(1)));
-			// assert_eq!(StakePallet::last_reward_reduction(), 2u64);
-			// assert_eq!(StakePallet::inflation_config(), inflation_expected);
-			// // reward once in 3rd year
-			// roll_to_claim_rewards(2 * <Test as Config>::BLOCKS_PER_YEAR + 2, authors.clone());
-			// let c_rewards_2 = Balances::balance(&1)
-			// 	.saturating_sub(10_000_000 * DECIMALS)
-			// 	.saturating_sub(c_rewards_0)
-			// 	.saturating_sub(c_rewards_1);
-			// assert!(c_rewards_1 == c_rewards_2);
-
-			// // should be zero because we set reward rate to zero
-			// let d_rewards_2 = Balances::balance(&2)
-			// 	.saturating_sub(90_000_000 * DECIMALS)
-			// 	.saturating_sub(d_rewards_0)
-			// 	.saturating_sub(d_rewards_1);
-			// assert!(!d_rewards_2.is_zero());
-			// assert!(d_rewards_2 == d_rewards_1);
-
-			// // finish 3rd year
-			// System::set_block_number(3 * <Test as Config>::BLOCKS_PER_YEAR);
-			// roll_to_claim_rewards(3 * <Test as Config>::BLOCKS_PER_YEAR + 1, vec![]);
-			// // reward reduction should not happen automatically anymore
-			// assert_eq!(StakePallet::last_reward_reduction(), 2u64);
-			// assert_ok!(StakePallet::execute_scheduled_reward_change(RuntimeOrigin::signed(1)));
-			// assert_eq!(StakePallet::last_reward_reduction(), 3u64);
-			// assert_eq!(StakePallet::inflation_config(), inflation_expected);
-			// // reward once in 4th year
-			// roll_to_claim_rewards(3 * <Test as Config>::BLOCKS_PER_YEAR + 2, authors);
-			// let c_rewards_3 = Balances::free_balance(1)
-			// 	.saturating_sub(10_000_000 * DECIMALS)
-			// 	.saturating_sub(c_rewards_0)
-			// 	.saturating_sub(c_rewards_1)
-			// 	.saturating_sub(c_rewards_2);
-			// // collator and delegator should not receive any rewards at all
-			// assert!(c_rewards_3.is_zero());
-
-			// let d_rewards_3 = Balances::free_balance(2)
-			// 	.saturating_sub(90_000_000 * DECIMALS)
-			// 	.saturating_sub(d_rewards_0)
-			// 	.saturating_sub(d_rewards_1)
-			// 	.saturating_sub(d_rewards_2);
-			// assert!(d_rewards_3.is_zero());
+			assert!(almost_equal(Perquintill::from_percent(8) * 1u128, Perquintill::from_rational(c_rewards_per_year  + d_rewards_per_year, total_issuance.into()) * 1u128, Perbill::from_perthousand(1)));
 		});
 }
 

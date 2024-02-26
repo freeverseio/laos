@@ -105,9 +105,44 @@ impl StakingInfo {
 		// println!("ratio: {:?}", ratio);
 		// multiplication with perbill cannot overflow
 		let reward = (self.reward_rate.per_block * ratio).saturating_mul(authors_per_round);
-		println!("reduction: {:?}, reward: {:?}", reduction, reward);
-		println!("authors_per_round: {:?}", authors_per_round);
+		// println!("reduction: {:?}, reward: {:?}", reduction, reward);
+		// println!("authors_per_round: {:?}", authors_per_round);
 		// println!("self.reward_rate.per_block: {:?}", self.reward_rate.per_block);
+		reward
+	}
+
+	/// Calculate newly minted rewards on coinbase, e.g.,
+	/// reward = rewards_per_block * staking_rate.
+	///
+	/// NOTE: If we exceed the max staking rate, the reward will be reduced by
+	/// max_rate / current_rate.
+	pub fn del_compute_reward<T: Config>(
+		&self,
+		total_issuance: BalanceOf<T>,
+		current_staking_rate: Perquintill,
+		authors_per_round: BalanceOf<T>,
+	) -> BalanceOf<T> {
+		// println!("self: {:?}", self);
+		// Perquintill automatically bounds to [0, 100]% in case staking_rate is greater
+		// than self.max_rate
+		// TODO reduction is needed????
+		let reduction = Perquintill::from_rational(
+			current_staking_rate.deconstruct(),
+			self.max_rate.deconstruct(),
+		);
+
+		// Divide total issuance by number of authors per round
+		let authors_per_round_reduction: BalanceOf<T> = if authors_per_round == 0u128.into() { 1u128.into() } else { authors_per_round };
+
+		let ratio: BalanceOf<T> = total_issuance / (authors_per_round_reduction);
+		// println!("total_issuance: {:?}", total_issuance);
+		// println!("ratio: {:?}", ratio);
+		// multiplication with perbill cannot overflow
+		let reward = (self.reward_rate.per_block * ratio).saturating_mul(authors_per_round);
+		println!("reduction: {:?}, reward: {:?}", reduction, reward);
+		// println!("authors_per_round: {:?}", authors_per_round);
+		// println!("self.reward_rate.per_block: {:?}", self.reward_rate.per_block);
+		// println!("current_staking_rate: {:?}", current_staking_rate);
 		reduction * reward
 	}
 }

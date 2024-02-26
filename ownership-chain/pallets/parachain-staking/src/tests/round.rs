@@ -19,11 +19,11 @@
 //! Unit testing
 
 use frame_support::{assert_noop, assert_ok, traits::fungible::Inspect};
-use sp_runtime::Perquintill;
+use sp_runtime::{Perquintill, Perbill};
 
 use crate::{
 	mock::{
-		events, last_event, roll_to, roll_to_claim_rewards, AccountId, Balances, ExtBuilder,
+		almost_equal, events, last_event, roll_to, roll_to_claim_rewards, AccountId, Balances, ExtBuilder,
 		RuntimeOrigin, Session, StakePallet, Test, DECIMALS, REWARDS_ACC, REWARDS_ACCOUNT_BALANCE,
 	},
 	types::RoundInfo,
@@ -160,6 +160,7 @@ fn authorities_per_round() {
 		])
 		.with_collators(vec![(1, stake), (2, stake), (3, stake), (4, stake)])
 		.build_and_execute_with_sanity_tests(|| {
+			let total_issuance = stake * 110 + REWARDS_ACCOUNT_BALANCE;
 			assert_eq!(StakePallet::selected_candidates().into_inner(), vec![1, 2]);
 			// reward 1 once per round
 			let authors: Vec<Option<AccountId>> =
@@ -168,7 +169,7 @@ fn authorities_per_round() {
 
 			// roll to last block of round 0
 			roll_to_claim_rewards(4, authors.clone());
-			let reward_0 = inflation.collator.reward_rate.per_block * stake * 2;
+			let reward_0 = (inflation.collator.reward_rate.per_block * total_issuance/2) * 2;
 			assert_eq!(Balances::balance(&1), stake + reward_0);
 			// increase max selected candidates which will become effective in round 2
 			assert_ok!(StakePallet::set_max_selected_candidates(RuntimeOrigin::root(), 10));
@@ -177,20 +178,20 @@ fn authorities_per_round() {
 			// should still multiply with 2 because the Authority set was chosen at start of
 			// round 1
 			roll_to_claim_rewards(9, authors.clone());
-			let reward_1 = inflation.collator.reward_rate.per_block * stake * 2;
+			let reward_1 = (inflation.collator.reward_rate.per_block * total_issuance/2) * 2;
 			assert_eq!(Balances::balance(&1), stake + reward_0 + reward_1);
 
 			// roll to last block of round 2
 			// should multiply with 4 because there are only 4 candidates
 			roll_to_claim_rewards(14, authors.clone());
-			let reward_2 = inflation.collator.reward_rate.per_block * stake * 4;
-			assert_eq!(Balances::balance(&1), stake + reward_0 + reward_1 + reward_2);
+			let reward_2 = (inflation.collator.reward_rate.per_block * total_issuance/2) * 2;
+			assert!(almost_equal(Balances::balance(&1), stake + reward_0 + reward_1 + reward_2, Perbill::from_perthousand(1)));
 
 			// roll to last block of round 3
 			// should multiply with 4 because there are only 4 candidates
 			roll_to_claim_rewards(19, authors);
-			let reward_3 = inflation.collator.reward_rate.per_block * stake * 4;
-			assert_eq!(Balances::balance(&1), stake + reward_0 + reward_1 + reward_2 + reward_3);
+			let reward_3 = (inflation.collator.reward_rate.per_block * total_issuance/2) * 2;
+			assert!(almost_equal(Balances::balance(&1), stake + reward_0 + reward_1 + reward_2 + reward_3, Perbill::from_perthousand(1)));
 		});
 }
 

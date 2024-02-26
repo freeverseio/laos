@@ -2521,8 +2521,8 @@ pub mod pallet {
 			let total_issuance = <T::Currency as Inspect<AccountIdOf<T>>>::total_issuance();
 			let TotalStake { delegators: total_delegators, .. } = TotalCollatorStake::<T>::get();
 			let staking_rate = Perquintill::from_rational(total_delegators, total_issuance);
-
-			InflationConfig::<T>::get().delegator.compute_reward::<T>(
+			
+			InflationConfig::<T>::get().delegator.del_compute_reward::<T>(
 				total_issuance,
 				staking_rate,
 				multiplier,
