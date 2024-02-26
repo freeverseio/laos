@@ -13,4 +13,6 @@ runs:
       run: |
         rustup update stable --no-self-update
         rustup target add wasm32-unknown-unknown
+        rustup update nightly --no-self-update
+        rustup target add wasm32-unknown-unknown --toolchain nightly
       shell: bash
