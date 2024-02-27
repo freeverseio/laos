@@ -1,14 +1,12 @@
-use crate::{Balances, Runtime, RuntimeCall, RuntimeEvent, UNIT};
+use super::calculate_deposit;
+use crate::{Balance, Balances, Runtime, RuntimeCall, RuntimeEvent};
 use frame_support::parameter_types;
-use ownership_parachain_primitives::Balance;
 
 parameter_types! {
 	// One storage item; key size is 32; value is size 4+4+16+32 bytes = 56 bytes
-	// Fixed to 1 UNIT
-	pub const DepositBase: Balance = UNIT;
+	pub const DepositBase: Balance = calculate_deposit(1, 56);
 	// Additional storage item size of 32 bytes.
-	// Fixed to 0.1 UNIT
-	pub const DepositFactor: Balance = UNIT / 10;
+	pub const DepositFactor: Balance = calculate_deposit(0, 32);
 	pub const MaxSignatories: u32 = 20;
 }
 

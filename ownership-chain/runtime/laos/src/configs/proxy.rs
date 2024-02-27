@@ -1,18 +1,9 @@
-use crate::{Balances, Runtime, RuntimeCall, RuntimeEvent, MILLIUNIT, UNIT};
+use super::calculate_deposit;
+use crate::{Balance, Balances, Runtime, RuntimeCall, RuntimeEvent};
 use frame_support::{parameter_types, traits::InstanceFilter};
-use ownership_parachain_primitives::Balance;
 use parity_scale_codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
 use sp_runtime::{traits::BlakeTwo256, RuntimeDebug};
-
-// Define storage fees as constants for clarity and reuse
-const STORAGE_ITEM_FEE: Balance = 10 * UNIT;
-const STORAGE_BYTE_FEE: Balance = 10 * MILLIUNIT;
-
-/// Calculates the deposit required based on the number of items and bytes.
-const fn calculate_deposit(items: u32, bytes: u32) -> Balance {
-	(items as Balance) * STORAGE_ITEM_FEE + (bytes as Balance) * STORAGE_BYTE_FEE
-}
 
 parameter_types! {
 	// One storage item; key size 32, value size 8
