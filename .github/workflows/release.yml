@@ -3,8 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v*.*.*'
-  workflow_dispatch:
+      - '*'
 
 env:
   SUBWASM_VERSION: 0.20.0
@@ -17,18 +16,22 @@ jobs:
       - id: check_version
         run: |
           VERSION=$(grep -m1 version Cargo.toml | sed -E 's/.*"(.*)".*/\1/')
-          if [ "v$VERSION" == "${{ github.ref_name }}" ]; then
-            echo "Proceeding..."
+          TAG_NAME="${{ github.ref_name }}"
+          
+          if echo "$TAG_NAME" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            if [ "v$VERSION" == "$TAG_NAME" ]; then
+              echo "Proceeding with tag $TAG_NAME matching Cargo.toml version v$VERSION."
+            else
+              echo "Version in Cargo.toml ($VERSION) does not match current tag $TAG_NAME. Canceling release..."
+              exit 1
+            fi
           else
-            echo "Version in Cargo.toml ($VERSION) does not match current tag ${{ github.ref_name }}. Canceling release..."
-            exit 1
+            echo "Tag $TAG_NAME does not have the format 'v*.*.*'. Skipping version check and proceeding..."
           fi
 
   prepare-release:
     needs: check-version
-    runs-on: 
-      group: laos
-      labels: ubuntu-16-cores
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         runtime:
@@ -72,18 +75,7 @@ jobs:
           subwasm  --json info ${{ steps.srtool_build.outputs.wasm_compressed }} > ${{ matrix.runtime.name }}-subwam-info.json
           subwasm info ${{ steps.srtool_build.outputs.wasm_compressed }} > ${{ matrix.runtime.name }}-subwam-info.txt
           cat ${{ matrix.runtime.name }}-subwam-info.txt
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2.1.0
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_TOKEN }}
-      - name: Push image ownership node
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          push: true
-          file: ./docker/ownership-node.local.Dockerfile
-          tags: freeverseio/laos-ownership-node:${{ github.ref_name }}
+     
       - name: Update Release Description with subwasm info
         run: |
           gh release view ${{ github.ref_name }} --json body -q .body > description.txt
@@ -107,3 +99,28 @@ jobs:
             gh release upload ${{ github.ref_name }} ${{ steps.srtool_build.outputs.wasm_compressed }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  dockerize_and_push:
+    runs-on: 
+      group: laos
+      labels: ubuntu-16-cores
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/cache
+        with:
+          cache-key: build_and_push
+      - name: Build
+        run: |
+          cargo build --release
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2.1.0
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+      - name: Push image ownership node
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          file: ./docker/ownership-node.local.Dockerfile
+          tags: freeverseio/laos-ownership-node:${{ github.ref_name }}

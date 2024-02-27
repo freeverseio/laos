@@ -195,7 +195,7 @@ std = [
 	"log/std",
 	"sp-consensus-slots/std",
 	"sp-staking/std",
-	"pallet-utility/std",
+	"pallet-proxy/std",
 ]
 
 runtime-benchmarks = [
