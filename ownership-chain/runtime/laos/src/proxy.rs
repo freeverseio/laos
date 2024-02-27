@@ -1,11 +1,10 @@
 // all the use statements
 use super::{deposit, Balances, Runtime, RuntimeCall, RuntimeEvent};
 use frame_support::{parameter_types, traits::InstanceFilter};
-pub use ownership_parachain_primitives::Balance;
+use ownership_parachain_primitives::Balance;
 use parity_scale_codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
 use sp_runtime::{traits::BlakeTwo256, RuntimeDebug};
-use sp_std::prelude::*;
 
 parameter_types! {
 	pub const ProxyDepositBase: Balance = deposit(1, 8);
