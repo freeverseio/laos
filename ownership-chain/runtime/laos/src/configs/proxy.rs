@@ -19,12 +19,16 @@ impl pallet_proxy::Config for Runtime {
 	type RuntimeCall = RuntimeCall;
 	type Currency = Balances;
 	type ProxyType = ProxyType;
+	/// The base amount of currency needed to reserve for creating a proxy.
 	type ProxyDepositBase = ProxyDepositBase;
+	/// The amount of currency needed per proxy added.
 	type ProxyDepositFactor = ProxyDepositFactor;
 	type MaxProxies = MaxProxies;
 	type MaxPending = MaxPending;
 	type CallHasher = BlakeTwo256;
+	/// The base amount of currency needed to reserve for creating an announcement.
 	type AnnouncementDepositBase = AnnouncementDepositBase;
+	/// The amount of currency needed per announcement.
 	type AnnouncementDepositFactor = AnnouncementDepositFactor;
 	type WeightInfo = pallet_proxy::weights::SubstrateWeight<Runtime>;
 }
