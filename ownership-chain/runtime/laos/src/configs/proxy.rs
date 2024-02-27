@@ -74,8 +74,13 @@ mod tests {
 	fn check_deposits() {
 		assert_eq!(<Runtime as pallet_proxy::Config>::ProxyDepositBase::get(), 10_080 * MILLIUNIT);
 		assert_eq!(<Runtime as pallet_proxy::Config>::ProxyDepositFactor::get(), 210 * MILLIUNIT);
-		assert_eq!(<Runtime as pallet_proxy::Config>::AnnouncementDepositBase::get(), 10_080 * MILLIUNIT);
-		assert_eq!(<Runtime as pallet_proxy::Config>::AnnouncementDepositFactor::get(), 560 * MILLIUNIT);
+		assert_eq!(
+			<Runtime as pallet_proxy::Config>::AnnouncementDepositBase::get(),
+			10_080 * MILLIUNIT
+		);
+		assert_eq!(
+			<Runtime as pallet_proxy::Config>::AnnouncementDepositFactor::get(),
+			560 * MILLIUNIT
+		);
 	}
 }
-
