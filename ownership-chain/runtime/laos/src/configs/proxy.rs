@@ -1,4 +1,4 @@
-use super::{deposit, Balances, Runtime, RuntimeCall, RuntimeEvent};
+use crate::{deposit, Balances, Runtime, RuntimeCall, RuntimeEvent};
 use frame_support::{parameter_types, traits::InstanceFilter};
 use ownership_parachain_primitives::Balance;
 use parity_scale_codec::{Decode, Encode, MaxEncodedLen};

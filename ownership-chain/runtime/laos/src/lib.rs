@@ -12,7 +12,7 @@ mod tests;
 mod weights;
 pub mod xcm_config;
 
-mod proxy;
+mod configs;
 
 use core::marker::PhantomData;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
