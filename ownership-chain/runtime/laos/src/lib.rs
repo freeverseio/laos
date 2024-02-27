@@ -233,18 +233,10 @@ pub const GAS_PER_SECOND: u64 = 40_000_000;
 /// u64 works for approximations because Weight is a very small unit compared to gas.
 pub const WEIGHT_PER_GAS: u64 = WEIGHT_REF_TIME_PER_SECOND / GAS_PER_SECOND;
 
-pub const SUPPLY_FACTOR: Balance = 100;
-
 pub const WEI: Balance = 1;
 pub const KILOWEI: Balance = 1_000 * WEI;
 pub const MEGAWEI: Balance = 1_000 * KILOWEI;
 pub const GIGAWEI: Balance = 1_000 * MEGAWEI;
-
-pub const STORAGE_BYTE_FEE: Balance = 100 * MICROUNIT * SUPPLY_FACTOR;
-
-pub const fn deposit(items: u32, bytes: u32) -> Balance {
-	items as Balance * 100 * MILLIUNIT * SUPPLY_FACTOR + (bytes as Balance) * STORAGE_BYTE_FEE
-}
 
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]

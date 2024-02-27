@@ -1,9 +1,16 @@
-use crate::{deposit, Balances, Runtime, RuntimeCall, RuntimeEvent};
+use crate::{Balances, Runtime, RuntimeCall, RuntimeEvent, MILLIUNIT, UNIT};
 use frame_support::{parameter_types, traits::InstanceFilter};
 use ownership_parachain_primitives::Balance;
 use parity_scale_codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
 use sp_runtime::{traits::BlakeTwo256, RuntimeDebug};
+
+const STORAGE_ITEM_FEE: Balance = 10 * UNIT;
+const STORAGE_BYTE_FEE: Balance = 10 * MILLIUNIT;
+
+const fn deposit(items: u32, bytes: u32) -> Balance {
+	items as Balance * STORAGE_ITEM_FEE + (bytes as Balance) * STORAGE_BYTE_FEE
+}
 
 parameter_types! {
 	pub const ProxyDepositBase: Balance = deposit(1, 8);
