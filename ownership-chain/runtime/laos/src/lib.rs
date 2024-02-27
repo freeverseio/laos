@@ -18,7 +18,8 @@ pub use ownership_parachain_primitives::{
 	AccountId, AuraId, Balance, BlockNumber, Hash, Index, Nonce, Signature,
 };
 use ownership_parachain_primitives::{MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO};
-use parity_scale_codec::{Decode, Encode};
+use parity_scale_codec::{Decode, Encode, MaxEncodedLen};
+use scale_info::TypeInfo;
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
 use sp_core::{
@@ -33,7 +34,7 @@ use sp_runtime::{
 		IdentityLookup, PostDispatchInfoOf, UniqueSaturatedInto,
 	},
 	transaction_validity::{TransactionSource, TransactionValidity, TransactionValidityError},
-	ApplyExtrinsicResult, ConsensusEngineId,
+	ApplyExtrinsicResult, ConsensusEngineId, RuntimeDebug,
 };
 
 use sp_std::prelude::*;
@@ -46,7 +47,7 @@ use frame_support::{
 	traits::{
 		fungible::{Balanced, Credit},
 		ConstBool, ConstU32, ConstU64, ConstU8, Currency, Everything, FindAuthor, Hooks, Imbalance,
-		OnUnbalanced, WithdrawReasons,
+		InstanceFilter, OnUnbalanced, WithdrawReasons,
 	},
 	weights::{
 		constants::WEIGHT_REF_TIME_PER_SECOND, ConstantMultiplier, Weight, WeightToFeeCoefficient,
@@ -231,10 +232,18 @@ pub const GAS_PER_SECOND: u64 = 40_000_000;
 /// u64 works for approximations because Weight is a very small unit compared to gas.
 pub const WEIGHT_PER_GAS: u64 = WEIGHT_REF_TIME_PER_SECOND / GAS_PER_SECOND;
 
+pub const SUPPLY_FACTOR: Balance = 100;
+
 pub const WEI: Balance = 1;
 pub const KILOWEI: Balance = 1_000 * WEI;
 pub const MEGAWEI: Balance = 1_000 * KILOWEI;
 pub const GIGAWEI: Balance = 1_000 * MEGAWEI;
+
+pub const STORAGE_BYTE_FEE: Balance = 100 * MICROUNIT * SUPPLY_FACTOR;
+
+pub const fn deposit(items: u32, bytes: u32) -> Balance {
+	items as Balance * 100 * MILLIUNIT * SUPPLY_FACTOR + (bytes as Balance) * STORAGE_BYTE_FEE
+}
 
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
@@ -742,6 +751,81 @@ impl pallet_parachain_staking::Config for Runtime {
 	const BLOCKS_PER_YEAR: BlockNumberFor<Self> = BLOCKS_PER_YEAR;
 }
 
+#[derive(
+	Copy,
+	Clone,
+	Eq,
+	PartialEq,
+	Ord,
+	PartialOrd,
+	Encode,
+	Decode,
+	RuntimeDebug,
+	MaxEncodedLen,
+	TypeInfo,
+)]
+pub enum ProxyType {
+	/// All calls can be proxied. This is the trivial/most permissive filter.
+	Any = 0,
+}
+
+impl Default for ProxyType {
+	fn default() -> Self {
+		Self::Any
+	}
+}
+
+impl InstanceFilter<RuntimeCall> for ProxyType {
+	fn filter(&self, _c: &RuntimeCall) -> bool {
+		match self {
+			ProxyType::Any => true,
+		}
+	}
+}
+
+parameter_types! {
+	// One storage item; key size 32, value size 8; .
+	// pub const ProxyDepositBase: Balance = deposit(1, 8);
+	// Additional storage item size of 33 bytes.
+	// pub const ProxyDepositFactor: Balance = deposit(0, 33);
+//	pub const MaxProxies: u16 = 32;
+//	pub const AnnouncementDepositBase: Balance = deposit(1, 8);
+//	pub const AnnouncementDepositFactor: Balance = deposit(0, 66);
+//	pub const MaxPending: u16 = 32;
+	pub const ProxyDepositBase: Balance = deposit(1, 8);
+	// Additional storage item size of 21 bytes (20 bytes AccountId + 1 byte sizeof(ProxyType)).
+	pub const ProxyDepositFactor: Balance = deposit(0, 21);
+	pub const MaxProxies: u16 = 32;
+	pub const MaxPending: u16 = 32;
+	pub const AnnouncementDepositBase: Balance = deposit(1, 8);
+	// Additional storage item size of 56 bytes:
+	// - 20 bytes AccountId
+	// - 32 bytes Hasher (Blake2256)
+	// - 4 bytes BlockNumber (u32)
+	pub const AnnouncementDepositFactor: Balance = deposit(0, 56);
+}
+
+impl pallet_proxy::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeCall = RuntimeCall;
+	type Currency = Balances;
+	type ProxyType = ProxyType;
+	// One storage item; key size 32, value size 8
+	type ProxyDepositBase = ProxyDepositBase;
+	// Additional storage item size of 21 bytes (20 bytes AccountId + 1 byte sizeof(ProxyType)).
+	type ProxyDepositFactor = ProxyDepositFactor;
+	type MaxProxies = MaxProxies;
+	type MaxPending = MaxPending;
+	type CallHasher = BlakeTwo256;
+	type AnnouncementDepositBase = AnnouncementDepositBase;
+	// Additional storage item size of 56 bytes:
+	// - 20 bytes AccountId
+	// - 32 bytes Hasher (Blake2256)
+	// - 4 bytes BlockNumber (u32)
+	type AnnouncementDepositFactor = AnnouncementDepositFactor;
+	type WeightInfo = pallet_proxy::weights::SubstrateWeight<Runtime>;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub struct Runtime
@@ -756,6 +840,7 @@ construct_runtime!(
 		Balances: pallet_balances = 10,
 		TransactionPayment: pallet_transaction_payment = 11,
 		Vesting: pallet_vesting = 12,
+		Proxy: pallet_proxy = 13,
 
 		// Consensus support.
 		// The following order MUST NOT be changed: Aura -> Session -> Staking -> Authorship -> AuraExt
