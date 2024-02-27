@@ -1,4 +1,6 @@
-use crate::*;
+use crate::{Balances, Runtime, RuntimeCall, RuntimeEvent, UNIT};
+use frame_support::parameter_types;
+use ownership_parachain_primitives::Balance;
 
 parameter_types! {
 	// One storage item; key size is 32; value is size 4+4+16+32 bytes = 56 bytes
@@ -19,4 +21,3 @@ impl pallet_multisig::Config for Runtime {
 	type MaxSignatories = MaxSignatories;
 	type WeightInfo = pallet_multisig::weights::SubstrateWeight<Runtime>;
 }
-

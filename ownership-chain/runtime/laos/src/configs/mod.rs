@@ -1,2 +1,2 @@
-mod proxy;
 mod multisig;
+mod proxy;
