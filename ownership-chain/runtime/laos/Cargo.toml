@@ -217,6 +217,7 @@ runtime-benchmarks = [
 	"pallet-asset-metadata-extender/runtime-benchmarks",
 	"pallet-vesting/runtime-benchmarks",
 	"pallet-parachain-staking/runtime-benchmarks",
+	"pallet-proxy/runtime-benchmarks",
 ]
 
 try-runtime = [
@@ -250,6 +251,7 @@ try-runtime = [
 	"pallet-asset-metadata-extender/try-runtime",
 	"pallet-vesting/try-runtime",
 	"pallet-parachain-staking/try-runtime",
+	"pallet-proxy/try-runtime",
 ]
 
 fast-runtime = []
