@@ -12,14 +12,15 @@ mod tests;
 mod weights;
 pub mod xcm_config;
 
+mod proxy;
+
 use core::marker::PhantomData;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 pub use ownership_parachain_primitives::{
 	AccountId, AuraId, Balance, BlockNumber, Hash, Index, Nonce, Signature,
 };
 use ownership_parachain_primitives::{MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO};
-use parity_scale_codec::{Decode, Encode, MaxEncodedLen};
-use scale_info::TypeInfo;
+use parity_scale_codec::{Decode, Encode};
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
 use sp_core::{
@@ -34,7 +35,7 @@ use sp_runtime::{
 		IdentityLookup, PostDispatchInfoOf, UniqueSaturatedInto,
 	},
 	transaction_validity::{TransactionSource, TransactionValidity, TransactionValidityError},
-	ApplyExtrinsicResult, ConsensusEngineId, RuntimeDebug,
+	ApplyExtrinsicResult, ConsensusEngineId,
 };
 
 use sp_std::prelude::*;
@@ -47,7 +48,7 @@ use frame_support::{
 	traits::{
 		fungible::{Balanced, Credit},
 		ConstBool, ConstU32, ConstU64, ConstU8, Currency, Everything, FindAuthor, Hooks, Imbalance,
-		InstanceFilter, OnUnbalanced, WithdrawReasons,
+		OnUnbalanced, WithdrawReasons,
 	},
 	weights::{
 		constants::WEIGHT_REF_TIME_PER_SECOND, ConstantMultiplier, Weight, WeightToFeeCoefficient,
@@ -749,68 +750,6 @@ impl pallet_parachain_staking::Config for Runtime {
 	type WeightInfo = pallet_parachain_staking::default_weights::SubstrateWeight<Runtime>;
 
 	const BLOCKS_PER_YEAR: BlockNumberFor<Self> = BLOCKS_PER_YEAR;
-}
-
-#[derive(
-	Copy,
-	Clone,
-	Eq,
-	PartialEq,
-	Ord,
-	PartialOrd,
-	Encode,
-	Decode,
-	RuntimeDebug,
-	MaxEncodedLen,
-	TypeInfo,
-)]
-pub enum ProxyType {
-	/// All calls can be proxied. This is the trivial/most permissive filter.
-	Any = 0,
-}
-
-impl Default for ProxyType {
-	fn default() -> Self {
-		Self::Any
-	}
-}
-
-impl InstanceFilter<RuntimeCall> for ProxyType {
-	fn filter(&self, _c: &RuntimeCall) -> bool {
-		match self {
-			ProxyType::Any => true,
-		}
-	}
-}
-
-parameter_types! {
-	pub const ProxyDepositBase: Balance = deposit(1, 8);
-	pub const ProxyDepositFactor: Balance = deposit(0, 21);
-	pub const MaxProxies: u16 = 32;
-	pub const MaxPending: u16 = 32;
-	pub const AnnouncementDepositBase: Balance = deposit(1, 8);
-	pub const AnnouncementDepositFactor: Balance = deposit(0, 56);
-}
-
-impl pallet_proxy::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type RuntimeCall = RuntimeCall;
-	type Currency = Balances;
-	type ProxyType = ProxyType;
-	// One storage item; key size 32, value size 8
-	type ProxyDepositBase = ProxyDepositBase;
-	// Additional storage item size of 21 bytes (20 bytes AccountId + 1 byte sizeof(ProxyType)).
-	type ProxyDepositFactor = ProxyDepositFactor;
-	type MaxProxies = MaxProxies;
-	type MaxPending = MaxPending;
-	type CallHasher = BlakeTwo256;
-	type AnnouncementDepositBase = AnnouncementDepositBase;
-	// Additional storage item size of 56 bytes:
-	// - 20 bytes AccountId
-	// - 32 bytes Hasher (Blake2256)
-	// - 4 bytes BlockNumber (u32)
-	type AnnouncementDepositFactor = AnnouncementDepositFactor;
-	type WeightInfo = pallet_proxy::weights::SubstrateWeight<Runtime>;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
