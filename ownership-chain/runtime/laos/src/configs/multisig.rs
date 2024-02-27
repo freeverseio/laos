@@ -19,3 +19,16 @@ impl pallet_multisig::Config for Runtime {
 	type MaxSignatories = MaxSignatories;
 	type WeightInfo = pallet_multisig::weights::SubstrateWeight<Runtime>;
 }
+
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use crate::MILLIUNIT;
+
+	#[test]
+	fn check_deposits(){ 
+		assert_eq!(<Runtime as pallet_multisig::Config>::DepositBase::get(), 10_560 * MILLIUNIT);
+		assert_eq!(<Runtime as pallet_multisig::Config>::DepositFactor::get(), 320 * MILLIUNIT);
+	}
+}
