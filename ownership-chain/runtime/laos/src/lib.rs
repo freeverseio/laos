@@ -57,7 +57,6 @@ use frame_support::{
 };
 use frame_system::{pallet_prelude::BlockNumberFor, EnsureRoot};
 pub use pallet_evm_evolution_collection_factory::REVERT_BYTECODE;
-pub use pallet_parachain_staking::{InflationInfo, RewardRate, StakingInfo};
 pub use sp_runtime::{Perbill, Permill, Perquintill};
 
 use xcm_config::{XcmConfig, XcmOriginToTransactDispatchOrigin};
@@ -71,7 +70,7 @@ pub use sp_runtime::BuildStorage;
 pub use parachains_common::impls::DealWithFees;
 
 // Polkadot imports
-use polkadot_runtime_common::{prod_or_fast, BlockHashCount, SlowAdjustingFeeUpdate};
+use polkadot_runtime_common::{BlockHashCount, SlowAdjustingFeeUpdate};
 
 use weights::{ExtrinsicBaseWeight, RocksDbWeight};
 
