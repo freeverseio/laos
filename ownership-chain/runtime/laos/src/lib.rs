@@ -12,6 +12,8 @@ mod tests;
 mod weights;
 pub mod xcm_config;
 
+mod configs;
+
 use core::marker::PhantomData;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 pub use ownership_parachain_primitives::{
@@ -646,26 +648,6 @@ impl pallet_base_fee::Config for Runtime {
 	type DefaultElasticity = DefaultElasticity;
 }
 
-parameter_types! {
-	// One storage item; key size is 32; value is size 4+4+16+32 bytes = 56 bytes
-	// Fixed to 1 UNIT
-	pub const DepositBase: Balance = UNIT;
-	// Additional storage item size of 32 bytes.
-	// Fixed to 0.1 UNIT
-	pub const DepositFactor: Balance = UNIT / 10;
-	pub const MaxSignatories: u32 = 20;
-}
-
-impl pallet_multisig::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type RuntimeCall = RuntimeCall;
-	type Currency = Balances;
-	type DepositBase = DepositBase;
-	type DepositFactor = DepositFactor;
-	type MaxSignatories = MaxSignatories;
-	type WeightInfo = pallet_multisig::weights::SubstrateWeight<Runtime>;
-}
-
 // Configuration of the Vesting Pallet
 parameter_types! {
 	pub const MinVestedTransfer: Balance = UNIT;
@@ -756,6 +738,7 @@ construct_runtime!(
 		Balances: pallet_balances = 10,
 		TransactionPayment: pallet_transaction_payment = 11,
 		Vesting: pallet_vesting = 12,
+		Proxy: pallet_proxy = 13,
 
 		// Consensus support.
 		// The following order MUST NOT be changed: Aura -> Session -> Staking -> Authorship -> AuraExt

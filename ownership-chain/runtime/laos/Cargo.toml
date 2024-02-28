@@ -38,6 +38,7 @@ pallet-timestamp = { workspace = true }
 pallet-transaction-payment = { workspace = true }
 pallet-transaction-payment-rpc-runtime-api = { workspace = true }
 pallet-vesting = { workspace = true }
+pallet-proxy = { workspace = true }
 sp-api = { workspace = true }
 sp-io = { workspace = true }
 sp-block-builder = { workspace = true }
@@ -216,6 +217,7 @@ runtime-benchmarks = [
 	"pallet-asset-metadata-extender/runtime-benchmarks",
 	"pallet-vesting/runtime-benchmarks",
 	"pallet-parachain-staking/runtime-benchmarks",
+	"pallet-proxy/runtime-benchmarks",
 ]
 
 try-runtime = [
@@ -249,6 +251,7 @@ try-runtime = [
 	"pallet-asset-metadata-extender/try-runtime",
 	"pallet-vesting/try-runtime",
 	"pallet-parachain-staking/try-runtime",
+	"pallet-proxy/try-runtime",
 ]
 
 fast-runtime = []

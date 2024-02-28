@@ -73,15 +73,6 @@ fn test_block_and_gas_limit_constants() {
 }
 
 #[test]
-fn test_multisig_constants() {
-	// 1 UNIT
-	assert_eq!(<Runtime as pallet_multisig::Config>::DepositBase::get(), UNIT);
-	// 0.1 UNIT
-	assert_eq!(<Runtime as pallet_multisig::Config>::DepositFactor::get(), UNIT / 10);
-	assert_eq!(<Runtime as pallet_multisig::Config>::MaxSignatories::get(), 20);
-}
-
-#[test]
 fn send_1_minimum_unit_to_wallet_with_0_wei_balance_should_increase_balance_by_1_wei() {
 	new_test_ext().execute_with(|| {
 		let alice = AccountId::from_str(ALICE).unwrap();
