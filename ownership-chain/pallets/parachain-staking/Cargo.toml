@@ -21,6 +21,7 @@ sp-std = { workspace = true }
 substrate-fixed = { workspace = true }
 pallet-session = { workspace = true }
 sp-staking = { workspace = true }
+pallet-authorship = { workspace = true }
 
 [dev-dependencies]
 pallet-balances = { workspace = true, features = [ "insecure_zero_ed", "std" ] }
@@ -42,6 +43,7 @@ std = [
 	"sp-std/std",
 	"pallet-session/std",
 	"sp-staking/std",
+	"pallet-authorship/std",
 ]
 runtime-benchmarks = [ "frame-benchmarking" ]
 try-runtime = [ "frame-support/try-runtime" ]

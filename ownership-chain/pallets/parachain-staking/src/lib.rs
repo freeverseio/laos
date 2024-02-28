@@ -478,9 +478,6 @@ pub mod pallet {
 			weight = weight.saturating_add(T::DbWeight::get().reads_writes(3, 2));
 			weight
 		}
-		fn on_finalize(_n: BlockNumberFor<T>) {
-			Self::award_points_to_block_author();
-		}
 	}
 
 	#[pallet::storage]
@@ -2182,8 +2179,7 @@ pub mod pallet {
 	/// Add reward points to block authors:
 	/// * 20 points to the block producer for producing a block in the chain
 	impl<T: Config> Pallet<T> {
-		fn award_points_to_block_author() {
-			let author = T::BlockAuthor::get();
+		fn award_points_to_block_author(author: AccountIdOf<T>) {
 			let now = <Round<T>>::get().current;
 			let score_plus_20 = <AwardedPts<T>>::get(now, &author).saturating_add(20);
 			<AwardedPts<T>>::insert(now, author, score_plus_20);
@@ -2193,7 +2189,18 @@ pub mod pallet {
 
 	impl<T: Config> Get<Vec<T::AccountId>> for Pallet<T> {
 		fn get() -> Vec<T::AccountId> {
-			Self::selected_candidates().into_inner()
+			Self::selected_candidates().to_vec()
+		}
+	}
+
+	impl<T> pallet_authorship::EventHandler<AccountIdOf<T>, BlockNumberFor<T>> for Pallet<T>
+	where
+		T: Config + pallet_authorship::Config + pallet_session::Config,
+	{
+		/// Add reward points to block authors:
+		/// * 20 points to the block producer for producing a block in the chain
+		fn note_author(author: AccountIdOf<T>) {
+			Pallet::<T>::award_points_to_block_author(author);
 		}
 	}
 
