@@ -1,7 +1,9 @@
 use crate::*;
 
-use frame_support::traits::{ConstU128, ConstU32};
-use frame_support::parameter_types;
+use frame_support::{
+	parameter_types,
+	traits::{ConstU128, ConstU32},
+};
 
 parameter_types! {
 	pub const MinCandidateStk: u128 = 20_000 * UNIT;
