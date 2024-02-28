@@ -2,7 +2,7 @@ use super::{get_collator_keys_from_seed, predefined_accounts, Extensions, SAFE_X
 use cumulus_primitives_core::ParaId;
 use fp_evm::GenesisAccount;
 use laos_ownership_runtime::{
-	configs::parachain_staking::MinCollatorStake, AccountId, AuraId, Balance, InflationInfo,
+	AccountId, AuraId, Balance,
 	Precompiles, BLOCKS_PER_YEAR, REVERT_BYTECODE, UNIT,
 };
 use sc_service::ChainType;
@@ -37,7 +37,7 @@ pub fn development_config() -> ChainSpec {
 		move || {
 			testnet_genesis(
 				// initial collators.
-				vec![(predefined_accounts::ALITH.into(), None, 2 * MinCollatorStake::get())],
+				vec![(predefined_accounts::ALITH.into(), None, 2 )],
 				vec![(predefined_accounts::ALITH.into(), get_collator_keys_from_seed("Alice"))],
 				predefined_accounts::accounts(),
 				// Give Alice root privileges
@@ -72,7 +72,7 @@ pub fn local_testnet_config() -> ChainSpec {
 		ChainType::Local,
 		move || {
 			testnet_genesis(
-				vec![(predefined_accounts::ALITH.into(), None, 2 * MinCollatorStake::get())],
+				vec![(predefined_accounts::ALITH.into(), None, 2 )],
 				// initial collators.
 				vec![(predefined_accounts::ALITH.into(), get_collator_keys_from_seed("Alice"))],
 				predefined_accounts::accounts(),
@@ -106,19 +106,6 @@ fn testnet_genesis(
 	root_key: Option<AccountId>,
 	id: ParaId,
 ) -> laos_ownership_runtime::RuntimeGenesisConfig {
-	// Reward configuration used in the genesis config
-	// This defines the rate at which rewards are distributed to collators and delegators
-	let reward_configuration = InflationInfo::new(
-		BLOCKS_PER_YEAR.into(),
-		// max collator staking rate
-		Perquintill::from_percent(40),
-		// collator reward rate
-		Perquintill::from_percent(10),
-		// max delegator staking rate
-		Perquintill::from_percent(10),
-		// delegator reward rate
-		Perquintill::from_percent(8),
-	);
 
 	laos_ownership_runtime::RuntimeGenesisConfig {
 		system: laos_ownership_runtime::SystemConfig {
@@ -163,9 +150,6 @@ fn testnet_genesis(
 			..Default::default()
 		},
 		parachain_staking: laos_ownership_runtime::ParachainStakingConfig {
-			stakers,
-			max_candidate_stake: 10_000 * UNIT,
-			inflation_config: reward_configuration,
 			..Default::default()
 		},
 		evm: laos_ownership_runtime::EVMConfig {

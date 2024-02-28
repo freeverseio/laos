@@ -497,9 +497,9 @@ where
 	R: pallet_balances::Config + pallet_parachain_staking::Config,
 {
 	fn on_nonzero_unbalanced(amount: NegativeImbalanceOfBalances<R>) {
-		if let Some(account) = <pallet_parachain_staking::Pallet<R>>::collator_rewards_account() {
-			<pallet_balances::Pallet<R>>::resolve_creating(&account, amount);
-		}
+		// if let Some(account) = <pallet_parachain_staking::Pallet<R>>::collator_rewards_account() {
+		// 	<pallet_balances::Pallet<R>>::resolve_creating(&account, amount);
+		// }
 	}
 }
 
@@ -511,10 +511,10 @@ where
 	fn on_nonzero_unbalanced(
 		amount: Credit<<R as frame_system::Config>::AccountId, pallet_balances::Pallet<R, ()>>,
 	) {
-		if let Some(account) = <pallet_parachain_staking::Pallet<R>>::collator_rewards_account() {
-			let result = <pallet_balances::Pallet<R>>::resolve(&account, amount);
-			debug_assert!(result.is_ok(), "Should not fail to transfer; qed");
-		}
+		// if let Some(account) = <pallet_parachain_staking::Pallet<R>>::collator_rewards_account() {
+		// 	let result = <pallet_balances::Pallet<R>>::resolve(&account, amount);
+		// 	debug_assert!(result.is_ok(), "Should not fail to transfer; qed");
+		// }
 	}
 }
 
@@ -1153,15 +1153,16 @@ impl_runtime_apis! {
 		}
 	}
 
-	impl laos_runtime_api_staking::Staking<Block, AccountId, Balance> for Runtime {
-		fn get_unclaimed_staking_rewards(account: &AccountId) -> Balance {
-			ParachainStaking::get_unclaimed_staking_rewards(account)
-		}
+	// TODO
+	// impl laos_runtime_api_staking::Staking<Block, AccountId, Balance> for Runtime {
+	// 	fn get_unclaimed_staking_rewards(account: &AccountId) -> Balance {
+	// 		ParachainStaking::get_unclaimed_staking_rewards(account)
+	// 	}
 
-		fn get_staking_rates() -> laos_runtime_api_staking::StakingRates {
-			ParachainStaking::get_staking_rates()
-		}
-	}
+	// 	fn get_staking_rates() -> laos_runtime_api_staking::StakingRates {
+	// 		ParachainStaking::get_staking_rates()
+	// 	}
+	// }
 
 	#[cfg(feature = "try-runtime")]
 	impl frame_try_runtime::TryRuntime<Block> for Runtime {
