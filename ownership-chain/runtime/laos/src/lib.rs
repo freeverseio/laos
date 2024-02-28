@@ -405,8 +405,8 @@ impl pallet_session::Config for Runtime {
 	// we don't have stash and controller, thus we don't need the convert as well.
 	type ValidatorIdOf = ConvertInto;
 	type ShouldEndSession = ParachainStaking;
-	type NextSessionRotation = ParachainStaking;
-	type SessionManager = ParachainStaking;
+	type NextSessionRotation = (); // TODO ParachainStaking;
+	type SessionManager = (); // TODO ParachainStaking;
 	// Essentially just Aura, but let's be pedantic.
 	type SessionHandler = <SessionKeys as sp_runtime::traits::OpaqueKeys>::KeyTypeIdProviders;
 	type Keys = SessionKeys;

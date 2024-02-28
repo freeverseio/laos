@@ -98,6 +98,7 @@ pub mod pallet {
 		traits::{Saturating, Zero},
 		DispatchErrorWithPostInfo, Perbill, Percent,
 	};
+	use sp_staking::SessionIndex;
 	use sp_std::{collections::btree_map::BTreeMap, prelude::*};
 
 	/// Pallet for parachain staking
@@ -109,6 +110,8 @@ pub mod pallet {
 	type RewardPoint = u32;
 	pub type BalanceOf<T> =
 		<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+
+	pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 
 	pub const COLLATOR_LOCK_ID: LockIdentifier = *b"stkngcol";
 	pub const DELEGATOR_LOCK_ID: LockIdentifier = *b"stkngdel";
@@ -2195,6 +2198,40 @@ pub mod pallet {
 	impl<T: Config> Get<Vec<T::AccountId>> for Pallet<T> {
 		fn get() -> Vec<T::AccountId> {
 			Self::selected_candidates().into_inner()
+		}
+	}
+
+	impl<T: Config> pallet_session::SessionManager<AccountIdOf<T>> for Pallet<T> {
+		/// 1. A new session starts.
+		/// 2. In hook new_session: Read the current top n candidates from the
+		///    TopCandidates and assign this set to author blocks for the next
+		///    session.
+		/// 3. AuRa queries the authorities from the session pallet for
+		///    this session and picks authors on round-robin-basis from list of
+		///    authorities.
+		fn new_session(new_index: SessionIndex) -> Option<Vec<AccountIdOf<T>>> {
+			log::warn!(
+				"assembling new collators for new session {} at #{:?}",
+				new_index,
+				<frame_system::Pallet<T>>::block_number(),
+			);
+
+			let collators = Pallet::<T>::selected_candidates().to_vec();
+			if collators.is_empty() {
+				// we never want to pass an empty set of collators. This would brick the chain.
+				log::error!("💥 keeping old session because of empty collator set!");
+				None
+			} else {
+				Some(collators)
+			}
+		}
+
+		fn end_session(_end_index: SessionIndex) {
+			// we too are not caring.
+		}
+
+		fn start_session(_start_index: SessionIndex) {
+			// we too are not caring.
 		}
 	}
 }
