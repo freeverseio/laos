@@ -1,26 +1,27 @@
 // Copyright 2019-2022 PureStake Inc.
+// This file is part of Moonbeam.
 
-// Polimec Blockchain – https://www.polimec.org/
-// Copyright (C) Polimec 2022. All rights reserved.
-
-// The Polimec Blockchain is free software: you can redistribute it and/or modify
+// Moonbeam is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 
-// The Polimec Blockchain is distributed in the hope that it will be useful,
+// Moonbeam is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
 // You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+// along with Moonbeam.  If not, see <http://www.gnu.org/licenses/>.
 
+/* TODO: use orml_utilities::OrderedSet without leaking substrate v2.0 dependencies*/
+
+use frame_support::traits::Get;
 use parity_scale_codec::{Decode, Encode};
 use scale_info::TypeInfo;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
-use sp_runtime::RuntimeDebug;
+use sp_runtime::{BoundedVec, RuntimeDebug};
 use sp_std::prelude::*;
 
 /// An ordered set backed by `Vec`
@@ -56,7 +57,7 @@ impl<T: Ord> OrderedSet<T> {
 			Err(loc) => {
 				self.0.insert(loc, value);
 				true
-			},
+			}
 		}
 	}
 
@@ -67,7 +68,7 @@ impl<T: Ord> OrderedSet<T> {
 			Ok(loc) => {
 				self.0.remove(loc);
 				true
-			},
+			}
 			Err(_) => false,
 		}
 	}
@@ -85,6 +86,81 @@ impl<T: Ord> OrderedSet<T> {
 
 impl<T: Ord> From<Vec<T>> for OrderedSet<T> {
 	fn from(v: Vec<T>) -> Self {
+		Self::from(v)
+	}
+}
+
+/// An ordered set backed by `BoundedVec`
+#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+#[derive(RuntimeDebug, PartialEq, Eq, Encode, Decode, Clone, TypeInfo)]
+#[scale_info(skip_type_params(S))]
+pub struct BoundedOrderedSet<T, S: Get<u32>>(pub BoundedVec<T, S>);
+
+impl<T, S: Get<u32>> sp_std::default::Default for BoundedOrderedSet<T, S> {
+	fn default() -> Self {
+		BoundedOrderedSet(BoundedVec::default())
+	}
+}
+
+impl<T: Ord, S: Get<u32>> BoundedOrderedSet<T, S> {
+	/// Create a new empty set
+	pub fn new() -> Self {
+		Self(BoundedVec::default())
+	}
+
+	/// Create a set from a `Vec`.
+	/// `v` will be sorted and dedup first.
+	pub fn from(mut v: BoundedVec<T, S>) -> Self {
+		v.sort();
+		let v = v.try_mutate(|inner| inner.dedup()).expect(
+			"input is a valid BoundedVec and deduping can only reduce the number of entires; qed",
+		);
+		Self::from_sorted_set(v)
+	}
+
+	/// Create a set from a `Vec`.
+	/// Assume `v` is sorted and contain unique elements.
+	pub fn from_sorted_set(v: BoundedVec<T, S>) -> Self {
+		Self(v)
+	}
+
+	/// Insert an element.
+	/// Return true if insertion happened.
+	pub fn try_insert(&mut self, value: T) -> Result<bool, ()> {
+		match self.0.binary_search(&value) {
+			Ok(_) => Ok(false),
+			Err(loc) => self.0.try_insert(loc, value).map(|_| true).map_err(|_| ()),
+		}
+	}
+
+	/// Remove an element.
+	/// Return true if removal happened.
+	pub fn remove(&mut self, value: &T) -> bool {
+		match self.0.binary_search(value) {
+			Ok(loc) => {
+				self.0.remove(loc);
+				true
+			}
+			Err(_) => false,
+		}
+	}
+
+	/// Return if the set contains `value`
+	pub fn contains(&self, value: &T) -> bool {
+		self.0.binary_search(value).is_ok()
+	}
+
+	/// Clear the set
+	pub fn clear(mut self) {
+		let v = self.0.try_mutate(|inner| inner.clear()).expect(
+			"input is a valid BoundedVec and clearing can only reduce the number of entires; qed",
+		);
+		self.0 = v;
+	}
+}
+
+impl<T: Ord, S: Get<u32>> From<BoundedVec<T, S>> for BoundedOrderedSet<T, S> {
+	fn from(v: BoundedVec<T, S>) -> Self {
 		Self::from(v)
 	}
 }

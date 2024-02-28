@@ -1,34 +1,33 @@
 // Copyright 2019-2022 PureStake Inc.
+// This file is part of Moonbeam.
 
-// Polimec Blockchain – https://www.polimec.org/
-// Copyright (C) Polimec 2022. All rights reserved.
-
-// The Polimec Blockchain is free software: you can redistribute it and/or modify
+// Moonbeam is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 
-// The Polimec Blockchain is distributed in the hope that it will be useful,
+// Moonbeam is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
 // You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+// along with Moonbeam.  If not, see <http://www.gnu.org/licenses/>.
 
 //! Auto-compounding functionality for staking rewards
 
-use crate::{
-	pallet::{
-		AddGet, AutoCompoundingDelegations as AutoCompoundingDelegationsStorage, BalanceOf, CandidateInfo, Config,
-		DelegatorState, Error, Event, Pallet, Total,
-	},
-	types::{Bond, BondAdjust, Delegator},
+use crate::pallet::{
+	AddGet, AutoCompoundingDelegations as AutoCompoundingDelegationsStorage, BalanceOf,
+	CandidateInfo, Config, DelegatorState, Error, Event, Pallet, Total,
 };
-use frame_support::{dispatch::DispatchResultWithPostInfo, ensure, traits::Get};
+use crate::types::{Bond, BondAdjust, Delegator};
+use frame_support::dispatch::DispatchResultWithPostInfo;
+use frame_support::ensure;
+use frame_support::traits::Get;
 use parity_scale_codec::{Decode, Encode};
 use scale_info::TypeInfo;
-use sp_runtime::{traits::Saturating, BoundedVec, Percent, RuntimeDebug};
+use sp_runtime::traits::Saturating;
+use sp_runtime::{BoundedVec, Percent, RuntimeDebug};
 use sp_std::prelude::*;
 
 /// Represents the auto-compounding amount for a delegation.
@@ -63,6 +62,10 @@ where
 		Self(sorted_delegations)
 	}
 
+	pub fn get_auto_compounding_delegation_count(candidate: &T::AccountId) -> usize {
+		<AutoCompoundingDelegationsStorage<T>>::decode_len(candidate).unwrap_or_default()
+	}
+
 	/// Retrieves an instance of [AutoCompoundingDelegations] storage as [AutoCompoundDelegations].
 	pub fn get_storage(candidate: &T::AccountId) -> Self {
 		Self(<AutoCompoundingDelegationsStorage<T>>::get(candidate))
@@ -76,7 +79,7 @@ where
 	/// Retrieves the auto-compounding value for a delegation. The `delegations_config` must be a
 	/// sorted vector for binary_search to work.
 	pub fn get_for_delegator(&self, delegator: &T::AccountId) -> Option<Percent> {
-		match self.0.binary_search_by(|d| d.delegator.cmp(delegator)) {
+		match self.0.binary_search_by(|d| d.delegator.cmp(&delegator)) {
 			Ok(index) => Some(self.0[index].value),
 			Err(_) => None,
 		}
@@ -84,21 +87,26 @@ where
 
 	/// Sets the auto-compounding value for a delegation. The `delegations_config` must be a sorted
 	/// vector for binary_search to work.
-	pub fn set_for_delegator(&mut self, delegator: T::AccountId, value: Percent) -> Result<bool, Error<T>> {
+	pub fn set_for_delegator(
+		&mut self,
+		delegator: T::AccountId,
+		value: Percent,
+	) -> Result<bool, Error<T>> {
 		match self.0.binary_search_by(|d| d.delegator.cmp(&delegator)) {
-			Ok(index) =>
+			Ok(index) => {
 				if self.0[index].value == value {
 					Ok(false)
 				} else {
 					self.0[index].value = value;
 					Ok(true)
-				},
+				}
+			}
 			Err(index) => {
 				self.0
 					.try_insert(index, AutoCompoundConfig { delegator, value })
 					.map_err(|_| Error::<T>::ExceedMaxDelegationsPerDelegator)?;
 				Ok(true)
-			},
+			}
 		}
 	}
 
@@ -106,11 +114,11 @@ where
 	/// Returns `true` if the entry was removed, `false` otherwise. The `delegations_config` must be a
 	/// sorted vector for binary_search to work.
 	pub fn remove_for_delegator(&mut self, delegator: &T::AccountId) -> bool {
-		match self.0.binary_search_by(|d| d.delegator.cmp(delegator)) {
+		match self.0.binary_search_by(|d| d.delegator.cmp(&delegator)) {
 			Ok(index) => {
 				self.0.remove(index);
 				true
-			},
+			}
 			Err(_) => false,
 		}
 	}
@@ -160,10 +168,13 @@ where
 			<Pallet<T>>::get_delegator_stakable_free_balance(&delegator) >= amount,
 			Error::<T>::InsufficientBalance
 		);
+		ensure!(
+			amount >= T::MinDelegation::get(),
+			Error::<T>::DelegationBelowMin
+		);
 
 		let mut delegator_state = if let Some(mut state) = <DelegatorState<T>>::get(&delegator) {
 			// delegation after first
-			ensure!(amount >= T::MinDelegation::get(), Error::<T>::DelegationBelowMin);
 			ensure!(
 				delegation_count_hint >= state.delegations.0.len() as u32,
 				Error::<T>::TooLowDelegationCountToDelegate
@@ -173,59 +184,72 @@ where
 				Error::<T>::ExceedMaxDelegationsPerDelegator
 			);
 			ensure!(
-				state.add_delegation(Bond { owner: candidate.clone(), amount }),
+				state.add_delegation(Bond {
+					owner: candidate.clone(),
+					amount
+				}),
 				Error::<T>::AlreadyDelegatedCandidate
 			);
 			state
 		} else {
 			// first delegation
-			ensure!(amount >= T::MinDelegatorStk::get(), Error::<T>::DelegatorBondBelowMin);
-			ensure!(!<Pallet<T>>::is_candidate(&delegator), Error::<T>::CandidateExists);
+			ensure!(
+				!<Pallet<T>>::is_candidate(&delegator),
+				Error::<T>::CandidateExists
+			);
 			Delegator::new(delegator.clone(), candidate.clone(), amount)
 		};
-		let mut candidate_state = <CandidateInfo<T>>::get(&candidate).ok_or(Error::<T>::CandidateDNE)?;
+		let mut candidate_state =
+			<CandidateInfo<T>>::get(&candidate).ok_or(Error::<T>::CandidateDNE)?;
 		ensure!(
 			candidate_delegation_count_hint >= candidate_state.delegation_count,
 			Error::<T>::TooLowCandidateDelegationCountToDelegate
 		);
 
-		let auto_compounding_state = if !auto_compound.is_zero() {
-			let auto_compounding_state = Self::get_storage(&candidate);
+		if !auto_compound.is_zero() {
 			ensure!(
-				auto_compounding_state.len() <= candidate_auto_compounding_delegation_count_hint,
+				Self::get_auto_compounding_delegation_count(&candidate) as u32
+					<= candidate_auto_compounding_delegation_count_hint,
 				<Error<T>>::TooLowCandidateAutoCompoundingDelegationCountToDelegate,
 			);
-			Some(auto_compounding_state)
-		} else {
-			None
-		};
+		}
 
 		// add delegation to candidate
-		let (delegator_position, less_total_staked) =
-			candidate_state.add_delegation::<T>(&candidate, Bond { owner: delegator.clone(), amount })?;
+		let (delegator_position, less_total_staked) = candidate_state.add_delegation::<T>(
+			&candidate,
+			Bond {
+				owner: delegator.clone(),
+				amount,
+			},
+		)?;
 
 		// lock delegator amount
 		delegator_state.adjust_bond_lock::<T>(BondAdjust::Increase(amount))?;
 
 		// adjust total locked,
 		// only is_some if kicked the lowest bottom as a consequence of this new delegation
-		let net_total_increase = if let Some(less) = less_total_staked { amount.saturating_sub(less) } else { amount };
+		let net_total_increase = if let Some(less) = less_total_staked {
+			amount.saturating_sub(less)
+		} else {
+			amount
+		};
 		let new_total_locked = <Total<T>>::get().saturating_add(net_total_increase);
 
-		// maybe set auto-compound config, state is Some if the percent is non-zero
-		if let Some(mut state) = auto_compounding_state {
-			state.set_for_delegator(delegator.clone(), auto_compound)?;
-			state.set_storage(&candidate);
+		// set auto-compound config if the percent is non-zero
+		if !auto_compound.is_zero() {
+			let mut auto_compounding_state = Self::get_storage(&candidate);
+			auto_compounding_state.set_for_delegator(delegator.clone(), auto_compound.clone())?;
+			auto_compounding_state.set_storage(&candidate);
 		}
 
 		<Total<T>>::put(new_total_locked);
 		<CandidateInfo<T>>::insert(&candidate, candidate_state);
 		<DelegatorState<T>>::insert(&delegator, delegator_state);
 		<Pallet<T>>::deposit_event(Event::Delegation {
-			delegator,
+			delegator: delegator,
 			locked_amount: amount,
-			candidate,
-			delegator_position,
+			candidate: candidate,
+			delegator_position: delegator_position,
 			auto_compound,
 		});
 
@@ -240,12 +264,20 @@ where
 		candidate_auto_compounding_delegation_count_hint: u32,
 		delegation_count_hint: u32,
 	) -> DispatchResultWithPostInfo {
-		let delegator_state = <DelegatorState<T>>::get(&delegator).ok_or(<Error<T>>::DelegatorDNE)?;
+		let delegator_state =
+			<DelegatorState<T>>::get(&delegator).ok_or(<Error<T>>::DelegatorDNE)?;
 		ensure!(
 			delegator_state.delegations.0.len() <= delegation_count_hint as usize,
 			<Error<T>>::TooLowDelegationCountToAutoCompound,
 		);
-		ensure!(delegator_state.delegations.0.iter().any(|b| b.owner == candidate), <Error<T>>::DelegationDNE,);
+		ensure!(
+			delegator_state
+				.delegations
+				.0
+				.iter()
+				.any(|b| b.owner == candidate),
+			<Error<T>>::DelegationDNE,
+		);
 
 		let mut auto_compounding_state = Self::get_storage(&candidate);
 		ensure!(
@@ -261,7 +293,11 @@ where
 			auto_compounding_state.set_storage(&candidate);
 		}
 
-		<Pallet<T>>::deposit_event(Event::AutoCompoundSet { candidate, delegator, value });
+		<Pallet<T>>::deposit_event(Event::AutoCompoundSet {
+			candidate,
+			delegator,
+			value,
+		});
 
 		Ok(().into())
 	}
@@ -271,14 +307,16 @@ where
 	pub(crate) fn remove_auto_compound(candidate: &T::AccountId, delegator: &T::AccountId) {
 		let mut auto_compounding_state = Self::get_storage(candidate);
 		if auto_compounding_state.remove_for_delegator(delegator) {
-			auto_compounding_state.set_storage(candidate);
+			auto_compounding_state.set_storage(&candidate);
 		}
 	}
 
 	/// Returns the value of auto-compound, if it exists for a given delegation, zero otherwise.
 	pub(crate) fn auto_compound(candidate: &T::AccountId, delegator: &T::AccountId) -> Percent {
 		let delegations_config = Self::get_storage(candidate);
-		delegations_config.get_for_delegator(delegator).unwrap_or_else(Percent::zero)
+		delegations_config
+			.get_for_delegator(&delegator)
+			.unwrap_or_else(|| Percent::zero())
 	}
 }
 
@@ -289,10 +327,19 @@ mod tests {
 
 	#[test]
 	fn test_set_for_delegator_inserts_config_and_returns_true_if_entry_missing() {
-		let mut delegations_config = AutoCompoundDelegations::<Test>::new(vec![].try_into().expect("must succeed"));
-		assert_eq!(true, delegations_config.set_for_delegator(1, Percent::from_percent(50)).expect("must succeed"));
+		let mut delegations_config =
+			AutoCompoundDelegations::<Test>::new(vec![].try_into().expect("must succeed"));
 		assert_eq!(
-			vec![AutoCompoundConfig { delegator: 1, value: Percent::from_percent(50) }],
+			true,
+			delegations_config
+				.set_for_delegator(1, Percent::from_percent(50))
+				.expect("must succeed")
+		);
+		assert_eq!(
+			vec![AutoCompoundConfig {
+				delegator: 1,
+				value: Percent::from_percent(50),
+			}],
 			delegations_config.into_inner().into_inner(),
 		);
 	}
@@ -300,13 +347,24 @@ mod tests {
 	#[test]
 	fn test_set_for_delegator_updates_config_and_returns_true_if_entry_changed() {
 		let mut delegations_config = AutoCompoundDelegations::<Test>::new(
-			vec![AutoCompoundConfig { delegator: 1, value: Percent::from_percent(10) }]
-				.try_into()
-				.expect("must succeed"),
+			vec![AutoCompoundConfig {
+				delegator: 1,
+				value: Percent::from_percent(10),
+			}]
+			.try_into()
+			.expect("must succeed"),
 		);
-		assert_eq!(true, delegations_config.set_for_delegator(1, Percent::from_percent(50)).expect("must succeed"));
 		assert_eq!(
-			vec![AutoCompoundConfig { delegator: 1, value: Percent::from_percent(50) }],
+			true,
+			delegations_config
+				.set_for_delegator(1, Percent::from_percent(50))
+				.expect("must succeed")
+		);
+		assert_eq!(
+			vec![AutoCompoundConfig {
+				delegator: 1,
+				value: Percent::from_percent(50),
+			}],
 			delegations_config.into_inner().into_inner(),
 		);
 	}
@@ -314,29 +372,44 @@ mod tests {
 	#[test]
 	fn test_set_for_delegator_updates_config_and_returns_false_if_entry_unchanged() {
 		let mut delegations_config = AutoCompoundDelegations::<Test>::new(
-			vec![AutoCompoundConfig { delegator: 1, value: Percent::from_percent(10) }]
-				.try_into()
-				.expect("must succeed"),
+			vec![AutoCompoundConfig {
+				delegator: 1,
+				value: Percent::from_percent(10),
+			}]
+			.try_into()
+			.expect("must succeed"),
 		);
-		assert_eq!(false, delegations_config.set_for_delegator(1, Percent::from_percent(10)).expect("must succeed"));
 		assert_eq!(
-			vec![AutoCompoundConfig { delegator: 1, value: Percent::from_percent(10) }],
+			false,
+			delegations_config
+				.set_for_delegator(1, Percent::from_percent(10))
+				.expect("must succeed")
+		);
+		assert_eq!(
+			vec![AutoCompoundConfig {
+				delegator: 1,
+				value: Percent::from_percent(10),
+			}],
 			delegations_config.into_inner().into_inner(),
 		);
 	}
 
 	#[test]
 	fn test_remove_for_delegator_returns_false_if_entry_was_missing() {
-		let mut delegations_config = AutoCompoundDelegations::<Test>::new(vec![].try_into().expect("must succeed"));
+		let mut delegations_config =
+			AutoCompoundDelegations::<Test>::new(vec![].try_into().expect("must succeed"));
 		assert_eq!(false, delegations_config.remove_for_delegator(&1),);
 	}
 
 	#[test]
 	fn test_remove_delegation_config_returns_true_if_entry_existed() {
 		let mut delegations_config = AutoCompoundDelegations::<Test>::new(
-			vec![AutoCompoundConfig { delegator: 1, value: Percent::from_percent(10) }]
-				.try_into()
-				.expect("must succeed"),
+			vec![AutoCompoundConfig {
+				delegator: 1,
+				value: Percent::from_percent(10),
+			}]
+			.try_into()
+			.expect("must succeed"),
 		);
 		assert_eq!(true, delegations_config.remove_for_delegator(&1));
 	}
