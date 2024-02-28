@@ -1,12 +1,14 @@
-// KILT Blockchain – https://botlabs.org
-// Copyright (C) 2019-2024 BOTLabs GmbH
+// Copyright 2019-2022 PureStake Inc.
 
-// The KILT Blockchain is free software: you can redistribute it and/or modify
+// Polimec Blockchain – https://www.polimec.org/
+// Copyright (C) Polimec 2022. All rights reserved.
+
+// The Polimec Blockchain is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 
-// The KILT Blockchain is distributed in the hope that it will be useful,
+// The Polimec Blockchain is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
@@ -14,145 +16,148 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-// If you feel like getting in touch with us, you can do so at info@botlabs.org
+//! # Migrations
+//!
+#[allow(unused_imports)]
+use crate::*;
 
-use frame_support::{
-	traits::{
-		fungible::freeze::Mutate as MutateFreeze, Get, GetStorageVersion, LockIdentifier,
-		LockableCurrency, OnRuntimeUpgrade, ReservableCurrency, StorageVersion,
-	},
-	weights::Weight,
+// Substrate
+use frame_support::traits::{
+	fungible::{InspectHold, MutateHold},
+	Currency, Get, LockIdentifier, LockableCurrency, ReservableCurrency,
 };
-use pallet_balances::{BalanceLock, Freezes, IdAmount, Locks};
-use sp_runtime::SaturatedConversion;
-use sp_std::marker::PhantomData;
+#[allow(unused_imports)]
+use frame_support::{dispatch::DispatchError, log, migration, storage::unhashed};
+use parity_scale_codec::Encode;
+use sp_core::hexdisplay::HexDisplay;
+#[allow(unused_imports)]
+use sp_std::vec::Vec;
 
-#[cfg(feature = "try-runtime")]
-use sp_runtime::TryRuntimeError;
+// Lock Identifiers used in the old version of the pallet.
+const COLLATOR_LOCK_ID: LockIdentifier = *b"stkngcol";
+const DELEGATOR_LOCK_ID: LockIdentifier = *b"stkngdel";
 
-use crate::{
-	types::{AccountIdOf, CurrencyOf},
-	Config, FreezeReason, Pallet, STORAGE_VERSION as TARGET_STORAGE_VERSION,
-};
-
-const STAKING_ID: LockIdentifier = *b"kiltpstk";
-
-const CURRENT_STORAGE_VERSION: StorageVersion = StorageVersion::new(8);
-
-pub struct BalanceMigration<T>(PhantomData<T>);
-
-impl<T: Config> OnRuntimeUpgrade for BalanceMigration<T>
+pub struct CustomOnRuntimeUpgrade<T, OldCurrency>
 where
-	<T as Config>::Currency: ReservableCurrency<T::AccountId>,
-	<T as Config>::Currency: LockableCurrency<T::AccountId>,
+	T: Config,
+	OldCurrency: 'static
+		+ LockableCurrency<<T as frame_system::Config>::AccountId>
+		+ Currency<<T as frame_system::Config>::AccountId>
+		+ ReservableCurrency<<T as frame_system::Config>::AccountId>,
 {
-	fn on_runtime_upgrade() -> frame_support::weights::Weight {
-		log::info!("Staking: Initiating migration");
+	_phantom: sp_std::marker::PhantomData<(T, OldCurrency)>,
+}
 
-		let onchain_storage_version = Pallet::<T>::on_chain_storage_version();
-		if onchain_storage_version == CURRENT_STORAGE_VERSION {
-			TARGET_STORAGE_VERSION.put::<Pallet<T>>();
-			<T as frame_system::Config>::DbWeight::get()
-				.reads_writes(1, 1)
-				.saturating_add(do_migration::<T>())
-		} else {
+impl<T, OldCurrency> frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade<T, OldCurrency>
+where
+	T: Config,
+	OldCurrency: 'static
+		+ LockableCurrency<<T as frame_system::Config>::AccountId>
+		+ Currency<<T as frame_system::Config>::AccountId>
+		+ ReservableCurrency<<T as frame_system::Config>::AccountId>,
+	BalanceOf<T>: From<OldCurrency::Balance>,
+{
+	#[cfg(feature = "try-runtime")]
+	fn pre_upgrade() -> Result<Vec<u8>, DispatchError> {
+		let active_collators = CandidatePool::<T>::get().0;
+
+		for bond_info in active_collators {
+			let owner = bond_info.owner;
+			let balance = OldCurrency::free_balance(&owner);
 			log::info!(
-				"Staking: No migration needed. This file should be deleted. Current storage version: {:?}, Required Version for update: {:?}",
-				onchain_storage_version,
-				CURRENT_STORAGE_VERSION
+				"Collator: {:?} OldCurrency::free_balance pre_upgrade {:?}",
+				HexDisplay::from(&owner.encode()),
+				balance
 			);
-			<T as frame_system::Config>::DbWeight::get().reads(1)
 		}
+
+		Ok(Vec::new())
 	}
 
 	#[cfg(feature = "try-runtime")]
-	fn pre_upgrade() -> Result<sp_std::vec::Vec<u8>, TryRuntimeError> {
-		use sp_runtime::traits::Zero;
-		use sp_std::vec;
+	fn post_upgrade(_state: Vec<u8>) -> Result<(), DispatchError> {
+		let active_collators = CandidatePool::<T>::get().0;
 
-		let count_freezes = pallet_balances::Freezes::<T>::iter().count();
-		assert!(count_freezes.is_zero(), "Staking Pre: There are already freezes.");
-
-		assert_eq!(Pallet::<T>::on_chain_storage_version(), CURRENT_STORAGE_VERSION);
-
-		log::info!("Staking: Pre migration checks successful");
-
-		Ok(vec![])
-	}
-
-	#[cfg(feature = "try-runtime")]
-	fn post_upgrade(_pre_state: sp_std::vec::Vec<u8>) -> Result<(), TryRuntimeError> {
-		use sp_runtime::traits::Zero;
-
-		let count_freezes = pallet_balances::Freezes::<T>::iter().count();
-
-		assert!(!count_freezes.is_zero(), "Staking: There are still no freezes.");
-
-		assert_eq!(Pallet::<T>::on_chain_storage_version(), TARGET_STORAGE_VERSION);
-
-		log::info!("Staking: Post migration checks successful");
+		for bond_info in active_collators {
+			let owner = bond_info.owner;
+			let balance = OldCurrency::free_balance(&owner);
+			log::info!(
+				"Collator: {:?} OldCurrency::free_balance post_upgrade {:?}",
+				HexDisplay::from(&owner.encode()),
+				balance
+			);
+		}
 
 		Ok(())
 	}
-}
 
-fn do_migration<T: Config>() -> Weight
-where
-	<T as Config>::Currency: ReservableCurrency<T::AccountId>,
-	<T as Config>::Currency: LockableCurrency<T::AccountId>,
-{
-	Locks::<T>::iter()
-		.map(|(user_id, locks)| {
-			let weight = locks
-				.iter()
-				.map(|lock: &BalanceLock<_>| -> Weight {
-					if lock.id == STAKING_ID {
-						return update_or_create_freeze::<T>(user_id.clone(), lock);
+	fn on_runtime_upgrade() -> frame_support::weights::Weight {
+		log::info!("Parachain Staking: on_runtime_upgrade");
+		let mut read_ops = 0u64;
+		let mut write_ops = 0u64;
+
+		// Get all the active collators
+		let active_collators = CandidatePool::<T>::get().0;
+		read_ops += 1;
+
+		for bond_info in active_collators {
+			let owner = bond_info.owner;
+			log::info!("Parachain Staking: migrating collator {:?}", HexDisplay::from(&owner.encode()));
+
+			let candidate_info = CandidateInfo::<T>::get(&owner).unwrap();
+			let bond_amount = candidate_info.bond;
+			read_ops += 1;
+			log::info!("Parachain Staking: bond_amount {:?}", bond_amount);
+
+			let already_held: <T as Config>::Balance =
+				T::Currency::balance_on_hold(&HoldReason::StakingCollator.into(), &owner);
+			read_ops += 1;
+
+			// Check if the lock is already held, to make migration idempotent
+			if already_held == bond_amount {
+				log::info!("Parachain Staking: already held {:?}", already_held);
+			} else {
+				// Remove the lock from the old currency
+				OldCurrency::remove_lock(COLLATOR_LOCK_ID, &owner);
+				write_ops += 1;
+
+				// Hold the new currency
+				T::Currency::hold(&HoldReason::StakingCollator.into(), &owner, bond_amount).unwrap_or_else(|err| {
+					log::error!("Failed to add lock to parachain staking currency: {:?}", err);
+				});
+				write_ops += 1;
+
+				// Get all the delegations for the collator
+				if let Some(delegations) = TopDelegations::<T>::get(&owner) {
+					read_ops += 1;
+					for delegation in delegations.delegations {
+						// Process each delegation
+						log::info!(
+							"Delegator: {:?}, Amount: {:?}",
+							HexDisplay::from(&delegation.owner.encode()),
+							delegation.amount
+						);
+
+						// Remove the lock from the old currency
+						OldCurrency::remove_lock(DELEGATOR_LOCK_ID, &delegation.owner);
+						write_ops += 1;
+
+						// Hold the new currency
+						T::Currency::hold(&HoldReason::StakingDelegator.into(), &delegation.owner, delegation.amount)
+							.unwrap_or_else(|err| {
+								log::error!("Failed to add lock to parachain staking currency: {:?}", err);
+							});
+						write_ops += 1;
 					}
-					<T as frame_system::Config>::DbWeight::get().reads_writes(0, 0)
-				})
-				.fold(Weight::zero(), |acc, next| acc.saturating_add(next));
-			weight
-		})
-		.fold(Weight::zero(), |acc, next| acc.saturating_add(next))
-}
+				} else {
+					// Handle the case where there are no delegations for the account
+					log::info!("No delegations found for the given account.");
+				}
+			}
+		}
 
-fn update_or_create_freeze<T: Config>(
-	user_id: T::AccountId,
-	lock: &BalanceLock<<T as pallet_balances::Config>::Balance>,
-) -> Weight
-where
-	CurrencyOf<T>: LockableCurrency<AccountIdOf<T>>,
-{
-	let freezes = Freezes::<T>::get(&user_id);
+		log::info!("Parachain Staking: read_ops {:?} | write_ops: {:?}", read_ops, write_ops);
 
-	let result = if let Some(IdAmount { amount, .. }) = freezes.iter().find(|freeze| {
-		freeze.id == <T as Config>::FreezeIdentifier::from(FreezeReason::Staking).into()
-	}) {
-		let total_lock =
-			lock.amount.saturated_into::<u128>().saturating_add((*amount).saturated_into());
-
-		<CurrencyOf<T> as MutateFreeze<AccountIdOf<T>>>::extend_freeze(
-			&<T as crate::Config>::FreezeIdentifier::from(FreezeReason::Staking),
-			&user_id,
-			total_lock.saturated_into(),
-		)
-	} else {
-		<CurrencyOf<T> as MutateFreeze<AccountIdOf<T>>>::set_freeze(
-			&<T as crate::Config>::FreezeIdentifier::from(FreezeReason::Staking),
-			&user_id,
-			lock.amount.saturated_into(),
-		)
-	};
-
-	<CurrencyOf<T> as LockableCurrency<AccountIdOf<T>>>::remove_lock(STAKING_ID, &user_id);
-
-	if result.is_err() {
-		return <T as frame_system::Config>::DbWeight::get().reads(1);
+		<T as frame_system::Config>::DbWeight::get().reads_writes(read_ops, write_ops)
 	}
-
-	// Currency::reserve and Currency::hold each read and write to the DB once.
-	// Since we are uncertain about which operation may fail, in the event of an
-	// error, we assume the worst-case scenario here.
-	<T as frame_system::Config>::DbWeight::get().reads_writes(2, 2)
 }

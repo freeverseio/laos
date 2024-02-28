@@ -1,11 +1,12 @@
 # DPoS Pallet for Parachain Staking
 
-This pallet is forked from `kilt` to avoid dependency on it. The exact commit hash of the fork is [`9b6b9da75496a4ab1a15a114679b6a942d4e73a1`](https://github.com/KILTprotocol/kilt-node/tree/9b6b9da75496a4ab1a15a114679b6a942d4e73a1);
+This repository contains a modified version of Moonbeam's 'parachain_staking' Substrate Pallet. The original version can be found [here](https://github.com/PureStake/moonbeam/tree/master/pallets/parachain-staking).
 
-## Collator Misconduct Policy
-
-In a Proof of Stake (PoS) system, stakeholders can become block producers, termed as collators, and receive rewards for successfully generated blocks. Stakeholders also have the option to delegate their stakes to a collator, sharing in the rewards for each block authored by the chosen collator.
-
-However, should a collator exhibit any form of misconduct—such as going offline, failing to validate, or producing invalid blocks—they will forfeit their rewards. By extension, delegators aligned with the non-compliant collator will also be affected, as they will not receive their expected rewards.
-
-In response to such events, the governing body retains the right to decommission any collator found to be in violation of operational standards.
+## Modifications
+The modifications to the original pallet include the following:
+1. Removed Nimbus Dependencies: The original dependencies on Nimbus have been removed. This simplifies the usage of the pallet and makes it independent of Nimbus.
+2. Implemented Traits from **pallet_authorship** and **pallet_session**: To replace some functionality previously provided by Nimbus, several traits from _pallet_authorship_ and _pallet_session_ have been implemented:
+    - **EventHandler** from *pallet_authorship*: This trait is used to note the block author and award them points for producing a block. The points are then used for staking purposes.
+    - **SessionManager** from *pallet_session*: This trait is used to manage the start and end of sessions, as well as assemble new collators for new sessions.
+    - **ShouldEndSession** from *pallet_session*: This trait is used to decide when a session should end.
+    - **EstimateNextSessionRotation** from *pallet_session*: This trait is used to estimate the average session length and the current session progress, as well as estimate the next session rotation.
