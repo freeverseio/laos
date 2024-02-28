@@ -1,6 +1,11 @@
 use crate::*;
 
 use frame_support::traits::{ConstU128, ConstU32};
+use frame_support::parameter_types;
+
+parameter_types! {
+	pub const MinCandidateStk: u128 = 20_000 * UNIT;
+}
 
 impl pallet_parachain_staking::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
@@ -31,7 +36,7 @@ impl pallet_parachain_staking::Config for Runtime {
 	/// Maximum delegations per delegator
 	type MaxDelegationsPerDelegator = ConstU32<100>;
 	/// Minimum stake required to be reserved to be a candidate
-	type MinCandidateStk = ConstU128<{ 20_000 * UNIT }>;
+	type MinCandidateStk = MinCandidateStk;
 	/// Minimum stake required to be reserved to be a delegator
 	type MinDelegation = ConstU128<{ 500 * UNIT }>;
 	type BlockAuthor = (); // TODO

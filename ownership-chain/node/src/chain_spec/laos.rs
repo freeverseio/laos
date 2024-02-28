@@ -3,11 +3,11 @@ use cumulus_primitives_core::ParaId;
 use fp_evm::GenesisAccount;
 use laos_ownership_runtime::{
 	AccountId, AuraId, Balance,
-	Precompiles, BLOCKS_PER_YEAR, REVERT_BYTECODE, UNIT,
+	Precompiles, REVERT_BYTECODE, 
+	configs::parachain_staking,
 };
 use sc_service::ChainType;
 use sp_core::{H160, U256};
-use sp_runtime::Perquintill;
 use std::{collections::BTreeMap, str::FromStr};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
@@ -37,7 +37,7 @@ pub fn development_config() -> ChainSpec {
 		move || {
 			testnet_genesis(
 				// initial collators.
-				vec![(predefined_accounts::ALITH.into(), None, 2 )],
+				vec![(predefined_accounts::ALITH.into(), 2 * parachain_staking::MinCandidateStk::get() )],
 				vec![(predefined_accounts::ALITH.into(), get_collator_keys_from_seed("Alice"))],
 				predefined_accounts::accounts(),
 				// Give Alice root privileges
@@ -72,7 +72,7 @@ pub fn local_testnet_config() -> ChainSpec {
 		ChainType::Local,
 		move || {
 			testnet_genesis(
-				vec![(predefined_accounts::ALITH.into(), None, 2 )],
+				vec![(predefined_accounts::ALITH.into(), 2 * parachain_staking::MinCandidateStk::get())],
 				// initial collators.
 				vec![(predefined_accounts::ALITH.into(), get_collator_keys_from_seed("Alice"))],
 				predefined_accounts::accounts(),
@@ -100,7 +100,7 @@ pub fn local_testnet_config() -> ChainSpec {
 }
 
 fn testnet_genesis(
-	stakers: Vec<(AccountId, Option<AccountId>, Balance)>,
+	stakers: Vec<(AccountId, Balance)>,
 	invulnerables: Vec<(AccountId, AuraId)>,
 	endowed_accounts: Vec<AccountId>,
 	root_key: Option<AccountId>,
@@ -150,6 +150,7 @@ fn testnet_genesis(
 			..Default::default()
 		},
 		parachain_staking: laos_ownership_runtime::ParachainStakingConfig {
+			candidates: stakers,
 			blocks_per_round: 5,
 			..Default::default()
 		},
