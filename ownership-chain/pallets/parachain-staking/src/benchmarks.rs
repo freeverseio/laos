@@ -65,11 +65,7 @@ fn create_funded_delegator<T: Config>(
 	collator_delegator_count: u32,
 ) -> Result<T::AccountId, &'static str> {
 	let (user, total) = create_funded_user::<T>(string, n, extra);
-	let bond = if min_bond {
-		min_delegator_stk::<T>()
-	} else {
-		total
-	};
+	let bond = if min_bond { min_delegator_stk::<T>() } else { total };
 	Pallet::<T>::delegate(
 		RawOrigin::Signed(user.clone()).into(),
 		collator,
@@ -149,11 +145,8 @@ fn create_account<T: Config>(
 				0u32, // first delegation for all calls
 			)
 			.expect("failed delegating");
-		}
-		AccountAction::JoinCandidates {
-			amount,
-			candidate_count,
-		} => {
+		},
+		AccountAction::JoinCandidates { amount, candidate_count } => {
 			let amount = match amount {
 				Amount::All => initial_balance,
 				Amount::Value(v) => v,
@@ -164,7 +157,7 @@ fn create_account<T: Config>(
 				candidate_count,
 			)
 			.expect("failed joining candidates");
-		}
+		},
 	};
 
 	Ok(acc)
@@ -179,16 +172,8 @@ fn create_funded_collator<T: Config>(
 	candidate_count: u32,
 ) -> Result<T::AccountId, &'static str> {
 	let (user, total) = create_funded_user::<T>(string, n, extra);
-	let bond = if min_bond {
-		min_candidate_stk::<T>()
-	} else {
-		total
-	};
-	Pallet::<T>::join_candidates(
-		RawOrigin::Signed(user.clone()).into(),
-		bond,
-		candidate_count,
-	)?;
+	let bond = if min_bond { min_candidate_stk::<T>() } else { total };
+	Pallet::<T>::join_candidates(RawOrigin::Signed(user.clone()).into(), bond, candidate_count)?;
 	Ok(user)
 }
 
@@ -2298,16 +2283,13 @@ benchmarks! {
 
 #[cfg(test)]
 mod tests {
-	use crate::benchmarks::*;
-	use crate::mock::Test;
+	use crate::{benchmarks::*, mock::Test};
 	use frame_support::assert_ok;
 	use sp_io::TestExternalities;
 	use sp_runtime::BuildStorage;
 
 	pub fn new_test_ext() -> TestExternalities {
-		let t = frame_system::GenesisConfig::<Test>::default()
-			.build_storage()
-			.unwrap();
+		let t = frame_system::GenesisConfig::<Test>::default().build_storage().unwrap();
 		TestExternalities::new(t)
 	}
 
@@ -2487,8 +2469,4 @@ mod tests {
 	}
 }
 
-impl_benchmark_test_suite!(
-	Pallet,
-	crate::benchmarks::tests::new_test_ext(),
-	crate::mock::Test
-);
+impl_benchmark_test_suite!(Pallet, crate::benchmarks::tests::new_test_ext(), crate::mock::Test);

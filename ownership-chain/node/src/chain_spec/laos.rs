@@ -2,8 +2,8 @@ use super::{get_collator_keys_from_seed, predefined_accounts, Extensions, SAFE_X
 use cumulus_primitives_core::ParaId;
 use fp_evm::GenesisAccount;
 use laos_ownership_runtime::{
-	AccountId, AuraId, Balance, InflationInfo, configs::parachain_staking::MinCollatorStake, Precompiles, BLOCKS_PER_YEAR,
-	REVERT_BYTECODE, UNIT,
+	configs::parachain_staking::MinCollatorStake, AccountId, AuraId, Balance, InflationInfo,
+	Precompiles, BLOCKS_PER_YEAR, REVERT_BYTECODE, UNIT,
 };
 use sc_service::ChainType;
 use sp_core::{H160, U256};

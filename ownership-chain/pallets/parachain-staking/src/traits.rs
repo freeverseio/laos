@@ -80,8 +80,6 @@ impl<Runtime: crate::Config> OnInactiveCollator<Runtime> for () {
 		_round: crate::RoundIndex,
 	) -> Result<Weight, DispatchErrorWithPostInfo<PostDispatchInfo>> {
 		crate::Pallet::<Runtime>::go_offline_inner(collator_id)?;
-		Ok(<Runtime as crate::Config>::WeightInfo::go_offline(
-			crate::MAX_CANDIDATES,
-		))
+		Ok(<Runtime as crate::Config>::WeightInfo::go_offline(crate::MAX_CANDIDATES))
 	}
 }

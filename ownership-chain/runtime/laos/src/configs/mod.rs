@@ -2,8 +2,8 @@ use crate::{MILLIUNIT, UNIT};
 use ownership_parachain_primitives::Balance;
 
 mod multisig;
-mod proxy;
 pub mod parachain_staking;
+mod proxy;
 
 // Define storage fees as constants for clarity and reuse
 const STORAGE_ITEM_FEE: Balance = 10 * UNIT;

@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moonbeam.  If not, see <http://www.gnu.org/licenses/>.
 
-/* TODO: use orml_utilities::OrderedSet without leaking substrate v2.0 dependencies*/
+/* TODO: use orml_utilities::OrderedSet without leaking substrate v2.0 dependencies */
 
 use frame_support::traits::Get;
 use parity_scale_codec::{Decode, Encode};
@@ -57,7 +57,7 @@ impl<T: Ord> OrderedSet<T> {
 			Err(loc) => {
 				self.0.insert(loc, value);
 				true
-			}
+			},
 		}
 	}
 
@@ -68,7 +68,7 @@ impl<T: Ord> OrderedSet<T> {
 			Ok(loc) => {
 				self.0.remove(loc);
 				true
-			}
+			},
 			Err(_) => false,
 		}
 	}
@@ -140,7 +140,7 @@ impl<T: Ord, S: Get<u32>> BoundedOrderedSet<T, S> {
 			Ok(loc) => {
 				self.0.remove(loc);
 				true
-			}
+			},
 			Err(_) => false,
 		}
 	}
