@@ -1,68 +1,47 @@
 use crate::*;
 
-// Polimec Blockchain – https://www.polimec.org/
-// Copyright (C) Polimec 2022. All rights reserved.
-
-// The Polimec Blockchain is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-
-// The Polimec Blockchain is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-use frame_support::{parameter_types, PalletId};
-
-// Since a Round is 6 hours, one week, expresses as `RoundIndex` is 4 * 7
-const WEEK_IN_ROUNDS: u32 = 4 * 7;
-
-parameter_types! {
-	pub const MinBlocksPerRound: u32 = 10;
-	pub const LeaveCandidatesDelay: u32 = WEEK_IN_ROUNDS;
-	pub const CandidateBondLessDelay: u32 = WEEK_IN_ROUNDS;
-	pub const LeaveDelegatorsDelay: u32 = WEEK_IN_ROUNDS;
-	pub const RevokeDelegationDelay: u32 = WEEK_IN_ROUNDS;
-	pub const DelegationBondLessDelay: u32 = WEEK_IN_ROUNDS;
-	pub const RewardPaymentDelay: u32 = 2;
-	pub const MinSelectedCandidates: u32 = 5;
-	pub const MaxTopDelegationsPerCandidate: u32 = 300;
-	pub const MaxBottomDelegationsPerCandidate: u32 = 50;
-	pub const MaxDelegationsPerDelegator: u32 = 100;
-	pub const MinCandidateStk: u128 = 20_000 * UNIT;
-	pub const MinDelegatorStk: u128 = 50 * UNIT;
-	pub const MinDelegation: u128 = 50 * UNIT;
-	pub const StakingPalletId: PalletId = PalletId(*b"plmc/stk");
-}
-
+use frame_support::traits::{ConstU32, ConstU128};
 
 impl pallet_parachain_staking::Config for Runtime {
-	type CandidateBondLessDelay = CandidateBondLessDelay;
-	type Currency = Balances;
-	type DelegationBondLessDelay = DelegationBondLessDelay;
-	type LeaveCandidatesDelay = LeaveCandidatesDelay;
-	type LeaveDelegatorsDelay = LeaveDelegatorsDelay;
-	type MaxBottomDelegationsPerCandidate = MaxBottomDelegationsPerCandidate;
-	type MaxDelegationsPerDelegator = MaxDelegationsPerDelegator;
-	type MaxTopDelegationsPerCandidate = MaxTopDelegationsPerCandidate;
-	type MinBlocksPerRound = MinBlocksPerRound;
-	type MinCandidateStk = MinCandidateStk;
-	type MinDelegation = MinDelegation;
-	type MinDelegatorStk = MinDelegatorStk;
-	type MinSelectedCandidates = MinSelectedCandidates;
-	type MonetaryGovernanceOrigin = frame_system::EnsureRoot<AccountId>;
-	type OnCollatorPayout = ();
-	type OnNewRound = ();
-	type PayMaster = ();
-	// We use the default implementation, so we leave () here.
-	type PayoutCollatorReward = ();
-	type RevokeDelegationDelay = RevokeDelegationDelay;
-	type RewardPaymentDelay = RewardPaymentDelay;
 	type RuntimeEvent = RuntimeEvent;
-	type RuntimeHoldReason = RuntimeHoldReason;
-	type WeightInfo = pallet_parachain_staking::weights::SubstrateWeight<Runtime>;
+	type Currency = Balances;
+	type MonetaryGovernanceOrigin = frame_system::EnsureRoot<AccountId>;
+	/// Minimum round length is 2 minutes (10 * 12 second block times)
+	type MinBlocksPerRound = ConstU32<10>;
+	/// If a collator doesn't produce any block on this number of rounds, it is notified as inactive
+	type MaxOfflineRounds = ConstU32<1>;
+	/// Rounds before the collator leaving the candidates request can be executed
+	type LeaveCandidatesDelay = ConstU32<{ 4 * 7 }>;
+	/// Rounds before the candidate bond increase/decrease can be executed
+	type CandidateBondLessDelay = ConstU32<{ 4 * 7 }>;
+	/// Rounds before the delegator exit can be executed
+	type LeaveDelegatorsDelay = ConstU32<{ 4 * 7 }>;
+	/// Rounds before the delegator revocation can be executed
+	type RevokeDelegationDelay = ConstU32<{ 4 * 7 }>;
+	/// Rounds before the delegator bond increase/decrease can be executed
+	type DelegationBondLessDelay = ConstU32<{ 4 * 7 }>;
+	/// Rounds before the reward is paid
+	type RewardPaymentDelay = ConstU32<2>;
+	/// Minimum collators selected per round, default at genesis and minimum forever after
+	type MinSelectedCandidates = ConstU32<8>;
+	/// Maximum top delegations per candidate
+	type MaxTopDelegationsPerCandidate = ConstU32<300>;
+	/// Maximum bottom delegations per candidate
+	type MaxBottomDelegationsPerCandidate = ConstU32<50>;
+	/// Maximum delegations per delegator
+	type MaxDelegationsPerDelegator = ConstU32<100>;
+	/// Minimum stake required to be reserved to be a candidate
+	type MinCandidateStk = ConstU128<{ 20_000 * UNIT }>;
+	/// Minimum stake required to be reserved to be a delegator
+	type MinDelegation = ConstU128<{ 500 * UNIT }>;
+	type BlockAuthor = (); // TODO
+	type OnCollatorPayout = ();
+	type PayoutCollatorReward = (); // TODO
+	type OnInactiveCollator = (); // TODO
+	type OnNewRound = (); // TODO
+	type SlotProvider = (); // TODO
+	type WeightInfo = (); // TODO
+	type MaxCandidates = ConstU32<200>;
+	type SlotsPerYear = ConstU32<{ 31_557_600 / 12 }>;
 }
+
