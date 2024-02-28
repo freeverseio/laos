@@ -2,7 +2,8 @@ use super::{get_collator_keys_from_seed, predefined_accounts, Extensions, SAFE_X
 use cumulus_primitives_core::ParaId;
 use fp_evm::GenesisAccount;
 use laos_ownership_runtime::{
-	AccountId, AuraId, Balance, Precompiles, BLOCKS_PER_YEAR, REVERT_BYTECODE, UNIT,
+	AccountId, AuraId, Balance,
+	Precompiles, BLOCKS_PER_YEAR, REVERT_BYTECODE, UNIT,
 };
 use sc_service::ChainType;
 use sp_core::{H160, U256};
@@ -36,7 +37,7 @@ pub fn development_config() -> ChainSpec {
 		move || {
 			testnet_genesis(
 				// initial collators.
-				vec![(predefined_accounts::ALITH.into(), None, 2)],
+				vec![(predefined_accounts::ALITH.into(), None, 2 )],
 				vec![(predefined_accounts::ALITH.into(), get_collator_keys_from_seed("Alice"))],
 				predefined_accounts::accounts(),
 				// Give Alice root privileges
@@ -71,7 +72,7 @@ pub fn local_testnet_config() -> ChainSpec {
 		ChainType::Local,
 		move || {
 			testnet_genesis(
-				vec![(predefined_accounts::ALITH.into(), None, 2)],
+				vec![(predefined_accounts::ALITH.into(), None, 2 )],
 				// initial collators.
 				vec![(predefined_accounts::ALITH.into(), get_collator_keys_from_seed("Alice"))],
 				predefined_accounts::accounts(),
@@ -105,6 +106,7 @@ fn testnet_genesis(
 	root_key: Option<AccountId>,
 	id: ParaId,
 ) -> laos_ownership_runtime::RuntimeGenesisConfig {
+
 	laos_ownership_runtime::RuntimeGenesisConfig {
 		system: laos_ownership_runtime::SystemConfig {
 			code: laos_ownership_runtime::WASM_BINARY
@@ -147,7 +149,10 @@ fn testnet_genesis(
 			chain_id: 667,
 			..Default::default()
 		},
-		parachain_staking: laos_ownership_runtime::ParachainStakingConfig { ..Default::default() },
+		parachain_staking: laos_ownership_runtime::ParachainStakingConfig {
+			blocks_per_round: 5,
+			..Default::default()
+		},
 		evm: laos_ownership_runtime::EVMConfig {
 			accounts: {
 				let mut map: BTreeMap<_, _> = Precompiles::used_addresses()
