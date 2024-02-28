@@ -405,9 +405,9 @@ impl pallet_session::Config for Runtime {
 	// we don't have stash and controller, thus we don't need the convert as well.
 	type ValidatorIdOf = ConvertInto;
 	type ShouldEndSession = ParachainStaking;
-	type NextSessionRotation = (); // TODO ParachainStaking;
-	type SessionManager = (); // TODO ParachainStaking;
-						  // Essentially just Aura, but let's be pedantic.
+	type NextSessionRotation = ParachainStaking;
+	type SessionManager = ParachainStaking;
+	// Essentially just Aura, but let's be pedantic.
 	type SessionHandler = <SessionKeys as sp_runtime::traits::OpaqueKeys>::KeyTypeIdProviders;
 	type Keys = SessionKeys;
 	type WeightInfo = pallet_session::weights::SubstrateWeight<Runtime>;
@@ -497,8 +497,8 @@ where
 	R: pallet_balances::Config + pallet_parachain_staking::Config,
 {
 	fn on_nonzero_unbalanced(amount: NegativeImbalanceOfBalances<R>) {
-		// if let Some(account) = <pallet_parachain_staking::Pallet<R>>::collator_rewards_account() {
-		// 	<pallet_balances::Pallet<R>>::resolve_creating(&account, amount);
+		// if let Some(account) = <pallet_parachain_staking::Pallet<R>>::collator_rewards_account()
+		// { 	<pallet_balances::Pallet<R>>::resolve_creating(&account, amount);
 		// }
 	}
 }
@@ -511,8 +511,8 @@ where
 	fn on_nonzero_unbalanced(
 		amount: Credit<<R as frame_system::Config>::AccountId, pallet_balances::Pallet<R, ()>>,
 	) {
-		// if let Some(account) = <pallet_parachain_staking::Pallet<R>>::collator_rewards_account() {
-		// 	let result = <pallet_balances::Pallet<R>>::resolve(&account, amount);
+		// if let Some(account) = <pallet_parachain_staking::Pallet<R>>::collator_rewards_account()
+		// { 	let result = <pallet_balances::Pallet<R>>::resolve(&account, amount);
 		// 	debug_assert!(result.is_ok(), "Should not fail to transfer; qed");
 		// }
 	}

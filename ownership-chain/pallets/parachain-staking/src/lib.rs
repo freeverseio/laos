@@ -88,15 +88,15 @@ pub mod pallet {
 		fail,
 		pallet_prelude::*,
 		traits::{
-			tokens::WithdrawReasons, Currency, Get, Imbalance, LockIdentifier, LockableCurrency,
-			ReservableCurrency,
+			tokens::WithdrawReasons, Currency, EstimateNextSessionRotation, Get, Imbalance,
+			LockIdentifier, LockableCurrency, ReservableCurrency,
 		},
 	};
 	use frame_system::pallet_prelude::*;
 	use sp_consensus_slots::Slot;
 	use sp_runtime::{
 		traits::{Saturating, Zero},
-		DispatchErrorWithPostInfo, Perbill, Percent,
+		DispatchErrorWithPostInfo, Perbill, Percent, Permill,
 	};
 	use sp_staking::SessionIndex;
 	use sp_std::{collections::btree_map::BTreeMap, prelude::*};
@@ -2241,6 +2241,38 @@ pub mod pallet {
 			let round = <Round<T>>::get();
 			// always update when a new round should start
 			round.should_update(now)
+		}
+	}
+
+	impl<T: Config> EstimateNextSessionRotation<BlockNumberFor<T>> for Pallet<T> {
+		fn average_session_length() -> BlockNumberFor<T> {
+			BlockNumberFor::<T>::from(<Round<T>>::get().length)
+		}
+
+		fn estimate_current_session_progress(now: BlockNumberFor<T>) -> (Option<Permill>, Weight) {
+			let round = <Round<T>>::get();
+			let passed_blocks = now.saturating_sub(round.first);
+
+			(
+				Some(Permill::from_rational(
+					passed_blocks,
+					BlockNumberFor::<T>::from(round.length),
+				)),
+				// One read for the round info, blocknumber is read free
+				T::DbWeight::get().reads(1),
+			)
+		}
+
+		fn estimate_next_session_rotation(
+			_now: BlockNumberFor<T>,
+		) -> (Option<BlockNumberFor<T>>, Weight) {
+			let round = <Round<T>>::get();
+
+			(
+				Some(round.first + round.length.into()),
+				// One read for the round info, blocknumber is read free
+				T::DbWeight::get().reads(1),
+			)
 		}
 	}
 }
