@@ -55,7 +55,7 @@ use frame_support::{
 		WeightToFeeCoefficients, WeightToFeePolynomial,
 	},
 };
-use frame_system::{pallet_prelude::BlockNumberFor, EnsureRoot};
+use frame_system::{EnsureRoot};
 pub use pallet_evm_evolution_collection_factory::REVERT_BYTECODE;
 pub use sp_runtime::{Perbill, Permill, Perquintill};
 
@@ -308,7 +308,7 @@ impl pallet_timestamp::Config for Runtime {
 
 impl pallet_authorship::Config for Runtime {
 	type FindAuthor = pallet_session::FindAccountFromAuthorIndex<Self, Aura>;
-	type EventHandler = ParachainStaking;
+	type EventHandler = (); // TODO ParachainStaking;
 }
 
 parameter_types! {
