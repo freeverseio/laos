@@ -2189,7 +2189,7 @@ pub mod pallet {
 
 	impl<T: Config> Get<Vec<T::AccountId>> for Pallet<T> {
 		fn get() -> Vec<T::AccountId> {
-			Self::selected_candidates().to_vec()
+			Self::selected_candidates().into_inner()
 		}
 	}
 
