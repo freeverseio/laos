@@ -55,7 +55,7 @@ use frame_support::{
 		WeightToFeeCoefficients, WeightToFeePolynomial,
 	},
 };
-use frame_system::{EnsureRoot};
+use frame_system::EnsureRoot;
 pub use pallet_evm_evolution_collection_factory::REVERT_BYTECODE;
 pub use sp_runtime::{Perbill, Permill, Perquintill};
 
@@ -407,7 +407,7 @@ impl pallet_session::Config for Runtime {
 	type ShouldEndSession = ParachainStaking;
 	type NextSessionRotation = (); // TODO ParachainStaking;
 	type SessionManager = (); // TODO ParachainStaking;
-	// Essentially just Aura, but let's be pedantic.
+						  // Essentially just Aura, but let's be pedantic.
 	type SessionHandler = <SessionKeys as sp_runtime::traits::OpaqueKeys>::KeyTypeIdProviders;
 	type Keys = SessionKeys;
 	type WeightInfo = pallet_session::weights::SubstrateWeight<Runtime>;
