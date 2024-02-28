@@ -265,7 +265,7 @@ pub mod pallet {
 	pub enum Event<T: Config> {
 		/// Started new round.
 		NewRound {
-			starting_block: u64,
+			starting_block: BlockNumberFor<T>,
 			round: RoundIndex,
 			selected_collators_number: u32,
 			total_balance: BalanceOf<T>,
@@ -425,7 +425,7 @@ pub mod pallet {
 		/// Set blocks per round
 		BlocksPerRoundSet {
 			current_round: RoundIndex,
-			first_block: u64,
+			first_block: BlockNumberFor<T>,
 			old: u32,
 			new: u32,
 			new_per_round_inflation_min: Perbill,
@@ -440,19 +440,14 @@ pub mod pallet {
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
-		fn on_initialize(_n: BlockNumberFor<T>) -> Weight {
+		fn on_initialize(n: BlockNumberFor<T>) -> Weight {
 			let mut weight = T::WeightInfo::base_on_initialize();
 
-			// fetch slot number
-			let slot: u64 = T::SlotProvider::get().into();
-
-			// account for SlotProvider read
-			weight = weight.saturating_add(T::DbWeight::get().reads_writes(1, 0));
-
 			let mut round = <Round<T>>::get();
-			if round.should_update(slot) {
+
+			if round.should_update(n) {
 				// mutate round
-				round.update(slot);
+				round.update(n);
 				// notify that new round begin
 				weight = weight.saturating_add(T::OnNewRound::on_new_round(round.current));
 				// pay all stakers for T::RewardPaymentDelay rounds ago
@@ -507,7 +502,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn round)]
 	/// Current round index and next round scheduled transition
-	pub type Round<T: Config> = StorageValue<_, RoundInfo<u64>, ValueQuery>;
+	pub(crate) type Round<T: Config> = StorageValue<_, RoundInfo<BlockNumberFor<T>>, ValueQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn delegator_state)]
@@ -788,12 +783,13 @@ pub mod pallet {
 			// Choose top TotalSelected collator candidates
 			let (_, v_count, _, total_staked) = <Pallet<T>>::select_top_candidates(1u32);
 			// Start Round 1 at Block 0
-			let round: RoundInfo<u64> = RoundInfo::new(1u32, 0u64, self.blocks_per_round);
+			let round: RoundInfo<BlockNumberFor<T>> =
+				RoundInfo::new(1u32, 0u32.into(), self.blocks_per_round);
 			<Round<T>>::put(round);
 			// Snapshot total stake
 			<Staked<T>>::insert(1u32, <Total<T>>::get());
 			<Pallet<T>>::deposit_event(Event::NewRound {
-				starting_block: u64::default(),
+				starting_block: BlockNumberFor::<T>::zero(),
 				round: 1u32,
 				selected_collators_number: v_count,
 				total_balance: total_staked,
