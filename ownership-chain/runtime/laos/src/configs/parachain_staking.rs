@@ -1,8 +1,7 @@
-use frame_support::{
-    parameter_types,
-    traits::{ConstU128, ConstU32},
+
+use crate::{Balance, Balances, Runtime, RuntimeCall, RuntimeEvent};
+use frame_support::parameter_types;
 };
-use crate::*;
 
 parameter_types! {
     // Minimum stake required to be reserved to be a candidate
