@@ -47,7 +47,7 @@ impl pallet_parachain_staking::Config for Runtime {
 	type OnInactiveCollator = (); // TODO
 	type OnNewRound = (); // TODO
 	type SlotProvider = (); // TODO
-	type WeightInfo = (); // TODO
+	type WeightInfo = pallet_parachain_staking::weights::SubstrateWeight<Runtime>;
 	type MaxCandidates = ConstU32<200>;
 	type SlotsPerYear = ConstU32<{ 31_557_600 / 12 }>;
 }
