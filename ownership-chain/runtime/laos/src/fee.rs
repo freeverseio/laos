@@ -1,8 +1,7 @@
 use super::PhantomData;
 use frame_support::traits::{fungible::Credit, OnUnbalanced};
 
-/// Logic for sending fees to the collator rewards account. On every unbalanced change (f.e
-/// transaction fees), the amount is transferred to the collator rewards account.
+/// This is a dummy implementation for `OnUnbalanced` trait.
 pub struct DealWithFees<R>(PhantomData<R>);
 
 type NegativeImbalanceOfBalances<T> = pallet_balances::NegativeImbalance<T>;
