@@ -31,7 +31,7 @@ parameter_types! {
 	// Minimum stake required to be reserved to be a delegator
 	pub const MinDelegation: u128 = 500 * UNIT;
 	pub const MaxCandidates: u32 = 200;
-	/// Number of blocks per year
+	/// Number of blocks per year: num of seconds in a year / num of seconds per block
 	pub const SlotsPerYear: u32 = 31_557_600 / 12;
 }
 
