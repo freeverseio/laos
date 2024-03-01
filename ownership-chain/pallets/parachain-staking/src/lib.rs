@@ -2238,27 +2238,28 @@ pub mod pallet {
 		}
 	}
 
-	impl<T: Config> pallet_session::ShouldEndSession<BlockNumberFor<T>> for Pallet<T> {
-		fn should_end_session(now: BlockNumberFor<T>) -> bool {
+	impl<T: Config> pallet_session::ShouldEndSession<u32> for Pallet<T> {
+		fn should_end_session(now: u32) -> bool {
 			let round = <Round<T>>::get();
 			// always update when a new round should start
-			round.should_update(now)
+			round.should_update(now as u64)
 		}
 	}
 
-	impl<T: Config> EstimateNextSessionRotation<BlockNumberFor<T>> for Pallet<T> {
-		fn average_session_length() -> BlockNumberFor<T> {
-			BlockNumberFor::<T>::from(<Round<T>>::get().length)
+	impl<T: Config> EstimateNextSessionRotation<u32> for Pallet<T> {
+		fn average_session_length() -> u32 {
+			<Round<T>>::get().length
 		}
 
-		fn estimate_current_session_progress(now: BlockNumberFor<T>) -> (Option<Permill>, Weight) {
+		fn estimate_current_session_progress(now: u32) -> (Option<Permill>, Weight) {
 			let round = <Round<T>>::get();
-			let passed_blocks = now.saturating_sub(round.first);
+			// TODO check the try_into
+			let passed_blocks = now.saturating_sub(round.first.try_into().unwrap());
 
 			(
 				Some(Permill::from_rational(
 					passed_blocks,
-					BlockNumberFor::<T>::from(round.length),
+					round.length,
 				)),
 				// One read for the round info, blocknumber is read free
 				T::DbWeight::get().reads(1),
@@ -2266,12 +2267,14 @@ pub mod pallet {
 		}
 
 		fn estimate_next_session_rotation(
-			_now: BlockNumberFor<T>,
-		) -> (Option<BlockNumberFor<T>>, Weight) {
+			_now: u32,
+		) -> (Option<u32>, Weight) {
 			let round = <Round<T>>::get();
 
+			// TODO check this try_into
+			let first_round: u32 = round.first.try_into().unwrap();
 			(
-				Some(round.first + round.length.into()),
+				Some(first_round + round.length),
 				// One read for the round info, blocknumber is read free
 				T::DbWeight::get().reads(1),
 			)
