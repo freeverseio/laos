@@ -1,21 +1,9 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-// External crate imports
 use frame_support::pallet_prelude::*;
-use frame_system::pallet_prelude::*;
-use sp_runtime::DispatchResult;
 
 // Crate's internal imports
 pub use pallet::*;
-
-// Internal modules
-mod benchmarking;
-pub mod weights;
-
-#[cfg(test)]
-mod mock;
-#[cfg(test)]
-mod tests;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -63,29 +51,10 @@ pub mod pallet {
 	/// Events for this pallet.
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
-	pub enum Event<T: Config> {
-		/// New rewards account has been set.
-		/// \[new account\]
-		RewardsAccountSet(T::AccountId),
-	}
+	pub enum Event<T: Config> {}
 
 	/// Customs errors for this pallet
 	#[pallet::error]
 	#[derive(PartialEq)]
 	pub enum Error<T> {}
-
-	#[pallet::call]
-	impl<T: Config> Pallet<T> {
-		/// Set rewards account.
-		///
-		/// Only `Root` origin can call this function.
-		#[pallet::call_index(0)]
-		#[pallet::weight(<T as Config>::WeightInfo::set_rewards_account())]
-		pub fn set_rewards_account(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
-			ensure_root(origin)?;
-			<RewardsAccount<T>>::put(account.clone());
-			Self::deposit_event(Event::RewardsAccountSet(account));
-			Ok(())
-		}
-	}
 }
