@@ -1,6 +1,6 @@
 use super::{
-	AccountId, AllPalletsWithSystem, Balances, ParachainInfo, PolkadotXcm, Runtime, RuntimeCall,
-	RuntimeEvent, RuntimeOrigin, ToCollatorRewards, WeightToFee,
+	fee, AccountId, AllPalletsWithSystem, Balances, ParachainInfo, PolkadotXcm, Runtime,
+	RuntimeCall, RuntimeEvent, RuntimeOrigin, WeightToFee,
 };
 use core::marker::PhantomData;
 use frame_support::{
@@ -123,7 +123,7 @@ impl staging_xcm_executor::Config for XcmConfig {
 	type Barrier = Barrier;
 	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
 	type Trader =
-		UsingComponents<WeightToFee, OurLocation, AccountId, Balances, ToCollatorRewards<Runtime>>;
+		UsingComponents<WeightToFee, OurLocation, AccountId, Balances, fee::DealWithFees<Runtime>>;
 	type ResponseHandler = PolkadotXcm;
 	type AssetTrap = PolkadotXcm;
 	type AssetClaims = PolkadotXcm;

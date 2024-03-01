@@ -13,6 +13,7 @@ mod weights;
 pub mod xcm_config;
 
 pub mod configs;
+mod fee;
 
 use core::marker::PhantomData;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
@@ -46,7 +47,6 @@ use sp_version::RuntimeVersion;
 use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{
-		fungible::{Balanced, Credit},
 		ConstBool, ConstU32, ConstU64, ConstU8, Currency, Everything, FindAuthor, Hooks, Imbalance,
 		OnUnbalanced, WithdrawReasons,
 	},
@@ -65,9 +65,6 @@ pub use pallet_xcm::Call as XcmCall;
 
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
-
-//https://github.com/paritytech/cumulus/tree/master/parachains/common
-pub use parachains_common::impls::DealWithFees;
 
 // Polkadot imports
 use polkadot_runtime_common::{BlockHashCount, SlowAdjustingFeeUpdate};
@@ -308,7 +305,7 @@ impl pallet_timestamp::Config for Runtime {
 
 impl pallet_authorship::Config for Runtime {
 	type FindAuthor = pallet_session::FindAccountFromAuthorIndex<Self, Aura>;
-	type EventHandler = ParachainStaking;
+	type EventHandler = ();
 }
 
 parameter_types! {
@@ -348,7 +345,7 @@ parameter_types! {
 impl pallet_transaction_payment::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type OnChargeTransaction =
-		pallet_transaction_payment::CurrencyAdapter<Balances, ToCollatorRewards<Runtime>>;
+		pallet_transaction_payment::CurrencyAdapter<Balances, fee::DealWithFees<Runtime>>;
 	type WeightToFee = WeightToFee;
 	type LengthToFee = ConstantMultiplier<Balance, TransactionByteFee>;
 	type FeeMultiplierUpdate = SlowAdjustingFeeUpdate<Self>;
@@ -486,38 +483,6 @@ impl<F: FindAuthor<u32>> FindAuthor<H160> for FindAuthorTruncated<F> {
 	}
 }
 
-/// Logic for sending fees to the collator rewards account. On every unbalanced change (f.e
-/// transaction fees), the amount is transferred to the collator rewards account.
-pub struct ToCollatorRewards<R>(PhantomData<R>);
-
-type NegativeImbalanceOfBalances<T> = pallet_balances::NegativeImbalance<T>;
-
-impl<R> OnUnbalanced<NegativeImbalanceOfBalances<R>> for ToCollatorRewards<R>
-where
-	R: pallet_balances::Config + pallet_parachain_staking::Config,
-{
-	fn on_nonzero_unbalanced(amount: NegativeImbalanceOfBalances<R>) {
-		// if let Some(account) = <pallet_parachain_staking::Pallet<R>>::collator_rewards_account()
-		// { 	<pallet_balances::Pallet<R>>::resolve_creating(&account, amount);
-		// }
-	}
-}
-
-impl<R> OnUnbalanced<Credit<<R as frame_system::Config>::AccountId, pallet_balances::Pallet<R, ()>>>
-	for ToCollatorRewards<R>
-where
-	R: pallet_balances::Config + pallet_parachain_staking::Config,
-{
-	fn on_nonzero_unbalanced(
-		amount: Credit<<R as frame_system::Config>::AccountId, pallet_balances::Pallet<R, ()>>,
-	) {
-		// if let Some(account) = <pallet_parachain_staking::Pallet<R>>::collator_rewards_account()
-		// { 	let result = <pallet_balances::Pallet<R>>::resolve(&account, amount);
-		// 	debug_assert!(result.is_ok(), "Should not fail to transfer; qed");
-		// }
-	}
-}
-
 pub struct EVMTransactionChargeHandler<OU>(PhantomData<OU>);
 
 type CurrencyAccountIdOf<T> = <T as frame_system::Config>::AccountId;
@@ -599,7 +564,7 @@ impl pallet_evm::Config for Runtime {
 	type FindAuthor = CustomFindAuthor<pallet_session::FindAccountFromAuthorIndex<Self, Aura>>;
 	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
-	type OnChargeTransaction = EVMCurrencyAdapter<Balances, ToCollatorRewards<Runtime>>;
+	type OnChargeTransaction = EVMCurrencyAdapter<Balances, fee::DealWithFees<Runtime>>;
 	type OnCreate = ();
 	type PrecompilesType = FrontierPrecompiles<Self>;
 	type PrecompilesValue = PrecompilesValue;
