@@ -1,4 +1,4 @@
-use crate::{AccountId, Balances, Permill, Runtime, RuntimeEvent, Session, Vec, Weight, UNIT};
+use crate::{AccountId, Balances, Permill, Runtime, RuntimeEvent, Vec, Weight, UNIT};
 use frame_support::{parameter_types, traits::Get};
 use sp_consensus_slots::Slot;
 use sp_staking::SessionIndex;
