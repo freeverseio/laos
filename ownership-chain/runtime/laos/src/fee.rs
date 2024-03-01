@@ -1,4 +1,4 @@
-use core::marker::PhantomData;
+use super::PhantomData;
 use frame_support::traits::{fungible::Credit, OnUnbalanced};
 
 /// Logic for sending fees to the collator rewards account. On every unbalanced change (f.e
@@ -17,14 +17,13 @@ where
 	}
 }
 
-impl<R> OnUnbalanced<Credit<<R as frame_system::Config>::AccountId, pallet_balances::Pallet<R, ()>>>
-	for DealWithFees<R>
+impl<R> OnUnbalanced<Credit<R::AccountId, pallet_balances::Pallet<R>>> for DealWithFees<R>
 where
-	R: pallet_balances::Config + pallet_parachain_staking::Config,
+	R: pallet_balances::Config,
 {
-	fn on_nonzero_unbalanced(
-		_amount: Credit<<R as frame_system::Config>::AccountId, pallet_balances::Pallet<R, ()>>,
-	) {
+	// this is called from pallet_evm for Ethereum-based transactions
+	// (technically, it calls on_unbalanced, which calls this when non-zero)
+	fn on_nonzero_unbalanced(_amount: Credit<R::AccountId, pallet_balances::Pallet<R>>) {
 		// if let Some(account) = <pallet_parachain_staking::Pallet<R>>::collator_rewards_account()
 		// { 	let result = <pallet_balances::Pallet<R>>::resolve(&account, amount);
 		// 	debug_assert!(result.is_ok(), "Should not fail to transfer; qed");
