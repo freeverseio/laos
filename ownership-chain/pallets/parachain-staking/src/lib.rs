@@ -263,7 +263,7 @@ pub mod pallet {
 	pub enum Event<T: Config> {
 		/// Started new round.
 		NewRound {
-			starting_block: BlockNumberFor<T>,
+			starting_block: u64,
 			round: RoundIndex,
 			selected_collators_number: u32,
 			total_balance: BalanceOf<T>,
@@ -423,7 +423,7 @@ pub mod pallet {
 		/// Set blocks per round
 		BlocksPerRoundSet {
 			current_round: RoundIndex,
-			first_block: BlockNumberFor<T>,
+			first_block: u64,
 			old: u32,
 			new: u32,
 			new_per_round_inflation_min: Perbill,
@@ -438,14 +438,19 @@ pub mod pallet {
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
-		fn on_initialize(n: BlockNumberFor<T>) -> Weight {
+		fn on_initialize(_n: BlockNumberFor<T>) -> Weight {
 			let mut weight = T::WeightInfo::base_on_initialize();
 
-			let mut round = <Round<T>>::get();
+			// fetch slot number
+			let slot: u64 = T::SlotProvider::get().into();
 
-			if round.should_update(n) {
+			// account for SlotProvider read
+			weight = weight.saturating_add(T::DbWeight::get().reads_writes(1, 0));
+
+			let mut round = <Round<T>>::get();
+			if round.should_update(slot) {
 				// mutate round
-				round.update(n);
+				round.update(slot);
 				// notify that new round begin
 				weight = weight.saturating_add(T::OnNewRound::on_new_round(round.current));
 				// pay all stakers for T::RewardPaymentDelay rounds ago
@@ -778,13 +783,13 @@ pub mod pallet {
 			// Choose top TotalSelected collator candidates
 			let (_, v_count, _, total_staked) = <Pallet<T>>::select_top_candidates(1u32);
 			// Start Round 1 at Block 0
-			let round: RoundInfo<BlockNumberFor<T>> =
-				RoundInfo::new(1u32, 0u32.into(), self.blocks_per_round);
+			let round: RoundInfo<u64> =
+				RoundInfo::new(1u32, 0u64.into(), self.blocks_per_round);
 			<Round<T>>::put(round);
 			// Snapshot total stake
 			<Staked<T>>::insert(1u32, <Total<T>>::get());
 			<Pallet<T>>::deposit_event(Event::NewRound {
-				starting_block: BlockNumberFor::<T>::zero(),
+				starting_block: u64::default(),
 				round: 1u32,
 				selected_collators_number: v_count,
 				total_balance: total_staked,
