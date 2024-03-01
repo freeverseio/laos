@@ -1,5 +1,6 @@
 use crate::{AccountId, Balances, Runtime, RuntimeEvent, UNIT};
-use frame_support::parameter_types;
+use frame_support::{parameter_types, traits::Get};
+use sp_consensus_slots::Slot;
 
 parameter_types! {
 	// Minimum stake required to be reserved to be a candidate
@@ -57,7 +58,18 @@ impl pallet_parachain_staking::Config for Runtime {
 	type PayoutCollatorReward = (); // TODO
 	type OnInactiveCollator = (); // TODO
 	type OnNewRound = (); // TODO
+	type SlotProvider = StakingRoundSlotProvider;
 	type WeightInfo = pallet_parachain_staking::weights::SubstrateWeight<Runtime>;
 	type MaxCandidates = MaxCandidates;
 	type SlotsPerYear = SlotsPerYear;
+}
+
+/// TODO:
+/// Temporary type that we should replace by RelayChainSlotProvider once async backing is enabled.
+pub struct StakingRoundSlotProvider;
+impl Get<Slot> for StakingRoundSlotProvider {
+	fn get() -> Slot {
+		let block_number: u64 = frame_system::pallet::Pallet::<Runtime>::block_number().into();
+		Slot::from(block_number)
+	}
 }

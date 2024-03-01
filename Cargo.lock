@@ -5182,6 +5182,7 @@ dependencies = [
  "sp-api",
  "sp-block-builder",
  "sp-consensus-aura",
+ "sp-consensus-slots",
  "sp-core",
  "sp-inherents",
  "sp-io",
