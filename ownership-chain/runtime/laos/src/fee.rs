@@ -11,7 +11,7 @@ impl<R> OnUnbalanced<NegativeImbalanceOfBalances<R>> for DealWithFees<R>
 where
 	R: pallet_balances::Config + pallet_parachain_staking::Config,
 {
-	fn on_nonzero_unbalanced(amount: NegativeImbalanceOfBalances<R>) {
+	fn on_nonzero_unbalanced(_amount: NegativeImbalanceOfBalances<R>) {
 		// if let Some(account) = <pallet_parachain_staking::Pallet<R>>::collator_rewards_account()
 		// { 	<pallet_balances::Pallet<R>>::resolve_creating(&account, amount);
 		// }
@@ -24,7 +24,7 @@ where
 	R: pallet_balances::Config + pallet_parachain_staking::Config,
 {
 	fn on_nonzero_unbalanced(
-		amount: Credit<<R as frame_system::Config>::AccountId, pallet_balances::Pallet<R, ()>>,
+		_amount: Credit<<R as frame_system::Config>::AccountId, pallet_balances::Pallet<R, ()>>,
 	) {
 		// if let Some(account) = <pallet_parachain_staking::Pallet<R>>::collator_rewards_account()
 		// { 	let result = <pallet_balances::Pallet<R>>::resolve(&account, amount);

@@ -47,7 +47,7 @@ use sp_version::RuntimeVersion;
 use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{
-		fungible::{Balanced, Credit},
+		fungible::{Credit},
 		ConstBool, ConstU32, ConstU64, ConstU8, Currency, Everything, FindAuthor, Hooks, Imbalance,
 		OnUnbalanced, WithdrawReasons,
 	},
