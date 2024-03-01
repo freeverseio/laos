@@ -88,7 +88,7 @@ pub mod pallet {
 		fail,
 		pallet_prelude::*,
 		traits::{
-			tokens::WithdrawReasons, Currency, EstimateNextSessionRotation, Get, Imbalance,
+			tokens::WithdrawReasons, Currency, Get, Imbalance,
 			LockIdentifier, LockableCurrency, ReservableCurrency,
 		},
 	};
@@ -96,7 +96,7 @@ pub mod pallet {
 	use sp_consensus_slots::Slot;
 	use sp_runtime::{
 		traits::{Saturating, Zero},
-		DispatchErrorWithPostInfo, Perbill, Percent, Permill,
+		DispatchErrorWithPostInfo, Perbill, Percent,
 	};
 	use sp_staking::SessionIndex;
 	use sp_std::{collections::btree_map::BTreeMap, prelude::*};
@@ -110,8 +110,6 @@ pub mod pallet {
 	type RewardPoint = u32;
 	pub type BalanceOf<T> =
 		<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
-
-	pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 
 	pub const COLLATOR_LOCK_ID: LockIdentifier = *b"stkngcol";
 	pub const DELEGATOR_LOCK_ID: LockIdentifier = *b"stkngdel";
@@ -2194,6 +2192,10 @@ pub mod pallet {
 			Self::selected_candidates().into_inner()
 		}
 	}
+
+	type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
+	use sp_runtime::Permill;
+	use frame_support::traits::EstimateNextSessionRotation;
 
 	impl<T> pallet_authorship::EventHandler<AccountIdOf<T>, BlockNumberFor<T>> for Pallet<T>
 	where
