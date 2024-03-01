@@ -1,6 +1,7 @@
-use crate::{AccountId, Balances, Runtime, RuntimeEvent, UNIT};
+use crate::{AccountId, Balances, BlockNumber, Permill, Runtime, RuntimeEvent, Vec, Weight, UNIT};
 use frame_support::{parameter_types, traits::Get};
 use sp_consensus_slots::Slot;
+use sp_staking::SessionIndex;
 
 parameter_types! {
 	// Minimum stake required to be reserved to be a candidate
@@ -79,5 +80,75 @@ impl Get<Slot> for StakingRoundSlotProvider {
 	fn get() -> Slot {
 		let block_number: u64 = frame_system::pallet::Pallet::<Runtime>::block_number().into();
 		Slot::from(block_number)
+	}
+}
+
+pub struct ParachainStakingAdapter;
+impl pallet_session::SessionManager<AccountId> for ParachainStakingAdapter {
+	/// 1. A new session starts.
+	/// 2. In hook new_session: Read the current top n candidates from the TopCandidates and assign
+	///    this set to author blocks for the next session.
+	/// 3. AuRa queries the authorities from the session pallet for this session and picks authors
+	///    on round-robin-basis from list of authorities.
+	fn new_session(new_index: SessionIndex) -> Option<Vec<AccountId>> {
+		log::warn!(
+			"assembling new collators for new session {} at #{:?}",
+			new_index,
+			frame_system::pallet::Pallet::<Runtime>::block_number(),
+		);
+
+		let collators =
+			pallet_parachain_staking::pallet::Pallet::<Runtime>::selected_candidates().to_vec();
+		if collators.is_empty() {
+			// we never want to pass an empty set of collators. This would brick the chain.
+			log::error!("💥 keeping old session because of empty collator set!");
+			None
+		} else {
+			Some(collators)
+		}
+	}
+
+	fn end_session(_end_index: SessionIndex) {
+		// we too are not caring.
+	}
+
+	fn start_session(_start_index: SessionIndex) {
+		// we too are not caring.
+	}
+}
+
+impl pallet_session::ShouldEndSession<BlockNumber> for ParachainStakingAdapter {
+	fn should_end_session(now: BlockNumber) -> bool {
+		let round = pallet_parachain_staking::pallet::Pallet::<Runtime>::round();
+		// always update when a new round should start
+		round.should_update(now.into())
+	}
+}
+
+impl frame_support::traits::EstimateNextSessionRotation<BlockNumber> for ParachainStakingAdapter {
+	fn average_session_length() -> BlockNumber {
+		pallet_parachain_staking::pallet::Pallet::<Runtime>::round().length
+	}
+
+	fn estimate_current_session_progress(now: BlockNumber) -> (Option<Permill>, Weight) {
+		let round = pallet_parachain_staking::pallet::Pallet::<Runtime>::round();
+		let passed_blocks = now.saturating_sub(round.first.try_into().unwrap());
+
+		(
+			Some(Permill::from_rational(passed_blocks, round.length)),
+			// One read for the round info, blocknumber is read free
+			<Runtime as frame_system::Config>::DbWeight::get().reads(1),
+		)
+	}
+
+	fn estimate_next_session_rotation(_now: BlockNumber) -> (Option<BlockNumber>, Weight) {
+		let round = pallet_parachain_staking::pallet::Pallet::<Runtime>::round();
+
+		let first_round: BlockNumber = round.first.try_into().unwrap();
+		(
+			Some(first_round + round.length),
+			// One read for the round info, blocknumber is read free
+			<Runtime as frame_system::Config>::DbWeight::get().reads(1),
+		)
 	}
 }
