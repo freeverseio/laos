@@ -49,6 +49,7 @@ construct_runtime!(
 		Balances: pallet_balances,
 		ParachainStaking: pallet_parachain_staking,
 		BlockAuthor: block_author,
+		BlockRewardsSource: pallet_block_rewards_source,
 	}
 );
 
@@ -160,6 +161,10 @@ impl Config for Test {
 	type WeightInfo = ();
 	type MaxCandidates = MaxCandidates;
 	type SlotsPerYear = frame_support::traits::ConstU32<{ 31_557_600 / 6 }>;
+}
+
+impl pallet_block_rewards_source::Config for Test {
+	type RuntimeEvent = RuntimeEvent;
 }
 
 pub(crate) struct ExtBuilder {

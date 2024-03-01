@@ -7614,6 +7614,7 @@ dependencies = [
  "frame-system",
  "log",
  "pallet-balances",
+ "pallet-block-rewards-source",
  "parity-scale-codec",
  "scale-info",
  "serde",

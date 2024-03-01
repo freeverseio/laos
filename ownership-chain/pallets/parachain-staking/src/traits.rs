@@ -18,7 +18,7 @@
 
 use crate::weights::WeightInfo;
 use frame_support::{dispatch::PostDispatchInfo, pallet_prelude::Weight};
-use sp_runtime::DispatchErrorWithPostInfo;
+use sp_runtime::{DispatchError, DispatchErrorWithPostInfo};
 
 pub trait OnCollatorPayout<AccountId, Balance> {
 	fn on_collator_payout(
@@ -52,18 +52,19 @@ pub trait PayoutCollatorReward<Runtime: crate::Config> {
 		round_index: crate::RoundIndex,
 		collator_id: Runtime::AccountId,
 		amount: crate::BalanceOf<Runtime>,
-	) -> Weight;
+	) -> Result<Weight, DispatchError>;
 }
 
 /// Defines the default behavior for paying out the collator's reward. The amount is directly
 /// deposited into the collator's account.
 impl<Runtime: crate::Config> PayoutCollatorReward<Runtime> for () {
 	fn payout_collator_reward(
-		for_round: crate::RoundIndex,
+		_for_round: crate::RoundIndex,
 		collator_id: Runtime::AccountId,
 		amount: crate::BalanceOf<Runtime>,
-	) -> Weight {
-		crate::Pallet::<Runtime>::mint_collator_reward(for_round, collator_id, amount)
+	) -> Result<Weight, DispatchError> {
+		let rewards_account = pallet_block_rewards_source::Pallet::<Runtime>::rewards_account();
+		crate::Pallet::<Runtime>::transfer_rewards(rewards_account, collator_id, amount)
 	}
 }
 

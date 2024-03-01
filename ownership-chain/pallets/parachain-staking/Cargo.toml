@@ -20,6 +20,8 @@ sp-runtime = { workspace = true }
 sp-std = { workspace = true }
 substrate-fixed = { workspace = true }
 
+pallet-block-rewards-source = { workspace = true }
+
 [dev-dependencies]
 pallet-balances = { workspace = true, features = [ "insecure_zero_ed", "std" ] }
 similar-asserts = { workspace = true }
@@ -38,6 +40,7 @@ std = [
 	"sp-consensus-slots/std",
 	"sp-runtime/std",
 	"sp-std/std",
+	"pallet-block-rewards-source/std",
 ]
 runtime-benchmarks = [ "frame-benchmarking" ]
 try-runtime = [ "frame-support/try-runtime" ]
