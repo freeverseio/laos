@@ -88,8 +88,8 @@ pub mod pallet {
 		fail,
 		pallet_prelude::*,
 		traits::{
-			tokens::WithdrawReasons, Currency, Get, Imbalance,
-			LockIdentifier, LockableCurrency, ReservableCurrency,
+			tokens::WithdrawReasons, Currency, Get, Imbalance, LockIdentifier, LockableCurrency,
+			ReservableCurrency,
 		},
 	};
 	use frame_system::pallet_prelude::*;
@@ -98,7 +98,6 @@ pub mod pallet {
 		traits::{Saturating, Zero},
 		DispatchErrorWithPostInfo, Perbill, Percent,
 	};
-	use sp_staking::SessionIndex;
 	use sp_std::{collections::btree_map::BTreeMap, prelude::*};
 
 	/// Pallet for parachain staking
@@ -2193,9 +2192,13 @@ pub mod pallet {
 		}
 	}
 
-	type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
-	use sp_runtime::Permill;
+	// Modification by Freeverse
+
 	use frame_support::traits::EstimateNextSessionRotation;
+	use sp_runtime::Permill;
+	use sp_staking::SessionIndex;
+
+	type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 
 	impl<T> pallet_authorship::EventHandler<AccountIdOf<T>, BlockNumberFor<T>> for Pallet<T>
 	where
@@ -2259,18 +2262,13 @@ pub mod pallet {
 			let passed_blocks = now.saturating_sub(round.first.try_into().unwrap());
 
 			(
-				Some(Permill::from_rational(
-					passed_blocks,
-					round.length,
-				)),
+				Some(Permill::from_rational(passed_blocks, round.length)),
 				// One read for the round info, blocknumber is read free
 				T::DbWeight::get().reads(1),
 			)
 		}
 
-		fn estimate_next_session_rotation(
-			_now: u32,
-		) -> (Option<u32>, Weight) {
+		fn estimate_next_session_rotation(_now: u32) -> (Option<u32>, Weight) {
 			let round = <Round<T>>::get();
 
 			// TODO check this try_into
