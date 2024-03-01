@@ -1,4 +1,4 @@
-use crate::{AccountId, Balances, Runtime, RuntimeEvent, Session, Vec, UNIT};
+use crate::{AccountId, Balances, Permill, Runtime, RuntimeEvent, Session, Vec, Weight, UNIT};
 use frame_support::{parameter_types, traits::Get};
 use sp_consensus_slots::Slot;
 use sp_staking::SessionIndex;
@@ -97,7 +97,8 @@ impl pallet_session::SessionManager<AccountId> for SessionManager {
 			frame_system::pallet::Pallet::<Runtime>::block_number(),
 		);
 
-		let collators = pallet_parachain_staking::pallet::Pallet::<Runtime>::selected_candidates().to_vec();
+		let collators =
+			pallet_parachain_staking::pallet::Pallet::<Runtime>::selected_candidates().to_vec();
 		if collators.is_empty() {
 			// we never want to pass an empty set of collators. This would brick the chain.
 			log::error!("💥 keeping old session because of empty collator set!");
@@ -113,5 +114,45 @@ impl pallet_session::SessionManager<AccountId> for SessionManager {
 
 	fn start_session(_start_index: SessionIndex) {
 		// we too are not caring.
+	}
+}
+
+pub struct ShouldEndSession;
+impl pallet_session::ShouldEndSession<u32> for ShouldEndSession {
+	fn should_end_session(now: u32) -> bool {
+		let round = pallet_parachain_staking::pallet::Pallet::<Runtime>::round();
+		// always update when a new round should start
+		round.should_update(now as u64)
+	}
+}
+
+pub struct NextSessionRotation;
+impl frame_support::traits::EstimateNextSessionRotation<u32> for NextSessionRotation {
+	fn average_session_length() -> u32 {
+		pallet_parachain_staking::pallet::Pallet::<Runtime>::round().length
+	}
+
+	fn estimate_current_session_progress(now: u32) -> (Option<Permill>, Weight) {
+		let round = pallet_parachain_staking::pallet::Pallet::<Runtime>::round();
+		// TODO check the try_into
+		let passed_blocks = now.saturating_sub(round.first.try_into().unwrap());
+
+		(
+			Some(Permill::from_rational(passed_blocks, round.length)),
+			// One read for the round info, blocknumber is read free
+			<Runtime as frame_system::Config>::DbWeight::get().reads(1),
+		)
+	}
+
+	fn estimate_next_session_rotation(_now: u32) -> (Option<u32>, Weight) {
+		let round = pallet_parachain_staking::pallet::Pallet::<Runtime>::round();
+
+		// TODO check this try_into
+		let first_round: u32 = round.first.try_into().unwrap();
+		(
+			Some(first_round + round.length),
+			// One read for the round info, blocknumber is read free
+			<Runtime as frame_system::Config>::DbWeight::get().reads(1),
+		)
 	}
 }
