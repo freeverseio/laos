@@ -52,6 +52,7 @@ sp-session = { workspace = true }
 sp-std = { workspace = true }
 sp-transaction-pool = { workspace = true }
 sp-version = { workspace = true }
+sp-staking = { workspace = true }
 
 pallet-asset-metadata-extender = { workspace = true }
 pallet-laos-evolution = { workspace = true }
@@ -191,6 +192,7 @@ std = [
 	"laos-runtime-api-staking/std",
 	"log/std",
 	"sp-consensus-slots/std",
+	"sp-staking/std",
 ]
 
 runtime-benchmarks = [

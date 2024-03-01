@@ -403,7 +403,7 @@ impl pallet_session::Config for Runtime {
 	type ValidatorIdOf = ConvertInto;
 	type ShouldEndSession = ParachainStaking;
 	type NextSessionRotation = ParachainStaking;
-	type SessionManager = ParachainStaking;
+	type SessionManager = configs::parachain_staking::SessionManager;
 	// Essentially just Aura, but let's be pedantic.
 	type SessionHandler = <SessionKeys as sp_runtime::traits::OpaqueKeys>::KeyTypeIdProviders;
 	type Keys = SessionKeys;

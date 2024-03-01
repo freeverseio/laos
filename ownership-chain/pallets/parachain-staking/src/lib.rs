@@ -2206,37 +2206,37 @@ pub mod pallet {
 
 	type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 
-	impl<T: Config> pallet_session::SessionManager<AccountIdOf<T>> for Pallet<T> {
-		/// 1. A new session starts.
-		/// 2. In hook new_session: Read the current top n candidates from the TopCandidates and
-		///    assign this set to author blocks for the next session.
-		/// 3. AuRa queries the authorities from the session pallet for this session and picks
-		///    authors on round-robin-basis from list of authorities.
-		fn new_session(new_index: SessionIndex) -> Option<Vec<AccountIdOf<T>>> {
-			log::warn!(
-				"assembling new collators for new session {} at #{:?}",
-				new_index,
-				<frame_system::Pallet<T>>::block_number(),
-			);
+	// impl<T: Config> pallet_session::SessionManager<AccountIdOf<T>> for Pallet<T> {
+	// 	/// 1. A new session starts.
+	// 	/// 2. In hook new_session: Read the current top n candidates from the TopCandidates and
+	// 	///    assign this set to author blocks for the next session.
+	// 	/// 3. AuRa queries the authorities from the session pallet for this session and picks
+	// 	///    authors on round-robin-basis from list of authorities.
+	// 	fn new_session(new_index: SessionIndex) -> Option<Vec<AccountIdOf<T>>> {
+	// 		log::warn!(
+	// 			"assembling new collators for new session {} at #{:?}",
+	// 			new_index,
+	// 			<frame_system::Pallet<T>>::block_number(),
+	// 		);
 
-			let collators = Pallet::<T>::selected_candidates().to_vec();
-			if collators.is_empty() {
-				// we never want to pass an empty set of collators. This would brick the chain.
-				log::error!("💥 keeping old session because of empty collator set!");
-				None
-			} else {
-				Some(collators)
-			}
-		}
+	// 		let collators = Pallet::<T>::selected_candidates().to_vec();
+	// 		if collators.is_empty() {
+	// 			// we never want to pass an empty set of collators. This would brick the chain.
+	// 			log::error!("💥 keeping old session because of empty collator set!");
+	// 			None
+	// 		} else {
+	// 			Some(collators)
+	// 		}
+	// 	}
 
-		fn end_session(_end_index: SessionIndex) {
-			// we too are not caring.
-		}
+	// 	fn end_session(_end_index: SessionIndex) {
+	// 		// we too are not caring.
+	// 	}
 
-		fn start_session(_start_index: SessionIndex) {
-			// we too are not caring.
-		}
-	}
+	// 	fn start_session(_start_index: SessionIndex) {
+	// 		// we too are not caring.
+	// 	}
+	// }
 
 	impl<T: Config> pallet_session::ShouldEndSession<u32> for Pallet<T> {
 		fn should_end_session(now: u32) -> bool {
