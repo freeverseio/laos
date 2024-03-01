@@ -1,6 +1,6 @@
 use super::{
-	AccountId, AllPalletsWithSystem, Balances, ParachainInfo, PolkadotXcm, Runtime, RuntimeCall,
-	RuntimeEvent, RuntimeOrigin, fee, WeightToFee,
+	fee, AccountId, AllPalletsWithSystem, Balances, ParachainInfo, PolkadotXcm, Runtime,
+	RuntimeCall, RuntimeEvent, RuntimeOrigin, WeightToFee,
 };
 use core::marker::PhantomData;
 use frame_support::{
