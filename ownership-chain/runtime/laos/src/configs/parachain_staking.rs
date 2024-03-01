@@ -54,7 +54,6 @@ impl pallet_parachain_staking::Config for Runtime {
 	type MaxDelegationsPerDelegator = MaxDelegationsPerDelegator;
 	type MinCandidateStk = MinCandidateStk;
 	type MinDelegation = MinDelegation;
-	type BlockAuthor = ();
 	type OnCollatorPayout = ();
 	type PayoutCollatorReward = (); // TODO
 	type OnInactiveCollator = (); // TODO
