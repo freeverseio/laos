@@ -10,7 +10,7 @@ pub use pallet::*;
 
 // Internal modules
 mod benchmarking;
-// pub mod weights;
+pub mod weights;
 
 #[cfg(test)]
 mod mock;
@@ -47,9 +47,7 @@ pub mod pallet {
 
 	impl<T: Config> Default for GenesisConfig<T> {
 		fn default() -> Self {
-			Self {
-				rewards_account: Default::default(),
-			}
+			Self { rewards_account: Default::default() }
 		}
 	}
 
@@ -82,7 +80,7 @@ pub mod pallet {
 		///
 		/// Only `Root` origin can call this function.
 		#[pallet::call_index(0)]
-		#[pallet::weight(0)] // TODO
+		#[pallet::weight(<T as Config>::WeightInfo::set_rewards_account())]
 		pub fn set_rewards_account(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
 			ensure_root(origin)?;
 			<RewardsAccount<T>>::put(account.clone());

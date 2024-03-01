@@ -4,6 +4,7 @@ use ownership_parachain_primitives::Balance;
 mod multisig;
 pub mod parachain_staking;
 mod proxy;
+mod block_rewards_source;
 
 // Define storage fees as constants for clarity and reuse
 const STORAGE_ITEM_FEE: Balance = 10 * UNIT;
