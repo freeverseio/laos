@@ -1,12 +1,11 @@
 use core::marker::PhantomData;
 use frame_support::traits::{fungible::Credit, OnUnbalanced};
 
-type NegativeImbalanceOfBalances<T> = pallet_balances::NegativeImbalance<T>;
-
 /// Logic for sending fees to the collator rewards account. On every unbalanced change (f.e
 /// transaction fees), the amount is transferred to the collator rewards account.
 pub struct DealWithFees<R>(PhantomData<R>);
 
+type NegativeImbalanceOfBalances<T> = pallet_balances::NegativeImbalance<T>;
 impl<R> OnUnbalanced<NegativeImbalanceOfBalances<R>> for DealWithFees<R>
 where
 	R: pallet_balances::Config + pallet_parachain_staking::Config,
