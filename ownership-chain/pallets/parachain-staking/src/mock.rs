@@ -155,6 +155,7 @@ impl Config for Test {
 	type PayoutCollatorReward = ();
 	type OnInactiveCollator = ();
 	type OnNewRound = ();
+	type SlotProvider = StakingRoundSlotProvider;
 	type WeightInfo = ();
 	type MaxCandidates = MaxCandidates;
 	type SlotsPerYear = frame_support::traits::ConstU32<{ 31_557_600 / 6 }>;
