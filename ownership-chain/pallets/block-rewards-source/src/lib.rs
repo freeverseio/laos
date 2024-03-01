@@ -40,6 +40,28 @@ pub mod pallet {
 	#[pallet::getter(fn rewards_account)]
 	pub type RewardsAccount<T: Config> = StorageValue<_, T::AccountId, OptionQuery>;
 
+	#[pallet::genesis_config]
+	pub struct GenesisConfig<T: Config> {
+		pub rewards_account: Option<T::AccountId>,
+	}
+
+	impl<T: Config> Default for GenesisConfig<T> {
+		fn default() -> Self {
+			Self {
+				rewards_account: Default::default(),
+			}
+		}
+	}
+
+	#[pallet::genesis_build]
+	impl<T: Config> BuildGenesisConfig for GenesisConfig<T> {
+		fn build(&self) {
+			if let Some(rewards_account) = &self.rewards_account {
+				RewardsAccount::<T>::put(rewards_account.clone());
+			}
+		}
+	}
+
 	/// Events for this pallet.
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
