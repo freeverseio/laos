@@ -1,19 +1,16 @@
-use crate::{PhantomData};
+use crate::PhantomData;
 use frame_support::traits::{
 	fungible::{Balanced, Credit},
 	OnUnbalanced,
 };
 
-/// This is a dummy implementation for `OnUnbalanced` trait.
 pub struct DealWithFees<R>(PhantomData<R>);
 
 impl<R> OnUnbalanced<pallet_balances::NegativeImbalance<R>> for DealWithFees<R>
 where
 	R: pallet_balances::Config + pallet_parachain_staking::Config,
 {
-	fn on_nonzero_unbalanced(amount: pallet_balances::NegativeImbalance<R>) {
-		// <ToRewardsAccount<R> as OnUnbalanced<_>>::on_unbalanced(amount);
-	}
+	fn on_nonzero_unbalanced(_amount: pallet_balances::NegativeImbalance<R>) {}
 }
 
 impl<R> OnUnbalanced<Credit<R::AccountId, pallet_balances::Pallet<R>>> for DealWithFees<R>
