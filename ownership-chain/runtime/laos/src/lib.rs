@@ -483,8 +483,6 @@ impl<F: FindAuthor<u32>> FindAuthor<H160> for FindAuthorTruncated<F> {
 	}
 }
 
-
-
 pub struct EVMTransactionChargeHandler<OU>(PhantomData<OU>);
 
 type CurrencyAccountIdOf<T> = <T as frame_system::Config>::AccountId;

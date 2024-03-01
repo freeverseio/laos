@@ -2206,17 +2206,6 @@ pub mod pallet {
 
 	type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 
-	impl<T> pallet_authorship::EventHandler<AccountIdOf<T>, BlockNumberFor<T>> for Pallet<T>
-	where
-		T: Config + pallet_authorship::Config + pallet_session::Config,
-	{
-		/// Add reward points to block authors:
-		/// * 20 points to the block producer for producing a block in the chain
-		fn note_author(_author: AccountIdOf<T>) {
-			// Pallet::<T>::award_points_to_block_author(author);
-		}
-	}
-
 	impl<T: Config> pallet_session::SessionManager<AccountIdOf<T>> for Pallet<T> {
 		/// 1. A new session starts.
 		/// 2. In hook new_session: Read the current top n candidates from the TopCandidates and
