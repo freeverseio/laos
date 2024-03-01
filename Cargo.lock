@@ -5146,6 +5146,7 @@ dependencies = [
  "pallet-authorship",
  "pallet-balances",
  "pallet-base-fee",
+ "pallet-block-rewards-source",
  "pallet-ethereum",
  "pallet-evm",
  "pallet-evm-asset-metadata-extender",
@@ -6960,6 +6961,21 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-state-machine",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-block-rewards-source"
+version = "0.1.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
  "sp-std",
 ]
 

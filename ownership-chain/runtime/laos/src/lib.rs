@@ -477,7 +477,7 @@ impl<F: FindAuthor<u32>> FindAuthor<H160> for FindAuthorTruncated<F> {
 	{
 		if let Some(author_index) = F::find_author(digests) {
 			let authority_id = Aura::authorities()[author_index as usize].clone();
-			return Some(H160::from_slice(&authority_id.to_raw_vec()[4..24]))
+			return Some(H160::from_slice(&authority_id.to_raw_vec()[4..24]));
 		}
 		None
 	}
@@ -653,6 +653,7 @@ construct_runtime!(
 		Aura: pallet_aura = 23,
 		AuraExt: cumulus_pallet_aura_ext = 24,
 		ParachainStaking: pallet_parachain_staking = 25,
+		BlockRewardsSource: pallet_block_rewards_source = 26,
 
 		// XCM helpers.
 		XcmpQueue: cumulus_pallet_xcmp_queue = 30,
