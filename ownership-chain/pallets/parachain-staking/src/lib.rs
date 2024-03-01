@@ -93,7 +93,6 @@ pub mod pallet {
 		},
 	};
 	use frame_system::pallet_prelude::*;
-	use sp_consensus_slots::Slot;
 	use sp_runtime::{
 		traits::{Saturating, Zero},
 		DispatchErrorWithPostInfo, Perbill, Percent, Permill,
@@ -189,8 +188,6 @@ pub mod pallet {
 		/// Handler to notify the runtime when a new round begin.
 		/// If you don't need it, you can specify the type `()`.
 		type OnNewRound: OnNewRound;
-		/// Get the slot number to use as clocktime for staking rounds
-		type SlotProvider: Get<Slot>;
 		/// Weight information for extrinsics in this pallet.
 		type WeightInfo: WeightInfo;
 		/// Maximum candidates
