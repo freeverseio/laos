@@ -83,8 +83,8 @@ impl Get<Slot> for StakingRoundSlotProvider {
 	}
 }
 
-pub struct SessionManager;
-impl pallet_session::SessionManager<AccountId> for SessionManager {
+pub struct ParachainStakingAdapter;
+impl pallet_session::SessionManager<AccountId> for ParachainStakingAdapter {
 	/// 1. A new session starts.
 	/// 2. In hook new_session: Read the current top n candidates from the TopCandidates and assign
 	///    this set to author blocks for the next session.
@@ -117,8 +117,7 @@ impl pallet_session::SessionManager<AccountId> for SessionManager {
 	}
 }
 
-pub struct ShouldEndSession;
-impl pallet_session::ShouldEndSession<u32> for ShouldEndSession {
+impl pallet_session::ShouldEndSession<u32> for ParachainStakingAdapter {
 	fn should_end_session(now: u32) -> bool {
 		let round = pallet_parachain_staking::pallet::Pallet::<Runtime>::round();
 		// always update when a new round should start
@@ -126,8 +125,7 @@ impl pallet_session::ShouldEndSession<u32> for ShouldEndSession {
 	}
 }
 
-pub struct NextSessionRotation;
-impl frame_support::traits::EstimateNextSessionRotation<u32> for NextSessionRotation {
+impl frame_support::traits::EstimateNextSessionRotation<u32> for ParachainStakingAdapter {
 	fn average_session_length() -> u32 {
 		pallet_parachain_staking::pallet::Pallet::<Runtime>::round().length
 	}
