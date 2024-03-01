@@ -783,7 +783,7 @@ pub mod pallet {
 			// Choose top TotalSelected collator candidates
 			let (_, v_count, _, total_staked) = <Pallet<T>>::select_top_candidates(1u32);
 			// Start Round 1 at Block 0
-			let round: RoundInfo<u64> = RoundInfo::new(1u32, 0u64.into(), self.blocks_per_round);
+			let round: RoundInfo<u64> = RoundInfo::new(1u32, 0u64, self.blocks_per_round);
 			<Round<T>>::put(round);
 			// Snapshot total stake
 			<Staked<T>>::insert(1u32, <Total<T>>::get());
