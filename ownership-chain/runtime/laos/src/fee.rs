@@ -1,12 +1,13 @@
 use crate::*;
 
-/// Logic for sending fees to the collator rewards account. On every unbalanced change (f.e
-/// transaction fees), the amount is transferred to the collator rewards account.
-pub struct ToCollatorRewards<R>(PhantomData<R>);
-
 type NegativeImbalanceOfBalances<T> = pallet_balances::NegativeImbalance<T>;
 
-impl<R> OnUnbalanced<NegativeImbalanceOfBalances<R>> for ToCollatorRewards<R>
+/// Logic for sending fees to the collator rewards account. On every unbalanced change (f.e
+/// transaction fees), the amount is transferred to the collator rewards account.
+pub struct DealWithFees<R>(PhantomData<R>);
+
+
+impl<R> OnUnbalanced<NegativeImbalanceOfBalances<R>> for DealWithFees<R>
 where
 	R: pallet_balances::Config + pallet_parachain_staking::Config,
 {
@@ -18,7 +19,7 @@ where
 }
 
 impl<R> OnUnbalanced<Credit<<R as frame_system::Config>::AccountId, pallet_balances::Pallet<R, ()>>>
-	for ToCollatorRewards<R>
+	for DealWithFees<R>
 where
 	R: pallet_balances::Config + pallet_parachain_staking::Config,
 {
