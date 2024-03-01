@@ -151,6 +151,7 @@ impl Config for Test {
 	type MaxDelegationsPerDelegator = MaxDelegationsPerDelegator;
 	type MinCandidateStk = MinCandidateStk;
 	type MinDelegation = MinDelegation;
+	type BlockAuthor = BlockAuthor;
 	type OnCollatorPayout = ();
 	type PayoutCollatorReward = ();
 	type OnInactiveCollator = ();

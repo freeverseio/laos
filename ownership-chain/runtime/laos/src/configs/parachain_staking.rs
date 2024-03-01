@@ -54,6 +54,7 @@ impl pallet_parachain_staking::Config for Runtime {
 	type MaxDelegationsPerDelegator = MaxDelegationsPerDelegator;
 	type MinCandidateStk = MinCandidateStk;
 	type MinDelegation = MinDelegation;
+	type BlockAuthor = BlockAuthor;
 	type OnCollatorPayout = ();
 	type PayoutCollatorReward = (); // TODO
 	type OnInactiveCollator = (); // TODO
@@ -64,6 +65,13 @@ impl pallet_parachain_staking::Config for Runtime {
 	type SlotsPerYear = SlotsPerYear;
 }
 
+pub struct BlockAuthor;
+impl Get<AccountId> for BlockAuthor {
+	fn get() -> AccountId {
+		let author = pallet_authorship::Pallet::<Runtime>::author();
+		author.unwrap_or_default() // TODO check if it's correct
+	}
+}
 /// TODO:
 /// Temporary type that we should replace by RelayChainSlotProvider once async backing is enabled.
 pub struct StakingRoundSlotProvider;

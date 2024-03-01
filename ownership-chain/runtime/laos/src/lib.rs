@@ -305,7 +305,7 @@ impl pallet_timestamp::Config for Runtime {
 
 impl pallet_authorship::Config for Runtime {
 	type FindAuthor = pallet_session::FindAccountFromAuthorIndex<Self, Aura>;
-	type EventHandler = ParachainStaking;
+	type EventHandler = ();
 }
 
 parameter_types! {
@@ -482,6 +482,8 @@ impl<F: FindAuthor<u32>> FindAuthor<H160> for FindAuthorTruncated<F> {
 		None
 	}
 }
+
+
 
 pub struct EVMTransactionChargeHandler<OU>(PhantomData<OU>);
 
