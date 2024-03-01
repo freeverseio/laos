@@ -1,4 +1,4 @@
-use crate::{AccountId, Balances, Permill, Runtime, RuntimeEvent, Vec, Weight, UNIT};
+use crate::{AccountId, Balances, BlockNumber, Permill, Runtime, RuntimeEvent, Vec, Weight, UNIT};
 use frame_support::{parameter_types, traits::Get};
 use sp_consensus_slots::Slot;
 use sp_staking::SessionIndex;
@@ -117,22 +117,21 @@ impl pallet_session::SessionManager<AccountId> for ParachainStakingAdapter {
 	}
 }
 
-impl pallet_session::ShouldEndSession<u32> for ParachainStakingAdapter {
-	fn should_end_session(now: u32) -> bool {
+impl pallet_session::ShouldEndSession<BlockNumber> for ParachainStakingAdapter {
+	fn should_end_session(now: BlockNumber) -> bool {
 		let round = pallet_parachain_staking::pallet::Pallet::<Runtime>::round();
 		// always update when a new round should start
-		round.should_update(now as u64)
+		round.should_update(now.into())
 	}
 }
 
-impl frame_support::traits::EstimateNextSessionRotation<u32> for ParachainStakingAdapter {
-	fn average_session_length() -> u32 {
+impl frame_support::traits::EstimateNextSessionRotation<BlockNumber> for ParachainStakingAdapter {
+	fn average_session_length() -> BlockNumber {
 		pallet_parachain_staking::pallet::Pallet::<Runtime>::round().length
 	}
 
-	fn estimate_current_session_progress(now: u32) -> (Option<Permill>, Weight) {
+	fn estimate_current_session_progress(now: BlockNumber) -> (Option<Permill>, Weight) {
 		let round = pallet_parachain_staking::pallet::Pallet::<Runtime>::round();
-		// TODO check the try_into
 		let passed_blocks = now.saturating_sub(round.first.try_into().unwrap());
 
 		(
@@ -142,11 +141,10 @@ impl frame_support::traits::EstimateNextSessionRotation<u32> for ParachainStakin
 		)
 	}
 
-	fn estimate_next_session_rotation(_now: u32) -> (Option<u32>, Weight) {
+	fn estimate_next_session_rotation(_now: BlockNumber) -> (Option<BlockNumber>, Weight) {
 		let round = pallet_parachain_staking::pallet::Pallet::<Runtime>::round();
 
-		// TODO check this try_into
-		let first_round: u32 = round.first.try_into().unwrap();
+		let first_round: BlockNumber = round.first.try_into().unwrap();
 		(
 			Some(first_round + round.length),
 			// One read for the round info, blocknumber is read free
