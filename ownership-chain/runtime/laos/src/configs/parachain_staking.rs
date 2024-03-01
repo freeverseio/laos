@@ -31,6 +31,7 @@ parameter_types! {
 	// Minimum stake required to be reserved to be a delegator
 	pub const MinDelegation: u128 = 500 * UNIT;
 	pub const MaxCandidates: u32 = 200;
+	/// Number of blocks per year
 	pub const SlotsPerYear: u32 = 31_557_600 / 12;
 }
 
@@ -57,7 +58,6 @@ impl pallet_parachain_staking::Config for Runtime {
 	type PayoutCollatorReward = (); // TODO
 	type OnInactiveCollator = (); // TODO
 	type OnNewRound = (); // TODO
-	type SlotProvider = (); // TODO
 	type WeightInfo = pallet_parachain_staking::weights::SubstrateWeight<Runtime>;
 	type MaxCandidates = MaxCandidates;
 	type SlotsPerYear = SlotsPerYear;
