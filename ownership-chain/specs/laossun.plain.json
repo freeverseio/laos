@@ -30,7 +30,7 @@
             849920000000000000000000000
           ],
           [
-            "0x0000000000000000000000000000000000009001",
+            "0xffffffffffffffffffffffffffffffffffffff01",
             150000000000000000000000000
           ],
           [
@@ -106,7 +106,7 @@
         "numSelectedCandidates": 8
       },
       "blockRewardsSource": {
-        "rewardsAccount": "0x0000000000000000000000000000000000009001"
+        "rewardsAccount": "0xffffffffffffffffffffffffffffffffffffff01"
       },
       "polkadotXcm": {
         "safeXcmVersion": 3
