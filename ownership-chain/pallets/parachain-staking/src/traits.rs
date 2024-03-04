@@ -20,22 +20,34 @@ use crate::weights::WeightInfo;
 use frame_support::{dispatch::PostDispatchInfo, pallet_prelude::Weight};
 use sp_runtime::{DispatchError, DispatchErrorWithPostInfo};
 
-pub trait OnCollatorPayout<AccountId, Balance> {
+pub trait OnCollatorPayout<Runtime: crate::Config> {
 	fn on_collator_payout(
 		for_round: crate::RoundIndex,
-		collator_id: AccountId,
-		amount: Balance,
+		collator_id: Runtime::AccountId,
+		amount: crate::BalanceOf<Runtime>,
 	) -> Weight;
 }
-impl<AccountId, Balance> OnCollatorPayout<AccountId, Balance> for () {
+impl<Runtime: crate::Config> OnCollatorPayout<Runtime> for () {
 	fn on_collator_payout(
 		_for_round: crate::RoundIndex,
-		_collator_id: AccountId,
-		_amount: Balance,
+		_collator_id: Runtime::AccountId,
+		_amount: crate::BalanceOf<Runtime>,
 	) -> Weight {
-		Weight::zero()
+		<Runtime as crate::Config>::WeightInfo::mint_reward()
 	}
 }
+
+// pub struct BlockRewardsSourceWeight;
+
+// impl<Runtime: crate::Config> OnCollatorPayout<Runtime> for BlockRewardsSourceWeight {
+// 	fn on_collator_payout(
+// 		_for_round: crate::RoundIndex,
+// 		_collator_id: Runtime::AccountId,
+// 		_amount: crate::BalanceOf<Runtime>,
+// 	) -> Weight {
+// 		<Runtime as crate::Config>::WeightInfo::transfer_reward()
+// 	}
+// }
 
 pub trait OnNewRound {
 	fn on_new_round(round_index: crate::RoundIndex) -> Weight;
@@ -52,7 +64,7 @@ pub trait PayoutReward<Runtime: crate::Config> {
 		round_index: crate::RoundIndex,
 		collator_id: Runtime::AccountId,
 		amount: crate::BalanceOf<Runtime>,
-	) -> Result<Weight, DispatchError>;
+	) -> Result<crate::BalanceOf<Runtime>, DispatchError>;
 }
 
 /// Defines the default behavior for paying out the collator's reward. The amount is directly
@@ -62,8 +74,8 @@ impl<Runtime: crate::Config> PayoutReward<Runtime> for () {
 		for_round: crate::RoundIndex,
 		collator_id: Runtime::AccountId,
 		amount: crate::BalanceOf<Runtime>,
-	) -> Result<Weight, DispatchError> {
-		Ok(crate::Pallet::<Runtime>::mint_collator_reward(for_round, collator_id, amount))
+	) -> Result<crate::BalanceOf<Runtime>, DispatchError> {
+		crate::Pallet::<Runtime>::mint_reward(for_round, collator_id, amount)
 	}
 }
 
@@ -76,8 +88,10 @@ impl<Runtime: crate::Config> PayoutReward<Runtime> for BlockRewardsSource {
 		_for_round: crate::RoundIndex,
 		collator_id: Runtime::AccountId,
 		amount: crate::BalanceOf<Runtime>,
-	) -> Result<Weight, DispatchError> {
-		let rewards_account = pallet_block_rewards_source::Pallet::<Runtime>::rewards_account();
+	) -> Result<crate::BalanceOf<Runtime>, DispatchError> {
+		let rewards_account =
+			pallet_block_rewards_source::Pallet::<Runtime>::rewards_account().unwrap();
+		// TODO check if rewards_account is none
 		crate::Pallet::<Runtime>::transfer_rewards(rewards_account, collator_id, amount)
 	}
 }

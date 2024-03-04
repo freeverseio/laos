@@ -47,8 +47,8 @@ impl StakingConfig for Runtime {
 	type MinCandidateStk = MinCandidateStk;
 	type MinDelegation = MinDelegation;
 	type BlockAuthor = BlockAuthor;
-	type OnCollatorPayout = ();
-	type PayoutCollatorReward = (); // Placeholder for future implementation.
+	type OnCollatorPayout = (); // Placeholder for future implementation.
+	type PayoutReward = (); // Placeholder for future implementation.
 	type OnInactiveCollator = (); // Placeholder for future implementation.
 	type OnNewRound = (); // Placeholder for future implementation.
 	type SlotProvider = StakingRoundSlotProvider;

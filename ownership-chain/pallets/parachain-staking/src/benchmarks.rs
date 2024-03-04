@@ -1728,7 +1728,7 @@ benchmarks! {
 			auto_compound,
 		} in &delegations
 		{
-			<Pallet<T>>::mint_and_compound(
+			<Pallet<T>>::payout_and_compound(
 				100u32.into(),
 				auto_compound.clone(),
 				prime_candidate.clone(),
@@ -2198,7 +2198,7 @@ benchmarks! {
 		);
 	}
 
-	mint_collator_reward {
+	mint_reward {
 		let mut seed = Seed::new();
 		let collator = create_funded_collator::<T>(
 			"collator",
@@ -2209,7 +2209,25 @@ benchmarks! {
 		)?;
 		let original_free_balance = T::Currency::free_balance(&collator);
 	}: {
-		Pallet::<T>::mint_collator_reward(1u32.into(), collator.clone(), 50u32.into())
+		let _ = Pallet::<T>::mint_reward(1u32.into(), collator.clone(), 50u32.into());
+	}
+	verify {
+		assert_eq!(T::Currency::free_balance(&collator), original_free_balance + 50u32.into());
+	}
+
+	transfer_rewards {
+		let mut seed = Seed::new();
+		let collator = create_funded_collator::<T>(
+			"collator",
+			seed.take(),
+			0u32.into(),
+			true,
+			1,
+		)?;
+		let (caller, _) = create_funded_user::<T>("caller", seed.take(), 0u32.into());
+		let original_free_balance = T::Currency::free_balance(&collator);
+	}: {
+		let _ = Pallet::<T>::transfer_rewards(caller.clone(), collator.clone(), 50u32.into());
 	}
 	verify {
 		assert_eq!(T::Currency::free_balance(&collator), original_free_balance + 50u32.into());

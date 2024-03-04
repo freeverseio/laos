@@ -88,7 +88,7 @@ pub trait WeightInfo {
 	fn set_auto_compound(x: u32, y: u32, ) -> Weight;
 	fn delegate_with_auto_compound(x: u32, y: u32, z: u32, ) -> Weight;
 	fn delegate_with_auto_compound_worst() -> Weight;
-	fn mint_collator_reward() -> Weight;
+	fn mint_reward() -> Weight;
 	fn notify_inactive_collator() -> Weight;
 }
 
@@ -876,7 +876,7 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	}
 	/// Storage: System Account (r:1 w:1)
 	/// Proof: System Account (max_values: None, max_size: Some(116), added: 2591, mode: MaxEncodedLen)
-	fn mint_collator_reward() -> Weight {
+	fn mint_reward() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `128`
 		//  Estimated: `3581`
@@ -1696,7 +1696,7 @@ impl WeightInfo for () {
 	}
 	/// Storage: System Account (r:1 w:1)
 	/// Proof: System Account (max_values: None, max_size: Some(116), added: 2591, mode: MaxEncodedLen)
-	fn mint_collator_reward() -> Weight {
+	fn mint_reward() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `128`
 		//  Estimated: `3581`

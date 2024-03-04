@@ -176,10 +176,10 @@ pub mod pallet {
 		type BlockAuthor: Get<Self::AccountId>;
 		/// Handler to notify the runtime when a collator is paid.
 		/// If you don't need it, you can specify the type `()`.
-		type OnCollatorPayout: OnCollatorPayout<Self::AccountId, BalanceOf<Self>>;
-		/// Handler to distribute a collator's reward.
+		type OnCollatorPayout: OnCollatorPayout<Self>;
+		/// Handler to distribute rewards.
 		/// To use the default implementation of minting rewards, specify the type `()`.
-		type PayoutCollatorReward: PayoutReward<Self>;
+		type PayoutReward: PayoutReward<Self>;
 		/// Handler to notify the runtime when a collator is inactive.
 		/// The default behavior is to mark the collator as offline.
 		/// If you need to use the default implementation, specify the type `()`.
@@ -1835,40 +1835,34 @@ pub mod pallet {
 					<DelegationScheduledRequests<T>>::decode_len(&collator).unwrap_or_default();
 				if state.delegations.is_empty() {
 					// solo collator with no delegators
-					extra_weight = extra_weight
-						.saturating_add(
-							T::PayoutCollatorReward::payout_reward(
+					if let Ok(_) =
+						T::PayoutReward::payout_reward(paid_for_round, collator.clone(), amt_due)
+					{
+						extra_weight =
+							extra_weight.saturating_add(T::OnCollatorPayout::on_collator_payout(
 								paid_for_round,
 								collator.clone(),
 								amt_due,
-							)
-							.unwrap_or(Weight::zero()),
-						)
-						.saturating_add(T::OnCollatorPayout::on_collator_payout(
-							paid_for_round,
-							collator.clone(),
-							amt_due,
-						));
+							));
+					}
 				} else {
 					// pay collator first; commission + due_portion
 					let collator_pct = Perbill::from_rational(state.bond, state.total);
 					let commission = pct_due * collator_issuance;
 					amt_due = amt_due.saturating_sub(commission);
 					let collator_reward = (collator_pct * amt_due).saturating_add(commission);
-					extra_weight = extra_weight
-						.saturating_add(
-							T::PayoutCollatorReward::payout_reward(
+					if let Ok(_) = T::PayoutReward::payout_reward(
+						paid_for_round,
+						collator.clone(),
+						collator_reward,
+					) {
+						extra_weight =
+							extra_weight.saturating_add(T::OnCollatorPayout::on_collator_payout(
 								paid_for_round,
 								collator.clone(),
 								collator_reward,
-							)
-							.unwrap_or(Weight::zero()),
-						)
-						.saturating_add(T::OnCollatorPayout::on_collator_payout(
-							paid_for_round,
-							collator.clone(),
-							collator_reward,
-						));
+							));
+					}
 
 					// pay delegators due portion
 					for BondWithAutoCompound { owner, amount, auto_compound } in state.delegations {
@@ -1877,7 +1871,7 @@ pub mod pallet {
 						if !due.is_zero() {
 							num_auto_compounding += if auto_compound.is_zero() { 0 } else { 1 };
 							num_paid_delegations += 1u32;
-							Self::mint_and_compound(
+							Self::payout_and_compound(
 								due,
 								auto_compound.clone(),
 								collator.clone(),
@@ -2101,30 +2095,29 @@ pub mod pallet {
 			Ok((in_top, actual_weight))
 		}
 
-		/// Mint a specified reward amount to the collator's account. Emits the [Rewarded] event.
-		pub fn mint_collator_reward(
+		/// Mint a specified reward amount to the recipient account. Emits the [Rewarded] event.
+		pub fn mint_reward(
 			_paid_for_round: RoundIndex,
-			collator_id: T::AccountId,
+			recipient: T::AccountId,
 			amt: BalanceOf<T>,
-		) -> Weight {
-			if let Ok(amount_transferred) = T::Currency::deposit_into_existing(&collator_id, amt) {
-				Self::deposit_event(Event::Rewarded {
-					account: collator_id.clone(),
-					rewards: amount_transferred.peek(),
-				});
-			}
-			T::WeightInfo::mint_collator_reward()
+		) -> Result<BalanceOf<T>, DispatchError> {
+			let amount_transferred = T::Currency::deposit_into_existing(&recipient, amt)?;
+			Self::deposit_event(Event::Rewarded {
+				account: recipient.clone(),
+				rewards: amount_transferred.peek(),
+			});
+			Ok(amount_transferred.peek())
 		}
 
 		/// Transfer a specified reward amount to the account rewarded. Emits the [Rewarded] event.
 		pub fn transfer_rewards(
-			rewards_source: Option<T::AccountId>,
+			rewards_source: T::AccountId,
 			account_rewarded: T::AccountId,
 			amount: BalanceOf<T>,
-		) -> Result<Weight, DispatchError> {
+		) -> Result<BalanceOf<T>, DispatchError> {
 			// TODO manage error? what happens if there is no enough amount?
 			T::Currency::transfer(
-				&rewards_source.unwrap(), // TODO check is none and add tests
+				&rewards_source,
 				&account_rewarded,
 				amount,
 				ExistenceRequirement::KeepAlive,
@@ -2133,24 +2126,23 @@ pub mod pallet {
 				account: account_rewarded.clone(),
 				rewards: amount,
 			});
-			Ok(T::WeightInfo::mint_collator_reward()) // TODO
+			Ok(amount)
 		}
 
 		/// Mint and compound delegation rewards. The function mints the amount towards the
 		/// delegator and tries to compound a specified percent of it back towards the delegation.
 		/// If a scheduled delegation revoke exists, then the amount is only minted, and nothing is
 		/// compounded. Emits the [Compounded] event.
-		pub fn mint_and_compound(
-			// TODO rename
+		pub fn payout_and_compound(
 			amt: BalanceOf<T>,
 			compound_percent: Percent,
 			candidate: T::AccountId,
 			delegator: T::AccountId,
 		) {
-			if let Ok(_) = T::PayoutCollatorReward::payout_reward(0, delegator.clone(), amt) {
-				Self::deposit_event(Event::Rewarded { account: delegator.clone(), rewards: amt });
-
-				let compound_amount = compound_percent.mul_ceil(amt);
+			if let Ok(amount_transferred) =
+				T::PayoutReward::payout_reward(0, delegator.clone(), amt)
+			{
+				let compound_amount = compound_percent.mul_ceil(amount_transferred);
 				if compound_amount.is_zero() {
 					return;
 				}
