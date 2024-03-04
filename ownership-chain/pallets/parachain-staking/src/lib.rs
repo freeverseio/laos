@@ -179,7 +179,7 @@ pub mod pallet {
 		type OnCollatorPayout: OnCollatorPayout<Self::AccountId, BalanceOf<Self>>;
 		/// Handler to distribute a collator's reward.
 		/// To use the default implementation of minting rewards, specify the type `()`.
-		type PayoutCollatorReward: PayoutCollatorReward<Self>;
+		type PayoutCollatorReward: PayoutReward<Self>;
 		/// Handler to notify the runtime when a collator is inactive.
 		/// The default behavior is to mark the collator as offline.
 		/// If you need to use the default implementation, specify the type `()`.
@@ -1740,25 +1740,10 @@ pub mod pallet {
 			}
 			let total_staked = <Staked<T>>::take(round_to_payout);
 			let total_issuance = Self::compute_issuance(total_staked);
-			let mut left_issuance = total_issuance;
-			// reserve portion of issuance for parachain bond account
-			// TODO commentting out ?
-			let bond_config = <ParachainBondInfo<T>>::get();
-			let parachain_bond_reserve = bond_config.percent * total_issuance;
-			if let Ok(imb) =
-				T::Currency::deposit_into_existing(&bond_config.account, parachain_bond_reserve)
-			{
-				// update round issuance iff transfer succeeds
-				left_issuance = left_issuance.saturating_sub(imb.peek());
-				Self::deposit_event(Event::ReservedForParachainBond {
-					account: bond_config.account,
-					value: imb.peek(),
-				});
-			}
 
 			let payout = DelayedPayout {
 				round_issuance: total_issuance,
-				total_staking_reward: left_issuance,
+				total_staking_reward: total_issuance,
 				collator_commission: <CollatorCommission<T>>::get(),
 			};
 
@@ -1852,7 +1837,7 @@ pub mod pallet {
 					// solo collator with no delegators
 					extra_weight = extra_weight
 						.saturating_add(
-							T::PayoutCollatorReward::payout_collator_reward(
+							T::PayoutCollatorReward::payout_reward(
 								paid_for_round,
 								collator.clone(),
 								amt_due,
@@ -1872,7 +1857,7 @@ pub mod pallet {
 					let collator_reward = (collator_pct * amt_due).saturating_add(commission);
 					extra_weight = extra_weight
 						.saturating_add(
-							T::PayoutCollatorReward::payout_collator_reward(
+							T::PayoutCollatorReward::payout_reward(
 								paid_for_round,
 								collator.clone(),
 								collator_reward,
@@ -2162,9 +2147,7 @@ pub mod pallet {
 			candidate: T::AccountId,
 			delegator: T::AccountId,
 		) {
-			if let Ok(_) =
-				T::PayoutCollatorReward::payout_collator_reward(0, delegator.clone(), amt)
-			{
+			if let Ok(_) = T::PayoutCollatorReward::payout_reward(0, delegator.clone(), amt) {
 				Self::deposit_event(Event::Rewarded { account: delegator.clone(), rewards: amt });
 
 				let compound_amount = compound_percent.mul_ceil(amt);

@@ -47,8 +47,8 @@ impl OnNewRound for () {
 }
 
 /// Defines the behavior to payout the collator's reward.
-pub trait PayoutCollatorReward<Runtime: crate::Config> {
-	fn payout_collator_reward(
+pub trait PayoutReward<Runtime: crate::Config> {
+	fn payout_reward(
 		round_index: crate::RoundIndex,
 		collator_id: Runtime::AccountId,
 		amount: crate::BalanceOf<Runtime>,
@@ -57,8 +57,22 @@ pub trait PayoutCollatorReward<Runtime: crate::Config> {
 
 /// Defines the default behavior for paying out the collator's reward. The amount is directly
 /// deposited into the collator's account.
-impl<Runtime: crate::Config> PayoutCollatorReward<Runtime> for () {
-	fn payout_collator_reward(
+impl<Runtime: crate::Config> PayoutReward<Runtime> for () {
+	fn payout_reward(
+		for_round: crate::RoundIndex,
+		collator_id: Runtime::AccountId,
+		amount: crate::BalanceOf<Runtime>,
+	) -> Result<Weight, DispatchError> {
+		Ok(crate::Pallet::<Runtime>::mint_collator_reward(for_round, collator_id, amount))
+	}
+}
+
+/// Defines the behavior for paying out the collator's reward. The amount is transferred
+/// from the rewards account defined in `BlockRewardsSource` pallet to the rewarded account.
+pub struct BlockRewardsSource;
+
+impl<Runtime: crate::Config> PayoutReward<Runtime> for BlockRewardsSource {
+	fn payout_reward(
 		_for_round: crate::RoundIndex,
 		collator_id: Runtime::AccountId,
 		amount: crate::BalanceOf<Runtime>,
