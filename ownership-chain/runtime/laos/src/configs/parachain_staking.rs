@@ -184,7 +184,6 @@ impl<Runtime: StakingConfig> OnCollatorPayout<Runtime> for BlockRewardsSourceWei
 mod test {
 	use super::*;
 	use crate::tests::ExtBuilder;
-	use frame_support::assert_ok;
 
 	#[test]
 	fn payout_reward_when_rewards_account_exists_works() {
