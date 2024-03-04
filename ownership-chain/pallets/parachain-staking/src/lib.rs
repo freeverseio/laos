@@ -1796,8 +1796,7 @@ pub mod pallet {
 
 		/// Payout a single collator from the given round.
 		///
-		/// Returns an optional tuple of (Collator's AccountId, total paid)
-		/// or None if there were no more payouts to be made for the round.
+		/// Returns a tuple of (Collator's AccountId, total paid)
 		pub(crate) fn pay_one_collator_reward(
 			paid_for_round: RoundIndex,
 			payout_info: DelayedPayout<BalanceOf<T>>,
@@ -2116,16 +2115,6 @@ pub mod pallet {
 
 			Ok((in_top, actual_weight))
 		}
-
-		// /// Mint a specified reward amount to the beneficiary account. Emits the [Rewarded] event.
-		// pub fn mint(amt: BalanceOf<T>, to: T::AccountId) {
-		// 	if let Ok(amount_transferred) = T::Currency::deposit_into_existing(&to, amt) {
-		// 		Self::deposit_event(Event::Rewarded {
-		// 			account: to.clone(),
-		// 			rewards: amount_transferred.peek(),
-		// 		});
-		// 	}
-		// }
 
 		/// Mint a specified reward amount to the collator's account. Emits the [Rewarded] event.
 		pub fn mint_collator_reward(
