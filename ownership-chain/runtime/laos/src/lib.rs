@@ -19,7 +19,6 @@ use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 pub use ownership_parachain_primitives::{
 	AccountId, AuraId, Balance, BlockNumber, Hash, Index, Nonce, Signature,
 };
-use ownership_parachain_primitives::{MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO};
 use parity_scale_codec::{Decode, Encode};
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
@@ -38,6 +37,7 @@ use sp_runtime::{
 	ApplyExtrinsicResult, ConsensusEngineId,
 };
 
+use ownership_parachain_primitives::MAXIMUM_BLOCK_WEIGHT;
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
@@ -46,8 +46,7 @@ use sp_version::RuntimeVersion;
 use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{
-		ConstBool, ConstU32, ConstU64, ConstU8, Currency, Everything, FindAuthor, Hooks, Imbalance,
-		OnUnbalanced, WithdrawReasons,
+		ConstBool, ConstU32, ConstU64, ConstU8, Everything, FindAuthor, Hooks, WithdrawReasons,
 	},
 	weights::{
 		constants::WEIGHT_REF_TIME_PER_SECOND, ConstantMultiplier, Weight, WeightToFeeCoefficient,
@@ -76,9 +75,7 @@ use staging_xcm_executor::XcmExecutor;
 // Frontier
 use fp_rpc::TransactionStatus;
 use pallet_ethereum::{Call::transact, PostLogContent, Transaction as EthereumTransaction};
-use pallet_evm::{
-	Account as EVMAccount, EVMCurrencyAdapter, FeeCalculator, OnChargeEVMTransaction, Runner,
-};
+use pallet_evm::{Account as EVMAccount, FeeCalculator, Runner};
 
 mod precompiles;
 use precompiles::FrontierPrecompiles;
@@ -479,29 +476,6 @@ impl<F: FindAuthor<u32>> FindAuthor<H160> for FindAuthorTruncated<F> {
 			return Some(H160::from_slice(&authority_id.to_raw_vec()[4..24]));
 		}
 		None
-	}
-}
-
-parameter_types! {
-	pub BlockGasLimit: U256 = U256::from(NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT.ref_time() / WEIGHT_PER_GAS);
-	pub PrecompilesValue: FrontierPrecompiles<Runtime> = FrontierPrecompiles::<_>::new();
-	pub WeightPerGas: Weight = Weight::from_parts(WEIGHT_PER_GAS, 0);
-	pub GasLimitPovSizeRatio: u64 = BlockGasLimit::get().checked_div(MAX_POV_SIZE.into()).expect("should be safe; qed").as_u64();
-}
-
-const MAX_POV_SIZE: u64 = 5 * 1024 * 1024;
-
-pub struct CustomFindAuthor<Inner>(sp_std::marker::PhantomData<Inner>);
-
-impl<Inner> frame_support::traits::FindAuthor<sp_core::H160> for CustomFindAuthor<Inner>
-where
-	Inner: frame_support::traits::FindAuthor<AccountId>,
-{
-	fn find_author<'a, I>(digests: I) -> Option<sp_core::H160>
-	where
-		I: 'a + IntoIterator<Item = (frame_support::ConsensusEngineId, &'a [u8])>,
-	{
-		Inner::find_author(digests).map(Into::into)
 	}
 }
 
