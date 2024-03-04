@@ -1,5 +1,5 @@
 use super::{
-	configs::fee, AccountId, AllPalletsWithSystem, Balances, ParachainInfo, PolkadotXcm, Runtime,
+	config::fee, AccountId, AllPalletsWithSystem, Balances, ParachainInfo, PolkadotXcm, Runtime,
 	RuntimeCall, RuntimeEvent, RuntimeOrigin, WeightToFee,
 };
 use core::marker::PhantomData;
