@@ -1,9 +1,12 @@
 use crate::{AccountId, Balances, BlockNumber, Permill, Runtime, RuntimeEvent, Vec, Weight, UNIT};
 use frame_support::{parameter_types, traits::Get};
 use frame_system::EnsureRoot;
-use pallet_parachain_staking::{self as staking, Config as StakingConfig};
+use pallet_parachain_staking::{
+	self as staking, Config as StakingConfig, OnCollatorPayout, PayoutReward, WeightInfo,
+};
 use pallet_session::{SessionManager, ShouldEndSession};
 use sp_consensus_slots::Slot;
+use sp_runtime::DispatchError;
 use sp_staking::SessionIndex;
 
 // Define runtime constants used across the parachain staking configuration.
@@ -47,8 +50,8 @@ impl StakingConfig for Runtime {
 	type MinCandidateStk = MinCandidateStk;
 	type MinDelegation = MinDelegation;
 	type BlockAuthor = BlockAuthor;
-	type OnCollatorPayout = (); // Placeholder for future implementation.
-	type PayoutReward = (); // Placeholder for future implementation.
+	type OnCollatorPayout = BlockRewardsSourceWeight;
+	type PayoutReward = BlockRewardsSource;
 	type OnInactiveCollator = (); // Placeholder for future implementation.
 	type OnNewRound = (); // Placeholder for future implementation.
 	type SlotProvider = StakingRoundSlotProvider;
@@ -144,5 +147,68 @@ impl frame_support::traits::EstimateNextSessionRotation<BlockNumber> for Paracha
 			Some(first_round + round.length),
 			<Runtime as frame_system::Config>::DbWeight::get().reads(1),
 		)
+	}
+}
+
+/// Defines the behavior for paying out the rewards for blocks producing. The amount is transferred
+/// from the rewards account defined in `BlockRewardsSource` pallet to the rewarded account.
+pub struct BlockRewardsSource;
+
+impl<Runtime: StakingConfig> PayoutReward<Runtime> for BlockRewardsSource {
+	fn payout_reward(
+		_for_round: staking::RoundIndex,
+		collator_id: Runtime::AccountId,
+		amount: staking::BalanceOf<Runtime>,
+	) -> Result<staking::BalanceOf<Runtime>, DispatchError> {
+		let rewards_account =
+			pallet_block_rewards_source::Pallet::<Runtime>::rewards_account().unwrap();
+		// TODO check if rewards_account is none
+		staking::Pallet::<Runtime>::transfer_rewards(rewards_account, collator_id, amount)
+	}
+}
+
+pub struct BlockRewardsSourceWeight;
+
+impl<Runtime: StakingConfig> OnCollatorPayout<Runtime> for BlockRewardsSourceWeight {
+	fn on_collator_payout(
+		_for_round: staking::RoundIndex,
+		_collator_id: Runtime::AccountId,
+		_amount: staking::BalanceOf<Runtime>,
+	) -> Weight {
+		<Runtime as StakingConfig>::WeightInfo::transfer_rewards()
+	}
+}
+
+#[cfg(test)]
+mod test {
+	use frame_support::assert_ok;
+
+	use crate::tests::new_test_ext;
+
+	use super::*;
+	// 	use crate::mock::{new_test_ext, Runtime};
+	// 	use frame_support::assert_ok;
+
+	// 	#[test]
+	// 	fn payout_reward_works() {
+	// 		let mut t = new_test_ext();
+	// 		pallet_block_rewards_source::GenesisConfig::<Runtime> {
+	// 			rewards_account: Some([1u8; 20].into()),
+	// 		}
+	// 		.assimilate_storage(&mut t)
+	// 		.unwrap();
+	// 		t.execute_with(|| {
+	// 			let collator_id = 1;
+	// 			let amount = BlockRewardsSource::payout_reward(1, collator_id, 100).unwrap();
+	// 			assert_ok!(amount, 0);
+	// 		});
+	// 	}
+	#[test]
+	fn payout_reward_works() {
+		new_test_ext().execute_with(|| {
+			let collator_id = AccountId::from([1u8; 20])
+			<BlockRewardsSource as PayoutReward<Runtime>>::payout_reward(1, collator_id, 100)
+				.unwrap();
+		});
 	}
 }

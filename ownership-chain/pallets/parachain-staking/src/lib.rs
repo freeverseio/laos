@@ -2109,7 +2109,8 @@ pub mod pallet {
 			Ok(amount_transferred.peek())
 		}
 
-		/// Transfer a specified reward amount to the destination account. Emits the [Rewarded] event.
+		/// Transfer a specified reward amount to the destination account. Emits the [Rewarded]
+		/// event.
 		pub fn transfer_rewards(
 			source: T::AccountId,
 			destination: T::AccountId,

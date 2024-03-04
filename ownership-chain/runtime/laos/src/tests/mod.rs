@@ -46,6 +46,16 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 		.assimilate_storage(&mut t)
 		.unwrap();
 
+	pallet_parachain_staking::GenesisConfig::<crate::Runtime> { ..Default::default() }
+		.assimilate_storage(&mut t)
+		.unwrap();
+
+	pallet_block_rewards_source::GenesisConfig::<crate::Runtime> {
+		rewards_account: Some([1u8; 20].into()),
+	}
+	.assimilate_storage(&mut t)
+	.unwrap();
+
 	t.into()
 }
 
