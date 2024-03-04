@@ -1,5 +1,7 @@
 # DPoS Pallet for Parachain Staking
 
+This pallet is forked from `moonbeam` to avoid dependency on it. The exact commit hash of the fork is tag [`v0.36.0`](https://github.com/moonbeam-foundation/moonbeam/tree/v0.36.0/pallets/parachain-staking);
+
 ## Formatting Rules
 
 - dependencies in alphabetical order in the `Cargo.toml` and at the top of each file

@@ -26,8 +26,12 @@
       "balances": {
         "balances": [
           [
-            "0x506543b5d64A0083Dd0faA386FfE41b75141A31C",
-            1000000000000000000000
+            "0xd16D70A63580c15EEAD7145f0f03A41c94027e63",
+            849920000000000000000000000
+          ],
+          [
+            "0xffffffffffffffffffffffffffffffffffffff01",
+            150000000000000000000000000
           ],
           [
             "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac",
@@ -36,10 +40,6 @@
           [
             "0x045c57B46DEDE60001623105d351c7941C90149e",
             40000000000000000000000
-          ],
-          [
-            "0x0000000000000000000000000000000000009001",
-            1000000000000000000000
           ]
         ]
       },
@@ -105,11 +105,14 @@
         "blocksPerRound": 5,
         "numSelectedCandidates": 8
       },
+      "blockRewardsSource": {
+        "rewardsAccount": "0xffffffffffffffffffffffffffffffffffffff01"
+      },
       "polkadotXcm": {
         "safeXcmVersion": 3
       },
       "sudo": {
-        "key": "0x506543b5d64A0083Dd0faA386FfE41b75141A31C"
+        "key": "0xd16D70A63580c15EEAD7145f0f03A41c94027e63"
       },
       "ethereum": {},
       "evm": {
