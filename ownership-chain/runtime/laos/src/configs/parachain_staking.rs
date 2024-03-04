@@ -51,8 +51,8 @@ impl StakingConfig for Runtime {
 	type MinCandidateStk = MinCandidateStk;
 	type MinDelegation = MinDelegation;
 	type BlockAuthor = BlockAuthor;
-	type OnCollatorPayout = BlockRewardsSourceWeight;
-	type PayoutReward = BlockRewardsSource<Self>;
+	type OnCollatorPayout = TransferRewardsWeight;
+	type PayoutReward = TransferRewards<Self>;
 	type OnInactiveCollator = (); // Placeholder for future implementation.
 	type OnNewRound = (); // Placeholder for future implementation.
 	type SlotProvider = StakingRoundSlotProvider;
@@ -152,10 +152,10 @@ impl frame_support::traits::EstimateNextSessionRotation<BlockNumber> for Paracha
 }
 
 /// Defines the behavior for paying out the rewards for producing blocks. The amount is transferred
-/// from the rewards account defined in `BlockRewardsSource` pallet to the rewarded account.
-pub struct BlockRewardsSource<Runtime>(PhantomData<Runtime>); // Coupling runtime with the struct
+/// from the rewards account defined in `TransferRewards` pallet to the rewarded account.
+pub struct TransferRewards<Runtime>(PhantomData<Runtime>); // Coupling runtime with the struct
 
-impl<Runtime: StakingConfig> PayoutReward<Runtime> for BlockRewardsSource<Runtime> {
+impl<Runtime: StakingConfig> PayoutReward<Runtime> for TransferRewards<Runtime> {
 	fn payout_reward(
 		_for_round: staking::RoundIndex,
 		destination: Runtime::AccountId,
@@ -168,9 +168,9 @@ impl<Runtime: StakingConfig> PayoutReward<Runtime> for BlockRewardsSource<Runtim
 	}
 }
 
-pub struct BlockRewardsSourceWeight;
+pub struct TransferRewardsWeight;
 
-impl<Runtime: StakingConfig> OnCollatorPayout<Runtime> for BlockRewardsSourceWeight {
+impl<Runtime: StakingConfig> OnCollatorPayout<Runtime> for TransferRewardsWeight {
 	fn on_collator_payout(
 		_for_round: staking::RoundIndex,
 		_collator_id: Runtime::AccountId,
@@ -195,7 +195,7 @@ mod test {
 				let collator_id = AccountId::from([9u8; 20]);
 				let initial_collator_balance = Balances::free_balance(collator_id);
 				let amount =
-					BlockRewardsSource::<Runtime>::payout_reward(0, collator_id, 100).unwrap();
+					TransferRewards::<Runtime>::payout_reward(0, collator_id, 100).unwrap();
 				assert_eq!(amount, 100);
 				assert_eq!(Balances::free_balance(collator_id), initial_collator_balance + 100);
 			});
@@ -206,7 +206,7 @@ mod test {
 		ExtBuilder::default().build().execute_with(|| {
 			let collator_id = AccountId::from([9u8; 20]);
 			let initial_collator_balance = Balances::free_balance(collator_id);
-			let amount = BlockRewardsSource::<Runtime>::payout_reward(0, collator_id, 100).unwrap();
+			let amount = TransferRewards::<Runtime>::payout_reward(0, collator_id, 100).unwrap();
 			assert_eq!(amount, 0);
 			assert_eq!(Balances::free_balance(collator_id), initial_collator_balance);
 		});
