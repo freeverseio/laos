@@ -8,6 +8,7 @@ use pallet_session::{SessionManager, ShouldEndSession};
 use sp_consensus_slots::Slot;
 use sp_runtime::DispatchError;
 use sp_staking::SessionIndex;
+use sp_std::marker::PhantomData;
 
 // Define runtime constants used across the parachain staking configuration.
 parameter_types! {
@@ -51,7 +52,7 @@ impl StakingConfig for Runtime {
 	type MinDelegation = MinDelegation;
 	type BlockAuthor = BlockAuthor;
 	type OnCollatorPayout = BlockRewardsSourceWeight;
-	type PayoutReward = BlockRewardsSource;
+	type PayoutReward = BlockRewardsSource<Self>;
 	type OnInactiveCollator = (); // Placeholder for future implementation.
 	type OnNewRound = (); // Placeholder for future implementation.
 	type SlotProvider = StakingRoundSlotProvider;
@@ -150,20 +151,20 @@ impl frame_support::traits::EstimateNextSessionRotation<BlockNumber> for Paracha
 	}
 }
 
-/// Defines the behavior for paying out the rewards for blocks producing. The amount is transferred
+/// Defines the behavior for paying out the rewards for producing blocks. The amount is transferred
 /// from the rewards account defined in `BlockRewardsSource` pallet to the rewarded account.
-pub struct BlockRewardsSource;
+pub struct BlockRewardsSource<Runtime>(PhantomData<Runtime>); // Coupling runtime with the struct
 
-impl<Runtime: StakingConfig> PayoutReward<Runtime> for BlockRewardsSource {
+impl<Runtime: StakingConfig> PayoutReward<Runtime> for BlockRewardsSource<Runtime> {
 	fn payout_reward(
 		_for_round: staking::RoundIndex,
-		collator_id: Runtime::AccountId,
+		destination: Runtime::AccountId,
 		amount: staking::BalanceOf<Runtime>,
 	) -> Result<staking::BalanceOf<Runtime>, DispatchError> {
-		let rewards_account =
-			pallet_block_rewards_source::Pallet::<Runtime>::rewards_account().unwrap();
-		// TODO check if rewards_account is none
-		staking::Pallet::<Runtime>::transfer_rewards(rewards_account, collator_id, amount)
+		if let Some(source) = pallet_block_rewards_source::Pallet::<Runtime>::rewards_account() {
+			return staking::Pallet::<Runtime>::transfer_rewards(source, destination, amount);
+		}
+		Ok(0u32.into())
 	}
 }
 
@@ -181,34 +182,34 @@ impl<Runtime: StakingConfig> OnCollatorPayout<Runtime> for BlockRewardsSourceWei
 
 #[cfg(test)]
 mod test {
+	use super::*;
+	use crate::tests::ExtBuilder;
 	use frame_support::assert_ok;
 
-	use crate::tests::new_test_ext;
-
-	use super::*;
-	// 	use crate::mock::{new_test_ext, Runtime};
-	// 	use frame_support::assert_ok;
-
-	// 	#[test]
-	// 	fn payout_reward_works() {
-	// 		let mut t = new_test_ext();
-	// 		pallet_block_rewards_source::GenesisConfig::<Runtime> {
-	// 			rewards_account: Some([1u8; 20].into()),
-	// 		}
-	// 		.assimilate_storage(&mut t)
-	// 		.unwrap();
-	// 		t.execute_with(|| {
-	// 			let collator_id = 1;
-	// 			let amount = BlockRewardsSource::payout_reward(1, collator_id, 100).unwrap();
-	// 			assert_ok!(amount, 0);
-	// 		});
-	// 	}
 	#[test]
-	fn payout_reward_works() {
-		new_test_ext().execute_with(|| {
-			let collator_id = AccountId::from([1u8; 20])
-			<BlockRewardsSource as PayoutReward<Runtime>>::payout_reward(1, collator_id, 100)
-				.unwrap();
+	fn payout_reward_when_rewards_account_exists_works() {
+		let rewards_account = AccountId::from([1u8; 20]);
+		ExtBuilder::default()
+			.with_rewards_account(rewards_account)
+			.build()
+			.execute_with(|| {
+				let collator_id = AccountId::from([9u8; 20]);
+				let initial_collator_balance = Balances::free_balance(collator_id);
+				let amount =
+					BlockRewardsSource::<Runtime>::payout_reward(0, collator_id, 100).unwrap();
+				assert_eq!(amount, 100);
+				assert_eq!(Balances::free_balance(collator_id), initial_collator_balance + 100);
+			});
+	}
+
+	#[test]
+	fn payout_reward_when_rewards_account_does_not_exist_works() {
+		ExtBuilder::default().build().execute_with(|| {
+			let collator_id = AccountId::from([9u8; 20]);
+			let initial_collator_balance = Balances::free_balance(collator_id);
+			let amount = BlockRewardsSource::<Runtime>::payout_reward(0, collator_id, 100).unwrap();
+			assert_eq!(amount, 0);
+			assert_eq!(Balances::free_balance(collator_id), initial_collator_balance);
 		});
 	}
 }

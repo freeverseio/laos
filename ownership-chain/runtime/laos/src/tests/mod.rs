@@ -26,37 +26,56 @@ use frame_support::{
 use pallet_transaction_payment::ChargeTransactionPayment;
 use sp_core::U256;
 
-// Build genesis storage according to the mock runtime.
-pub fn new_test_ext() -> sp_io::TestExternalities {
-	let mut t = frame_system::GenesisConfig::<crate::Runtime>::default()
-		.build_storage()
-		.unwrap()
-		.into();
+pub(crate) struct ExtBuilder {
+	rewards_account: Option<AccountId>,
+}
 
-	pallet_balances::GenesisConfig::<crate::Runtime> {
-		balances: vec![
-			([0u8; 20].into(), 1_000_000_000_000_000_000_000u128),
-			([1u8; 20].into(), 1_000_000_000_000_000_000_000u128),
-		],
+impl Default for ExtBuilder {
+	fn default() -> Self {
+		Self { rewards_account: None }
 	}
-	.assimilate_storage(&mut t)
-	.unwrap();
+}
 
-	pallet_sudo::GenesisConfig::<crate::Runtime> { key: Some(AccountId::from_str(BOB).unwrap()) }
+impl ExtBuilder {
+	pub(crate) fn with_rewards_account(mut self, account: AccountId) -> Self {
+		self.rewards_account = Some(account);
+		self
+	}
+
+	// Build genesis storage according to the mock runtime.
+	pub(crate) fn build(self) -> sp_io::TestExternalities {
+		let mut t = frame_system::GenesisConfig::<crate::Runtime>::default()
+			.build_storage()
+			.unwrap()
+			.into();
+
+		pallet_balances::GenesisConfig::<crate::Runtime> {
+			balances: vec![
+				([0u8; 20].into(), 1_000_000_000_000_000_000_000u128),
+				([1u8; 20].into(), 1_000_000_000_000_000_000_000u128),
+			],
+		}
 		.assimilate_storage(&mut t)
 		.unwrap();
 
-	pallet_parachain_staking::GenesisConfig::<crate::Runtime> { ..Default::default() }
+		pallet_sudo::GenesisConfig::<crate::Runtime> {
+			key: Some(AccountId::from_str(BOB).unwrap()),
+		}
 		.assimilate_storage(&mut t)
 		.unwrap();
 
-	pallet_block_rewards_source::GenesisConfig::<crate::Runtime> {
-		rewards_account: Some([1u8; 20].into()),
-	}
-	.assimilate_storage(&mut t)
-	.unwrap();
+		pallet_block_rewards_source::GenesisConfig::<crate::Runtime> {
+			rewards_account: self.rewards_account,
+		}
+		.assimilate_storage(&mut t)
+		.unwrap();
 
-	t.into()
+		t.into()
+	}
+}
+
+pub(crate) fn new_test_ext() -> sp_io::TestExternalities {
+	ExtBuilder::default().build()
 }
 
 const ALICE: &str = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
