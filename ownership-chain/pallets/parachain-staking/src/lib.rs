@@ -2170,6 +2170,7 @@ pub mod pallet {
 				});
 			};
 		}
+	}
 
 	/// Add reward points to block authors:
 	/// * 20 points to the block producer for producing a block in the chain
