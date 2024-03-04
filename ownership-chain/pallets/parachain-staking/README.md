@@ -1,11 +1,28 @@
 # DPoS Pallet for Parachain Staking
 
-This pallet is forked from `kilt` to avoid dependency on it. The exact commit hash of the fork is [`9b6b9da75496a4ab1a15a114679b6a942d4e73a1`](https://github.com/KILTprotocol/kilt-node/tree/9b6b9da75496a4ab1a15a114679b6a942d4e73a1);
+This pallet is forked from `moonbeam` to avoid dependency on it. The exact commit hash of the fork is tag [`v0.36.0`](https://github.com/moonbeam-foundation/moonbeam/tree/v0.36.0/pallets/parachain-staking);
 
-## Collator Misconduct Policy
+## Formatting Rules
 
-In a Proof of Stake (PoS) system, stakeholders can become block producers, termed as collators, and receive rewards for successfully generated blocks. Stakeholders also have the option to delegate their stakes to a collator, sharing in the rewards for each block authored by the chosen collator.
+- dependencies in alphabetical order in the `Cargo.toml` and at the top of each file
+- prefer explicit imports to glob import syntax i.e. prefer `use::crate::{Ex1, Ex2, ..};` to `use super::*;`
 
-However, should a collator exhibit any form of misconduct—such as going offline, failing to validate, or producing invalid blocks—they will forfeit their rewards. By extension, delegators aligned with the non-compliant collator will also be affected, as they will not receive their expected rewards.
+## Description
 
-In response to such events, the governing body retains the right to decommission any collator found to be in violation of operational standards.
+Implements Delegated Proof of Stake to
+
+1. select the active set of eligible block producers
+2. reward block authors
+3. enable delegators and collators to participate in inflationary rewards
+
+Links:
+
+- [Rust Documentation](https://moonbeam-foundation.github.io/moonbeam/pallet_parachain_staking/index.html)
+- [Unofficial Documentation](https://meta5.world/parachain-staking-docs/)
+- [(Outdated) Blog Post with Justification](https://meta5.world/posts/parachain-staking)
+
+## History
+
+Since January 2021, Moonbeam's team has maintained this Delegated Proof of Stake (DPoS) pallet designed specifically for parachains.
+
+Since April 2021, the development of this pallet has been supported by [a Web3 Foundation grant](https://github.com/w3f/Grants-Program/pull/389). The [first milestone](https://github.com/w3f/Grant-Milestone-Delivery/pull/218) was approved in June 2021.

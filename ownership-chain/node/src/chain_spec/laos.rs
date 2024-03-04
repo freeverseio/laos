@@ -2,12 +2,10 @@ use super::{get_collator_keys_from_seed, predefined_accounts, Extensions, SAFE_X
 use cumulus_primitives_core::ParaId;
 use fp_evm::GenesisAccount;
 use laos_ownership_runtime::{
-	AccountId, AuraId, Balance, InflationInfo, MinCollatorStake, Precompiles, BLOCKS_PER_YEAR,
-	REVERT_BYTECODE, UNIT,
+	configs::parachain_staking, AccountId, AuraId, Balance, Precompiles, REVERT_BYTECODE,
 };
 use sc_service::ChainType;
 use sp_core::{H160, U256};
-use sp_runtime::Perquintill;
 use std::{collections::BTreeMap, str::FromStr};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
@@ -37,7 +35,10 @@ pub fn development_config() -> ChainSpec {
 		move || {
 			testnet_genesis(
 				// initial collators.
-				vec![(predefined_accounts::ALITH.into(), None, 2 * MinCollatorStake::get())],
+				vec![(
+					predefined_accounts::ALITH.into(),
+					2 * parachain_staking::MinCandidateStk::get(),
+				)],
 				vec![(predefined_accounts::ALITH.into(), get_collator_keys_from_seed("Alice"))],
 				predefined_accounts::accounts(),
 				// Give Alice root privileges
@@ -72,7 +73,10 @@ pub fn local_testnet_config() -> ChainSpec {
 		ChainType::Local,
 		move || {
 			testnet_genesis(
-				vec![(predefined_accounts::ALITH.into(), None, 2 * MinCollatorStake::get())],
+				vec![(
+					predefined_accounts::ALITH.into(),
+					2 * parachain_staking::MinCandidateStk::get(),
+				)],
 				// initial collators.
 				vec![(predefined_accounts::ALITH.into(), get_collator_keys_from_seed("Alice"))],
 				predefined_accounts::accounts(),
@@ -100,26 +104,12 @@ pub fn local_testnet_config() -> ChainSpec {
 }
 
 fn testnet_genesis(
-	stakers: Vec<(AccountId, Option<AccountId>, Balance)>,
+	stakers: Vec<(AccountId, Balance)>,
 	invulnerables: Vec<(AccountId, AuraId)>,
 	endowed_accounts: Vec<AccountId>,
 	root_key: Option<AccountId>,
 	id: ParaId,
 ) -> laos_ownership_runtime::RuntimeGenesisConfig {
-	// Reward configuration used in the genesis config
-	// This defines the rate at which rewards are distributed to collators and delegators
-	let reward_configuration = InflationInfo::new(
-		BLOCKS_PER_YEAR.into(),
-		// max collator staking rate
-		Perquintill::from_percent(40),
-		// collator reward rate
-		Perquintill::from_percent(10),
-		// max delegator staking rate
-		Perquintill::from_percent(10),
-		// delegator reward rate
-		Perquintill::from_percent(8),
-	);
-
 	laos_ownership_runtime::RuntimeGenesisConfig {
 		system: laos_ownership_runtime::SystemConfig {
 			code: laos_ownership_runtime::WASM_BINARY
@@ -163,9 +153,8 @@ fn testnet_genesis(
 			..Default::default()
 		},
 		parachain_staking: laos_ownership_runtime::ParachainStakingConfig {
-			stakers,
-			max_candidate_stake: 10_000 * UNIT,
-			inflation_config: reward_configuration,
+			candidates: stakers,
+			blocks_per_round: 5,
 			..Default::default()
 		},
 		evm: laos_ownership_runtime::EVMConfig {
