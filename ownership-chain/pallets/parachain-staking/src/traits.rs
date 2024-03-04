@@ -37,18 +37,6 @@ impl<Runtime: crate::Config> OnCollatorPayout<Runtime> for () {
 	}
 }
 
-// pub struct BlockRewardsSourceWeight;
-
-// impl<Runtime: crate::Config> OnCollatorPayout<Runtime> for BlockRewardsSourceWeight {
-// 	fn on_collator_payout(
-// 		_for_round: crate::RoundIndex,
-// 		_collator_id: Runtime::AccountId,
-// 		_amount: crate::BalanceOf<Runtime>,
-// 	) -> Weight {
-// 		<Runtime as crate::Config>::WeightInfo::transfer_reward()
-// 	}
-// }
-
 pub trait OnNewRound {
 	fn on_new_round(round_index: crate::RoundIndex) -> Weight;
 }
@@ -76,23 +64,6 @@ impl<Runtime: crate::Config> PayoutReward<Runtime> for () {
 		amount: crate::BalanceOf<Runtime>,
 	) -> Result<crate::BalanceOf<Runtime>, DispatchError> {
 		crate::Pallet::<Runtime>::mint_reward(for_round, collator_id, amount)
-	}
-}
-
-/// Defines the behavior for paying out the collator's reward. The amount is transferred
-/// from the rewards account defined in `BlockRewardsSource` pallet to the rewarded account.
-pub struct BlockRewardsSource;
-
-impl<Runtime: crate::Config> PayoutReward<Runtime> for BlockRewardsSource {
-	fn payout_reward(
-		_for_round: crate::RoundIndex,
-		collator_id: Runtime::AccountId,
-		amount: crate::BalanceOf<Runtime>,
-	) -> Result<crate::BalanceOf<Runtime>, DispatchError> {
-		let rewards_account =
-			pallet_block_rewards_source::Pallet::<Runtime>::rewards_account().unwrap();
-		// TODO check if rewards_account is none
-		crate::Pallet::<Runtime>::transfer_rewards(rewards_account, collator_id, amount)
 	}
 }
 
