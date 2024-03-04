@@ -97,7 +97,7 @@ pub mod pallet {
 	use sp_consensus_slots::Slot;
 	use sp_runtime::{
 		traits::{Saturating, Zero},
-		DispatchErrorWithPostInfo, Perbill, Percent,
+		DispatchError, DispatchErrorWithPostInfo, Perbill, Percent, TokenError,
 	};
 	use sp_std::{collections::btree_map::BTreeMap, prelude::*};
 
@@ -2109,23 +2109,24 @@ pub mod pallet {
 			Ok(amount_transferred.peek())
 		}
 
-		/// Transfer a specified reward amount to the account rewarded. Emits the [Rewarded] event.
+		/// Transfer a specified reward amount to the destination account. Emits the [Rewarded] event.
 		pub fn transfer_rewards(
-			rewards_source: T::AccountId,
-			account_rewarded: T::AccountId,
+			source: T::AccountId,
+			destination: T::AccountId,
 			amount: BalanceOf<T>,
 		) -> Result<BalanceOf<T>, DispatchError> {
-			// TODO manage error? what happens if there is no enough amount?
-			T::Currency::transfer(
-				&rewards_source,
-				&account_rewarded,
+			let amount = T::Currency::transfer(
+				&source,
+				&destination,
 				amount,
 				ExistenceRequirement::KeepAlive,
-			)?;
-			Self::deposit_event(Event::Rewarded {
-				account: account_rewarded.clone(),
-				rewards: amount,
-			});
+			)
+			.map(|_| amount)
+			.or_else(|e| match e {
+				DispatchError::Token(TokenError::FundsUnavailable) => Ok(0u32.into()),
+				_ => Err(e),
+			})?;
+			Self::deposit_event(Event::Rewarded { account: destination.clone(), rewards: amount });
 			Ok(amount)
 		}
 

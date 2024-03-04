@@ -6705,3 +6705,33 @@ fn test_removed_calls() {
 		);
 	});
 }
+
+#[test]
+fn transfer_rewards_when_source_has_no_enough_funds() {
+	let destination = 1;
+	let source = 2;
+	ExtBuilder::default()
+		.with_balances(vec![(destination, 30), (source, 20)])
+		.build()
+		.execute_with(|| {
+			let amount = ParachainStaking::transfer_rewards(source, destination, 21).unwrap();
+			assert_eq!(amount, 0);
+			assert_eq!(Balances::free_balance(&source), 20);
+			assert_eq!(Balances::free_balance(&destination), 30);
+		});
+}
+
+#[test]
+fn transfer_rewards_works() {
+	let destination = 1;
+	let source = 2;
+	ExtBuilder::default()
+		.with_balances(vec![(destination, 30), (source, 20)])
+		.build()
+		.execute_with(|| {
+			let amount = ParachainStaking::transfer_rewards(source, destination, 20).unwrap();
+			assert_eq!(amount, 20);
+			assert_eq!(Balances::free_balance(&source), 0);
+			assert_eq!(Balances::free_balance(&destination), 30 + amount);
+		});
+}
