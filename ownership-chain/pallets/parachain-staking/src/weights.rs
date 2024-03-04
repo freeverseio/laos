@@ -90,6 +90,7 @@ pub trait WeightInfo {
 	fn delegate_with_auto_compound_worst() -> Weight;
 	fn mint_reward() -> Weight;
 	fn notify_inactive_collator() -> Weight;
+	fn transfer_rewards() -> Weight;
 }
 
 /// Weights for pallet_parachain_staking using the Substrate node and recommended hardware.
@@ -911,6 +912,17 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 			.saturating_add(T::DbWeight::get().reads(10_u64))
 			.saturating_add(T::DbWeight::get().writes(2_u64))
 	}
+	/// Storage: `System::Account` (r:2 w:2)
+	/// Proof: `System::Account` (`max_values`: None, `max_size`: Some(116), added: 2591, mode: `MaxEncodedLen`)
+	fn transfer_rewards() -> Weight {
+		// Proof Size summary in bytes:
+		//  Measured:  `219`
+		//  Estimated: `6172`
+		// Minimum execution time: 35_913_000 picoseconds.
+		Weight::from_parts(37_053_000, 6172)
+			.saturating_add(T::DbWeight::get().reads(2_u64))
+			.saturating_add(T::DbWeight::get().writes(2_u64))
+	}
 }
 
 // For backwards compatibility and tests
@@ -1729,6 +1741,17 @@ impl WeightInfo for () {
 		Weight::from_parts(41_130_000, 0)
 			.saturating_add(Weight::from_parts(0, 17434))
 			.saturating_add(RocksDbWeight::get().reads(10_u64))
+			.saturating_add(RocksDbWeight::get().writes(2_u64))
+	}
+	/// Storage: `System::Account` (r:2 w:2)
+	/// Proof: `System::Account` (`max_values`: None, `max_size`: Some(116), added: 2591, mode: `MaxEncodedLen`)
+	fn transfer_rewards() -> Weight {
+		// Proof Size summary in bytes:
+		//  Measured:  `219`
+		//  Estimated: `6172`
+		// Minimum execution time: 35_913_000 picoseconds.
+		Weight::from_parts(37_053_000, 6172)
+			.saturating_add(RocksDbWeight::get().reads(2_u64))
 			.saturating_add(RocksDbWeight::get().writes(2_u64))
 	}
 }
