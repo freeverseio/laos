@@ -1,6 +1,7 @@
 use crate::{AccountId, Balances, BlockNumber, Permill, Runtime, RuntimeEvent, Vec, Weight, UNIT};
 use frame_support::{parameter_types, traits::Get};
 use frame_system::EnsureRoot;
+use pallet_block_rewards_source::Config as BlockRewardsSourceConfig;
 use pallet_parachain_staking::{
 	self as staking, Config as StakingConfig, OnCollatorPayout, PayoutReward, WeightInfo,
 };
@@ -155,7 +156,9 @@ impl frame_support::traits::EstimateNextSessionRotation<BlockNumber> for Paracha
 /// from the rewards account defined in `TransferRewards` pallet to the rewarded account.
 pub struct TransferRewards<Runtime>(PhantomData<Runtime>); // Coupling runtime with the struct
 
-impl<Runtime: StakingConfig> PayoutReward<Runtime> for TransferRewards<Runtime> {
+impl<Runtime: StakingConfig + BlockRewardsSourceConfig> PayoutReward<Runtime>
+	for TransferRewards<Runtime>
+{
 	fn payout_reward(
 		_for_round: staking::RoundIndex,
 		destination: Runtime::AccountId,
