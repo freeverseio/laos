@@ -79,12 +79,8 @@ impl<Runtime: crate::Config> PayoutCollatorReward<Runtime> for () {
 		delegator_id: &Runtime::AccountId,
 		amount: crate::BalanceOf<Runtime>,
 	) -> Result<crate::BalanceOf<Runtime>, DispatchError> {
-		if let Ok(amount) = Runtime::Currency::deposit_into_existing(&delegator_id, amount.clone())
-		{
-			Ok(amount.peek())
-		} else {
-			Err(DispatchError::Other("Failed to deposit into existing account"))
-		}
+		Runtime::Currency::deposit_into_existing(delegator_id, amount)
+			.map(|imbalance| imbalance.peek())
 	}
 }
 
