@@ -19,9 +19,14 @@ where
 				tips.merge_into(&mut to_author);
 			}
 
-			let rewards_account =
-				<pallet_block_rewards_source::Pallet<R>>::rewards_account().unwrap(); // TODO
-			<pallet_balances::Pallet<R>>::resolve_creating(&rewards_account, to_rewards_account);
+			if let Some(rewards_account) =
+				<pallet_block_rewards_source::Pallet<R>>::rewards_account()
+			{
+				<pallet_balances::Pallet<R>>::resolve_creating(
+					&rewards_account,
+					to_rewards_account,
+				);
+			};
 
 			if let Some(author) = <pallet_authorship::Pallet<R>>::author() {
 				<pallet_balances::Pallet<R>>::resolve_creating(&author, to_author);
@@ -35,8 +40,9 @@ where
 		// 80% to rewards account, 20% to author
 		let (to_rewards_account, to_author) = amount.ration(80, 20);
 
-		let rewards_account = <pallet_block_rewards_source::Pallet<R>>::rewards_account().unwrap(); // TODO
-		<pallet_balances::Pallet<R>>::resolve_creating(&rewards_account, to_rewards_account);
+		if let Some(rewards_account) = <pallet_block_rewards_source::Pallet<R>>::rewards_account() {
+			<pallet_balances::Pallet<R>>::resolve_creating(&rewards_account, to_rewards_account);
+		};
 
 		if let Some(author) = <pallet_authorship::Pallet<R>>::author() {
 			<pallet_balances::Pallet<R>>::resolve_creating(&author, to_author);
