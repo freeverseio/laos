@@ -17,8 +17,10 @@
 //! traits for parachain-staking
 
 use crate::weights::WeightInfo;
-use frame_support::{dispatch::PostDispatchInfo, pallet_prelude::Weight};
-use sp_runtime::DispatchErrorWithPostInfo;
+use frame_support::{
+	dispatch::PostDispatchInfo, pallet_prelude::Weight, traits::tokens::currency::Currency,
+};
+use sp_runtime::{DispatchError, DispatchErrorWithPostInfo};
 
 pub trait OnCollatorPayout<AccountId, Balance> {
 	fn on_collator_payout(
@@ -53,6 +55,11 @@ pub trait PayoutCollatorReward<Runtime: crate::Config> {
 		collator_id: Runtime::AccountId,
 		amount: crate::BalanceOf<Runtime>,
 	) -> Weight;
+
+	fn payout_delegator_reward(
+		delegator_id: Runtime::AccountId,
+		amount: crate::BalanceOf<Runtime>,
+	) -> Result<crate::PositiveImbalanceOf<Runtime>, DispatchError>;
 }
 
 /// Defines the default behavior for paying out the collator's reward. The amount is directly
@@ -64,6 +71,13 @@ impl<Runtime: crate::Config> PayoutCollatorReward<Runtime> for () {
 		amount: crate::BalanceOf<Runtime>,
 	) -> Weight {
 		crate::Pallet::<Runtime>::mint_collator_reward(for_round, collator_id, amount)
+	}
+
+	fn payout_delegator_reward(
+		delegator_id: Runtime::AccountId,
+		amount: crate::BalanceOf<Runtime>,
+	) -> Result<crate::PositiveImbalanceOf<Runtime>, DispatchError> {
+		Runtime::Currency::deposit_into_existing(&delegator_id, amount.clone())
 	}
 }
 
