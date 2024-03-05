@@ -1747,9 +1747,10 @@ pub mod pallet {
 			// reserve portion of issuance for parachain bond account
 			let bond_config = <ParachainBondInfo<T>>::get();
 			let parachain_bond_reserve = bond_config.percent * total_issuance;
-			if let Ok(imb) =
-				T::Currency::deposit_into_existing(&bond_config.account, parachain_bond_reserve)
-			{
+			if let Ok(imb) = T::PayoutCollatorReward::payout_delegator_reward(
+				bond_config.account.clone(),
+				parachain_bond_reserve,
+			) {
 				// update round issuance iff transfer succeeds
 				left_issuance = left_issuance.saturating_sub(imb.peek());
 				Self::deposit_event(Event::ReservedForParachainBond {
@@ -2115,7 +2116,9 @@ pub mod pallet {
 
 		/// Mint a specified reward amount to the beneficiary account. Emits the [Rewarded] event.
 		pub fn mint(amt: BalanceOf<T>, to: T::AccountId) {
-			if let Ok(amount_transferred) = T::Currency::deposit_into_existing(&to, amt) {
+			if let Ok(amount_transferred) =
+				T::PayoutCollatorReward::payout_delegator_reward(to.clone(), amt)
+			{
 				Self::deposit_event(Event::Rewarded {
 					account: to.clone(),
 					rewards: amount_transferred.peek(),
@@ -2129,7 +2132,9 @@ pub mod pallet {
 			collator_id: T::AccountId,
 			amt: BalanceOf<T>,
 		) -> Weight {
-			if let Ok(amount_transferred) = T::Currency::deposit_into_existing(&collator_id, amt) {
+			if let Ok(amount_transferred) =
+				T::PayoutCollatorReward::payout_delegator_reward(collator_id.clone(), amt)
+			{
 				Self::deposit_event(Event::Rewarded {
 					account: collator_id.clone(),
 					rewards: amount_transferred.peek(),
@@ -2149,7 +2154,7 @@ pub mod pallet {
 			delegator: T::AccountId,
 		) {
 			if let Ok(amount_transferred) =
-				T::Currency::deposit_into_existing(&delegator, amt.clone())
+				T::PayoutCollatorReward::payout_delegator_reward(delegator.clone(), amt)
 			{
 				Self::deposit_event(Event::Rewarded {
 					account: delegator.clone(),
