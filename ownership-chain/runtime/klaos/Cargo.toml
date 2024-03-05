@@ -36,6 +36,7 @@ pallet-sudo = { workspace = true }
 pallet-timestamp = { workspace = true }
 pallet-transaction-payment = { workspace = true }
 pallet-transaction-payment-rpc-runtime-api = { workspace = true }
+pallet-utility = { workspace = true }
 pallet-vesting = { workspace = true }
 sp-api = { workspace = true }
 sp-io = { workspace = true }
@@ -105,7 +106,6 @@ xcm-simulator = { workspace = true }
 polkadot-runtime-parachains = { workspace = true }
 pallet-assets = { workspace = true }
 pallet-message-queue = { workspace = true }
-pallet-utility = { workspace = true }
 
 [features]
 default = [
@@ -183,6 +183,7 @@ std = [
 	# Bridge deps,
 	"ownership-parachain-primitives/std",
 	"hex/std",
+	"pallet-utility/std",
 ]
 
 runtime-benchmarks = [
@@ -211,6 +212,7 @@ runtime-benchmarks = [
 	"staging-xcm-executor/runtime-benchmarks",
 	"pallet-asset-metadata-extender/runtime-benchmarks",
 	"pallet-vesting/runtime-benchmarks",
+	"pallet-utility/runtime-benchmarks",
 ]
 
 try-runtime = [
@@ -244,4 +246,5 @@ try-runtime = [
 	"sp-runtime/try-runtime",
 	"pallet-asset-metadata-extender/try-runtime",
 	"pallet-vesting/try-runtime",
+	"pallet-utility/try-runtime",
 ]
