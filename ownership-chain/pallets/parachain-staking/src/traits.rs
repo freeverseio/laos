@@ -57,7 +57,7 @@ pub trait PayoutCollatorReward<Runtime: crate::Config> {
 	) -> Weight;
 
 	fn deposit_into_existing(
-		delegator_id: Runtime::AccountId,
+		delegator_id: &Runtime::AccountId,
 		amount: crate::BalanceOf<Runtime>,
 	) -> Result<crate::PositiveImbalanceOf<Runtime>, DispatchError>;
 }
@@ -74,7 +74,7 @@ impl<Runtime: crate::Config> PayoutCollatorReward<Runtime> for () {
 	}
 
 	fn deposit_into_existing(
-		delegator_id: Runtime::AccountId,
+		delegator_id: &Runtime::AccountId,
 		amount: crate::BalanceOf<Runtime>,
 	) -> Result<crate::PositiveImbalanceOf<Runtime>, DispatchError> {
 		Runtime::Currency::deposit_into_existing(&delegator_id, amount.clone())
