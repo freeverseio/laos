@@ -1,6 +1,9 @@
 use super::fee::DealWithFees;
 use crate::{Balance, Balances, Runtime, RuntimeEvent, WeightToFee, MICROUNIT};
-use frame_support::{parameter_types, weights::{ConstantMultiplier, WeightToFeeCoefficients, WeightToFeePolynomial}};
+use frame_support::{
+	parameter_types,
+	weights::{ConstantMultiplier, WeightToFeeCoefficients, WeightToFeePolynomial},
+};
 use polkadot_runtime_common::SlowAdjustingFeeUpdate;
 use smallvec::smallvec;
 
