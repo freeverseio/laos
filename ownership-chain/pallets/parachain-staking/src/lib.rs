@@ -2153,7 +2153,7 @@ pub mod pallet {
 			delegator: T::AccountId,
 		) {
 			if let Ok(amount_transferred) =
-				T::PayoutCollatorReward::deposit_into_existing(&delegator, amt)
+				T::PayoutCollatorReward::deposit_into_existing(&delegator, amt.clone())
 			{
 				Self::deposit_event(Event::Rewarded {
 					account: delegator.clone(),
