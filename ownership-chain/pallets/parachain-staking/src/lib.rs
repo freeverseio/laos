@@ -88,7 +88,7 @@ pub mod pallet {
 		fail,
 		pallet_prelude::*,
 		traits::{
-			tokens::WithdrawReasons, Currency, Get, Imbalance, LockIdentifier, LockableCurrency,
+			tokens::WithdrawReasons, Currency, Get, LockIdentifier, LockableCurrency,
 			ReservableCurrency,
 		},
 	};
@@ -109,10 +109,6 @@ pub mod pallet {
 	type RewardPoint = u32;
 	pub type BalanceOf<T> =
 		<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
-
-	pub type PositiveImbalanceOf<T> = <<T as Config>::Currency as Currency<
-		<T as frame_system::Config>::AccountId,
-	>>::PositiveImbalance;
 
 	pub const COLLATOR_LOCK_ID: LockIdentifier = *b"stkngcol";
 	pub const DELEGATOR_LOCK_ID: LockIdentifier = *b"stkngdel";
@@ -1752,10 +1748,10 @@ pub mod pallet {
 				parachain_bond_reserve,
 			) {
 				// update round issuance iff transfer succeeds
-				left_issuance = left_issuance.saturating_sub(imb.peek());
+				left_issuance = left_issuance.saturating_sub(imb);
 				Self::deposit_event(Event::ReservedForParachainBond {
 					account: bond_config.account,
-					value: imb.peek(),
+					value: imb,
 				});
 			}
 
@@ -2120,7 +2116,7 @@ pub mod pallet {
 			{
 				Self::deposit_event(Event::Rewarded {
 					account: to.clone(),
-					rewards: amount_transferred.peek(),
+					rewards: amount_transferred,
 				});
 			}
 		}
@@ -2136,7 +2132,7 @@ pub mod pallet {
 			{
 				Self::deposit_event(Event::Rewarded {
 					account: collator_id.clone(),
-					rewards: amount_transferred.peek(),
+					rewards: amount_transferred,
 				});
 			}
 			T::WeightInfo::mint_collator_reward()
@@ -2157,10 +2153,10 @@ pub mod pallet {
 			{
 				Self::deposit_event(Event::Rewarded {
 					account: delegator.clone(),
-					rewards: amount_transferred.peek(),
+					rewards: amount_transferred,
 				});
 
-				let compound_amount = compound_percent.mul_ceil(amount_transferred.peek());
+				let compound_amount = compound_percent.mul_ceil(amount_transferred);
 				if compound_amount.is_zero() {
 					return;
 				}

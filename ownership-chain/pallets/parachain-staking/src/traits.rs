@@ -18,7 +18,9 @@
 
 use crate::weights::WeightInfo;
 use frame_support::{
-	dispatch::PostDispatchInfo, pallet_prelude::Weight, traits::tokens::currency::Currency,
+	dispatch::PostDispatchInfo,
+	pallet_prelude::Weight,
+	traits::{tokens::currency::Currency, Imbalance},
 };
 use sp_runtime::{DispatchError, DispatchErrorWithPostInfo};
 
@@ -59,7 +61,7 @@ pub trait PayoutCollatorReward<Runtime: crate::Config> {
 	fn deposit_into_existing(
 		delegator_id: &Runtime::AccountId,
 		amount: crate::BalanceOf<Runtime>,
-	) -> Result<crate::PositiveImbalanceOf<Runtime>, DispatchError>;
+	) -> Result<crate::BalanceOf<Runtime>, DispatchError>;
 }
 
 /// Defines the default behavior for paying out the collator's reward. The amount is directly
@@ -76,8 +78,13 @@ impl<Runtime: crate::Config> PayoutCollatorReward<Runtime> for () {
 	fn deposit_into_existing(
 		delegator_id: &Runtime::AccountId,
 		amount: crate::BalanceOf<Runtime>,
-	) -> Result<crate::PositiveImbalanceOf<Runtime>, DispatchError> {
-		Runtime::Currency::deposit_into_existing(&delegator_id, amount.clone())
+	) -> Result<crate::BalanceOf<Runtime>, DispatchError> {
+		if let Ok(amount) = Runtime::Currency::deposit_into_existing(&delegator_id, amount.clone())
+		{
+			Ok(amount.peek())
+		} else {
+			Err(DispatchError::Other("Failed to deposit into existing account"))
+		}
 	}
 }
 
