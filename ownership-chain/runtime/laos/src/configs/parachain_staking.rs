@@ -1,6 +1,7 @@
 use crate::{AccountId, Balances, BlockNumber, Permill, Runtime, RuntimeEvent, Vec, Weight, UNIT};
 use frame_support::{parameter_types, traits::Get};
 use frame_system::EnsureRoot;
+use pallet_block_rewards_source::Pallet as BlockRewardsSource;
 use pallet_parachain_staking::{self as staking, Config as StakingConfig};
 use pallet_session::{SessionManager, ShouldEndSession};
 use sp_consensus_slots::Slot;
@@ -48,7 +49,7 @@ impl StakingConfig for Runtime {
 	type MinDelegation = MinDelegation;
 	type BlockAuthor = BlockAuthor;
 	type OnCollatorPayout = ();
-	type PayoutCollatorReward = (); // Placeholder for future implementation.
+	type PayoutCollatorReward = BlockRewardsSource<Runtime>;
 	type OnInactiveCollator = (); // Placeholder for future implementation.
 	type OnNewRound = (); // Placeholder for future implementation.
 	type SlotProvider = StakingRoundSlotProvider;
@@ -146,3 +147,62 @@ impl frame_support::traits::EstimateNextSessionRotation<BlockNumber> for Paracha
 		)
 	}
 }
+
+// pub struct BlockRewardsSource;
+
+// impl<Runtime: StakingConfig + BlockRewardsSourceConfig> PayoutCollatorReward<Runtime>
+// 	for BlockRewardsSource
+// {
+// 	/// This method is part of the `PayoutCollatorReward` trait.
+// 	/// Attempt to retrieve the rewards account and execute the transfer if available.
+// 	/// Returns the weight associated with the transfer or the fallback action.
+// 	fn payout_collator_reward(
+// 		_round_index: staking::RoundIndex,
+// 		collator_id: Runtime::AccountId,
+// 		amount: staking::BalanceOf<Runtime>,
+// 	) -> Weight {
+// 		if let Some(rewards_account) =
+// 			pallet_block_rewards_source::Pallet::<Runtime>::rewards_account()
+// 		{
+// 			return <Runtime as StakingConfig>::Currency::transfer(
+// 				&rewards_account,
+// 				&collator_id,
+// 				amount,
+// 				ExistenceRequirement::KeepAlive,
+// 			)
+// 			.map_or_else(
+// 				|_| Weight::zero(), // TODO  Runtime::WeightInfo::payout_collator_reward(round_index, collator_id, amount)
+// 				|_| Weight::zero(),
+// 			);
+// 		}
+
+// 		// Fallback weight if no rewards account is set or transfer fails. Adjust as needed.
+// 		Weight::zero()
+// 	}
+
+// 	/// This method is part of the `PayoutCollatorReward` trait.
+// 	/// On success, simply return the amount transferred.
+// 	/// When rewards account has no funds or it doesn't exist return Ok(0).
+// 	fn deposit_into_existing(
+// 		delegator_id: &Runtime::AccountId,
+// 		amount: staking::BalanceOf<Runtime>,
+// 	) -> Result<staking::BalanceOf<Runtime>, DispatchError> {
+// 		let rewards_account =
+// 			match pallet_block_rewards_source::Pallet::<Runtime>::rewards_account() {
+// 				Some(account) => account,
+// 				None => return Ok(0u32.into()),
+// 			};
+
+// 		<Runtime as StakingConfig>::Currency::transfer(
+// 			&rewards_account,
+// 			delegator_id,
+// 			amount,
+// 			ExistenceRequirement::KeepAlive,
+// 		)
+// 		.map(|_| amount)
+// 		.or_else(|e| match e {
+// 			DispatchError::Token(TokenError::FundsUnavailable) => Ok(0u32.into()),
+// 			_ => Err(e),
+// 		})
+// 	}
+// }
