@@ -18,11 +18,13 @@ sp-runtime = { workspace = true }
 sp-core = { workspace = true }
 frame-benchmarking = { optional = true, workspace = true }
 sp-std = { workspace = true }
-pallet-parachain-staking = { workspace = true }
+pallet-parachain-staking = { workspace = true, features = [ "std" ] }
+sp-consensus-slots = { workspace = true }
 
 [dev-dependencies]
 sp-io = { workspace = true }
 sp-runtime = { workspace = true }
+pallet-balances = { workspace = true, features = [ "std" ] }
 
 [features]
 default = ["std"]
@@ -35,6 +37,7 @@ std = [
 	"sp-runtime/std",
 	"frame-benchmarking/std",
 	"sp-std/std",
+	"sp-consensus-slots/std",
 ]
 
 runtime-benchmarks = [

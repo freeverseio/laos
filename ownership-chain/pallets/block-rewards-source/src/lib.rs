@@ -7,7 +7,7 @@ use frame_support::{
 };
 
 // Standard library
-use sp_runtime::TokenError;
+use sp_runtime::ArithmeticError;
 
 // Your own modules
 mod benchmarking;
@@ -32,8 +32,6 @@ pub mod pallet {
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
-		/// Because this pallet emits events, it depends on the runtime's definition of an event.
-		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		/// Weight information for extrinsics in this pallet.
 		type WeightInfo: WeightInfo;
 	}
@@ -63,11 +61,6 @@ pub mod pallet {
 		}
 	}
 
-	/// Events for this pallet.
-	#[pallet::event]
-	#[pallet::generate_deposit(pub(super) fn deposit_event)]
-	pub enum Event<T: Config> {}
-
 	/// Customs errors for this pallet
 	#[pallet::error]
 	#[derive(PartialEq)]
@@ -92,8 +85,8 @@ pub mod pallet {
 					ExistenceRequirement::KeepAlive,
 				)
 				.map_or_else(
-					|_| <T as Config>::WeightInfo::payout_collator_reward(), // TODO  T::WeightInfo::payout_collator_reward(round_index, collator_id, amount)
 					|_| Weight::zero(),
+					|_| <T as Config>::WeightInfo::payout_collator_reward(),
 				);
 			}
 
@@ -121,9 +114,14 @@ pub mod pallet {
 			)
 			.map(|_| amount)
 			.or_else(|e| match e {
-				DispatchError::Token(TokenError::FundsUnavailable) => Ok(0u32.into()),
+				DispatchError::Arithmetic(ArithmeticError::Underflow) => Ok(0u32.into()),
 				_ => Err(e),
 			})
 		}
 	}
 }
+
+#[cfg(test)]
+mod mock;
+#[cfg(test)]
+mod tests;
