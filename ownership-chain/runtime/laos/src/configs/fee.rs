@@ -17,10 +17,10 @@ where
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::{generic::DigestItem, H256, BlakeTwo256, IdentityLookup};
+	use crate::{generic::DigestItem, BlakeTwo256, IdentityLookup, H256};
 	use frame_support::{
 		parameter_types,
-		traits::{ConstU16, ConstU64, tokens::Precision, fungible::Balanced},
+		traits::{fungible::Balanced, tokens::Precision, ConstU16, ConstU64},
 		ConsensusEngineId,
 	};
 	use sp_runtime::{
@@ -136,12 +136,12 @@ mod tests {
 	}
 
 	fn initialize_block_and_set_author(number: u64, author: AccountId) {
-			let mut header =
-				seal_header(create_header(number, Default::default(), [1; 32].into()), author);
+		let mut header =
+			seal_header(create_header(number, Default::default(), [1; 32].into()), author);
 
-			header.digest_mut().pop(); // pop the seal off.
-			System::reset_events();
-			System::initialize(&number, &Default::default(), header.digest());
+		header.digest_mut().pop(); // pop the seal off.
+		System::reset_events();
+		System::initialize(&number, &Default::default(), header.digest());
 	}
 
 	#[test]
@@ -195,7 +195,12 @@ mod tests {
 				"Author should not be set"
 			);
 
-			assert!(pallet_balances::Pallet::<Test>::deposit(&66, fee_amount * 2, Precision::Exact).is_ok());
+			assert!(pallet_balances::Pallet::<Test>::deposit(
+				&66,
+				fee_amount * 2,
+				Precision::Exact
+			)
+			.is_ok());
 
 			let initial_total_issuance = pallet_balances::Pallet::<Test>::total_issuance();
 
