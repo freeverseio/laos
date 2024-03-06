@@ -1,5 +1,5 @@
 use crate::{AccountId, PhantomData};
-use frame_support::traits::{tokens::currency::Currency, Imbalance, OnUnbalanced};
+use frame_support::traits::{tokens::currency::Currency, OnUnbalanced};
 
 /// Logic for the author to get a portion of fees.
 pub struct ToAuthor<R>(PhantomData<R>);
@@ -52,6 +52,13 @@ mod tests {
 	fn with_no_author_fee_should_be_burned() {
 		new_test_ext().execute_with(|| {
 			let fee_amount = 100;
+
+			assert_eq!(
+				pallet_authorship::Pallet::<Runtime>::author(),
+				None,
+				"Author should not be set"
+			);
+
 			let initial_total_issuance = pallet_balances::Pallet::<Runtime>::total_issuance();
 
 			// Mock the creation of a negative imbalance of 100 units
