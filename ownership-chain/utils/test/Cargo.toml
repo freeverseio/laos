@@ -1,0 +1,12 @@
+[package]
+name = "test-utils"
+description = "Commonly used types and function for tests"
+version = "0.1.0"
+authors = ["Freeverse"]
+edition = "2021"
+license = "GPL-3.0-or-later WITH Classpath-exception-2.0"
+
+[dependencies]
+sp-core = { workspace = true }
+frame-support = { workspace = true }
+sp-std = { workspace = true }

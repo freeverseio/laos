@@ -8,7 +8,7 @@ mod xcm_tests;
 
 pub use xcm_mock::ParachainXcmRouter;
 
-use sp_runtime::{traits::SignedExtension, BuildStorage};
+use sp_runtime::BuildStorage;
 
 use core::str::FromStr;
 
@@ -17,36 +17,83 @@ use crate::{AccountId, Balances, Runtime, UNIT};
 use fp_rpc::runtime_decl_for_ethereum_runtime_rpc_api::EthereumRuntimeRPCApiV5;
 use frame_support::{
 	assert_ok,
-	dispatch::GetDispatchInfo,
 	traits::{
 		tokens::{fungible::Balanced, Precision},
-		Currency, UnfilteredDispatchable,
+		Currency,
 	},
 };
-use pallet_transaction_payment::ChargeTransactionPayment;
 use sp_core::U256;
 
-// Build genesis storage according to the mock runtime.
-pub fn new_test_ext() -> sp_io::TestExternalities {
-	let mut t = frame_system::GenesisConfig::<crate::Runtime>::default()
-		.build_storage()
-		.unwrap()
-		.into();
+pub struct ExtBuilder {
+	endowed_accounts: Vec<(AccountId, Balance)>,
+	candidates: Vec<(AccountId, Balance)>,
+}
 
-	pallet_balances::GenesisConfig::<crate::Runtime> {
-		balances: vec![
-			([0u8; 20].into(), 1_000_000_000_000_000_000_000u128),
-			([1u8; 20].into(), 1_000_000_000_000_000_000_000u128),
-		],
+impl Default for ExtBuilder {
+	fn default() -> Self {
+		Self {
+			endowed_accounts: vec![
+				([0u8; 20].into(), 1_000_000_000_000_000_000_000u128),
+				([1u8; 20].into(), 1_000_000_000_000_000_000_000u128),
+				([2u8; 20].into(), 1_000_000_000_000_000_000_000u128),
+				([3u8; 20].into(), 1_000_000_000_000_000_000_000u128),
+			],
+			candidates: vec![],
+		}
 	}
-	.assimilate_storage(&mut t)
-	.unwrap();
+}
 
-	pallet_sudo::GenesisConfig::<crate::Runtime> { key: Some(AccountId::from_str(BOB).unwrap()) }
+impl ExtBuilder {
+	pub fn with_endowed_accounts(mut self, accounts: Vec<(AccountId, Balance)>) -> Self {
+		self.endowed_accounts = accounts;
+		self
+	}
+
+	pub fn with_candidates(mut self, candidates: Vec<(AccountId, Balance)>) -> Self {
+		self.candidates = candidates;
+		self
+	}
+
+	pub(crate) fn build(self) -> sp_io::TestExternalities {
+		let mut t = frame_system::GenesisConfig::<crate::Runtime>::default()
+			.build_storage()
+			.unwrap()
+			.into();
+
+		// get deduplicated list of all accounts, including candidates and delegators
+		// only accounts, no balances
+		let all_accounts = self
+			.endowed_accounts
+			.iter()
+			.map(|(a, _)| a.clone())
+			.chain(self.candidates.iter().map(|(a, _)| a.clone()))
+			.collect::<Vec<_>>();
+
+		pallet_balances::GenesisConfig::<crate::Runtime> {
+			balances: all_accounts
+				.iter()
+				.map(|a| (*a, 1_000_000_000_000_000_000_000_000u128))
+				.collect::<Vec<_>>(),
+		}
 		.assimilate_storage(&mut t)
 		.unwrap();
 
-	t.into()
+		pallet_sudo::GenesisConfig::<crate::Runtime> {
+			key: Some(AccountId::from_str(BOB).unwrap()),
+		}
+		.assimilate_storage(&mut t)
+		.unwrap();
+
+		pallet_parachain_staking::GenesisConfig::<crate::Runtime> {
+			candidates: self.candidates,
+			blocks_per_round: 10,
+			..Default::default()
+		}
+		.assimilate_storage(&mut t)
+		.unwrap();
+
+		t.into()
+	}
 }
 
 const ALICE: &str = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
@@ -74,7 +121,7 @@ fn test_block_and_gas_limit_constants() {
 
 #[test]
 fn send_1_minimum_unit_to_wallet_with_0_wei_balance_should_increase_balance_by_1_wei() {
-	new_test_ext().execute_with(|| {
+	ExtBuilder::default().build().execute_with(|| {
 		let alice = AccountId::from_str(ALICE).unwrap();
 		assert_eq!(Runtime::account_basic(alice.into()).balance, 0.into());
 
@@ -98,7 +145,7 @@ fn check_pallet_vesting_configuration() {
 
 #[test]
 fn account_vests_correctly_over_time() {
-	new_test_ext().execute_with(|| {
+	ExtBuilder::default().build().execute_with(|| {
 		let alice = AccountId::from_str(ALICE).unwrap();
 		let bob = AccountId::from_str(BOB).unwrap();
 		let cliff_duration = 24_u32;
