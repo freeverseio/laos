@@ -78,14 +78,16 @@ impl pallet_authorship::Config for Test {
 	type EventHandler = ();
 }
 
+const AUTHOR_ID: AccountId = 999;
+
 pub struct AuthorAccount {}
 
 impl FindAuthor<AccountId> for AuthorAccount {
-	fn find_author<'a, I>(digests: I) -> Option<AccountId>
+	fn find_author<'a, I>(_digests: I) -> Option<AccountId>
 	where
 		I: 'a + IntoIterator<Item = (ConsensusEngineId, &'a [u8])>,
 	{
-		Some(999)
+		Some(AUTHOR_ID)
 	}
 }
 

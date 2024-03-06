@@ -8,7 +8,7 @@ mod xcm_tests;
 
 pub use xcm_mock::ParachainXcmRouter;
 
-use sp_runtime::{traits::SignedExtension, BuildStorage};
+use sp_runtime::{BuildStorage};
 
 use core::str::FromStr;
 
@@ -17,13 +17,11 @@ use crate::{AccountId, Balances, Runtime, UNIT};
 use fp_rpc::runtime_decl_for_ethereum_runtime_rpc_api::EthereumRuntimeRPCApiV5;
 use frame_support::{
 	assert_ok,
-	dispatch::GetDispatchInfo,
 	traits::{
 		tokens::{fungible::Balanced, Precision},
-		Currency, UnfilteredDispatchable,
+		Currency,
 	},
 };
-use pallet_transaction_payment::ChargeTransactionPayment;
 use sp_core::U256;
 
 // Build genesis storage according to the mock runtime.
