@@ -17,10 +17,10 @@ where
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::{generic::DigestItem, BlakeTwo256, IdentityLookup, H256};
+	use crate::{generic::DigestItem, H256};
 	use frame_support::{
-		parameter_types,
-		traits::{fungible::Balanced, tokens::Precision, ConstU16, ConstU64},
+		derive_impl, parameter_types,
+		traits::{fungible::Balanced, tokens::Precision},
 		ConsensusEngineId,
 	};
 	use sp_runtime::{
@@ -42,40 +42,19 @@ mod tests {
 		}
 	);
 
-	pub type AccountId = u64;
+	type AccountId = u64;
+	type Balance = u128;
 
+	#[derive_impl(frame_system::config_preludes::TestDefaultConfig as frame_system::DefaultConfig)]
 	impl frame_system::Config for Test {
-		type BaseCallFilter = frame_support::traits::Everything;
-		type BlockWeights = ();
-		type BlockLength = ();
-		type DbWeight = ();
-		type RuntimeOrigin = RuntimeOrigin;
-		type RuntimeCall = RuntimeCall;
-		type Nonce = u64;
-		type Hash = H256;
-		type Hashing = BlakeTwo256;
-		type AccountId = AccountId;
-		type Lookup = IdentityLookup<Self::AccountId>;
 		type Block = Block;
-		type RuntimeEvent = RuntimeEvent;
-		type BlockHashCount = ConstU64<250>;
-		type Version = ();
-		type PalletInfo = PalletInfo;
 		type AccountData = pallet_balances::AccountData<Balance>;
-		type OnNewAccount = ();
-		type OnKilledAccount = ();
-		type SystemWeightInfo = ();
-		type SS58Prefix = ConstU16<42>;
-		type OnSetCode = ();
-		type MaxConsumers = frame_support::traits::ConstU32<16>;
 	}
 
 	parameter_types! {
 		pub const MaxTokenUriLength: u32 = 512;
 		pub const ExistentialDeposit: u128 = 1;
 	}
-
-	type Balance = u128;
 
 	impl pallet_balances::Config for Test {
 		type MaxReserves = ();
