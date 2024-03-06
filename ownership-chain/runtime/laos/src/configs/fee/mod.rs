@@ -56,3 +56,9 @@ where
 		Self::to_author(author_amount);
 	}
 }
+
+#[cfg(test)]
+mod mock;
+
+#[cfg(test)]
+mod tests;
