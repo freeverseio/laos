@@ -87,24 +87,3 @@ fn distribute_ethereum_based_fees_correctly() {
 		);
 	});
 }
-
-// #[test]
-// fn no_distribution_when_no_author() {
-// 	let fee_amount = 100;
-
-// 	ExtBuilder::default().build().execute_with(|| {
-// 		System::set_block_number(1);
-
-// 		// Simulate no author being set
-// 		pallet_authorship::Pallet::<Test>::kill_author();
-
-// 		let imbalance = pallet_balances::NegativeImbalance::new(fee_amount);
-
-// 		// Attempt to distribute fees without an author
-// 		DealWithFees::<Test>::on_unbalanceds(vec![imbalance].into_iter());
-
-// 		// Verify that balances remain unchanged, as there's no author to distribute to
-// 		// This could be more elaborate depending on the system's default behavior in such cases
-// 		// For simplicity, assuming no change is the expected behavior
-// 	});
-// }
