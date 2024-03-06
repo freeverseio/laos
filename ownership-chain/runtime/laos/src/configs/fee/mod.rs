@@ -1,19 +1,7 @@
-use crate::PhantomData;
+use crate::{AccountId, PhantomData};
 use frame_support::traits::{tokens::currency::Currency, Imbalance, OnUnbalanced};
 
 pub struct DealWithFees<R>(PhantomData<R>);
-
-impl<R> DealWithFees<R>
-where
-	R: pallet_balances::Config + pallet_authorship::Config,
-{
-	// Distributes the specified imbalance to the author of the block
-	fn to_author(imbalance: pallet_balances::NegativeImbalance<R>) {
-		if let Some(author) = <pallet_authorship::Pallet<R>>::author() {
-			<pallet_balances::Pallet<R>>::resolve_creating(&author, imbalance);
-		}
-	}
-}
 
 impl<R> OnUnbalanced<pallet_balances::NegativeImbalance<R>> for DealWithFees<R>
 where
@@ -30,13 +18,26 @@ where
 				tips.merge_into(&mut author_amount);
 			}
 
-			Self::to_author(author_amount);
+			<ToAuthor<R> as OnUnbalanced<_>>::on_unbalanced(author_amount);
 		}
 	}
 
 	// Handles unbalanced fees from Ethereum-based transactions
 	fn on_nonzero_unbalanced(amount: pallet_balances::NegativeImbalance<R>) {
-		Self::to_author(amount);
+		<ToAuthor<R> as OnUnbalanced<_>>::on_unbalanced(amount);
+	}
+}
+
+/// Logic for the author to get a portion of fees.
+pub struct ToAuthor<R>(PhantomData<R>);
+impl<R> OnUnbalanced<pallet_balances::NegativeImbalance<R>> for ToAuthor<R>
+where
+	R: pallet_balances::Config + pallet_authorship::Config,
+{
+	fn on_nonzero_unbalanced(amount: pallet_balances::NegativeImbalance<R>) {
+		if let Some(author) = <pallet_authorship::Pallet<R>>::author() {
+			<pallet_balances::Pallet<R>>::resolve_creating(&author, amount);
+		}
 	}
 }
 
