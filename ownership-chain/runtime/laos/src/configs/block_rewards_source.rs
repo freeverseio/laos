@@ -1,15 +1,14 @@
-use crate::{AccountId, Balances, Runtime};
+use crate::{Balances, Runtime};
 use frame_support::weights::Weight;
 use pallet_block_rewards_source::{BalanceOf, WeightInfo};
 use pallet_parachain_staking::PayoutCollatorReward;
-use sp_runtime::DispatchError;
+use sp_runtime::{traits::Zero, DispatchError};
 use sp_std::marker::PhantomData;
 
 impl pallet_block_rewards_source::Config for Runtime {
 	type WeightInfo = pallet_block_rewards_source::weights::SubstrateWeight<Runtime>;
 	type Currency = Balances;
 }
-
 pub struct BlockRewardsSourceAdapter<Runtime>(PhantomData<Runtime>);
 
 impl<Runtime: pallet_parachain_staking::Config + pallet_block_rewards_source::Config>
@@ -20,11 +19,14 @@ impl<Runtime: pallet_parachain_staking::Config + pallet_block_rewards_source::Co
 		collator_id: Runtime::AccountId,
 		amount: pallet_block_rewards_source::BalanceOf<Runtime>,
 	) -> Weight {
-		pallet_block_rewards_source::Pallet::<Runtime>::send_rewards(collator_id, amount.into())
-			.map_or_else(
-				|_| Weight::zero(),
-				|_| <Runtime as pallet_block_rewards_source::Config>::WeightInfo::send_rewards(),
-			)
+		match pallet_block_rewards_source::Pallet::<Runtime>::send_rewards(
+			collator_id,
+			amount.into(),
+		) {
+			Ok(amount) if amount.is_zero() => Weight::zero(),
+			Ok(_) => <Runtime as pallet_block_rewards_source::Config>::WeightInfo::send_rewards(),
+			Err(_) => Weight::zero(),
+		}
 	}
 
 	fn deposit_into_existing(
@@ -38,7 +40,7 @@ impl<Runtime: pallet_parachain_staking::Config + pallet_block_rewards_source::Co
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::tests::ExtBuilder;
+	use crate::{tests::ExtBuilder, AccountId};
 
 	#[test]
 	fn payout_collator_reward_when_source_account_is_none() {
