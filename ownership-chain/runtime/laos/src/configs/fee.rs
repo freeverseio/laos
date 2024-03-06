@@ -49,7 +49,7 @@ mod tests {
 	}
 
 	#[test]
-	fn with_no_author_fees_are_burned() {
+	fn with_no_author_fee_should_be_burned() {
 		new_test_ext().execute_with(|| {
 			let fee_amount = 100;
 			let initial_total_issuance = pallet_balances::Pallet::<Runtime>::total_issuance();
