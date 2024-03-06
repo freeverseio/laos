@@ -1,9 +1,6 @@
 use super::fee::DealWithFees;
 use crate::{Balance, Balances, Runtime, RuntimeEvent, WeightToFee, MICROUNIT};
-use frame_support::{
-	parameter_types,
-	weights::{ConstantMultiplier},
-};
+use frame_support::{parameter_types, weights::ConstantMultiplier};
 use polkadot_runtime_common::SlowAdjustingFeeUpdate;
 
 parameter_types! {
