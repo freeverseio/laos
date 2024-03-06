@@ -1,4 +1,5 @@
 use super::mock::*;
+use super::*;
 
 #[test]
 fn distribute_fees_correctly() {
@@ -16,11 +17,11 @@ fn distribute_fees_correctly() {
 		])
 		.build()
 		.execute_with(|| {
-			// // Mock the creation of a negative imbalance of 100 units
-			// let imbalance = pallet_balances::NegativeImbalance::new(fee_amount);
+			// Mock the creation of a negative imbalance of 100 units
+			let imbalance = pallet_balances::NegativeImbalance::new(fee_amount);
 
-			// // Distribute the fees
-			// DealWithFees::<Runtime>::on_unbalanceds(vec![imbalance].into_iter());
+			// Distribute the fees
+			DealWithFees::<Test>::on_unbalanceds(vec![imbalance].into_iter());
 
 			// // Assert the expected state of balances after distribution
 			// let rewards_balance =

@@ -3,7 +3,6 @@ use frame_support::{
 	traits::{ConstU16, ConstU64, Get},
 	weights::constants::RocksDbWeight,
 };
-use sp_consensus_slots::Slot;
 use sp_core::H256;
 use sp_runtime::{
 	traits::{BlakeTwo256, IdentityLookup},
@@ -17,7 +16,7 @@ frame_support::construct_runtime!(
 	pub enum Test
 	{
 		System: frame_system,
-		// Authorship: pallet_authorship,
+		Authorship: pallet_authorship,
 		BlockRewardsSource: pallet_block_rewards_source,
 		Balances: pallet_balances,
 	}
@@ -76,6 +75,11 @@ impl pallet_balances::Config for Test {
 
 impl pallet_block_rewards_source::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
+}
+
+impl pallet_authorship::Config for Test {
+	type FindAuthor = ();
+	type EventHandler = ();
 }
 
 pub(crate) struct ExtBuilder {
