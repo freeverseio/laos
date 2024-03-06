@@ -1,4 +1,4 @@
-use super::fee::DealWithFees;
+use super::fee::ToAuthor;
 use crate::{
 	precompiles::FrontierPrecompiles, AccountId, Aura, Balances, BaseFee, EVMChainId, Runtime,
 	RuntimeEvent, Timestamp, Weight, U256, WEIGHT_REF_TIME_PER_SECOND,
@@ -37,7 +37,7 @@ impl pallet_evm::Config for Runtime {
 	type FindAuthor = CustomFindAuthor<pallet_session::FindAccountFromAuthorIndex<Self, Aura>>;
 	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
-	type OnChargeTransaction = pallet_evm::EVMCurrencyAdapter<Balances, DealWithFees<Runtime>>;
+	type OnChargeTransaction = pallet_evm::EVMCurrencyAdapter<Balances, ToAuthor<Self>>;
 	type OnCreate = ();
 	type PrecompilesType = FrontierPrecompiles<Self>;
 	type PrecompilesValue = PrecompilesValue;

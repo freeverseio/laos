@@ -123,7 +123,7 @@ impl staging_xcm_executor::Config for XcmConfig {
 	type Barrier = Barrier;
 	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
 	type Trader =
-		UsingComponents<WeightToFee, OurLocation, AccountId, Balances, fee::DealWithFees<Runtime>>;
+		UsingComponents<WeightToFee, OurLocation, AccountId, Balances, fee::ToAuthor<Runtime>>;
 	type ResponseHandler = PolkadotXcm;
 	type AssetTrap = PolkadotXcm;
 	type AssetClaims = PolkadotXcm;

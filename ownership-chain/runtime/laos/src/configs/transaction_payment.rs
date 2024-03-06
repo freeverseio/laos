@@ -1,4 +1,4 @@
-use super::fee::DealWithFees;
+use super::fee::ToAuthor;
 use crate::{Balance, Balances, Runtime, RuntimeEvent, WeightToFee, MICROUNIT};
 use frame_support::{parameter_types, weights::ConstantMultiplier};
 use polkadot_runtime_common::SlowAdjustingFeeUpdate;
@@ -13,7 +13,7 @@ parameter_types! {
 impl pallet_transaction_payment::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type OnChargeTransaction =
-		pallet_transaction_payment::CurrencyAdapter<Balances, DealWithFees<Runtime>>;
+		pallet_transaction_payment::CurrencyAdapter<Balances, ToAuthor<Self>>;
 	type OperationalFeeMultiplier = OperationalFeeMultiplier;
 	type WeightToFee = WeightToFee;
 	type LengthToFee = ConstantMultiplier<Balance, TransactionByteFee>;
