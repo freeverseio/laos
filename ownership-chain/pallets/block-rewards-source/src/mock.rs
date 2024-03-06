@@ -2,10 +2,9 @@ use crate as pallet_block_rewards_source;
 use crate::Config;
 use frame_support::{
 	parameter_types,
-	traits::{ConstU16, ConstU64, Get},
+	traits::{ConstU16, ConstU64},
 	weights::constants::RocksDbWeight,
 };
-use sp_consensus_slots::Slot;
 use sp_core::H256;
 use sp_runtime::{
 	traits::{BlakeTwo256, IdentityLookup},
@@ -21,8 +20,6 @@ frame_support::construct_runtime!(
 		System: frame_system,
 		BlockRewardsSource: pallet_block_rewards_source,
 		Balances: pallet_balances,
-		BlockAuthor: block_author,
-		ParachainStaking: pallet_parachain_staking,
 	}
 );
 
@@ -81,84 +78,7 @@ parameter_types! {
 
 impl Config for Test {
 	type WeightInfo = ();
-}
-
-impl block_author::Config for Test {}
-const GENESIS_NUM_SELECTED_CANDIDATES: u32 = 5;
-parameter_types! {
-	pub const MinBlocksPerRound: u32 = 3;
-	pub const MaxOfflineRounds: u32 = 1;
-	pub const LeaveCandidatesDelay: u32 = 2;
-	pub const CandidateBondLessDelay: u32 = 2;
-	pub const LeaveDelegatorsDelay: u32 = 2;
-	pub const RevokeDelegationDelay: u32 = 2;
-	pub const DelegationBondLessDelay: u32 = 2;
-	pub const RewardPaymentDelay: u32 = 2;
-	pub const MinSelectedCandidates: u32 = GENESIS_NUM_SELECTED_CANDIDATES;
-	pub const MaxTopDelegationsPerCandidate: u32 = 4;
-	pub const MaxBottomDelegationsPerCandidate: u32 = 4;
-	pub const MaxDelegationsPerDelegator: u32 = 4;
-	pub const MinCandidateStk: u128 = 10;
-	pub const MinDelegation: u128 = 3;
-	pub const MaxCandidates: u32 = 200;
-}
-impl pallet_parachain_staking::Config for Test {
-	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
-	type MonetaryGovernanceOrigin = frame_system::EnsureRoot<AccountId>;
-	type MinBlocksPerRound = MinBlocksPerRound;
-	type MaxOfflineRounds = MaxOfflineRounds;
-	type LeaveCandidatesDelay = LeaveCandidatesDelay;
-	type CandidateBondLessDelay = CandidateBondLessDelay;
-	type LeaveDelegatorsDelay = LeaveDelegatorsDelay;
-	type RevokeDelegationDelay = RevokeDelegationDelay;
-	type DelegationBondLessDelay = DelegationBondLessDelay;
-	type RewardPaymentDelay = RewardPaymentDelay;
-	type MinSelectedCandidates = MinSelectedCandidates;
-	type MaxTopDelegationsPerCandidate = MaxTopDelegationsPerCandidate;
-	type MaxBottomDelegationsPerCandidate = MaxBottomDelegationsPerCandidate;
-	type MaxDelegationsPerDelegator = MaxDelegationsPerDelegator;
-	type MinCandidateStk = MinCandidateStk;
-	type MinDelegation = MinDelegation;
-	type BlockAuthor = BlockAuthor;
-	type OnCollatorPayout = ();
-	type PayoutCollatorReward = ();
-	type OnInactiveCollator = ();
-	type OnNewRound = ();
-	type SlotProvider = StakingRoundSlotProvider;
-	type WeightInfo = ();
-	type MaxCandidates = MaxCandidates;
-	type SlotsPerYear = frame_support::traits::ConstU32<{ 31_557_600 / 6 }>;
-}
-
-pub struct StakingRoundSlotProvider;
-impl Get<Slot> for StakingRoundSlotProvider {
-	fn get() -> Slot {
-		let block_number: u64 = System::block_number().into();
-		Slot::from(block_number)
-	}
-}
-
-#[frame_support::pallet]
-pub mod block_author {
-	use super::*;
-	use frame_support::{pallet_prelude::*, traits::Get};
-
-	#[pallet::config]
-	pub trait Config: frame_system::Config {}
-
-	#[pallet::pallet]
-	pub struct Pallet<T>(_);
-
-	#[pallet::storage]
-	#[pallet::getter(fn block_author)]
-	pub(super) type BlockAuthor<T> = StorageValue<_, AccountId, ValueQuery>;
-
-	impl<T: Config> Get<AccountId> for Pallet<T> {
-		fn get() -> AccountId {
-			<BlockAuthor<T>>::get()
-		}
-	}
 }
 
 pub(crate) struct ExtBuilder {
