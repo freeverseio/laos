@@ -3,7 +3,6 @@ use crate::{
 	RuntimeCall, RuntimeEvent, RuntimeOrigin, SS58Prefix, Version,
 };
 use frame_support::traits::Contains;
-use ownership_parachain_primitives::{Hash, Nonce};
 use sp_runtime::traits::{BlakeTwo256, IdentityLookup};
 
 impl frame_system::Config for Runtime {
@@ -16,9 +15,9 @@ impl frame_system::Config for Runtime {
 	/// The block type
 	type Block = Block;
 	/// The type for hashing blocks and tries.
-	type Hash = Hash;
+	type Hash = ownership_parachain_primitives::Hash;
 	/// The type for storing how many extrinsics an account has signed.
-	type Nonce = Nonce;
+	type Nonce = ownership_parachain_primitives::Nonce;
 	/// The hashing algorithm used.
 	type Hashing = BlakeTwo256;
 	/// The ubiquitous event type.
