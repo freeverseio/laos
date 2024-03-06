@@ -5,7 +5,6 @@ use frame_support::{
 	weights::{ConstantMultiplier, WeightToFeeCoefficients, WeightToFeePolynomial},
 };
 use polkadot_runtime_common::SlowAdjustingFeeUpdate;
-use smallvec::smallvec;
 
 parameter_types! {
 	/// Relay Chain `TransactionByteFee` / 10
