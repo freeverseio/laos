@@ -1,8 +1,8 @@
 use frame_support::{
 	parameter_types,
-    ConsensusEngineId,
 	traits::{ConstU16, ConstU64, FindAuthor},
 	weights::constants::RocksDbWeight,
+	ConsensusEngineId,
 };
 use sp_core::H256;
 use sp_runtime::{
@@ -74,19 +74,18 @@ impl pallet_balances::Config for Test {
 }
 
 impl pallet_authorship::Config for Test {
-	type FindAuthor = AuthorAccount<AccountId>;
+	type FindAuthor = AuthorAccount;
 	type EventHandler = ();
 }
 
-pub struct AuthorAccount<T>(sp_std::marker::PhantomData<T>);
+pub struct AuthorAccount {}
 
-impl<T> FindAuthor<T>
-	for AuthorAccount<T>
-{
-	fn find_author<'a, I>(digests: I) -> Option<T>
-    where I: 'a + IntoIterator<Item = (ConsensusEngineId, &'a [u8])>
+impl FindAuthor<AccountId> for AuthorAccount {
+	fn find_author<'a, I>(digests: I) -> Option<AccountId>
+	where
+		I: 'a + IntoIterator<Item = (ConsensusEngineId, &'a [u8])>,
 	{
-        None
+		Some(999)
 	}
 }
 
