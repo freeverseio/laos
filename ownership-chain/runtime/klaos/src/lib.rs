@@ -9,6 +9,7 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 #[cfg(test)]
 mod tests;
 
+pub mod configs;
 mod weights;
 pub mod xcm_config;
 
@@ -745,6 +746,7 @@ construct_runtime!(
 
 		// Other pallets
 		Multisig: pallet_multisig = 60,
+		Utility: pallet_utility = 61,
 	}
 );
 
