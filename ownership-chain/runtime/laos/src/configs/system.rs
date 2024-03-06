@@ -57,6 +57,7 @@ pub struct BaseCallFilter;
 impl Contains<RuntimeCall> for BaseCallFilter {
 	fn contains(c: &RuntimeCall) -> bool {
 		use pallet_balances::Call::*;
+		use pallet_parachain_staking::Call::*;
 		use pallet_vesting::Call::*;
 
 		match c {
@@ -71,6 +72,11 @@ impl Contains<RuntimeCall> for BaseCallFilter {
 			RuntimeCall::Vesting(inner_call) => match inner_call {
 				// Vested transfes are not allowed.
 				vested_transfer { .. } => false,
+				_ => true,
+			},
+			RuntimeCall::ParachainStaking(inner_call) => match inner_call {
+				// Staking is not allowed.
+				join_candidates { .. } => false,
 				_ => true,
 			},
 			_ => true,
