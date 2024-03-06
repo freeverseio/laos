@@ -561,7 +561,8 @@ construct_runtime!(
 		BaseFee: pallet_base_fee = 54,
 
 		// Other pallets
-		Multisig: pallet_multisig = 60
+		Multisig: pallet_multisig = 60,
+		Utility: pallet_utility = 61,
 	}
 );
 
