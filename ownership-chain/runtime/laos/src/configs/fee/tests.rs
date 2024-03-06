@@ -24,7 +24,7 @@ fn distribute_fees_correctly() {
 		let author_balance = pallet_balances::Pallet::<Test>::free_balance(author);
 
 		// Assuming all fees are distributed to the author
-		let expected_author_balance = fee_amount;
+		let expected_author_balance = initial_author_balance + fee_amount;
 
 		assert_eq!(
 			author_balance, expected_author_balance,
