@@ -21,10 +21,8 @@ mod tests {
 
 	#[test]
 	fn all_fee_should_go_to_block_author() {
-		let fee_amount = 100;
-
-		// Set up the environment with a rewards account and initial balances
 		new_test_ext().execute_with(|| {
+			let fee_amount = 100;
 			// get author of the block
 			let author = pallet_authorship::Pallet::<Runtime>::author().unwrap();
 
@@ -52,12 +50,10 @@ mod tests {
 
 	#[test]
 	fn with_no_author_fees_are_burned() {
-		let fee_amount = 100;
-
-		// Set up the environment with a rewards account and initial balances
 		new_test_ext().execute_with(|| {
-			// get all the balance in the network
+			let fee_amount = 100;
 			let initial_total_issuance = pallet_balances::Pallet::<Runtime>::total_issuance();
+
 			// Mock the creation of a negative imbalance of 100 units
 			let imbalance = pallet_balances::NegativeImbalance::new(fee_amount);
 
