@@ -77,30 +77,17 @@ impl pallet_authorship::Config for Test {
 	type EventHandler = ();
 }
 
-pub(crate) struct ExtBuilder {
-	balances: Vec<(AccountId, Balance)>,
-}
+pub(crate) struct ExtBuilder {}
 
 impl Default for ExtBuilder {
 	fn default() -> Self {
-		Self { balances: vec![] }
+		Self {}
 	}
 }
 
 impl ExtBuilder {
-	pub(crate) fn with_balances(mut self, balances: Vec<(AccountId, Balance)>) -> Self {
-		self.balances = balances;
-		self
-	}
-
 	// Build genesis storage according to the mock runtime.
 	pub(crate) fn build(self) -> sp_io::TestExternalities {
-		let mut t = frame_system::GenesisConfig::<Test>::default().build_storage().unwrap().into();
-
-		pallet_balances::GenesisConfig::<Test> { balances: self.balances }
-			.assimilate_storage(&mut t)
-			.expect("Pallet balances storage can be assimilated");
-
-		t.into()
+		frame_system::GenesisConfig::<Test>::default().build_storage().unwrap().into()
 	}
 }

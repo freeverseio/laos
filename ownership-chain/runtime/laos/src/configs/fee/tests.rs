@@ -2,34 +2,33 @@ use super::{mock::*, *};
 
 #[test]
 fn distribute_fees_correctly() {
-	let author_account_id = 2;
-	let initial_balance = 1000;
 	let fee_amount = 100;
 
 	// Set up the environment with a rewards account and initial balances
-	ExtBuilder::default()
-		.with_balances(vec![
-			(author_account_id, initial_balance),
-		])
-		.build()
-		.execute_with(|| {
-			// Mock the creation of a negative imbalance of 100 units
-			let imbalance = pallet_balances::NegativeImbalance::new(fee_amount);
+	ExtBuilder::default().build().execute_with(|| {
+		System::set_block_number(1);
 
-			// Distribute the fees
-			DealWithFees::<Test>::on_unbalanceds(vec![imbalance].into_iter());
+		// get author of the block
+		let author = pallet_authorship::Pallet::<Test>::author().unwrap();
 
+		// initial author balance
+		let initial_author_balance = pallet_balances::Pallet::<Test>::free_balance(author);
 
+		// Mock the creation of a negative imbalance of 100 units
+		let imbalance = pallet_balances::NegativeImbalance::new(fee_amount);
 
-			// Assert the expected state of balances after distribution
-			let author_balance = pallet_balances::Pallet::<Test>::free_balance(author_account_id);
+		// Distribute the fees
+		DealWithFees::<Test>::on_unbalanceds(vec![imbalance].into_iter());
 
-			// Assuming an 80/20 split, calculate expected balances
-			let expected_author_balance = initial_balance + fee_amount;
+		// Assert the expected state of balances after distribution
+		let author_balance = pallet_balances::Pallet::<Test>::free_balance(author);
 
-			assert_eq!(
-				author_balance, expected_author_balance,
-				"Author did not receive the correct amount"
-			);
-		});
+		// Assuming all fees are distributed to the author
+		let expected_author_balance = fee_amount;
+
+		assert_eq!(
+			author_balance, expected_author_balance,
+			"Author did not receive the correct amount"
+		);
+	});
 }
