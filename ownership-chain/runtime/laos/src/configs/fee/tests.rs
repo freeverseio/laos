@@ -1,5 +1,4 @@
-use super::mock::*;
-use super::*;
+use super::{mock::*, *};
 
 #[test]
 fn distribute_fees_correctly() {
@@ -23,18 +22,22 @@ fn distribute_fees_correctly() {
 			// Distribute the fees
 			DealWithFees::<Test>::on_unbalanceds(vec![imbalance].into_iter());
 
-			// // Assert the expected state of balances after distribution
-			// let rewards_balance =
-			// pallet_balances::Pallet::<Runtime>::free_balance(rewards_account_id);
-			// let author_balance =
-			// pallet_balances::Pallet::<Runtime>::free_balance(author_account_id);
+			// Assert the expected state of balances after distribution
+			let rewards_balance = pallet_balances::Pallet::<Test>::free_balance(rewards_account_id);
+			let author_balance = pallet_balances::Pallet::<Test>::free_balance(author_account_id);
 
-			// // Assuming an 80/20 split, calculate expected balances
-			// let expected_rewards_balance = initial_balance + (fee_amount * 80 / 100);
-			// let expected_author_balance = initial_balance + (fee_amount * 20 / 100);
+			// Assuming an 80/20 split, calculate expected balances
+			let expected_rewards_balance = initial_balance + (fee_amount * 80 / 100);
+			let expected_author_balance = initial_balance + (fee_amount * 20 / 100);
 
-			// assert_eq!(rewards_balance, expected_rewards_balance, "Rewards account did not
-			// receive the correct amount"); assert_eq!(author_balance, expected_author_balance,
-			// "Author did not receive the correct amount");
+			assert_eq!(
+				rewards_balance, expected_rewards_balance,
+				"Rewards account did not
+			receive the correct amount"
+			);
+			assert_eq!(
+				author_balance, expected_author_balance,
+				"Author did not receive the correct amount"
+			);
 		});
 }

@@ -1,6 +1,6 @@
 use frame_support::{
 	parameter_types,
-	traits::{ConstU16, ConstU64, Get},
+	traits::{ConstU16, ConstU64},
 	weights::constants::RocksDbWeight,
 };
 use sp_core::H256;
