@@ -8,6 +8,7 @@ mod multisig;
 pub mod parachain_staking;
 mod proxy;
 mod transaction_payment;
+mod utility;
 
 // Define storage fees as constants for clarity and reuse
 const STORAGE_ITEM_FEE: Balance = 10 * UNIT;

@@ -39,6 +39,7 @@ pallet-transaction-payment = { workspace = true }
 pallet-transaction-payment-rpc-runtime-api = { workspace = true }
 pallet-vesting = { workspace = true }
 pallet-proxy = { workspace = true }
+pallet-utility = { workspace = true }
 sp-api = { workspace = true }
 sp-io = { workspace = true }
 sp-block-builder = { workspace = true }
@@ -112,7 +113,6 @@ xcm-simulator = { workspace = true }
 polkadot-runtime-parachains = { workspace = true }
 pallet-assets = { workspace = true }
 pallet-message-queue = { workspace = true }
-pallet-utility = { workspace = true }
 
 [features]
 default = [
@@ -195,6 +195,7 @@ std = [
 	"log/std",
 	"sp-consensus-slots/std",
 	"sp-staking/std",
+	"pallet-utility/std",
 ]
 
 runtime-benchmarks = [
@@ -225,6 +226,7 @@ runtime-benchmarks = [
 	"pallet-parachain-staking/runtime-benchmarks",
 	"pallet-block-rewards-source/runtime-benchmarks",
 	"pallet-proxy/runtime-benchmarks",
+	"pallet-utility/runtime-benchmarks",
 ]
 
 try-runtime = [
@@ -260,6 +262,7 @@ try-runtime = [
 	"pallet-parachain-staking/try-runtime",
 	"pallet-block-rewards-source/try-runtime",
 	"pallet-proxy/try-runtime",
+	"pallet-utility/try-runtime",
 ]
 
 fast-runtime = []
