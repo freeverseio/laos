@@ -3,7 +3,7 @@
 // External crates
 use frame_support::{
 	pallet_prelude::*,
-	traits::{Currency, ExistenceRequirement},
+	traits::{Currency, ExistenceRequirement, LockableCurrency, ReservableCurrency},
 };
 
 // Standard library
@@ -25,6 +25,9 @@ pub mod pallet {
 	/// The current storage version.
 	const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
 
+	pub type BalanceOf<T> =
+		<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+
 	#[pallet::pallet]
 	#[pallet::storage_version(STORAGE_VERSION)]
 	pub struct Pallet<T>(_);
@@ -34,6 +37,11 @@ pub mod pallet {
 	pub trait Config: frame_system::Config {
 		/// Weight information for extrinsics in this pallet.
 		type WeightInfo: WeightInfo;
+
+		/// The currency type
+		type Currency: Currency<Self::AccountId>
+			+ ReservableCurrency<Self::AccountId>
+			+ LockableCurrency<Self::AccountId>;
 	}
 
 	/// Source of rewards for block producers
@@ -66,57 +74,25 @@ pub mod pallet {
 	#[derive(PartialEq)]
 	pub enum Error<T> {}
 
-	impl<T: Config + pallet_parachain_staking::Config>
-		pallet_parachain_staking::PayoutCollatorReward<T> for Pallet<T>
-	{
-		/// This method is part of the `PayoutCollatorReward` trait.
-		/// Attempt to retrieve the rewards account and execute the transfer if available.
-		/// Returns the weight associated with the transfer or the fallback action.
-		fn payout_collator_reward(
-			_round_index: pallet_parachain_staking::RoundIndex,
-			collator_id: T::AccountId,
-			amount: pallet_parachain_staking::BalanceOf<T>,
-		) -> Weight {
-			if let Some(rewards_account) = RewardsAccount::<T>::get() {
-				return <T as pallet_parachain_staking::Config>::Currency::transfer(
-					&rewards_account,
-					&collator_id,
-					amount,
-					ExistenceRequirement::KeepAlive,
-				)
-				.map_or_else(
-					|_| Weight::zero(),
-					|_| <T as Config>::WeightInfo::payout_collator_reward(),
-				);
-			}
-
-			// Fallback weight if no rewards account is set or transfer fails. Adjust as needed.
-			Weight::zero()
-		}
-
-		/// This method is part of the `PayoutCollatorReward` trait.
+	impl<T: Config> Pallet<T> {
+		/// This method sends rewards to the destination account.
 		/// On success, simply return the amount transferred.
 		/// When rewards account has no funds or it doesn't exist return Ok(0).
-		fn deposit_into_existing(
-			delegator_id: &T::AccountId,
-			amount: pallet_parachain_staking::BalanceOf<T>,
-		) -> Result<pallet_parachain_staking::BalanceOf<T>, DispatchError> {
-			let rewards_account = match RewardsAccount::<T>::get() {
+		pub fn send_rewards(
+			destination: T::AccountId,
+			amount: BalanceOf<T>,
+		) -> Result<BalanceOf<T>, DispatchError> {
+			let source = match RewardsAccount::<T>::get() {
 				Some(account) => account,
 				None => return Ok(0u32.into()),
 			};
 
-			<T as pallet_parachain_staking::Config>::Currency::transfer(
-				&rewards_account,
-				delegator_id,
-				amount,
-				ExistenceRequirement::KeepAlive,
-			)
-			.map(|_| amount)
-			.or_else(|e| match e {
-				DispatchError::Arithmetic(ArithmeticError::Underflow) => Ok(0u32.into()),
-				_ => Err(e),
-			})
+			T::Currency::transfer(&source, &destination, amount, ExistenceRequirement::KeepAlive)
+				.map(|_| amount)
+				.or_else(|e| match e {
+					DispatchError::Arithmetic(ArithmeticError::Underflow) => Ok(0u32.into()),
+					_ => Err(e),
+				})
 		}
 	}
 }

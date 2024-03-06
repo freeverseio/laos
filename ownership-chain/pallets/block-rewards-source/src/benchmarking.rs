@@ -4,34 +4,26 @@ use super::*;
 #[allow(unused)]
 use crate::{Pallet as BlockRewardsSource, RewardsAccount};
 use frame_benchmarking::v2::*;
-use pallet_parachain_staking::PayoutCollatorReward;
 use sp_std::vec;
 
-#[benchmarks(where
-    T: Send + Sync + crate::Config + pallet_parachain_staking::Config
-)]
 #[benchmarks]
 mod benchmarks {
 	use super::*;
 	#[benchmark]
-	fn payout_collator_reward() {
+	fn send_rewards() {
 		let rewards_account: T::AccountId = account("rewards_account", 0, 0);
-		let collator: T::AccountId = account("collator", 0, 0);
+		let destination: T::AccountId = account("destination", 0, 0);
 		let amount = 100u32;
-		<T as pallet_parachain_staking::Config>::Currency::deposit_creating(
-			&rewards_account,
-			amount.into(),
-		);
-		let initial_collator_balance =
-			<T as pallet_parachain_staking::Config>::Currency::free_balance(&collator);
+		let _ = T::Currency::deposit_creating(&rewards_account, amount.into());
+		let initial_destination_balance = T::Currency::free_balance(&destination);
 		RewardsAccount::<T>::put(rewards_account.clone());
 		#[block]
 		{
-			BlockRewardsSource::<T>::payout_collator_reward(0, collator.clone(), amount.into());
+			BlockRewardsSource::<T>::send_rewards(destination.clone(), amount.into()).unwrap();
 		}
 		assert_eq!(
-			<T as pallet_parachain_staking::Config>::Currency::free_balance(&collator),
-			initial_collator_balance + amount.into()
+			T::Currency::free_balance(&destination),
+			initial_destination_balance + amount.into()
 		);
 	}
 }

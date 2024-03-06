@@ -16,7 +16,7 @@
 
 //! traits for parachain-staking
 
-use crate::weights::WeightInfo;
+use crate::{weights::WeightInfo, BalanceOf};
 use frame_support::{
 	dispatch::PostDispatchInfo,
 	pallet_prelude::Weight,
@@ -51,22 +51,22 @@ impl OnNewRound for () {
 }
 
 /// Defines the behavior to payout the collator's reward.
-pub trait PayoutCollatorReward<Runtime: crate::Config> {
+pub trait PayoutCollatorReward<Runtime: crate::Config, Balance> {
 	fn payout_collator_reward(
 		round_index: crate::RoundIndex,
 		collator_id: Runtime::AccountId,
-		amount: crate::BalanceOf<Runtime>,
+		amount: Balance,
 	) -> Weight;
 
 	fn deposit_into_existing(
 		delegator_id: &Runtime::AccountId,
-		amount: crate::BalanceOf<Runtime>,
-	) -> Result<crate::BalanceOf<Runtime>, DispatchError>;
+		amount: Balance,
+	) -> Result<Balance, DispatchError>;
 }
 
 /// Defines the default behavior for paying out the collator's reward. The amount is directly
 /// deposited into the collator's account.
-impl<Runtime: crate::Config> PayoutCollatorReward<Runtime> for () {
+impl<Runtime: crate::Config> PayoutCollatorReward<Runtime, BalanceOf<Runtime>> for () {
 	fn payout_collator_reward(
 		for_round: crate::RoundIndex,
 		collator_id: Runtime::AccountId,
