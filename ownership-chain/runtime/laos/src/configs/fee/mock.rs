@@ -17,7 +17,6 @@ frame_support::construct_runtime!(
 	{
 		System: frame_system,
 		Authorship: pallet_authorship,
-		BlockRewardsSource: pallet_block_rewards_source,
 		Balances: pallet_balances,
 	}
 );
@@ -73,32 +72,22 @@ impl pallet_balances::Config for Test {
 	type MaxFreezes = ();
 }
 
-impl pallet_block_rewards_source::Config for Test {
-	type RuntimeEvent = RuntimeEvent;
-}
-
 impl pallet_authorship::Config for Test {
 	type FindAuthor = ();
 	type EventHandler = ();
 }
 
 pub(crate) struct ExtBuilder {
-	rewards_account: Option<AccountId>,
 	balances: Vec<(AccountId, Balance)>,
 }
 
 impl Default for ExtBuilder {
 	fn default() -> Self {
-		Self { rewards_account: None, balances: vec![] }
+		Self { balances: vec![] }
 	}
 }
 
 impl ExtBuilder {
-	pub(crate) fn with_rewards_account(mut self, account_id: AccountId) -> Self {
-		self.rewards_account = Some(account_id);
-		self
-	}
-
 	pub(crate) fn with_balances(mut self, balances: Vec<(AccountId, Balance)>) -> Self {
 		self.balances = balances;
 		self
@@ -111,12 +100,6 @@ impl ExtBuilder {
 		pallet_balances::GenesisConfig::<Test> { balances: self.balances }
 			.assimilate_storage(&mut t)
 			.expect("Pallet balances storage can be assimilated");
-
-		pallet_block_rewards_source::GenesisConfig::<Test> {
-			rewards_account: self.rewards_account,
-		}
-		.assimilate_storage(&mut t)
-		.unwrap();
 
 		t.into()
 	}
