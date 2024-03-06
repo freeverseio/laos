@@ -8,7 +8,7 @@ mod xcm_tests;
 
 pub use xcm_mock::ParachainXcmRouter;
 
-use sp_runtime::{BuildStorage};
+use sp_runtime::BuildStorage;
 
 use core::str::FromStr;
 
