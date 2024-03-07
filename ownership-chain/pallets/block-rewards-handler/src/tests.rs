@@ -1,5 +1,6 @@
 use crate::{mock::*, Error};
 use frame_support::assert_err;
+use sp_runtime::{ArithmeticError, DispatchError};
 
 #[test]
 fn send_rewards_when_source_account_does_not_exist_fails() {
@@ -8,7 +9,10 @@ fn send_rewards_when_source_account_does_not_exist_fails() {
 	ExtBuilder::default().build().execute_with(|| {
 		let initial_destination_balance = Balances::free_balance(&destination);
 		assert!(BlockRewardsHandler::rewards_account().is_none());
-		assert_err!(BlockRewardsHandler::send_rewards(destination, amount), Error::<Test>::RewardsAccountNotSet);
+		assert_err!(
+			BlockRewardsHandler::send_rewards(destination, amount),
+			Error::<Test>::RewardsAccountNotSet
+		);
 		assert_eq!(Balances::free_balance(&destination), initial_destination_balance);
 	});
 }
@@ -24,7 +28,10 @@ fn send_rewards_when_source_account_has_no_enough_balance_fails() {
 		.execute_with(|| {
 			let initial_destination_balance = Balances::free_balance(&destination);
 			assert!(BlockRewardsHandler::rewards_account().is_some());
-			assert_err!(BlockRewardsHandler::send_rewards(destination, amount), Error::<Test>::RewardsAccountHasNoFunds);
+			assert_err!(
+				BlockRewardsHandler::send_rewards(destination, amount),
+				DispatchError::Arithmetic(ArithmeticError::Underflow)
+			);
 			assert_eq!(Balances::free_balance(&destination), initial_destination_balance);
 		});
 }

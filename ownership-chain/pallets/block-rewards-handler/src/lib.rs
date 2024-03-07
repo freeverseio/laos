@@ -5,8 +5,6 @@ use frame_support::{
 	traits::{Currency, ExistenceRequirement},
 };
 
-use sp_runtime::{ArithmeticError};
-
 mod benchmarking;
 pub mod weights;
 
@@ -60,8 +58,6 @@ pub mod pallet {
 
 	#[pallet::error]
 	pub enum Error<T> {
-		/// The rewards account has no funds.
-		RewardsAccountHasNoFunds,
 		/// The rewards account is not set.
 		RewardsAccountNotSet,
 	}
@@ -75,13 +71,8 @@ pub mod pallet {
 			amount: BalanceOf<T>,
 		) -> Result<BalanceOf<T>, DispatchError> {
 			let source = RewardsAccount::<T>::get().ok_or(Error::<T>::RewardsAccountNotSet)?;
-
-			T::Currency::transfer(&source, &destination, amount, ExistenceRequirement::KeepAlive)
-				.map(|_| amount)
-				.or_else(|e| match e {
-					DispatchError::Arithmetic(ArithmeticError::Underflow) => Err(Error::<T>::RewardsAccountHasNoFunds.into()),
-					_ => Err(e),
-				})
+			T::Currency::transfer(&source, &destination, amount, ExistenceRequirement::KeepAlive)?;
+			Ok(amount)
 		}
 	}
 }

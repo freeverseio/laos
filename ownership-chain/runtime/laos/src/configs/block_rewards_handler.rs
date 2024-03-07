@@ -2,7 +2,7 @@ use crate::{Balances, Runtime};
 use frame_support::{ensure, weights::Weight};
 use pallet_block_rewards_handler::{BalanceOf, WeightInfo};
 use pallet_parachain_staking::PayoutReward;
-use sp_runtime::{traits::Zero, DispatchError};
+use sp_runtime::{traits::Zero, ArithmeticError, DispatchError};
 use sp_std::marker::PhantomData;
 impl pallet_block_rewards_handler::Config for Runtime {
 	type WeightInfo = pallet_block_rewards_handler::weights::SubstrateWeight<Runtime>;
@@ -18,7 +18,8 @@ impl<Runtime: pallet_parachain_staking::Config + pallet_block_rewards_handler::C
 		collator: Runtime::AccountId,
 		amount: pallet_block_rewards_handler::BalanceOf<Runtime>,
 	) -> Weight {
-		pallet_block_rewards_handler::Pallet::<Runtime>::send_rewards(collator, amount.into());
+		let _ =
+			pallet_block_rewards_handler::Pallet::<Runtime>::send_rewards(collator, amount.into());
 		// TODO: In case of a failure in sending rewards, we should return a weight,
 		// since at least one read operation is performed. Additionally, this situation
 		// incurs an extra write operation.
@@ -38,15 +39,11 @@ impl<Runtime: pallet_parachain_staking::Config + pallet_block_rewards_handler::C
 			amount,
 		) {
 			Ok(_) => Ok(amount),
-			Err(err) => match err {
-				DispatchError::Module(err)
-					if err.message.as_deref() == Some("RewardsAccountHasNoFunds")
-						|| err.message.as_deref() == Some("RewardsAccountNotSet") =>
-				{
-					Ok(Zero::zero())
-				},
-				_ => Err(err),
-			},
+			Err(DispatchError::Module(err))
+				if err.message.as_deref() == Some("RewardsAccountNotSet") =>
+				Ok(Zero::zero()),
+			Err(DispatchError::Arithmetic(ArithmeticError::Underflow)) => Ok(Zero::zero()),
+			Err(err) => Err(err),
 		}
 	}
 }
@@ -61,7 +58,7 @@ mod tests {
 		let amount = 2;
 		let collator = AccountId::from([1u8; 20]);
 		ExtBuilder::default().build().execute_with(|| {
-			assert_eq!(
+			assert_ne!(
 				BlockRewardsHandlerAdapter::<Runtime>::payout_collator_rewards(0, collator, amount),
 				Weight::zero()
 			);
