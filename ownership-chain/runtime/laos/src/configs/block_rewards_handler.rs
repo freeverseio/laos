@@ -129,7 +129,8 @@ mod tests {
 			.build()
 			.execute_with(|| {
 				assert_eq!(
-					BlockRewardsHandlerAdapter::<Runtime>::payout(&destination, amount).unwrap_err(),
+					BlockRewardsHandlerAdapter::<Runtime>::payout(&destination, amount)
+						.unwrap_err(),
 					DispatchError::from("Account does not exist")
 				);
 			});
