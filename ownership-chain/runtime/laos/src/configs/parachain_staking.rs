@@ -278,7 +278,7 @@ mod tests {
 	#[test]
 	fn estimate_current_session_progress() {
 		ExtBuilder::default().build().execute_with(|| {
-			// Roll to the first block of the next session.
+			// Roll to the half of the current session.
 			for _ in 0..ParachainStakingAdapter::average_session_length() / 2 {
 				roll_one_block!(true);
 			}
