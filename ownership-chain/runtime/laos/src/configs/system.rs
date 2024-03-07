@@ -83,3 +83,30 @@ impl Contains<RuntimeCall> for BaseCallFilter {
 		}
 	}
 }
+
+// tests
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use crate::{
+		tests::{new_test_ext, ALICE, BOB},
+		Runtime,
+	};
+	use core::str::FromStr;
+	use frame_support::{
+		assert_noop, assert_ok,
+		traits::{fungible::Balanced, tokens::Precision},
+	};
+	use sp_runtime::DispatchError;
+
+	#[test]
+	fn transfer_should_not_be_allowed() {
+		new_test_ext().execute_with(|| {
+			let from_account = AccountId::from_str(ALICE).unwrap();
+			let to_account = AccountId::from_str(BOB).unwrap();
+			let transfer_amount = 100;
+
+			// TODO
+		});
+	}
+}

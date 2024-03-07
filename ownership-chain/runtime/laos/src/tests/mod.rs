@@ -49,8 +49,8 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 	t.into()
 }
 
-const ALICE: &str = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
-const BOB: &str = "0x6c2b9c9b5007740e52d80dddb8e197b0c844f239";
+pub(crate) const ALICE: &str = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
+pub(crate) const BOB: &str = "0x6c2b9c9b5007740e52d80dddb8e197b0c844f239";
 
 #[test]
 fn minimum_balance_should_be_0() {
