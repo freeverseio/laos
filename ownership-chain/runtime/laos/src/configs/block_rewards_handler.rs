@@ -16,11 +16,11 @@ impl<Runtime: pallet_parachain_staking::Config + pallet_block_rewards_handler::C
 {
 	fn payout_with_computation_cost(
 		_round_index: pallet_parachain_staking::RoundIndex,
-		collator_id: Runtime::AccountId,
+		destination: Runtime::AccountId,
 		amount: pallet_block_rewards_handler::BalanceOf<Runtime>,
 	) -> Weight {
 		match pallet_block_rewards_handler::Pallet::<Runtime>::send_rewards(
-			collator_id,
+			destination_id,
 			amount.into(),
 		) {
 			Ok(amount) if amount.is_zero() => Weight::zero(),
@@ -32,10 +32,10 @@ impl<Runtime: pallet_parachain_staking::Config + pallet_block_rewards_handler::C
 	}
 
 	fn payout(
-		delegator_id: &Runtime::AccountId,
+		destination: &Runtime::AccountId,
 		amount: pallet_block_rewards_handler::BalanceOf<Runtime>,
 	) -> Result<pallet_block_rewards_handler::BalanceOf<Runtime>, DispatchError> {
-		pallet_block_rewards_handler::Pallet::<Runtime>::send_rewards(delegator_id.clone(), amount)
+		pallet_block_rewards_handler::Pallet::<Runtime>::send_rewards(destination, amount)
 	}
 }
 
@@ -45,13 +45,15 @@ mod tests {
 	use crate::{tests::ExtBuilder, AccountId};
 
 	#[test]
-	fn payout_collator_reward_when_source_account_is_none() {
+	fn payout_with_computation_cost_when_source_account_is_none() {
 		let amount = 2;
-		let collator = AccountId::from([1u8; 20]);
+		let destination = AccountId::from([1u8; 20]);
 		ExtBuilder::default().build().execute_with(|| {
 			assert_eq!(
 				BlockRewardsHandlerAdapter::<Runtime>::payout_with_computation_cost(
-					0, collator, amount
+					0,
+					destination,
+					amount
 				),
 				Weight::zero()
 			);
@@ -59,14 +61,16 @@ mod tests {
 	}
 
 	#[test]
-	fn payout_collator_reward_when_source_account_has_no_enough_funds() {
+	fn payout_with_computation_cost_when_source_account_has_no_enough_funds() {
 		let amount = 2;
-		let collator = AccountId::from([1u8; 20]);
+		let destination = AccountId::from([1u8; 20]);
 		let source = AccountId::from([0u8; 20]);
 		ExtBuilder::default().with_rewards_account(source).build().execute_with(|| {
 			assert_ne!(
 				BlockRewardsHandlerAdapter::<Runtime>::payout_with_computation_cost(
-					0, collator, amount
+					0,
+					destination,
+					amount
 				),
 				Weight::zero()
 			);
@@ -74,10 +78,10 @@ mod tests {
 	}
 
 	#[test]
-	fn payout_collator_reward_when_send_rewards_works() {
+	fn payout_with_computation_cost_when_send_rewards_works() {
 		let source = AccountId::from([0u8; 20]);
 		let amount = 2;
-		let collator = AccountId::from([1u8; 20]);
+		let destination = AccountId::from([1u8; 20]);
 		ExtBuilder::default()
 			.with_balances(vec![(source, 100)])
 			.with_rewards_account(source)
@@ -85,7 +89,9 @@ mod tests {
 			.execute_with(|| {
 				assert_ne!(
 					BlockRewardsHandlerAdapter::<Runtime>::payout_with_computation_cost(
-						0, collator, amount
+						0,
+						destination,
+						amount
 					),
 					Weight::zero()
 				);
@@ -93,29 +99,29 @@ mod tests {
 	}
 
 	#[test]
-	fn deposit_into_existing_when_source_account_is_none() {
+	fn payout_when_source_account_is_none() {
 		let amount = 2;
-		let collator = AccountId::from([1u8; 20]);
+		let destination = AccountId::from([1u8; 20]);
 		ExtBuilder::default().build().execute_with(|| {
 			assert_eq!(
-				BlockRewardsHandlerAdapter::<Runtime>::payout(&collator, amount).unwrap(),
+				BlockRewardsHandlerAdapter::<Runtime>::payout(&destination, amount).unwrap(),
 				0
 			);
 		});
 	}
 
 	#[test]
-	fn deposit_into_existing_when_send_rewards_works() {
+	fn payout_when_send_rewards_works() {
 		let source = AccountId::from([0u8; 20]);
 		let amount = 2;
-		let collator = AccountId::from([1u8; 20]);
+		let destination = AccountId::from([1u8; 20]);
 		ExtBuilder::default()
 			.with_balances(vec![(source, 100)])
 			.with_rewards_account(source)
 			.build()
 			.execute_with(|| {
 				assert_eq!(
-					BlockRewardsHandlerAdapter::<Runtime>::payout(&collator, amount).unwrap(),
+					BlockRewardsHandlerAdapter::<Runtime>::payout(&destination, amount).unwrap(),
 					amount
 				);
 			});

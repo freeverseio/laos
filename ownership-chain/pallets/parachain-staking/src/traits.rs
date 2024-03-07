@@ -54,7 +54,7 @@ impl OnNewRound for () {
 pub trait PayoutReward<Runtime: crate::Config, Balance> {
 	fn payout_with_computation_cost(
 		round_index: crate::RoundIndex,
-		collator_id: Runtime::AccountId,
+		destination: Runtime::AccountId,
 		amount: Balance,
 	) -> Weight;
 

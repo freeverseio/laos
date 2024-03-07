@@ -44,29 +44,19 @@ pub mod pallet {
 	pub type RewardsAccount<T: Config> = StorageValue<_, T::AccountId, OptionQuery>;
 
 	#[pallet::genesis_config]
+	#[derive(frame_support::DefaultNoBound)]
 	pub struct GenesisConfig<T: Config> {
 		pub rewards_account: Option<T::AccountId>,
-	}
-
-	impl<T: Config> Default for GenesisConfig<T> {
-		fn default() -> Self {
-			Self { rewards_account: Default::default() }
-		}
 	}
 
 	#[pallet::genesis_build]
 	impl<T: Config> BuildGenesisConfig for GenesisConfig<T> {
 		fn build(&self) {
 			if let Some(rewards_account) = &self.rewards_account {
-				RewardsAccount::<T>::put(rewards_account.clone());
+				RewardsAccount::<T>::put(rewards_account);
 			}
 		}
 	}
-
-	/// Customs errors for this pallet
-	#[pallet::error]
-	#[derive(PartialEq)]
-	pub enum Error<T> {}
 
 	impl<T: Config> Pallet<T> {
 		/// This method sends rewards to the destination account.
