@@ -539,7 +539,7 @@ construct_runtime!(
 		Aura: pallet_aura = 23,
 		AuraExt: cumulus_pallet_aura_ext = 24,
 		ParachainStaking: pallet_parachain_staking = 25,
-		BlockRewardsSource: pallet_block_rewards_source = 26,
+		BlockRewardsHandler: pallet_block_rewards_handler = 26,
 
 		// XCM helpers.
 		XcmpQueue: cumulus_pallet_xcmp_queue = 30,
@@ -687,6 +687,7 @@ mod benches {
 		[pallet_laos_evolution, LaosEvolution]
 		[pallet_asset_metadata_extender, AssetMetadataExtender]
 		[pallet_parachain_staking, ParachainStaking]
+		[pallet_block_rewards_handler, BlockRewardsHandler]
 	);
 }
 
