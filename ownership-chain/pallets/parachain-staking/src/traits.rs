@@ -16,9 +16,13 @@
 
 //! traits for parachain-staking
 
-use crate::weights::WeightInfo;
-use frame_support::{dispatch::PostDispatchInfo, pallet_prelude::Weight};
-use sp_runtime::DispatchErrorWithPostInfo;
+use crate::{weights::WeightInfo, BalanceOf};
+use frame_support::{
+	dispatch::PostDispatchInfo,
+	pallet_prelude::Weight,
+	traits::{tokens::currency::Currency, Imbalance},
+};
+use sp_runtime::{DispatchError, DispatchErrorWithPostInfo};
 
 pub trait OnCollatorPayout<AccountId, Balance> {
 	fn on_collator_payout(
@@ -46,24 +50,39 @@ impl OnNewRound for () {
 	}
 }
 
-/// Defines the behavior to payout the collator's reward.
-pub trait PayoutCollatorReward<Runtime: crate::Config> {
-	fn payout_collator_reward(
+/// Defines the behavior to payout the block producer reward.
+pub trait PayoutReward<Runtime: crate::Config, Balance> {
+	/// Send amount to the balance of the specified account (collator).
+	/// and corresponding weight consumed is returned.
+	fn payout_collator_rewards(
 		round_index: crate::RoundIndex,
-		collator_id: Runtime::AccountId,
-		amount: crate::BalanceOf<Runtime>,
+		collator: Runtime::AccountId,
+		amount: Balance,
 	) -> Weight;
+
+	/// Send amount to the free balance of the specified account (destination).
+	/// If the account (destination) does not exist, the operation is not carried out,
+	/// and an error is returned instead.
+	fn payout(destination: &Runtime::AccountId, amount: Balance) -> Result<Balance, DispatchError>;
 }
 
 /// Defines the default behavior for paying out the collator's reward. The amount is directly
 /// deposited into the collator's account.
-impl<Runtime: crate::Config> PayoutCollatorReward<Runtime> for () {
-	fn payout_collator_reward(
+impl<Runtime: crate::Config> PayoutReward<Runtime, BalanceOf<Runtime>> for () {
+	fn payout_collator_rewards(
 		for_round: crate::RoundIndex,
 		collator_id: Runtime::AccountId,
 		amount: crate::BalanceOf<Runtime>,
 	) -> Weight {
 		crate::Pallet::<Runtime>::mint_collator_reward(for_round, collator_id, amount)
+	}
+
+	fn payout(
+		delegator_id: &Runtime::AccountId,
+		amount: crate::BalanceOf<Runtime>,
+	) -> Result<crate::BalanceOf<Runtime>, DispatchError> {
+		Runtime::Currency::deposit_into_existing(delegator_id, amount)
+			.map(|imbalance| imbalance.peek())
 	}
 }
 
