@@ -5,7 +5,7 @@ use frame_support::{
 	traits::{Currency, ExistenceRequirement},
 };
 
-use sp_runtime::{traits::Zero, ArithmeticError};
+use sp_runtime::{ArithmeticError};
 
 mod benchmarking;
 pub mod weights;
@@ -58,23 +58,28 @@ pub mod pallet {
 		}
 	}
 
+	#[pallet::error]
+	pub enum Error<T> {
+		/// The rewards account has no funds.
+		RewardsAccountHasNoFunds,
+		/// The rewards account is not set.
+		RewardsAccountNotSet,
+	}
+
 	impl<T: Config> Pallet<T> {
 		/// This method sends rewards to the destination account.
 		/// On success, simply return the amount transferred.
-		/// When rewards account has no funds or it doesn't exist return Ok(0).
+		/// Whether the rewards account has no funds or it is not set, return an error.
 		pub fn send_rewards(
 			destination: T::AccountId,
 			amount: BalanceOf<T>,
 		) -> Result<BalanceOf<T>, DispatchError> {
-			let source = match RewardsAccount::<T>::get() {
-				Some(account) => account,
-				None => return Ok(Zero::zero()),
-			};
+			let source = RewardsAccount::<T>::get().ok_or(Error::<T>::RewardsAccountNotSet)?;
 
 			T::Currency::transfer(&source, &destination, amount, ExistenceRequirement::KeepAlive)
 				.map(|_| amount)
 				.or_else(|e| match e {
-					DispatchError::Arithmetic(ArithmeticError::Underflow) => Ok(Zero::zero()),
+					DispatchError::Arithmetic(ArithmeticError::Underflow) => Err(Error::<T>::RewardsAccountHasNoFunds.into()),
 					_ => Err(e),
 				})
 		}

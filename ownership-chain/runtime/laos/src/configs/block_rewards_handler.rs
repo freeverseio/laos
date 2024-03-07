@@ -18,14 +18,11 @@ impl<Runtime: pallet_parachain_staking::Config + pallet_block_rewards_handler::C
 		collator: Runtime::AccountId,
 		amount: pallet_block_rewards_handler::BalanceOf<Runtime>,
 	) -> Weight {
-		match pallet_block_rewards_handler::Pallet::<Runtime>::send_rewards(collator, amount.into())
-		{
-			Ok(amount) if amount.is_zero() => Weight::zero(),
-			// TODO: In case of a failure in sending rewards, we should return a weight,
-			// since at least one read operation is performed. Additionally, this situation
-			// incurs an extra write operation.
-			_ => <Runtime as pallet_block_rewards_handler::Config>::WeightInfo::send_rewards(),
-		}
+		pallet_block_rewards_handler::Pallet::<Runtime>::send_rewards(collator, amount.into());
+		// TODO: In case of a failure in sending rewards, we should return a weight,
+		// since at least one read operation is performed. Additionally, this situation
+		// incurs an extra write operation.
+		<Runtime as pallet_block_rewards_handler::Config>::WeightInfo::send_rewards()
 	}
 
 	fn payout(
@@ -36,7 +33,17 @@ impl<Runtime: pallet_parachain_staking::Config + pallet_block_rewards_handler::C
 			frame_system::Account::<Runtime>::contains_key(destination),
 			"Account does not exist"
 		);
-		pallet_block_rewards_handler::Pallet::<Runtime>::send_rewards(destination.clone(), amount)
+		match pallet_block_rewards_handler::Pallet::<Runtime>::send_rewards(
+			destination.clone(),
+			amount,
+		) {
+			Ok(_) => Ok(amount),
+			// Err(pallet_block_rewards_handler::Error::<Runtime>::RewardsAccountHasNoFunds) => {
+			// 	Ok(Zero::zero())
+			// },
+			Err(DispatchError::) => Ok(Zero::zero()),
+			Err(err) => Err(err),
+		}
 	}
 }
 
