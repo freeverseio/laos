@@ -1,10 +1,9 @@
 use crate::{Balances, Runtime};
-use frame_support::weights::Weight;
+use frame_support::{ensure, weights::Weight};
 use pallet_block_rewards_handler::{BalanceOf, WeightInfo};
 use pallet_parachain_staking::PayoutReward;
 use sp_runtime::{traits::Zero, DispatchError};
 use sp_std::marker::PhantomData;
-
 impl pallet_block_rewards_handler::Config for Runtime {
 	type WeightInfo = pallet_block_rewards_handler::weights::SubstrateWeight<Runtime>;
 	type Currency = Balances;
@@ -33,6 +32,10 @@ impl<Runtime: pallet_parachain_staking::Config + pallet_block_rewards_handler::C
 		destination: &Runtime::AccountId,
 		amount: pallet_block_rewards_handler::BalanceOf<Runtime>,
 	) -> Result<pallet_block_rewards_handler::BalanceOf<Runtime>, DispatchError> {
+		ensure!(
+			frame_system::Account::<Runtime>::contains_key(destination),
+			"Account does not exist"
+		);
 		pallet_block_rewards_handler::Pallet::<Runtime>::send_rewards(destination.clone(), amount)
 	}
 }
@@ -111,6 +114,23 @@ mod tests {
 				assert_eq!(
 					BlockRewardsHandlerAdapter::<Runtime>::payout(&destination, amount).unwrap(),
 					amount
+				);
+			});
+	}
+
+	#[test]
+	fn payout_when_destination_does_not_exist() {
+		let source = AccountId::from([0u8; 20]);
+		let amount = 2;
+		let destination = AccountId::from([11u8; 20]);
+		ExtBuilder::default()
+			.with_balances(vec![(source, 100)])
+			.with_rewards_account(source)
+			.build()
+			.execute_with(|| {
+				assert_eq!(
+					BlockRewardsHandlerAdapter::<Runtime>::payout(&destination, amount).unwrap_err(),
+					DispatchError::from("Account does not exist")
 				);
 			});
 	}
