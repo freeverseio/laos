@@ -20,7 +20,7 @@ impl<Runtime: pallet_parachain_staking::Config + pallet_block_rewards_handler::C
 		amount: pallet_block_rewards_handler::BalanceOf<Runtime>,
 	) -> Weight {
 		match pallet_block_rewards_handler::Pallet::<Runtime>::send_rewards(
-			destination_id,
+			destination,
 			amount.into(),
 		) {
 			Ok(amount) if amount.is_zero() => Weight::zero(),
@@ -35,7 +35,7 @@ impl<Runtime: pallet_parachain_staking::Config + pallet_block_rewards_handler::C
 		destination: &Runtime::AccountId,
 		amount: pallet_block_rewards_handler::BalanceOf<Runtime>,
 	) -> Result<pallet_block_rewards_handler::BalanceOf<Runtime>, DispatchError> {
-		pallet_block_rewards_handler::Pallet::<Runtime>::send_rewards(destination, amount)
+		pallet_block_rewards_handler::Pallet::<Runtime>::send_rewards(destination.clone(), amount)
 	}
 }
 
