@@ -2,7 +2,7 @@ use crate::{Balances, Runtime};
 use frame_support::{ensure, weights::Weight};
 use pallet_block_rewards_handler::{BalanceOf, WeightInfo};
 use pallet_parachain_staking::PayoutReward;
-use sp_runtime::{traits::Zero, ArithmeticError, DispatchError};
+use sp_runtime::{traits::Zero, DispatchError};
 use sp_std::marker::PhantomData;
 impl pallet_block_rewards_handler::Config for Runtime {
 	type WeightInfo = pallet_block_rewards_handler::weights::SubstrateWeight<Runtime>;
@@ -40,9 +40,8 @@ impl<Runtime: pallet_parachain_staking::Config + pallet_block_rewards_handler::C
 		) {
 			Ok(_) => Ok(amount),
 			Err(DispatchError::Module(err))
-				if err.message.as_deref() == Some("RewardsAccountNotSet") =>
+				if err.message.as_deref() == Some("RewardsAccountNotSet") || err.message.as_deref() == Some("RewardsAccountNoEnoughBalance") =>
 				Ok(Zero::zero()),
-			Err(DispatchError::Arithmetic(ArithmeticError::Underflow)) => Ok(Zero::zero()),
 			Err(err) => Err(err),
 		}
 	}
@@ -102,6 +101,19 @@ mod tests {
 		let amount = 2;
 		let destination = AccountId::from([1u8; 20]);
 		ExtBuilder::default().build().execute_with(|| {
+			assert_eq!(
+				BlockRewardsHandlerAdapter::<Runtime>::payout(&destination, amount).unwrap(),
+				0
+			);
+		});
+	}
+
+	#[test]
+	fn payout_when_source_account_has_no_enough_funds() {
+		let amount = 2;
+		let destination = AccountId::from([1u8; 20]);
+		let source = AccountId::from([33u8; 20]);
+		ExtBuilder::default().with_rewards_account(source).build().execute_with(|| {
 			assert_eq!(
 				BlockRewardsHandlerAdapter::<Runtime>::payout(&destination, amount).unwrap(),
 				0

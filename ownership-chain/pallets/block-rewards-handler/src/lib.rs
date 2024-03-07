@@ -4,6 +4,7 @@ use frame_support::{
 	pallet_prelude::*,
 	traits::{Currency, ExistenceRequirement},
 };
+use sp_runtime::{ArithmeticError, DispatchError};
 
 mod benchmarking;
 pub mod weights;
@@ -60,6 +61,8 @@ pub mod pallet {
 	pub enum Error<T> {
 		/// The rewards account is not set.
 		RewardsAccountNotSet,
+		/// The rewards account has no enough balance.
+		RewardsAccountNoEnoughBalance,
 	}
 
 	impl<T: Config> Pallet<T> {
@@ -71,7 +74,13 @@ pub mod pallet {
 			amount: BalanceOf<T>,
 		) -> Result<BalanceOf<T>, DispatchError> {
 			let source = RewardsAccount::<T>::get().ok_or(Error::<T>::RewardsAccountNotSet)?;
-			T::Currency::transfer(&source, &destination, amount, ExistenceRequirement::KeepAlive)?;
+			T::Currency::transfer(&source, &destination, amount, ExistenceRequirement::KeepAlive)
+				.map_err(|err| {
+					if let DispatchError::Arithmetic(ArithmeticError::Underflow) = err {
+						return Error::<T>::RewardsAccountNoEnoughBalance.into();
+					}
+					err
+				})?;
 			Ok(amount)
 		}
 	}
