@@ -1,4 +1,4 @@
-use crate as pallet_block_rewards_source;
+use crate as pallet_block_rewards_handler;
 use crate::Config;
 use frame_support::{
 	parameter_types,
@@ -18,7 +18,7 @@ frame_support::construct_runtime!(
 	pub enum Test
 	{
 		System: frame_system,
-		BlockRewardsHandler: pallet_block_rewards_source,
+		BlockRewardsHandler: pallet_block_rewards_handler,
 		Balances: pallet_balances,
 	}
 );
@@ -104,7 +104,7 @@ impl ExtBuilder {
 			.assimilate_storage(&mut t)
 			.expect("Pallet balances storage can be assimilated");
 
-		pallet_block_rewards_source::GenesisConfig::<Test> {
+		pallet_block_rewards_handler::GenesisConfig::<Test> {
 			rewards_account: self.rewards_account,
 		}
 		.assimilate_storage(&mut t)

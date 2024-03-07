@@ -1,25 +1,25 @@
 use crate::{Balances, Runtime};
 use frame_support::weights::Weight;
-use pallet_block_rewards_source::{BalanceOf, WeightInfo};
+use pallet_block_rewards_handler::{BalanceOf, WeightInfo};
 use pallet_parachain_staking::PayoutReward;
 use sp_runtime::{traits::Zero, DispatchError};
 use sp_std::marker::PhantomData;
 
-impl pallet_block_rewards_source::Config for Runtime {
-	type WeightInfo = pallet_block_rewards_source::weights::SubstrateWeight<Runtime>;
+impl pallet_block_rewards_handler::Config for Runtime {
+	type WeightInfo = pallet_block_rewards_handler::weights::SubstrateWeight<Runtime>;
 	type Currency = Balances;
 }
 pub struct BlockRewardsHandlerAdapter<Runtime>(PhantomData<Runtime>);
 
-impl<Runtime: pallet_parachain_staking::Config + pallet_block_rewards_source::Config>
+impl<Runtime: pallet_parachain_staking::Config + pallet_block_rewards_handler::Config>
 	PayoutReward<Runtime, BalanceOf<Runtime>> for BlockRewardsHandlerAdapter<Runtime>
 {
 	fn payout_with_computation_cost(
 		_round_index: pallet_parachain_staking::RoundIndex,
 		collator_id: Runtime::AccountId,
-		amount: pallet_block_rewards_source::BalanceOf<Runtime>,
+		amount: pallet_block_rewards_handler::BalanceOf<Runtime>,
 	) -> Weight {
-		match pallet_block_rewards_source::Pallet::<Runtime>::send_rewards(
+		match pallet_block_rewards_handler::Pallet::<Runtime>::send_rewards(
 			collator_id,
 			amount.into(),
 		) {
@@ -27,15 +27,15 @@ impl<Runtime: pallet_parachain_staking::Config + pallet_block_rewards_source::Co
 			// TODO: In case of a failure in sending rewards, we should return a weight,
 			// since at least one read operation is performed. Additionally, this situation
 			// incurs an extra write operation.
-			_ => <Runtime as pallet_block_rewards_source::Config>::WeightInfo::send_rewards(),
+			_ => <Runtime as pallet_block_rewards_handler::Config>::WeightInfo::send_rewards(),
 		}
 	}
 
 	fn payout(
 		delegator_id: &Runtime::AccountId,
-		amount: pallet_block_rewards_source::BalanceOf<Runtime>,
-	) -> Result<pallet_block_rewards_source::BalanceOf<Runtime>, DispatchError> {
-		pallet_block_rewards_source::Pallet::<Runtime>::send_rewards(delegator_id.clone(), amount)
+		amount: pallet_block_rewards_handler::BalanceOf<Runtime>,
+	) -> Result<pallet_block_rewards_handler::BalanceOf<Runtime>, DispatchError> {
+		pallet_block_rewards_handler::Pallet::<Runtime>::send_rewards(delegator_id.clone(), amount)
 	}
 }
 

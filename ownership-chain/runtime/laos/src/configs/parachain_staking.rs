@@ -1,5 +1,5 @@
 use crate::{
-	configs::block_rewards_source::BlockRewardsHandlerAdapter, AccountId, Balances, BlockNumber,
+	configs::block_rewards_handler::BlockRewardsHandlerAdapter, AccountId, Balances, BlockNumber,
 	Permill, Runtime, RuntimeEvent, Vec, Weight, UNIT,
 };
 use frame_support::{parameter_types, traits::Get};

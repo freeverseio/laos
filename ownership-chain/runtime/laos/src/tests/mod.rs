@@ -65,7 +65,7 @@ impl ExtBuilder {
 		.assimilate_storage(&mut t)
 		.unwrap();
 
-		pallet_block_rewards_source::GenesisConfig::<crate::Runtime> {
+		pallet_block_rewards_handler::GenesisConfig::<crate::Runtime> {
 			rewards_account: self.rewards_account,
 		}
 		.assimilate_storage(&mut t)
