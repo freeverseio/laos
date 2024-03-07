@@ -18,7 +18,7 @@ frame_support::construct_runtime!(
 	pub enum Test
 	{
 		System: frame_system,
-		BlockRewardsSource: pallet_block_rewards_source,
+		BlockRewardsHandler: pallet_block_rewards_source,
 		Balances: pallet_balances,
 	}
 );
@@ -81,15 +81,10 @@ impl Config for Test {
 	type Currency = Balances;
 }
 
+#[derive(Default)]
 pub(crate) struct ExtBuilder {
 	rewards_account: Option<AccountId>,
 	balances: Vec<(AccountId, Balance)>,
-}
-
-impl Default for ExtBuilder {
-	fn default() -> Self {
-		Self { rewards_account: None, balances: vec![] }
-	}
 }
 
 impl ExtBuilder {

@@ -26,15 +26,10 @@ use frame_support::{
 use pallet_transaction_payment::ChargeTransactionPayment;
 use sp_core::U256;
 
+#[derive(Default)]
 pub(crate) struct ExtBuilder {
 	rewards_account: Option<AccountId>,
 	balances: Vec<(AccountId, u128)>,
-}
-
-impl Default for ExtBuilder {
-	fn default() -> Self {
-		Self { rewards_account: None, balances: vec![] }
-	}
 }
 
 impl ExtBuilder {

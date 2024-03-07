@@ -1,19 +1,15 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-// External crates
 use frame_support::{
 	pallet_prelude::*,
-	traits::{Currency, ExistenceRequirement, LockableCurrency, ReservableCurrency},
+	traits::{Currency, ExistenceRequirement},
 };
 
-// Standard library
-use sp_runtime::ArithmeticError;
+use sp_runtime::{traits::Zero, ArithmeticError};
 
-// Your own modules
 mod benchmarking;
 pub mod weights;
 
-// Re-exports
 pub use pallet::*;
 pub use weights::WeightInfo;
 
@@ -39,9 +35,7 @@ pub mod pallet {
 		type WeightInfo: WeightInfo;
 
 		/// The currency type
-		type Currency: Currency<Self::AccountId>
-			+ ReservableCurrency<Self::AccountId>
-			+ LockableCurrency<Self::AccountId>;
+		type Currency: Currency<Self::AccountId>;
 	}
 
 	/// Source of rewards for block producers
@@ -84,13 +78,13 @@ pub mod pallet {
 		) -> Result<BalanceOf<T>, DispatchError> {
 			let source = match RewardsAccount::<T>::get() {
 				Some(account) => account,
-				None => return Ok(0u32.into()),
+				None => return Ok(Zero::zero()),
 			};
 
 			T::Currency::transfer(&source, &destination, amount, ExistenceRequirement::KeepAlive)
 				.map(|_| amount)
 				.or_else(|e| match e {
-					DispatchError::Arithmetic(ArithmeticError::Underflow) => Ok(0u32.into()),
+					DispatchError::Arithmetic(ArithmeticError::Underflow) => Ok(Zero::zero()),
 					_ => Err(e),
 				})
 		}

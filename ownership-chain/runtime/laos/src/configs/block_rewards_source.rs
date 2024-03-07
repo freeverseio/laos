@@ -1,7 +1,7 @@
 use crate::{Balances, Runtime};
 use frame_support::weights::Weight;
 use pallet_block_rewards_source::{BalanceOf, WeightInfo};
-use pallet_parachain_staking::PayoutCollatorReward;
+use pallet_parachain_staking::PayoutReward;
 use sp_runtime::{traits::Zero, DispatchError};
 use sp_std::marker::PhantomData;
 
@@ -9,12 +9,12 @@ impl pallet_block_rewards_source::Config for Runtime {
 	type WeightInfo = pallet_block_rewards_source::weights::SubstrateWeight<Runtime>;
 	type Currency = Balances;
 }
-pub struct BlockRewardsSourceAdapter<Runtime>(PhantomData<Runtime>);
+pub struct BlockRewardsHandlerAdapter<Runtime>(PhantomData<Runtime>);
 
 impl<Runtime: pallet_parachain_staking::Config + pallet_block_rewards_source::Config>
-	PayoutCollatorReward<Runtime, BalanceOf<Runtime>> for BlockRewardsSourceAdapter<Runtime>
+	PayoutReward<Runtime, BalanceOf<Runtime>> for BlockRewardsHandlerAdapter<Runtime>
 {
-	fn payout_collator_reward(
+	fn payout_with_computation_cost(
 		_round_index: pallet_parachain_staking::RoundIndex,
 		collator_id: Runtime::AccountId,
 		amount: pallet_block_rewards_source::BalanceOf<Runtime>,
@@ -24,12 +24,14 @@ impl<Runtime: pallet_parachain_staking::Config + pallet_block_rewards_source::Co
 			amount.into(),
 		) {
 			Ok(amount) if amount.is_zero() => Weight::zero(),
-			Ok(_) => <Runtime as pallet_block_rewards_source::Config>::WeightInfo::send_rewards(),
-			Err(_) => Weight::zero(),
+			// TODO: In case of a failure in sending rewards, we should return a weight,
+			// since at least one read operation is performed. Additionally, this situation
+			// incurs an extra write operation.
+			_ => <Runtime as pallet_block_rewards_source::Config>::WeightInfo::send_rewards(),
 		}
 	}
 
-	fn deposit_into_existing(
+	fn payout(
 		delegator_id: &Runtime::AccountId,
 		amount: pallet_block_rewards_source::BalanceOf<Runtime>,
 	) -> Result<pallet_block_rewards_source::BalanceOf<Runtime>, DispatchError> {
@@ -48,7 +50,24 @@ mod tests {
 		let collator = AccountId::from([1u8; 20]);
 		ExtBuilder::default().build().execute_with(|| {
 			assert_eq!(
-				BlockRewardsSourceAdapter::<Runtime>::payout_collator_reward(0, collator, amount),
+				BlockRewardsHandlerAdapter::<Runtime>::payout_with_computation_cost(
+					0, collator, amount
+				),
+				Weight::zero()
+			);
+		});
+	}
+
+	#[test]
+	fn payout_collator_reward_when_source_account_has_no_enough_funds() {
+		let amount = 2;
+		let collator = AccountId::from([1u8; 20]);
+		let source = AccountId::from([0u8; 20]);
+		ExtBuilder::default().with_rewards_account(source).build().execute_with(|| {
+			assert_eq!(
+				BlockRewardsHandlerAdapter::<Runtime>::payout_with_computation_cost(
+					0, collator, amount
+				),
 				Weight::zero()
 			);
 		});
@@ -65,7 +84,7 @@ mod tests {
 			.build()
 			.execute_with(|| {
 				assert_ne!(
-					BlockRewardsSourceAdapter::<Runtime>::payout_collator_reward(
+					BlockRewardsHandlerAdapter::<Runtime>::payout_with_computation_cost(
 						0, collator, amount
 					),
 					Weight::zero()
@@ -79,8 +98,7 @@ mod tests {
 		let collator = AccountId::from([1u8; 20]);
 		ExtBuilder::default().build().execute_with(|| {
 			assert_eq!(
-				BlockRewardsSourceAdapter::<Runtime>::deposit_into_existing(&collator, amount)
-					.unwrap(),
+				BlockRewardsHandlerAdapter::<Runtime>::payout(&collator, amount).unwrap(),
 				0
 			);
 		});
@@ -97,8 +115,7 @@ mod tests {
 			.build()
 			.execute_with(|| {
 				assert_eq!(
-					BlockRewardsSourceAdapter::<Runtime>::deposit_into_existing(&collator, amount)
-						.unwrap(),
+					BlockRewardsHandlerAdapter::<Runtime>::payout(&collator, amount).unwrap(),
 					amount
 				);
 			});

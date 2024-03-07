@@ -1,5 +1,5 @@
 [package]
-name = "pallet-block-rewards-source"
+name = "pallet-block-rewards-handler"
 version = "0.1.0"
 homepage = "https://freeverse.io"
 edition = "2021"

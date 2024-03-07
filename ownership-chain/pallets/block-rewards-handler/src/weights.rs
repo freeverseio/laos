@@ -12,10 +12,10 @@
 // benchmark
 // pallet
 // --pallet
-// pallet-block-rewards-source
+// pallet-block-rewards-handler
 // --extrinsic=*
 // --output
-// ownership-chain/pallets/block-rewards-source/src/weights.rs
+// ownership-chain/pallets/block-rewards-handler/src/weights.rs
 // --execution
 // wasm
 // --wasm-execution=compiled
@@ -42,8 +42,8 @@ pub trait WeightInfo {
 /// Weights for `pallet_block_rewards_source` using the Substrate node and recommended hardware.
 pub struct SubstrateWeight<T>(PhantomData<T>);
 impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
-	/// Storage: `BlockRewardsSource::RewardsAccount` (r:1 w:0)
-	/// Proof: `BlockRewardsSource::RewardsAccount` (`max_values`: Some(1), `max_size`: Some(20), added: 515, mode: `MaxEncodedLen`)
+	/// Storage: `BlockRewardsHandler::RewardsAccount` (r:1 w:0)
+	/// Proof: `BlockRewardsHandler::RewardsAccount` (`max_values`: Some(1), `max_size`: Some(20), added: 515, mode: `MaxEncodedLen`)
 	/// Storage: `System::Account` (r:2 w:2)
 	/// Proof: `System::Account` (`max_values`: None, `max_size`: Some(116), added: 2591, mode: `MaxEncodedLen`)
 	fn send_rewards() -> Weight {
@@ -59,8 +59,8 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 
 // For backwards compatibility and tests.
 impl WeightInfo for () {
-	/// Storage: `BlockRewardsSource::RewardsAccount` (r:1 w:0)
-	/// Proof: `BlockRewardsSource::RewardsAccount` (`max_values`: Some(1), `max_size`: Some(20), added: 515, mode: `MaxEncodedLen`)
+	/// Storage: `BlockRewardsHandler::RewardsAccount` (r:1 w:0)
+	/// Proof: `BlockRewardsHandler::RewardsAccount` (`max_values`: Some(1), `max_size`: Some(20), added: 515, mode: `MaxEncodedLen`)
 	/// Storage: `System::Account` (r:2 w:2)
 	/// Proof: `System::Account` (`max_values`: None, `max_size`: Some(116), added: 2591, mode: `MaxEncodedLen`)
 	fn send_rewards() -> Weight {

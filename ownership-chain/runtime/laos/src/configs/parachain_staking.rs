@@ -1,5 +1,5 @@
 use crate::{
-	configs::block_rewards_source::BlockRewardsSourceAdapter, AccountId, Balances, BlockNumber,
+	configs::block_rewards_source::BlockRewardsHandlerAdapter, AccountId, Balances, BlockNumber,
 	Permill, Runtime, RuntimeEvent, Vec, Weight, UNIT,
 };
 use frame_support::{parameter_types, traits::Get};
@@ -51,7 +51,7 @@ impl StakingConfig for Runtime {
 	type MinDelegation = MinDelegation;
 	type BlockAuthor = BlockAuthor;
 	type OnCollatorPayout = ();
-	type PayoutCollatorReward = BlockRewardsSourceAdapter<Self>;
+	type PayoutReward = BlockRewardsHandlerAdapter<Self>;
 	type OnInactiveCollator = (); // Placeholder for future implementation.
 	type OnNewRound = (); // Placeholder for future implementation.
 	type SlotProvider = StakingRoundSlotProvider;

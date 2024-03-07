@@ -178,7 +178,7 @@ pub mod pallet {
 		type OnCollatorPayout: OnCollatorPayout<Self::AccountId, BalanceOf<Self>>;
 		/// Handler to distribute a collator's reward.
 		/// To use the default implementation of minting rewards, specify the type `()`.
-		type PayoutCollatorReward: PayoutCollatorReward<Self, BalanceOf<Self>>;
+		type PayoutReward: PayoutReward<Self, BalanceOf<Self>>;
 		/// Handler to notify the runtime when a collator is inactive.
 		/// The default behavior is to mark the collator as offline.
 		/// If you need to use the default implementation, specify the type `()`.
@@ -1743,15 +1743,14 @@ pub mod pallet {
 			// reserve portion of issuance for parachain bond account
 			let bond_config = <ParachainBondInfo<T>>::get();
 			let parachain_bond_reserve = bond_config.percent * total_issuance;
-			if let Ok(imb) = T::PayoutCollatorReward::deposit_into_existing(
-				&bond_config.account,
-				parachain_bond_reserve,
-			) {
+			if let Ok(amount) =
+				T::PayoutReward::payout(&bond_config.account, parachain_bond_reserve)
+			{
 				// update round issuance iff transfer succeeds
-				left_issuance = left_issuance.saturating_sub(imb);
+				left_issuance = left_issuance.saturating_sub(amount);
 				Self::deposit_event(Event::ReservedForParachainBond {
 					account: bond_config.account,
-					value: imb,
+					value: amount,
 				});
 			}
 
@@ -1851,7 +1850,7 @@ pub mod pallet {
 				if state.delegations.is_empty() {
 					// solo collator with no delegators
 					extra_weight = extra_weight
-						.saturating_add(T::PayoutCollatorReward::payout_collator_reward(
+						.saturating_add(T::PayoutReward::payout_with_computation_cost(
 							paid_for_round,
 							collator.clone(),
 							amt_due,
@@ -1868,7 +1867,7 @@ pub mod pallet {
 					amt_due = amt_due.saturating_sub(commission);
 					let collator_reward = (collator_pct * amt_due).saturating_add(commission);
 					extra_weight = extra_weight
-						.saturating_add(T::PayoutCollatorReward::payout_collator_reward(
+						.saturating_add(T::PayoutReward::payout_with_computation_cost(
 							paid_for_round,
 							collator.clone(),
 							collator_reward,
@@ -2112,8 +2111,7 @@ pub mod pallet {
 
 		/// Mint a specified reward amount to the beneficiary account. Emits the [Rewarded] event.
 		pub fn mint(amt: BalanceOf<T>, to: T::AccountId) {
-			if let Ok(amount_transferred) = T::PayoutCollatorReward::deposit_into_existing(&to, amt)
-			{
+			if let Ok(amount_transferred) = T::PayoutReward::payout(&to, amt) {
 				Self::deposit_event(Event::Rewarded {
 					account: to.clone(),
 					rewards: amount_transferred,
@@ -2127,9 +2125,7 @@ pub mod pallet {
 			collator_id: T::AccountId,
 			amt: BalanceOf<T>,
 		) -> Weight {
-			if let Ok(amount_transferred) =
-				T::PayoutCollatorReward::deposit_into_existing(&collator_id, amt)
-			{
+			if let Ok(amount_transferred) = T::PayoutReward::payout(&collator_id, amt) {
 				Self::deposit_event(Event::Rewarded {
 					account: collator_id.clone(),
 					rewards: amount_transferred,
@@ -2148,9 +2144,7 @@ pub mod pallet {
 			candidate: T::AccountId,
 			delegator: T::AccountId,
 		) {
-			if let Ok(amount_transferred) =
-				T::PayoutCollatorReward::deposit_into_existing(&delegator, amt.clone())
-			{
+			if let Ok(amount_transferred) = T::PayoutReward::payout(&delegator, amt.clone()) {
 				Self::deposit_event(Event::Rewarded {
 					account: delegator.clone(),
 					rewards: amount_transferred,

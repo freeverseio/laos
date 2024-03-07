@@ -2,7 +2,7 @@
 #![cfg(feature = "runtime-benchmarks")]
 use super::*;
 #[allow(unused)]
-use crate::{Pallet as BlockRewardsSource, RewardsAccount};
+use crate::{Pallet as BlockRewardsHandler, RewardsAccount};
 use frame_benchmarking::v2::*;
 use sp_std::vec;
 
@@ -19,7 +19,7 @@ mod benchmarks {
 		RewardsAccount::<T>::put(rewards_account.clone());
 		#[block]
 		{
-			BlockRewardsSource::<T>::send_rewards(destination.clone(), amount.into()).unwrap();
+			BlockRewardsHandler::<T>::send_rewards(destination.clone(), amount.into()).unwrap();
 		}
 		assert_eq!(
 			T::Currency::free_balance(&destination),

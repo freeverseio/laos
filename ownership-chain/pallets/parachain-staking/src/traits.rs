@@ -50,24 +50,21 @@ impl OnNewRound for () {
 	}
 }
 
-/// Defines the behavior to payout the collator's reward.
-pub trait PayoutCollatorReward<Runtime: crate::Config, Balance> {
-	fn payout_collator_reward(
+/// Defines the behavior to payout the block producer reward.
+pub trait PayoutReward<Runtime: crate::Config, Balance> {
+	fn payout_with_computation_cost(
 		round_index: crate::RoundIndex,
 		collator_id: Runtime::AccountId,
 		amount: Balance,
 	) -> Weight;
 
-	fn deposit_into_existing(
-		delegator_id: &Runtime::AccountId,
-		amount: Balance,
-	) -> Result<Balance, DispatchError>;
+	fn payout(destination: &Runtime::AccountId, amount: Balance) -> Result<Balance, DispatchError>;
 }
 
 /// Defines the default behavior for paying out the collator's reward. The amount is directly
 /// deposited into the collator's account.
-impl<Runtime: crate::Config> PayoutCollatorReward<Runtime, BalanceOf<Runtime>> for () {
-	fn payout_collator_reward(
+impl<Runtime: crate::Config> PayoutReward<Runtime, BalanceOf<Runtime>> for () {
+	fn payout_with_computation_cost(
 		for_round: crate::RoundIndex,
 		collator_id: Runtime::AccountId,
 		amount: crate::BalanceOf<Runtime>,
@@ -75,7 +72,7 @@ impl<Runtime: crate::Config> PayoutCollatorReward<Runtime, BalanceOf<Runtime>> f
 		crate::Pallet::<Runtime>::mint_collator_reward(for_round, collator_id, amount)
 	}
 
-	fn deposit_into_existing(
+	fn payout(
 		delegator_id: &Runtime::AccountId,
 		amount: crate::BalanceOf<Runtime>,
 	) -> Result<crate::BalanceOf<Runtime>, DispatchError> {

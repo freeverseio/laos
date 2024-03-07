@@ -653,7 +653,7 @@ construct_runtime!(
 		Aura: pallet_aura = 23,
 		AuraExt: cumulus_pallet_aura_ext = 24,
 		ParachainStaking: pallet_parachain_staking = 25,
-		BlockRewardsSource: pallet_block_rewards_source = 26,
+		BlockRewardsHandler: pallet_block_rewards_source = 26,
 
 		// XCM helpers.
 		XcmpQueue: cumulus_pallet_xcmp_queue = 30,
@@ -769,8 +769,9 @@ impl fp_self_contained::SelfContainedCall for RuntimeCall {
 		len: usize,
 	) -> Option<Result<(), TransactionValidityError>> {
 		match self {
-			RuntimeCall::Ethereum(call) =>
-				call.pre_dispatch_self_contained(info, dispatch_info, len),
+			RuntimeCall::Ethereum(call) => {
+				call.pre_dispatch_self_contained(info, dispatch_info, len)
+			},
 			_ => None,
 		}
 	}
@@ -780,10 +781,11 @@ impl fp_self_contained::SelfContainedCall for RuntimeCall {
 		info: Self::SignedInfo,
 	) -> Option<sp_runtime::DispatchResultWithInfo<PostDispatchInfoOf<Self>>> {
 		match self {
-			call @ RuntimeCall::Ethereum(pallet_ethereum::Call::transact { .. }) =>
+			call @ RuntimeCall::Ethereum(pallet_ethereum::Call::transact { .. }) => {
 				Some(call.dispatch(RuntimeOrigin::from(
 					pallet_ethereum::RawOrigin::EthereumTransaction(info),
-				))),
+				)))
+			},
 			_ => None,
 		}
 	}
@@ -800,7 +802,7 @@ mod benches {
 		[pallet_laos_evolution, LaosEvolution]
 		[pallet_asset_metadata_extender, AssetMetadataExtender]
 		[pallet_parachain_staking, ParachainStaking]
-		[pallet_block_rewards_source, BlockRewardsSource]
+		[pallet_block_rewards_source, BlockRewardsHandler]
 	);
 }
 

@@ -6,8 +6,8 @@ fn send_rewards_when_source_account_does_not_exist() {
 	let amount = 100;
 	ExtBuilder::default().build().execute_with(|| {
 		let initial_destination_balance = Balances::free_balance(&destination);
-		assert!(BlockRewardsSource::rewards_account().is_none());
-		assert_eq!(BlockRewardsSource::send_rewards(destination, amount).unwrap(), 0);
+		assert!(BlockRewardsHandler::rewards_account().is_none());
+		assert_eq!(BlockRewardsHandler::send_rewards(destination, amount).unwrap(), 0);
 		assert_eq!(Balances::free_balance(&destination), initial_destination_balance);
 	});
 }
@@ -22,8 +22,8 @@ fn send_rewards_when_source_account_has_no_enough_balance() {
 		.build()
 		.execute_with(|| {
 			let initial_destination_balance = Balances::free_balance(&destination);
-			assert!(BlockRewardsSource::rewards_account().is_some());
-			assert_eq!(BlockRewardsSource::send_rewards(destination, amount).unwrap(), 0);
+			assert!(BlockRewardsHandler::rewards_account().is_some());
+			assert_eq!(BlockRewardsHandler::send_rewards(destination, amount).unwrap(), 0);
 			assert_eq!(Balances::free_balance(&destination), initial_destination_balance);
 		});
 }
@@ -39,8 +39,8 @@ fn send_rewards_works() {
 		.build()
 		.execute_with(|| {
 			let initial_destination_balance = Balances::free_balance(&destination);
-			assert!(BlockRewardsSource::rewards_account().is_some());
-			assert_eq!(BlockRewardsSource::send_rewards(destination, amount).unwrap(), amount);
+			assert!(BlockRewardsHandler::rewards_account().is_some());
+			assert_eq!(BlockRewardsHandler::send_rewards(destination, amount).unwrap(), amount);
 			assert_eq!(Balances::free_balance(&rewards_account), 1000 - amount);
 			assert_eq!(Balances::free_balance(&destination), initial_destination_balance + amount);
 		});
