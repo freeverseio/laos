@@ -38,11 +38,15 @@ impl<Runtime: pallet_parachain_staking::Config + pallet_block_rewards_handler::C
 			amount,
 		) {
 			Ok(_) => Ok(amount),
-			// Err(pallet_block_rewards_handler::Error::<Runtime>::RewardsAccountHasNoFunds) => {
-			// 	Ok(Zero::zero())
-			// },
-			Err(DispatchError::) => Ok(Zero::zero()),
-			Err(err) => Err(err),
+			Err(err) => match err {
+				DispatchError::Module(err)
+					if err.message.as_deref() == Some("RewardsAccountHasNoFunds")
+						|| err.message.as_deref() == Some("RewardsAccountNotSet") =>
+				{
+					Ok(Zero::zero())
+				},
+				_ => Err(err),
+			},
 		}
 	}
 }
