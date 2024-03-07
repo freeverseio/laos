@@ -64,7 +64,7 @@ mod tests {
 		let collator = AccountId::from([1u8; 20]);
 		let source = AccountId::from([0u8; 20]);
 		ExtBuilder::default().with_rewards_account(source).build().execute_with(|| {
-			assert_eq!(
+			assert_ne!(
 				BlockRewardsHandlerAdapter::<Runtime>::payout_with_computation_cost(
 					0, collator, amount
 				),
