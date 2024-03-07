@@ -1850,7 +1850,7 @@ pub mod pallet {
 				if state.delegations.is_empty() {
 					// solo collator with no delegators
 					extra_weight = extra_weight
-						.saturating_add(T::PayoutReward::payout_with_computation_cost(
+						.saturating_add(T::PayoutReward::payout_collator_rewards(
 							paid_for_round,
 							collator.clone(),
 							amt_due,
@@ -1867,7 +1867,7 @@ pub mod pallet {
 					amt_due = amt_due.saturating_sub(commission);
 					let collator_reward = (collator_pct * amt_due).saturating_add(commission);
 					extra_weight = extra_weight
-						.saturating_add(T::PayoutReward::payout_with_computation_cost(
+						.saturating_add(T::PayoutReward::payout_collator_rewards(
 							paid_for_round,
 							collator.clone(),
 							collator_reward,

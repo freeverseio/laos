@@ -52,19 +52,24 @@ impl OnNewRound for () {
 
 /// Defines the behavior to payout the block producer reward.
 pub trait PayoutReward<Runtime: crate::Config, Balance> {
-	fn payout_with_computation_cost(
+	/// Send amount to the balance of the specified account (collator).
+	/// and corresponding weight consumed is returned.
+	fn payout_collator_rewards(
 		round_index: crate::RoundIndex,
-		destination: Runtime::AccountId,
+		collator: Runtime::AccountId,
 		amount: Balance,
 	) -> Weight;
 
+	/// Send amount to the free balance of the specified account (destination).
+	/// If the account (destination) does not exist, the operation is not carried out,
+	/// and an error is returned instead.
 	fn payout(destination: &Runtime::AccountId, amount: Balance) -> Result<Balance, DispatchError>;
 }
 
 /// Defines the default behavior for paying out the collator's reward. The amount is directly
 /// deposited into the collator's account.
 impl<Runtime: crate::Config> PayoutReward<Runtime, BalanceOf<Runtime>> for () {
-	fn payout_with_computation_cost(
+	fn payout_collator_rewards(
 		for_round: crate::RoundIndex,
 		collator_id: Runtime::AccountId,
 		amount: crate::BalanceOf<Runtime>,

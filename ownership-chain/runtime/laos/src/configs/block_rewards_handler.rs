@@ -14,15 +14,13 @@ pub struct BlockRewardsHandlerAdapter<Runtime>(PhantomData<Runtime>);
 impl<Runtime: pallet_parachain_staking::Config + pallet_block_rewards_handler::Config>
 	PayoutReward<Runtime, BalanceOf<Runtime>> for BlockRewardsHandlerAdapter<Runtime>
 {
-	fn payout_with_computation_cost(
+	fn payout_collator_rewards(
 		_round_index: pallet_parachain_staking::RoundIndex,
-		destination: Runtime::AccountId,
+		collator: Runtime::AccountId,
 		amount: pallet_block_rewards_handler::BalanceOf<Runtime>,
 	) -> Weight {
-		match pallet_block_rewards_handler::Pallet::<Runtime>::send_rewards(
-			destination,
-			amount.into(),
-		) {
+		match pallet_block_rewards_handler::Pallet::<Runtime>::send_rewards(collator, amount.into())
+		{
 			Ok(amount) if amount.is_zero() => Weight::zero(),
 			// TODO: In case of a failure in sending rewards, we should return a weight,
 			// since at least one read operation is performed. Additionally, this situation
@@ -45,53 +43,43 @@ mod tests {
 	use crate::{tests::ExtBuilder, AccountId};
 
 	#[test]
-	fn payout_with_computation_cost_when_source_account_is_none() {
+	fn payout_collator_rewards_when_source_account_is_none() {
 		let amount = 2;
-		let destination = AccountId::from([1u8; 20]);
+		let collator = AccountId::from([1u8; 20]);
 		ExtBuilder::default().build().execute_with(|| {
 			assert_eq!(
-				BlockRewardsHandlerAdapter::<Runtime>::payout_with_computation_cost(
-					0,
-					destination,
-					amount
-				),
+				BlockRewardsHandlerAdapter::<Runtime>::payout_collator_rewards(0, collator, amount),
 				Weight::zero()
 			);
 		});
 	}
 
 	#[test]
-	fn payout_with_computation_cost_when_source_account_has_no_enough_funds() {
+	fn payout_collator_rewards_when_source_account_has_no_enough_funds() {
 		let amount = 2;
-		let destination = AccountId::from([1u8; 20]);
+		let collator = AccountId::from([1u8; 20]);
 		let source = AccountId::from([0u8; 20]);
 		ExtBuilder::default().with_rewards_account(source).build().execute_with(|| {
 			assert_ne!(
-				BlockRewardsHandlerAdapter::<Runtime>::payout_with_computation_cost(
-					0,
-					destination,
-					amount
-				),
+				BlockRewardsHandlerAdapter::<Runtime>::payout_collator_rewards(0, collator, amount),
 				Weight::zero()
 			);
 		});
 	}
 
 	#[test]
-	fn payout_with_computation_cost_when_send_rewards_works() {
+	fn payout_collator_rewards_when_send_rewards_works() {
 		let source = AccountId::from([0u8; 20]);
 		let amount = 2;
-		let destination = AccountId::from([1u8; 20]);
+		let collator = AccountId::from([1u8; 20]);
 		ExtBuilder::default()
 			.with_balances(vec![(source, 100)])
 			.with_rewards_account(source)
 			.build()
 			.execute_with(|| {
 				assert_ne!(
-					BlockRewardsHandlerAdapter::<Runtime>::payout_with_computation_cost(
-						0,
-						destination,
-						amount
+					BlockRewardsHandlerAdapter::<Runtime>::payout_collator_rewards(
+						0, collator, amount
 					),
 					Weight::zero()
 				);
