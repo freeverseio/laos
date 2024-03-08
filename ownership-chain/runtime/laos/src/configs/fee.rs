@@ -117,16 +117,7 @@ mod tests {
 		header.digest_mut().pop(); // pop the seal off.
 		System::reset_events();
 		System::initialize(&number, &Default::default(), header.digest());
-	}
-
-	#[test]
-	fn sets_author_lazily() {
-		new_test_ext().execute_with(|| {
-			let author = 42;
-
-			initialize_block_and_set_author(1, author);
-			assert_eq!(Authorship::author(), Some(author));
-		});
+		assert_eq!(Authorship::author(), Some(author));
 	}
 
 	#[test]
