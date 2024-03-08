@@ -17,19 +17,18 @@ use crate::{AccountId, Balances, Runtime, UNIT};
 use fp_rpc::runtime_decl_for_ethereum_runtime_rpc_api::EthereumRuntimeRPCApiV5;
 use frame_support::{
 	assert_ok,
-	dispatch::GetDispatchInfo,
 	traits::{
 		tokens::{fungible::Balanced, Precision},
-		Currency, UnfilteredDispatchable,
+		Currency,
 	},
 };
-use pallet_transaction_payment::ChargeTransactionPayment;
 use sp_core::U256;
 
 #[derive(Default)]
 pub(crate) struct ExtBuilder {
 	rewards_account: Option<AccountId>,
 	balances: Vec<(AccountId, u128)>,
+	candidates: Vec<(AccountId, Balance)>,
 }
 
 impl ExtBuilder {
@@ -43,6 +42,11 @@ impl ExtBuilder {
 		self
 	}
 
+	pub fn with_candidates(mut self, candidates: Vec<(AccountId, Balance)>) -> Self {
+		self.candidates = candidates;
+		self
+	}
+
 	// Build genesis storage according to the mock runtime.
 	pub(crate) fn build(self) -> sp_io::TestExternalities {
 		let mut t = frame_system::GenesisConfig::<crate::Runtime>::default()
@@ -50,17 +54,28 @@ impl ExtBuilder {
 			.unwrap()
 			.into();
 
-		pallet_balances::GenesisConfig::<crate::Runtime> {
-			balances: vec![
-				([0u8; 20].into(), 1_000_000_000_000_000_000_000u128),
-				([1u8; 20].into(), 1_000_000_000_000_000_000_000u128),
-			],
+		// get deduplicated list of all accounts and balances
+		let all_accounts = self
+			.balances
+			.iter()
+			.map(|a| a.clone())
+			.chain(self.candidates.iter().map(|(a, b)| (a.clone(), b * 2)))
+			.collect::<Vec<_>>();
+
+		pallet_balances::GenesisConfig::<crate::Runtime> { balances: all_accounts }
+			.assimilate_storage(&mut t)
+			.unwrap();
+
+		pallet_sudo::GenesisConfig::<crate::Runtime> {
+			key: Some(AccountId::from_str(BOB).unwrap()),
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();
 
-		pallet_sudo::GenesisConfig::<crate::Runtime> {
-			key: Some(AccountId::from_str(BOB).unwrap()),
+		pallet_parachain_staking::GenesisConfig::<crate::Runtime> {
+			candidates: self.candidates,
+			blocks_per_round: 10,
+			..Default::default()
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();
@@ -104,7 +119,7 @@ fn test_block_and_gas_limit_constants() {
 
 #[test]
 fn send_1_minimum_unit_to_wallet_with_0_wei_balance_should_increase_balance_by_1_wei() {
-	new_test_ext().execute_with(|| {
+	ExtBuilder::default().build().execute_with(|| {
 		let alice = AccountId::from_str(ALICE).unwrap();
 		assert_eq!(Runtime::account_basic(alice.into()).balance, 0.into());
 
@@ -128,7 +143,7 @@ fn check_pallet_vesting_configuration() {
 
 #[test]
 fn account_vests_correctly_over_time() {
-	new_test_ext().execute_with(|| {
+	ExtBuilder::default().build().execute_with(|| {
 		let alice = AccountId::from_str(ALICE).unwrap();
 		let bob = AccountId::from_str(BOB).unwrap();
 		let cliff_duration = 24_u32;

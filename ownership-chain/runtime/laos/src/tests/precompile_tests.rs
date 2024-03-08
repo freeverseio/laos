@@ -1,4 +1,4 @@
-use crate::{precompiles::FrontierPrecompiles, tests::new_test_ext};
+use crate::precompiles::FrontierPrecompiles;
 
 use crate::Runtime;
 use core::str::FromStr;
@@ -7,6 +7,8 @@ use frame_support::assert_noop;
 use pallet_evm::{ExitRevert, IsPrecompileResult, PrecompileFailure, PrecompileSet};
 use precompile_utils::testing::MockHandle;
 use sp_core::H160;
+
+use super::ExtBuilder;
 
 fn hash(a: u64) -> H160 {
 	H160::from_low_u64_be(a)
@@ -123,7 +125,7 @@ fn execute_delegate_call_on_custom_precompile_should_fail() {
 
 #[test]
 fn call_unknown_address_does_not_revert() {
-	new_test_ext().execute_with(|| {
+	ExtBuilder::default().build().execute_with(|| {
 		let dummy_contract = H160::from_str("0xe4BdA39B4E2730a578D5E2461A0Cc74FCAa64d62").unwrap();
 		let p = FrontierPrecompiles::<Runtime>::new();
 
@@ -166,7 +168,7 @@ fn call_unknown_address_does_not_revert() {
 
 #[test]
 fn call_unknown_address_is_noop() {
-	new_test_ext().execute_with(|| {
+	ExtBuilder::default().build().execute_with(|| {
 		let dummy_contract = H160::from_str("0x80fc115869ba344BBd6Baf14a8b089b48e870AaD").unwrap();
 
 		let mut handle = MockHandle::new(
