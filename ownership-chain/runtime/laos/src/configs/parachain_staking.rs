@@ -1,4 +1,7 @@
-use crate::{AccountId, Balances, BlockNumber, Permill, Runtime, RuntimeEvent, Vec, Weight, UNIT};
+use crate::{
+	configs::block_rewards_handler::BlockRewardsHandlerAdapter, AccountId, Balances, BlockNumber,
+	Permill, Runtime, RuntimeEvent, Vec, Weight, UNIT,
+};
 use frame_support::{parameter_types, traits::Get};
 use frame_system::EnsureRoot;
 use pallet_parachain_staking::{self as staking, Config as StakingConfig};
@@ -48,7 +51,7 @@ impl StakingConfig for Runtime {
 	type MinDelegation = MinDelegation;
 	type BlockAuthor = BlockAuthor;
 	type OnCollatorPayout = ();
-	type PayoutCollatorReward = (); // Placeholder for future implementation.
+	type PayoutReward = BlockRewardsHandlerAdapter<Self>;
 	type OnInactiveCollator = (); // Placeholder for future implementation.
 	type OnNewRound = (); // Placeholder for future implementation.
 	type SlotProvider = StakingRoundSlotProvider;
@@ -172,7 +175,14 @@ mod tests {
 			.map(|i| ([(i + 4) as u8; 20].into(), MinCandidateStk::get() + i as u128))
 			.collect::<Vec<_>>();
 
+		let min_delegation = MinDelegation::get();
+
 		ExtBuilder::default()
+			.with_balances(vec![
+				(ALICE.into(), min_delegation * 4),
+				(BOB.into(), min_delegation * 4),
+				(CHARLIE.into(), min_delegation * 4),
+			])
 			.with_candidates(candidates.clone())
 			.build()
 			.execute_with(|| {
@@ -215,7 +225,7 @@ mod tests {
 					ParachainStaking::delegate_with_auto_compound(
 						RuntimeOrigin::signed(acc.clone().into()),
 						candidates[i].0.clone().into(),
-						MinDelegation::get() * 3,
+						min_delegation * 3,
 						Percent::from_percent(100),
 						0,
 						0,
