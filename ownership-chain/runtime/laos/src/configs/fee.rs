@@ -143,6 +143,7 @@ mod tests {
 
 			// initial author balance
 			let initial_author_balance = pallet_balances::Pallet::<Test>::free_balance(author);
+			assert_eq!(initial_author_balance, 0);
 
 			// Mock the creation of a negative imbalance of 100 units
 			let imbalance = pallet_balances::NegativeImbalance::new(fee_amount);
@@ -164,6 +165,32 @@ mod tests {
 	}
 
 	#[test]
+	fn issuance_should_not_change_after_fee_distribution(){
+		new_test_ext().execute_with(|| {
+			let fee_amount = 100;
+			let author = 62;
+
+			initialize_block_and_set_author(1, author);
+
+			let initial_total_issuance = pallet_balances::Pallet::<Test>::total_issuance();
+			assert_eq!(initial_total_issuance, 0);
+
+			// Mock the creation of a negative imbalance of 100 units
+			let imbalance = pallet_balances::NegativeImbalance::new(fee_amount);
+
+			// Distribute the fees
+			ToAuthor::<Test>::on_unbalanceds(vec![imbalance].into_iter());
+
+			let total_issuance = pallet_balances::Pallet::<Test>::total_issuance();
+			assert_eq!(
+				total_issuance, initial_total_issuance,
+				"Total issuance should not change"
+			);
+		});
+	
+	}
+
+	#[test]
 	fn with_no_author_fee_should_be_burned() {
 		new_test_ext().execute_with(|| {
 			let fee_amount = 100;
@@ -174,15 +201,16 @@ mod tests {
 				"Author should not be set"
 			);
 
-			// Deposit some funds to burn
+			// Deposit some funds to burn otherwise the issuance is 0
 			assert!(pallet_balances::Pallet::<Test>::deposit(
-				&66,
+				&66, // random account
 				fee_amount * 2,
 				Precision::Exact
 			)
 			.is_ok());
 
 			let initial_total_issuance = pallet_balances::Pallet::<Test>::total_issuance();
+			assert_eq!(initial_total_issuance, fee_amount * 2);
 
 			// Mock the creation of a negative imbalance of 100 units
 			let imbalance = pallet_balances::NegativeImbalance::new(fee_amount);
