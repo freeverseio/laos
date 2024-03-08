@@ -18,11 +18,7 @@ where
 mod tests {
 	use super::*;
 	use crate::{generic::DigestItem, H256};
-	use frame_support::{
-		derive_impl, parameter_types,
-		traits::{fungible::Balanced, tokens::Precision},
-		ConsensusEngineId,
-	};
+	use frame_support::{derive_impl, parameter_types, ConsensusEngineId};
 	use sp_runtime::{
 		codec::{Decode, Encode},
 		testing::Header,
@@ -141,24 +137,18 @@ mod tests {
 
 			initialize_block_and_set_author(1, author);
 
-			// initial author balance
+			// Check initial conditions
 			let initial_author_balance = pallet_balances::Pallet::<Test>::free_balance(author);
-			assert_eq!(initial_author_balance, 0);
+			assert_eq!(initial_author_balance, 0, "Initial author balance should be 0");
 
-			// Mock the creation of a negative imbalance of 100 units
-			let imbalance = pallet_balances::NegativeImbalance::new(fee_amount);
-
-			// Distribute the fees
+			// Mock the creation of a negative imbalance and distribute fees
+			let imbalance = pallet_balances::Pallet::<Test>::issue(fee_amount);
 			ToAuthor::<Test>::on_unbalanceds(vec![imbalance].into_iter());
 
-			// Assert the expected state of balances after distribution
-			let author_balance = pallet_balances::Pallet::<Test>::free_balance(author);
-
-			// Assuming all fees are distributed to the author
-			let expected_author_balance = initial_author_balance + fee_amount;
-
+			// Assert the final state
+			let final_author_balance = pallet_balances::Pallet::<Test>::free_balance(author);
 			assert_eq!(
-				author_balance, expected_author_balance,
+				final_author_balance, fee_amount,
 				"Author did not receive the correct amount"
 			);
 		});
@@ -172,17 +162,20 @@ mod tests {
 
 			initialize_block_and_set_author(1, author);
 
-			let initial_total_issuance = pallet_balances::Pallet::<Test>::total_issuance();
-			assert_eq!(initial_total_issuance, 0);
+			// Mock the creation of a negative imbalance
+			let imbalance = pallet_balances::Pallet::<Test>::issue(fee_amount);
 
-			// Mock the creation of a negative imbalance of 100 units
-			let imbalance = pallet_balances::NegativeImbalance::new(fee_amount);
+			let initial_total_issuance = pallet_balances::Pallet::<Test>::total_issuance();
+			assert_eq!(initial_total_issuance, fee_amount, "Initial total issuance incorrect");
 
 			// Distribute the fees
 			ToAuthor::<Test>::on_unbalanceds(vec![imbalance].into_iter());
 
-			let total_issuance = pallet_balances::Pallet::<Test>::total_issuance();
-			assert_eq!(total_issuance, initial_total_issuance, "Total issuance should not change");
+			let final_total_issuance = pallet_balances::Pallet::<Test>::total_issuance();
+			assert_eq!(
+				final_total_issuance, initial_total_issuance,
+				"Total issuance should not change"
+			);
 		});
 	}
 
@@ -191,35 +184,31 @@ mod tests {
 		new_test_ext().execute_with(|| {
 			let fee_amount = 100;
 
+			// Ensure there's no author set
 			assert_eq!(
 				pallet_authorship::Pallet::<Test>::author(),
 				None,
 				"Author should not be set"
 			);
 
-			// Deposit some funds to burn otherwise the issuance is 0
-			assert!(pallet_balances::Pallet::<Test>::deposit(
-				&66, // random account
-				fee_amount * 2,
-				Precision::Exact
-			)
-			.is_ok());
+			// Mock the creation of a negative imbalance
+			let imbalance = pallet_balances::Pallet::<Test>::issue(fee_amount);
 
-			let initial_total_issuance = pallet_balances::Pallet::<Test>::total_issuance();
-			assert_eq!(initial_total_issuance, fee_amount * 2);
-
-			// Mock the creation of a negative imbalance of 100 units
-			let imbalance = pallet_balances::NegativeImbalance::new(fee_amount);
+			// Initially, the total issuance should equal the fee amount
+			assert_eq!(
+				pallet_balances::Pallet::<Test>::total_issuance(),
+				fee_amount,
+				"Initial total issuance incorrect"
+			);
 
 			// Distribute the fees
 			ToAuthor::<Test>::on_unbalanceds(vec![imbalance].into_iter());
 
-			let total_issuance = pallet_balances::Pallet::<Test>::total_issuance();
-			let expected_issuance = initial_total_issuance - fee_amount;
-
+			// Assert the fee was burned
 			assert_eq!(
-				total_issuance, expected_issuance,
-				"Total issuance did not decrease by the correct amount"
+				pallet_balances::Pallet::<Test>::total_issuance(),
+				0,
+				"Fee was not burned as expected"
 			);
 		});
 	}
