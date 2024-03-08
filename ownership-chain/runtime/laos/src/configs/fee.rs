@@ -174,6 +174,7 @@ mod tests {
 				"Author should not be set"
 			);
 
+			// Deposit some funds to burn
 			assert!(pallet_balances::Pallet::<Test>::deposit(
 				&66,
 				fee_amount * 2,
