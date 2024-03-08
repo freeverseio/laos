@@ -6,13 +6,11 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
-#[cfg(test)]
-mod tests;
-
 mod weights;
 pub mod xcm_config;
 
 pub mod configs;
+mod types;
 
 use core::marker::PhantomData;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
@@ -1078,3 +1076,6 @@ impl_runtime_apis! {
 		}
 	}
 }
+
+#[cfg(test)]
+mod tests;

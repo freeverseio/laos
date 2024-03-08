@@ -1,7 +1,6 @@
-use super::types::ToAuthor;
 use crate::{
-	precompiles::FrontierPrecompiles, AccountId, Aura, Balances, BaseFee, EVMChainId, Runtime,
-	RuntimeEvent, Timestamp, Weight, U256, WEIGHT_REF_TIME_PER_SECOND,
+	precompiles::FrontierPrecompiles, types::ToAuthor, AccountId, Aura, Balances, BaseFee,
+	EVMChainId, Runtime, RuntimeEvent, Timestamp, Weight, U256, WEIGHT_REF_TIME_PER_SECOND,
 };
 use frame_support::parameter_types;
 use ownership_parachain_primitives::{MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO};

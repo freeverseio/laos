@@ -7,7 +7,6 @@ mod multisig;
 pub mod parachain_staking;
 mod proxy;
 mod transaction_payment;
-pub mod types;
 mod utility;
 
 // Define storage fees as constants for clarity and reuse
