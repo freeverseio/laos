@@ -63,7 +63,7 @@ mod tests {
 		let collator = AccountId::from([1u8; 20]);
 		let source = AccountId::from([0u8; 20]);
 		ExtBuilder::default().with_rewards_account(source).build().execute_with(|| {
-			assert_ne!(
+			assert_eq!(
 				BlockRewardsHandlerAdapter::<Runtime>::payout_collator_rewards(0, collator, amount),
 				Weight::zero()
 			);
@@ -93,12 +93,15 @@ mod tests {
 	fn payout_when_source_account_is_none() {
 		let amount = 2;
 		let destination = AccountId::from([1u8; 20]);
-		ExtBuilder::default().build().execute_with(|| {
-			assert_eq!(
-				BlockRewardsHandlerAdapter::<Runtime>::payout(&destination, amount).unwrap(),
-				0
-			);
-		});
+		ExtBuilder::default()
+			.with_balances(vec![(destination, 1)])
+			.build()
+			.execute_with(|| {
+				assert_eq!(
+					BlockRewardsHandlerAdapter::<Runtime>::payout(&destination, amount).unwrap(),
+					0
+				);
+			});
 	}
 
 	#[test]
@@ -107,7 +110,7 @@ mod tests {
 		let amount = 2;
 		let destination = AccountId::from([1u8; 20]);
 		ExtBuilder::default()
-			.with_balances(vec![(source, 100)])
+			.with_balances(vec![(source, 100), (destination, 1)])
 			.with_rewards_account(source)
 			.build()
 			.execute_with(|| {

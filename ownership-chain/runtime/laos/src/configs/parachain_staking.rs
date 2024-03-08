@@ -149,3 +149,176 @@ impl frame_support::traits::EstimateNextSessionRotation<BlockNumber> for Paracha
 		)
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	use super::{MinCandidateStk, MinDelegation, MinSelectedCandidates};
+	use crate::{
+		configs::parachain_staking::{MinBlocksPerRound, ParachainStakingAdapter},
+		tests::ExtBuilder,
+		Balances, ParachainStaking, RuntimeOrigin, System,
+	};
+	use frame_support::traits::{EstimateNextSessionRotation, Hooks};
+	use pallet_session::{SessionManager, ShouldEndSession};
+	use sp_runtime::{Percent, Permill};
+	use test_utils::roll_one_block;
+
+	const ALICE: [u8; 20] = [1; 20];
+	const BOB: [u8; 20] = [2; 20];
+	const CHARLIE: [u8; 20] = [3; 20];
+
+	#[test]
+	fn new_session_works() {
+		// Create a set of candidates with increasing stakes.
+		// top `MinSelectedCandidates` candidates are selected.
+		let candidates = (0..MinSelectedCandidates::get() * 2)
+			.map(|i| ([(i + 4) as u8; 20].into(), MinCandidateStk::get() + i as u128))
+			.collect::<Vec<_>>();
+
+		let min_delegation = MinDelegation::get();
+
+		ExtBuilder::default()
+			.with_balances(vec![
+				(ALICE.into(), min_delegation * 4),
+				(BOB.into(), min_delegation * 4),
+				(CHARLIE.into(), min_delegation * 4),
+			])
+			.with_candidates(candidates.clone())
+			.build()
+			.execute_with(|| {
+				// by default, last `MinSelectedCandidates` candidates are selected, because they
+				// have the highest stake
+				let session = ParachainStakingAdapter::new_session(0).unwrap();
+				assert_eq!(
+					session,
+					candidates
+						.iter()
+						.skip(candidates.len() - MinSelectedCandidates::get() as usize)
+						.map(|(a, _)| *a)
+						.collect::<Vec<_>>()
+				);
+
+				// Roll to the first block of the next session.
+				for _ in 0..MinBlocksPerRound::get() {
+					roll_one_block!(true);
+				}
+
+				// New session has the same candidates as the previous session.
+				let new_session = ParachainStakingAdapter::new_session(1).unwrap();
+
+				assert_eq!(
+					new_session,
+					// take last `MinSelectedCandidates` candidates
+					candidates
+						.iter()
+						.skip(candidates.len() - MinSelectedCandidates::get() as usize)
+						.map(|(a, _)| *a)
+						.collect::<Vec<_>>()
+				);
+
+				// do some delegations for Alice, Bob and Charlie to 1, 2, 3 candidates
+				// they have the lowest stake, they should be top candidates with this delegation
+				for (i, acc) in vec![ALICE, BOB, CHARLIE].iter().enumerate() {
+					// check that the candidate is not in the last session's candidates
+					assert!(!new_session.contains(&candidates[i].0.clone()));
+
+					ParachainStaking::delegate_with_auto_compound(
+						RuntimeOrigin::signed(acc.clone().into()),
+						candidates[i].0.clone().into(),
+						min_delegation * 3,
+						Percent::from_percent(100),
+						0,
+						0,
+						0,
+					)
+					.unwrap();
+				}
+
+				// Roll to the first block of the next session.
+				for _ in 0..MinBlocksPerRound::get() {
+					roll_one_block!(true);
+				}
+
+				// Check that the new session has the top `MinSelectedCandidates` candidates.
+				let new_session = ParachainStakingAdapter::new_session(2).unwrap();
+				for (i, _) in [ALICE, BOB, CHARLIE].iter().enumerate() {
+					assert!(new_session.contains(&candidates[i].0.clone()));
+				}
+			});
+	}
+
+	#[test]
+	fn new_session_empty_candidates() {
+		ExtBuilder::default().build().execute_with(|| {
+			// Check that the new session has no candidates, this should never be the case,
+			// i.e we should always provide candidates in genesis
+			let new_session = ParachainStakingAdapter::new_session(1);
+			assert!(new_session.is_none());
+		});
+	}
+
+	#[test]
+	fn test_should_end_session() {
+		ExtBuilder::default().build().execute_with(|| {
+			// Roll to the last block of the current session.
+			for _ in 0..MinBlocksPerRound::get() - 1 {
+				roll_one_block!(true);
+			}
+
+			// Check that the session should not end
+			assert!(!ParachainStakingAdapter::should_end_session(System::block_number()));
+
+			// Roll to the first block of the next session.
+			// don't run `on_initialize` for staking, otherwise it will update the round.
+			roll_one_block!(false);
+
+			// Check that the session should end
+			assert!(ParachainStakingAdapter::should_end_session(System::block_number()));
+		});
+	}
+
+	#[test]
+	fn average_session_length_works() {
+		ExtBuilder::default().build().execute_with(|| {
+			// Check that the average session length is equal to the configured value.
+			assert_eq!(ParachainStakingAdapter::average_session_length(), MinBlocksPerRound::get());
+		});
+	}
+
+	#[test]
+	fn estimate_current_session_progress() {
+		ExtBuilder::default().build().execute_with(|| {
+			// Roll to the half of the current session.
+			for _ in 0..ParachainStakingAdapter::average_session_length() / 2 {
+				roll_one_block!(true);
+			}
+
+			// Estimate the current session progress.
+			let (progress, _) =
+				ParachainStakingAdapter::estimate_current_session_progress(System::block_number());
+			assert_eq!(progress, Some(Permill::from_percent(50)));
+
+			// Roll to the last block of the current session.
+			for _ in 0..ParachainStakingAdapter::average_session_length() / 2 {
+				roll_one_block!(true);
+			}
+
+			// Estimate the current session progress.
+			let (progress, _) =
+				ParachainStakingAdapter::estimate_current_session_progress(System::block_number());
+			// 0% progress because new session has started
+			assert_eq!(progress, Some(Permill::from_percent(0)));
+		});
+	}
+
+	#[test]
+	fn estimate_next_session_rotation_works() {
+		ExtBuilder::default().build().execute_with(|| {
+			roll_one_block!(true);
+
+			// Estimate the next session rotation.
+			let (next_session, _) = ParachainStakingAdapter::estimate_next_session_rotation(1);
+			assert_eq!(next_session, Some(MinBlocksPerRound::get() as u32));
+		});
+	}
+}
