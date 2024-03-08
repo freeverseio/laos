@@ -1,6 +1,10 @@
 //! Contains commonly used test functions and types
 
 /// Rolls to a block number by simulating the block production
+///
+/// ```rs
+/// roll_one_block!(true);
+/// ```
 #[macro_export]
 macro_rules! roll_one_block {
 	($staking_enabled: expr) => {
