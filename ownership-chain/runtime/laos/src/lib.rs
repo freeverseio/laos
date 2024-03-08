@@ -6,21 +6,17 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
-#[cfg(test)]
-mod tests;
-
 mod weights;
 pub mod xcm_config;
 
 pub mod configs;
-mod fee;
+mod types;
 
 use core::marker::PhantomData;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 pub use ownership_parachain_primitives::{
 	AccountId, AuraId, Balance, BlockNumber, Hash, Index, Nonce, Signature,
 };
-use ownership_parachain_primitives::{MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO};
 use parity_scale_codec::{Decode, Encode};
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
@@ -39,6 +35,7 @@ use sp_runtime::{
 	ApplyExtrinsicResult, ConsensusEngineId,
 };
 
+use ownership_parachain_primitives::MAXIMUM_BLOCK_WEIGHT;
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
@@ -46,12 +43,9 @@ use sp_version::RuntimeVersion;
 
 use frame_support::{
 	construct_runtime, parameter_types,
-	traits::{
-		ConstBool, ConstU32, ConstU64, ConstU8, Currency, Everything, FindAuthor, Hooks, Imbalance,
-		OnUnbalanced, WithdrawReasons,
-	},
+	traits::{ConstBool, ConstU32, ConstU64, Everything, FindAuthor, Hooks, WithdrawReasons},
 	weights::{
-		constants::WEIGHT_REF_TIME_PER_SECOND, ConstantMultiplier, Weight, WeightToFeeCoefficient,
+		constants::WEIGHT_REF_TIME_PER_SECOND, Weight, WeightToFeeCoefficient,
 		WeightToFeeCoefficients, WeightToFeePolynomial,
 	},
 };
@@ -67,7 +61,7 @@ pub use pallet_xcm::Call as XcmCall;
 pub use sp_runtime::BuildStorage;
 
 // Polkadot imports
-use polkadot_runtime_common::{BlockHashCount, SlowAdjustingFeeUpdate};
+use polkadot_runtime_common::BlockHashCount;
 
 use weights::{ExtrinsicBaseWeight, RocksDbWeight};
 
@@ -77,9 +71,7 @@ use staging_xcm_executor::XcmExecutor;
 // Frontier
 use fp_rpc::TransactionStatus;
 use pallet_ethereum::{Call::transact, PostLogContent, Transaction as EthereumTransaction};
-use pallet_evm::{
-	Account as EVMAccount, EVMCurrencyAdapter, FeeCalculator, OnChargeEVMTransaction, Runner,
-};
+use pallet_evm::{Account as EVMAccount, FeeCalculator, Runner};
 
 mod precompiles;
 use precompiles::FrontierPrecompiles;
@@ -338,21 +330,6 @@ impl pallet_balances::Config for Runtime {
 }
 
 parameter_types! {
-	/// Relay Chain `TransactionByteFee` / 10
-	pub const TransactionByteFee: Balance = 10 * MICROUNIT;
-}
-
-impl pallet_transaction_payment::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type OnChargeTransaction =
-		pallet_transaction_payment::CurrencyAdapter<Balances, fee::DealWithFees<Runtime>>;
-	type WeightToFee = WeightToFee;
-	type LengthToFee = ConstantMultiplier<Balance, TransactionByteFee>;
-	type FeeMultiplierUpdate = SlowAdjustingFeeUpdate<Self>;
-	type OperationalFeeMultiplier = ConstU8<5>;
-}
-
-parameter_types! {
 	pub const ReservedXcmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT.saturating_div(4);
 	pub const ReservedDmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT.saturating_div(4);
 }
@@ -481,99 +458,6 @@ impl<F: FindAuthor<u32>> FindAuthor<H160> for FindAuthorTruncated<F> {
 		}
 		None
 	}
-}
-
-pub struct EVMTransactionChargeHandler<OU>(PhantomData<OU>);
-
-type CurrencyAccountIdOf<T> = <T as frame_system::Config>::AccountId;
-
-type BalanceOf<T> =
-	<<T as pallet_evm::Config>::Currency as Currency<CurrencyAccountIdOf<T>>>::Balance;
-
-type PositiveImbalanceOf<T> =
-	<<T as pallet_evm::Config>::Currency as Currency<CurrencyAccountIdOf<T>>>::PositiveImbalance;
-
-type NegativeImbalanceOf<T> =
-	<<T as pallet_evm::Config>::Currency as Currency<CurrencyAccountIdOf<T>>>::NegativeImbalance;
-
-impl<R, OU> OnChargeEVMTransaction<R> for EVMTransactionChargeHandler<OU>
-where
-	R: pallet_evm::Config + pallet_balances::Config,
-	PositiveImbalanceOf<R>: Imbalance<BalanceOf<R>, Opposite = NegativeImbalanceOf<R>>,
-	NegativeImbalanceOf<R>: Imbalance<BalanceOf<R>, Opposite = PositiveImbalanceOf<R>>,
-	OU: OnUnbalanced<NegativeImbalanceOf<R>>,
-	U256: UniqueSaturatedInto<BalanceOf<R>>,
-{
-	type LiquidityInfo = Option<NegativeImbalanceOf<R>>;
-
-	fn withdraw_fee(
-		who: &H160,
-		fee: sp_core::U256,
-	) -> Result<Self::LiquidityInfo, pallet_evm::Error<R>> {
-		EVMCurrencyAdapter::<<R as pallet_evm::Config>::Currency, ()>::withdraw_fee(who, fee)
-	}
-
-	fn correct_and_deposit_fee(
-		who: &H160,
-		corrected_fee: sp_core::U256,
-		base_fee: sp_core::U256,
-		already_withdrawn: Self::LiquidityInfo,
-	) -> Self::LiquidityInfo {
-		<EVMCurrencyAdapter::<<R as pallet_evm::Config>::Currency, OU>
-            as OnChargeEVMTransaction<R>>::correct_and_deposit_fee(who, corrected_fee, base_fee, already_withdrawn)
-	}
-
-	fn pay_priority_fee(tip: Self::LiquidityInfo) {
-		if let Some(tip) = tip {
-			OU::on_unbalanced(tip);
-		}
-	}
-}
-
-parameter_types! {
-	pub BlockGasLimit: U256 = U256::from(NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT.ref_time() / WEIGHT_PER_GAS);
-	pub PrecompilesValue: FrontierPrecompiles<Runtime> = FrontierPrecompiles::<_>::new();
-	pub WeightPerGas: Weight = Weight::from_parts(WEIGHT_PER_GAS, 0);
-	pub GasLimitPovSizeRatio: u64 = BlockGasLimit::get().checked_div(MAX_POV_SIZE.into()).expect("should be safe; qed").as_u64();
-}
-
-const MAX_POV_SIZE: u64 = 5 * 1024 * 1024;
-
-pub struct CustomFindAuthor<Inner>(sp_std::marker::PhantomData<Inner>);
-
-impl<Inner> frame_support::traits::FindAuthor<sp_core::H160> for CustomFindAuthor<Inner>
-where
-	Inner: frame_support::traits::FindAuthor<AccountId>,
-{
-	fn find_author<'a, I>(digests: I) -> Option<sp_core::H160>
-	where
-		I: 'a + IntoIterator<Item = (frame_support::ConsensusEngineId, &'a [u8])>,
-	{
-		Inner::find_author(digests).map(Into::into)
-	}
-}
-
-impl pallet_evm::Config for Runtime {
-	type AddressMapping = pallet_evm::IdentityAddressMapping;
-	type BlockGasLimit = BlockGasLimit;
-	type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
-	type CallOrigin = pallet_evm::EnsureAddressRoot<AccountId>;
-	type ChainId = EVMChainId;
-	type Currency = Balances;
-	type FeeCalculator = BaseFee;
-	type FindAuthor = CustomFindAuthor<pallet_session::FindAccountFromAuthorIndex<Self, Aura>>;
-	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
-	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
-	type OnChargeTransaction = EVMCurrencyAdapter<Balances, fee::DealWithFees<Runtime>>;
-	type OnCreate = ();
-	type PrecompilesType = FrontierPrecompiles<Self>;
-	type PrecompilesValue = PrecompilesValue;
-	type Runner = pallet_evm::runner::stack::Runner<Self>;
-	type RuntimeEvent = RuntimeEvent;
-	type Timestamp = Timestamp;
-	type WeightInfo = pallet_evm::weights::SubstrateWeight<Runtime>;
-	type WeightPerGas = WeightPerGas;
-	type WithdrawOrigin = pallet_evm::EnsureAddressNever<AccountId>;
 }
 
 parameter_types! {
@@ -1192,3 +1076,6 @@ impl_runtime_apis! {
 		}
 	}
 }
+
+#[cfg(test)]
+mod tests;
