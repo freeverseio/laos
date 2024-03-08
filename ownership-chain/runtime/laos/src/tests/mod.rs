@@ -54,8 +54,7 @@ impl ExtBuilder {
 			.unwrap()
 			.into();
 
-		// get deduplicated list of all accounts, including candidates and delegators
-		// only accounts, no balances
+		// get deduplicated list of all accounts and balances
 		let all_accounts = self
 			.balances
 			.iter()
