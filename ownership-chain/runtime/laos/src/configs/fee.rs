@@ -165,7 +165,7 @@ mod tests {
 	}
 
 	#[test]
-	fn issuance_should_not_change_after_fee_distribution(){
+	fn issuance_should_not_change_after_fee_distribution() {
 		new_test_ext().execute_with(|| {
 			let fee_amount = 100;
 			let author = 62;
@@ -182,12 +182,8 @@ mod tests {
 			ToAuthor::<Test>::on_unbalanceds(vec![imbalance].into_iter());
 
 			let total_issuance = pallet_balances::Pallet::<Test>::total_issuance();
-			assert_eq!(
-				total_issuance, initial_total_issuance,
-				"Total issuance should not change"
-			);
+			assert_eq!(total_issuance, initial_total_issuance, "Total issuance should not change");
 		});
-	
 	}
 
 	#[test]
