@@ -1,4 +1,4 @@
-use super::fee::ToAuthor;
+use super::types::ToAuthor;
 use crate::{Balance, Balances, Runtime, RuntimeEvent, WeightToFee, MICROUNIT};
 use frame_support::{parameter_types, weights::ConstantMultiplier};
 use polkadot_runtime_common::SlowAdjustingFeeUpdate;
