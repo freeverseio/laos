@@ -5501,7 +5501,7 @@ dependencies = [
  "pallet-authorship",
  "pallet-balances",
  "pallet-base-fee",
- "pallet-block-rewards-source",
+ "pallet-block-rewards-handler",
  "pallet-ethereum",
  "pallet-evm",
  "pallet-evm-asset-metadata-extender",
@@ -5554,6 +5554,7 @@ dependencies = [
  "staging-xcm-executor",
  "static_assertions",
  "substrate-wasm-builder",
+ "test-utils",
  "xcm-simulator",
 ]
 
@@ -7418,12 +7419,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-block-rewards-source"
+name = "pallet-block-rewards-handler"
 version = "0.1.0"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
+ "pallet-balances",
  "parity-scale-codec",
  "scale-info",
  "sp-core",
@@ -8077,6 +8079,7 @@ dependencies = [
  "sp-runtime",
  "sp-std",
  "substrate-fixed",
+ "test-utils",
 ]
 
 [[package]]
@@ -14385,6 +14388,15 @@ name = "termtree"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3369f5ac52d5eb6ab48c6b4ffdc8efbcad6b89c765749064ba298f2c68a16a76"
+
+[[package]]
+name = "test-utils"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "sp-core",
+ "sp-std",
+]
 
 [[package]]
 name = "thiserror"

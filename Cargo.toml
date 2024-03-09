@@ -257,7 +257,7 @@ pallet-evm-erc721 = { path = "./ownership-chain/precompile/erc721", default-feat
 pallet-asset-metadata-extender = { path = "./ownership-chain/pallets/asset-metadata-extender", default-features = false }
 pallet-evm-asset-metadata-extender = { path = "./ownership-chain/precompile/asset-metadata-extender", default-features = false }
 pallet-parachain-staking = { path = "./ownership-chain/pallets/parachain-staking", default-features = false }
-pallet-block-rewards-source = { path = "./ownership-chain/pallets/block-rewards-source", default-features = false }
+pallet-block-rewards-handler = { path = "./ownership-chain/pallets/block-rewards-handler", default-features = false }
 
 # Precompiles
 laos-precompile-utils-macro = { path = "./ownership-chain/precompile/utils/macro", default-features = false }
@@ -265,6 +265,7 @@ laos-precompile-utils = { path = "./ownership-chain/precompile/utils", default-f
 
 # Primitives
 ownership-parachain-primitives = { path = "./ownership-chain/primitives", default-features = false }
+test-utils = { path = "./ownership-chain/utils/test", default-features = false }
 
 # Other crates
 laos-runtime-api-staking = { path = "./ownership-chain/runtime-api/staking", default-features = false }
