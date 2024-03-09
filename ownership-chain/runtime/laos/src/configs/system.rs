@@ -97,7 +97,7 @@ mod tests {
 		assert_noop, assert_ok,
 		traits::{fungible::Balanced, tokens::Precision},
 	};
-	use sp_runtime::DispatchError;
+	use sp_runtime::{traits::Dispatchable, DispatchErrorWithPostInfo, DispatchError};
 
 	#[test]
 	fn transfer_should_not_be_allowed() {
@@ -106,7 +106,22 @@ mod tests {
 			let to_account = AccountId::from_str(BOB).unwrap();
 			let transfer_amount = 100;
 
-			// TODO
+			let call = RuntimeCall::Balances(pallet_balances::Call::transfer {
+				dest: to_account.clone(),
+				value: transfer_amount,
+			});
+
+			
+			let result = call.dispatch(RuntimeOrigin::signed(from_account));
+
+			assert!(result.is_err());
+
+			match result.unwrap_err().error {
+				DispatchError::Module(module_error) => {
+					assert_eq!(module_error.message, Some("CallFiltered"));
+				},
+				_ => panic!("Expected ModuleError with message 'CallFiltered'."),
+			}
 		});
 	}
 }
