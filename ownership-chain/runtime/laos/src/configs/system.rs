@@ -94,10 +94,13 @@ mod tests {
 	};
 	use core::str::FromStr;
 	use frame_support::{
-		assert_noop, assert_ok,
+		assert_err, assert_err_ignore_postinfo, assert_noop, assert_ok,
 		traits::{fungible::Balanced, tokens::Precision},
 	};
-	use sp_runtime::{traits::Dispatchable, DispatchErrorWithPostInfo, DispatchError};
+	use sp_runtime::{
+		traits::Dispatchable, DispatchError, DispatchErrorWithPostInfo, DispatchResultWithInfo,
+		ModuleError,
+	};
 
 	#[test]
 	fn transfer_should_not_be_allowed() {
@@ -111,17 +114,10 @@ mod tests {
 				value: transfer_amount,
 			});
 
-			
-			let result = call.dispatch(RuntimeOrigin::signed(from_account));
-
-			assert!(result.is_err());
-
-			match result.unwrap_err().error {
-				DispatchError::Module(module_error) => {
-					assert_eq!(module_error.message, Some("CallFiltered"));
-				},
-				_ => panic!("Expected ModuleError with message 'CallFiltered'."),
-			}
+			assert_err!(
+				call.dispatch(RuntimeOrigin::signed(from_account)),
+				frame_system::Error::<Runtime>::CallFiltered
+			);
 		});
 	}
 }
