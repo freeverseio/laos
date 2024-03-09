@@ -93,14 +93,8 @@ mod tests {
 		Runtime,
 	};
 	use core::str::FromStr;
-	use frame_support::{
-		assert_err, assert_err_ignore_postinfo, assert_noop, assert_ok,
-		traits::{fungible::Balanced, tokens::Precision},
-	};
-	use sp_runtime::{
-		traits::Dispatchable, DispatchError, DispatchErrorWithPostInfo, DispatchResultWithInfo,
-		ModuleError,
-	};
+	use frame_support::assert_err;
+	use sp_runtime::traits::Dispatchable;
 
 	#[test]
 	fn transfer_should_not_be_allowed() {
@@ -116,6 +110,105 @@ mod tests {
 
 			assert_err!(
 				call.dispatch(RuntimeOrigin::signed(from_account)),
+				frame_system::Error::<Runtime>::CallFiltered
+			);
+		});
+	}
+
+	#[test]
+	fn transfer_all_should_not_be_allowed() {
+		new_test_ext().execute_with(|| {
+			let from_account = AccountId::from_str(ALICE).unwrap();
+			let to_account = AccountId::from_str(BOB).unwrap();
+
+			let call = RuntimeCall::Balances(pallet_balances::Call::transfer_all {
+				dest: to_account.clone(),
+				keep_alive: false,
+			});
+
+			assert_err!(
+				call.dispatch(RuntimeOrigin::signed(from_account)),
+				frame_system::Error::<Runtime>::CallFiltered
+			);
+		});
+	}
+
+	#[test]
+	fn transfer_keep_alive_should_not_be_allowed() {
+		new_test_ext().execute_with(|| {
+			let from_account = AccountId::from_str(ALICE).unwrap();
+			let to_account = AccountId::from_str(BOB).unwrap();
+			let transfer_amount = 100;
+
+			let call = RuntimeCall::Balances(pallet_balances::Call::transfer_keep_alive {
+				dest: to_account.clone(),
+				value: transfer_amount,
+			});
+
+			assert_err!(
+				call.dispatch(RuntimeOrigin::signed(from_account)),
+				frame_system::Error::<Runtime>::CallFiltered
+			);
+		});
+	}
+
+	#[test]
+	fn transfer_allow_death_should_not_be_allowed() {
+		new_test_ext().execute_with(|| {
+			let from_account = AccountId::from_str(ALICE).unwrap();
+			let to_account = AccountId::from_str(BOB).unwrap();
+			let transfer_amount = 100;
+
+			let call = RuntimeCall::Balances(pallet_balances::Call::transfer_allow_death {
+				dest: to_account.clone(),
+				value: transfer_amount,
+			});
+
+			assert_err!(
+				call.dispatch(RuntimeOrigin::signed(from_account)),
+				frame_system::Error::<Runtime>::CallFiltered
+			);
+		});
+	}
+
+	#[test]
+	fn vested_transfer_should_not_be_allowed() {
+		new_test_ext().execute_with(|| {
+			let from_account = AccountId::from_str(ALICE).unwrap();
+			let to_account = AccountId::from_str(BOB).unwrap();
+			let transfer_amount = 1000;
+			let per_block = 10;
+			let starting_block = 100;
+
+			let vesting_schedule =
+				pallet_vesting::VestingInfo::new(transfer_amount, per_block, starting_block);
+
+			let call = RuntimeCall::Vesting(pallet_vesting::Call::vested_transfer {
+				target: to_account.clone(),
+				schedule: vesting_schedule,
+			});
+
+			assert_err!(
+				call.dispatch(RuntimeOrigin::signed(from_account)),
+				frame_system::Error::<Runtime>::CallFiltered
+			);
+		});
+	}
+
+	#[test]
+	fn join_candidates_should_not_be_allowed() {
+		new_test_ext().execute_with(|| {
+			let account = AccountId::from_str(ALICE).unwrap();
+			let stake = 100_000;
+
+			let call =
+				RuntimeCall::ParachainStaking(pallet_parachain_staking::Call::join_candidates {
+					bond: stake,
+					candidate_count: 32,
+				});
+
+			assert_err!(
+				call.dispatch(RuntimeOrigin::signed(account)),
 				frame_system::Error::<Runtime>::CallFiltered
 			);
 		});
