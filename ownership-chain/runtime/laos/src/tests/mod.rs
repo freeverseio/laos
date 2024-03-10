@@ -213,7 +213,6 @@ const D: [u8; 20] = [36; 20];
 const E: [u8; 20] = [37; 20];
 
 #[test]
-// set rewards account with funds
 fn payout_distribution_to_solo_collators() {
 	let min_staked = MinCandidateStk::get();
 	ExtBuilder::default()
