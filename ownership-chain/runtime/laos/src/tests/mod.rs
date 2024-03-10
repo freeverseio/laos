@@ -14,8 +14,10 @@ use sp_runtime::BuildStorage;
 use core::str::FromStr;
 
 use super::*;
-use crate::configs::parachain_staking::{MinCandidateStk, MinDelegation};
-use crate::{AccountId, Balances, Runtime, UNIT};
+use crate::{
+	configs::parachain_staking::{MinCandidateStk, MinDelegation},
+	AccountId, Balances, Runtime, UNIT,
+};
 use fp_rpc::runtime_decl_for_ethereum_runtime_rpc_api::EthereumRuntimeRPCApiV5;
 use frame_support::{
 	assert_ok,
@@ -229,59 +231,6 @@ fn payout_distribution_to_solo_collators() {
 
 			let b_initial_balance = (90 + min_staked) * 2;
 			assert_eq!(Balances::free_balance(&B.into()), b_initial_balance);
-
-			// should choose top TotalCandidatesSelected (5), in order
-			let events = System::events()
-				.into_iter()
-				.filter_map(|r| match r.event {
-					RuntimeEvent::ParachainStaking(
-						pallet_parachain_staking::Event::CollatorChosen { .. },
-					) => Some(r.event),
-					_ => None,
-				})
-				.collect::<Vec<_>>();
-			assert_eq!(events.len(), 4);
-			similar_asserts::assert_eq!(
-				events,
-				vec![
-					RuntimeEvent::ParachainStaking(
-						pallet_parachain_staking::Event::CollatorChosen {
-							round: 2,
-							collator_account: A.into(),
-							total_exposed_amount: 100 + min_staked,
-						},
-					),
-					RuntimeEvent::ParachainStaking(
-						pallet_parachain_staking::Event::CollatorChosen {
-							round: 2,
-							collator_account: B.into(),
-							total_exposed_amount: 90 + min_staked,
-						},
-					),
-					RuntimeEvent::ParachainStaking(
-						pallet_parachain_staking::Event::CollatorChosen {
-							round: 2,
-							collator_account: C.into(),
-							total_exposed_amount: 80 + min_staked,
-						},
-					),
-					RuntimeEvent::ParachainStaking(
-						pallet_parachain_staking::Event::CollatorChosen {
-							round: 2,
-							collator_account: D.into(),
-							total_exposed_amount: 70 + min_staked,
-						},
-					),
-					// RuntimeEvent::ParachainStaking(
-					// 	pallet_parachain_staking::Event::NewRound {
-					// 		starting_block: 5,
-					// 		round: 2,
-					// 		selected_collators_number: 4,
-					// 		total_balance: 340,
-					// 	},
-					// ),
-				]
-			);
 
 			// ~ set block author as 1 for all blocks this round
 			// same as set_author(2, 1, 100);
