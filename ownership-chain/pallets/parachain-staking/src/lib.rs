@@ -88,7 +88,7 @@ pub mod pallet {
 		fail,
 		pallet_prelude::*,
 		traits::{
-			tokens::WithdrawReasons, Currency, Get, LockIdentifier, LockableCurrency,
+			tokens::WithdrawReasons, Currency, Get, Imbalance, LockIdentifier, LockableCurrency,
 			ReservableCurrency,
 		},
 	};
@@ -2125,10 +2125,10 @@ pub mod pallet {
 			collator_id: T::AccountId,
 			amt: BalanceOf<T>,
 		) -> Weight {
-			if let Ok(amount_transferred) = T::PayoutReward::payout(&collator_id, amt) {
+			if let Ok(amount_transferred) = T::Currency::deposit_into_existing(&collator_id, amt) {
 				Self::deposit_event(Event::Rewarded {
 					account: collator_id.clone(),
-					rewards: amount_transferred,
+					rewards: amount_transferred.peek(),
 				});
 			}
 			T::WeightInfo::mint_collator_reward()
