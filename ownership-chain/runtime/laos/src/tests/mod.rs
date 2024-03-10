@@ -6,6 +6,7 @@ mod version_tests;
 mod xcm_mock;
 mod xcm_tests;
 
+use pallet_parachain_staking::{InflationInfo, Range};
 pub use xcm_mock::ParachainXcmRouter;
 
 use sp_runtime::BuildStorage;
@@ -13,6 +14,7 @@ use sp_runtime::BuildStorage;
 use core::str::FromStr;
 
 use super::*;
+use crate::configs::parachain_staking::{MinCandidateStk, MinDelegation};
 use crate::{AccountId, Balances, Runtime, UNIT};
 use fp_rpc::runtime_decl_for_ethereum_runtime_rpc_api::EthereumRuntimeRPCApiV5;
 use frame_support::{
@@ -23,6 +25,7 @@ use frame_support::{
 	},
 };
 use sp_core::U256;
+use test_utils::{assert_events_eq, roll_one_block};
 
 #[derive(Default)]
 pub(crate) struct ExtBuilder {
@@ -75,6 +78,19 @@ impl ExtBuilder {
 		pallet_parachain_staking::GenesisConfig::<crate::Runtime> {
 			candidates: self.candidates,
 			blocks_per_round: 10,
+			inflation_config: InflationInfo {
+				expect: Range { min: 100_000, ideal: 200_000, max: 500_000 },
+				annual: Range {
+					min: Perbill::from_percent(50),
+					ideal: Perbill::from_percent(50),
+					max: Perbill::from_percent(50),
+				},
+				round: Range {
+					min: Perbill::from_percent(5),
+					ideal: Perbill::from_percent(5),
+					max: Perbill::from_percent(5),
+				},
+			},
 			..Default::default()
 		}
 		.assimilate_storage(&mut t)
@@ -186,4 +202,123 @@ fn account_vests_correctly_over_time() {
 		// Check that Bob's balance is now the total vested amount
 		assert_eq!(Balances::usable_balance(&bob), total_vested_amount);
 	});
+}
+
+const A: [u8; 20] = [33; 20];
+const B: [u8; 20] = [34; 20];
+const C: [u8; 20] = [35; 20];
+const D: [u8; 20] = [36; 20];
+const E: [u8; 20] = [37; 20];
+
+#[test]
+// set rewards account with funds
+fn payout_distribution_to_solo_collators() {
+	let min_staked = MinCandidateStk::get();
+	ExtBuilder::default()
+		.with_candidates(vec![
+			(B.into(), 90 + min_staked),
+			(A.into(), 100 + min_staked),
+			(C.into(), 80 + min_staked),
+			(D.into(), 70 + min_staked),
+		])
+		.with_rewards_account(E.into())
+		.with_balances(vec![(E.into(), 80_000_000_000_000_000_000_000)])
+		.build()
+		.execute_with(|| {
+			roll_to_round_begin(2);
+
+			let b_initial_balance = (90 + min_staked) * 2;
+			assert_eq!(Balances::free_balance(&B.into()), b_initial_balance);
+
+			// should choose top TotalCandidatesSelected (5), in order
+			let events = System::events()
+				.into_iter()
+				.filter_map(|r| match r.event {
+					RuntimeEvent::ParachainStaking(
+						pallet_parachain_staking::Event::CollatorChosen { .. },
+					) => Some(r.event),
+					_ => None,
+				})
+				.collect::<Vec<_>>();
+			assert_eq!(events.len(), 4);
+			similar_asserts::assert_eq!(
+				events,
+				vec![
+					RuntimeEvent::ParachainStaking(
+						pallet_parachain_staking::Event::CollatorChosen {
+							round: 2,
+							collator_account: A.into(),
+							total_exposed_amount: 100 + min_staked,
+						},
+					),
+					RuntimeEvent::ParachainStaking(
+						pallet_parachain_staking::Event::CollatorChosen {
+							round: 2,
+							collator_account: B.into(),
+							total_exposed_amount: 90 + min_staked,
+						},
+					),
+					RuntimeEvent::ParachainStaking(
+						pallet_parachain_staking::Event::CollatorChosen {
+							round: 2,
+							collator_account: C.into(),
+							total_exposed_amount: 80 + min_staked,
+						},
+					),
+					RuntimeEvent::ParachainStaking(
+						pallet_parachain_staking::Event::CollatorChosen {
+							round: 2,
+							collator_account: D.into(),
+							total_exposed_amount: 70 + min_staked,
+						},
+					),
+					// RuntimeEvent::ParachainStaking(
+					// 	pallet_parachain_staking::Event::NewRound {
+					// 		starting_block: 5,
+					// 		round: 2,
+					// 		selected_collators_number: 4,
+					// 		total_balance: 340,
+					// 	},
+					// ),
+				]
+			);
+
+			// ~ set block author as 1 for all blocks this round
+			// same as set_author(2, 1, 100);
+			pallet_parachain_staking::Points::<Runtime>::mutate(2, |p| *p += 100);
+			pallet_parachain_staking::AwardedPts::<Runtime>::mutate(2, AccountId::from(B), |p| {
+				*p += 100
+			});
+			roll_to_round_begin(4);
+
+			// pay total issuance to 1 at 2nd block
+			// same as roll_blocks(3);
+			for _ in 0..3 {
+				roll_one_block!(true);
+			}
+			System::block_number();
+
+			assert!(Balances::free_balance(&B.into()) > b_initial_balance);
+		});
+}
+
+const GENESIS_BLOCKS_PER_ROUND: BlockNumber = 10;
+/// Rolls block-by-block to the beginning of the specified round.
+/// This will complete the block in which the round change occurs.
+/// Returns the number of blocks played.
+pub(crate) fn roll_to_round_begin(round: BlockNumber) -> BlockNumber {
+	let block = (round - 1) * GENESIS_BLOCKS_PER_ROUND;
+	roll_to(block)
+}
+
+/// Rolls to the desired block. Returns the number of blocks played.
+pub(crate) fn roll_to(n: BlockNumber) -> BlockNumber {
+	let mut num_blocks = 0;
+	let mut block = System::block_number();
+	while block < n {
+		roll_one_block!(true);
+		block = System::block_number();
+		num_blocks += 1;
+	}
+	num_blocks
 }
