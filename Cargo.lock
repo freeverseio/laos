@@ -5424,6 +5424,7 @@ dependencies = [
  "laos-ownership-runtime",
  "log",
  "ownership-parachain-primitives",
+ "pallet-parachain-staking",
  "pallet-transaction-payment-rpc",
  "parity-scale-codec",
  "polkadot-cli",

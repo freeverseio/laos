@@ -2,11 +2,12 @@ use super::{get_collator_keys_from_seed, predefined_accounts, Extensions, SAFE_X
 use cumulus_primitives_core::ParaId;
 use fp_evm::GenesisAccount;
 use laos_ownership_runtime::{
-	configs::{block_rewards_handler, parachain_staking},
-	AccountId, AuraId, Balance, Precompiles, REVERT_BYTECODE,
+	configs::parachain_staking, AccountId, AuraId, Balance, Precompiles, REVERT_BYTECODE,
 };
+use pallet_parachain_staking::{InflationInfo, Range};
 use sc_service::ChainType;
 use sp_core::{H160, U256};
+use sp_runtime::Perbill;
 use std::{collections::BTreeMap, str::FromStr};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
@@ -137,7 +138,7 @@ fn testnet_genesis(
 				})
 				.collect(),
 		},
-		block_rewards_handler: block_rewards_handler::SessionConfig {
+		block_rewards_handler: laos_ownership_runtime::BlockRewardsHandlerConfig {
 			rewards_account: Some(predefined_accounts::BALTATHAR.into()),
 		},
 		// no need to pass anything to aura, in fact it will panic if we do. Session will take care
@@ -158,6 +159,17 @@ fn testnet_genesis(
 		},
 		parachain_staking: laos_ownership_runtime::ParachainStakingConfig {
 			candidates: stakers.into_iter().map(|(acc, _, stake)| (acc, stake)).collect(),
+			inflation_config: InflationInfo {
+				// staking expectations
+				expect: Range { min: 200_000, ideal: 200_000, max: 200_000 },
+				// annual inflation
+				annual: Range {
+					min: Perbill::from_percent(5),
+					ideal: Perbill::from_percent(5),
+					max: Perbill::from_percent(5),
+				},
+				round: Range { min: Perbill::zero(), ideal: Perbill::zero(), max: Perbill::zero() },
+			},
 			blocks_per_round: 5,
 			..Default::default()
 		},
