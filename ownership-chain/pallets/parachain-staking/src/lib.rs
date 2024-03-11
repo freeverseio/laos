@@ -700,13 +700,13 @@ pub mod pallet {
 
 			// Set inflation configuration
 			let mut inflation_config = self.inflation_config.clone();
-			assert!(inflation_config.round.max == Perbill::zero(), "Inflation round.max must be 0");
-			assert!(
-				inflation_config.round.ideal == Perbill::zero(),
-				"Inflation round.ideal must be 0"
-			);
-			assert!(inflation_config.round.min == Perbill::zero(), "Inflation round.min must be 0");
-			inflation_config.set_round_from_annual::<T>(inflation_config.annual);
+			// if all the round values are 0, derive them from the annual values
+			if inflation_config.round.min.is_zero() &&
+				inflation_config.round.ideal.is_zero() &&
+				inflation_config.round.max.is_zero()
+			{
+				inflation_config.set_round_from_annual::<T>(inflation_config.annual);
+			}
 			<InflationConfig<T>>::put(inflation_config);
 
 			let mut candidate_count = 0u32;
