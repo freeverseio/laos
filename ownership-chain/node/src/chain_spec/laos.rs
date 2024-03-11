@@ -6,6 +6,7 @@ use laos_ownership_runtime::{
 };
 use sc_service::ChainType;
 use sp_core::{H160, U256};
+use sp_runtime::Perbill;
 use std::{collections::BTreeMap, str::FromStr};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
@@ -155,6 +156,23 @@ fn testnet_genesis(
 		parachain_staking: laos_ownership_runtime::ParachainStakingConfig {
 			candidates: stakers,
 			blocks_per_round: 5,
+			inflation_config: laos_ownership_runtime::pallet_parachain_staking::InflationInfo {
+				expect: laos_ownership_runtime::pallet_parachain_staking::Range {
+					min: 100_000 * 1_000_000_000_000_000_000,
+					ideal: 200_000 * 1_000_000_000_000_000_000,
+					max: 500_000 * 1_000_000_000_000_000_000,
+				},
+				annual: laos_ownership_runtime::pallet_parachain_staking::Range {
+					min: Perbill::from_rational(72u32, 10),
+					ideal: Perbill::from_rational(72u32, 10),
+					max: Perbill::from_rational(72u32, 10),
+				},
+				round: laos_ownership_runtime::pallet_parachain_staking::Range {
+					min: Perbill::from_percent(0),
+					ideal: Perbill::from_percent(0),
+					max: Perbill::from_percent(0),
+				},
+			},
 			..Default::default()
 		},
 		evm: laos_ownership_runtime::EVMConfig {

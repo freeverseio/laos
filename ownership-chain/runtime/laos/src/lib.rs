@@ -17,6 +17,7 @@ use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 pub use ownership_parachain_primitives::{
 	AccountId, AuraId, Balance, BlockNumber, Hash, Index, Nonce, Signature,
 };
+pub use pallet_parachain_staking;
 use parity_scale_codec::{Decode, Encode};
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
