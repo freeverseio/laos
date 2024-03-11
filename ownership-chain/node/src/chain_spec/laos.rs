@@ -2,7 +2,8 @@ use super::{get_collator_keys_from_seed, predefined_accounts, Extensions, SAFE_X
 use cumulus_primitives_core::ParaId;
 use fp_evm::GenesisAccount;
 use laos_ownership_runtime::{
-	configs::parachain_staking, AccountId, AuraId, Balance, Precompiles, REVERT_BYTECODE,
+	configs::{block_rewards_handler, parachain_staking},
+	AccountId, AuraId, Balance, Precompiles, REVERT_BYTECODE,
 };
 use sc_service::ChainType;
 use sp_core::{H160, U256};
@@ -135,6 +136,9 @@ fn testnet_genesis(
 					)
 				})
 				.collect(),
+		},
+		block_rewards_handler: block_rewards_handler::SessionConfig {
+			rewards_account: Some(predefined_accounts::BALTATHAR.into()),
 		},
 		// no need to pass anything to aura, in fact it will panic if we do. Session will take care
 		// of this.

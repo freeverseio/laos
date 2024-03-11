@@ -1,7 +1,7 @@
 use crate::{MILLIUNIT, UNIT};
 use ownership_parachain_primitives::Balance;
 
-mod block_rewards_handler;
+pub mod block_rewards_handler;
 mod evm;
 mod multisig;
 pub mod parachain_staking;
