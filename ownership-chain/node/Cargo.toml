@@ -22,7 +22,6 @@ klaos-ownership-runtime = { workspace = true, features = ["std"] }
 frame-benchmarking = { workspace = true }
 frame-benchmarking-cli = { workspace = true }
 pallet-transaction-payment-rpc = { workspace = true }
-pallet-parachain-staking = { workspace = true }
 sc-basic-authorship = { workspace = true }
 sc-chain-spec = { workspace = true }
 sc-cli = { workspace = true }

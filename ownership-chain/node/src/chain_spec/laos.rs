@@ -4,7 +4,6 @@ use fp_evm::GenesisAccount;
 use laos_ownership_runtime::{
 	configs::parachain_staking, AccountId, AuraId, Balance, Precompiles, REVERT_BYTECODE,
 };
-use pallet_parachain_staking::{InflationInfo, Range};
 use sc_service::ChainType;
 use sp_core::{H160, U256};
 use sp_runtime::Perbill;
@@ -158,16 +157,20 @@ fn testnet_genesis(
 			..Default::default()
 		},
 		parachain_staking: laos_ownership_runtime::ParachainStakingConfig {
-			inflation_config: InflationInfo {
+			inflation_config: laos_ownership_runtime::InflationInfo {
 				// staking expectations
-				expect: Range { min: 0, ideal: 0, max: 0 },
+				expect: laos_ownership_runtime::Range { min: 0, ideal: 0, max: 0 },
 				// annual inflation
-				annual: Range {
+				annual: laos_ownership_runtime::Range {
 					min: Perbill::from_percent(10),
 					ideal: Perbill::from_percent(10),
 					max: Perbill::from_percent(10),
 				},
-				round: Range { min: Perbill::zero(), ideal: Perbill::zero(), max: Perbill::zero() },
+				round: laos_ownership_runtime::Range {
+					min: Perbill::zero(),
+					ideal: Perbill::zero(),
+					max: Perbill::zero(),
+				},
 			},
 			blocks_per_round: 5,
 			..Default::default()
