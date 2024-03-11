@@ -75,7 +75,7 @@ impl Contains<RuntimeCall> for BaseCallFilter {
 				_ => true,
 			},
 			RuntimeCall::ParachainStaking(inner_call) => match inner_call {
-				// Staking is not allowed.
+				// New candidates are not allowed.
 				join_candidates { .. } => false,
 				_ => true,
 			},
