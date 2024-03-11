@@ -37,9 +37,9 @@ pub fn development_config() -> ChainSpec {
 				// initial collators.
 				vec![(
 					predefined_accounts::ALITH.into(),
+					get_collator_keys_from_seed("Alice"),
 					2 * parachain_staking::MinCandidateStk::get(),
 				)],
-				vec![(predefined_accounts::ALITH.into(), get_collator_keys_from_seed("Alice"))],
 				predefined_accounts::accounts(),
 				// Give Alice root privileges
 				Some(predefined_accounts::ALITH.into()),
@@ -75,10 +75,10 @@ pub fn local_testnet_config() -> ChainSpec {
 			testnet_genesis(
 				vec![(
 					predefined_accounts::ALITH.into(),
+					get_collator_keys_from_seed("Alice"),
 					2 * parachain_staking::MinCandidateStk::get(),
 				)],
 				// initial collators.
-				vec![(predefined_accounts::ALITH.into(), get_collator_keys_from_seed("Alice"))],
 				predefined_accounts::accounts(),
 				// Give Alice root privileges
 				Some(predefined_accounts::ALITH.into()),
@@ -104,8 +104,7 @@ pub fn local_testnet_config() -> ChainSpec {
 }
 
 fn testnet_genesis(
-	stakers: Vec<(AccountId, Balance)>,
-	invulnerables: Vec<(AccountId, AuraId)>,
+	stakers: Vec<(AccountId, AuraId, Balance)>,
 	endowed_accounts: Vec<AccountId>,
 	root_key: Option<AccountId>,
 	id: ParaId,
@@ -125,9 +124,10 @@ fn testnet_genesis(
 			..Default::default()
 		},
 		session: laos_ownership_runtime::SessionConfig {
-			keys: invulnerables
+			keys: stakers
+				.clone()
 				.into_iter()
-				.map(|(acc, aura)| {
+				.map(|(acc, aura, _)| {
 					(
 						acc,                         // account id
 						acc,                         // validator id
@@ -153,7 +153,7 @@ fn testnet_genesis(
 			..Default::default()
 		},
 		parachain_staking: laos_ownership_runtime::ParachainStakingConfig {
-			candidates: stakers,
+			candidates: stakers.into_iter().map(|(acc, _, stake)| (acc, stake)).collect(),
 			blocks_per_round: 5,
 			..Default::default()
 		},
