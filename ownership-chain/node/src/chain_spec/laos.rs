@@ -158,15 +158,14 @@ fn testnet_genesis(
 			..Default::default()
 		},
 		parachain_staking: laos_ownership_runtime::ParachainStakingConfig {
-			candidates: stakers.into_iter().map(|(acc, _, stake)| (acc, stake)).collect(),
 			inflation_config: InflationInfo {
 				// staking expectations
-				expect: Range { min: 200_000, ideal: 200_000, max: 200_000 },
+				expect: Range { min: 0, ideal: 0, max: 0 },
 				// annual inflation
 				annual: Range {
-					min: Perbill::from_percent(5),
-					ideal: Perbill::from_percent(5),
-					max: Perbill::from_percent(5),
+					min: Perbill::from_percent(10),
+					ideal: Perbill::from_percent(10),
+					max: Perbill::from_percent(10),
 				},
 				round: Range { min: Perbill::zero(), ideal: Perbill::zero(), max: Perbill::zero() },
 			},
