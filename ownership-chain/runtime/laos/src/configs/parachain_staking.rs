@@ -20,7 +20,7 @@ parameter_types! {
 	pub const RevokeDelegationDelay: u32 = 4 * 7; // Delay for revoking a delegation.
 	pub const DelegationBondLessDelay: u32 = 4 * 7; // Delay for delegation bond decrease.
 	pub const RewardPaymentDelay: u32 = 2; // Delay for reward payments.
-	pub const MinSelectedCandidates: u32 = 8; // Minimum selected candidates per round.
+	pub const MinSelectedCandidates: u32 = 5; // Minimum selected candidates per round.
 	pub const MaxTopDelegationsPerCandidate: u32 = 300; // Max top delegations per candidate.
 	pub const MaxBottomDelegationsPerCandidate: u32 = 50; // Max bottom delegations per candidate.
 	pub const MaxDelegationsPerDelegator: u32 = 100; // Max delegations per delegator.
