@@ -3,6 +3,7 @@
   "id": "laos_sun_testnet",
   "chainType": "Live",
   "bootNodes": [
+    "/dns4/laossun-boot-1.gorengine.com/tcp/30334/p2p/12D3KooWKXd2uAnD9r1LuFoEsxpVxccDw8oW1zwSV5ZXm69UnBw9"
   ],
   "telemetryEndpoints": null,
   "protocolId": "laos_sun_testnet",
@@ -34,11 +35,11 @@
             150000000000000000000000000
           ],
           [
-            "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac",
+            "0xffffffffffffffffffffffffffffffffffffff02",
             40000000000000000000000
           ],
           [
-            "0x045c57B46DEDE60001623105d351c7941C90149e",
+            "0xffffffffffffffffffffffffffffffffffffff03",
             40000000000000000000000
           ]
         ]
@@ -52,15 +53,15 @@
       "session": {
         "keys": [
           [
-            "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac",
-            "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac",
+            "0xffffffffffffffffffffffffffffffffffffff02",
+            "0xffffffffffffffffffffffffffffffffffffff02",
             {
-              "aura": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+              "aura": "5F1i56nP2dVkUv84hhBw3g1F9AyWfGvYDUyKo6r7Fv8axnTD"
             }
           ],
           [
-            "0x045c57B46DEDE60001623105d351c7941C90149e",
-            "0x045c57B46DEDE60001623105d351c7941C90149e",
+            "0xffffffffffffffffffffffffffffffffffffff03",
+            "0xffffffffffffffffffffffffffffffffffffff03",
             {
               "aura": "5HQmMyrZQgxzM8tprXxRrV6C68WHemm47ZnbxQfnrTQDrS9Y"
             }
@@ -74,11 +75,11 @@
       "parachainStaking": {
         "candidates": [
           [
-            "0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac",
+            "0xffffffffffffffffffffffffffffffffffffff02",
             40000000000000000000000
           ],
           [ 
-            "0x045c57B46DEDE60001623105d351c7941C90149e",
+            "0xffffffffffffffffffffffffffffffffffffff03",
             40000000000000000000000
           ]
         ],
@@ -90,9 +91,15 @@
             "max": 500000000000000000000000
           },
           "annual": {
+<<<<<<< HEAD
             "min": 72300000,
             "ideal": 72300000,
             "max": 72300000
+=======
+            "min": 72000000,
+            "ideal": 72000000,
+            "max": 72000000
+>>>>>>> main
           },
           "round": {
             "min": 0,
