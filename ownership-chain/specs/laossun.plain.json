@@ -27,7 +27,7 @@
       "balances": {
         "balances": [
           [
-            "0xd16D70A63580c15EEAD7145f0f03A41c94027e63",
+            "0x506543b5d64A0083Dd0faA386FfE41b75141A31C",
             849920000000000000000000000
           ],
           [
@@ -113,7 +113,7 @@
         "safeXcmVersion": 3
       },
       "sudo": {
-        "key": "0xd16D70A63580c15EEAD7145f0f03A41c94027e63"
+        "key": "0x506543b5d64A0083Dd0faA386FfE41b75141A31C"
       },
       "ethereum": {},
       "evm": {
