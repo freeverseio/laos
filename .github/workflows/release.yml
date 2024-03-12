@@ -54,6 +54,8 @@ jobs:
         run: |
             echo "Uploading LAOS wasm binary for release ${{ github.ref_name }}"
             gh release upload ${{ github.ref_name }} ./target/release/wbuild/laos-ownership-runtime/laos_ownership_runtime.compact.compressed.wasm
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload KLAOS Wasm Binaries
         run: |
             echo "Uploading KLAOS wasm binary for release ${{ github.ref_name }}"
