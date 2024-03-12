@@ -6,72 +6,38 @@ on:
       - 'v*.*.*'
   workflow_dispatch:
 
-env:
-  SUBWASM_VERSION: 0.20.0
-
 jobs:
   check-version:
     runs-on: ubuntu-latest
+    outputs:
+      proceed: ${{ steps.check_version.outputs.proceed }}
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v3
       - id: check_version
         run: |
           VERSION=$(grep -m1 version Cargo.toml | sed -E 's/.*"(.*)".*/\1/')
           if [ "v$VERSION" == "${{ github.ref_name }}" ]; then
-            echo "Proceeding..."
+            echo "::set-output name=proceed::true"
           else
             echo "Version in Cargo.toml ($VERSION) does not match current tag ${{ github.ref_name }}. Canceling release..."
-            exit 1
+            echo "::set-output name=proceed::false"
           fi
 
-  prepare-release:
+  dockerize:
     needs: check-version
+    if: needs.check-version.outputs.proceed == 'true'
     runs-on: 
       group: laos
       labels: ubuntu-16-cores
-    strategy:
-      matrix:
-        runtime:
-          - { name: "laos", package: "laos-ownership-runtime", path: "ownership-chain/runtime/laos" }
-          - { name: "klaos", package: "klaos-ownership-runtime", path: "ownership-chain/runtime/klaos" }
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup
       - uses: ./.github/actions/cache
         with:
           cache-key: build_and_push
-      - name: Srtool build
-        id: srtool_build
-        uses: chevdor/srtool-actions@v0.9.2
-        with:
-          chain: ${{ matrix.runtime.name }}
-          package: ${{ matrix.runtime.package }}
-          runtime_dir: ${{ matrix.runtime.path }}
-          tag: 1.74.0
-      - name: Summary
-        id: summary
+      - name: Build
         run: |
-          echo '${{ steps.srtool_build.outputs.json }}' | jq . > ${{ matrix.runtime.name }}-srtool-digest.json
-          cat ${{ matrix.runtime.name }}-srtool-digest.json
-          echo "Runtime location: ${{ steps.srtool_build.outputs.wasm }}"
-          RUSTC_VERSION=$(jq '.info.rustc' < ${{ matrix.runtime.name }}-srtool-digest.json)
-          SRTOOL_VERSION=$(jq '.info.generator.version' < ${{ matrix.runtime.name }}-srtool-digest.json)
-          echo "rustc_version='$RUSTC_VERSION'" >> $GITHUB_OUTPUT
-          echo "srtool_version=$SRTOOL_VERSION" >> $GITHUB_OUTPUT
-      - name: Install subwasm ${{ env.SUBWASM_VERSION }}
-        run: |
-          wget https://github.com/chevdor/subwasm/releases/download/v${{ env.SUBWASM_VERSION }}/subwasm_linux_amd64_v${{ env.SUBWASM_VERSION }}.deb
-          sudo dpkg -i subwasm_linux_amd64_v${{ env.SUBWASM_VERSION }}.deb
-          subwasm --version
-      - name: Extract metadata
-        run: |
-          subwasm  --json info ${{ steps.srtool_build.outputs.wasm }} > ${{ matrix.runtime.name }}-info.json
-          subwasm info ${{ steps.srtool_build.outputs.wasm }} > ${{ matrix.runtime.name }}-info.txt
-          cat ${{ matrix.runtime.name }}-info.txt
-
-          subwasm  --json info ${{ steps.srtool_build.outputs.wasm_compressed }} > ${{ matrix.runtime.name }}-subwam-info.json
-          subwasm info ${{ steps.srtool_build.outputs.wasm_compressed }} > ${{ matrix.runtime.name }}-subwam-info.txt
-          cat ${{ matrix.runtime.name }}-subwam-info.txt
+          cargo build --release
       - name: Log in to Docker Hub
         uses: docker/login-action@v2.1.0
         with:
@@ -84,26 +50,13 @@ jobs:
           push: true
           file: ./docker/ownership-node.local.Dockerfile
           tags: freeverseio/laos-ownership-node:${{ github.ref_name }}
-      - name: Update Release Description with subwasm info
+      - name: Upload LAOS Wasm Binaries
         run: |
-          gh release view ${{ github.ref_name }} --json body -q .body > description.txt
-              
-          RUSTC_VERSION=$(echo ${{ steps.summary.outputs.rustc_version }} | tr -d '"')
-          SRTOOL_VERSION=${{ steps.summary.outputs.srtool_version }}
-          
-          printf "\n\n## ${{ matrix.runtime.name }} runtime\nThis runtime was built using %s with srtool %s\n" "$RUSTC_VERSION" "$SRTOOL_VERSION" >> description.txt
-          echo '```' >> description.txt
-          
-          cat ${{ matrix.runtime.name }}-subwam-info.txt >> description.txt
-          
-          echo '```' >> description.txt
-          
-          gh release edit ${{ github.ref_name }} --notes-file description.txt
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Upload Ownership Wasm Binaries
+            echo "Uploading LAOS wasm binary for release ${{ github.ref_name }}"
+            gh release upload ${{ github.ref_name }} ./target/release/wbuild/laos-ownership-runtime/laos_ownership_runtime.compact.compressed.wasm
+      - name: Upload KLAOS Wasm Binaries
         run: |
-            echo "Uploading ownership wasm binary for release ${{ github.ref_name }}"
-            gh release upload ${{ github.ref_name }} ${{ steps.srtool_build.outputs.wasm_compressed }}
+            echo "Uploading KLAOS wasm binary for release ${{ github.ref_name }}"
+            gh release upload ${{ github.ref_name }} ./target/release/wbuild/klaos-ownership-runtime/klaos_ownership_runtime.compact.compressed.wasm
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

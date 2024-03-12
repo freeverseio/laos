@@ -6,6 +6,7 @@ mod evm;
 mod multisig;
 pub mod parachain_staking;
 mod proxy;
+mod system;
 mod transaction_payment;
 mod utility;
 
