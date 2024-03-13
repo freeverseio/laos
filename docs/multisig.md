@@ -19,7 +19,7 @@ We will be using a local Zombienet network to demonstrate:
 
 ## Launch a local Zombienet network
 
-Follow the instructions [here](../ownership-chain/zombienet/README.md) to launch a local Zombienet network.
+Follow the instructions [here](../zombienet/README.md) to launch a local Zombienet network.
 
 ## Create a multisig account
 

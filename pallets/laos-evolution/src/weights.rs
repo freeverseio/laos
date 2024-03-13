@@ -15,12 +15,12 @@
 // pallet-laos-evolution
 // --extrinsic=*
 // --output
-// ownership-chain/pallets/laos-evolution/src/weights.rs
+// pallets/laos-evolution/src/weights.rs
 // --execution
 // wasm
 // --wasm-execution=compiled
 // --template
-// ./ownership-chain/.maintain/frame-weight-template.hbs
+// ./.maintain/frame-weight-template.hbs
 // --steps
 // 50
 // --repeat

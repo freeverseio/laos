@@ -139,7 +139,7 @@ jobs:
           export ZOMBIENET_RELAYCHAIN_COMMAND=./polkadot
           export ZOMBIENET_OWNCHAIN_COMMAND=./target/release/laos-ownership
           export ZOMBIENET_ASTAR_COMMAND=./astar-collator
-          ./zombienet-linux-x64 spawn ./ownership-chain/zombienet/native.toml -p native &
+          ./zombienet-linux-x64 spawn ./zombienet/native.toml -p native &
           echo "Zombienet started"
 
       - name: Wait for zombienet
@@ -154,12 +154,12 @@ jobs:
       - name: Install dependencies
         run: |
           npm install
-        working-directory: ./ownership-chain/e2e-tests
+        working-directory: ./e2e-tests
 
       - name: Run tests
         run: |
           npm run build && npm run test
-        working-directory: ./ownership-chain/e2e-tests
+        working-directory: ./e2e-tests
 
   e2e-tests-klaos:
     runs-on: 
@@ -196,7 +196,7 @@ jobs:
           export ZOMBIENET_RELAYCHAIN_COMMAND=./polkadot
           export ZOMBIENET_OWNCHAIN_COMMAND=./target/release/laos-ownership
           export ZOMBIENET_ASTAR_COMMAND=./astar-collator
-          ./zombienet-linux-x64 spawn ./ownership-chain/zombienet/native.klaos.toml -p native &
+          ./zombienet-linux-x64 spawn ./zombienet/native.klaos.toml -p native &
           echo "Zombienet started"
 
       - name: Wait for zombienet
@@ -211,10 +211,9 @@ jobs:
       - name: Install dependencies
         run: |
           npm install
-        working-directory: ./ownership-chain/e2e-tests
+        working-directory: ./e2e-tests
 
       - name: Run tests
         run: |
           npm run build && npm run test
-        working-directory: ./ownership-chain/e2e-tests
-
+        working-directory: ./e2e-tests

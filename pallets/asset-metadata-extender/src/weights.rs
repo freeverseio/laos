@@ -15,10 +15,10 @@
 // pallet-asset-metadata-extender
 // --extrinsic=*
 // --output
-// ownership-chain/pallets/asset-metadata-extender/src/weights.rs
+// pallets/asset-metadata-extender/src/weights.rs
 // --wasm-execution=compiled
 // --template
-// ./ownership-chain/.maintain/frame-weight-template.hbs
+// ./.maintain/frame-weight-template.hbs
 // --steps
 // 50
 // --repeat
