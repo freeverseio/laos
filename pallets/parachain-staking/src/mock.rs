@@ -177,6 +177,8 @@ pub(crate) struct ExtBuilder {
 	delegations: Vec<(AccountId, AccountId, Balance, Percent)>,
 	// inflation config
 	inflation: InflationInfo<Balance>,
+	// rewards account balance
+	rewards_account_balance: Balance,
 }
 
 impl Default for ExtBuilder {
@@ -200,6 +202,7 @@ impl Default for ExtBuilder {
 					max: Perbill::from_percent(5),
 				},
 			},
+			rewards_account_balance: 100,
 		}
 	}
 }
@@ -232,6 +235,11 @@ impl ExtBuilder {
 		self
 	}
 
+	pub(crate) fn with_rewards_account_balance(mut self, rewards_account_balance: Balance) -> Self {
+		self.rewards_account_balance = rewards_account_balance;
+		self
+	}
+
 	#[allow(dead_code)]
 	pub(crate) fn with_inflation(mut self, inflation: InflationInfo<Balance>) -> Self {
 		self.inflation = inflation;
@@ -243,7 +251,10 @@ impl ExtBuilder {
 			.build_storage()
 			.expect("Frame system builds valid default genesis config");
 
-		pallet_balances::GenesisConfig::<Test> { balances: self.balances }
+		// add rewards account to the balances
+		let mut balances = self.balances.clone();
+		balances.push((RewardsAccount::get(), self.rewards_account_balance));
+		pallet_balances::GenesisConfig::<Test> { balances }
 			.assimilate_storage(&mut t)
 			.expect("Pallet balances storage can be assimilated");
 		pallet_parachain_staking::GenesisConfig::<Test> {

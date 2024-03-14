@@ -28,7 +28,7 @@ use crate::{
 	mock::{
 		assert_events_emitted, assert_events_emitted_match, assert_events_eq, assert_no_events,
 		roll_blocks, roll_to, roll_to_round_begin, roll_to_round_end, set_author, set_block_author,
-		Balances, BlockNumber, ExtBuilder, ParachainStaking, RuntimeOrigin, Test,
+		Balances, BlockNumber, ExtBuilder, ParachainStaking, RewardsAccount, RuntimeOrigin, Test,
 	},
 	AtStake, Bond, CollatorStatus, DelegationScheduledRequests, DelegatorAdded,
 	EnableMarkingOffline, Error, Event, Range, DELEGATOR_LOCK_ID,
@@ -5120,14 +5120,14 @@ fn test_delegator_scheduled_for_revoke_is_rewarded_for_previous_rounds_but_not_f
 			assert_events_emitted_match!(Event::NewRound { round: 3, .. });
 			roll_blocks(3);
 			assert_events_eq!(
-				Event::Rewarded { account: 1, rewards: 4 },
-				Event::Rewarded { account: 2, rewards: 1 },
+				Event::Rewarded { account: 1, rewards: 5 },
+				Event::Rewarded { account: 2, rewards: 2 },
 			);
 
 			roll_to_round_begin(4);
 			assert_events_emitted_match!(Event::NewRound { round: 4, .. });
 			roll_blocks(3);
-			assert_events_eq!(Event::Rewarded { account: 1, rewards: 5 },);
+			assert_events_eq!(Event::Rewarded { account: 1, rewards: 7 },);
 			let collator_snapshot =
 				ParachainStaking::at_stake(ParachainStaking::round().current, 1)
 					.unwrap_or_default();
@@ -5146,7 +5146,7 @@ fn test_delegator_scheduled_for_revoke_is_rewarded_for_previous_rounds_but_not_f
 #[test]
 fn test_delegator_scheduled_for_revoke_is_rewarded_when_request_cancelled() {
 	ExtBuilder::default()
-		.with_balances(vec![(1, 20), (2, 40), (3, 20), (4, 20), (43, 10000000000)])
+		.with_balances(vec![(1, 20), (2, 30), (3, 20), (4, 20)])
 		.with_candidates(vec![(1, 20), (3, 20), (4, 20)])
 		.with_delegations(vec![(2, 1, 10), (2, 3, 10)])
 		.build()
@@ -5174,7 +5174,7 @@ fn test_delegator_scheduled_for_revoke_is_rewarded_when_request_cancelled() {
 			roll_to_round_begin(4);
 			assert_events_emitted_match!(Event::NewRound { round: 4, .. });
 			roll_blocks(3);
-			assert_events_eq!(Event::Rewarded { account: 1, rewards: 5 },);
+			assert_events_eq!(Event::Rewarded { account: 1, rewards: 6 },);
 			let collator_snapshot =
 				ParachainStaking::at_stake(ParachainStaking::round().current, 1)
 					.unwrap_or_default();
@@ -5192,7 +5192,7 @@ fn test_delegator_scheduled_for_revoke_is_rewarded_when_request_cancelled() {
 			assert_events_emitted_match!(Event::NewRound { round: 5, .. });
 			roll_blocks(3);
 			assert_events_eq!(
-				Event::Rewarded { account: 1, rewards: 4 },
+				Event::Rewarded { account: 1, rewards: 5 },
 				Event::Rewarded { account: 2, rewards: 1 },
 			);
 		});
@@ -5232,7 +5232,7 @@ fn test_delegator_scheduled_for_bond_decrease_is_rewarded_for_previous_rounds_bu
 			assert_events_emitted_match!(Event::NewRound { round: 3, .. });
 			roll_blocks(3);
 			assert_events_eq!(
-				Event::Rewarded { account: 1, rewards: 3 },
+				Event::Rewarded { account: 1, rewards: 4 },
 				Event::Rewarded { account: 2, rewards: 2 },
 			);
 
@@ -5240,8 +5240,8 @@ fn test_delegator_scheduled_for_bond_decrease_is_rewarded_for_previous_rounds_bu
 			assert_events_emitted_match!(Event::NewRound { round: 4, .. });
 			roll_blocks(3);
 			assert_events_eq!(
-				Event::Rewarded { account: 1, rewards: 4 },
-				Event::Rewarded { account: 2, rewards: 1 },
+				Event::Rewarded { account: 1, rewards: 5 },
+				Event::Rewarded { account: 2, rewards: 2 },
 			);
 			let collator_snapshot =
 				ParachainStaking::at_stake(ParachainStaking::round().current, 1)
@@ -5294,8 +5294,8 @@ fn test_delegator_scheduled_for_bond_decrease_is_rewarded_when_request_cancelled
 			assert_events_emitted_match!(Event::NewRound { round: 4, .. });
 			roll_blocks(3);
 			assert_events_eq!(
-				Event::Rewarded { account: 1, rewards: 4 },
-				Event::Rewarded { account: 2, rewards: 1 },
+				Event::Rewarded { account: 1, rewards: 5 },
+				Event::Rewarded { account: 2, rewards: 2 },
 			);
 			let collator_snapshot =
 				ParachainStaking::at_stake(ParachainStaking::round().current, 1)
@@ -5314,7 +5314,7 @@ fn test_delegator_scheduled_for_bond_decrease_is_rewarded_when_request_cancelled
 			assert_events_emitted_match!(Event::NewRound { round: 5, .. });
 			roll_blocks(3);
 			assert_events_eq!(
-				Event::Rewarded { account: 1, rewards: 3 },
+				Event::Rewarded { account: 1, rewards: 4 },
 				Event::Rewarded { account: 2, rewards: 2 },
 			);
 		});
@@ -5358,14 +5358,14 @@ fn test_delegator_scheduled_for_leave_is_rewarded_for_previous_rounds_but_not_fo
 			assert_events_emitted_match!(Event::NewRound { round: 3, .. });
 			roll_blocks(3);
 			assert_events_eq!(
-				Event::Rewarded { account: 1, rewards: 4 },
-				Event::Rewarded { account: 2, rewards: 1 },
+				Event::Rewarded { account: 1, rewards: 5 },
+				Event::Rewarded { account: 2, rewards: 2 },
 			);
 
 			roll_to_round_begin(4);
 			assert_events_emitted_match!(Event::NewRound { round: 4, .. });
 			roll_blocks(3);
-			assert_events_eq!(Event::Rewarded { account: 1, rewards: 5 },);
+			assert_events_eq!(Event::Rewarded { account: 1, rewards: 7 },);
 			let collator_snapshot =
 				ParachainStaking::at_stake(ParachainStaking::round().current, 1)
 					.unwrap_or_default();
@@ -5422,7 +5422,7 @@ fn test_delegator_scheduled_for_leave_is_rewarded_when_request_cancelled() {
 			roll_to_round_begin(4);
 			assert_events_emitted_match!(Event::NewRound { round: 4, .. });
 			roll_blocks(3);
-			assert_events_eq!(Event::Rewarded { account: 1, rewards: 5 },);
+			assert_events_eq!(Event::Rewarded { account: 1, rewards: 7 },);
 			let collator_snapshot =
 				ParachainStaking::at_stake(ParachainStaking::round().current, 1)
 					.unwrap_or_default();
@@ -5440,8 +5440,8 @@ fn test_delegator_scheduled_for_leave_is_rewarded_when_request_cancelled() {
 			assert_events_emitted_match!(Event::NewRound { round: 5, .. });
 			roll_blocks(3);
 			assert_events_eq!(
-				Event::Rewarded { account: 1, rewards: 4 },
-				Event::Rewarded { account: 2, rewards: 1 },
+				Event::Rewarded { account: 1, rewards: 5 },
+				Event::Rewarded { account: 2, rewards: 2 },
 			);
 		});
 }
