@@ -1,5 +1,5 @@
 [package]
-name = "laos-ownership"
+name = "laos"
 edition = "2021"
 authors = { workspace = true }
 version = { workspace = true }
@@ -15,8 +15,8 @@ jsonrpsee = { workspace = true, features = ["server"] }
 hex-literal = { workspace = true }
 
 # Local
-laos-ownership-runtime = { workspace = true, features = ["std"] }
-klaos-ownership-runtime = { workspace = true, features = ["std"] }
+laos-runtime = { workspace = true, features = ["std"] }
+klaos-runtime = { workspace = true, features = ["std"] }
 
 # Substrate
 frame-benchmarking = { workspace = true }
@@ -58,7 +58,7 @@ polkadot-cli = { workspace = true, features = ["rococo-native"] }
 polkadot-service = { workspace = true, features = ["rococo-native"] }
 polkadot-primitives = { workspace = true }
 staging-xcm = { workspace = true }
-ownership-parachain-primitives = { workspace = true }
+laos-primitives = { workspace = true }
 
 # Cumulus
 cumulus-client-cli = { workspace = true }
@@ -94,8 +94,8 @@ default = [
 ]
 txpool = ["fc-rpc/txpool"]
 runtime-benchmarks = [
-	"laos-ownership-runtime/runtime-benchmarks",
-	"klaos-ownership-runtime/runtime-benchmarks",
+	"laos-runtime/runtime-benchmarks",
+	"klaos-runtime/runtime-benchmarks",
 	"polkadot-cli/runtime-benchmarks",
 	"polkadot-service/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
@@ -106,8 +106,8 @@ runtime-benchmarks = [
 ]
 try-runtime = [
 	"try-runtime-cli/try-runtime",
-	"laos-ownership-runtime/try-runtime",
-	"klaos-ownership-runtime/try-runtime",
+	"laos-runtime/try-runtime",
+	"klaos-runtime/try-runtime",
 	"polkadot-cli/try-runtime",
 	"polkadot-service/try-runtime",
 	"sp-runtime/try-runtime",

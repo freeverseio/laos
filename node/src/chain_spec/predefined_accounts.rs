@@ -1,5 +1,5 @@
 use hex_literal::hex;
-use ownership_parachain_primitives::AccountId;
+use laos_primitives::AccountId;
 
 pub const ALITH: [u8; 20] = hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac");
 pub const BALTATHAR: [u8; 20] = hex!("3Cd0A705a2DC65e5b1E1205896BaA2be8A07c6e0");

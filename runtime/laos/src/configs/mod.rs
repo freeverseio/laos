@@ -1,5 +1,5 @@
 use crate::{MILLIUNIT, UNIT};
-use ownership_parachain_primitives::Balance;
+use laos_primitives::Balance;
 
 mod block_rewards_handler;
 mod evm;

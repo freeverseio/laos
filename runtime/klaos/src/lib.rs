@@ -15,10 +15,8 @@ pub mod xcm_config;
 
 use core::marker::PhantomData;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
-pub use ownership_parachain_primitives::{
-	AccountId, AuraId, Balance, BlockNumber, Hash, Index, Nonce, Signature,
-};
-use ownership_parachain_primitives::{MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO};
+pub use laos_primitives::{AccountId, AuraId, Balance, BlockNumber, Hash, Index, Nonce, Signature};
+use laos_primitives::{MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO};
 use parity_scale_codec::{Decode, Encode};
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
@@ -90,7 +88,7 @@ mod precompiles;
 use precompiles::FrontierPrecompiles;
 
 /// Block header type as expected by this runtime.
-pub type Header = generic::Header<BlockNumber, ownership_parachain_primitives::Hasher>;
+pub type Header = generic::Header<BlockNumber, laos_primitives::Hasher>;
 
 /// Block type as expected by this runtime.
 pub type Block = generic::Block<Header, UncheckedExtrinsic>;
@@ -285,9 +283,9 @@ impl frame_system::Config for Runtime {
 	/// Weight information for the extrinsics of this pallet.
 	type SystemWeightInfo = ();
 	/// Block & extrinsics weights: base values and limits.
-	type BlockWeights = ownership_parachain_primitives::BlockWeights;
+	type BlockWeights = laos_primitives::BlockWeights;
 	/// The maximum length of a block (in bytes).
-	type BlockLength = ownership_parachain_primitives::BlockLength;
+	type BlockLength = laos_primitives::BlockLength;
 	/// This is used as an identifier of the chain. 42 is the generic substrate prefix.
 	type SS58Prefix = SS58Prefix;
 	/// The action to take on a Runtime Upgrade
@@ -1194,7 +1192,7 @@ impl_runtime_apis! {
 	impl frame_try_runtime::TryRuntime<Block> for Runtime {
 		fn on_runtime_upgrade(checks: frame_try_runtime::UpgradeCheckSelect) -> (Weight, Weight) {
 			let weight = Executive::try_runtime_upgrade(checks).unwrap();
-			(weight, ownership_parachain_primitives::BlockWeights::get().max_block)
+			(weight, laos_primitives::BlockWeights::get().max_block)
 		}
 
 		fn execute_block(
