@@ -5489,7 +5489,6 @@ dependencies = [
  "frame-try-runtime",
  "hex",
  "hex-literal",
- "laos-runtime-api-staking",
  "log",
  "orml-traits",
  "orml-xcm-support",
@@ -5589,16 +5588,6 @@ dependencies = [
  "quote",
  "sha3",
  "syn 1.0.109",
-]
-
-[[package]]
-name = "laos-runtime-api-staking"
-version = "0.1.0"
-dependencies = [
- "parity-scale-codec",
- "scale-info",
- "sp-api",
- "sp-runtime",
 ]
 
 [[package]]
