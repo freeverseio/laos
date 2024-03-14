@@ -15,10 +15,10 @@
 // along with Moonbeam.  If not, see <http://www.gnu.org/licenses/>.
 
 //! Test utilities
-use crate as pallet_parachain_staking;
 use crate::{
-	pallet, AwardedPts, Config, Event as ParachainStakingEvent, InflationInfo, Points, Range,
-	COLLATOR_LOCK_ID, DELEGATOR_LOCK_ID,
+	self as pallet_parachain_staking, pallet, rewards, AwardedPts, Config,
+	Event as ParachainStakingEvent, InflationInfo, Points, Range, COLLATOR_LOCK_ID,
+	DELEGATOR_LOCK_ID,
 };
 use block_author::BlockAuthor as BlockAuthorMap;
 use frame_support::{
@@ -155,7 +155,7 @@ impl Config for Test {
 	type MinDelegation = MinDelegation;
 	type BlockAuthor = BlockAuthor;
 	type OnCollatorPayout = ();
-	type PayoutReward = ();
+	type PayoutReward = rewards::MintingRewards;
 	type OnInactiveCollator = ();
 	type OnNewRound = ();
 	type SlotProvider = StakingRoundSlotProvider;

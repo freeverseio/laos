@@ -5,7 +5,7 @@ use frame_support::{
 };
 use sp_runtime::DispatchError;
 
-struct MintingRewards;
+pub struct MintingRewards;
 
 /// Defines the default behavior for paying out the collator's reward. The amount is directly
 /// deposited into the collator's account.
