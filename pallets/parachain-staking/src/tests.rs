@@ -3757,6 +3757,7 @@ fn payout_distribution_to_solo_collators() {
 	ExtBuilder::default()
 		.with_balances(vec![(1, 1000), (2, 1000), (3, 1000), (4, 1000), (7, 33), (8, 33), (9, 33)])
 		.with_candidates(vec![(1, 100), (2, 90), (3, 80), (4, 70)])
+		.with_rewards_account_balance(100000)
 		.build()
 		.execute_with(|| {
 			roll_to_round_begin(2);
@@ -3790,7 +3791,7 @@ fn payout_distribution_to_solo_collators() {
 			);
 			// pay total issuance to 1 at 2nd block
 			roll_blocks(3);
-			assert_events_eq!(Event::Rewarded { account: 1, rewards: 205 });
+			assert_events_eq!(Event::Rewarded { account: 1, rewards: 5205 });
 			// ~ set block author as 1 for 3 blocks this round
 			set_author(4, 1, 60);
 			// ~ set block author as 2 for 2 blocks this round
@@ -3810,9 +3811,9 @@ fn payout_distribution_to_solo_collators() {
 				},
 			);
 			roll_blocks(3);
-			assert_events_eq!(Event::Rewarded { account: 1, rewards: 129 });
+			assert_events_eq!(Event::Rewarded { account: 1, rewards: 3123 });
 			roll_blocks(1);
-			assert_events_eq!(Event::Rewarded { account: 2, rewards: 86 },);
+			assert_events_eq!(Event::Rewarded { account: 2, rewards: 2082 },);
 			// ~ each collator produces 1 block this round
 			set_author(6, 1, 20);
 			set_author(6, 2, 20);
@@ -3833,13 +3834,13 @@ fn payout_distribution_to_solo_collators() {
 				},
 			);
 			roll_blocks(1);
-			assert_events_eq!(Event::Rewarded { account: 3, rewards: 56 });
+			assert_events_eq!(Event::Rewarded { account: 3, rewards: 1301 });
 			roll_blocks(1);
-			assert_events_eq!(Event::Rewarded { account: 4, rewards: 56 });
+			assert_events_eq!(Event::Rewarded { account: 4, rewards: 1301 });
 			roll_blocks(1);
-			assert_events_eq!(Event::Rewarded { account: 1, rewards: 56 });
+			assert_events_eq!(Event::Rewarded { account: 1, rewards: 1301 });
 			roll_blocks(1);
-			assert_events_eq!(Event::Rewarded { account: 2, rewards: 56 });
+			assert_events_eq!(Event::Rewarded { account: 2, rewards: 1301 });
 			// check that distributing rewards clears awarded pts
 			assert!(ParachainStaking::awarded_pts(1, 1).is_zero());
 			assert!(ParachainStaking::awarded_pts(4, 1).is_zero());
@@ -4024,6 +4025,7 @@ fn payouts_follow_delegation_changes() {
 		])
 		.with_candidates(vec![(1, 20), (2, 20), (3, 20), (4, 20)])
 		.with_delegations(vec![(6, 1, 10), (7, 1, 10), (8, 2, 10), (9, 2, 10), (10, 1, 10)])
+		.with_rewards_account_balance(100000)
 		.build()
 		.execute_with(|| {
 			roll_to_round_begin(2);
@@ -4058,10 +4060,10 @@ fn payouts_follow_delegation_changes() {
 			);
 			roll_blocks(3);
 			assert_events_eq!(
-				Event::Rewarded { account: 1, rewards: 26 },
-				Event::Rewarded { account: 6, rewards: 8 },
-				Event::Rewarded { account: 7, rewards: 8 },
-				Event::Rewarded { account: 10, rewards: 8 },
+				Event::Rewarded { account: 1, rewards: 2623 },
+				Event::Rewarded { account: 6, rewards: 807 },
+				Event::Rewarded { account: 7, rewards: 807 },
+				Event::Rewarded { account: 10, rewards: 807 },
 			);
 			// ~ set block author as 1 for all blocks this round
 			set_author(3, 1, 100);
@@ -4098,10 +4100,10 @@ fn payouts_follow_delegation_changes() {
 			);
 			roll_blocks(3);
 			assert_events_eq!(
-				Event::Rewarded { account: 1, rewards: 26 },
-				Event::Rewarded { account: 6, rewards: 8 },
-				Event::Rewarded { account: 7, rewards: 8 },
-				Event::Rewarded { account: 10, rewards: 8 },
+				Event::Rewarded { account: 1, rewards: 2623 },
+				Event::Rewarded { account: 6, rewards: 807 },
+				Event::Rewarded { account: 7, rewards: 807 },
+				Event::Rewarded { account: 10, rewards: 807 },
 			);
 			// keep paying 6 (note: inflation is in terms of total issuance so that's why 1 is 21)
 			roll_to_round_begin(6);
@@ -4132,10 +4134,10 @@ fn payouts_follow_delegation_changes() {
 			);
 			roll_blocks(3);
 			assert_events_eq!(
-				Event::Rewarded { account: 1, rewards: 26 },
-				Event::Rewarded { account: 6, rewards: 8 },
-				Event::Rewarded { account: 7, rewards: 8 },
-				Event::Rewarded { account: 10, rewards: 8 },
+				Event::Rewarded { account: 1, rewards: 2623 },
+				Event::Rewarded { account: 6, rewards: 807 },
+				Event::Rewarded { account: 7, rewards: 807 },
+				Event::Rewarded { account: 10, rewards: 807 },
 			);
 			// 6 won't be paid for this round because they left already
 			set_author(7, 1, 100);
@@ -4155,9 +4157,9 @@ fn payouts_follow_delegation_changes() {
 			);
 			roll_blocks(3);
 			assert_events_eq!(
-				Event::Rewarded { account: 1, rewards: 31 },
-				Event::Rewarded { account: 7, rewards: 10 },
-				Event::Rewarded { account: 10, rewards: 10 },
+				Event::Rewarded { account: 1, rewards: 3027 },
+				Event::Rewarded { account: 7, rewards: 1009 },
+				Event::Rewarded { account: 10, rewards: 1009 },
 			);
 			roll_to_round_begin(8);
 			assert_events_eq!(
@@ -4174,9 +4176,9 @@ fn payouts_follow_delegation_changes() {
 			);
 			roll_blocks(3);
 			assert_events_eq!(
-				Event::Rewarded { account: 1, rewards: 33 },
-				Event::Rewarded { account: 7, rewards: 11 },
-				Event::Rewarded { account: 10, rewards: 11 },
+				Event::Rewarded { account: 1, rewards: 3027 },
+				Event::Rewarded { account: 7, rewards: 1009 },
+				Event::Rewarded { account: 10, rewards: 1009 },
 			);
 			set_author(8, 1, 100);
 			roll_to_round_begin(9);
@@ -4195,9 +4197,9 @@ fn payouts_follow_delegation_changes() {
 			);
 			roll_blocks(3);
 			assert_events_eq!(
-				Event::Rewarded { account: 1, rewards: 34 },
-				Event::Rewarded { account: 7, rewards: 11 },
-				Event::Rewarded { account: 10, rewards: 11 },
+				Event::Rewarded { account: 1, rewards: 3027 },
+				Event::Rewarded { account: 7, rewards: 1009 },
+				Event::Rewarded { account: 10, rewards: 1009 },
 			);
 			roll_blocks(1);
 			set_author(9, 1, 100);
@@ -4226,9 +4228,9 @@ fn payouts_follow_delegation_changes() {
 			);
 			roll_blocks(3);
 			assert_events_eq!(
-				Event::Rewarded { account: 1, rewards: 36 },
-				Event::Rewarded { account: 7, rewards: 12 },
-				Event::Rewarded { account: 10, rewards: 12 },
+				Event::Rewarded { account: 1, rewards: 3027 },
+				Event::Rewarded { account: 7, rewards: 1009 },
+				Event::Rewarded { account: 10, rewards: 1009 },
 			);
 			set_author(10, 1, 100);
 			roll_to_round_begin(11);
@@ -4247,9 +4249,9 @@ fn payouts_follow_delegation_changes() {
 			);
 			roll_blocks(3);
 			assert_events_eq!(
-				Event::Rewarded { account: 1, rewards: 38 },
-				Event::Rewarded { account: 7, rewards: 12 },
-				Event::Rewarded { account: 10, rewards: 12 },
+				Event::Rewarded { account: 1, rewards: 3027 },
+				Event::Rewarded { account: 7, rewards: 1009 },
+				Event::Rewarded { account: 10, rewards: 1009 },
 			);
 			roll_to_round_begin(12);
 			// new delegation is rewarded for first time
@@ -4268,10 +4270,10 @@ fn payouts_follow_delegation_changes() {
 			);
 			roll_blocks(3);
 			assert_events_eq!(
-				Event::Rewarded { account: 1, rewards: 34 },
-				Event::Rewarded { account: 7, rewards: 11 },
-				Event::Rewarded { account: 10, rewards: 11 },
-				Event::Rewarded { account: 8, rewards: 11 },
+				Event::Rewarded { account: 1, rewards: 2623 },
+				Event::Rewarded { account: 7, rewards: 807 },
+				Event::Rewarded { account: 10, rewards: 807 },
+				Event::Rewarded { account: 8, rewards: 807 },
 			);
 		});
 }
@@ -4874,6 +4876,7 @@ fn deferred_payment_steady_state_event_flow() {
 			(44, 4, 100),
 			(44, 1, 100),
 		])
+		.with_rewards_account_balance(100000)
 		.build()
 		.execute_with(|| {
 			// convenience to set the round points consistently
@@ -4953,30 +4956,30 @@ fn deferred_payment_steady_state_event_flow() {
 
 				roll_blocks(1);
 				assert_events_eq!(
-					Event::Rewarded { account: 3, rewards: 20 },
-					Event::Rewarded { account: 22, rewards: 7 },
-					Event::Rewarded { account: 33, rewards: 7 },
+					Event::Rewarded { account: 3, rewards: 769 },
+					Event::Rewarded { account: 22, rewards: 256 },
+					Event::Rewarded { account: 33, rewards: 256 },
 				);
 
 				roll_blocks(1);
 				assert_events_eq!(
-					Event::Rewarded { account: 4, rewards: 20 },
-					Event::Rewarded { account: 33, rewards: 7 },
-					Event::Rewarded { account: 44, rewards: 7 },
+					Event::Rewarded { account: 4, rewards: 769 },
+					Event::Rewarded { account: 33, rewards: 256 },
+					Event::Rewarded { account: 44, rewards: 256 },
 				);
 
 				roll_blocks(1);
 				assert_events_eq!(
-					Event::Rewarded { account: 1, rewards: 20 },
-					Event::Rewarded { account: 11, rewards: 7 },
-					Event::Rewarded { account: 44, rewards: 7 },
+					Event::Rewarded { account: 1, rewards: 769 },
+					Event::Rewarded { account: 11, rewards: 256 },
+					Event::Rewarded { account: 44, rewards: 256 },
 				);
 
 				roll_blocks(1);
 				assert_events_eq!(
-					Event::Rewarded { account: 2, rewards: 20 },
-					Event::Rewarded { account: 11, rewards: 7 },
-					Event::Rewarded { account: 22, rewards: 7 },
+					Event::Rewarded { account: 2, rewards: 769 },
+					Event::Rewarded { account: 11, rewards: 256 },
+					Event::Rewarded { account: 22, rewards: 256 },
 				);
 
 				roll_blocks(1);
