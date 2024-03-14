@@ -697,7 +697,7 @@ pub mod pallet {
 				parachain_bond_reserve_percent: Default::default(),
 				blocks_per_round: 1u32,
 				num_selected_candidates: T::MinSelectedCandidates::get(),
-				rewards_account: None,
+				rewards_account: Default::default(),
 			}
 		}
 	}
