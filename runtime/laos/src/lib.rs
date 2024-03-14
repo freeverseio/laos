@@ -14,9 +14,7 @@ mod types;
 
 use core::marker::PhantomData;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
-pub use ownership_parachain_primitives::{
-	AccountId, AuraId, Balance, BlockNumber, Hash, Index, Nonce, Signature,
-};
+pub use laos_primitives::{AccountId, AuraId, Balance, BlockNumber, Hash, Index, Nonce, Signature};
 use parity_scale_codec::{Decode, Encode};
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
@@ -35,7 +33,7 @@ use sp_runtime::{
 	ApplyExtrinsicResult, ConsensusEngineId,
 };
 
-use ownership_parachain_primitives::MAXIMUM_BLOCK_WEIGHT;
+use laos_primitives::MAXIMUM_BLOCK_WEIGHT;
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
@@ -77,7 +75,7 @@ mod precompiles;
 use precompiles::FrontierPrecompiles;
 
 /// Block header type as expected by this runtime.
-pub type Header = generic::Header<BlockNumber, ownership_parachain_primitives::Hasher>;
+pub type Header = generic::Header<BlockNumber, laos_primitives::Hasher>;
 
 /// Block type as expected by this runtime.
 pub type Block = generic::Block<Header, UncheckedExtrinsic>;
@@ -972,7 +970,7 @@ impl_runtime_apis! {
 	impl frame_try_runtime::TryRuntime<Block> for Runtime {
 		fn on_runtime_upgrade(checks: frame_try_runtime::UpgradeCheckSelect) -> (Weight, Weight) {
 			let weight = Executive::try_runtime_upgrade(checks).unwrap();
-			(weight, ownership_parachain_primitives::BlockWeights::get().max_block)
+			(weight, laos_primitives::BlockWeights::get().max_block)
 		}
 
 		fn execute_block(

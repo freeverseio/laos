@@ -4,7 +4,7 @@ use cumulus_client_cli::generate_genesis_block;
 use cumulus_primitives_core::ParaId;
 use fc_db::kv::frontier_database_dir;
 use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
-use laos_ownership_runtime::Block;
+use laos_runtime::Block;
 use log::info;
 use parity_scale_codec::Encode;
 use polkadot_service::RococoChainSpec;
@@ -258,7 +258,7 @@ pub fn run() -> Result<()> {
 			runner.sync_run(|config| {
 				let partials = new_partial(&config, &eth_cfg)?;
 				let spec = cli.load_spec(&cmd.shared_params.chain.clone().unwrap_or_default())?;
-				cmd.run::<laos_ownership_runtime::opaque::Block>(&*spec, &*partials.client)
+				cmd.run::<laos_runtime::opaque::Block>(&*spec, &*partials.client)
 			})
 		},
 		Some(Subcommand::ExportGenesisWasm(cmd)) => {
@@ -309,7 +309,7 @@ pub fn run() -> Result<()> {
 		},
 		#[cfg(feature = "try-runtime")]
 		Some(Subcommand::TryRuntime(cmd)) => {
-			use laos_ownership_runtime::MILLISECS_PER_BLOCK;
+			use laos_runtime::MILLISECS_PER_BLOCK;
 			use sc_executor::{sp_wasm_interface::ExtendedHostFunctions, NativeExecutionDispatch};
 			use try_runtime_cli::block_building_info::timestamp_with_aura_info;
 
@@ -391,7 +391,7 @@ pub fn run() -> Result<()> {
 						&id,
 					);
 
-				let block: laos_ownership_runtime::opaque::Block =
+				let block: laos_runtime::opaque::Block =
 					generate_genesis_block(&*config.chain_spec, sp_runtime::StateVersion::V1)
 						.map_err(|e| format!("{:?}", e))?;
 				let genesis_state = format!("0x{:?}", HexDisplay::from(&block.header().encode()));

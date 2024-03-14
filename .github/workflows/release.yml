@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - "v*.*.*"
   workflow_dispatch:
 
 jobs:
@@ -26,7 +26,7 @@ jobs:
   dockerize:
     needs: check-version
     if: needs.check-version.outputs.proceed == 'true'
-    runs-on: 
+    runs-on:
       group: laos
       labels: ubuntu-16-cores
     steps:
@@ -43,22 +43,22 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
-      - name: Push image ownership node
+      - name: Push image of laos node
         uses: docker/build-push-action@v4
         with:
           context: .
           push: true
-          file: ./docker/ownership-node.local.Dockerfile
+          file: ./docker/laos-node.local.Dockerfile
           tags: freeverseio/laos-ownership-node:${{ github.ref_name }}
       - name: Upload LAOS Wasm Binaries
         run: |
-            echo "Uploading LAOS wasm binary for release ${{ github.ref_name }}"
-            gh release upload ${{ github.ref_name }} ./target/release/wbuild/laos-ownership-runtime/laos_ownership_runtime.compact.compressed.wasm
+          echo "Uploading LAOS wasm binary for release ${{ github.ref_name }}"
+          gh release upload ${{ github.ref_name }} ./target/release/wbuild/laos-runtime/laos_runtime.compact.compressed.wasm
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload KLAOS Wasm Binaries
         run: |
-            echo "Uploading KLAOS wasm binary for release ${{ github.ref_name }}"
-            gh release upload ${{ github.ref_name }} ./target/release/wbuild/klaos-ownership-runtime/klaos_ownership_runtime.compact.compressed.wasm
+          echo "Uploading KLAOS wasm binary for release ${{ github.ref_name }}"
+          gh release upload ${{ github.ref_name }} ./target/release/wbuild/klaos-runtime/klaos_runtime.compact.compressed.wasm
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

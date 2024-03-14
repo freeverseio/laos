@@ -8,7 +8,7 @@
 //! WASM-EXECUTION: `Compiled`, CHAIN: `None`, DB CACHE: `1024`
 
 // Executed Command:
-// ./target/release/laos-ownership
+// ./target/release/laos
 // benchmark
 // pallet
 // --pallet

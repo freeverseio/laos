@@ -1,5 +1,5 @@
 [package]
-name = "ownership-parachain-primitives"
+name = "laos-primitives"
 description = "Primitives of Ownership parachain runtime."
 version = "0.1.0"
 authors = ["Freeverse"]
