@@ -267,9 +267,6 @@ laos-precompile-utils = { path = "./precompile/utils", default-features = false 
 laos-primitives = { path = "./primitives", default-features = false }
 test-utils = { path = "./utils/test", default-features = false }
 
-# Other crates
-laos-runtime-api-staking = { path = "./runtime-api/staking", default-features = false }
-
 # runtime
 laos-runtime = { path = "./runtime/laos", default-features = false }
 klaos-runtime = { path = "./runtime/klaos", default-features = false }
