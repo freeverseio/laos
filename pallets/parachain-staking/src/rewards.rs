@@ -71,8 +71,6 @@ where
 			DispatchError::Arithmetic(ArithmeticError::Underflow) => Ok(Zero::zero()),
 			_ => Err(e),
 		})
-		// Runtime::Currency::deposit_into_existing(delegator_id, amount)
-		// 	.map(|imbalance| imbalance.peek())
 	}
 }
 
