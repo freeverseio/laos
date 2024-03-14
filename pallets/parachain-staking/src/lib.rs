@@ -52,6 +52,7 @@ mod auto_compound;
 mod delegation_requests;
 pub mod inflation;
 pub mod migrations;
+mod rewards;
 pub mod traits;
 pub mod types;
 pub mod weights;
