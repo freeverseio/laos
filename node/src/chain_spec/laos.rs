@@ -1,7 +1,7 @@
 use super::{get_collator_keys_from_seed, predefined_accounts, Extensions, SAFE_XCM_VERSION};
 use cumulus_primitives_core::ParaId;
 use fp_evm::GenesisAccount;
-use laos_ownership_runtime::{
+use laos_runtime::{
 	configs::parachain_staking, AccountId, AuraId, Balance, Precompiles, REVERT_BYTECODE,
 };
 use sc_service::ChainType;
@@ -9,14 +9,13 @@ use sp_core::{H160, U256};
 use std::{collections::BTreeMap, str::FromStr};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
-pub type ChainSpec =
-	sc_service::GenericChainSpec<laos_ownership_runtime::RuntimeGenesisConfig, Extensions>;
+pub type ChainSpec = sc_service::GenericChainSpec<laos_runtime::RuntimeGenesisConfig, Extensions>;
 
 /// Generate the session keys from individual elements.
 ///
 /// The input must be a tuple of individual keys (a single arg for now since we have just one key).
-pub fn template_session_keys(keys: AuraId) -> laos_ownership_runtime::SessionKeys {
-	laos_ownership_runtime::SessionKeys { aura: keys }
+pub fn template_session_keys(keys: AuraId) -> laos_runtime::SessionKeys {
+	laos_runtime::SessionKeys { aura: keys }
 }
 
 pub fn development_config() -> ChainSpec {
@@ -109,22 +108,22 @@ fn testnet_genesis(
 	endowed_accounts: Vec<AccountId>,
 	root_key: Option<AccountId>,
 	id: ParaId,
-) -> laos_ownership_runtime::RuntimeGenesisConfig {
-	laos_ownership_runtime::RuntimeGenesisConfig {
-		system: laos_ownership_runtime::SystemConfig {
-			code: laos_ownership_runtime::WASM_BINARY
+) -> laos_runtime::RuntimeGenesisConfig {
+	laos_runtime::RuntimeGenesisConfig {
+		system: laos_runtime::SystemConfig {
+			code: laos_runtime::WASM_BINARY
 				.expect("WASM binary was not build, please build it!")
 				.to_vec(),
 			..Default::default()
 		},
-		balances: laos_ownership_runtime::BalancesConfig {
+		balances: laos_runtime::BalancesConfig {
 			balances: endowed_accounts.iter().cloned().map(|k| (k, 1e24 as u128)).collect(),
 		},
-		parachain_info: laos_ownership_runtime::ParachainInfoConfig {
+		parachain_info: laos_runtime::ParachainInfoConfig {
 			parachain_id: id,
 			..Default::default()
 		},
-		session: laos_ownership_runtime::SessionConfig {
+		session: laos_runtime::SessionConfig {
 			keys: invulnerables
 				.into_iter()
 				.map(|(acc, aura)| {
@@ -141,23 +140,20 @@ fn testnet_genesis(
 		aura: Default::default(),
 		aura_ext: Default::default(),
 		parachain_system: Default::default(),
-		polkadot_xcm: laos_ownership_runtime::PolkadotXcmConfig {
+		polkadot_xcm: laos_runtime::PolkadotXcmConfig {
 			safe_xcm_version: Some(SAFE_XCM_VERSION),
 			..Default::default()
 		},
-		sudo: laos_ownership_runtime::SudoConfig { key: root_key },
+		sudo: laos_runtime::SudoConfig { key: root_key },
 		transaction_payment: Default::default(),
 		// EVM compatibility
-		evm_chain_id: laos_ownership_runtime::EVMChainIdConfig {
-			chain_id: 667,
-			..Default::default()
-		},
-		parachain_staking: laos_ownership_runtime::ParachainStakingConfig {
+		evm_chain_id: laos_runtime::EVMChainIdConfig { chain_id: 667, ..Default::default() },
+		parachain_staking: laos_runtime::ParachainStakingConfig {
 			candidates: stakers,
 			blocks_per_round: 5,
 			..Default::default()
 		},
-		evm: laos_ownership_runtime::EVMConfig {
+		evm: laos_runtime::EVMConfig {
 			accounts: {
 				let mut map: BTreeMap<_, _> = Precompiles::used_addresses()
 					.iter()

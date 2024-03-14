@@ -5,7 +5,7 @@ use std::{path::Path, sync::Arc, time::Duration};
 
 use cumulus_client_cli::CollatorOptions;
 // Local Runtime Types
-use laos_ownership_runtime::{opaque::Block, Hash, RuntimeApi, TransactionConverter};
+use laos_runtime::{opaque::Block, Hash, RuntimeApi, TransactionConverter};
 
 // Cumulus Imports
 use cumulus_client_collator::service::CollatorService;
@@ -48,11 +48,11 @@ impl sc_executor::NativeExecutionDispatch for ParachainNativeExecutor {
 	type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;
 
 	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
-		laos_ownership_runtime::api::dispatch(method, data)
+		laos_runtime::api::dispatch(method, data)
 	}
 
 	fn native_version() -> sc_executor::NativeVersion {
-		laos_ownership_runtime::native_version()
+		laos_runtime::native_version()
 	}
 }
 

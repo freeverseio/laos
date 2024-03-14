@@ -1,5 +1,5 @@
 [package]
-name = "laos-ownership-runtime"
+name = "laos-runtime"
 edition = "2021"
 version = { workspace = true }
 
@@ -18,7 +18,7 @@ smallvec = { workspace = true }
 log = { workspace = true }
 
 # Runtime primitives
-ownership-parachain-primitives = { workspace = true }
+laos-primitives = { workspace = true }
 
 # Substrate
 frame-benchmarking = { workspace = true, optional = true }
@@ -99,7 +99,6 @@ pallet-evm-precompile-bn128 = { workspace = true }
 pallet-evm-precompile-blake2 = { workspace = true }
 
 pallet-parachain-staking = { workspace = true }
-laos-runtime-api-staking = { workspace = true }
 pallet-block-rewards-handler = { workspace = true }
 
 [dev-dependencies]
@@ -188,11 +187,10 @@ std = [
 	"frame-system-benchmarking?/std",
 	"frame-try-runtime",
 	# Bridge deps,
-	"ownership-parachain-primitives/std",
+	"laos-primitives/std",
 	"hex/std",
 	"pallet-parachain-staking/std",
 	"pallet-block-rewards-handler/std",
-	"laos-runtime-api-staking/std",
 	"log/std",
 	"sp-consensus-slots/std",
 	"sp-staking/std",

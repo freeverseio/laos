@@ -21,7 +21,7 @@ use fc_mapping_sync::{kv::MappingSyncWorker, SyncStrategy};
 use fc_rpc::{EthTask, OverrideHandle};
 pub use fc_rpc_core::types::{FeeHistoryCache, FeeHistoryCacheLimit, FilterPool};
 // Local
-use laos_ownership_runtime::opaque::Block;
+use laos_runtime::opaque::Block;
 
 /// Frontier DB backend type.
 pub type FrontierBackend = fc_db::Backend<Block>;

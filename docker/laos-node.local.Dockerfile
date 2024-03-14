@@ -15,10 +15,10 @@ RUN mkdir -p /data /laos/.local/share && \
 USER laos
 
 # copy the compiled binary to the container
-COPY --chown=laos:laos --chmod=774 target/release/laos-ownership /usr/bin/laos-ownership
+COPY --chown=laos:laos --chmod=774 target/release/laos /usr/bin/laos
 
 # check if executable works in this container
-RUN /usr/bin/laos-ownership --version
+RUN /usr/bin/laos --version
 
 # Expose necessary ports
 EXPOSE 9930 9333 9944 30333 30334
@@ -27,4 +27,4 @@ EXPOSE 9930 9333 9944 30333 30334
 VOLUME ["/data"]
 
 # ws_port
-ENTRYPOINT ["/usr/bin/laos-ownership"]
+ENTRYPOINT ["/usr/bin/laos"]
