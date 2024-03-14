@@ -88,8 +88,8 @@ pub mod pallet {
 		fail,
 		pallet_prelude::*,
 		traits::{
-			tokens::WithdrawReasons, Currency, Get, LockIdentifier, LockableCurrency,
-			ReservableCurrency,
+			tokens::{ExistenceRequirement, WithdrawReasons},
+			Currency, Get, LockIdentifier, LockableCurrency, ReservableCurrency,
 		},
 	};
 	use frame_system::pallet_prelude::*;
@@ -2134,6 +2134,23 @@ pub mod pallet {
 				});
 			}
 			T::WeightInfo::mint_collator_reward()
+		}
+
+		/// Mint a specified reward amount to the collator's account. Emits the [Rewarded] event.
+		pub fn send_collator_reward(
+			_paid_for_round: RoundIndex,
+			collator_id: T::AccountId,
+			amt: BalanceOf<T>,
+		) -> Weight {
+			if let Ok(()) = T::Currency::transfer(
+				&T::RewardsAccount::get(),
+				&collator_id,
+				amt,
+				ExistenceRequirement::KeepAlive,
+			) {
+				Self::deposit_event(Event::Rewarded { account: collator_id.clone(), rewards: amt });
+			}
+			Weight::zero() // TODO: weight
 		}
 
 		/// Mint and compound delegation rewards. The function mints the amount towards the
