@@ -110,6 +110,7 @@ const GENESIS_COLLATOR_COMMISSION: Perbill = Perbill::from_percent(20);
 const GENESIS_PARACHAIN_BOND_RESERVE_PERCENT: Percent = Percent::from_percent(30);
 const GENESIS_NUM_SELECTED_CANDIDATES: u32 = 5;
 const GENESIS_REWARDS_ACCOUNT: AccountId = 999;
+
 parameter_types! {
 	pub const MinBlocksPerRound: u32 = 3;
 	pub const MaxOfflineRounds: u32 = 1;
@@ -134,10 +135,6 @@ impl Get<Slot> for StakingRoundSlotProvider {
 		let block_number: u64 = System::block_number().into();
 		Slot::from(block_number)
 	}
-}
-
-parameter_types! {
-	pub const RewardsAccount: AccountId = 999;
 }
 
 impl Config for Test {
@@ -254,7 +251,7 @@ impl ExtBuilder {
 
 		// add rewards account to the balances
 		let mut balances = self.balances.clone();
-		balances.push((RewardsAccount::get(), self.rewards_account_balance));
+		balances.push((GENESIS_REWARDS_ACCOUNT, self.rewards_account_balance));
 		pallet_balances::GenesisConfig::<Test> { balances }
 			.assimilate_storage(&mut t)
 			.expect("Pallet balances storage can be assimilated");
