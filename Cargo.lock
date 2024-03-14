@@ -4900,7 +4900,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "klaos-ownership-runtime"
+name = "klaos-runtime"
 version = "0.12.1"
 dependencies = [
  "cumulus-pallet-aura-ext",
@@ -5045,7 +5045,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "laos-ownership"
+name = "laos"
 version = "0.12.1"
 dependencies = [
  "clap",
@@ -5120,7 +5120,52 @@ dependencies = [
 ]
 
 [[package]]
-name = "laos-ownership-runtime"
+name = "laos-precompile-utils"
+version = "0.4.3"
+dependencies = [
+ "evm",
+ "fp-evm",
+ "frame-support",
+ "frame-system",
+ "hex-literal",
+ "impl-trait-for-tuples",
+ "laos-precompile-utils-macro",
+ "num_enum",
+ "pallet-evm",
+ "parity-scale-codec",
+ "precompile-utils",
+ "sha3",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "laos-precompile-utils-macro"
+version = "0.1.0"
+dependencies = [
+ "num_enum",
+ "proc-macro2",
+ "quote",
+ "sha3",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "laos-primitives"
+version = "0.1.0"
+dependencies = [
+ "fp-account",
+ "frame-support",
+ "frame-system",
+ "sp-consensus-aura",
+ "sp-core",
+ "sp-runtime",
+]
+
+[[package]]
+name = "laos-runtime"
 version = "0.12.1"
 dependencies = [
  "cumulus-pallet-aura-ext",
@@ -6690,18 +6735,6 @@ dependencies = [
  "sp-std",
  "staging-xcm",
  "staging-xcm-executor",
-]
-
-[[package]]
-name = "ownership-parachain-primitives"
-version = "0.1.0"
-dependencies = [
- "fp-account",
- "frame-support",
- "frame-system",
- "sp-consensus-aura",
- "sp-core",
- "sp-runtime",
 ]
 
 [[package]]
