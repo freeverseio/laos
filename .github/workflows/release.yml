@@ -39,8 +39,8 @@ jobs:
     strategy:
       matrix:
         runtime:
-          - { name: "laos", package: "laos-ownership-runtime", path: "ownership-chain/runtime/laos" }
-          - { name: "klaos", package: "klaos-ownership-runtime", path: "ownership-chain/runtime/klaos" }
+          - { name: "laos", package: "laos-ownership-runtime", path: "runtime/laos" }
+          - { name: "klaos", package: "klaos-ownership-runtime", path: "runtime/klaos" }
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup
