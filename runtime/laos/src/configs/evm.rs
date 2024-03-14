@@ -3,7 +3,7 @@ use crate::{
 	EVMChainId, Runtime, RuntimeEvent, Timestamp, Weight, U256, WEIGHT_REF_TIME_PER_SECOND,
 };
 use frame_support::parameter_types;
-use ownership_parachain_primitives::{MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO};
+use laos_primitives::{MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO};
 
 /// Current approximation of the gas/s consumption considering
 /// EVM execution over compiled WASM (on 4.4Ghz CPU).

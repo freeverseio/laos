@@ -1,5 +1,5 @@
 [package]
-name = "klaos-ownership-runtime"
+name = "klaos-runtime"
 edition = "2021"
 version = { workspace = true }
 
@@ -17,7 +17,7 @@ scale-info = { workspace = true, features = ["derive"] }
 smallvec = { workspace = true }
 
 # Runtime primitives
-ownership-parachain-primitives = { workspace = true }
+laos-primitives = { workspace = true }
 
 # Substrate
 frame-benchmarking = { workspace = true, optional = true }
@@ -181,7 +181,7 @@ std = [
 	"frame-system-benchmarking",
 	"frame-try-runtime",
 	# Bridge deps,
-	"ownership-parachain-primitives/std",
+	"laos-primitives/std",
 	"hex/std",
 	"pallet-utility/std",
 ]

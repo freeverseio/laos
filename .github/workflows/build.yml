@@ -1,4 +1,4 @@
-name: Build 
+name: Build
 
 # Controls when the action will run.
 on:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   check:
-    runs-on: 
+    runs-on:
       group: laos
       labels: ubuntu-16-cores
     steps:
@@ -21,7 +21,7 @@ jobs:
           cargo check --all-targets --release --features runtime-benchmarks --features try-runtime --features fast-runtime
 
   build_and_push:
-    runs-on: 
+    runs-on:
       group: laos
       labels: ubuntu-16-cores
     steps:
@@ -42,12 +42,12 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: ./docker/ownership-node.local.Dockerfile
+          file: ./docker/laos-node.local.Dockerfile
           push: true
           tags: freeverseio/laos-ownership-node:${{ github.sha }}
 
   lint:
-    runs-on: 
+    runs-on:
       group: laos
       labels: ubuntu-16-cores
     steps:
@@ -70,7 +70,7 @@ jobs:
         run: |
           cargo clippy --all-targets --workspace --features runtime-benchmarks --features try-runtime
   test:
-    runs-on: 
+    runs-on:
       group: laos
       labels: ubuntu-16-cores
     steps:
@@ -79,13 +79,13 @@ jobs:
       - uses: ./.github/actions/cache
         with:
           cache-key: test
- 
+
       - name: Test
         run: |
           SKIP_WASM_BUILD=1 cargo test
 
   try-runtime-klaos:
-    runs-on: 
+    runs-on:
       group: laos
       labels: ubuntu-16-cores
     steps:
@@ -96,16 +96,16 @@ jobs:
           cache-key: try_runtime
       - name: Build
         run: |
-          cargo build --release --package laos-ownership --features=try-runtime
+          cargo build --release --package laos --features=try-runtime
       - name: Try Runtime for Caladan
         run: |
-          RUST_LOG=try-runtime ./target/release/laos-ownership try-runtime --chain klaos-dev --runtime ./target/release/wbuild/klaos-ownership-runtime/klaos_ownership_runtime.wasm on-runtime-upgrade --checks=pre-and-post live --uri ws://161.35.247.178:9944
+          RUST_LOG=try-runtime ./target/release/laos try-runtime --chain klaos-dev --runtime ./target/release/wbuild/klaos-runtime/klaos_runtime.wasm on-runtime-upgrade --checks=pre-and-post live --uri ws://161.35.247.178:9944
       - name: Try Runtime for Klaos
         run: |
-          RUST_LOG=try-runtime ./target/release/laos-ownership try-runtime --chain klaos-dev --runtime ./target/release/wbuild/klaos-ownership-runtime/klaos_ownership_runtime.wasm on-runtime-upgrade --checks=pre-and-post live --uri ws://159.223.241.90:9944
-  
+          RUST_LOG=try-runtime ./target/release/laos try-runtime --chain klaos-dev --runtime ./target/release/wbuild/klaos-runtime/klaos_runtime.wasm on-runtime-upgrade --checks=pre-and-post live --uri ws://159.223.241.90:9944
+
   e2e-tests:
-    runs-on: 
+    runs-on:
       group: laos
       labels: ubuntu-16-cores
     steps:
@@ -114,10 +114,10 @@ jobs:
       - uses: ./.github/actions/cache
         with:
           cache-key: build_and_push
-   
+
       - name: Build
         run: |
-          cargo build --release 
+          cargo build --release
 
       - name: Copy polkadot relay chain binary
         run: |
@@ -128,16 +128,16 @@ jobs:
           wget https://github.com/AstarNetwork/Astar/releases/download/v5.23.0/astar-collator-v5.23.0-ubuntu-x86_64.tar.gz
           tar xf astar-collator-v5.23.0-ubuntu-x86_64.tar.gz
           chmod +x ./astar-collator
-        
+
       - name: Copy zombienet binary
         run: |
           wget https://github.com/paritytech/zombienet/releases/download/v1.3.55/zombienet-linux-x64
           chmod +x ./zombienet-linux-x64
-        
+
       - name: Run zombienet
         run: |
           export ZOMBIENET_RELAYCHAIN_COMMAND=./polkadot
-          export ZOMBIENET_OWNCHAIN_COMMAND=./target/release/laos-ownership
+          export ZOMBIENET_OWNCHAIN_COMMAND=./target/release/laos
           export ZOMBIENET_ASTAR_COMMAND=./astar-collator
           ./zombienet-linux-x64 spawn ./zombienet/native.toml -p native &
           echo "Zombienet started"
@@ -162,7 +162,7 @@ jobs:
         working-directory: ./e2e-tests
 
   e2e-tests-klaos:
-    runs-on: 
+    runs-on:
       group: laos
       labels: ubuntu-16-cores
     steps:
@@ -171,10 +171,10 @@ jobs:
       - uses: ./.github/actions/cache
         with:
           cache-key: build_and_push
-   
+
       - name: Build
         run: |
-          cargo build --release 
+          cargo build --release
 
       - name: Copy polkadot relay chain binary
         run: |
@@ -185,16 +185,16 @@ jobs:
           wget https://github.com/AstarNetwork/Astar/releases/download/v5.23.0/astar-collator-v5.23.0-ubuntu-x86_64.tar.gz
           tar xf astar-collator-v5.23.0-ubuntu-x86_64.tar.gz
           chmod +x ./astar-collator
-        
+
       - name: Copy zombienet binary
         run: |
           wget https://github.com/paritytech/zombienet/releases/download/v1.3.55/zombienet-linux-x64
           chmod +x ./zombienet-linux-x64
-        
+
       - name: Run zombienet
         run: |
           export ZOMBIENET_RELAYCHAIN_COMMAND=./polkadot
-          export ZOMBIENET_OWNCHAIN_COMMAND=./target/release/laos-ownership
+          export ZOMBIENET_OWNCHAIN_COMMAND=./target/release/laos
           export ZOMBIENET_ASTAR_COMMAND=./astar-collator
           ./zombienet-linux-x64 spawn ./zombienet/native.klaos.toml -p native &
           echo "Zombienet started"

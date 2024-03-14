@@ -15,9 +15,9 @@ impl frame_system::Config for Runtime {
 	/// The block type
 	type Block = Block;
 	/// The type for hashing blocks and tries.
-	type Hash = ownership_parachain_primitives::Hash;
+	type Hash = laos_primitives::Hash;
 	/// The type for storing how many extrinsics an account has signed.
-	type Nonce = ownership_parachain_primitives::Nonce;
+	type Nonce = laos_primitives::Nonce;
 	/// The hashing algorithm used.
 	type Hashing = BlakeTwo256;
 	/// The ubiquitous event type.
@@ -43,9 +43,9 @@ impl frame_system::Config for Runtime {
 	/// Weight information for the extrinsics of this pallet.
 	type SystemWeightInfo = ();
 	/// Block & extrinsics weights: base values and limits.
-	type BlockWeights = ownership_parachain_primitives::BlockWeights;
+	type BlockWeights = laos_primitives::BlockWeights;
 	/// The maximum length of a block (in bytes).
-	type BlockLength = ownership_parachain_primitives::BlockLength;
+	type BlockLength = laos_primitives::BlockLength;
 	/// This is used as an identifier of the chain. 42 is the generic substrate prefix.
 	type SS58Prefix = SS58Prefix;
 	/// The action to take on a Runtime Upgrade
