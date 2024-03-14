@@ -19,19 +19,19 @@ chain = "local-v"
   [[parachains.collators]]
   name = "laos"
   ws_port = 9999
-  command = "{{ZOMBIENET_OWNCHAIN_COMMAND}}"
+  command = "{{ZOMBIENET_LAOS_COMMAND}}"
   validator = true
 
   [[parachains.collators]]
   name = "laos-1"
   ws_port = 10000
-  command = "{{ZOMBIENET_OWNCHAIN_COMMAND}}"
+  command = "{{ZOMBIENET_LAOS_COMMAND}}"
   validator = true
 
   [[parachains.collators]]
   name = "laos-2"
   ws_port = 10001
-  command = "{{ZOMBIENET_OWNCHAIN_COMMAND}}"
+  command = "{{ZOMBIENET_LAOS_COMMAND}}"
   validator = true
 
 [[parachains]]

@@ -137,7 +137,7 @@ jobs:
       - name: Run zombienet
         run: |
           export ZOMBIENET_RELAYCHAIN_COMMAND=./polkadot
-          export ZOMBIENET_OWNCHAIN_COMMAND=./target/release/laos
+          export ZOMBIENET_LAOS_COMMAND=./target/release/laos
           export ZOMBIENET_ASTAR_COMMAND=./astar-collator
           ./zombienet-linux-x64 spawn ./zombienet/native.toml -p native &
           echo "Zombienet started"
@@ -194,7 +194,7 @@ jobs:
       - name: Run zombienet
         run: |
           export ZOMBIENET_RELAYCHAIN_COMMAND=./polkadot
-          export ZOMBIENET_OWNCHAIN_COMMAND=./target/release/laos
+          export ZOMBIENET_LAOS_COMMAND=./target/release/laos
           export ZOMBIENET_ASTAR_COMMAND=./astar-collator
           ./zombienet-linux-x64 spawn ./zombienet/native.klaos.toml -p native &
           echo "Zombienet started"
