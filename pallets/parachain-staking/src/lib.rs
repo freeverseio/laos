@@ -690,7 +690,7 @@ pub mod pallet {
 	impl<T: Config> Default for GenesisConfig<T> {
 		fn default() -> Self {
 			Self {
-				candidates: vec![],
+				candidates: Default::default(),
 				delegations: vec![],
 				inflation_config: Default::default(),
 				collator_commission: Default::default(),
@@ -707,7 +707,18 @@ pub mod pallet {
 		fn build(&self) {
 			RewardsAccount::<T>::put(self.rewards_account.clone().unwrap());
 			assert!(self.blocks_per_round > 0, "Blocks per round must be > 0");
-			<InflationConfig<T>>::put(self.inflation_config.clone());
+
+			// Set inflation configuration
+			let mut inflation_config = self.inflation_config.clone();
+			// if all the round values are 0, derive them from the annual values
+			if inflation_config.round.min.is_zero() &&
+				inflation_config.round.ideal.is_zero() &&
+				inflation_config.round.max.is_zero()
+			{
+				inflation_config.set_round_from_annual::<T>(inflation_config.annual);
+			}
+			<InflationConfig<T>>::put(inflation_config);
+
 			let mut candidate_count = 0u32;
 			// Initialize the candidates
 			for &(ref candidate, balance) in &self.candidates {
