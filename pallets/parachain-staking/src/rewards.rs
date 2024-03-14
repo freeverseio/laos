@@ -78,12 +78,14 @@ impl<T: Config> Pallet<T> {
 		collator_id: T::AccountId,
 		amt: BalanceOf<T>,
 	) -> Weight {
-		if let Ok(()) = T::Currency::transfer(
+		if T::Currency::transfer(
 			&T::RewardsAccount::get(),
 			&collator_id,
 			amt,
 			ExistenceRequirement::KeepAlive,
-		) {
+		)
+		.is_ok()
+		{
 			Self::deposit_event(Event::Rewarded { account: collator_id.clone(), rewards: amt });
 		}
 		Weight::zero() // TODO: weight
