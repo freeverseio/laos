@@ -1,5 +1,6 @@
 use crate::{traits::PayoutReward, BalanceOf, *};
 use frame_support::{
+	ensure,
 	pallet_prelude::Weight,
 	traits::{
 		tokens::{currency::Currency, ExistenceRequirement},
@@ -49,6 +50,11 @@ where
 		delegator_id: &Runtime::AccountId,
 		amount: crate::BalanceOf<Runtime>,
 	) -> Result<crate::BalanceOf<Runtime>, DispatchError> {
+		ensure!(
+			frame_system::Account::<Runtime>::contains_key(delegator_id),
+			"Account does not exist"
+		);
+
 		Runtime::Currency::transfer(
 			&T::get(),
 			&delegator_id,
