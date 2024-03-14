@@ -4,11 +4,10 @@ use frame_support::{
 	pallet_prelude::Weight,
 	traits::{
 		tokens::{currency::Currency, ExistenceRequirement},
-		Get, Imbalance,
+		Imbalance,
 	},
 };
 use sp_runtime::{traits::Zero, ArithmeticError, DispatchError};
-use sp_std::marker::PhantomData;
 
 pub struct MintingRewards;
 impl<Runtime: crate::Config> PayoutReward<Runtime, BalanceOf<Runtime>> for MintingRewards {
@@ -29,26 +28,16 @@ impl<Runtime: crate::Config> PayoutReward<Runtime, BalanceOf<Runtime>> for Minti
 	}
 }
 
-pub struct TransferFrom<RewardsAccount> {
-	_phantom: PhantomData<RewardsAccount>,
-}
-impl<Runtime, RewardsAccount> PayoutReward<Runtime, BalanceOf<Runtime>>
-	for TransferFrom<RewardsAccount>
-where
-	Runtime: crate::Config,
-	RewardsAccount: Get<Runtime::AccountId>,
+pub struct TransferFromRewardsAccount;
+impl<Runtime: crate::Config> PayoutReward<Runtime, BalanceOf<Runtime>>
+	for TransferFromRewardsAccount
 {
 	fn payout_collator_rewards(
 		for_round: crate::RoundIndex,
 		collator_id: Runtime::AccountId,
 		amount: crate::BalanceOf<Runtime>,
 	) -> Weight {
-		crate::Pallet::<Runtime>::send_collator_reward(
-			for_round,
-			RewardsAccount::get(),
-			collator_id,
-			amount,
-		)
+		crate::Pallet::<Runtime>::send_collator_reward(for_round, collator_id, amount)
 	}
 
 	fn payout(
@@ -60,8 +49,10 @@ where
 			"Account does not exist"
 		);
 
+		let rewards_account = RewardsAccount::<Runtime>::get().unwrap();
+
 		Runtime::Currency::transfer(
-			&RewardsAccount::get(),
+			&rewards_account,
 			&delegator_id,
 			amount,
 			ExistenceRequirement::KeepAlive,
@@ -92,12 +83,16 @@ impl<T: Config> Pallet<T> {
 
 	pub fn send_collator_reward(
 		_paid_for_round: RoundIndex,
-		source_id: T::AccountId,
 		collator_id: T::AccountId,
 		amt: BalanceOf<T>,
 	) -> Weight {
-		if T::Currency::transfer(&source_id, &collator_id, amt, ExistenceRequirement::KeepAlive)
-			.is_ok()
+		if T::Currency::transfer(
+			&RewardsAccount::<T>::get().unwrap(),
+			&collator_id,
+			amt,
+			ExistenceRequirement::KeepAlive,
+		)
+		.is_ok()
 		{
 			Self::deposit_event(Event::Rewarded { account: collator_id.clone(), rewards: amt });
 		}

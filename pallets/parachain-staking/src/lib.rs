@@ -52,7 +52,7 @@ mod auto_compound;
 mod delegation_requests;
 pub mod inflation;
 pub mod migrations;
-mod rewards;
+pub mod rewards;
 pub mod traits;
 pub mod types;
 pub mod weights;
@@ -659,6 +659,11 @@ pub mod pallet {
 	/// Killswitch to enable/disable marking offline feature.
 	pub type EnableMarkingOffline<T: Config> = StorageValue<_, bool, ValueQuery>;
 
+	/// Source of rewards for block producers
+	#[pallet::storage]
+	#[pallet::getter(fn rewards_account)]
+	pub type RewardsAccount<T: Config> = StorageValue<_, T::AccountId, OptionQuery>;
+
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T: Config> {
 		/// Initialize balance and register all as collators: `(collator AccountId, balance
@@ -678,6 +683,8 @@ pub mod pallet {
 		pub blocks_per_round: u32,
 		/// Number of selected candidates every round. Cannot be lower than MinSelectedCandidates
 		pub num_selected_candidates: u32,
+		/// Source of rewards for block producers
+		pub rewards_account: Option<T::AccountId>,
 	}
 
 	impl<T: Config> Default for GenesisConfig<T> {
@@ -690,6 +697,7 @@ pub mod pallet {
 				parachain_bond_reserve_percent: Default::default(),
 				blocks_per_round: 1u32,
 				num_selected_candidates: T::MinSelectedCandidates::get(),
+				rewards_account: None,
 			}
 		}
 	}
@@ -697,6 +705,7 @@ pub mod pallet {
 	#[pallet::genesis_build]
 	impl<T: Config> BuildGenesisConfig for GenesisConfig<T> {
 		fn build(&self) {
+			RewardsAccount::<T>::put(self.rewards_account.clone().unwrap());
 			assert!(self.blocks_per_round > 0, "Blocks per round must be > 0");
 			<InflationConfig<T>>::put(self.inflation_config.clone());
 			let mut candidate_count = 0u32;
