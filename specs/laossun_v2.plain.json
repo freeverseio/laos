@@ -104,9 +104,7 @@
         "collatorCommission": 0,
         "parachainBondReservePercent": 0,
         "blocksPerRound": 5,
-        "numSelectedCandidates": 5
-      },
-      "blockRewardsHandler": {
+        "numSelectedCandidates": 5,
         "rewardsAccount": "0xffffffffffffffffffffffffffffffffffffff01"
       },
       "polkadotXcm": {
