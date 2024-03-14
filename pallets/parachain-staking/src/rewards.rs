@@ -6,7 +6,7 @@ use frame_support::{
 		Get, Imbalance,
 	},
 };
-use sp_runtime::DispatchError;
+use sp_runtime::{traits::Zero, ArithmeticError, DispatchError};
 
 pub struct MintingRewards;
 impl<Runtime: crate::Config> PayoutReward<Runtime, BalanceOf<Runtime>> for MintingRewards {
@@ -24,6 +24,36 @@ impl<Runtime: crate::Config> PayoutReward<Runtime, BalanceOf<Runtime>> for Minti
 	) -> Result<crate::BalanceOf<Runtime>, DispatchError> {
 		Runtime::Currency::deposit_into_existing(delegator_id, amount)
 			.map(|imbalance| imbalance.peek())
+	}
+}
+
+pub struct TransferFromRewardsAccount;
+impl<Runtime: crate::Config> PayoutReward<Runtime, BalanceOf<Runtime>>
+	for TransferFromRewardsAccount
+{
+	fn payout_collator_rewards(
+		for_round: crate::RoundIndex,
+		collator_id: Runtime::AccountId,
+		amount: crate::BalanceOf<Runtime>,
+	) -> Weight {
+		crate::Pallet::<Runtime>::send_collator_reward(for_round, collator_id, amount)
+	}
+
+	fn payout(
+		delegator_id: &Runtime::AccountId,
+		amount: crate::BalanceOf<Runtime>,
+	) -> Result<crate::BalanceOf<Runtime>, DispatchError> {
+		Runtime::Currency::transfer(
+			&Runtime::RewardsAccount::get(),
+			&delegator_id,
+			amount,
+			ExistenceRequirement::KeepAlive,
+		)
+		.map(|_| amount)
+		.or_else(|e| match e {
+			DispatchError::Arithmetic(ArithmeticError::Underflow) => Ok(Zero::zero()),
+			_ => Err(e),
+		})
 	}
 }
 
