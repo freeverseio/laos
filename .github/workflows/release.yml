@@ -82,7 +82,7 @@ jobs:
      
       - name: Update Release Description with subwasm info
         run: |
-          if [ "${{ needs.check_version.outputs.is_release_version }}" == "true" ]; then
+          if [ "${{ needs.check-version.outputs.is_release_version }}" == "true" ]; then
             echo "This runs because it is a release version"
             gh release view ${{ github.ref_name }} --json body -q .body > description.txt
                 
@@ -105,7 +105,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload Ownership Wasm Binaries
         run: |
-            if [ "${{ needs.check_version.outputs.is_release_version }}" == "true" ]; then
+            if [ "${{ needs.check-version.outputs.is_release_version }}" == "true" ]; then
               echo "Uploading ownership wasm binary for release ${{ github.ref_name }}"
               echo "This runs because it is a release version"
               gh release upload ${{ github.ref_name }} ${{ steps.srtool_build.outputs.wasm_compressed }}
