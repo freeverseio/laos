@@ -9,9 +9,6 @@ use frame_support::{
 use sp_runtime::DispatchError;
 
 pub struct MintingRewards;
-
-/// Defines the default behavior for paying out the collator's reward. The amount is directly
-/// deposited into the collator's account.
 impl<Runtime: crate::Config> PayoutReward<Runtime, BalanceOf<Runtime>> for MintingRewards {
 	fn payout_collator_rewards(
 		for_round: crate::RoundIndex,
