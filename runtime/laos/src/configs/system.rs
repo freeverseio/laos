@@ -57,6 +57,8 @@ pub struct BaseCallFilter;
 impl Contains<RuntimeCall> for BaseCallFilter {
 	fn contains(c: &RuntimeCall) -> bool {
 		use pallet_balances::Call::*;
+		use pallet_ethereum::Call::*;
+		use pallet_evm::Call::*;
 		use pallet_parachain_staking::Call::*;
 		use pallet_vesting::Call::*;
 
@@ -79,6 +81,14 @@ impl Contains<RuntimeCall> for BaseCallFilter {
 				join_candidates { .. } => false,
 				_ => true,
 			},
+			// Ethereum pallet calls are not allowed.
+			RuntimeCall::Ethereum(inner_call) => match inner_call {
+				_ => false,
+			},
+			// EVM pallet calls are not allowed.
+			RuntimeCall::EVM(inner_call) => match inner_call {
+				_ => false,
+			},
 			_ => true,
 		}
 	}
@@ -94,6 +104,8 @@ mod tests {
 	};
 	use core::str::FromStr;
 	use frame_support::assert_err;
+	use precompile_utils::testing::Zero;
+	use sp_core::{H160, U256};
 	use sp_runtime::traits::Dispatchable;
 
 	#[test]
@@ -206,6 +218,83 @@ mod tests {
 					bond: stake,
 					candidate_count: 32,
 				});
+
+			assert_err!(
+				call.dispatch(RuntimeOrigin::signed(account)),
+				frame_system::Error::<Runtime>::CallFiltered
+			);
+		});
+	}
+
+	#[test]
+	fn evm_create_should_not_be_allowed() {
+		new_test_ext().execute_with(|| {
+			let account = AccountId::from_str(ALICE).unwrap();
+
+			let call = RuntimeCall::EVM(pallet_evm::Call::create {
+				source: H160::from(account.0),
+				init: vec![],
+				gas_limit: 100_000,
+				max_fee_per_gas: U256::from(100_000),
+				max_priority_fee_per_gas: None,
+				nonce: None,
+				access_list: vec![],
+				value: U256::zero(),
+			});
+
+			assert_err!(
+				call.dispatch(RuntimeOrigin::signed(account)),
+				frame_system::Error::<Runtime>::CallFiltered
+			);
+
+			let call_2 = RuntimeCall::EVM(pallet_evm::Call::create2 {
+				source: H160::from(account.0),
+				init: vec![],
+				salt: U256::zero(),
+				gas_limit: 100_000,
+				max_fee_per_gas: U256::from(100_000),
+				max_priority_fee_per_gas: None,
+				nonce: None,
+				access_list: vec![],
+				value: U256::zero(),
+			});
+
+			assert_err!(
+				call_2.dispatch(RuntimeOrigin::signed(account)),
+				frame_system::Error::<Runtime>::CallFiltered
+			);
+		});
+	}
+
+	#[test]
+	fn evm_call_should_not_be_allowed() {
+		new_test_ext().execute_with(|| {
+			let account = AccountId::from_str(ALICE).unwrap();
+
+			let call = RuntimeCall::EVM(pallet_evm::Call::call {
+				source: H160::from(account.0),
+				target: H160([0x2; 20]),
+				value: U256::zero(),
+				input: vec![],
+				gas_limit: 100_000,
+				max_fee_per_gas: U256::from(100_000),
+				max_priority_fee_per_gas: None,
+				nonce: None,
+				access_list: vec![],
+			});
+
+			assert_err!(
+				call.dispatch(RuntimeOrigin::signed(account)),
+				frame_system::Error::<Runtime>::CallFiltered
+			);
+		});
+	}
+
+	#[test]
+	fn evm_withdraw_should_not_be_allowed() {
+		new_test_ext().execute_with(|| {
+			let call =
+				RuntimeCall::EVM(pallet_evm::Call::withdraw { address: H160([0x2; 20]), value: 0 });
 
 			assert_err!(
 				call.dispatch(RuntimeOrigin::signed(account)),
