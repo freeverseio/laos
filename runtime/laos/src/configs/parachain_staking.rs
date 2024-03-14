@@ -1,7 +1,4 @@
-use crate::{
-	AccountId, Balances, BlockNumber,
-	Permill, Runtime, RuntimeEvent, Vec, Weight, UNIT,
-};
+use crate::{AccountId, Balances, BlockNumber, Permill, Runtime, RuntimeEvent, Vec, Weight, UNIT};
 use frame_support::{parameter_types, traits::Get};
 use frame_system::EnsureRoot;
 use pallet_parachain_staking::{self as staking, rewards, Config as StakingConfig};
