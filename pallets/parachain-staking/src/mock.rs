@@ -159,7 +159,7 @@ impl Config for Test {
 	type MinDelegation = MinDelegation;
 	type BlockAuthor = BlockAuthor;
 	type OnCollatorPayout = ();
-	type PayoutReward = rewards::TransferFromRewardsAccount<RewardsAccount>;
+	type PayoutReward = rewards::TransferFrom<RewardsAccount>;
 	type OnInactiveCollator = ();
 	type OnNewRound = ();
 	type SlotProvider = StakingRoundSlotProvider;

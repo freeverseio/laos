@@ -29,21 +29,25 @@ impl<Runtime: crate::Config> PayoutReward<Runtime, BalanceOf<Runtime>> for Minti
 	}
 }
 
-pub struct TransferFromRewardsAccount<T> {
-	_phantom: PhantomData<T>,
+pub struct TransferFrom<RewardsAccount> {
+	_phantom: PhantomData<RewardsAccount>,
 }
-impl<Runtime: crate::Config, T> PayoutReward<Runtime, BalanceOf<Runtime>>
-	for TransferFromRewardsAccount<T>
+impl<Runtime: crate::Config, RewardsAccount> PayoutReward<Runtime, BalanceOf<Runtime>>
+	for TransferFrom<RewardsAccount>
 where
-	T: Get<Runtime::AccountId>,
+	RewardsAccount: Get<Runtime::AccountId>,
 {
 	fn payout_collator_rewards(
 		for_round: crate::RoundIndex,
 		collator_id: Runtime::AccountId,
 		amount: crate::BalanceOf<Runtime>,
 	) -> Weight {
-		crate::Pallet::<Runtime>::send_collator_reward(for_round, T::get(), collator_id, amount)
-		// crate::Pallet::<Runtime>::mint_collator_reward(for_round, collator_id, amount)
+		crate::Pallet::<Runtime>::send_collator_reward(
+			for_round,
+			RewardsAccount::get(),
+			collator_id,
+			amount,
+		)
 	}
 
 	fn payout(
@@ -56,7 +60,7 @@ where
 		);
 
 		Runtime::Currency::transfer(
-			&T::get(),
+			&RewardsAccount::get(),
 			&delegator_id,
 			amount,
 			ExistenceRequirement::KeepAlive,
