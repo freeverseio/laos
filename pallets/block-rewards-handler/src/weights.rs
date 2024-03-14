@@ -15,12 +15,12 @@
 // pallet-block-rewards-handler
 // --extrinsic=*
 // --output
-// ownership-chain/pallets/block-rewards-handler/src/weights.rs
+// pallets/block-rewards-handler/src/weights.rs
 // --execution
 // wasm
 // --wasm-execution=compiled
 // --template
-// ./ownership-chain/.maintain/frame-weight-template.hbs
+// ./.maintain/frame-weight-template.hbs
 // --steps
 // 50
 // --repeat

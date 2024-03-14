@@ -9,11 +9,11 @@ version = "0.12.0"
 resolver = "2"
 
 members = [
-   "ownership-chain/node",
-   "ownership-chain/runtime/*",
-   "ownership-chain/precompile/*",
-   "ownership-chain/pallets/*",
-   "ownership-chain/primitives",
+   "node",
+   "runtime/*",
+   "precompile/*",
+   "pallets/*",
+   "primitives",
 ]
 
 [workspace.dependencies]
@@ -250,26 +250,26 @@ orml-xtokens = { git = "https://github.com/open-web3-stack/open-runtime-module-l
 substrate-fixed = { git = "https://github.com/encointer/substrate-fixed", default-features = false }
 
 # LAOS pallets
-pallet-laos-evolution = { path = "./ownership-chain/pallets/laos-evolution", default-features = false }
-pallet-evm-evolution-collection-factory = { path = "./ownership-chain/precompile/evolution-collection-factory", default-features = false }
-pallet-evm-evolution-collection = { path = "./ownership-chain/precompile/evolution-collection", default-features = false }
-pallet-evm-erc721 = { path = "./ownership-chain/precompile/erc721", default-features = false }
-pallet-asset-metadata-extender = { path = "./ownership-chain/pallets/asset-metadata-extender", default-features = false }
-pallet-evm-asset-metadata-extender = { path = "./ownership-chain/precompile/asset-metadata-extender", default-features = false }
-pallet-parachain-staking = { path = "./ownership-chain/pallets/parachain-staking", default-features = false }
-pallet-block-rewards-handler = { path = "./ownership-chain/pallets/block-rewards-handler", default-features = false }
+pallet-laos-evolution = { path = "./pallets/laos-evolution", default-features = false }
+pallet-evm-evolution-collection-factory = { path = "./precompile/evolution-collection-factory", default-features = false }
+pallet-evm-evolution-collection = { path = "./precompile/evolution-collection", default-features = false }
+pallet-evm-erc721 = { path = "./precompile/erc721", default-features = false }
+pallet-asset-metadata-extender = { path = "./pallets/asset-metadata-extender", default-features = false }
+pallet-evm-asset-metadata-extender = { path = "./precompile/asset-metadata-extender", default-features = false }
+pallet-parachain-staking = { path = "./pallets/parachain-staking", default-features = false }
+pallet-block-rewards-handler = { path = "./pallets/block-rewards-handler", default-features = false }
 
 # Precompiles
-laos-precompile-utils-macro = { path = "./ownership-chain/precompile/utils/macro", default-features = false }
-laos-precompile-utils = { path = "./ownership-chain/precompile/utils", default-features = false }
+laos-precompile-utils-macro = { path = "./precompile/utils/macro", default-features = false }
+laos-precompile-utils = { path = "./precompile/utils", default-features = false }
 
 # Primitives
-ownership-parachain-primitives = { path = "./ownership-chain/primitives", default-features = false }
-test-utils = { path = "./ownership-chain/utils/test", default-features = false }
+ownership-parachain-primitives = { path = "./primitives", default-features = false }
+test-utils = { path = "./utils/test", default-features = false }
 
 # Other crates
-laos-runtime-api-staking = { path = "./ownership-chain/runtime-api/staking", default-features = false }
+laos-runtime-api-staking = { path = "./runtime-api/staking", default-features = false }
 
 # runtime
-laos-ownership-runtime = { path = "./ownership-chain/runtime/laos", default-features = false }
-klaos-ownership-runtime = { path = "./ownership-chain/runtime/klaos", default-features = false }
+laos-ownership-runtime = { path = "./runtime/laos", default-features = false }
+klaos-ownership-runtime = { path = "./runtime/klaos", default-features = false }
