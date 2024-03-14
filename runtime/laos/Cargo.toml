@@ -99,7 +99,6 @@ pallet-evm-precompile-bn128 = { workspace = true }
 pallet-evm-precompile-blake2 = { workspace = true }
 
 pallet-parachain-staking = { workspace = true }
-pallet-block-rewards-handler = { workspace = true }
 
 [dev-dependencies]
 static_assertions = { workspace = true }
@@ -190,7 +189,6 @@ std = [
 	"laos-primitives/std",
 	"hex/std",
 	"pallet-parachain-staking/std",
-	"pallet-block-rewards-handler/std",
 	"log/std",
 	"sp-consensus-slots/std",
 	"sp-staking/std",
@@ -224,7 +222,6 @@ runtime-benchmarks = [
 	"pallet-asset-metadata-extender/runtime-benchmarks",
 	"pallet-vesting/runtime-benchmarks",
 	"pallet-parachain-staking/runtime-benchmarks",
-	"pallet-block-rewards-handler/runtime-benchmarks",
 	"pallet-proxy/runtime-benchmarks",
 	"pallet-utility/runtime-benchmarks",
 	"pallet-proxy/runtime-benchmarks",
@@ -261,7 +258,6 @@ try-runtime = [
 	"pallet-asset-metadata-extender/try-runtime",
 	"pallet-vesting/try-runtime",
 	"pallet-parachain-staking/try-runtime",
-	"pallet-block-rewards-handler/try-runtime",
 	"pallet-proxy/try-runtime",
 	"pallet-utility/try-runtime",
 ]

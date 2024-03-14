@@ -1,7 +1,6 @@
 use crate::{MILLIUNIT, UNIT};
 use laos_primitives::Balance;
 
-pub mod block_rewards_handler;
 mod evm;
 mod multisig;
 pub mod parachain_staking;

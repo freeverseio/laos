@@ -135,9 +135,6 @@ fn testnet_genesis(
 				})
 				.collect(),
 		},
-		block_rewards_handler: laos_runtime::BlockRewardsHandlerConfig {
-			rewards_account: Some(predefined_accounts::BALTATHAR.into()),
-		},
 		// no need to pass anything to aura, in fact it will panic if we do. Session will take care
 		// of this.
 		aura: Default::default(),
