@@ -136,7 +136,7 @@ impl Get<Slot> for StakingRoundSlotProvider {
 }
 
 parameter_types! {
-	pub const RewardsAccount: AccountId = 43;
+	pub const RewardsAccount: AccountId = 999;
 }
 
 impl Config for Test {
