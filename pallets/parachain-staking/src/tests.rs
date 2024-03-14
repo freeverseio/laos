@@ -5146,7 +5146,7 @@ fn test_delegator_scheduled_for_revoke_is_rewarded_for_previous_rounds_but_not_f
 #[test]
 fn test_delegator_scheduled_for_revoke_is_rewarded_when_request_cancelled() {
 	ExtBuilder::default()
-		.with_balances(vec![(1, 20), (2, 40), (3, 20), (4, 20)])
+		.with_balances(vec![(1, 20), (2, 40), (3, 20), (4, 20), (43, 10000000000)])
 		.with_candidates(vec![(1, 20), (3, 20), (4, 20)])
 		.with_delegations(vec![(2, 1, 10), (2, 3, 10)])
 		.build()

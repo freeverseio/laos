@@ -135,6 +135,10 @@ impl Get<Slot> for StakingRoundSlotProvider {
 	}
 }
 
+parameter_types! {
+	pub const RewardsAccount: AccountId = 43;
+}
+
 impl Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
@@ -155,14 +159,13 @@ impl Config for Test {
 	type MinDelegation = MinDelegation;
 	type BlockAuthor = BlockAuthor;
 	type OnCollatorPayout = ();
-	type PayoutReward = rewards::MintingRewards;
+	type PayoutReward = rewards::TransferFromRewardsAccount<RewardsAccount>;
 	type OnInactiveCollator = ();
 	type OnNewRound = ();
 	type SlotProvider = StakingRoundSlotProvider;
 	type WeightInfo = ();
 	type MaxCandidates = MaxCandidates;
 	type SlotsPerYear = frame_support::traits::ConstU32<{ 31_557_600 / 6 }>;
-	type RewardsAccount = ();
 }
 
 pub(crate) struct ExtBuilder {

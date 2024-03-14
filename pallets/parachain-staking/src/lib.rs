@@ -197,8 +197,6 @@ pub mod pallet {
 		/// Average number of slots per year
 		/// A slot here is the unit of time for staking rounds (provided by SlotProvider)
 		type SlotsPerYear: Get<u32>;
-		/// Source of rewards for block producers
-		type RewardsAccount: Get<Self::AccountId>;
 	}
 
 	#[pallet::error]
