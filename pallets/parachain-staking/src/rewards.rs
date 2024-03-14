@@ -32,9 +32,10 @@ impl<Runtime: crate::Config> PayoutReward<Runtime, BalanceOf<Runtime>> for Minti
 pub struct TransferFrom<RewardsAccount> {
 	_phantom: PhantomData<RewardsAccount>,
 }
-impl<Runtime: crate::Config, RewardsAccount> PayoutReward<Runtime, BalanceOf<Runtime>>
+impl<Runtime, RewardsAccount> PayoutReward<Runtime, BalanceOf<Runtime>>
 	for TransferFrom<RewardsAccount>
 where
+	Runtime: crate::Config,
 	RewardsAccount: Get<Runtime::AccountId>,
 {
 	fn payout_collator_rewards(
