@@ -49,6 +49,8 @@ impl<Runtime: crate::Config> PayoutReward<Runtime, BalanceOf<Runtime>>
 			"Account does not exist"
 		);
 
+		ensure!(RewardsAccount::<Runtime>::get().is_some(), "RewardAccount is not set");
+
 		let rewards_account = RewardsAccount::<Runtime>::get().unwrap();
 
 		Runtime::Currency::transfer(
@@ -86,6 +88,11 @@ impl<T: Config> Pallet<T> {
 		collator_id: T::AccountId,
 		amt: BalanceOf<T>,
 	) -> Weight {
+		// if RewardAccount is not set then return
+		if RewardsAccount::<T>::get().is_none() {
+			return Weight::zero(); // TODO RewardsAccount should not be an Option
+		}
+
 		if T::Currency::transfer(
 			&RewardsAccount::<T>::get().unwrap(),
 			&collator_id,
@@ -105,7 +112,8 @@ impl<T: Config> Pallet<T> {
 mod tests {
 	use super::*;
 	use crate as pallet_parachain_staking;
-	use frame_support::{derive_impl, parameter_types};
+	use frame_support::{assert_err, derive_impl, parameter_types};
+	use sp_runtime::{BuildStorage, TokenError};
 
 	type Block = frame_system::mocking::MockBlock<Test>;
 	pub type Balance = u128;
@@ -188,4 +196,101 @@ mod tests {
 			ParachainStaking: pallet_parachain_staking,
 		}
 	);
+
+	fn new_test_ext() -> sp_io::TestExternalities {
+		let t = frame_system::GenesisConfig::<Test>::default().build_storage().unwrap();
+		t.into()
+	}
+
+	#[test]
+	fn payout_collator_rewards_should_not_panic() {
+		new_test_ext().execute_with(|| {
+			let collator = 1;
+			let amount = 100;
+			let round_index = 1;
+
+			// check not panic
+			<MintingRewards as PayoutReward<Test, Balance>>::payout_collator_rewards(
+				round_index,
+				collator,
+				amount,
+			);
+			<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout_collator_rewards(
+				round_index,
+				collator,
+				amount,
+			);
+
+			RewardsAccount::<Test>::put(2);
+			<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout_collator_rewards(
+				round_index,
+				collator,
+				amount,
+			);
+
+			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&collator, amount / 2);
+			<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout_collator_rewards(
+				round_index,
+				collator,
+				amount,
+			);
+
+			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&collator, amount);
+			<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout_collator_rewards(
+				round_index,
+				collator,
+				amount,
+			);
+		});
+	}
+
+	#[test]
+	fn payout_should_error_id_delegator_account_do_not_exist() {
+		new_test_ext().execute_with(|| {
+			let delegator = 1;
+			let amount = 100;
+
+			assert_err!(
+				<MintingRewards as PayoutReward<Test, Balance>>::payout(&delegator, amount),
+				pallet_balances::Error::<Test>::DeadAccount
+			);
+			assert_err!(
+				<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout(
+					&delegator, amount
+				),
+				"Account does not exist"
+			);
+		});
+	}
+
+	#[test]
+	fn payout_should_return_amount_transferred() {
+		new_test_ext().execute_with(|| {
+			let delegator = 1;
+			let amount = 100;
+			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&delegator, amount);
+
+			assert_eq!(
+				<MintingRewards as PayoutReward<Test, Balance>>::payout(&delegator, amount),
+				Ok(amount)
+			);
+
+			// if RewardAccount is not set then Error
+			assert_err!(
+				<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout(
+					&delegator, amount
+				),
+				"RewardAccount is not set"
+			);
+
+			// set RewardAccount
+			RewardsAccount::<Test>::put(2);
+			assert_err!(
+				<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout(
+					&delegator, amount
+				),
+				TokenError::FundsUnavailable
+			);
+		});
+	}
 }
