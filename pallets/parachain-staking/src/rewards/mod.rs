@@ -31,13 +31,8 @@ impl<T: Config> Pallet<T> {
 			Ok(_) => {
 				Self::deposit_event(Event::Rewarded { account: collator_id.clone(), rewards: amt });
 			},
-			Err(e) => log::error!(
-				"💥 Failed to send reward to collator: {:?} from: {:?}, to: {:?}, amount: {:?}",
-				e,
-				source,
-				collator_id,
-				amt
-			),
+			Err(e) =>
+				log::error!("💥 Failed to send reward to collator: {:?}, amount: {:?}", e, amt),
 		}
 
 		Weight::zero() // TODO: weight

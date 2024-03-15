@@ -157,9 +157,9 @@ fn testnet_genesis(
 				expect: laos_runtime::Range { min: 1000000, ideal: 1000000, max: 1000000 },
 				// annual inflation
 				annual: laos_runtime::Range {
-					min: Perbill::from_percent(10),
-					ideal: Perbill::from_percent(10),
-					max: Perbill::from_percent(10),
+					min: Perbill::from_percent(1),
+					ideal: Perbill::from_percent(1),
+					max: Perbill::from_percent(1),
 				},
 				round: laos_runtime::Range {
 					min: Perbill::zero(),
