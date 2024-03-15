@@ -23,19 +23,21 @@ impl<Runtime: crate::Config> PayoutReward<Runtime, BalanceOf<Runtime>>
 		delegator_id: &Runtime::AccountId,
 		amount: crate::BalanceOf<Runtime>,
 	) -> Result<crate::BalanceOf<Runtime>, DispatchError> {
-		if amount.is_zero() {
+		// Early return if amount is zero or rewards account is not set.
+		if amount.is_zero() || RewardsAccount::<Runtime>::get().is_none() {
 			return Ok(Zero::zero());
 		}
 
+        // Ensure the destination account exists.
 		ensure!(
 			frame_system::Account::<Runtime>::contains_key(delegator_id),
 			"Destination Account does not exist"
 		);
 
-		ensure!(RewardsAccount::<Runtime>::get().is_some(), "RewardAccount is not set");
-
+        // Unwrap is safe here because we checked is_none() above.
 		let rewards_account = RewardsAccount::<Runtime>::get().unwrap();
 
+        // Attempt to transfer from rewards to delegator, handling the specific underflow error.
 		Runtime::Currency::transfer(
 			&rewards_account,
 			&delegator_id,
@@ -78,6 +80,58 @@ mod tests {
 		ExtBuilder::default().build().execute_with(|| {
 			let delegator = 0;
 			let amount = 0;
+
+			assert_ok!(
+				<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout(
+					&delegator, amount
+				),
+				0
+			);
+		});
+	}
+
+	#[test]
+	fn payout_100_amount_succeed() {
+		ExtBuilder::default().build().execute_with(|| {
+			let delegator = 0;
+			let amount = 100;
+
+			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&delegator, 1);
+
+			assert_ok!(
+				<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout(
+					&delegator, amount
+				),
+				100
+			);
+		});
+	}
+
+	#[test]
+	fn payout_100_with_no_funds_in_rewards_account_should_succeed() {
+		ExtBuilder::default().with_rewards_account_balance(0).build().execute_with(|| {
+			let delegator = 0;
+			let amount = 100;
+
+			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&delegator, 1);
+
+			assert_ok!(
+				<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout(
+					&delegator, amount
+				),
+				0
+			);
+		});
+	}
+
+	#[test]
+	fn payout_100_with_rewards_account_should_succeed() {
+		ExtBuilder::default().with_rewards_account_balance(0).build().execute_with(|| {
+			let delegator = 0;
+			let amount = 100;
+
+			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&delegator, 1);
+			RewardsAccount::<Test>::kill();
 
 			assert_ok!(
 				<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout(
