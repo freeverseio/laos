@@ -51,31 +51,14 @@ impl pallet_evm::Config for Runtime {
 
 pub struct CustomFindAuthor<Inner>(sp_std::marker::PhantomData<Inner>);
 
-impl<Inner> frame_support::traits::FindAuthor<H160> for CustomFindAuthor<Inner>
+impl<Inner> frame_support::traits::FindAuthor<sp_core::H160> for CustomFindAuthor<Inner>
 where
 	Inner: frame_support::traits::FindAuthor<AccountId>,
 {
-	fn find_author<'a, I>(digests: I) -> Option<H160>
+	fn find_author<'a, I>(digests: I) -> Option<sp_core::H160>
 	where
 		I: 'a + IntoIterator<Item = (frame_support::ConsensusEngineId, &'a [u8])>,
 	{
 		Inner::find_author(digests).map(Into::into)
-	}
-}
-
-// Frontier
-impl pallet_evm_chain_id::Config for Runtime {}
-
-pub struct FindAuthorTruncated<F>(PhantomData<F>);
-impl<F: FindAuthor<u32>> FindAuthor<H160> for FindAuthorTruncated<F> {
-	fn find_author<'a, I>(digests: I) -> Option<H160>
-	where
-		I: 'a + IntoIterator<Item = (ConsensusEngineId, &'a [u8])>,
-	{
-		if let Some(author_index) = F::find_author(digests) {
-			let authority_id = Aura::authorities()[author_index as usize].clone();
-			return Some(H160::from_slice(&authority_id.to_raw_vec()[4..24]));
-		}
-		None
 	}
 }
