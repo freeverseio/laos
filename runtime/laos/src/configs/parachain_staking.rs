@@ -1,6 +1,6 @@
 use crate::{
-	configs::block_rewards_handler::BlockRewardsHandlerAdapter, AccountId, Balances, BlockNumber,
-	Permill, Runtime, RuntimeEvent, Vec, Weight, UNIT,
+	configs::block_rewards_handler::BlockRewardsHandlerAdapter, currency::UNIT, AccountId,
+	Balances, BlockNumber, Permill, Runtime, RuntimeEvent, Vec, Weight,
 };
 use frame_support::{parameter_types, traits::Get};
 use frame_system::EnsureRoot;

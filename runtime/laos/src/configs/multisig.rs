@@ -1,5 +1,4 @@
-use super::calculate_deposit;
-use crate::{Balance, Balances, Runtime, RuntimeCall, RuntimeEvent};
+use crate::{currency::calculate_deposit, Balance, Balances, Runtime, RuntimeCall, RuntimeEvent};
 use frame_support::parameter_types;
 
 parameter_types! {

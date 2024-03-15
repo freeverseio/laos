@@ -1,10 +1,4 @@
-use crate::{configs, ConvertInto, Runtime, RuntimeEvent, SessionKeys, HOURS};
-use frame_support::parameter_types;
-
-parameter_types! {
-	pub const Period: u32 = 6 * HOURS;
-	pub const Offset: u32 = 0;
-}
+use crate::{configs, ConvertInto, Runtime, RuntimeEvent, SessionKeys};
 
 impl pallet_session::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;

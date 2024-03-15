@@ -1,5 +1,4 @@
-use super::calculate_deposit;
-use crate::{Balance, Balances, Runtime, RuntimeCall, RuntimeEvent};
+use crate::{currency::calculate_deposit, Balance, Balances, Runtime, RuntimeCall, RuntimeEvent};
 use frame_support::{parameter_types, traits::InstanceFilter};
 use parity_scale_codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;

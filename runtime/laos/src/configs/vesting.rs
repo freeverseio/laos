@@ -1,4 +1,4 @@
-use crate::{Balance, Balances, Runtime, RuntimeEvent, UNIT};
+use crate::{currency::UNIT, Balance, Balances, Runtime, RuntimeEvent};
 use frame_support::{parameter_types, traits::WithdrawReasons};
 use sp_runtime::traits::ConvertInto;
 

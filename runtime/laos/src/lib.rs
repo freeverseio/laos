@@ -10,6 +10,7 @@ mod weights;
 pub mod xcm_config;
 
 pub mod configs;
+mod currency;
 mod types;
 
 use core::marker::PhantomData;
@@ -135,7 +136,7 @@ impl WeightToFeePolynomial for WeightToFee {
 	fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
 		// in Rococo, extrinsic base weight (smallest non-zero weight) is mapped to 1 MILLIUNIT:
 		// in our parachain, we map to 1/10 of that, or 1/10 MILLIUNIT
-		let p = MILLIUNIT / 10;
+		let p = currency::MILLIUNIT / 10;
 		let q = 100 * Balance::from(ExtrinsicBaseWeight::get().ref_time());
 		smallvec![WeightToFeeCoefficient {
 			degree: 1,
@@ -193,35 +194,6 @@ pub const MILLISECS_PER_BLOCK: u64 = 12000;
 // NOTE: Currently it is not possible to change the slot duration after the chain has started.
 //       Attempting to do so will brick block production.
 pub const SLOT_DURATION: u64 = MILLISECS_PER_BLOCK;
-
-// Time is measured by number of blocks.
-pub const MINUTES: BlockNumber = 60_000 / (MILLISECS_PER_BLOCK as BlockNumber);
-pub const HOURS: BlockNumber = MINUTES * 60;
-pub const DAYS: BlockNumber = HOURS * 24;
-// Julian year as Substrate handles it
-pub const BLOCKS_PER_YEAR: BlockNumber = DAYS * 36525 / 100;
-
-// Unit = the base number of indivisible units for balances
-// 18 decimals
-pub const UNIT: Balance = 1_000_000_000_000_000_000;
-pub const MILLIUNIT: Balance = UNIT / 1000;
-pub const MICROUNIT: Balance = MILLIUNIT / 1000;
-
-/// Current approximation of the gas/s consumption considering
-/// EVM execution over compiled WASM (on 4.4Ghz CPU).
-/// Given the 500ms Weight, from which 75% only are used for transactions,
-/// the total EVM execution gas limit is: GAS_PER_SECOND * 0.500 * 0.75 ~= 15_000_000.
-/// Note: this value has been used in production by (and is copied from) the Moonbeam parachain.
-pub const GAS_PER_SECOND: u64 = 40_000_000;
-
-/// Approximate ratio of the amount of Weight per Gas.
-/// u64 works for approximations because Weight is a very small unit compared to gas.
-pub const WEIGHT_PER_GAS: u64 = WEIGHT_REF_TIME_PER_SECOND / GAS_PER_SECOND;
-
-pub const WEI: Balance = 1;
-pub const KILOWEI: Balance = 1_000 * WEI;
-pub const MEGAWEI: Balance = 1_000 * KILOWEI;
-pub const GIGAWEI: Balance = 1_000 * MEGAWEI;
 
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
