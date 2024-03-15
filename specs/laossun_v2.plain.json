@@ -1,16 +1,16 @@
 {
-  "name": "Laos Sun Testnet",
-  "id": "laos_sun_testnet",
+  "name": "Laos Mercury Testnet",
+  "id": "laos_mercury_testnet",
   "chainType": "Live",
   "bootNodes": [
     "/dns4/laossun-boot-1.gorengine.com/tcp/30334/p2p/12D3KooWKXd2uAnD9r1LuFoEsxpVxccDw8oW1zwSV5ZXm69UnBw9"
   ],
   "telemetryEndpoints": null,
-  "protocolId": "laos_sun_testnet",
+  "protocolId": "laos_mercury_testnet",
   "properties": {
     "ss58Format": 42,
     "tokenDecimals": 18,
-    "tokenSymbol": "SUN"
+    "tokenSymbol": "MER"
   },
   "relay_chain": "rococo_freeverse",
   "para_id": 2012,
@@ -91,9 +91,9 @@
             "max": 500000000000000000000000
           },
           "annual": {
-            "min": 72000000,
-            "ideal": 72000000,
-            "max": 72000000
+            "min": 75000000,
+            "ideal": 75000000,
+            "max": 75000000
           },
           "round": {
             "min": 0,
