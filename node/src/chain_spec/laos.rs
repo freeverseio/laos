@@ -6,6 +6,7 @@ use laos_runtime::{
 };
 use sc_service::ChainType;
 use sp_core::{H160, U256};
+use sp_runtime::Perbill;
 use std::{collections::BTreeMap, str::FromStr};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
@@ -149,8 +150,23 @@ fn testnet_genesis(
 		// EVM compatibility
 		evm_chain_id: laos_runtime::EVMChainIdConfig { chain_id: 667, ..Default::default() },
 		parachain_staking: laos_runtime::ParachainStakingConfig {
-			blocks_per_round: 5,
+			blocks_per_round: 2,
 			rewards_account: Some(predefined_accounts::BALTATHAR.into()),
+			inflation_config: laos_runtime::InflationInfo {
+				// staking expectations
+				expect: laos_runtime::Range { min: 1000000, ideal: 1000000, max: 1000000 },
+				// annual inflation
+				annual: laos_runtime::Range {
+					min: Perbill::from_percent(10),
+					ideal: Perbill::from_percent(10),
+					max: Perbill::from_percent(10),
+				},
+				round: laos_runtime::Range {
+					min: Perbill::zero(),
+					ideal: Perbill::zero(),
+					max: Perbill::zero(),
+				},
+			},
 			..Default::default()
 		},
 		evm: laos_runtime::EVMConfig {
