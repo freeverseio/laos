@@ -17,7 +17,6 @@ use core::marker::PhantomData;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 pub use laos_primitives::{AccountId, AuraId, Balance, BlockNumber, Hash, Index, Nonce, Signature};
 use parity_scale_codec::{Decode, Encode};
-use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
 use sp_core::{
 	crypto::{ByteArray, KeyTypeId},
@@ -27,8 +26,8 @@ use sp_core::{
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{
-		Block as BlockT, Convert, ConvertInto, DispatchInfoOf, Dispatchable, Get,
-		PostDispatchInfoOf, UniqueSaturatedInto,
+		Block as BlockT, ConvertInto, DispatchInfoOf, Dispatchable, Get, PostDispatchInfoOf,
+		UniqueSaturatedInto,
 	},
 	transaction_validity::{TransactionSource, TransactionValidity, TransactionValidityError},
 	ApplyExtrinsicResult, ConsensusEngineId,
@@ -42,10 +41,7 @@ use sp_version::RuntimeVersion;
 use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{FindAuthor, Hooks},
-	weights::{
-		constants::WEIGHT_REF_TIME_PER_SECOND, Weight, WeightToFeeCoefficient,
-		WeightToFeeCoefficients, WeightToFeePolynomial,
-	},
+	weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight},
 };
 use frame_system::EnsureRoot;
 pub use pallet_evm_evolution_collection_factory::REVERT_BYTECODE;
@@ -120,33 +116,6 @@ pub type Executive = frame_executive::Executive<
 
 pub type Precompiles = FrontierPrecompiles<Runtime>;
 
-/// Handles converting a weight scalar to a fee value, based on the scale and granularity of the
-/// node's balance type.
-///
-/// This should typically create a mapping between the following ranges:
-///   - `[0, MAXIMUM_BLOCK_WEIGHT]`
-///   - `[Balance::min, Balance::max]`
-///
-/// Yet, it can be used for any other sort of change to weight-fee. Some examples being:
-///   - Setting it to `0` will essentially disable the weight fee.
-///   - Setting it to `1` will cause the literal `#[weight = x]` values to be charged.
-pub struct WeightToFee;
-impl WeightToFeePolynomial for WeightToFee {
-	type Balance = Balance;
-	fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
-		// in Rococo, extrinsic base weight (smallest non-zero weight) is mapped to 1 MILLIUNIT:
-		// in our parachain, we map to 1/10 of that, or 1/10 MILLIUNIT
-		let p = currency::MILLIUNIT / 10;
-		let q = 100 * Balance::from(ExtrinsicBaseWeight::get().ref_time());
-		smallvec![WeightToFeeCoefficient {
-			degree: 1,
-			negative: false,
-			coeff_frac: Perbill::from_rational(p % q, q),
-			coeff_integer: p / q,
-		}]
-	}
-}
-
 /// Opaque types. These are used by the CLI to instantiate machinery that don't need to know
 /// the specifics of the runtime. They can then be made to be agnostic over specific formats
 /// of data like extrinsics, allowing for them to continue syncing the network through upgrades
@@ -206,20 +175,6 @@ pub fn native_version() -> NativeVersion {
 parameter_types! {
 	/// Max length of the `TokenUri`
 	pub const MaxTokenUriLength: u32 = 512;
-}
-
-/// Represents a mapping between `AssetId` and `AccountId`.
-/// This struct provides functionalities to convert an `AssetId` (represented by `U256`) into an
-/// `AccountId`.
-pub struct AssetIdToInitialOwner;
-impl Convert<U256, AccountId> for AssetIdToInitialOwner {
-	fn convert(asset_id: U256) -> AccountId {
-		let mut bytes = [0u8; 20];
-		let asset_id_bytes: [u8; 32] = asset_id.into();
-		bytes.copy_from_slice(&asset_id_bytes[asset_id_bytes.len() - 20..]);
-
-		bytes.into()
-	}
 }
 
 pub struct FindAuthorTruncated<F>(PhantomData<F>);
