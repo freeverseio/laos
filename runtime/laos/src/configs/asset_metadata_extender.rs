@@ -1,4 +1,6 @@
-use crate::{AccountIdToH160, MaxTokenUriLength, MaxUniversalLocationLength, Runtime, RuntimeEvent};
+use crate::{
+	AccountIdToH160, MaxTokenUriLength, MaxUniversalLocationLength, Runtime, RuntimeEvent,
+};
 
 impl pallet_asset_metadata_extender::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
@@ -6,5 +8,3 @@ impl pallet_asset_metadata_extender::Config for Runtime {
 	type MaxTokenUriLength = MaxTokenUriLength;
 	type MaxUniversalLocationLength = MaxUniversalLocationLength;
 }
-
-

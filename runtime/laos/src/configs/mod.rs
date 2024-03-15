@@ -1,10 +1,14 @@
 use crate::{MILLIUNIT, UNIT};
 use laos_primitives::Balance;
 
+mod asset_metadata_extender;
+mod aura;
+mod authorship;
 mod balances;
 mod base_fee;
 mod block_rewards_handler;
 mod evm;
+mod laos_evolution;
 mod multisig;
 pub mod parachain_staking;
 mod proxy;
@@ -15,10 +19,6 @@ mod timestamp;
 mod transaction_payment;
 mod utility;
 mod vesting;
-mod laos_evolution;
-mod aura;
-mod authorship;
-mod asset_metadata_extender;
 
 // Define storage fees as constants for clarity and reuse
 const STORAGE_ITEM_FEE: Balance = 10 * UNIT;

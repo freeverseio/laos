@@ -5,5 +5,3 @@ impl pallet_laos_evolution::Config for Runtime {
 	type AccountIdToH160 = AccountIdToH160;
 	type MaxTokenUriLength = MaxTokenUriLength;
 }
-
-
