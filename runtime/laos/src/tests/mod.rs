@@ -13,13 +13,13 @@ use sp_runtime::BuildStorage;
 use core::str::FromStr;
 
 use super::*;
-use crate::{AccountId, Balances, Runtime, UNIT};
+use crate::{currency::UNIT, AccountId, Balances, Runtime};
 use fp_rpc::runtime_decl_for_ethereum_runtime_rpc_api::EthereumRuntimeRPCApiV5;
 use frame_support::{
 	assert_ok,
 	traits::{
 		tokens::{fungible::Balanced, Precision},
-		Currency,
+		Currency, WithdrawReasons,
 	},
 };
 use sp_core::U256;

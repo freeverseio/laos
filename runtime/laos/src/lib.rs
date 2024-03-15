@@ -10,42 +10,35 @@ mod weights;
 pub mod xcm_config;
 
 pub mod configs;
+mod currency;
 mod types;
 
 use core::marker::PhantomData;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 pub use laos_primitives::{AccountId, AuraId, Balance, BlockNumber, Hash, Index, Nonce, Signature};
 use parity_scale_codec::{Decode, Encode};
-use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
-use sp_core::{
-	crypto::{ByteArray, KeyTypeId},
-	OpaqueMetadata, H160, H256, U256,
-};
+use sp_core::{crypto::KeyTypeId, OpaqueMetadata, H160, H256, U256};
 
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{
-		Block as BlockT, Convert, ConvertInto, DispatchInfoOf, Dispatchable, Get,
-		PostDispatchInfoOf, UniqueSaturatedInto,
+		Block as BlockT, ConvertInto, DispatchInfoOf, Dispatchable, Get, PostDispatchInfoOf,
+		UniqueSaturatedInto,
 	},
 	transaction_validity::{TransactionSource, TransactionValidity, TransactionValidityError},
-	ApplyExtrinsicResult, ConsensusEngineId,
+	ApplyExtrinsicResult,
 };
 
-use laos_primitives::MAXIMUM_BLOCK_WEIGHT;
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
 use frame_support::{
-	construct_runtime, parameter_types,
-	traits::{ConstBool, ConstU32, ConstU64, FindAuthor, Hooks, WithdrawReasons},
-	weights::{
-		constants::WEIGHT_REF_TIME_PER_SECOND, Weight, WeightToFeeCoefficient,
-		WeightToFeeCoefficients, WeightToFeePolynomial,
-	},
+	construct_runtime,
+	traits::Hooks,
+	weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight},
 };
 use frame_system::EnsureRoot;
 pub use pallet_evm_evolution_collection_factory::REVERT_BYTECODE;
@@ -68,7 +61,7 @@ use staging_xcm_executor::XcmExecutor;
 
 // Frontier
 use fp_rpc::TransactionStatus;
-use pallet_ethereum::{Call::transact, PostLogContent, Transaction as EthereumTransaction};
+use pallet_ethereum::{Call::transact, Transaction as EthereumTransaction};
 use pallet_evm::{Account as EVMAccount, FeeCalculator, Runner};
 
 mod precompiles;
@@ -120,33 +113,6 @@ pub type Executive = frame_executive::Executive<
 
 pub type Precompiles = FrontierPrecompiles<Runtime>;
 
-/// Handles converting a weight scalar to a fee value, based on the scale and granularity of the
-/// node's balance type.
-///
-/// This should typically create a mapping between the following ranges:
-///   - `[0, MAXIMUM_BLOCK_WEIGHT]`
-///   - `[Balance::min, Balance::max]`
-///
-/// Yet, it can be used for any other sort of change to weight-fee. Some examples being:
-///   - Setting it to `0` will essentially disable the weight fee.
-///   - Setting it to `1` will cause the literal `#[weight = x]` values to be charged.
-pub struct WeightToFee;
-impl WeightToFeePolynomial for WeightToFee {
-	type Balance = Balance;
-	fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
-		// in Rococo, extrinsic base weight (smallest non-zero weight) is mapped to 1 MILLIUNIT:
-		// in our parachain, we map to 1/10 of that, or 1/10 MILLIUNIT
-		let p = MILLIUNIT / 10;
-		let q = 100 * Balance::from(ExtrinsicBaseWeight::get().ref_time());
-		smallvec![WeightToFeeCoefficient {
-			degree: 1,
-			negative: false,
-			coeff_frac: Perbill::from_rational(p % q, q),
-			coeff_integer: p / q,
-		}]
-	}
-}
-
 /// Opaque types. These are used by the CLI to instantiate machinery that don't need to know
 /// the specifics of the runtime. They can then be made to be agnostic over specific formats
 /// of data like extrinsics, allowing for them to continue syncing the network through upgrades
@@ -195,272 +161,10 @@ pub const MILLISECS_PER_BLOCK: u64 = 12000;
 //       Attempting to do so will brick block production.
 pub const SLOT_DURATION: u64 = MILLISECS_PER_BLOCK;
 
-// Time is measured by number of blocks.
-pub const MINUTES: BlockNumber = 60_000 / (MILLISECS_PER_BLOCK as BlockNumber);
-pub const HOURS: BlockNumber = MINUTES * 60;
-pub const DAYS: BlockNumber = HOURS * 24;
-// Julian year as Substrate handles it
-pub const BLOCKS_PER_YEAR: BlockNumber = DAYS * 36525 / 100;
-
-// Unit = the base number of indivisible units for balances
-// 18 decimals
-pub const UNIT: Balance = 1_000_000_000_000_000_000;
-pub const MILLIUNIT: Balance = UNIT / 1000;
-pub const MICROUNIT: Balance = MILLIUNIT / 1000;
-
-/// Current approximation of the gas/s consumption considering
-/// EVM execution over compiled WASM (on 4.4Ghz CPU).
-/// Given the 500ms Weight, from which 75% only are used for transactions,
-/// the total EVM execution gas limit is: GAS_PER_SECOND * 0.500 * 0.75 ~= 15_000_000.
-/// Note: this value has been used in production by (and is copied from) the Moonbeam parachain.
-pub const GAS_PER_SECOND: u64 = 40_000_000;
-
-/// Approximate ratio of the amount of Weight per Gas.
-/// u64 works for approximations because Weight is a very small unit compared to gas.
-pub const WEIGHT_PER_GAS: u64 = WEIGHT_REF_TIME_PER_SECOND / GAS_PER_SECOND;
-
-pub const WEI: Balance = 1;
-pub const KILOWEI: Balance = 1_000 * WEI;
-pub const MEGAWEI: Balance = 1_000 * KILOWEI;
-pub const GIGAWEI: Balance = 1_000 * MEGAWEI;
-
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
 pub fn native_version() -> NativeVersion {
 	NativeVersion { runtime_version: VERSION, can_author_with: Default::default() }
-}
-
-parameter_types! {
-	pub const Version: RuntimeVersion = VERSION;
-	pub const SS58Prefix: u16 = 42;
-}
-
-// Configure FRAME pallets to include in runtime.
-
-impl pallet_timestamp::Config for Runtime {
-	/// A timestamp: milliseconds since the unix epoch.
-	type Moment = u64;
-	type OnTimestampSet = Aura;
-	type MinimumPeriod = ConstU64<{ SLOT_DURATION / 2 }>;
-	type WeightInfo = ();
-}
-
-impl pallet_authorship::Config for Runtime {
-	type FindAuthor = pallet_session::FindAccountFromAuthorIndex<Self, Aura>;
-	type EventHandler = ();
-}
-
-parameter_types! {
-	/// The minimum amount required to keep an account open, set to zero in this case.
-	///
-	/// While it's generally advised to have this value greater than zero to avoid potential
-	/// DoS vectors, we set it to zero here due to specific concerns about relay attacks.
-	/// In such attacks, the reset of the nonce upon account deletion can be exploited.
-	/// By setting the ExistentialDeposit to zero, we prevent the scenario where an account's
-	/// balance drops to a level that would trigger its deletion and subsequent nonce reset.
-	pub const ExistentialDeposit: Balance = 0;
-}
-
-impl pallet_balances::Config for Runtime {
-	type MaxLocks = ConstU32<50>;
-	/// The type for recording an account's balance.
-	type Balance = Balance;
-	/// The ubiquitous event type.
-	type RuntimeEvent = RuntimeEvent;
-	type DustRemoval = ();
-	type ExistentialDeposit = ExistentialDeposit;
-	type AccountStore = System;
-	type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
-	type MaxReserves = ConstU32<50>;
-	type ReserveIdentifier = [u8; 8];
-	type FreezeIdentifier = RuntimeFreezeReason;
-	type MaxHolds = ConstU32<0>;
-	type RuntimeHoldReason = ();
-	type MaxFreezes = ConstU32<1>;
-}
-
-parameter_types! {
-	pub const ReservedXcmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT.saturating_div(4);
-	pub const ReservedDmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT.saturating_div(4);
-}
-
-impl cumulus_pallet_parachain_system::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type OnSystemEvent = ();
-	type SelfParaId = parachain_info::Pallet<Runtime>;
-	type OutboundXcmpMessageSource = XcmpQueue;
-	type DmpMessageHandler = DmpQueue;
-	type ReservedDmpWeight = ReservedDmpWeight;
-	type XcmpMessageHandler = XcmpQueue;
-	type ReservedXcmpWeight = ReservedXcmpWeight;
-	type CheckAssociatedRelayNumber = RelayNumberStrictlyIncreases;
-}
-
-impl parachain_info::Config for Runtime {}
-
-impl cumulus_pallet_aura_ext::Config for Runtime {}
-
-impl cumulus_pallet_xcmp_queue::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type XcmExecutor = XcmExecutor<XcmConfig>;
-	type ChannelInfo = ParachainSystem;
-	type VersionWrapper = ();
-	type ExecuteOverweightOrigin = EnsureRoot<AccountId>;
-	type ControllerOrigin = EnsureRoot<AccountId>;
-	type ControllerOriginConverter = XcmOriginToTransactDispatchOrigin;
-	type WeightInfo = ();
-	type PriceForSiblingDelivery = ();
-}
-
-impl cumulus_pallet_dmp_queue::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type XcmExecutor = XcmExecutor<XcmConfig>;
-	type ExecuteOverweightOrigin = EnsureRoot<AccountId>;
-}
-
-parameter_types! {
-	pub const Period: u32 = 6 * HOURS;
-	pub const Offset: u32 = 0;
-}
-
-impl pallet_session::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type ValidatorId = <Self as frame_system::Config>::AccountId;
-	// we don't have stash and controller, thus we don't need the convert as well.
-	type ValidatorIdOf = ConvertInto;
-	type ShouldEndSession = configs::parachain_staking::ParachainStakingAdapter;
-	type NextSessionRotation = configs::parachain_staking::ParachainStakingAdapter;
-	type SessionManager = configs::parachain_staking::ParachainStakingAdapter;
-	// Essentially just Aura, but let's be pedantic.
-	type SessionHandler = <SessionKeys as sp_runtime::traits::OpaqueKeys>::KeyTypeIdProviders;
-	type Keys = SessionKeys;
-	type WeightInfo = pallet_session::weights::SubstrateWeight<Runtime>;
-}
-
-impl pallet_aura::Config for Runtime {
-	type AuthorityId = AuraId;
-	type DisabledValidators = ();
-	type MaxAuthorities = ConstU32<100_000>;
-	type AllowMultipleBlocksPerSlot = ConstBool<false>;
-}
-
-parameter_types! {
-	/// Max length of the `TokenUri`
-	pub const MaxTokenUriLength: u32 = 512;
-	/// Max length of the `UniversalLocation`
-	pub const MaxUniversalLocationLength: u32 = 512;
-}
-
-/// Converts [`AccountId`] to [`H160`]
-pub struct AccountIdToH160;
-
-impl sp_runtime::traits::Convert<AccountId, H160> for AccountIdToH160 {
-	fn convert(account_id: AccountId) -> H160 {
-		H160(account_id.0)
-	}
-}
-
-impl pallet_laos_evolution::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type AccountIdToH160 = AccountIdToH160;
-	type MaxTokenUriLength = MaxTokenUriLength;
-}
-
-impl pallet_asset_metadata_extender::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type AccountIdToH160 = AccountIdToH160;
-	type MaxTokenUriLength = MaxTokenUriLength;
-	type MaxUniversalLocationLength = MaxUniversalLocationLength;
-}
-
-impl pallet_sudo::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type RuntimeCall = RuntimeCall;
-	type WeightInfo = ();
-}
-
-/// Represents a mapping between `AssetId` and `AccountId`.
-/// This struct provides functionalities to convert an `AssetId` (represented by `U256`) into an
-/// `AccountId`.
-pub struct AssetIdToInitialOwner;
-impl Convert<U256, AccountId> for AssetIdToInitialOwner {
-	fn convert(asset_id: U256) -> AccountId {
-		let mut bytes = [0u8; 20];
-		let asset_id_bytes: [u8; 32] = asset_id.into();
-		bytes.copy_from_slice(&asset_id_bytes[asset_id_bytes.len() - 20..]);
-
-		bytes.into()
-	}
-}
-
-// Frontier
-impl pallet_evm_chain_id::Config for Runtime {}
-
-pub struct FindAuthorTruncated<F>(PhantomData<F>);
-impl<F: FindAuthor<u32>> FindAuthor<H160> for FindAuthorTruncated<F> {
-	fn find_author<'a, I>(digests: I) -> Option<H160>
-	where
-		I: 'a + IntoIterator<Item = (ConsensusEngineId, &'a [u8])>,
-	{
-		if let Some(author_index) = F::find_author(digests) {
-			let authority_id = Aura::authorities()[author_index as usize].clone();
-			return Some(H160::from_slice(&authority_id.to_raw_vec()[4..24]));
-		}
-		None
-	}
-}
-
-parameter_types! {
-	pub const PostBlockAndTxnHashes: PostLogContent = PostLogContent::BlockAndTxnHashes;
-}
-
-impl pallet_ethereum::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type StateRoot = pallet_ethereum::IntermediateStateRoot<Self>;
-	type PostLogContent = PostBlockAndTxnHashes;
-	type ExtraDataLength = ConstU32<30>;
-}
-
-parameter_types! {
-	pub DefaultBaseFeePerGas: U256 = U256::from(1_000_000_000);
-	pub DefaultElasticity: Permill = Permill::from_parts(125_000);
-}
-
-pub struct BaseFeeThreshold;
-impl pallet_base_fee::BaseFeeThreshold for BaseFeeThreshold {
-	fn lower() -> Permill {
-		Permill::zero()
-	}
-	fn ideal() -> Permill {
-		Permill::from_parts(500_000)
-	}
-	fn upper() -> Permill {
-		Permill::from_parts(1_000_000)
-	}
-}
-
-impl pallet_base_fee::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type Threshold = BaseFeeThreshold;
-	type DefaultBaseFeePerGas = DefaultBaseFeePerGas;
-	type DefaultElasticity = DefaultElasticity;
-}
-
-// Configuration of the Vesting Pallet
-parameter_types! {
-	pub const MinVestedTransfer: Balance = UNIT;
-	pub UnvestedFundsAllowedWithdrawReasons: WithdrawReasons =
-		WithdrawReasons::except(WithdrawReasons::TRANSFER | WithdrawReasons::RESERVE);
-}
-
-impl pallet_vesting::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type Currency = Balances;
-	type BlockNumberToBalance = ConvertInto;
-	type WeightInfo = pallet_vesting::weights::SubstrateWeight<Runtime>;
-	type MinVestedTransfer = MinVestedTransfer;
-	type UnvestedFundsAllowedWithdrawReasons = UnvestedFundsAllowedWithdrawReasons;
-	const MAX_VESTING_SCHEDULES: u32 = 28;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.

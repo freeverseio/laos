@@ -1,9 +1,14 @@
 use crate::{
 	weights::RocksDbWeight, AccountId, Balance, Block, BlockHashCount, PalletInfo, Runtime,
-	RuntimeCall, RuntimeEvent, RuntimeOrigin, SS58Prefix, Version,
+	RuntimeCall, RuntimeEvent, RuntimeOrigin, RuntimeVersion, VERSION,
 };
-use frame_support::traits::Contains;
+use frame_support::{parameter_types, traits::Contains};
 use sp_runtime::traits::{BlakeTwo256, IdentityLookup};
+
+parameter_types! {
+	pub const Version: RuntimeVersion = VERSION;
+	pub const SS58Prefix: u16 = 42;
+}
 
 impl frame_system::Config for Runtime {
 	/// The identifier used to distinguish between accounts.
