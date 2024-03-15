@@ -99,3 +99,42 @@ impl<T: Config> Pallet<T> {
 		Weight::zero() // TODO: weight
 	}
 }
+
+// tests
+#[cfg(test)]
+mod tests {
+	// use crate as pallet_parachain_staking;
+	use frame_support::derive_impl;
+
+	type Block = frame_system::mocking::MockBlock<Test>;
+
+	#[derive_impl(frame_system::config_preludes::TestDefaultConfig as frame_system::DefaultConfig)]
+	impl frame_system::Config for Test {
+		type Block = Block;
+	}
+
+	// impl pallet_balances::Config for Test {
+	// 	type MaxReserves = ();
+	// 	type ReserveIdentifier = [u8; 4];
+	// 	type MaxLocks = ();
+	// 	type Balance = Balance;
+	// 	type RuntimeEvent = RuntimeEvent;
+	// 	type DustRemoval = ();
+	// 	type ExistentialDeposit = ExistentialDeposit;
+	// 	type AccountStore = System;
+	// 	type WeightInfo = ();
+	// 	type RuntimeHoldReason = ();
+	// 	type FreezeIdentifier = ();
+	// 	type MaxHolds = ();
+	// 	type MaxFreezes = ();
+	// }
+
+	frame_support::construct_runtime!(
+		pub enum Test
+		{
+			System: frame_system,
+			// ParachainStaking: pallet_parachain_staking,
+			// Balances: pallet_balances,
+		}
+	);
+}
