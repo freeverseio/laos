@@ -67,46 +67,6 @@ impl<Runtime: crate::Config> PayoutReward<Runtime, BalanceOf<Runtime>>
 	}
 }
 
-impl<T: Config> Pallet<T> {
-	/// Mint a specified reward amount to the collator's account. Emits the [Rewarded] event.
-	pub(crate) fn mint_collator_reward(
-		_paid_for_round: RoundIndex,
-		collator_id: T::AccountId,
-		amt: BalanceOf<T>,
-	) -> Weight {
-		if let Ok(amount_transferred) = T::PayoutReward::payout(&collator_id, amt) {
-			Self::deposit_event(Event::Rewarded {
-				account: collator_id.clone(),
-				rewards: amount_transferred,
-			});
-		}
-		T::WeightInfo::mint_collator_reward()
-	}
-
-	pub fn send_collator_reward(
-		_paid_for_round: RoundIndex,
-		collator_id: T::AccountId,
-		amt: BalanceOf<T>,
-	) -> Weight {
-		// if RewardAccount is not set then return
-		if RewardsAccount::<T>::get().is_none() {
-			return Weight::zero(); // TODO RewardsAccount should not be an Option
-		}
-
-		if T::Currency::transfer(
-			&RewardsAccount::<T>::get().unwrap(),
-			&collator_id,
-			amt,
-			ExistenceRequirement::KeepAlive,
-		)
-		.is_ok()
-		{
-			Self::deposit_event(Event::Rewarded { account: collator_id.clone(), rewards: amt });
-		}
-		Weight::zero() // TODO: weight
-	}
-}
-
 // tests
 #[cfg(test)]
 mod tests {
@@ -119,7 +79,7 @@ mod tests {
 	#[test]
 	fn payout_collator_rewards_should_not_panic() {
 		ExtBuilder::default().build().execute_with(|| {
-			let collator = 1;
+			let collator = 678;
 			let amount = 100;
 			let round_index = 1;
 
@@ -161,7 +121,7 @@ mod tests {
 	#[test]
 	fn payout_should_error_id_delegator_account_do_not_exist() {
 		ExtBuilder::default().build().execute_with(|| {
-			let delegator = 1;
+			let delegator = 678;
 			let amount = 100;
 
 			assert_err!(
@@ -180,7 +140,7 @@ mod tests {
 	#[test]
 	fn payout_should_return_amount_transferred() {
 		ExtBuilder::default().build().execute_with(|| {
-			let delegator = 1;
+			let delegator = 678;
 			let amount = 100;
 			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&delegator, amount);
 
@@ -253,4 +213,41 @@ mod tests {
 			);
 		});
 	}
+
+	// // test when amount is 0
+	// #[test]
+	// fn payout_should_return_zero_amount() {
+	// 	ExtBuilder::default().build().execute_with(|| {
+	// 		let delegator = 100;
+	// 		let amount = 0;
+	// 		let _ = pallet_balances::Pallet::<Test>::deposit_creating(&delegator, amount);
+
+	// 		assert_eq!(
+	// 			<MintingRewards as PayoutReward<Test, Balance>>::payout(&delegator, amount),
+	// 			Ok(0)
+	// 		);
+
+	// 		assert_err!(
+	// 			<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout(
+	// 				&delegator, amount
+	// 			),
+	// 			TokenError::FundsUnavailable
+	// 		);
+
+	// 		let _ = pallet_balances::Pallet::<Test>::deposit_creating(&delegator, amount);
+	// 		assert_eq!(
+	// 			<MintingRewards as PayoutReward<Test, Balance>>::payout(&delegator, amount),
+	// 			Ok(0)
+	// 		);
+
+	// 		RewardsAccount::<Test>::kill();
+	// 		// if RewardAccount is not set then Error
+	// 		assert_err!(
+	// 			<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout(
+	// 				&delegator, amount
+	// 			),
+	// 			"RewardAccount is not set"
+	// 		);
+	// 	});
+	// }
 }
