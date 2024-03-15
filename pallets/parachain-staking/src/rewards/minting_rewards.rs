@@ -29,33 +29,33 @@ impl<Runtime: crate::Config> PayoutReward<Runtime, BalanceOf<Runtime>> for Minti
 mod tests {
 	use super::*;
 	use crate::mock::*;
-	use frame_support::{ assert_ok, assert_err};
+	use frame_support::{assert_err, assert_ok};
 
-    #[test]
-    fn payout_to_account_0_fails() {
-        ExtBuilder::default().build().execute_with(|| {
-            let delegator = 0;
-            let amount = 100;
+	#[test]
+	fn payout_to_account_0_fails() {
+		ExtBuilder::default().build().execute_with(|| {
+			let delegator = 0;
+			let amount = 100;
 
-            assert_err!(
-                <MintingRewards as PayoutReward<Test, Balance>>::payout(&delegator, amount),
+			assert_err!(
+				<MintingRewards as PayoutReward<Test, Balance>>::payout(&delegator, amount),
 				pallet_balances::Error::<Test>::DeadAccount
-            );
-        });
-    }
+			);
+		});
+	}
 
-    #[test]
-    fn payout_0_amount_succeed() {
-        ExtBuilder::default().build().execute_with(|| {
-            let delegator = 0;
-            let amount = 0;
+	#[test]
+	fn payout_0_amount_succeed() {
+		ExtBuilder::default().build().execute_with(|| {
+			let delegator = 0;
+			let amount = 0;
 
-            assert_ok!(
-                <MintingRewards as PayoutReward<Test, Balance>>::payout(&delegator, amount),
+			assert_ok!(
+				<MintingRewards as PayoutReward<Test, Balance>>::payout(&delegator, amount),
 				0
-            );
-        });
-    }
+			);
+		});
+	}
 
 	#[test]
 	fn payout_collator_rewards_should_not_panic() {

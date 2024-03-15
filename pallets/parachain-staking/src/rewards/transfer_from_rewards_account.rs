@@ -23,9 +23,9 @@ impl<Runtime: crate::Config> PayoutReward<Runtime, BalanceOf<Runtime>>
 		delegator_id: &Runtime::AccountId,
 		amount: crate::BalanceOf<Runtime>,
 	) -> Result<crate::BalanceOf<Runtime>, DispatchError> {
-        if amount.is_zero() {
-            return Ok(Zero::zero());
-        }
+		if amount.is_zero() {
+			return Ok(Zero::zero());
+		}
 
 		ensure!(
 			frame_system::Account::<Runtime>::contains_key(delegator_id),
@@ -55,32 +55,36 @@ impl<Runtime: crate::Config> PayoutReward<Runtime, BalanceOf<Runtime>>
 mod tests {
 	use super::*;
 	use crate::mock::*;
-	use frame_support::{ assert_ok, assert_err};
+	use frame_support::{assert_err, assert_ok};
 	use sp_runtime::TokenError;
 
-    #[test]
-    fn payout_to_account_0_fails() {
-        ExtBuilder::default().build().execute_with(|| {
-            let delegator = 0;
-            let amount = 100;
+	#[test]
+	fn payout_to_account_0_fails() {
+		ExtBuilder::default().build().execute_with(|| {
+			let delegator = 0;
+			let amount = 100;
 
-            assert_err!(
-                <TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout(&delegator, amount),
-                "Destination Account does not exist"
-            );
-        });
-    }
+			assert_err!(
+				<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout(
+					&delegator, amount
+				),
+				"Destination Account does not exist"
+			);
+		});
+	}
 
-    #[test]
-    fn payout_0_amount_succeed() {
-        ExtBuilder::default().build().execute_with(|| {
-            let delegator = 0;
-            let amount = 0;
+	#[test]
+	fn payout_0_amount_succeed() {
+		ExtBuilder::default().build().execute_with(|| {
+			let delegator = 0;
+			let amount = 0;
 
-            assert_ok!(
-                <TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout(&delegator, amount),
+			assert_ok!(
+				<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout(
+					&delegator, amount
+				),
 				0
-            );
-        });
-    }
+			);
+		});
+	}
 }

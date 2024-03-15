@@ -74,7 +74,7 @@ mod tests {
 	#[test]
 	fn send_collator_rewards_to_unexistent_account_should_success() {
 		ExtBuilder::default().build().execute_with(|| {
-            let source = 2;
+			let source = 2;
 			let collator = 1;
 			System::set_block_number(1);
 
