@@ -1,4 +1,4 @@
-use crate::{traits::PayoutReward, BalanceOf, *};
+use crate::{traits::PayoutReward, BalanceOf, RewardsAccount};
 use frame_support::{
 	ensure,
 	pallet_prelude::Weight,
