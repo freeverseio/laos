@@ -16,6 +16,7 @@ mod evm;
 mod evm_chain_id;
 mod laos_evolution;
 mod multisig;
+mod parachain_info;
 pub mod parachain_staking;
 mod proxy;
 mod session;
@@ -25,7 +26,6 @@ mod timestamp;
 mod transaction_payment;
 mod utility;
 mod vesting;
-mod parachain_info;
 
 // Define storage fees as constants for clarity and reuse
 const STORAGE_ITEM_FEE: Balance = 10 * UNIT;

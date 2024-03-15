@@ -229,11 +229,6 @@ pub fn native_version() -> NativeVersion {
 	NativeVersion { runtime_version: VERSION, can_author_with: Default::default() }
 }
 
-parameter_types! {
-	pub const Version: RuntimeVersion = VERSION;
-	pub const SS58Prefix: u16 = 42;
-}
-
 // Configure FRAME pallets to include in runtime.
 
 parameter_types! {
