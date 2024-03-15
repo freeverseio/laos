@@ -292,13 +292,6 @@ impl sp_runtime::traits::Convert<AccountId, H160> for AccountIdToH160 {
 	}
 }
 
-impl pallet_asset_metadata_extender::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type AccountIdToH160 = AccountIdToH160;
-	type MaxTokenUriLength = MaxTokenUriLength;
-	type MaxUniversalLocationLength = MaxUniversalLocationLength;
-}
-
 /// Represents a mapping between `AssetId` and `AccountId`.
 /// This struct provides functionalities to convert an `AssetId` (represented by `U256`) into an
 /// `AccountId`.
