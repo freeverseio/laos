@@ -208,15 +208,6 @@ parameter_types! {
 	pub const MaxTokenUriLength: u32 = 512;
 }
 
-/// Converts [`AccountId`] to [`H160`]
-pub struct AccountIdToH160;
-
-impl sp_runtime::traits::Convert<AccountId, H160> for AccountIdToH160 {
-	fn convert(account_id: AccountId) -> H160 {
-		H160(account_id.0)
-	}
-}
-
 /// Represents a mapping between `AssetId` and `AccountId`.
 /// This struct provides functionalities to convert an `AssetId` (represented by `U256`) into an
 /// `AccountId`.

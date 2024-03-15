@@ -1,4 +1,4 @@
-use crate::{AccountIdToH160, MaxTokenUriLength, Runtime, RuntimeEvent};
+use crate::{types::AccountIdToH160, MaxTokenUriLength, Runtime, RuntimeEvent};
 
 impl pallet_laos_evolution::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;

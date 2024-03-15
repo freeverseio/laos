@@ -1,4 +1,4 @@
-use crate::{AccountIdToH160, MaxTokenUriLength, Runtime, RuntimeEvent};
+use crate::{types::AccountIdToH160, MaxTokenUriLength, Runtime, RuntimeEvent};
 use frame_support::parameter_types;
 
 parameter_types! {
