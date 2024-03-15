@@ -39,7 +39,7 @@ use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
 use frame_support::{
-	construct_runtime, parameter_types,
+	construct_runtime,
 	traits::{FindAuthor, Hooks},
 	weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight},
 };
@@ -171,11 +171,6 @@ pub fn native_version() -> NativeVersion {
 }
 
 // Configure FRAME pallets to include in runtime.
-
-parameter_types! {
-	/// Max length of the `TokenUri`
-	pub const MaxTokenUriLength: u32 = 512;
-}
 
 pub struct FindAuthorTruncated<F>(PhantomData<F>);
 impl<F: FindAuthor<u32>> FindAuthor<H160> for FindAuthorTruncated<F> {

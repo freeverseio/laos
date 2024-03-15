@@ -23,3 +23,10 @@ mod timestamp;
 mod transaction_payment;
 mod utility;
 mod vesting;
+
+use frame_support::parameter_types;
+
+parameter_types! {
+	/// Max length of the `TokenUri`
+	pub const MaxTokenUriLength: u32 = 512;
+}
