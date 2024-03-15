@@ -112,99 +112,13 @@ impl<T: Config> Pallet<T> {
 mod tests {
 	use super::*;
 	use crate as pallet_parachain_staking;
+	use crate::mock::*;
 	use frame_support::{assert_err, derive_impl, parameter_types};
-	use sp_runtime::{BuildStorage, TokenError};
-
-	type Block = frame_system::mocking::MockBlock<Test>;
-	pub type Balance = u128;
-	pub type AccountId = u64;
-
-	#[derive_impl(frame_system::config_preludes::TestDefaultConfig as frame_system::DefaultConfig)]
-	impl frame_system::Config for Test {
-		type Block = Block;
-		type AccountData = pallet_balances::AccountData<Balance>;
-	}
-
-	impl pallet_balances::Config for Test {
-		type MaxReserves = ();
-		type ReserveIdentifier = [u8; 4];
-		type MaxLocks = ();
-		type Balance = Balance;
-		type RuntimeEvent = RuntimeEvent;
-		type DustRemoval = ();
-		type ExistentialDeposit = ();
-		type AccountStore = System;
-		type WeightInfo = ();
-		type RuntimeHoldReason = ();
-		type FreezeIdentifier = ();
-		type MaxHolds = ();
-		type MaxFreezes = ();
-	}
-
-	parameter_types! {
-		pub const MinBlocksPerRound: u32 = 3;
-		pub const MaxOfflineRounds: u32 = 1;
-		pub const LeaveCandidatesDelay: u32 = 2;
-		pub const CandidateBondLessDelay: u32 = 2;
-		pub const LeaveDelegatorsDelay: u32 = 2;
-		pub const RevokeDelegationDelay: u32 = 2;
-		pub const DelegationBondLessDelay: u32 = 2;
-		pub const RewardPaymentDelay: u32 = 2;
-		pub const MinSelectedCandidates: u32 = 1;
-		pub const MaxTopDelegationsPerCandidate: u32 = 4;
-		pub const MaxBottomDelegationsPerCandidate: u32 = 4;
-		pub const MaxDelegationsPerDelegator: u32 = 4;
-		pub const MinCandidateStk: u32 = 10;
-		pub const MinDelegation: u32 = 3;
-		pub const MaxCandidates: u32 = 200;
-	}
-
-	impl Config for Test {
-		type RuntimeEvent = RuntimeEvent;
-		type Currency = Balances;
-		type MonetaryGovernanceOrigin = frame_system::EnsureRoot<AccountId>;
-		type MinBlocksPerRound = MinBlocksPerRound;
-		type MaxOfflineRounds = MaxOfflineRounds;
-		type LeaveCandidatesDelay = LeaveCandidatesDelay;
-		type CandidateBondLessDelay = CandidateBondLessDelay;
-		type LeaveDelegatorsDelay = LeaveDelegatorsDelay;
-		type RevokeDelegationDelay = RevokeDelegationDelay;
-		type DelegationBondLessDelay = DelegationBondLessDelay;
-		type RewardPaymentDelay = RewardPaymentDelay;
-		type MinSelectedCandidates = MinSelectedCandidates;
-		type MaxTopDelegationsPerCandidate = MaxTopDelegationsPerCandidate;
-		type MaxBottomDelegationsPerCandidate = MaxBottomDelegationsPerCandidate;
-		type MaxDelegationsPerDelegator = MaxDelegationsPerDelegator;
-		type MinCandidateStk = MinCandidateStk;
-		type MinDelegation = MinDelegation;
-		type BlockAuthor = ();
-		type OnCollatorPayout = ();
-		type PayoutReward = TransferFromRewardsAccount;
-		type OnInactiveCollator = ();
-		type OnNewRound = ();
-		type SlotProvider = ();
-		type WeightInfo = ();
-		type MaxCandidates = MaxCandidates;
-		type SlotsPerYear = frame_support::traits::ConstU32<{ 31_557_600 / 6 }>;
-	}
-
-	frame_support::construct_runtime!(
-		pub enum Test
-		{
-			System: frame_system,
-			Balances: pallet_balances,
-			ParachainStaking: pallet_parachain_staking,
-		}
-	);
-
-	fn new_test_ext() -> sp_io::TestExternalities {
-		let t = frame_system::GenesisConfig::<Test>::default().build_storage().unwrap();
-		t.into()
-	}
+	use sp_runtime::TokenError;
 
 	#[test]
 	fn payout_collator_rewards_should_not_panic() {
-		new_test_ext().execute_with(|| {
+		ExtBuilder::default().build().execute_with(|| {
 			let collator = 1;
 			let amount = 100;
 			let round_index = 1;
@@ -246,7 +160,7 @@ mod tests {
 
 	#[test]
 	fn payout_should_error_id_delegator_account_do_not_exist() {
-		new_test_ext().execute_with(|| {
+		ExtBuilder::default().build().execute_with(|| {
 			let delegator = 1;
 			let amount = 100;
 
@@ -265,7 +179,7 @@ mod tests {
 
 	#[test]
 	fn payout_should_return_amount_transferred() {
-		new_test_ext().execute_with(|| {
+		ExtBuilder::default().build().execute_with(|| {
 			let delegator = 1;
 			let amount = 100;
 			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&delegator, amount);
@@ -275,14 +189,6 @@ mod tests {
 				Ok(amount)
 			);
 
-			// if RewardAccount is not set then Error
-			assert_err!(
-				<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout(
-					&delegator, amount
-				),
-				"RewardAccount is not set"
-			);
-
 			// set RewardAccount
 			RewardsAccount::<Test>::put(2);
 			assert_err!(
@@ -297,13 +203,22 @@ mod tests {
 				<MintingRewards as PayoutReward<Test, Balance>>::payout(&delegator, amount),
 				Ok(amount)
 			);
+
+			RewardsAccount::<Test>::kill();
+			// if RewardAccount is not set then Error
+			assert_err!(
+				<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout(
+					&delegator, amount
+				),
+				"RewardAccount is not set"
+			);
 		});
 	}
 
 	// test when delegator is 0
 	#[test]
 	fn payout_should_return_zero() {
-		new_test_ext().execute_with(|| {
+		ExtBuilder::default().with_rewards_account_balance(0).build().execute_with(|| {
 			let delegator = 0;
 			let amount = 100;
 			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&delegator, amount);
@@ -313,15 +228,7 @@ mod tests {
 				Ok(100)
 			);
 
-			assert_err!(
-				<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout(
-					&delegator, amount
-				),
-				"RewardAccount is not set"
-			);
-
 			// set RewardAccount
-			RewardsAccount::<Test>::put(2);
 			assert_err!(
 				<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout(
 					&delegator, amount
@@ -333,6 +240,16 @@ mod tests {
 			assert_eq!(
 				<MintingRewards as PayoutReward<Test, Balance>>::payout(&delegator, amount),
 				Ok(amount)
+			);
+
+			// reset RewardAccount
+			RewardsAccount::<Test>::kill();
+
+			assert_err!(
+				<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout(
+					&delegator, amount
+				),
+				"RewardAccount is not set"
 			);
 		});
 	}
