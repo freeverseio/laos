@@ -28,16 +28,16 @@ impl<Runtime: crate::Config> PayoutReward<Runtime, BalanceOf<Runtime>>
 			return Ok(Zero::zero());
 		}
 
-        // Ensure the destination account exists.
+		// Ensure the destination account exists.
 		ensure!(
 			frame_system::Account::<Runtime>::contains_key(delegator_id),
 			"Destination Account does not exist"
 		);
 
-        // Unwrap is safe here because we checked is_none() above.
+		// Unwrap is safe here because we checked is_none() above.
 		let rewards_account = RewardsAccount::<Runtime>::get().unwrap();
 
-        // Attempt to transfer from rewards to delegator, handling the specific underflow error.
+		// Attempt to transfer from rewards to delegator, handling the specific underflow error.
 		Runtime::Currency::transfer(
 			&rewards_account,
 			&delegator_id,
