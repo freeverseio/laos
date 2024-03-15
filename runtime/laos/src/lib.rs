@@ -304,12 +304,6 @@ impl sp_runtime::traits::Convert<AccountId, H160> for AccountIdToH160 {
 	}
 }
 
-impl pallet_laos_evolution::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type AccountIdToH160 = AccountIdToH160;
-	type MaxTokenUriLength = MaxTokenUriLength;
-}
-
 impl pallet_asset_metadata_extender::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type AccountIdToH160 = AccountIdToH160;
