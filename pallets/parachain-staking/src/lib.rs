@@ -690,7 +690,7 @@ pub mod pallet {
 	impl<T: Config> Default for GenesisConfig<T> {
 		fn default() -> Self {
 			Self {
-				candidates: Default::default(),
+				candidates: vec![],
 				delegations: vec![],
 				inflation_config: Default::default(),
 				collator_commission: Default::default(),
