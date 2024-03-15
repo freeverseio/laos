@@ -67,7 +67,7 @@ impl InstanceFilter<RuntimeCall> for ProxyType {
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::MILLIUNIT;
+	use crate::currency::MILLIUNIT;
 
 	#[test]
 	fn check_deposits() {

@@ -22,7 +22,7 @@ impl pallet_multisig::Config for Runtime {
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::MILLIUNIT;
+	use crate::currency::MILLIUNIT;
 
 	#[test]
 	fn check_deposits() {

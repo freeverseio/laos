@@ -13,7 +13,7 @@ use crate::Runtime as RealParachainRuntime;
 use parachain::Runtime as MockParachainRuntime;
 use relay_chain::Runtime as MockRelayChainRuntime;
 
-use crate::UNIT;
+use crate::currency::UNIT;
 
 pub const ALICE: sp_runtime::AccountId32 = sp_runtime::AccountId32::new([0xFAu8; 32]);
 pub const ALITH: H160 = H160([0xFAu8; 20]);
