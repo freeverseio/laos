@@ -75,13 +75,8 @@ impl ExtBuilder {
 		pallet_parachain_staking::GenesisConfig::<crate::Runtime> {
 			candidates: self.candidates,
 			blocks_per_round: 10,
-			..Default::default()
-		}
-		.assimilate_storage(&mut t)
-		.unwrap();
-
-		pallet_block_rewards_handler::GenesisConfig::<crate::Runtime> {
 			rewards_account: self.rewards_account,
+			..Default::default()
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();

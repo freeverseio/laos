@@ -67,7 +67,7 @@ impl<Runtime: crate::Config> PayoutReward<Runtime, BalanceOf<Runtime>>
 
 impl<T: Config> Pallet<T> {
 	/// Mint a specified reward amount to the collator's account. Emits the [Rewarded] event.
-	fn mint_collator_reward(
+	pub(crate) fn mint_collator_reward(
 		_paid_for_round: RoundIndex,
 		collator_id: T::AccountId,
 		amt: BalanceOf<T>,
