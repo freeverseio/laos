@@ -27,11 +27,19 @@ impl<T: Config> Pallet<T> {
 		collator_id: T::AccountId,
 		amt: BalanceOf<T>,
 	) -> Weight {
-		if T::Currency::transfer(&source, &collator_id, amt, ExistenceRequirement::KeepAlive)
-			.is_ok()
-		{
-			Self::deposit_event(Event::Rewarded { account: collator_id.clone(), rewards: amt });
+		match T::Currency::transfer(&source, &collator_id, amt, ExistenceRequirement::KeepAlive) {
+			Ok(_) => {
+				Self::deposit_event(Event::Rewarded { account: collator_id.clone(), rewards: amt });
+			},
+			Err(e) => log::error!(
+				"💥 Failed to send reward to collator: {:?} from: {:?}, to: {:?}, amount: {:?}",
+				e,
+				source,
+				collator_id,
+				amt
+			),
 		}
+
 		Weight::zero() // TODO: weight
 	}
 }
@@ -81,6 +89,25 @@ mod tests {
 			Pallet::<Test>::send_collator_reward(source, collator, 100);
 
 			assert_eq!(System::events().len(), 0);
+		})
+	}
+
+	#[test]
+	fn send_collator_rewards_of_existent_account_succeed() {
+		ExtBuilder::default().build().execute_with(|| {
+			let source = 2;
+			let collator = 1;
+
+			System::set_block_number(1);
+
+			assert_eq!(System::events().len(), 0);
+
+			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&source, 100);
+			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&collator, 1);
+
+			Pallet::<Test>::send_collator_reward(source, collator, 100);
+
+			assert_events_eq_match!(Event::Rewarded { account: 1, rewards: 100 },);
 		})
 	}
 }

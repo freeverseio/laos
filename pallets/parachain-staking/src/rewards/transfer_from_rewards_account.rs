@@ -52,7 +52,6 @@ impl<Runtime: crate::Config> PayoutReward<Runtime, BalanceOf<Runtime>>
 	}
 }
 
-// tests
 #[cfg(test)]
 mod tests {
 	use super::*;
