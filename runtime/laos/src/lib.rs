@@ -338,12 +338,6 @@ impl pallet_asset_metadata_extender::Config for Runtime {
 	type MaxUniversalLocationLength = MaxUniversalLocationLength;
 }
 
-impl pallet_sudo::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type RuntimeCall = RuntimeCall;
-	type WeightInfo = ();
-}
-
 /// Represents a mapping between `AssetId` and `AccountId`.
 /// This struct provides functionalities to convert an `AssetId` (represented by `U256`) into an
 /// `AccountId`.

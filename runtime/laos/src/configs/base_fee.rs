@@ -3,7 +3,7 @@ use frame_support::parameter_types;
 use sp_runtime::Permill;
 
 parameter_types! {
-	pub DefaultBaseFeePerGas: U256 = U256::from(1_000_000_000);
+	pub DefaultBaseFeePerGas: U256 = U256::from(1_000_000_000); 
 	pub DefaultElasticity: Permill = Permill::from_parts(125_000);
 }
 

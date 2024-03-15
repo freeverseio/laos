@@ -13,6 +13,7 @@ mod vesting;
 mod timestamp;
 mod balances;
 mod base_fee;
+mod sudo;
 
 // Define storage fees as constants for clarity and reuse
 const STORAGE_ITEM_FEE: Balance = 10 * UNIT;
