@@ -235,7 +235,6 @@ parameter_types! {
 }
 
 // Configure FRAME pallets to include in runtime.
-impl parachain_info::Config for Runtime {}
 
 parameter_types! {
 	/// Max length of the `TokenUri`
