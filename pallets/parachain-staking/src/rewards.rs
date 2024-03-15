@@ -109,6 +109,7 @@ mod tests {
 
 	type Block = frame_system::mocking::MockBlock<Test>;
 	pub type Balance = u128;
+	pub type AccountId = u64;
 
 	#[derive_impl(frame_system::config_preludes::TestDefaultConfig as frame_system::DefaultConfig)]
 	impl frame_system::Config for Test {
@@ -132,59 +133,59 @@ mod tests {
 		type MaxFreezes = ();
 	}
 
-	// parameter_types! {
-	// 	pub const MinBlocksPerRound: u32 = 3;
-	// 	pub const MaxOfflineRounds: u32 = 1;
-	// 	pub const LeaveCandidatesDelay: u32 = 2;
-	// 	pub const CandidateBondLessDelay: u32 = 2;
-	// 	pub const LeaveDelegatorsDelay: u32 = 2;
-	// 	pub const RevokeDelegationDelay: u32 = 2;
-	// 	pub const DelegationBondLessDelay: u32 = 2;
-	// 	pub const RewardPaymentDelay: u32 = 2;
-	// 	pub const MinSelectedCandidates: u32 = 1;
-	// 	pub const MaxTopDelegationsPerCandidate: u32 = 4;
-	// 	pub const MaxBottomDelegationsPerCandidate: u32 = 4;
-	// 	pub const MaxDelegationsPerDelegator: u32 = 4;
-	// 	pub const MinCandidateStk: u32 = 10;
-	// 	pub const MinDelegation: u32 = 3;
-	// 	pub const MaxCandidates: u32 = 200;
-	// }
+	parameter_types! {
+		pub const MinBlocksPerRound: u32 = 3;
+		pub const MaxOfflineRounds: u32 = 1;
+		pub const LeaveCandidatesDelay: u32 = 2;
+		pub const CandidateBondLessDelay: u32 = 2;
+		pub const LeaveDelegatorsDelay: u32 = 2;
+		pub const RevokeDelegationDelay: u32 = 2;
+		pub const DelegationBondLessDelay: u32 = 2;
+		pub const RewardPaymentDelay: u32 = 2;
+		pub const MinSelectedCandidates: u32 = 1;
+		pub const MaxTopDelegationsPerCandidate: u32 = 4;
+		pub const MaxBottomDelegationsPerCandidate: u32 = 4;
+		pub const MaxDelegationsPerDelegator: u32 = 4;
+		pub const MinCandidateStk: u32 = 10;
+		pub const MinDelegation: u32 = 3;
+		pub const MaxCandidates: u32 = 200;
+	}
 
-	// impl Config for Test {
-	// 	type RuntimeEvent = RuntimeEvent;
-	// 	type Currency = ();
-	// 	type MonetaryGovernanceOrigin = ();
-	// 	type MinBlocksPerRound = MinBlocksPerRound;
-	// 	type MaxOfflineRounds = MaxOfflineRounds;
-	// 	type LeaveCandidatesDelay = LeaveCandidatesDelay;
-	// 	type CandidateBondLessDelay = CandidateBondLessDelay;
-	// 	type LeaveDelegatorsDelay = LeaveDelegatorsDelay;
-	// 	type RevokeDelegationDelay = RevokeDelegationDelay;
-	// 	type DelegationBondLessDelay = DelegationBondLessDelay;
-	// 	type RewardPaymentDelay = RewardPaymentDelay;
-	// 	type MinSelectedCandidates = MinSelectedCandidates;
-	// 	type MaxTopDelegationsPerCandidate = MaxTopDelegationsPerCandidate;
-	// 	type MaxBottomDelegationsPerCandidate = MaxBottomDelegationsPerCandidate;
-	// 	type MaxDelegationsPerDelegator = MaxDelegationsPerDelegator;
-	// 	type MinCandidateStk = MinCandidateStk;
-	// 	type MinDelegation = MinDelegation;
-	// 	type BlockAuthor = ();
-	// 	type OnCollatorPayout = ();
-	// 	type PayoutReward = TransferFromRewardsAccount;
-	// 	type OnInactiveCollator = ();
-	// 	type OnNewRound = ();
-	// 	type SlotProvider = ();
-	// 	type WeightInfo = ();
-	// 	type MaxCandidates = MaxCandidates;
-	// 	type SlotsPerYear = frame_support::traits::ConstU32<{ 31_557_600 / 6 }>;
-	// }
+	impl Config for Test {
+		type RuntimeEvent = RuntimeEvent;
+		type Currency = Balances;
+		type MonetaryGovernanceOrigin = frame_system::EnsureRoot<AccountId>;
+		type MinBlocksPerRound = MinBlocksPerRound;
+		type MaxOfflineRounds = MaxOfflineRounds;
+		type LeaveCandidatesDelay = LeaveCandidatesDelay;
+		type CandidateBondLessDelay = CandidateBondLessDelay;
+		type LeaveDelegatorsDelay = LeaveDelegatorsDelay;
+		type RevokeDelegationDelay = RevokeDelegationDelay;
+		type DelegationBondLessDelay = DelegationBondLessDelay;
+		type RewardPaymentDelay = RewardPaymentDelay;
+		type MinSelectedCandidates = MinSelectedCandidates;
+		type MaxTopDelegationsPerCandidate = MaxTopDelegationsPerCandidate;
+		type MaxBottomDelegationsPerCandidate = MaxBottomDelegationsPerCandidate;
+		type MaxDelegationsPerDelegator = MaxDelegationsPerDelegator;
+		type MinCandidateStk = MinCandidateStk;
+		type MinDelegation = MinDelegation;
+		type BlockAuthor = ();
+		type OnCollatorPayout = ();
+		type PayoutReward = TransferFromRewardsAccount;
+		type OnInactiveCollator = ();
+		type OnNewRound = ();
+		type SlotProvider = ();
+		type WeightInfo = ();
+		type MaxCandidates = MaxCandidates;
+		type SlotsPerYear = frame_support::traits::ConstU32<{ 31_557_600 / 6 }>;
+	}
 
 	frame_support::construct_runtime!(
 		pub enum Test
 		{
 			System: frame_system,
 			Balances: pallet_balances,
-			// ParachainStaking: pallet_parachain_staking,
+			ParachainStaking: pallet_parachain_staking,
 		}
 	);
 }
