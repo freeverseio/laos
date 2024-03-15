@@ -64,6 +64,19 @@ mod tests {
 	}
 
 	#[test]
+	fn mint_collator_0_rewards_succeed() {
+		ExtBuilder::default().build().execute_with(|| {
+			let collator = 1;
+			System::set_block_number(1);
+
+			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&collator, 1);
+			Pallet::<Test>::mint_collator_reward(collator, 0);
+
+			assert_events_eq_match!(Event::Rewarded { account: 1, rewards: 0 },);
+		})
+	}
+
+	#[test]
 	fn mint_collator_rewards_of_existent_account_succeed() {
 		ExtBuilder::default().build().execute_with(|| {
 			let collator = 1;
@@ -89,6 +102,21 @@ mod tests {
 			Pallet::<Test>::send_collator_reward(source, collator, 100);
 
 			assert_eq!(System::events().len(), 0);
+		})
+	}
+
+	#[test]
+	fn send_collator_0_rewards_succeed() {
+		ExtBuilder::default().build().execute_with(|| {
+			let source = 2;
+			let collator = 1;
+			System::set_block_number(1);
+
+			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&source, 1);
+			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&collator, 1);
+			Pallet::<Test>::send_collator_reward(source, collator, 0);
+
+			assert_events_eq_match!(Event::Rewarded { account: 1, rewards: 0 },);
 		})
 	}
 
