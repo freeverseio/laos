@@ -1,4 +1,4 @@
-use crate::{traits::PayoutReward, BalanceOf};
+use crate::{traits::PayoutReward, BalanceOf, RoundIndex};
 use frame_support::{
 	pallet_prelude::Weight,
 	traits::{tokens::currency::Currency, Imbalance},
@@ -8,11 +8,11 @@ use sp_runtime::DispatchError;
 pub struct MintingRewards;
 impl<Runtime: crate::Config> PayoutReward<Runtime, BalanceOf<Runtime>> for MintingRewards {
 	fn payout_collator_rewards(
-		_for_round: crate::RoundIndex,
+		for_round: RoundIndex,
 		collator_id: Runtime::AccountId,
 		amount: crate::BalanceOf<Runtime>,
 	) -> Weight {
-		crate::Pallet::<Runtime>::mint_collator_reward(collator_id, amount)
+		crate::Pallet::<Runtime>::mint_collator_reward(for_round, collator_id, amount)
 	}
 
 	fn payout(
