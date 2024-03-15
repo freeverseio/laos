@@ -291,6 +291,49 @@ mod tests {
 				),
 				TokenError::FundsUnavailable
 			);
+
+			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&delegator, amount);
+			assert_eq!(
+				<MintingRewards as PayoutReward<Test, Balance>>::payout(&delegator, amount),
+				Ok(amount)
+			);
+		});
+	}
+
+	// test when delegator is 0
+	#[test]
+	fn payout_should_return_zero() {
+		new_test_ext().execute_with(|| {
+			let delegator = 0;
+			let amount = 100;
+			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&delegator, amount);
+
+			assert_eq!(
+				<MintingRewards as PayoutReward<Test, Balance>>::payout(&delegator, amount),
+				Ok(100)
+			);
+
+			assert_err!(
+				<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout(
+					&delegator, amount
+				),
+				"RewardAccount is not set"
+			);
+
+			// set RewardAccount
+			RewardsAccount::<Test>::put(2);
+			assert_err!(
+				<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout(
+					&delegator, amount
+				),
+				TokenError::FundsUnavailable
+			);
+
+			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&delegator, amount);
+			assert_eq!(
+				<MintingRewards as PayoutReward<Test, Balance>>::payout(&delegator, amount),
+				Ok(amount)
+			);
 		});
 	}
 }
