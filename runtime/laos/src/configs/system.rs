@@ -308,7 +308,7 @@ mod tests {
 	}
 
 	#[test]
-	fn ethereum_transact_fails() {
+	fn ethereum_transact_should_not_be_allowed() {
 		new_test_ext().execute_with(|| {
 			let call = RuntimeCall::Ethereum(pallet_ethereum::Call::transact {
 				transaction: Transaction::Legacy(ethereum::LegacyTransaction {
