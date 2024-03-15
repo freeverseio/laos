@@ -4,7 +4,7 @@ use pallet_ethereum::PostLogContent;
 
 parameter_types! {
 	pub const PostBlockAndTxnHashes: PostLogContent = PostLogContent::BlockAndTxnHashes;
-    pub const ExtraDataLength: u32 = 30;
+	pub const ExtraDataLength: u32 = 30;
 }
 
 impl pallet_ethereum::Config for Runtime {

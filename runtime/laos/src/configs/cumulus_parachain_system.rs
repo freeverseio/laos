@@ -1,5 +1,5 @@
-use crate::{Runtime, RuntimeEvent, XcmpQueue, DmpQueue, RelayNumberStrictlyIncreases};
-use frame_support::{ weights::Weight, parameter_types};
+use crate::{DmpQueue, RelayNumberStrictlyIncreases, Runtime, RuntimeEvent, XcmpQueue};
+use frame_support::{parameter_types, weights::Weight};
 
 use laos_primitives::MAXIMUM_BLOCK_WEIGHT;
 
@@ -19,4 +19,3 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
 	type ReservedXcmpWeight = ReservedXcmpWeight;
 	type CheckAssociatedRelayNumber = RelayNumberStrictlyIncreases;
 }
-

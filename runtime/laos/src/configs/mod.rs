@@ -7,7 +7,11 @@ mod authorship;
 mod balances;
 mod base_fee;
 mod block_rewards_handler;
+mod cumulus_parachain_system;
+mod cumulus_xcmp_queue;
+mod ethereum;
 mod evm;
+mod evm_chain_id;
 mod laos_evolution;
 mod multisig;
 pub mod parachain_staking;
@@ -19,9 +23,6 @@ mod timestamp;
 mod transaction_payment;
 mod utility;
 mod vesting;
-mod ethereum;
-mod evm_chain_id;
-mod cumulus_parachain_system;
 
 // Define storage fees as constants for clarity and reuse
 const STORAGE_ITEM_FEE: Balance = 10 * UNIT;
