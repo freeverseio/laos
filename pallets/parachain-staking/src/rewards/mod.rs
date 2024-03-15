@@ -1,7 +1,7 @@
 mod minting_rewards;
 mod transfer_from_rewards_account;
 
-pub use minting_rewards::TransferFromRewardsAccount;
+pub use transfer_from_rewards_account::TransferFromRewardsAccount;
 
 use crate::{
 	traits::PayoutReward, BalanceOf, Config, Event, Pallet, RewardsAccount, RoundIndex, WeightInfo,

@@ -28,45 +28,6 @@ impl<Runtime: crate::Config> PayoutReward<Runtime, BalanceOf<Runtime>> for Minti
 	}
 }
 
-pub struct TransferFromRewardsAccount;
-impl<Runtime: crate::Config> PayoutReward<Runtime, BalanceOf<Runtime>>
-	for TransferFromRewardsAccount
-{
-	fn payout_collator_rewards(
-		for_round: crate::RoundIndex,
-		collator_id: Runtime::AccountId,
-		amount: crate::BalanceOf<Runtime>,
-	) -> Weight {
-		crate::Pallet::<Runtime>::send_collator_reward(for_round, collator_id, amount)
-	}
-
-	fn payout(
-		delegator_id: &Runtime::AccountId,
-		amount: crate::BalanceOf<Runtime>,
-	) -> Result<crate::BalanceOf<Runtime>, DispatchError> {
-		ensure!(
-			frame_system::Account::<Runtime>::contains_key(delegator_id),
-			"Account does not exist"
-		);
-
-		ensure!(RewardsAccount::<Runtime>::get().is_some(), "RewardAccount is not set");
-
-		let rewards_account = RewardsAccount::<Runtime>::get().unwrap();
-
-		Runtime::Currency::transfer(
-			&rewards_account,
-			&delegator_id,
-			amount,
-			ExistenceRequirement::KeepAlive,
-		)
-		.map(|_| amount)
-		.or_else(|e| match e {
-			DispatchError::Arithmetic(ArithmeticError::Underflow) => Ok(Zero::zero()),
-			_ => Err(e),
-		})
-	}
-}
-
 // tests
 #[cfg(test)]
 mod tests {
@@ -89,32 +50,6 @@ mod tests {
 				collator,
 				amount,
 			);
-			<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout_collator_rewards(
-				round_index,
-				collator,
-				amount,
-			);
-
-			RewardsAccount::<Test>::put(2);
-			<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout_collator_rewards(
-				round_index,
-				collator,
-				amount,
-			);
-
-			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&collator, amount / 2);
-			<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout_collator_rewards(
-				round_index,
-				collator,
-				amount,
-			);
-
-			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&collator, amount);
-			<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout_collator_rewards(
-				round_index,
-				collator,
-				amount,
-			);
 		});
 	}
 
@@ -127,12 +62,6 @@ mod tests {
 			assert_err!(
 				<MintingRewards as PayoutReward<Test, Balance>>::payout(&delegator, amount),
 				pallet_balances::Error::<Test>::DeadAccount
-			);
-			assert_err!(
-				<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout(
-					&delegator, amount
-				),
-				"Account does not exist"
 			);
 		});
 	}
@@ -149,28 +78,10 @@ mod tests {
 				Ok(amount)
 			);
 
-			// set RewardAccount
-			RewardsAccount::<Test>::put(2);
-			assert_err!(
-				<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout(
-					&delegator, amount
-				),
-				TokenError::FundsUnavailable
-			);
-
 			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&delegator, amount);
 			assert_eq!(
 				<MintingRewards as PayoutReward<Test, Balance>>::payout(&delegator, amount),
 				Ok(amount)
-			);
-
-			RewardsAccount::<Test>::kill();
-			// if RewardAccount is not set then Error
-			assert_err!(
-				<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout(
-					&delegator, amount
-				),
-				"RewardAccount is not set"
 			);
 		});
 	}
@@ -188,28 +99,10 @@ mod tests {
 				Ok(100)
 			);
 
-			// set RewardAccount
-			assert_err!(
-				<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout(
-					&delegator, amount
-				),
-				TokenError::FundsUnavailable
-			);
-
 			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&delegator, amount);
 			assert_eq!(
 				<MintingRewards as PayoutReward<Test, Balance>>::payout(&delegator, amount),
 				Ok(amount)
-			);
-
-			// reset RewardAccount
-			RewardsAccount::<Test>::kill();
-
-			assert_err!(
-				<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout(
-					&delegator, amount
-				),
-				"RewardAccount is not set"
 			);
 		});
 	}
