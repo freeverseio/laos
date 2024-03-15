@@ -58,7 +58,6 @@ mod tests {
 	use super::*;
 	use crate::mock::*;
 	use frame_support::{assert_err, assert_ok};
-	use sp_runtime::TokenError;
 
 	#[test]
 	fn payout_to_account_0_fails() {
