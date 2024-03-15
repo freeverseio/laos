@@ -15,7 +15,7 @@ use frame_support::{
 	PalletId,
 };
 use frame_system::{EnsureRoot, RawOrigin as SystemRawOrigin};
-use ownership_parachain_primitives::MAXIMUM_BLOCK_WEIGHT;
+use laos_primitives::MAXIMUM_BLOCK_WEIGHT;
 use pallet_assets::AssetsCallback;
 use pallet_evm::{
 	runner, EnsureAddressNever, EnsureAddressRoot, FeeCalculator, FixedGasWeightMapping,

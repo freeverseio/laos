@@ -3,15 +3,8 @@ use crate::{
 	precompiles::FrontierPrecompiles, types::ToAuthor, AccountId, Aura, Balances, BaseFee,
 	EVMChainId, Runtime, RuntimeEvent, Timestamp, Weight, U256, WEIGHT_REF_TIME_PER_SECOND,
 };
-use frame_support::{
-	parameter_types,
-	traits::{ConstU32, FindAuthor},
-};
-use ownership_parachain_primitives::{MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO};
-use pallet_ethereum::PostLogContent;
-use sp_core::H160;
-use sp_runtime::{ConsensusEngineId, RuntimeAppPublic};
-use sp_std::marker::PhantomData;
+use frame_support::parameter_types;
+use laos_primitives::{MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO};
 
 /// Current approximation of the gas/s consumption considering
 /// EVM execution over compiled WASM (on 4.4Ghz CPU).
@@ -85,15 +78,4 @@ impl<F: FindAuthor<u32>> FindAuthor<H160> for FindAuthorTruncated<F> {
 		}
 		None
 	}
-}
-
-parameter_types! {
-	pub const PostBlockAndTxnHashes: PostLogContent = PostLogContent::BlockAndTxnHashes;
-}
-
-impl pallet_ethereum::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type StateRoot = pallet_ethereum::IntermediateStateRoot<Self>;
-	type PostLogContent = PostBlockAndTxnHashes;
-	type ExtraDataLength = ConstU32<30>;
 }

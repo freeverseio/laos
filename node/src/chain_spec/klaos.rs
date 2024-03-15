@@ -1,21 +1,20 @@
 use super::{get_collator_keys_from_seed, predefined_accounts, Extensions, SAFE_XCM_VERSION};
 use cumulus_primitives_core::ParaId;
 use fp_evm::GenesisAccount;
-use klaos_ownership_runtime::{AccountId, AuraId, Precompiles, REVERT_BYTECODE};
+use klaos_runtime::{AccountId, AuraId, Precompiles, REVERT_BYTECODE};
 use sc_service::ChainType;
 use sp_core::{H160, U256};
 use sp_runtime::traits::Zero;
 use std::{collections::BTreeMap, str::FromStr};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
-pub type ChainSpec =
-	sc_service::GenericChainSpec<klaos_ownership_runtime::RuntimeGenesisConfig, Extensions>;
+pub type ChainSpec = sc_service::GenericChainSpec<klaos_runtime::RuntimeGenesisConfig, Extensions>;
 
 /// Generate the session keys from individual elements.
 ///
 /// The input must be a tuple of individual keys (a single arg for now since we have just one key).
-pub fn template_session_keys(keys: AuraId) -> klaos_ownership_runtime::SessionKeys {
-	klaos_ownership_runtime::SessionKeys { aura: keys }
+pub fn template_session_keys(keys: AuraId) -> klaos_runtime::SessionKeys {
+	klaos_runtime::SessionKeys { aura: keys }
 }
 
 pub fn development_config() -> ChainSpec {
@@ -99,27 +98,27 @@ fn testnet_genesis(
 	endowed_accounts: Vec<AccountId>,
 	root_key: Option<AccountId>,
 	id: ParaId,
-) -> klaos_ownership_runtime::RuntimeGenesisConfig {
-	klaos_ownership_runtime::RuntimeGenesisConfig {
-		system: klaos_ownership_runtime::SystemConfig {
-			code: klaos_ownership_runtime::WASM_BINARY
+) -> klaos_runtime::RuntimeGenesisConfig {
+	klaos_runtime::RuntimeGenesisConfig {
+		system: klaos_runtime::SystemConfig {
+			code: klaos_runtime::WASM_BINARY
 				.expect("WASM binary was not build, please build it!")
 				.to_vec(),
 			..Default::default()
 		},
-		balances: klaos_ownership_runtime::BalancesConfig {
+		balances: klaos_runtime::BalancesConfig {
 			balances: endowed_accounts.iter().cloned().map(|k| (k, 1e24 as u128)).collect(),
 		},
-		parachain_info: klaos_ownership_runtime::ParachainInfoConfig {
+		parachain_info: klaos_runtime::ParachainInfoConfig {
 			parachain_id: id,
 			..Default::default()
 		},
-		collator_selection: klaos_ownership_runtime::CollatorSelectionConfig {
+		collator_selection: klaos_runtime::CollatorSelectionConfig {
 			invulnerables: invulnerables.iter().cloned().map(|(acc, _)| acc).collect(),
 			candidacy_bond: Zero::zero(),
 			..Default::default()
 		},
-		session: klaos_ownership_runtime::SessionConfig {
+		session: klaos_runtime::SessionConfig {
 			keys: invulnerables
 				.into_iter()
 				.map(|(acc, aura)| {
@@ -136,18 +135,15 @@ fn testnet_genesis(
 		aura: Default::default(),
 		aura_ext: Default::default(),
 		parachain_system: Default::default(),
-		polkadot_xcm: klaos_ownership_runtime::PolkadotXcmConfig {
+		polkadot_xcm: klaos_runtime::PolkadotXcmConfig {
 			safe_xcm_version: Some(SAFE_XCM_VERSION),
 			..Default::default()
 		},
-		sudo: klaos_ownership_runtime::SudoConfig { key: root_key },
+		sudo: klaos_runtime::SudoConfig { key: root_key },
 		transaction_payment: Default::default(),
 		// EVM compatibility
-		evm_chain_id: klaos_ownership_runtime::EVMChainIdConfig {
-			chain_id: 667,
-			..Default::default()
-		},
-		evm: klaos_ownership_runtime::EVMConfig {
+		evm_chain_id: klaos_runtime::EVMChainIdConfig { chain_id: 667, ..Default::default() },
+		evm: klaos_runtime::EVMConfig {
 			accounts: {
 				let mut map: BTreeMap<_, _> = Precompiles::used_addresses()
 					.iter()

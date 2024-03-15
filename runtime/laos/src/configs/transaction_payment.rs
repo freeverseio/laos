@@ -1,4 +1,8 @@
-use crate::{types::ToAuthor, Balance, Balances, Runtime, RuntimeEvent, WeightToFee, MICROUNIT};
+use crate::{
+	currency::MICROUNIT,
+	types::{ToAuthor, WeightToFee},
+	Balance, Balances, Runtime, RuntimeEvent,
+};
 use frame_support::{parameter_types, weights::ConstantMultiplier};
 use polkadot_runtime_common::SlowAdjustingFeeUpdate;
 

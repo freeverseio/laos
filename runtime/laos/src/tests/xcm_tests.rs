@@ -13,11 +13,12 @@ use super::xcm_mock::{
 	Relay,
 };
 use crate::{
+	currency::UNIT,
 	tests::xcm_mock::{
 		parachain, LaosParachainBalances, LaosParachainXcm, ParachainXtokens, ALICE, ALITH, BOBTH,
 		INITIAL_BALANCE,
 	},
-	Runtime, RuntimeOrigin, UNIT,
+	Runtime, RuntimeOrigin,
 };
 use cumulus_primitives_core::{
 	Fungibility::Fungible,
