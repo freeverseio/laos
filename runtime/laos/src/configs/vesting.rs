@@ -1,4 +1,4 @@
-use crate::{Balances, Runtime, RuntimeEvent, UNIT, Balance};
+use crate::{Balance, Balances, Runtime, RuntimeEvent, UNIT};
 use frame_support::{parameter_types, traits::WithdrawReasons};
 use sp_runtime::traits::ConvertInto;
 
@@ -18,4 +18,3 @@ impl pallet_vesting::Config for Runtime {
 	type UnvestedFundsAllowedWithdrawReasons = UnvestedFundsAllowedWithdrawReasons;
 	const MAX_VESTING_SCHEDULES: u32 = 28;
 }
-

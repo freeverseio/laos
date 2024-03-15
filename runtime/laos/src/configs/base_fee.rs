@@ -3,10 +3,9 @@ use frame_support::parameter_types;
 use sp_runtime::Permill;
 
 parameter_types! {
-	pub DefaultBaseFeePerGas: U256 = U256::from(1_000_000_000); 
+	pub DefaultBaseFeePerGas: U256 = U256::from(1_000_000_000);
 	pub DefaultElasticity: Permill = Permill::from_parts(125_000);
 }
-
 
 impl pallet_base_fee::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
@@ -14,7 +13,6 @@ impl pallet_base_fee::Config for Runtime {
 	type DefaultBaseFeePerGas = DefaultBaseFeePerGas;
 	type DefaultElasticity = DefaultElasticity;
 }
-
 
 pub struct BaseFeeThreshold;
 impl pallet_base_fee::BaseFeeThreshold for BaseFeeThreshold {

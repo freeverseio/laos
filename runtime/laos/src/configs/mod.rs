@@ -1,19 +1,20 @@
 use crate::{MILLIUNIT, UNIT};
 use laos_primitives::Balance;
 
+mod balances;
+mod base_fee;
 mod block_rewards_handler;
 mod evm;
 mod multisig;
 pub mod parachain_staking;
 mod proxy;
+mod session;
+mod sudo;
 mod system;
+mod timestamp;
 mod transaction_payment;
 mod utility;
 mod vesting;
-mod timestamp;
-mod balances;
-mod base_fee;
-mod sudo;
 
 // Define storage fees as constants for clarity and reuse
 const STORAGE_ITEM_FEE: Balance = 10 * UNIT;
