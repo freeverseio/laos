@@ -206,8 +206,6 @@ pub fn native_version() -> NativeVersion {
 parameter_types! {
 	/// Max length of the `TokenUri`
 	pub const MaxTokenUriLength: u32 = 512;
-	/// Max length of the `UniversalLocation`
-	pub const MaxUniversalLocationLength: u32 = 512;
 }
 
 /// Converts [`AccountId`] to [`H160`]
