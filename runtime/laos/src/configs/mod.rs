@@ -9,6 +9,7 @@ mod proxy;
 mod system;
 mod transaction_payment;
 mod utility;
+mod vesting;
 
 // Define storage fees as constants for clarity and reuse
 const STORAGE_ITEM_FEE: Balance = 10 * UNIT;
