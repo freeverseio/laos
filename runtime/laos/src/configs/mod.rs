@@ -17,6 +17,7 @@ mod utility;
 mod vesting;
 mod laos_evolution;
 mod aura;
+mod authorship;
 
 // Define storage fees as constants for clarity and reuse
 const STORAGE_ITEM_FEE: Balance = 10 * UNIT;
