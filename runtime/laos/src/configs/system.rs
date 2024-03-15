@@ -62,8 +62,6 @@ pub struct BaseCallFilter;
 impl Contains<RuntimeCall> for BaseCallFilter {
 	fn contains(c: &RuntimeCall) -> bool {
 		use pallet_balances::Call::*;
-		use pallet_ethereum::Call::*;
-		use pallet_evm::Call::*;
 		use pallet_parachain_staking::Call::*;
 		use pallet_vesting::Call::*;
 
@@ -109,6 +107,7 @@ mod tests {
 	};
 	use core::str::FromStr;
 	use frame_support::assert_err;
+	use pallet_ethereum::Transaction;
 	use sp_core::{H160, H256, U256};
 	use sp_runtime::traits::Dispatchable;
 
@@ -299,6 +298,35 @@ mod tests {
 		new_test_ext().execute_with(|| {
 			let call =
 				RuntimeCall::EVM(pallet_evm::Call::withdraw { address: H160([0x2; 20]), value: 0 });
+			let account = AccountId::from_str(ALICE).unwrap();
+
+			assert_err!(
+				call.dispatch(RuntimeOrigin::signed(account)),
+				frame_system::Error::<Runtime>::CallFiltered
+			);
+		});
+	}
+
+	#[test]
+	fn ethereum_transact_fails() {
+		new_test_ext().execute_with(|| {
+			let call = RuntimeCall::Ethereum(pallet_ethereum::Call::transact {
+				transaction: Transaction::Legacy(ethereum::LegacyTransaction {
+					nonce: U256::zero(),
+					gas_price: U256::zero(),
+					gas_limit: U256::from(100_000),
+					action: ethereum::TransactionAction::Call(H160::zero()),
+					value: U256::zero(),
+					input: vec![],
+					signature: ethereum::TransactionSignature::new(
+						123,
+						H256::from_low_u64_be(1),
+						H256::from_low_u64_be(2),
+					)
+					.unwrap(),
+				}),
+			});
+
 			let account = AccountId::from_str(ALICE).unwrap();
 
 			assert_err!(
