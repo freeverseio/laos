@@ -104,8 +104,7 @@ mod tests {
 	};
 	use core::str::FromStr;
 	use frame_support::assert_err;
-	use precompile_utils::testing::Zero;
-	use sp_core::{H160, U256};
+	use sp_core::{H160, H256, U256};
 	use sp_runtime::traits::Dispatchable;
 
 	#[test]
@@ -250,7 +249,7 @@ mod tests {
 			let call_2 = RuntimeCall::EVM(pallet_evm::Call::create2 {
 				source: H160::from(account.0),
 				init: vec![],
-				salt: U256::zero(),
+				salt: H256::zero(),
 				gas_limit: 100_000,
 				max_fee_per_gas: U256::from(100_000),
 				max_priority_fee_per_gas: None,
@@ -295,6 +294,7 @@ mod tests {
 		new_test_ext().execute_with(|| {
 			let call =
 				RuntimeCall::EVM(pallet_evm::Call::withdraw { address: H160([0x2; 20]), value: 0 });
+			let account = AccountId::from_str(ALICE).unwrap();
 
 			assert_err!(
 				call.dispatch(RuntimeOrigin::signed(account)),
