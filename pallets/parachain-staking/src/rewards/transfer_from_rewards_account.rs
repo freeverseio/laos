@@ -2,10 +2,7 @@ use crate::{traits::PayoutReward, BalanceOf, *};
 use frame_support::{
 	ensure,
 	pallet_prelude::Weight,
-	traits::{
-		tokens::{currency::Currency, ExistenceRequirement},
-		Imbalance,
-	},
+	traits::tokens::{currency::Currency, ExistenceRequirement},
 };
 use sp_runtime::{traits::Zero, ArithmeticError, DispatchError};
 
@@ -52,9 +49,8 @@ impl<Runtime: crate::Config> PayoutReward<Runtime, BalanceOf<Runtime>>
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate as pallet_parachain_staking;
 	use crate::mock::*;
-	use frame_support::{assert_err, derive_impl, parameter_types};
+	use frame_support::assert_err;
 	use sp_runtime::TokenError;
 
 	#[test]

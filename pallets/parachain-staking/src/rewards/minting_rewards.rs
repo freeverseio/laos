@@ -1,13 +1,9 @@
-use crate::{traits::PayoutReward, BalanceOf, *};
+use crate::{traits::PayoutReward, BalanceOf};
 use frame_support::{
-	ensure,
 	pallet_prelude::Weight,
-	traits::{
-		tokens::{currency::Currency, ExistenceRequirement},
-		Imbalance,
-	},
+	traits::{tokens::currency::Currency, Imbalance},
 };
-use sp_runtime::{traits::Zero, ArithmeticError, DispatchError};
+use sp_runtime::DispatchError;
 
 pub struct MintingRewards;
 impl<Runtime: crate::Config> PayoutReward<Runtime, BalanceOf<Runtime>> for MintingRewards {
@@ -32,10 +28,8 @@ impl<Runtime: crate::Config> PayoutReward<Runtime, BalanceOf<Runtime>> for Minti
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate as pallet_parachain_staking;
 	use crate::mock::*;
-	use frame_support::{assert_err, derive_impl, parameter_types};
-	use sp_runtime::TokenError;
+	use frame_support::assert_err;
 
 	#[test]
 	fn payout_collator_rewards_should_not_panic() {
