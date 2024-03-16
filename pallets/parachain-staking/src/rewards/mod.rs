@@ -77,21 +77,18 @@ mod tests {
 
 	#[test]
 	fn mint_collator_rewards_of_existent_account_succeed() {
-		ExtBuilder::default()
-			.with_rewards_account_balance(100)
-			.build()
-			.execute_with(|| {
-				let collator = 1;
+		ExtBuilder::default().with_rewards_account(999, 100).build().execute_with(|| {
+			let collator = 1;
 
-				System::set_block_number(1);
+			System::set_block_number(1);
 
-				assert_eq!(System::events().len(), 0);
-				let _ = pallet_balances::Pallet::<Test>::deposit_creating(&collator, 1);
+			assert_eq!(System::events().len(), 0);
+			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&collator, 1);
 
-				Pallet::<Test>::mint_collator_reward(0, collator, 100);
+			Pallet::<Test>::mint_collator_reward(0, collator, 100);
 
-				assert_events_eq_match!(Event::Rewarded { account: 1, rewards: 100 },);
-			})
+			assert_events_eq_match!(Event::Rewarded { account: 1, rewards: 100 },);
+		})
 	}
 
 	#[test]

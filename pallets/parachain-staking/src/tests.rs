@@ -3565,7 +3565,7 @@ fn paid_collator_commission_matches_config() {
 		.with_balances(vec![(1, 100), (2, 100), (3, 100), (4, 100), (5, 100), (6, 100)])
 		.with_candidates(vec![(1, 20)])
 		.with_delegations(vec![(2, 1, 10), (3, 1, 10)])
-		.with_rewards_account_balance(100)
+		.with_rewards_account(999, 100)
 		.build()
 		.execute_with(|| {
 			roll_to_round_begin(2);
@@ -3758,7 +3758,7 @@ fn payout_distribution_to_solo_collators() {
 	ExtBuilder::default()
 		.with_balances(vec![(1, 1000), (2, 1000), (3, 1000), (4, 1000), (7, 33), (8, 33), (9, 33)])
 		.with_candidates(vec![(1, 100), (2, 90), (3, 80), (4, 70)])
-		.with_rewards_account_balance(100000)
+		.with_rewards_account(999, 100000)
 		.build()
 		.execute_with(|| {
 			roll_to_round_begin(2);
@@ -4026,7 +4026,7 @@ fn payouts_follow_delegation_changes() {
 		])
 		.with_candidates(vec![(1, 20), (2, 20), (3, 20), (4, 20)])
 		.with_delegations(vec![(6, 1, 10), (7, 1, 10), (8, 2, 10), (9, 2, 10), (10, 1, 10)])
-		.with_rewards_account_balance(100000)
+		.with_rewards_account(999, 100000)
 		.build()
 		.execute_with(|| {
 			roll_to_round_begin(2);
@@ -4608,7 +4608,7 @@ fn no_rewards_paid_until_after_reward_payment_delay() {
 	ExtBuilder::default()
 		.with_balances(vec![(1, 20), (2, 20), (3, 20)])
 		.with_candidates(vec![(1, 20), (2, 20), (3, 20)])
-		.with_rewards_account_balance(100)
+		.with_rewards_account(999, 100)
 		.build()
 		.execute_with(|| {
 			roll_to_round_begin(2);
@@ -4669,7 +4669,7 @@ fn deferred_payment_storage_items_are_cleaned_up() {
 	ExtBuilder::default()
 		.with_balances(vec![(1, 20), (2, 20)])
 		.with_candidates(vec![(1, 20), (2, 20)])
-		.with_rewards_account_balance(100)
+		.with_rewards_account(999, 100)
 		.build()
 		.execute_with(|| {
 			set_author(1, 1, 1);
@@ -4879,7 +4879,7 @@ fn deferred_payment_steady_state_event_flow() {
 			(44, 4, 100),
 			(44, 1, 100),
 		])
-		.with_rewards_account_balance(100000)
+		.with_rewards_account(999, 100000)
 		.build()
 		.execute_with(|| {
 			// convenience to set the round points consistently
@@ -5103,7 +5103,7 @@ fn test_delegator_scheduled_for_revoke_is_rewarded_for_previous_rounds_but_not_f
 		.with_balances(vec![(1, 20), (2, 40), (3, 20), (4, 20)])
 		.with_candidates(vec![(1, 20), (3, 20), (4, 20)])
 		.with_delegations(vec![(2, 1, 10), (2, 3, 10)])
-		.with_rewards_account_balance(100)
+		.with_rewards_account(999, 100)
 		.build()
 		.execute_with(|| {
 			// preset rewards for rounds 1, 2 and 3
@@ -5156,7 +5156,7 @@ fn test_delegator_scheduled_for_revoke_is_rewarded_when_request_cancelled() {
 		.with_balances(vec![(1, 20), (2, 30), (3, 20), (4, 20)])
 		.with_candidates(vec![(1, 20), (3, 20), (4, 20)])
 		.with_delegations(vec![(2, 1, 10), (2, 3, 10)])
-		.with_rewards_account_balance(100)
+		.with_rewards_account(999, 100)
 		.build()
 		.execute_with(|| {
 			// preset rewards for rounds 2, 3 and 4
@@ -5213,7 +5213,7 @@ fn test_delegator_scheduled_for_bond_decrease_is_rewarded_for_previous_rounds_bu
 		.with_balances(vec![(1, 20), (2, 40), (3, 20), (4, 20)])
 		.with_candidates(vec![(1, 20), (3, 20), (4, 20)])
 		.with_delegations(vec![(2, 1, 20), (2, 3, 10)])
-		.with_rewards_account_balance(100)
+		.with_rewards_account(999, 100)
 		.build()
 		.execute_with(|| {
 			// preset rewards for rounds 1, 2 and 3
@@ -5273,7 +5273,7 @@ fn test_delegator_scheduled_for_bond_decrease_is_rewarded_when_request_cancelled
 		.with_balances(vec![(1, 20), (2, 40), (3, 20), (4, 20)])
 		.with_candidates(vec![(1, 20), (3, 20), (4, 20)])
 		.with_delegations(vec![(2, 1, 20), (2, 3, 10)])
-		.with_rewards_account_balance(100)
+		.with_rewards_account(999, 100)
 		.build()
 		.execute_with(|| {
 			// preset rewards for rounds 2, 3 and 4
@@ -5336,7 +5336,7 @@ fn test_delegator_scheduled_for_leave_is_rewarded_for_previous_rounds_but_not_fo
 		.with_balances(vec![(1, 20), (2, 40), (3, 20), (4, 20)])
 		.with_candidates(vec![(1, 20), (3, 20), (4, 20)])
 		.with_delegations(vec![(2, 1, 10), (2, 3, 10)])
-		.with_rewards_account_balance(100)
+		.with_rewards_account(999, 100)
 		.build()
 		.execute_with(|| {
 			// preset rewards for rounds 1, 2 and 3
@@ -5398,7 +5398,7 @@ fn test_delegator_scheduled_for_leave_is_rewarded_when_request_cancelled() {
 		.with_balances(vec![(1, 20), (2, 40), (3, 20), (4, 20)])
 		.with_candidates(vec![(1, 20), (3, 20), (4, 20)])
 		.with_delegations(vec![(2, 1, 10), (2, 3, 10)])
-		.with_rewards_account_balance(100)
+		.with_rewards_account(999, 100)
 		.build()
 		.execute_with(|| {
 			// preset rewards for rounds 2, 3 and 4
@@ -6045,7 +6045,7 @@ fn test_rewards_do_not_auto_compound_on_payment_if_delegation_scheduled_revoke_e
 		.with_balances(vec![(1, 100), (2, 200), (3, 200)])
 		.with_candidates(vec![(1, 100)])
 		.with_delegations(vec![(2, 1, 200), (3, 1, 200)])
-		.with_rewards_account_balance(100)
+		.with_rewards_account(999, 100)
 		.build()
 		.execute_with(|| {
 			(2..=5).for_each(|round| set_author(round, 1, 1));
@@ -6097,7 +6097,7 @@ fn test_rewards_auto_compound_on_payment_as_per_auto_compound_config() {
 		.with_balances(vec![(1, 100), (2, 200), (3, 200), (4, 200), (5, 200)])
 		.with_candidates(vec![(1, 100)])
 		.with_delegations(vec![(2, 1, 200), (3, 1, 200), (4, 1, 200), (5, 1, 200)])
-		.with_rewards_account_balance(100)
+		.with_rewards_account(999, 100)
 		.build()
 		.execute_with(|| {
 			(2..=6).for_each(|round| set_author(round, 1, 1));

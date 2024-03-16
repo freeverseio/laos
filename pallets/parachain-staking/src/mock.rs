@@ -109,7 +109,6 @@ const GENESIS_BLOCKS_PER_ROUND: BlockNumber = 5;
 const GENESIS_COLLATOR_COMMISSION: Perbill = Perbill::from_percent(20);
 const GENESIS_PARACHAIN_BOND_RESERVE_PERCENT: Percent = Percent::from_percent(30);
 const GENESIS_NUM_SELECTED_CANDIDATES: u32 = 5;
-const GENESIS_REWARDS_ACCOUNT: AccountId = 999;
 
 parameter_types! {
 	pub const MinBlocksPerRound: u32 = 3;
@@ -176,7 +175,7 @@ pub(crate) struct ExtBuilder {
 	// inflation config
 	inflation: InflationInfo<Balance>,
 	// rewards account balance
-	rewards_account_balance: Balance,
+	rewards_account: Option<(AccountId, Balance)>,
 }
 
 impl Default for ExtBuilder {
@@ -200,7 +199,7 @@ impl Default for ExtBuilder {
 					max: Perbill::from_percent(5),
 				},
 			},
-			rewards_account_balance: 0,
+			rewards_account: Some((999, 100)),
 		}
 	}
 }
@@ -233,8 +232,8 @@ impl ExtBuilder {
 		self
 	}
 
-	pub(crate) fn with_rewards_account_balance(mut self, rewards_account_balance: Balance) -> Self {
-		self.rewards_account_balance = rewards_account_balance;
+	pub(crate) fn with_rewards_account(mut self, account: AccountId, balance: Balance) -> Self {
+		self.rewards_account = Some((account, balance));
 		self
 	}
 
@@ -249,9 +248,12 @@ impl ExtBuilder {
 			.build_storage()
 			.expect("Frame system builds valid default genesis config");
 
-		// add rewards account to the balances
+		let mut rewards_account = None;
 		let mut balances = self.balances.clone();
-		balances.push((GENESIS_REWARDS_ACCOUNT, self.rewards_account_balance));
+		if let Some((account, balance)) = self.rewards_account {
+			balances.push((account, balance));
+			rewards_account = Some(account);
+		}
 		pallet_balances::GenesisConfig::<Test> { balances }
 			.assimilate_storage(&mut t)
 			.expect("Pallet balances storage can be assimilated");
@@ -263,7 +265,7 @@ impl ExtBuilder {
 			parachain_bond_reserve_percent: GENESIS_PARACHAIN_BOND_RESERVE_PERCENT,
 			blocks_per_round: GENESIS_BLOCKS_PER_ROUND,
 			num_selected_candidates: GENESIS_NUM_SELECTED_CANDIDATES,
-			rewards_account: Some(GENESIS_REWARDS_ACCOUNT),
+			rewards_account,
 		}
 		.assimilate_storage(&mut t)
 		.expect("Parachain Staking's storage can be assimilated");
