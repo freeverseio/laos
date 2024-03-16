@@ -31,30 +31,36 @@ impl<T: Config> Pallet<T> {
 		collator_id: T::AccountId,
 		amt: BalanceOf<T>,
 	) -> Weight {
+		// Check if the collator's account exists; return early if not.
 		if !frame_system::Account::<T>::contains_key(&collator_id) {
-			return Weight::zero();
+			return Weight::zero(); // TODO
 		}
 
-		// Early return if RewardsAccount is not set.
-		if let Some(rewards_account) = RewardsAccount::<T>::get() {
-			match T::Currency::transfer(
-				&rewards_account,
-				&collator_id,
-				amt,
-				ExistenceRequirement::KeepAlive,
-			) {
-				Ok(_) => {
-					Self::deposit_event(Event::Rewarded {
-						account: collator_id.clone(),
-						rewards: amt,
-					});
-				},
-				Err(e) =>
-					log::error!("💥 Failed to send reward to collator: {:?}, amount: {:?}", e, amt),
-			}
+		// Attempt to get the RewardsAccount and return early if not set.
+		let rewards_account = match RewardsAccount::<T>::get() {
+			Some(account) => account,
+			None => {
+				return Weight::zero(); // TODO Adjust with the actual weight for a missing rewards account.
+			},
+		};
+
+		// Proceed with the transfer and handle the result.
+		let transfer_result = T::Currency::transfer(
+			&rewards_account,
+			&collator_id,
+			amt,
+			ExistenceRequirement::KeepAlive,
+		);
+
+		match transfer_result {
+			Ok(_) => {
+				Self::deposit_event(Event::Rewarded { account: collator_id, rewards: amt });
+			},
+			Err(e) =>
+				log::error!("💥 Failed to send reward to collator: {:?}, amount: {:?}", e, amt),
 		}
 
-		Weight::zero() // TODO: weight
+		Weight::zero() // TODO
 	}
 }
 
