@@ -18,7 +18,9 @@ pub use types::TransactionConverter;
 
 use core::marker::PhantomData;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
-pub use laos_primitives::{AccountId, AuraId, Balance, BlockNumber, Hash, Index, Nonce, Signature};
+pub use laos_primitives::{
+	AccountId, AuraId, Balance, BlockNumber, Hash, Header, Index, Nonce, Signature,
+};
 use sp_api::impl_runtime_apis;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata, H160, H256, U256};
 
@@ -69,9 +71,6 @@ use pallet_evm::{Account as EVMAccount, FeeCalculator, Runner};
 mod precompiles;
 use precompiles::FrontierPrecompiles;
 
-/// Block header type as expected by this runtime.
-pub type Header = generic::Header<BlockNumber, laos_primitives::Hasher>;
-
 /// Block type as expected by this runtime.
 pub type Block = generic::Block<Header, UncheckedExtrinsic>;
 
@@ -101,7 +100,7 @@ pub type UncheckedExtrinsic =
 pub type CheckedExtrinsic =
 	fp_self_contained::CheckedExtrinsic<AccountId, RuntimeCall, SignedExtra, H160>;
 
-type Migrations = precompiles::migration::InjectDamePrecompileBytecode<Runtime>;
+type Migrations = precompiles::migration::InjectDamePrecompileBytecode<Runtime>; // TODO check if this is correct
 
 /// Executive: handles dispatch to the various modules.
 pub type Executive = frame_executive::Executive<
