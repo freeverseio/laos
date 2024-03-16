@@ -317,17 +317,6 @@ macro_rules! impl_runtime_apis_plus {
         		}
         	}
 
-        	// TODO
-        	// impl laos_runtime_api_staking::Staking<Block, AccountId, Balance> for Runtime {
-        	// 	fn get_unclaimed_staking_rewards(account: &AccountId) -> Balance {
-        	// 		ParachainStaking::get_unclaimed_staking_rewards(account)
-        	// 	}
-
-        	// 	fn get_staking_rates() -> laos_runtime_api_staking::StakingRates {
-        	// 		ParachainStaking::get_staking_rates()
-        	// 	}
-        	// }
-
         	#[cfg(feature = "try-runtime")]
         	impl frame_try_runtime::TryRuntime<Block> for Runtime {
         		fn on_runtime_upgrade(checks: frame_try_runtime::UpgradeCheckSelect) -> (Weight, Weight) {
