@@ -1,4 +1,4 @@
-use crate::{traits::PayoutReward, BalanceOf, RewardsAccount};
+use crate::{traits::PayoutReward, BalanceOf, Config, Event, Pallet, RewardsAccount, RoundIndex};
 use frame_support::{
 	ensure,
 	pallet_prelude::Weight,
@@ -51,6 +51,45 @@ impl<Runtime: crate::Config> PayoutReward<Runtime, BalanceOf<Runtime>>
 			Err(DispatchError::Arithmetic(ArithmeticError::Underflow)) => Ok(Zero::zero()),
 			Err(e) => Err(e),
 		}
+	}
+}
+
+impl<T: Config> Pallet<T> {
+	pub fn send_collator_reward(
+		_round_idx: RoundIndex,
+		collator_id: T::AccountId,
+		amt: BalanceOf<T>,
+	) -> Weight {
+		// Check if the collator's account exists; return early if not.
+		if !frame_system::Account::<T>::contains_key(&collator_id) {
+			return Weight::zero(); // TODO
+		}
+
+		// Attempt to get the RewardsAccount and return early if not set.
+		let rewards_account = match RewardsAccount::<T>::get() {
+			Some(account) => account,
+			None => {
+				return Weight::zero(); // TODO Adjust with the actual weight for a missing rewards account.
+			},
+		};
+
+		// Proceed with the transfer and handle the result.
+		let transfer_result = T::Currency::transfer(
+			&rewards_account,
+			&collator_id,
+			amt,
+			ExistenceRequirement::KeepAlive,
+		);
+
+		match transfer_result {
+			Ok(_) => {
+				Self::deposit_event(Event::Rewarded { account: collator_id, rewards: amt });
+			},
+			Err(e) =>
+				log::error!("💥 Failed to send reward to collator: {:?}, amount: {:?}", e, amt),
+		}
+
+		Weight::zero() // TODO
 	}
 }
 
@@ -134,5 +173,48 @@ mod tests {
 				0
 			);
 		});
+	}
+
+	#[test]
+	fn test_send_reward_to_nonexistent_collator_does_not_emit_event() {
+		ExtBuilder::default().with_rewards_account(2, 100).build().execute_with(|| {
+			let collator = 1;
+			System::set_block_number(1);
+
+			Pallet::<Test>::send_collator_reward(0, collator, 100);
+
+			assert_eq!(System::events().len(), 0);
+		})
+	}
+
+	#[test]
+	fn test_send_zero_rewards_to_collator_emits_rewarded_event() {
+		ExtBuilder::default().with_rewards_account(2, 1).build().execute_with(|| {
+			let collator = 1;
+			let amount = 0;
+			System::set_block_number(1);
+
+			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&collator, 1);
+			Pallet::<Test>::send_collator_reward(0, collator, amount);
+
+			assert_events_eq_match!(Event::Rewarded { account: 1, rewards: 0 },);
+		})
+	}
+
+	#[test]
+	fn test_send_rewards_to_existing_collator_emits_rewarded_event() {
+		ExtBuilder::default().with_rewards_account(2, 100).build().execute_with(|| {
+			let collator = 1;
+
+			System::set_block_number(1);
+
+			assert_eq!(System::events().len(), 0);
+
+			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&collator, 1);
+
+			Pallet::<Test>::send_collator_reward(0, collator, 100);
+
+			assert_events_eq_match!(Event::Rewarded { account: 1, rewards: 100 },);
+		})
 	}
 }
