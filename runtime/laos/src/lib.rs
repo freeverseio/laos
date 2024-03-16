@@ -11,7 +11,7 @@ pub mod xcm_config;
 
 pub mod configs;
 mod currency;
-pub mod runtime_api;
+mod runtime_api;
 mod types;
 
 pub use runtime_api::{api, RuntimeApi, VERSION};
