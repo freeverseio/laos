@@ -3,30 +3,119 @@ name: Release
 on:
   push:
     tags:
-      - "v*.*.*"
-  workflow_dispatch:
+      - '*'
+
+env:
+  SUBWASM_VERSION: 0.20.0
 
 jobs:
   check-version:
     runs-on: ubuntu-latest
-    outputs:
-      proceed: ${{ steps.check_version.outputs.proceed }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4.1.1
       - id: check_version
         run: |
           VERSION=$(grep -m1 version Cargo.toml | sed -E 's/.*"(.*)".*/\1/')
-          if [ "v$VERSION" == "${{ github.ref_name }}" ]; then
-            echo "::set-output name=proceed::true"
+          TAG_NAME="${{ github.ref_name }}"
+          
+          if echo "$TAG_NAME" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "is_release_version=true" >> $GITHUB_OUTPUT
+            if [ "v$VERSION" == "$TAG_NAME" ]; then
+              echo "Proceeding with tag $TAG_NAME matching Cargo.toml version v$VERSION."
+            else
+              echo "Version in Cargo.toml ($VERSION) does not match current tag $TAG_NAME. Canceling release..."
+              exit 1
+            fi
           else
-            echo "Version in Cargo.toml ($VERSION) does not match current tag ${{ github.ref_name }}. Canceling release..."
-            echo "::set-output name=proceed::false"
+            echo "is_release_version=false" >> $GITHUB_OUTPUT
+            echo "Tag $TAG_NAME does not have the format 'v*.*.*'. Skipping version check and proceeding..."
           fi
+    outputs:
+      is_release_version: ${{ steps.check_version.outputs.is_release_version }}
 
-  dockerize:
+  prepare-release:
     needs: check-version
-    if: needs.check-version.outputs.proceed == 'true'
-    runs-on:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        runtime:
+          - { name: "laos", package: "laos-runtime", path: "runtime/laos" }
+          - { name: "klaos", package: "klaos-runtime", path: "runtime/klaos" }
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/cache
+        with:
+          cache-key: build_and_push
+      - name: Srtool build
+        id: srtool_build
+        uses: chevdor/srtool-actions@v0.9.2
+        with:
+          chain: ${{ matrix.runtime.name }}
+          package: ${{ matrix.runtime.package }}
+          runtime_dir: ${{ matrix.runtime.path }}
+          tag: 1.74.0
+      - name: Summary
+        id: summary
+        run: |
+          echo '${{ steps.srtool_build.outputs.json }}' | jq . > ${{ matrix.runtime.name }}-srtool-digest.json
+          cat ${{ matrix.runtime.name }}-srtool-digest.json
+          echo "Runtime location: ${{ steps.srtool_build.outputs.wasm }}"
+          RUSTC_VERSION=$(jq '.info.rustc' < ${{ matrix.runtime.name }}-srtool-digest.json)
+          SRTOOL_VERSION=$(jq '.info.generator.version' < ${{ matrix.runtime.name }}-srtool-digest.json)
+          echo "rustc_version='$RUSTC_VERSION'" >> $GITHUB_OUTPUT
+          echo "srtool_version=$SRTOOL_VERSION" >> $GITHUB_OUTPUT
+      - name: Install subwasm ${{ env.SUBWASM_VERSION }}
+        run: |
+          wget https://github.com/chevdor/subwasm/releases/download/v${{ env.SUBWASM_VERSION }}/subwasm_linux_amd64_v${{ env.SUBWASM_VERSION }}.deb
+          sudo dpkg -i subwasm_linux_amd64_v${{ env.SUBWASM_VERSION }}.deb
+          subwasm --version
+      - name: Extract metadata
+        run: |
+          subwasm  --json info ${{ steps.srtool_build.outputs.wasm }} > ${{ matrix.runtime.name }}-info.json
+          subwasm info ${{ steps.srtool_build.outputs.wasm }} > ${{ matrix.runtime.name }}-info.txt
+          cat ${{ matrix.runtime.name }}-info.txt
+
+          subwasm  --json info ${{ steps.srtool_build.outputs.wasm_compressed }} > ${{ matrix.runtime.name }}-subwam-info.json
+          subwasm info ${{ steps.srtool_build.outputs.wasm_compressed }} > ${{ matrix.runtime.name }}-subwam-info.txt
+          cat ${{ matrix.runtime.name }}-subwam-info.txt
+     
+      - name: Update Release Description with subwasm info
+        run: |
+          if [ "${{ needs.check-version.outputs.is_release_version }}" == "true" ]; then
+            echo "This runs because it is a release version"
+            gh release view ${{ github.ref_name }} --json body -q .body > description.txt
+                
+            RUSTC_VERSION=$(echo ${{ steps.summary.outputs.rustc_version }} | tr -d '"')
+            SRTOOL_VERSION=${{ steps.summary.outputs.srtool_version }}
+            
+            printf "\n\n## ${{ matrix.runtime.name }} runtime\nThis runtime was built using %s with srtool %s\n" "$RUSTC_VERSION" "$SRTOOL_VERSION" >> description.txt
+            echo '```' >> description.txt
+            
+            cat ${{ matrix.runtime.name }}-subwam-info.txt >> description.txt
+            
+            echo '```' >> description.txt
+          
+          
+            gh release edit ${{ github.ref_name }} --notes-file description.txt
+          else
+            echo "Skipping because it is not a release version"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload Ownership Wasm Binaries
+        run: |
+            if [ "${{ needs.check-version.outputs.is_release_version }}" == "true" ]; then
+              echo "Uploading ownership wasm binary for release ${{ github.ref_name }}"
+              echo "This runs because it is a release version"
+              gh release upload ${{ github.ref_name }} ${{ steps.srtool_build.outputs.wasm_compressed }}
+            else
+              echo "Skipping because it is not a release version"
+            fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  dockerize_and_push:
+    runs-on: 
       group: laos
       labels: ubuntu-16-cores
     steps:
@@ -50,15 +139,3 @@ jobs:
           push: true
           file: ./docker/laos-node.local.Dockerfile
           tags: freeverseio/laos-ownership-node:${{ github.ref_name }}
-      - name: Upload LAOS Wasm Binaries
-        run: |
-          echo "Uploading LAOS wasm binary for release ${{ github.ref_name }}"
-          gh release upload ${{ github.ref_name }} ./target/release/wbuild/laos-runtime/laos_runtime.compact.compressed.wasm
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Upload KLAOS Wasm Binaries
-        run: |
-          echo "Uploading KLAOS wasm binary for release ${{ github.ref_name }}"
-          gh release upload ${{ github.ref_name }} ./target/release/wbuild/klaos-runtime/klaos_runtime.compact.compressed.wasm
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

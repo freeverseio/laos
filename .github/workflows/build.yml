@@ -158,7 +158,7 @@ jobs:
 
       - name: Run tests
         run: |
-          npm run build && npm run test
+          npm run build && npm run test:laos
         working-directory: ./e2e-tests
 
   e2e-tests-klaos:
