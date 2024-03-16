@@ -1,14 +1,9 @@
 use crate::*;
 use sp_std::borrow::Cow;
 
-pub mod exposer_api {
-	pub use super::api;
-}
+pub const PUBLIC_RUNTIME_API_VERSION: Cow<'_, [([u8; 8], u32)]> = RUNTIME_API_VERSIONS;
 
-pub const V: Cow<'_, [([u8; 8], u32)]> = RUNTIME_API_VERSIONS;
 impl_runtime_apis! {
-
-
 	impl sp_consensus_aura::AuraApi<Block, AuraId> for Runtime {
 		fn slot_duration() -> sp_consensus_aura::SlotDuration {
 			sp_consensus_aura::SlotDuration::from_millis(Aura::slot_duration())

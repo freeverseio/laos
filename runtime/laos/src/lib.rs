@@ -9,12 +9,12 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 mod weights;
 pub mod xcm_config;
 
-pub mod api;
+pub mod runtime_api;
 pub mod configs;
 mod currency;
 mod types;
 
-pub use api::*;
+pub use runtime_api::*;
 
 use core::marker::PhantomData;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
@@ -147,7 +147,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	authoring_version: 1,
 	spec_version: 1201,
 	impl_version: 0,
-	apis: api::V,
+	apis: runtime_api::PUBLIC_RUNTIME_API_VERSION,
 	transaction_version: 1,
 	state_version: 1,
 };
