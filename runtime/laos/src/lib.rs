@@ -9,9 +9,9 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 mod weights;
 pub mod xcm_config;
 
-pub mod runtime_api;
 pub mod configs;
 mod currency;
+pub mod runtime_api;
 mod types;
 
 pub use runtime_api::*;
