@@ -18,7 +18,6 @@ pub use types::TransactionConverter;
 use core::marker::PhantomData;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 pub use laos_primitives::{AccountId, AuraId, Balance, BlockNumber, Hash, Index, Nonce, Signature};
-use parity_scale_codec::{Decode, Encode};
 use sp_api::impl_runtime_apis;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata, H160, H256, U256};
 
