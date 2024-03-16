@@ -71,7 +71,7 @@ mod tests {
 	use crate::mock::*;
 
 	#[test]
-	fn mint_collator_rewards_of_unexistent_account_do_not_succeed() {
+	fn test_mint_reward_for_nonexistent_collator_does_not_emit_event() {
 		ExtBuilder::default().build().execute_with(|| {
 			let collator = 1;
 			let amount = 100;
@@ -84,7 +84,7 @@ mod tests {
 	}
 
 	#[test]
-	fn mint_collator_0_rewards_succeed() {
+	fn test_mint_zero_rewards_for_collator_emits_rewarded_event() {
 		ExtBuilder::default().build().execute_with(|| {
 			let collator = 1;
 			System::set_block_number(1);
@@ -97,7 +97,7 @@ mod tests {
 	}
 
 	#[test]
-	fn mint_collator_rewards_of_existent_account_succeed() {
+	fn test_mint_reward_for_existing_collator_emits_rewarded_event() {
 		ExtBuilder::default().with_rewards_account(999, 100).build().execute_with(|| {
 			let collator = 1;
 
@@ -113,7 +113,7 @@ mod tests {
 	}
 
 	#[test]
-	fn send_collator_rewards_to_unexistent_account_should_success() {
+	fn test_send_reward_to_nonexistent_collator_does_not_emit_event() {
 		ExtBuilder::default().with_rewards_account(2, 100).build().execute_with(|| {
 			let collator = 1;
 			System::set_block_number(1);
@@ -125,7 +125,7 @@ mod tests {
 	}
 
 	#[test]
-	fn send_collator_0_rewards_succeed() {
+	fn test_send_zero_rewards_to_collator_emits_rewarded_event() {
 		ExtBuilder::default().with_rewards_account(2, 1).build().execute_with(|| {
 			let collator = 1;
 			let amount = 0;
@@ -139,7 +139,7 @@ mod tests {
 	}
 
 	#[test]
-	fn send_collator_rewards_of_existent_account_succeed() {
+	fn test_send_rewards_to_existing_collator_emits_rewarded_event() {
 		ExtBuilder::default().with_rewards_account(2, 100).build().execute_with(|| {
 			let collator = 1;
 

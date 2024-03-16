@@ -32,9 +32,9 @@ mod tests {
 	use frame_support::{assert_err, assert_ok};
 
 	#[test]
-	fn payout_to_account_0_fails() {
+	fn test_payout_to_dead_account_fails() {
 		ExtBuilder::default().build().execute_with(|| {
-			let delegator = 0;
+			let delegator = 10;
 			let amount = 100;
 
 			assert_err!(
@@ -45,9 +45,9 @@ mod tests {
 	}
 
 	#[test]
-	fn payout_0_amount_succeed() {
+	fn test_payout_with_zero_amount_succeeds() {
 		ExtBuilder::default().build().execute_with(|| {
-			let delegator = 0;
+			let delegator = 10;
 			let amount = 0;
 
 			assert_ok!(

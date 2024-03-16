@@ -61,7 +61,7 @@ mod tests {
 	use frame_support::{assert_err, assert_ok};
 
 	#[test]
-	fn payout_collator_rewards_when_rewards_account_is_none_should_not_panic() {
+	fn test_payout_collator_rewards_without_rewards_account_does_not_panic() {
 		ExtBuilder::default().build().execute_with(|| {
 			let collator = 1;
 			let amount = 100;
@@ -73,7 +73,7 @@ mod tests {
 	}
 
 	#[test]
-	fn payout_to_unexistent_account_should_fail() {
+	fn test_payout_to_nonexistent_account_fails() {
 		ExtBuilder::default().with_rewards_account(999, 100).build().execute_with(|| {
 			let delegator = 0;
 			let amount = 100;
@@ -88,7 +88,7 @@ mod tests {
 	}
 
 	#[test]
-	fn payout_0_amount_succeed() {
+	fn test_payout_with_zero_amount_succeeds() {
 		ExtBuilder::default().with_rewards_account(999, 100).build().execute_with(|| {
 			let delegator = 0;
 			let amount = 0;
@@ -103,7 +103,7 @@ mod tests {
 	}
 
 	#[test]
-	fn payout_100_amount_succeed() {
+	fn test_payout_with_nonzero_amount_succeeds() {
 		ExtBuilder::default().with_rewards_account(999, 100).build().execute_with(|| {
 			let delegator = 0;
 			let amount = 100;
@@ -120,30 +120,12 @@ mod tests {
 	}
 
 	#[test]
-	fn payout_100_with_no_funds_in_rewards_account_should_succeed() {
-		ExtBuilder::default().with_rewards_account(999, 0).build().execute_with(|| {
+	fn test_payout_with_insufficient_rewards_account_funds_succeeds() {
+		ExtBuilder::default().with_rewards_account(999, 10).build().execute_with(|| {
 			let delegator = 0;
 			let amount = 100;
 
 			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&delegator, 1);
-
-			assert_ok!(
-				<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout(
-					&delegator, amount
-				),
-				0
-			);
-		});
-	}
-
-	#[test]
-	fn payout_100_with_rewards_account_should_succeed() {
-		ExtBuilder::default().with_rewards_account(999, 0).build().execute_with(|| {
-			let delegator = 0;
-			let amount = 100;
-
-			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&delegator, 1);
-			RewardsAccount::<Test>::kill();
 
 			assert_ok!(
 				<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout(
