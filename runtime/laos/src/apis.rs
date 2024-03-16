@@ -1,5 +1,5 @@
 #[macro_export]
-macro_rules! impl_runtime_apis_plus_common {
+macro_rules! impl_runtime_apis_plus {
 	{$($custom:tt)*} => {
         impl_runtime_apis! {
         	impl sp_consensus_aura::AuraApi<Block, AuraId> for Runtime {

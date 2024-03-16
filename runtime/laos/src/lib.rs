@@ -222,7 +222,7 @@ construct_runtime!(
 );
 
 impl_self_contained_call!();
-impl_runtime_apis_plus_common!();
+impl_runtime_apis_plus!();
 
 #[cfg(test)]
 mod tests;
