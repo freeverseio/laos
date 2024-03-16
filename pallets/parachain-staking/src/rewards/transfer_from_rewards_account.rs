@@ -22,32 +22,35 @@ impl<Runtime: crate::Config> PayoutReward<Runtime, BalanceOf<Runtime>>
 		delegator_id: &Runtime::AccountId,
 		amount: crate::BalanceOf<Runtime>,
 	) -> Result<crate::BalanceOf<Runtime>, DispatchError> {
-		// Early return if amount is zero or rewards account is not set.
-		if amount.is_zero() || RewardsAccount::<Runtime>::get().is_none() {
+		// Early return if amount is zero,
+		if amount.is_zero() {
 			return Ok(Zero::zero());
 		}
 
-		// Ensure the destination account exists.
+		// Early return if RewardsAccount is not set.
+		let rewards_account = match RewardsAccount::<Runtime>::get() {
+			Some(account) => account,
+			None => return Ok(Zero::zero()),
+		};
+
+		// Ensure the destination account exists with a clearer error message.
 		ensure!(
 			frame_system::Account::<Runtime>::contains_key(delegator_id),
 			"Destination Account does not exist"
 		);
 
-		// Unwrap is safe here because we checked is_none() above.
-		let rewards_account = RewardsAccount::<Runtime>::get().unwrap();
-
-		// Attempt to transfer from rewards to delegator, handling the specific underflow error.
-		Runtime::Currency::transfer(
+		// Directly handle the result of the transfer, making use of match
+		// for clearer error handling.
+		match Runtime::Currency::transfer(
 			&rewards_account,
 			&delegator_id,
 			amount,
 			ExistenceRequirement::KeepAlive,
-		)
-		.map(|_| amount)
-		.or_else(|e| match e {
-			DispatchError::Arithmetic(ArithmeticError::Underflow) => Ok(Zero::zero()),
-			_ => Err(e),
-		})
+		) {
+			Ok(_) => Ok(amount),
+			Err(DispatchError::Arithmetic(ArithmeticError::Underflow)) => Ok(Zero::zero()),
+			Err(e) => Err(e),
+		}
 	}
 }
 
