@@ -298,21 +298,6 @@ impl fp_self_contained::SelfContainedCall for RuntimeCall {
 	}
 }
 
-#[cfg(feature = "runtime-benchmarks")]
-mod benches {
-	frame_benchmarking::define_benchmarks!(
-		[frame_system, SystemBench::<Runtime>]
-		[pallet_balances, Balances]
-		[pallet_session, SessionBench::<Runtime>]
-		[pallet_timestamp, Timestamp]
-		[cumulus_pallet_xcmp_queue, XcmpQueue]
-		[pallet_laos_evolution, LaosEvolution]
-		[pallet_asset_metadata_extender, AssetMetadataExtender]
-		[pallet_parachain_staking, ParachainStaking]
-		[pallet_block_rewards_handler, BlockRewardsHandler]
-	);
-}
-
 impl_runtime_apis! {
 	impl sp_consensus_aura::AuraApi<Block, AuraId> for Runtime {
 		fn slot_duration() -> sp_consensus_aura::SlotDuration {
@@ -703,3 +688,6 @@ impl_runtime_apis! {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarks;
