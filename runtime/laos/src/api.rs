@@ -1,9 +1,11 @@
 use crate::*;
 use sp_std::borrow::Cow;
 
-// pub use api::*;
+pub mod exposer_api {
+	pub use super::api;
+}
 
-	pub const V: Cow<'_, [([u8; 8], u32)]> = RUNTIME_API_VERSIONS;
+pub const V: Cow<'_, [([u8; 8], u32)]> = RUNTIME_API_VERSIONS;
 impl_runtime_apis! {
 
 

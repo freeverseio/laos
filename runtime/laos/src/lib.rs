@@ -9,10 +9,10 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 mod weights;
 pub mod xcm_config;
 
+pub mod api;
 pub mod configs;
 mod currency;
 mod types;
-pub mod api;
 
 pub use api::*;
 
@@ -345,7 +345,6 @@ mod benches {
 		[pallet_block_rewards_handler, BlockRewardsHandler]
 	);
 }
-
 
 #[cfg(test)]
 mod tests;
