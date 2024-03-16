@@ -1,7 +1,17 @@
 use crate::*;
-use sp_std::borrow::Cow;
 
-pub const PUBLIC_RUNTIME_API_VERSION: Cow<'_, [([u8; 8], u32)]> = RUNTIME_API_VERSIONS;
+/// Version of the runtime
+#[sp_version::runtime_version]
+pub const VERSION: RuntimeVersion = RuntimeVersion {
+	spec_name: create_runtime_str!("laos"),
+	impl_name: create_runtime_str!("laos"),
+	authoring_version: 1,
+	spec_version: 1201,
+	impl_version: 0,
+	apis: RUNTIME_API_VERSIONS,
+	transaction_version: 1,
+	state_version: 1,
+};
 
 impl_runtime_apis! {
 	impl sp_consensus_aura::AuraApi<Block, AuraId> for Runtime {

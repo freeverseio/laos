@@ -14,7 +14,7 @@ mod currency;
 pub mod runtime_api;
 mod types;
 
-pub use runtime_api::*;
+pub use runtime_api::{api, RuntimeApi, VERSION};
 
 use core::marker::PhantomData;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
@@ -138,19 +138,6 @@ impl_opaque_keys! {
 		pub aura: Aura,
 	}
 }
-
-/// Version of the runtime
-#[sp_version::runtime_version]
-pub const VERSION: RuntimeVersion = RuntimeVersion {
-	spec_name: create_runtime_str!("laos"),
-	impl_name: create_runtime_str!("laos"),
-	authoring_version: 1,
-	spec_version: 1201,
-	impl_version: 0,
-	apis: runtime_api::PUBLIC_RUNTIME_API_VERSION,
-	transaction_version: 1,
-	state_version: 1,
-};
 
 /// This determines the average expected block time that we are targeting.
 /// Blocks will be produced at a minimum duration defined by `SLOT_DURATION`.
