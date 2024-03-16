@@ -20,15 +20,11 @@ use core::marker::PhantomData;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 pub use laos_primitives::{AccountId, AuraId, Balance, BlockNumber, Hash, Index, Nonce, Signature};
 use parity_scale_codec::{Decode, Encode};
-use sp_api::impl_runtime_apis;
-use sp_core::{crypto::KeyTypeId, OpaqueMetadata, H160, H256, U256};
+use sp_core::{H160, U256};
 
 use sp_runtime::{
-	create_runtime_str, generic, impl_opaque_keys,
-	traits::{
-		Block as BlockT, ConvertInto, DispatchInfoOf, Dispatchable, Get, PostDispatchInfoOf,
-		UniqueSaturatedInto,
-	},
+	generic, impl_opaque_keys,
+	traits::{ConvertInto, DispatchInfoOf, Dispatchable, PostDispatchInfoOf},
 	transaction_validity::{TransactionSource, TransactionValidity, TransactionValidityError},
 	ApplyExtrinsicResult,
 };
@@ -40,7 +36,6 @@ use sp_version::RuntimeVersion;
 
 use frame_support::{
 	construct_runtime,
-	traits::Hooks,
 	weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight},
 };
 use frame_system::EnsureRoot;
@@ -64,8 +59,7 @@ use staging_xcm_executor::XcmExecutor;
 
 // Frontier
 use fp_rpc::TransactionStatus;
-use pallet_ethereum::{Call::transact, Transaction as EthereumTransaction};
-use pallet_evm::{Account as EVMAccount, FeeCalculator, Runner};
+use pallet_ethereum::Transaction as EthereumTransaction;
 
 mod precompiles;
 use precompiles::FrontierPrecompiles;
