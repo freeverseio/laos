@@ -1,6 +1,6 @@
 use crate::{
-	Block, DmpQueue, Executive, InherentDataExt, RelayNumberStrictlyIncreases, Runtime,
-	RuntimeEvent, XcmpQueue,
+	Block, DmpQueue, InherentDataExt, RelayNumberStrictlyIncreases, Runtime, RuntimeEvent,
+	XcmpQueue,
 };
 use frame_support::{parameter_types, weights::Weight};
 
@@ -48,6 +48,6 @@ impl cumulus_pallet_parachain_system::CheckInherents<Block> for CheckInherents {
 
 cumulus_pallet_parachain_system::register_validate_block! {
 	Runtime = Runtime,
-	BlockExecutor = cumulus_pallet_aura_ext::BlockExecutor::<Runtime, Executive>,
+	BlockExecutor = cumulus_pallet_aura_ext::BlockExecutor::<Runtime, crate::Executive>,
 	CheckInherents = CheckInherents,
 }
