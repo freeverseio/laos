@@ -27,6 +27,7 @@ pub use laos_primitives::{
 use pallet_ethereum::{Call::transact, Transaction as EthereumTransaction};
 use pallet_evm::{Account as EVMAccount, FeeCalculator, Runner};
 pub use pallet_evm_evolution_collection_factory::REVERT_BYTECODE;
+pub use pallet_parachain_staking::{InflationInfo, Range};
 pub use pallet_xcm::Call as XcmCall;
 use polkadot_runtime_common::BlockHashCount;
 use precompiles::FrontierPrecompiles;
@@ -52,7 +53,6 @@ use staging_xcm_executor::XcmExecutor;
 pub use types::TransactionConverter;
 use weights::ExtrinsicBaseWeight;
 use xcm_config::{XcmConfig, XcmOriginToTransactDispatchOrigin};
-pub use pallet_parachain_staking::{Range, InflationInfo};
 
 /// Block type as expected by this runtime.
 pub type Block = generic::Block<Header, UncheckedExtrinsic>;

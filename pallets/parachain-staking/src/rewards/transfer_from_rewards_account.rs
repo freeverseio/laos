@@ -90,19 +90,22 @@ mod tests {
 
 	#[test]
 	fn payout_100_amount_succeed() {
-		ExtBuilder::default().build().execute_with(|| {
-			let delegator = 0;
-			let amount = 100;
+		ExtBuilder::default()
+			.with_rewards_account_balance(100)
+			.build()
+			.execute_with(|| {
+				let delegator = 0;
+				let amount = 100;
 
-			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&delegator, 1);
+				let _ = pallet_balances::Pallet::<Test>::deposit_creating(&delegator, 1);
 
-			assert_ok!(
-				<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout(
-					&delegator, amount
-				),
-				100
-			);
-		});
+				assert_ok!(
+					<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout(
+						&delegator, amount
+					),
+					100
+				);
+			});
 	}
 
 	#[test]

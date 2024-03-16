@@ -200,7 +200,7 @@ impl Default for ExtBuilder {
 					max: Perbill::from_percent(5),
 				},
 			},
-			rewards_account_balance: 100,
+			rewards_account_balance: 0,
 		}
 	}
 }
