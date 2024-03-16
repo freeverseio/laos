@@ -11,12 +11,11 @@ impl<Runtime: crate::Config> PayoutReward<Runtime, BalanceOf<Runtime>>
 	for TransferFromRewardsAccount
 {
 	fn payout_collator_rewards(
-		_for_round: crate::RoundIndex,
+		for_round: crate::RoundIndex,
 		collator_id: Runtime::AccountId,
 		amount: crate::BalanceOf<Runtime>,
 	) -> Weight {
-		let rewards_account = RewardsAccount::<Runtime>::get().unwrap();
-		crate::Pallet::<Runtime>::send_collator_reward(rewards_account, collator_id, amount)
+		crate::Pallet::<Runtime>::send_collator_reward(for_round, collator_id, amount)
 	}
 
 	fn payout(
@@ -59,8 +58,20 @@ mod tests {
 	use frame_support::{assert_err, assert_ok};
 
 	#[test]
-	fn payout_to_account_0_fails() {
+	fn payout_collator_rewards_when_rewards_account_is_none_should_not_panic() {
 		ExtBuilder::default().build().execute_with(|| {
+			let collator = 1;
+			let amount = 100;
+
+			<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout_collator_rewards(
+				0, collator, amount,
+			);
+		});
+	}
+
+	#[test]
+	fn payout_to_unexistent_account_should_fail() {
+		ExtBuilder::default().with_rewards_account(999, 100).build().execute_with(|| {
 			let delegator = 0;
 			let amount = 100;
 
@@ -75,7 +86,7 @@ mod tests {
 
 	#[test]
 	fn payout_0_amount_succeed() {
-		ExtBuilder::default().build().execute_with(|| {
+		ExtBuilder::default().with_rewards_account(999, 100).build().execute_with(|| {
 			let delegator = 0;
 			let amount = 0;
 

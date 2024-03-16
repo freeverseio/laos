@@ -199,7 +199,7 @@ impl Default for ExtBuilder {
 					max: Perbill::from_percent(5),
 				},
 			},
-			rewards_account: Some((999, 100)),
+			rewards_account: None,
 		}
 	}
 }
