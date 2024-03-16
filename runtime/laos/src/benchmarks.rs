@@ -1,4 +1,3 @@
-
 frame_benchmarking::define_benchmarks!(
 	[frame_system, SystemBench::<Runtime>]
 	[pallet_balances, Balances]
