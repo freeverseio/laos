@@ -705,7 +705,8 @@ pub mod pallet {
 	#[pallet::genesis_build]
 	impl<T: Config> BuildGenesisConfig for GenesisConfig<T> {
 		fn build(&self) {
-			RewardsAccount::<T>::put(self.rewards_account.clone().unwrap());
+			RewardsAccount::<T>::set(self.rewards_account.clone());
+
 			assert!(self.blocks_per_round > 0, "Blocks per round must be > 0");
 
 			// Set inflation configuration

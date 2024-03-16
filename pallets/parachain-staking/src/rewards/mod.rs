@@ -13,7 +13,7 @@ use frame_support::{
 impl<T: Config> Pallet<T> {
 	/// Mint a specified reward amount to the collator's account. Emits the [Rewarded] event.
 	pub(crate) fn mint_collator_reward(
-		round_idx: RoundIndex,
+		_round_idx: RoundIndex,
 		collator_id: T::AccountId,
 		amt: BalanceOf<T>,
 	) -> Weight {
