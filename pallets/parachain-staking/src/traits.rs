@@ -16,7 +16,7 @@
 
 //! traits for parachain-staking
 
-use crate::weights::WeightInfo;
+use crate::{weights::WeightInfo, BalanceOf};
 use frame_support::{dispatch::PostDispatchInfo, pallet_prelude::Weight};
 use sp_runtime::{DispatchError, DispatchErrorWithPostInfo};
 
@@ -47,19 +47,22 @@ impl OnNewRound for () {
 }
 
 /// Defines the behavior to payout the block producer reward.
-pub trait PayoutReward<Runtime: crate::Config, Balance> {
+pub trait PayoutReward<Runtime: crate::Config> {
 	/// Send amount to the balance of the specified account (collator).
 	/// and corresponding weight consumed is returned.
 	fn payout_collator_rewards(
 		round_index: crate::RoundIndex,
 		collator: Runtime::AccountId,
-		amount: Balance,
+		amount: BalanceOf<Runtime>,
 	) -> Weight;
 
 	/// Send amount to the free balance of the specified account (destination).
 	/// If the account (destination) does not exist, the operation is not carried out,
 	/// and an error is returned instead.
-	fn payout(destination: &Runtime::AccountId, amount: Balance) -> Result<Balance, DispatchError>;
+	fn payout(
+		destination: &Runtime::AccountId,
+		amount: BalanceOf<Runtime>,
+	) -> Result<BalanceOf<Runtime>, DispatchError>;
 }
 
 pub trait OnInactiveCollator<Runtime: crate::Config> {

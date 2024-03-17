@@ -6,7 +6,7 @@ use frame_support::{
 use sp_runtime::DispatchError;
 
 pub struct MintingRewards;
-impl<Runtime: crate::Config> PayoutReward<Runtime, BalanceOf<Runtime>> for MintingRewards {
+impl<Runtime: crate::Config> PayoutReward<Runtime> for MintingRewards {
 	fn payout_collator_rewards(
 		for_round: RoundIndex,
 		collator_id: Runtime::AccountId,
@@ -55,7 +55,7 @@ mod tests {
 			let amount = 100;
 
 			assert_err!(
-				<MintingRewards as PayoutReward<Test, Balance>>::payout(&delegator, amount),
+				<MintingRewards as PayoutReward<Test>>::payout(&delegator, amount),
 				pallet_balances::Error::<Test>::DeadAccount
 			);
 		});
@@ -67,10 +67,7 @@ mod tests {
 			let delegator = 10;
 			let amount = 0;
 
-			assert_ok!(
-				<MintingRewards as PayoutReward<Test, Balance>>::payout(&delegator, amount),
-				0
-			);
+			assert_ok!(<MintingRewards as PayoutReward<Test>>::payout(&delegator, amount), 0);
 		});
 	}
 

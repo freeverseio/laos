@@ -4,7 +4,8 @@ mod transfer_from_rewards_account;
 pub use minting_rewards::MintingRewards;
 pub use transfer_from_rewards_account::TransferFromRewardsAccount;
 
-// These tests aim to verify the PayoutReward trait's behavior through its concrete implementations, ensuring they function as anticipated.
+// These tests aim to verify the PayoutReward trait's behavior through its concrete implementations,
+// ensuring they function as anticipated.
 #[cfg(test)]
 mod tests {
 	use super::*;
@@ -14,7 +15,7 @@ mod tests {
 	};
 	use sp_runtime::DispatchError;
 
-	fn paying_collator_rewards<T: PayoutReward<Test, Balance>>(
+	fn paying_collator_rewards<T: PayoutReward<Test>>(
 		round_index: RoundIndex,
 		collator: AccountId,
 		amount: Balance,
@@ -22,7 +23,7 @@ mod tests {
 		T::payout_collator_rewards(round_index, collator, amount)
 	}
 
-	fn paying<T: PayoutReward<Test, Balance>>(
+	fn paying<T: PayoutReward<Test>>(
 		destination: AccountId,
 		amount: Balance,
 	) -> Result<Balance, DispatchError> {

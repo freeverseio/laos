@@ -179,7 +179,7 @@ pub mod pallet {
 		type OnCollatorPayout: OnCollatorPayout<Self::AccountId, BalanceOf<Self>>;
 		/// Handler to distribute a collator's reward.
 		/// To use the default implementation of minting rewards, specify the type `()`.
-		type PayoutReward: PayoutReward<Self, BalanceOf<Self>>;
+		type PayoutReward: PayoutReward<Self>;
 		/// Handler to notify the runtime when a collator is inactive.
 		/// The default behavior is to mark the collator as offline.
 		/// If you need to use the default implementation, specify the type `()`.

@@ -9,9 +9,7 @@ use frame_support::{
 use sp_runtime::{traits::Zero, ArithmeticError, DispatchError};
 
 pub struct TransferFromRewardsAccount;
-impl<Runtime: crate::Config> PayoutReward<Runtime, BalanceOf<Runtime>>
-	for TransferFromRewardsAccount
-{
+impl<Runtime: crate::Config> PayoutReward<Runtime> for TransferFromRewardsAccount {
 	fn payout_collator_rewards(
 		for_round: crate::RoundIndex,
 		collator_id: Runtime::AccountId,
@@ -107,7 +105,7 @@ mod tests {
 			let collator = 1;
 			let amount = 100;
 
-			<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout_collator_rewards(
+			<TransferFromRewardsAccount as PayoutReward<Test>>::payout_collator_rewards(
 				0, collator, amount,
 			);
 		});
@@ -120,9 +118,7 @@ mod tests {
 			let amount = 100;
 
 			assert_err!(
-				<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout(
-					&delegator, amount
-				),
+				<TransferFromRewardsAccount as PayoutReward<Test>>::payout(&delegator, amount),
 				Error::<Test>::DeadAccount
 			);
 		});
@@ -135,9 +131,7 @@ mod tests {
 			let amount = 0;
 
 			assert_ok!(
-				<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout(
-					&delegator, amount
-				),
+				<TransferFromRewardsAccount as PayoutReward<Test>>::payout(&delegator, amount),
 				0
 			);
 		});
@@ -152,9 +146,7 @@ mod tests {
 			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&delegator, 1);
 
 			assert_ok!(
-				<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout(
-					&delegator, amount
-				),
+				<TransferFromRewardsAccount as PayoutReward<Test>>::payout(&delegator, amount),
 				100
 			);
 		});
@@ -169,9 +161,7 @@ mod tests {
 			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&delegator, 1);
 
 			assert_ok!(
-				<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout(
-					&delegator, amount
-				),
+				<TransferFromRewardsAccount as PayoutReward<Test>>::payout(&delegator, amount),
 				0
 			);
 		});
