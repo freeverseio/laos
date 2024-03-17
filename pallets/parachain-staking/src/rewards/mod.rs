@@ -85,7 +85,7 @@ mod tests {
 				paying::<MintingRewards>(delegator, amount),
 				pallet_balances::Error::<Test>::DeadAccount
 			);
-			paying::<TransferFromRewardsAccount>(delegator, amount).unwrap_err();
+			assert_err!(paying::<TransferFromRewardsAccount>(delegator, amount), "Destination Account does not exist"));
 		});
 	}
 
