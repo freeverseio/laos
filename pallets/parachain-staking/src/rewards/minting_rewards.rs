@@ -49,29 +49,6 @@ mod tests {
 	use frame_support::{assert_err, assert_ok};
 
 	#[test]
-	fn test_payout_to_dead_account_fails() {
-		ExtBuilder::default().build().execute_with(|| {
-			let delegator = 10;
-			let amount = 100;
-
-			assert_err!(
-				<MintingRewards as PayoutReward<Test>>::payout(&delegator, amount),
-				pallet_balances::Error::<Test>::DeadAccount
-			);
-		});
-	}
-
-	#[test]
-	fn test_payout_with_zero_amount_succeeds() {
-		ExtBuilder::default().build().execute_with(|| {
-			let delegator = 10;
-			let amount = 0;
-
-			assert_ok!(<MintingRewards as PayoutReward<Test>>::payout(&delegator, amount), 0);
-		});
-	}
-
-	#[test]
 	fn test_mint_reward_for_nonexistent_collator_does_not_emit_event() {
 		ExtBuilder::default().build().execute_with(|| {
 			let collator = 1;

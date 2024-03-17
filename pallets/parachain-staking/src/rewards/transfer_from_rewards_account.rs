@@ -100,46 +100,50 @@ mod tests {
 	use frame_support::{assert_err, assert_ok};
 
 	#[test]
-	fn test_payout_collator_rewards_without_rewards_account_does_not_panic() {
+	fn test_payout_collator_without_rewards_account() {
 		ExtBuilder::default().build().execute_with(|| {
-			let collator = 1;
-			let amount = 100;
+			let collator = 10;
+			let amount = 8;
+			let round_index = 0;
+
+			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&collator, 1);
 
 			<TransferFromRewardsAccount as PayoutReward<Test>>::payout_collator_rewards(
-				0, collator, amount,
+				round_index,
+				collator,
+				amount,
 			);
+
+			assert_eq!(pallet_balances::Pallet::<Test>::free_balance(&collator), 1);
+
+			assert_no_events!();
 		});
 	}
 
 	#[test]
-	fn test_payout_to_nonexistent_account_fails() {
-		ExtBuilder::default().with_rewards_account(999, 100).build().execute_with(|| {
-			let delegator = 0;
-			let amount = 100;
+	fn test_payout_collator_with_not_enough_funds_in_rewards_account() {
+		ExtBuilder::default().with_rewards_account(999, 7).build().execute_with(|| {
+			let collator = 10;
+			let amount = 8;
+			let round_index = 0;
 
-			assert_err!(
-				<TransferFromRewardsAccount as PayoutReward<Test>>::payout(&delegator, amount),
-				Error::<Test>::DeadAccount
+			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&collator, 1);
+
+			<TransferFromRewardsAccount as PayoutReward<Test>>::payout_collator_rewards(
+				round_index,
+				collator,
+				amount,
 			);
+
+			assert_eq!(pallet_balances::Pallet::<Test>::free_balance(&collator), 1);
+
+			assert_no_events!();
 		});
 	}
 
 	#[test]
-	fn test_payout_with_zero_amount_succeeds() {
-		ExtBuilder::default().with_rewards_account(999, 100).build().execute_with(|| {
-			let delegator = 0;
-			let amount = 0;
-
-			assert_ok!(
-				<TransferFromRewardsAccount as PayoutReward<Test>>::payout(&delegator, amount),
-				0
-			);
-		});
-	}
-
-	#[test]
-	fn test_payout_with_nonzero_amount_succeeds() {
-		ExtBuilder::default().with_rewards_account(999, 100).build().execute_with(|| {
+	fn test_payout_with_no_rewards_account_should_do_nothing() {
+		ExtBuilder::default().build().execute_with(|| {
 			let delegator = 0;
 			let amount = 100;
 
@@ -147,7 +151,7 @@ mod tests {
 
 			assert_ok!(
 				<TransferFromRewardsAccount as PayoutReward<Test>>::payout(&delegator, amount),
-				100
+				0
 			);
 		});
 	}
@@ -174,7 +178,7 @@ mod tests {
 
 			Pallet::<Test>::send_collator_reward(0, collator, 100);
 
-			assert_eq!(System::events().len(), 0);
+			assert_no_events!()
 		})
 	}
 

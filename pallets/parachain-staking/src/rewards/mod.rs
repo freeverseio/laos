@@ -42,7 +42,7 @@ mod tests {
 
 			assert_eq!(pallet_balances::Pallet::<Test>::free_balance(&collator), 0);
 
-			assert_eq!(System::events().len(), 0);
+			assert_no_events!();
 		});
 	}
 
