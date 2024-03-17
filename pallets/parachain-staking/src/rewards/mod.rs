@@ -9,7 +9,9 @@ pub use transfer_from_rewards_account::TransferFromRewardsAccount;
 mod tests {
 	use super::*;
 	use crate::{mock::*, PayoutReward, RoundIndex};
-	use frame_support::{pallet_prelude::Weight, traits::tokens::currency::Currency};
+	use frame_support::{
+		assert_err, assert_ok, pallet_prelude::Weight, traits::tokens::currency::Currency,
+	};
 	use sp_runtime::DispatchError;
 
 	fn paying_collator_rewards<T: PayoutReward<Test, Balance>>(
@@ -70,6 +72,50 @@ mod tests {
 			paying_collator_rewards::<TransferFromRewardsAccount>(round_index, collator, amount);
 
 			assert_eq!(pallet_balances::Pallet::<Test>::free_balance(&collator), 1);
+		});
+	}
+
+	#[test]
+	fn test_payout_to_nonexistent_account_fails() {
+		ExtBuilder::default().with_rewards_account(999, 100).build().execute_with(|| {
+			let delegator = 9;
+			let amount = 100;
+
+			assert_err!(
+				paying::<MintingRewards>(delegator, amount),
+				pallet_balances::Error::<Test>::DeadAccount
+			);
+			paying::<TransferFromRewardsAccount>(delegator, amount).unwrap_err();
+		});
+	}
+
+	#[test]
+	fn test_payout_zero_amount() {
+		ExtBuilder::default().with_rewards_account(999, 100).build().execute_with(|| {
+			let delegator = 9;
+			let amount = 0;
+
+			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&delegator, 1);
+
+			assert_ok!(paying::<MintingRewards>(delegator, amount), 0);
+			assert_ok!(paying::<TransferFromRewardsAccount>(delegator, amount), 0);
+
+			assert_eq!(pallet_balances::Pallet::<Test>::free_balance(&delegator), 1);
+		});
+	}
+
+	#[test]
+	fn test_payout_non_zero_amount() {
+		ExtBuilder::default().with_rewards_account(999, 100).build().execute_with(|| {
+			let delegator = 9;
+			let amount = 100;
+
+			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&delegator, 1);
+
+			assert_ok!(paying::<MintingRewards>(delegator, amount), 100);
+			assert_ok!(paying::<TransferFromRewardsAccount>(delegator, amount), 100);
+
+			assert_eq!(pallet_balances::Pallet::<Test>::free_balance(&delegator), 201);
 		});
 	}
 }
