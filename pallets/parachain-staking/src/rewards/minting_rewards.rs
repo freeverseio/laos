@@ -76,7 +76,6 @@ mod tests {
 		ExtBuilder::default().build().execute_with(|| {
 			let collator = 1;
 			let amount = 100;
-			System::set_block_number(1);
 
 			Pallet::<Test>::mint_collator_reward(0, collator, amount);
 
@@ -88,7 +87,6 @@ mod tests {
 	fn test_mint_zero_rewards_for_collator_emits_rewarded_event() {
 		ExtBuilder::default().build().execute_with(|| {
 			let collator = 1;
-			System::set_block_number(1);
 
 			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&collator, 1);
 			Pallet::<Test>::mint_collator_reward(0, collator, 0);
@@ -101,8 +99,6 @@ mod tests {
 	fn test_mint_reward_for_existing_collator_emits_rewarded_event() {
 		ExtBuilder::default().with_rewards_account(999, 100).build().execute_with(|| {
 			let collator = 1;
-
-			System::set_block_number(1);
 
 			assert_eq!(System::events().len(), 0);
 			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&collator, 1);

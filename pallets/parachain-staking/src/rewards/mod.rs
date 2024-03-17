@@ -9,7 +9,7 @@ pub use transfer_from_rewards_account::TransferFromRewardsAccount;
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::{mock::*, Error, PayoutReward, RoundIndex};
+	use crate::{mock::*, Error, Event, PayoutReward, RoundIndex};
 	use frame_support::{
 		assert_err, assert_ok, pallet_prelude::Weight, traits::tokens::currency::Currency,
 	};
@@ -41,6 +41,8 @@ mod tests {
 			paying_collator_rewards::<TransferFromRewardsAccount>(round_index, collator, amount);
 
 			assert_eq!(pallet_balances::Pallet::<Test>::free_balance(&collator), 0);
+
+			assert_eq!(System::events().len(), 0);
 		});
 	}
 
@@ -57,6 +59,11 @@ mod tests {
 			paying_collator_rewards::<TransferFromRewardsAccount>(round_index, collator, amount);
 
 			assert_eq!(pallet_balances::Pallet::<Test>::free_balance(&collator), 17);
+
+			assert_events_eq_match!(
+				Event::Rewarded { account: 10, rewards: 8 },
+				Event::Rewarded { account: 10, rewards: 8 },
+			);
 		});
 	}
 
@@ -73,6 +80,11 @@ mod tests {
 			paying_collator_rewards::<TransferFromRewardsAccount>(round_index, collator, amount);
 
 			assert_eq!(pallet_balances::Pallet::<Test>::free_balance(&collator), 1);
+
+			assert_events_eq_match!(
+				Event::Rewarded { account: 10, rewards: 0 },
+				Event::Rewarded { account: 10, rewards: 0 },
+			);
 		});
 	}
 
