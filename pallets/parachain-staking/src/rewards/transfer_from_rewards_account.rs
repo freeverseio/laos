@@ -1,4 +1,6 @@
-use crate::{traits::PayoutReward, BalanceOf, Config, Event, Pallet, RewardsAccount, RoundIndex};
+use crate::{
+	traits::PayoutReward, BalanceOf, Config, Error, Event, Pallet, RewardsAccount, RoundIndex,
+};
 use frame_support::{
 	ensure,
 	pallet_prelude::Weight,
@@ -36,7 +38,7 @@ impl<Runtime: crate::Config> PayoutReward<Runtime, BalanceOf<Runtime>>
 		// Ensure the destination account exists with a clearer error message.
 		ensure!(
 			frame_system::Account::<Runtime>::contains_key(delegator_id),
-			"Destination Account does not exist"
+			Error::<Runtime>::DeadAccount
 		);
 
 		// Directly handle the result of the transfer, making use of match
@@ -121,7 +123,7 @@ mod tests {
 				<TransferFromRewardsAccount as PayoutReward<Test, Balance>>::payout(
 					&delegator, amount
 				),
-				"Destination Account does not exist"
+				Error::<Test>::DeadAccount
 			);
 		});
 	}

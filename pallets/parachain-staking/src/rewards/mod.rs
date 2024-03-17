@@ -8,7 +8,7 @@ pub use transfer_from_rewards_account::TransferFromRewardsAccount;
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::{mock::*, PayoutReward, RoundIndex};
+	use crate::{mock::*, Error, PayoutReward, RoundIndex};
 	use frame_support::{
 		assert_err, assert_ok, pallet_prelude::Weight, traits::tokens::currency::Currency,
 	};
@@ -76,7 +76,7 @@ mod tests {
 	}
 
 	#[test]
-	fn test_payout_to_nonexistent_account_fails() {
+	fn test_payout_nonexistent_account_fails() {
 		ExtBuilder::default().with_rewards_account(999, 100).build().execute_with(|| {
 			let delegator = 9;
 			let amount = 100;
@@ -85,7 +85,10 @@ mod tests {
 				paying::<MintingRewards>(delegator, amount),
 				pallet_balances::Error::<Test>::DeadAccount
 			);
-			assert_err!(paying::<TransferFromRewardsAccount>(delegator, amount), "Destinatio Account does not exist");
+			assert_err!(
+				paying::<TransferFromRewardsAccount>(delegator, amount),
+				Error::<Test>::DeadAccount
+			);
 		});
 	}
 

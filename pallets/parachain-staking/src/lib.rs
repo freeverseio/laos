@@ -256,6 +256,7 @@ pub mod pallet {
 		RemovedCall,
 		MarkingOfflineNotEnabled,
 		CurrentRoundTooLow,
+		DeadAccount,
 	}
 
 	#[pallet::event]
