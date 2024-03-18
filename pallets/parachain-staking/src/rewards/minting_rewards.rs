@@ -46,7 +46,6 @@ impl<T: Config> Pallet<T> {
 mod tests {
 	use super::*;
 	use crate::mock::*;
-	use frame_support::{assert_err, assert_ok};
 
 	#[test]
 	fn test_mint_reward_for_nonexistent_collator_does_not_emit_event() {

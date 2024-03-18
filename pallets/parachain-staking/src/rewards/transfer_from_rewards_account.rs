@@ -81,12 +81,10 @@ impl<T: Config> Pallet<T> {
 			ExistenceRequirement::KeepAlive,
 		);
 
-		match transfer_result {
-			Ok(_) => {
-				Self::deposit_event(Event::Rewarded { account: collator_id, rewards: amount });
-			},
-			Err(e) =>
-				log::error!("💥 Failed to send reward to collator: {:?}, amount: {:?}", e, amount),
+		if let Err(e) = transfer_result {
+			log::error!("💥 Failed to send reward to collator: {:?}, amount: {:?}", e, amount);
+		} else {
+			Self::deposit_event(Event::Rewarded { account: collator_id, rewards: amount });
 		}
 
 		Weight::zero() // TODO
@@ -97,7 +95,7 @@ impl<T: Config> Pallet<T> {
 mod tests {
 	use super::*;
 	use crate::mock::*;
-	use frame_support::{assert_err, assert_ok};
+	use frame_support::assert_ok;
 
 	#[test]
 	fn test_payout_collator_without_rewards_account() {
