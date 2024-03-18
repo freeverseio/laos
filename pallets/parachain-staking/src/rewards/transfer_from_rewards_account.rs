@@ -95,7 +95,7 @@ impl<T: Config> Pallet<T> {
 mod tests {
 	use super::*;
 	use crate::mock::*;
-	use frame_support::assert_ok;
+	use frame_support::{assert_ok, assert_storage_noop};
 
 	#[test]
 	fn test_payout_collator_without_rewards_account() {
@@ -147,10 +147,9 @@ mod tests {
 
 			let _ = pallet_balances::Pallet::<Test>::deposit_creating(&delegator, 1);
 
-			assert_ok!(
-				<TransferFromRewardsAccount as PayoutReward<Test>>::payout(&delegator, amount),
-				0
-			);
+			assert_storage_noop!(<TransferFromRewardsAccount as PayoutReward<Test>>::payout(
+				&delegator, amount
+			));
 		});
 	}
 
