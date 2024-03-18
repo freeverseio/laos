@@ -58,7 +58,7 @@ impl<T: Config> Pallet<T> {
 	pub fn send_collator_rewards(
 		_round_idx: RoundIndex,
 		collator_id: T::AccountId,
-		amt: BalanceOf<T>,
+		amount: BalanceOf<T>,
 	) -> Weight {
 		// Check if the collator's account exists; return early if not.
 		if !frame_system::Account::<T>::contains_key(&collator_id) {
