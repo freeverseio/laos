@@ -44,7 +44,7 @@ jobs:
           context: .
           file: ./docker/laos-node.local.Dockerfile
           push: true
-          tags: freeverseio/laos-ownership-node:${{ github.sha }}
+          tags: freeverseio/laos-node:${{ github.sha }}
 
   lint:
     runs-on:

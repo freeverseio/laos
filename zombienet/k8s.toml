@@ -21,5 +21,5 @@ cumulus_based = true
   [parachains.collator]
   name = "laos-collator"
   command = "laos"
-  image = "freeverseio/laos-ownership-node:latest"
+  image = "freeverseio/laos-node:latest"
   args = [ "--collator" ]
