@@ -10,5 +10,5 @@ impl pallet_timestamp::Config for Runtime {
 	type Moment = u64;
 	type OnTimestampSet = Aura;
 	type MinimumPeriod = MinimumPeriod;
-	type WeightInfo = (); // TODO
+	type WeightInfo = pallet_timestamp::weights::SubstrateWeight<Runtime>;
 }
