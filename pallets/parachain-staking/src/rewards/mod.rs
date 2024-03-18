@@ -1,7 +1,7 @@
-mod minting_rewards;
+mod mint_rewards;
 mod transfer_from_rewards_account;
 
-pub use minting_rewards::MintingRewards;
+pub use mint_rewards::MintingRewards;
 pub use transfer_from_rewards_account::TransferFromRewardsAccount;
 
 // These tests aim to verify the PayoutReward trait's behavior through its concrete implementations,
