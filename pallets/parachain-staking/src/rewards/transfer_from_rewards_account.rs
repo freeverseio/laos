@@ -82,7 +82,7 @@ impl<T: Config> Pallet<T> {
 		);
 
 		if let Err(e) = transfer_result {
-			log::error!("💥 Failed to send reward to collator: {:?}, amount: {:?}", e, amount);
+			log::error!("💥 Failed to send rewards to collator: {:?}, amount: {:?}", e, amount);
 		} else {
 			Self::deposit_event(Event::Rewarded { account: collator_id, rewards: amount });
 		}
