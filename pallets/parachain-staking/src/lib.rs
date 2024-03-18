@@ -712,13 +712,13 @@ pub mod pallet {
 
 			// Set inflation configuration
 			let mut inflation_config = self.inflation_config.clone();
-			assert!(
-				!(inflation_config.round.min.is_zero() ||
-					inflation_config.round.ideal.is_zero() ||
-					inflation_config.round.max.is_zero()),
-				"Round values have to be 0, they are derived from annual inflation"
-			);
-			inflation_config.set_round_from_annual::<T>(inflation_config.annual);
+			// if all the round values are 0, derive them from the annual values
+			if inflation_config.round.min.is_zero() &&
+				inflation_config.round.ideal.is_zero() &&
+				inflation_config.round.max.is_zero()
+			{
+				inflation_config.set_round_from_annual::<T>(inflation_config.annual);
+			}
 			<InflationConfig<T>>::put(inflation_config);
 
 			let mut candidate_count = 0u32;
