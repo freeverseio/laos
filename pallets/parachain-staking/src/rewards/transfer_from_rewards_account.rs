@@ -55,7 +55,7 @@ impl<Runtime: crate::Config> PayoutReward<Runtime> for TransferFromRewardsAccoun
 }
 
 impl<T: Config> Pallet<T> {
-	pub fn send_collator_reward(
+	pub fn send_collator_rewards(
 		_round_idx: RoundIndex,
 		collator_id: T::AccountId,
 		amt: BalanceOf<T>,
