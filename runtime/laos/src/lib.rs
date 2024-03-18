@@ -1,28 +1,40 @@
 #![cfg_attr(not(feature = "std"), no_std)]
-// `construct_runtime!` does a lot of recursion and requires us to increase the limit to 256.
-#![recursion_limit = "256"]
+#![recursion_limit = "256"] // `construct_runtime!` does a lot of recursion and requires us to increase the limit to 256.
 
-// Make the WASM binary available.
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
-
-mod weights;
-pub mod xcm_config;
 
 mod apis;
 pub mod configs;
 mod currency;
 mod impl_self_contained_call;
+mod precompiles;
 mod types;
-
-pub use types::TransactionConverter;
+mod weights;
+pub mod xcm_config;
 
 use core::marker::PhantomData;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
-pub use laos_primitives::{AccountId, AuraId, Balance, BlockNumber, Hash, Index, Nonce, Signature};
+use fp_rpc::TransactionStatus;
+use frame_support::{
+	construct_runtime,
+	traits::Hooks,
+	weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight},
+};
+use frame_system::EnsureRoot;
+pub use laos_primitives::{
+	AccountId, AuraId, Balance, BlockNumber, Hash, Header, Index, Nonce, Signature,
+};
+use pallet_ethereum::{Call::transact, Transaction as EthereumTransaction};
+use pallet_evm::{Account as EVMAccount, FeeCalculator, Runner};
+pub use pallet_evm_evolution_collection_factory::REVERT_BYTECODE;
+pub use pallet_xcm::Call as XcmCall;
+use polkadot_runtime_common::BlockHashCount;
+use precompiles::FrontierPrecompiles;
 use sp_api::impl_runtime_apis;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata, H160, H256, U256};
-
+#[cfg(any(feature = "std", test))]
+pub use sp_runtime::BuildStorage;
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{
@@ -32,46 +44,15 @@ use sp_runtime::{
 	transaction_validity::{TransactionSource, TransactionValidity, TransactionValidityError},
 	ApplyExtrinsicResult,
 };
-
+pub use sp_runtime::{Perbill, Permill, Perquintill};
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
-
-use frame_support::{
-	construct_runtime,
-	traits::Hooks,
-	weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight},
-};
-use frame_system::EnsureRoot;
-pub use pallet_evm_evolution_collection_factory::REVERT_BYTECODE;
-pub use sp_runtime::{Perbill, Permill, Perquintill};
-
-use xcm_config::{XcmConfig, XcmOriginToTransactDispatchOrigin};
-
-pub use pallet_xcm::Call as XcmCall;
-
-#[cfg(any(feature = "std", test))]
-pub use sp_runtime::BuildStorage;
-
-// Polkadot imports
-use polkadot_runtime_common::BlockHashCount;
-
-use weights::ExtrinsicBaseWeight;
-
-// XCM Imports
 use staging_xcm_executor::XcmExecutor;
-
-// Frontier
-use fp_rpc::TransactionStatus;
-use pallet_ethereum::{Call::transact, Transaction as EthereumTransaction};
-use pallet_evm::{Account as EVMAccount, FeeCalculator, Runner};
-
-mod precompiles;
-use precompiles::FrontierPrecompiles;
-
-/// Block header type as expected by this runtime.
-pub type Header = generic::Header<BlockNumber, laos_primitives::Hasher>;
+pub use types::TransactionConverter;
+use weights::ExtrinsicBaseWeight;
+use xcm_config::{XcmConfig, XcmOriginToTransactDispatchOrigin};
 
 /// Block type as expected by this runtime.
 pub type Block = generic::Block<Header, UncheckedExtrinsic>;
@@ -102,7 +83,7 @@ pub type UncheckedExtrinsic =
 pub type CheckedExtrinsic =
 	fp_self_contained::CheckedExtrinsic<AccountId, RuntimeCall, SignedExtra, H160>;
 
-type Migrations = precompiles::migration::InjectDamePrecompileBytecode<Runtime>;
+type Migrations = precompiles::migration::InjectDamePrecompileBytecode<Runtime>; // TODO check if this is correct
 
 /// Executive: handles dispatch to the various modules.
 pub type Executive = frame_executive::Executive<
@@ -153,16 +134,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 };
 
 /// This determines the average expected block time that we are targeting.
-/// Blocks will be produced at a minimum duration defined by `SLOT_DURATION`.
-/// `SLOT_DURATION` is picked up by `pallet_timestamp` which is in turn picked
-/// up by `pallet_aura` to implement `fn slot_duration()`.
-///
-/// Change this to adjust the block time.
 pub const MILLISECS_PER_BLOCK: u64 = 12000;
-
-// NOTE: Currently it is not possible to change the slot duration after the chain has started.
-//       Attempting to do so will brick block production.
-pub const SLOT_DURATION: u64 = MILLISECS_PER_BLOCK;
 
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]

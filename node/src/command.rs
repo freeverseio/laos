@@ -363,7 +363,7 @@ pub fn run() -> Result<()> {
 				info!(" the LAOS Parachain on Polkadot.");
 				info!(" KLAOS is not endorsed by either the LAOS Foundation or Freeverse");
 				info!(" for real-value transactions involving the KLAOS token");
-				info!(" https://disclaimer.klaos.laosfoundation.io");
+				info!(" https://www.laosfoundation.io/disclaimer-klaos");
 				info!("-----------------------------------------------------------------");
 			};
 
