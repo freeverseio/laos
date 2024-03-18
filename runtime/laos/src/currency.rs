@@ -4,7 +4,11 @@ use laos_primitives::Balance;
 // 18 decimals
 pub const UNIT: Balance = 1_000_000_000_000_000_000;
 pub const MILLIUNIT: Balance = UNIT / 1000;
-pub const MICROUNIT: Balance = MILLIUNIT / 1000;
+
+// Constants in ETH terms
+pub const WEI: Balance = 1;
+pub const KILOWEI: Balance = 1_000 * WEI;
+pub const GIGAWEI: Balance = 1_000_000_000 * WEI;
 
 // Define storage fees as constants for clarity and reuse
 const STORAGE_ITEM_FEE: Balance = 10 * UNIT;
