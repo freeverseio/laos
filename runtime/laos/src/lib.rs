@@ -151,16 +151,17 @@ construct_runtime!(
 		ParachainSystem: cumulus_pallet_parachain_system = 1,
 		Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent} = 2,
 		ParachainInfo: parachain_info = 3,
+		Sudo: pallet_sudo = 4,
+		Utility: pallet_utility = 5,
+		Multisig: pallet_multisig = 6,
+		Proxy: pallet_proxy = 7,
 
 		// Monetary stuff.
 		Balances: pallet_balances = 10,
 		TransactionPayment: pallet_transaction_payment = 11,
 		Vesting: pallet_vesting = 12,
-		Proxy: pallet_proxy = 13,
 
-		// Consensus support.
-		// The following order MUST NOT be changed: Aura -> Session -> Staking -> Authorship -> AuraExt
-		// Dependencies: AuraExt on Aura, Authorship and Session on ParachainStaking
+		// Consensus support: the order of these 5 are important and shall not change.
 		Authorship: pallet_authorship = 20,
 		Session: pallet_session = 22,
 		Aura: pallet_aura = 23,
@@ -174,12 +175,6 @@ construct_runtime!(
 		CumulusXcm: cumulus_pallet_xcm = 32,
 		DmpQueue: cumulus_pallet_dmp_queue = 33,
 
-		// Sudo
-		Sudo: pallet_sudo = 40,
-
-		LaosEvolution: pallet_laos_evolution = 42,
-		AssetMetadataExtender: pallet_asset_metadata_extender = 43,
-
 		// Frontier
 		Ethereum: pallet_ethereum = 50,
 		EVM: pallet_evm = 51,
@@ -187,9 +182,9 @@ construct_runtime!(
 		// DynamicFee: pallet_dynamic_fee = 43,
 		BaseFee: pallet_base_fee = 54,
 
-		// Other pallets
-		Multisig: pallet_multisig = 60,
-		Utility: pallet_utility = 61,
+		// LAOS pallets
+		LaosEvolution: pallet_laos_evolution = 100,
+		AssetMetadataExtender: pallet_asset_metadata_extender = 101,
 	}
 );
 
