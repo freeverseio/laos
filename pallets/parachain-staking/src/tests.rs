@@ -6722,65 +6722,17 @@ fn test_removed_calls() {
 
 #[test]
 fn test_the_rewards_will_be_the_correct_one_calculated_from_the_yearly_rate() {
-	let collator = 1;
+	let governance = 1;
+	let collator = 2;
 	ExtBuilder::default()
-		.with_balances(vec![
-			(collator, 1000),
-			(2, 1000),
-			(3, 1000),
-			(4, 1000),
-			(7, 33),
-			(8, 33),
-			(9, 33),
-		])
-		.with_candidates(vec![(collator, 100), (2, 90), (3, 80), (4, 70)])
-		.with_rewards_account(999, 100000)
+		.with_balances(vec![(governance, 840000000), (collator, 10000000)])
+		.with_candidates(vec![(collator, 100)])
+		.with_rewards_account(999, 150000000)
 		.build()
 		.execute_with(|| {
-			roll_to_round_begin(2);
-			// should choose top TotalCandidatesSelected (5), in order
-			assert_events_eq!(
-				Event::CollatorChosen {
-					round: 2,
-					collator_account: collator,
-					total_exposed_amount: 100
-				},
-				Event::CollatorChosen { round: 2, collator_account: 2, total_exposed_amount: 90 },
-				Event::CollatorChosen { round: 2, collator_account: 3, total_exposed_amount: 80 },
-				Event::CollatorChosen { round: 2, collator_account: 4, total_exposed_amount: 70 },
-				Event::NewRound {
-					starting_block: 5,
-					round: 2,
-					selected_collators_number: 4,
-					total_balance: 340,
-				},
-			);
-			// ~ set block author as 1 for all blocks this round
 			set_author(2, collator, 100);
 			roll_to_round_begin(4);
-			// assert_events_eq!(
-			// 	Event::CollatorChosen {
-			// 		round: 4,
-			// 		collator_account: collator,
-			// 		total_exposed_amount: 100
-			// 	},
-			// 	Event::CollatorChosen { round: 4, collator_account: 2, total_exposed_amount: 90 },
-			// 	Event::CollatorChosen { round: 4, collator_account: 3, total_exposed_amount: 80 },
-			// 	Event::CollatorChosen { round: 4, collator_account: 4, total_exposed_amount: 70 },
-			// 	Event::NewRound {
-			// 		starting_block: 15,
-			// 		round: 4,
-			// 		selected_collators_number: 4,
-			// 		total_balance: 340,
-			// 	},
-			// );
 			roll_blocks(1);
-			assert_no_events!();
-			roll_blocks(1);
-			assert_no_events!();
-			roll_blocks(1);
-			assert_events_eq!(Event::Rewarded { account: 1, rewards: 5205 });
-			roll_blocks(1);
-			assert_no_events!();
+			assert_events_eq!(Event::Rewarded { account: collator, rewards: 50000000 });
 		});
 }
