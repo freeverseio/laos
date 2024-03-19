@@ -28,6 +28,7 @@ pub use laos_primitives::{
 use pallet_ethereum::{Call::transact, Transaction as EthereumTransaction};
 use pallet_evm::{Account as EVMAccount, FeeCalculator, Runner};
 pub use pallet_evm_evolution_collection_factory::REVERT_BYTECODE;
+pub use pallet_parachain_staking::{InflationInfo, Range};
 pub use pallet_xcm::Call as XcmCall;
 use polkadot_runtime_common::BlockHashCount;
 use precompiles::FrontierPrecompiles;
@@ -167,7 +168,6 @@ construct_runtime!(
 		Aura: pallet_aura = 23,
 		AuraExt: cumulus_pallet_aura_ext = 24,
 		ParachainStaking: pallet_parachain_staking = 25,
-		BlockRewardsHandler: pallet_block_rewards_handler = 26,
 
 		// XCM helpers.
 		XcmpQueue: cumulus_pallet_xcmp_queue = 30,

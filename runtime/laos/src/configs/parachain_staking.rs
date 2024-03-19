@@ -1,10 +1,9 @@
 use crate::{
-	configs::block_rewards_handler::BlockRewardsHandlerAdapter, currency::UNIT, AccountId,
-	Balances, BlockNumber, Permill, Runtime, RuntimeEvent, Vec, Weight,
+	currency::UNIT, AccountId, Balances, BlockNumber, Permill, Runtime, RuntimeEvent, Vec, Weight,
 };
 use frame_support::{parameter_types, traits::Get};
 use frame_system::EnsureRoot;
-use pallet_parachain_staking::{self as staking, Config as StakingConfig};
+use pallet_parachain_staking::{self as staking, rewards, Config as StakingConfig};
 use pallet_session::{SessionManager, ShouldEndSession};
 use sp_consensus_slots::Slot;
 use sp_staking::SessionIndex;
@@ -51,7 +50,7 @@ impl StakingConfig for Runtime {
 	type MinDelegation = MinDelegation;
 	type BlockAuthor = BlockAuthor;
 	type OnCollatorPayout = ();
-	type PayoutReward = BlockRewardsHandlerAdapter<Self>;
+	type PayoutReward = rewards::TransferFromRewardsAccount;
 	type OnInactiveCollator = (); // Placeholder for future implementation.
 	type OnNewRound = (); // Placeholder for future implementation.
 	type SlotProvider = StakingRoundSlotProvider;

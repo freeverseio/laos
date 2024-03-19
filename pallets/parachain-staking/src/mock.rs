@@ -15,10 +15,10 @@
 // along with Moonbeam.  If not, see <http://www.gnu.org/licenses/>.
 
 //! Test utilities
-use crate as pallet_parachain_staking;
 use crate::{
-	pallet, AwardedPts, Config, Event as ParachainStakingEvent, InflationInfo, Points, Range,
-	COLLATOR_LOCK_ID, DELEGATOR_LOCK_ID,
+	self as pallet_parachain_staking, pallet, rewards, AwardedPts, Config,
+	Event as ParachainStakingEvent, InflationInfo, Points, Range, COLLATOR_LOCK_ID,
+	DELEGATOR_LOCK_ID,
 };
 use block_author::BlockAuthor as BlockAuthorMap;
 use frame_support::{
@@ -109,6 +109,7 @@ const GENESIS_BLOCKS_PER_ROUND: BlockNumber = 5;
 const GENESIS_COLLATOR_COMMISSION: Perbill = Perbill::from_percent(20);
 const GENESIS_PARACHAIN_BOND_RESERVE_PERCENT: Percent = Percent::from_percent(30);
 const GENESIS_NUM_SELECTED_CANDIDATES: u32 = 5;
+
 parameter_types! {
 	pub const MinBlocksPerRound: u32 = 3;
 	pub const MaxOfflineRounds: u32 = 1;
@@ -155,7 +156,7 @@ impl Config for Test {
 	type MinDelegation = MinDelegation;
 	type BlockAuthor = BlockAuthor;
 	type OnCollatorPayout = ();
-	type PayoutReward = ();
+	type PayoutReward = rewards::TransferFromRewardsAccount;
 	type OnInactiveCollator = ();
 	type OnNewRound = ();
 	type SlotProvider = StakingRoundSlotProvider;
@@ -173,6 +174,8 @@ pub(crate) struct ExtBuilder {
 	delegations: Vec<(AccountId, AccountId, Balance, Percent)>,
 	// inflation config
 	inflation: InflationInfo<Balance>,
+	// rewards account balance
+	rewards_account: Option<(AccountId, Balance)>,
 }
 
 impl Default for ExtBuilder {
@@ -196,6 +199,7 @@ impl Default for ExtBuilder {
 					max: Perbill::from_percent(5),
 				},
 			},
+			rewards_account: None,
 		}
 	}
 }
@@ -228,6 +232,11 @@ impl ExtBuilder {
 		self
 	}
 
+	pub(crate) fn with_rewards_account(mut self, account: AccountId, balance: Balance) -> Self {
+		self.rewards_account = Some((account, balance));
+		self
+	}
+
 	#[allow(dead_code)]
 	pub(crate) fn with_inflation(mut self, inflation: InflationInfo<Balance>) -> Self {
 		self.inflation = inflation;
@@ -239,7 +248,13 @@ impl ExtBuilder {
 			.build_storage()
 			.expect("Frame system builds valid default genesis config");
 
-		pallet_balances::GenesisConfig::<Test> { balances: self.balances }
+		let mut rewards_account = None;
+		let mut balances = self.balances.clone();
+		if let Some((account, balance)) = self.rewards_account {
+			balances.push((account, balance));
+			rewards_account = Some(account);
+		}
+		pallet_balances::GenesisConfig::<Test> { balances }
 			.assimilate_storage(&mut t)
 			.expect("Pallet balances storage can be assimilated");
 		pallet_parachain_staking::GenesisConfig::<Test> {
@@ -250,6 +265,7 @@ impl ExtBuilder {
 			parachain_bond_reserve_percent: GENESIS_PARACHAIN_BOND_RESERVE_PERCENT,
 			blocks_per_round: GENESIS_BLOCKS_PER_ROUND,
 			num_selected_candidates: GENESIS_NUM_SELECTED_CANDIDATES,
+			rewards_account,
 		}
 		.assimilate_storage(&mut t)
 		.expect("Parachain Staking's storage can be assimilated");

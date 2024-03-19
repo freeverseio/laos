@@ -6,6 +6,7 @@ use laos_runtime::{
 };
 use sc_service::ChainType;
 use sp_core::{H160, U256};
+use sp_runtime::Perbill;
 use std::{collections::BTreeMap, str::FromStr};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
@@ -36,9 +37,9 @@ pub fn development_config() -> ChainSpec {
 				// initial collators.
 				vec![(
 					predefined_accounts::ALITH.into(),
+					get_collator_keys_from_seed("Alice"),
 					2 * parachain_staking::MinCandidateStk::get(),
 				)],
-				vec![(predefined_accounts::ALITH.into(), get_collator_keys_from_seed("Alice"))],
 				predefined_accounts::accounts(),
 				// Give Alice root privileges
 				Some(predefined_accounts::ALITH.into()),
@@ -74,10 +75,10 @@ pub fn local_testnet_config() -> ChainSpec {
 			testnet_genesis(
 				vec![(
 					predefined_accounts::ALITH.into(),
+					get_collator_keys_from_seed("Alice"),
 					2 * parachain_staking::MinCandidateStk::get(),
 				)],
 				// initial collators.
-				vec![(predefined_accounts::ALITH.into(), get_collator_keys_from_seed("Alice"))],
 				predefined_accounts::accounts(),
 				// Give Alice root privileges
 				Some(predefined_accounts::ALITH.into()),
@@ -103,8 +104,7 @@ pub fn local_testnet_config() -> ChainSpec {
 }
 
 fn testnet_genesis(
-	stakers: Vec<(AccountId, Balance)>,
-	invulnerables: Vec<(AccountId, AuraId)>,
+	stakers: Vec<(AccountId, AuraId, Balance)>,
 	endowed_accounts: Vec<AccountId>,
 	root_key: Option<AccountId>,
 	id: ParaId,
@@ -124,9 +124,10 @@ fn testnet_genesis(
 			..Default::default()
 		},
 		session: laos_runtime::SessionConfig {
-			keys: invulnerables
+			keys: stakers
+				.clone()
 				.into_iter()
-				.map(|(acc, aura)| {
+				.map(|(acc, aura, _)| {
 					(
 						acc,                         // account id
 						acc,                         // validator id
@@ -149,8 +150,23 @@ fn testnet_genesis(
 		// EVM compatibility
 		evm_chain_id: laos_runtime::EVMChainIdConfig { chain_id: 667, ..Default::default() },
 		parachain_staking: laos_runtime::ParachainStakingConfig {
-			candidates: stakers,
-			blocks_per_round: 5,
+			blocks_per_round: 2,
+			rewards_account: Some(predefined_accounts::BALTATHAR.into()),
+			inflation_config: laos_runtime::InflationInfo {
+				// staking expectations
+				expect: laos_runtime::Range { min: 1000000, ideal: 1000000, max: 1000000 },
+				// annual inflation
+				annual: laos_runtime::Range {
+					min: Perbill::from_percent(1),
+					ideal: Perbill::from_percent(1),
+					max: Perbill::from_percent(1),
+				},
+				round: laos_runtime::Range {
+					min: Perbill::zero(),
+					ideal: Perbill::zero(),
+					max: Perbill::zero(),
+				},
+			},
 			..Default::default()
 		},
 		evm: laos_runtime::EVMConfig {

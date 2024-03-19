@@ -52,6 +52,7 @@ mod auto_compound;
 mod delegation_requests;
 pub mod inflation;
 pub mod migrations;
+pub mod rewards;
 pub mod traits;
 pub mod types;
 pub mod weights;
@@ -178,7 +179,7 @@ pub mod pallet {
 		type OnCollatorPayout: OnCollatorPayout<Self::AccountId, BalanceOf<Self>>;
 		/// Handler to distribute a collator's reward.
 		/// To use the default implementation of minting rewards, specify the type `()`.
-		type PayoutReward: PayoutReward<Self, BalanceOf<Self>>;
+		type PayoutReward: PayoutReward<Self>;
 		/// Handler to notify the runtime when a collator is inactive.
 		/// The default behavior is to mark the collator as offline.
 		/// If you need to use the default implementation, specify the type `()`.
@@ -255,6 +256,7 @@ pub mod pallet {
 		RemovedCall,
 		MarkingOfflineNotEnabled,
 		CurrentRoundTooLow,
+		DeadAccount,
 	}
 
 	#[pallet::event]
@@ -658,6 +660,11 @@ pub mod pallet {
 	/// Killswitch to enable/disable marking offline feature.
 	pub type EnableMarkingOffline<T: Config> = StorageValue<_, bool, ValueQuery>;
 
+	/// Source of rewards for block producers
+	#[pallet::storage]
+	#[pallet::getter(fn rewards_account)]
+	pub type RewardsAccount<T: Config> = StorageValue<_, T::AccountId, OptionQuery>;
+
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T: Config> {
 		/// Initialize balance and register all as collators: `(collator AccountId, balance
@@ -677,6 +684,8 @@ pub mod pallet {
 		pub blocks_per_round: u32,
 		/// Number of selected candidates every round. Cannot be lower than MinSelectedCandidates
 		pub num_selected_candidates: u32,
+		/// Source of rewards for block producers
+		pub rewards_account: Option<T::AccountId>,
 	}
 
 	impl<T: Config> Default for GenesisConfig<T> {
@@ -689,6 +698,7 @@ pub mod pallet {
 				parachain_bond_reserve_percent: Default::default(),
 				blocks_per_round: 1u32,
 				num_selected_candidates: T::MinSelectedCandidates::get(),
+				rewards_account: Default::default(),
 			}
 		}
 	}
@@ -696,8 +706,21 @@ pub mod pallet {
 	#[pallet::genesis_build]
 	impl<T: Config> BuildGenesisConfig for GenesisConfig<T> {
 		fn build(&self) {
+			RewardsAccount::<T>::set(self.rewards_account.clone());
+
 			assert!(self.blocks_per_round > 0, "Blocks per round must be > 0");
-			<InflationConfig<T>>::put(self.inflation_config.clone());
+
+			// Set inflation configuration
+			let mut inflation_config = self.inflation_config.clone();
+			// if all the round values are 0, derive them from the annual values
+			if inflation_config.round.min.is_zero() &&
+				inflation_config.round.ideal.is_zero() &&
+				inflation_config.round.max.is_zero()
+			{
+				inflation_config.set_round_from_annual::<T>(inflation_config.annual);
+			}
+			<InflationConfig<T>>::put(inflation_config);
+
 			let mut candidate_count = 0u32;
 			// Initialize the candidates
 			for &(ref candidate, balance) in &self.candidates {
@@ -2117,21 +2140,6 @@ pub mod pallet {
 					rewards: amount_transferred,
 				});
 			}
-		}
-
-		/// Mint a specified reward amount to the collator's account. Emits the [Rewarded] event.
-		pub fn mint_collator_reward(
-			_paid_for_round: RoundIndex,
-			collator_id: T::AccountId,
-			amt: BalanceOf<T>,
-		) -> Weight {
-			if let Ok(amount_transferred) = T::PayoutReward::payout(&collator_id, amt) {
-				Self::deposit_event(Event::Rewarded {
-					account: collator_id.clone(),
-					rewards: amount_transferred,
-				});
-			}
-			T::WeightInfo::mint_collator_reward()
 		}
 
 		/// Mint and compound delegation rewards. The function mints the amount towards the
