@@ -31,7 +31,7 @@ use crate::{
 		Balances, BlockNumber, ExtBuilder, ParachainStaking, RuntimeOrigin, Test,
 	},
 	AtStake, Bond, CollatorStatus, DelegationScheduledRequests, DelegatorAdded,
-	EnableMarkingOffline, Error, Event, Range, DELEGATOR_LOCK_ID,
+	EnableMarkingOffline, Error, Event, InflationInfo, Range, DELEGATOR_LOCK_ID,
 };
 use frame_support::{assert_err, assert_noop, assert_ok, pallet_prelude::*, BoundedVec};
 use sp_runtime::{traits::Zero, DispatchError, ModuleError, Perbill, Percent};
@@ -6728,11 +6728,22 @@ fn test_the_rewards_will_be_the_correct_one_calculated_from_the_yearly_rate() {
 		.with_balances(vec![(governance, 840000000), (collator, 10000000)])
 		.with_candidates(vec![(collator, 100)])
 		.with_rewards_account(999, 150000000)
+		.with_inflation(InflationInfo {
+			expect: Range { min: 700, ideal: 700, max: 700 },
+			// not used
+			annual: Range {
+				min: Perbill::from_perthousand(70),
+				ideal: Perbill::from_perthousand(70),
+				max: Perbill::from_perthousand(70),
+			},
+			// unrealistically high parameterization, only for testing
+			round: Range { min: Perbill::zero(), ideal: Perbill::zero(), max: Perbill::zero() },
+		})
 		.build()
 		.execute_with(|| {
 			set_author(2, collator, 100);
 			roll_to_round_begin(4);
 			roll_blocks(1);
-			assert_events_eq!(Event::Rewarded { account: collator, rewards: 50000000 });
+			assert_events_eq!(Event::Rewarded { account: collator, rewards: 258 });
 		});
 }
