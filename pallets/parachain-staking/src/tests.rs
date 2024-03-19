@@ -6759,7 +6759,7 @@ fn test_the_rewards_will_be_the_correct_one_calculated_from_the_yearly_rate() {
 				},
 			);
 			// pay total issuance to 1 at 2nd block
-			roll_blocks(1);
+			roll_blocks(3);
 			assert_events_eq!(Event::Rewarded { account: 1, rewards: 5205 });
 		});
 }
