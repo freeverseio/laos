@@ -6731,93 +6731,35 @@ fn test_the_rewards_will_be_the_correct_one_calculated_from_the_yearly_rate() {
 		.execute_with(|| {
 			roll_to_round_begin(2);
 			// should choose top TotalCandidatesSelected (5), in order
-			// assert_events_eq!(
-			// 	Event::CollatorChosen { round: 2, collator_account: collator, total_exposed_amount: 100 },
-			// 	Event::CollatorChosen { round: 2, collator_account: 2, total_exposed_amount: 90 },
-			// 	Event::CollatorChosen { round: 2, collator_account: 3, total_exposed_amount: 80 },
-			// 	Event::CollatorChosen { round: 2, collator_account: 4, total_exposed_amount: 70 },
-			// 	Event::NewRound {
-			// 		starting_block: 5,
-			// 		round: 2,
-			// 		selected_collators_number: 4,
-			// 		total_balance: 340,
-			// 	},
-			// );
+			assert_events_eq!(
+				Event::CollatorChosen { round: 2, collator_account: collator, total_exposed_amount: 100 },
+				Event::CollatorChosen { round: 2, collator_account: 2, total_exposed_amount: 90 },
+				Event::CollatorChosen { round: 2, collator_account: 3, total_exposed_amount: 80 },
+				Event::CollatorChosen { round: 2, collator_account: 4, total_exposed_amount: 70 },
+				Event::NewRound {
+					starting_block: 5,
+					round: 2,
+					selected_collators_number: 4,
+					total_balance: 340,
+				},
+			);
 			// ~ set block author as 1 for all blocks this round
 			set_author(2, collator, 100);
 			roll_to_round_begin(4);
-			// assert_events_eq!(
-			// 	Event::CollatorChosen { round: 4, collator_account: collator, total_exposed_amount: 100 },
-			// 	Event::CollatorChosen { round: 4, collator_account: 2, total_exposed_amount: 90 },
-			// 	Event::CollatorChosen { round: 4, collator_account: 3, total_exposed_amount: 80 },
-			// 	Event::CollatorChosen { round: 4, collator_account: 4, total_exposed_amount: 70 },
-			// 	Event::NewRound {
-			// 		starting_block: 15,
-			// 		round: 4,
-			// 		selected_collators_number: 4,
-			// 		total_balance: 340,
-			// 	},
-			// );
+			assert_events_eq!(
+				Event::CollatorChosen { round: 4, collator_account: collator, total_exposed_amount: 100 },
+				Event::CollatorChosen { round: 4, collator_account: 2, total_exposed_amount: 90 },
+				Event::CollatorChosen { round: 4, collator_account: 3, total_exposed_amount: 80 },
+				Event::CollatorChosen { round: 4, collator_account: 4, total_exposed_amount: 70 },
+				Event::NewRound {
+					starting_block: 15,
+					round: 4,
+					selected_collators_number: 4,
+					total_balance: 340,
+				},
+			);
 			// pay total issuance to 1 at 2nd block
 			roll_blocks(3);
 			assert_events_eq!(Event::Rewarded { account: 1, rewards: 5205 });
-			return;
-			// ~ set block author as 1 for 3 blocks this round
-			set_author(4, collator, 60);
-			// ~ set block author as 2 for 2 blocks this round
-			set_author(4, 2, 40);
-			roll_to_round_begin(6);
-			// pay 60% total issuance to 1 and 40% total issuance to 2
-			assert_events_eq!(
-				Event::CollatorChosen { round: 6, collator_account: collator, total_exposed_amount: 100 },
-				Event::CollatorChosen { round: 6, collator_account: 2, total_exposed_amount: 90 },
-				Event::CollatorChosen { round: 6, collator_account: 3, total_exposed_amount: 80 },
-				Event::CollatorChosen { round: 6, collator_account: 4, total_exposed_amount: 70 },
-				Event::NewRound {
-					starting_block: 25,
-					round: 6,
-					selected_collators_number: 4,
-					total_balance: 340,
-				},
-			);
-			roll_blocks(3);
-			assert_events_eq!(Event::Rewarded { account: collator, rewards: 3123 });
-			roll_blocks(1);
-			assert_events_eq!(Event::Rewarded { account: 2, rewards: 2082 },);
-			// ~ each collator produces 1 block this round
-			set_author(6, collator, 20);
-			set_author(6, 2, 20);
-			set_author(6, 3, 20);
-			set_author(6, 4, 20);
-			roll_to_round_begin(8);
-			// pay 20% issuance for all collators
-			assert_events_eq!(
-				Event::CollatorChosen { round: 8, collator_account: collator, total_exposed_amount: 100 },
-				Event::CollatorChosen { round: 8, collator_account: 2, total_exposed_amount: 90 },
-				Event::CollatorChosen { round: 8, collator_account: 3, total_exposed_amount: 80 },
-				Event::CollatorChosen { round: 8, collator_account: 4, total_exposed_amount: 70 },
-				Event::NewRound {
-					starting_block: 35,
-					round: 8,
-					selected_collators_number: 4,
-					total_balance: 340,
-				},
-			);
-			roll_blocks(1);
-			assert_events_eq!(Event::Rewarded { account: 3, rewards: 1301 });
-			roll_blocks(1);
-			assert_events_eq!(Event::Rewarded { account: 4, rewards: 1301 });
-			roll_blocks(1);
-			assert_events_eq!(Event::Rewarded { account: 1, rewards: 1301 });
-			roll_blocks(1);
-			assert_events_eq!(Event::Rewarded { account: 2, rewards: 1301 });
-			// check that distributing rewards clears awarded pts
-			assert!(ParachainStaking::awarded_pts(1, 1).is_zero());
-			assert!(ParachainStaking::awarded_pts(4, 1).is_zero());
-			assert!(ParachainStaking::awarded_pts(4, 2).is_zero());
-			assert!(ParachainStaking::awarded_pts(6, 1).is_zero());
-			assert!(ParachainStaking::awarded_pts(6, 2).is_zero());
-			assert!(ParachainStaking::awarded_pts(6, 3).is_zero());
-			assert!(ParachainStaking::awarded_pts(6, 4).is_zero());
 		});
 }
