@@ -26,9 +26,9 @@ use crate::{
 	auto_compound::{AutoCompoundConfig, AutoCompoundDelegations},
 	delegation_requests::{CancelledScheduledRequest, DelegationAction, ScheduledRequest},
 	mock::{
-		assert_events_emitted, assert_events_emitted_match, assert_events_eq, assert_no_events,
-		roll_blocks, roll_to, roll_to_round_begin, roll_to_round_end, set_author, set_block_author,
-		Balances, BlockNumber, ExtBuilder, ParachainStaking, RuntimeOrigin, Test,
+		self, assert_events_emitted, assert_events_emitted_match, assert_events_eq,
+		assert_no_events, roll_blocks, roll_to, roll_to_round_begin, roll_to_round_end, set_author,
+		set_block_author, Balances, BlockNumber, ExtBuilder, ParachainStaking, RuntimeOrigin, Test,
 	},
 	AtStake, Bond, CollatorStatus, DelegationScheduledRequests, DelegatorAdded,
 	EnableMarkingOffline, Error, Event, InflationInfo, Range, DELEGATOR_LOCK_ID,
@@ -6755,8 +6755,8 @@ fn test_the_rewards_will_be_the_correct_one_calculated_from_the_yearly_rate() {
 
 			let blocks_per_round = ParachainStaking::round().length;
 			assert_eq!(blocks_per_round, 5);
-			let blocks_per_year = 31_557_600 / 6; // TODO
-									  // blocks_per_round = round.length;
+			let blocks_per_year = mock::SlotsPerYear::get();
+			// blocks_per_round = round.length;
 			let rounds_per_year = blocks_per_year / blocks_per_round;
 
 			let all_rewards_per_year = rounds_per_year * 276;
