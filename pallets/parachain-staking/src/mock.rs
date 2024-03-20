@@ -126,7 +126,6 @@ parameter_types! {
 	pub const MinCandidateStk: u128 = 10;
 	pub const MinDelegation: u128 = 3;
 	pub const MaxCandidates: u32 = 200;
-pub const SlotsPerYear:u32 = 31_557_600 / 6;
 }
 
 pub struct StakingRoundSlotProvider;
@@ -163,7 +162,7 @@ impl Config for Test {
 	type SlotProvider = StakingRoundSlotProvider;
 	type WeightInfo = ();
 	type MaxCandidates = MaxCandidates;
-	type SlotsPerYear = SlotsPerYear;
+	type SlotsPerYear = frame_support::traits::ConstU32<{ 31_557_600 / 6 }>;;
 }
 
 pub(crate) struct ExtBuilder {
