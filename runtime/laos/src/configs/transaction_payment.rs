@@ -25,7 +25,6 @@ impl WeightToFeePolynomial for LengthToFee {
 	}
 }
 
-// TODO: following has to be checked with this: https://github.com/moonbeam-foundation/moonbeam/blob/31dd0f3703d844b139a2f0fafde91025a8b97771/runtime/moonbeam/src/lib.rs#L361
 impl pallet_transaction_payment::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type OnChargeTransaction =
