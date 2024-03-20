@@ -55,6 +55,11 @@ fn create_funded_user<T: Config>(
 	(user, total)
 }
 
+fn set_rewards_account<T: Config>(amount: BalanceOf<T>) {
+	let (user, total) = create_funded_user::<T>("rewards_account", 0, amount);
+	crate::RewardsAccount::<T>::put(user);
+}
+
 /// Create a funded delegator.
 fn create_funded_delegator<T: Config>(
 	string: &'static str,
@@ -171,6 +176,7 @@ fn create_funded_collator<T: Config>(
 	min_bond: bool,
 	candidate_count: u32,
 ) -> Result<T::AccountId, &'static str> {
+	set_rewards_account::<T>(10000u32.into());
 	let (user, total) = create_funded_user::<T>(string, n, extra);
 	let bond = if min_bond { min_candidate_stk::<T>() } else { total };
 	Pallet::<T>::join_candidates(RawOrigin::Signed(user.clone()).into(), bond, candidate_count)?;
@@ -2210,6 +2216,23 @@ benchmarks! {
 		let original_free_balance = T::Currency::free_balance(&collator);
 	}: {
 		Pallet::<T>::mint_collator_reward(1u32.into(), collator.clone(), 50u32.into())
+	}
+	verify {
+		assert_eq!(T::Currency::free_balance(&collator), original_free_balance + 50u32.into());
+	}
+
+	send_collator_rewards {
+		let mut seed = Seed::new();
+		let collator = create_funded_collator::<T>(
+			"collator",
+			seed.take(),
+			0u32.into(),
+			true,
+			1,
+		)?;
+		let original_free_balance = T::Currency::free_balance(&collator);
+	}: {
+		Pallet::<T>::send_collator_rewards(1u32.into(), collator.clone(), 50u32.into())
 	}
 	verify {
 		assert_eq!(T::Currency::free_balance(&collator), original_free_balance + 50u32.into());
