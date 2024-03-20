@@ -3,7 +3,7 @@
   "id": "rococo_local_testnet",
   "chainType": "Local",
   "bootNodes": [
-    "/dns4/freeverse-rococo-local.bootnode.staging.gorengine.com/tcp/30333/p2p/12D3KooWSqiFvmUwRAvUN24JYgzK9FG2Gf9MVixJLSjW2g983M2Q"
+    "/dns4/freeverse-rococo-local.bootnode-0.staging.gorengine.com/tcp/30333/p2p/12D3KooWSqiFvmUwRAvUN24JYgzK9FG2Gf9MVixJLSjW2g983M2Q"
   ],
   "telemetryEndpoints": null,
   "protocolId": "dot",
