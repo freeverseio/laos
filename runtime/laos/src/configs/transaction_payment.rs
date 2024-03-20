@@ -1,5 +1,5 @@
 use crate::{
-	currency::{GIGAWEI, KILOWEI},
+	currency::{TRANSACTION_BYTE_FEE, WEIGHT_TO_FEE},
 	types::ToAuthor,
 	Balance, Balances, Runtime, RuntimeEvent,
 };
@@ -11,32 +11,17 @@ use smallvec::smallvec;
 use sp_core::{ConstU128, ConstU8};
 use sp_runtime::Perbill;
 
-// Provide a common factor between runtimes based on a supply of 10_000_000 tokens.
-pub const SUPPLY_FACTOR: Balance = 100;
-/// One byte of transaction data has a fee of 1/1000 of a micro unit.
-pub const TRANSACTION_BYTE_FEE: Balance = 1 * GIGAWEI * SUPPLY_FACTOR;
-/// Weight to fee conversion factor.
-pub const WEIGHT_TO_FEE: u128 = 50 * KILOWEI * SUPPLY_FACTOR;
-
 pub struct LengthToFee;
 impl WeightToFeePolynomial for LengthToFee {
 	type Balance = Balance;
 
 	fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
-		smallvec![
-			WeightToFeeCoefficient {
-				degree: 1,
-				coeff_frac: Perbill::zero(),
-				coeff_integer: TRANSACTION_BYTE_FEE,
-				negative: false,
-			},
-			WeightToFeeCoefficient {
-				degree: 3,
-				coeff_frac: Perbill::zero(),
-				coeff_integer: SUPPLY_FACTOR,
-				negative: false,
-			},
-		]
+		smallvec![WeightToFeeCoefficient {
+			degree: 1,
+			coeff_frac: Perbill::zero(),
+			coeff_integer: TRANSACTION_BYTE_FEE,
+			negative: false,
+		},]
 	}
 }
 
@@ -85,11 +70,11 @@ mod tests {
 		assert_eq!(pallet_transaction_payment::Pallet::<Runtime>::length_to_fee(0), 0);
 		assert_eq!(
 			pallet_transaction_payment::Pallet::<Runtime>::length_to_fee(1),
-			TRANSACTION_BYTE_FEE + SUPPLY_FACTOR
+			TRANSACTION_BYTE_FEE
 		);
 		assert_eq!(
 			pallet_transaction_payment::Pallet::<Runtime>::length_to_fee(3),
-			3 * TRANSACTION_BYTE_FEE + 27 * SUPPLY_FACTOR // 27 because degree 3
+			3 * TRANSACTION_BYTE_FEE
 		);
 	}
 }
