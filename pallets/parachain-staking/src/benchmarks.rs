@@ -25,7 +25,7 @@ use crate::{
 use frame_benchmarking::{account, benchmarks, impl_benchmark_test_suite};
 use frame_support::traits::{Currency, Get, OnFinalize, OnInitialize};
 use frame_system::{pallet_prelude::BlockNumberFor, RawOrigin};
-use sp_runtime::{traits::Zero, Perbill, Percent};
+use sp_runtime::{traits::Zero, Perbill, Percent,};
 use sp_std::vec::Vec;
 
 /// Minimum collator candidate stake
@@ -55,7 +55,7 @@ fn create_funded_user<T: Config>(
 	(user, total)
 }
 
-fn set_rewards_account<T: Config>(amount: BalanceOf<T>) {
+fn create_rewards_account<T: Config>(amount: BalanceOf<T>) {
 	let (user, total) = create_funded_user::<T>("rewards_account", 0, amount);
 	crate::RewardsAccount::<T>::put(user);
 }
@@ -176,7 +176,6 @@ fn create_funded_collator<T: Config>(
 	min_bond: bool,
 	candidate_count: u32,
 ) -> Result<T::AccountId, &'static str> {
-	set_rewards_account::<T>(10000u32.into());
 	let (user, total) = create_funded_user::<T>(string, n, extra);
 	let bond = if min_bond { min_candidate_stk::<T>() } else { total };
 	Pallet::<T>::join_candidates(RawOrigin::Signed(user.clone()).into(), bond, candidate_count)?;
