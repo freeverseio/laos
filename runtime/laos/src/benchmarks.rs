@@ -7,5 +7,4 @@ frame_benchmarking::define_benchmarks!(
 	[pallet_laos_evolution, LaosEvolution]
 	[pallet_asset_metadata_extender, AssetMetadataExtender]
 	[pallet_parachain_staking, ParachainStaking]
-	[pallet_block_rewards_handler, BlockRewardsHandler]
 );

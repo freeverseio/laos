@@ -3,7 +3,6 @@ mod aura;
 mod authorship;
 mod balances;
 mod base_fee;
-mod block_rewards_handler;
 mod cumulus_aura_ext;
 mod cumulus_dmp_queue;
 mod cumulus_parachain_system;

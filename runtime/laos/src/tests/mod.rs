@@ -26,17 +26,11 @@ use sp_core::U256;
 
 #[derive(Default)]
 pub(crate) struct ExtBuilder {
-	rewards_account: Option<AccountId>,
 	balances: Vec<(AccountId, u128)>,
 	candidates: Vec<(AccountId, Balance)>,
 }
 
 impl ExtBuilder {
-	pub(crate) fn with_rewards_account(mut self, account: AccountId) -> Self {
-		self.rewards_account = Some(account);
-		self
-	}
-
 	pub(crate) fn with_balances(mut self, balances: Vec<(AccountId, u128)>) -> Self {
 		self.balances = balances;
 		self
@@ -76,12 +70,6 @@ impl ExtBuilder {
 			candidates: self.candidates,
 			blocks_per_round: 10,
 			..Default::default()
-		}
-		.assimilate_storage(&mut t)
-		.unwrap();
-
-		pallet_block_rewards_handler::GenesisConfig::<crate::Runtime> {
-			rewards_account: self.rewards_account,
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();
