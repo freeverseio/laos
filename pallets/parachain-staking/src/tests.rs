@@ -26,12 +26,12 @@ use crate::{
 	auto_compound::{AutoCompoundConfig, AutoCompoundDelegations},
 	delegation_requests::{CancelledScheduledRequest, DelegationAction, ScheduledRequest},
 	mock::{
-		assert_events_emitted, assert_events_emitted_match, assert_events_eq, assert_no_events,
-		roll_blocks, roll_to, roll_to_round_begin, roll_to_round_end, set_author, set_block_author,
-		Balances, BlockNumber, ExtBuilder, ParachainStaking, RuntimeOrigin, Test,
+		self, assert_events_emitted, assert_events_emitted_match, assert_events_eq,
+		assert_no_events, roll_blocks, roll_to, roll_to_round_begin, roll_to_round_end, set_author,
+		set_block_author, Balances, BlockNumber, ExtBuilder, ParachainStaking, RuntimeOrigin, Test,
 	},
 	AtStake, Bond, CollatorStatus, DelegationScheduledRequests, DelegatorAdded,
-	EnableMarkingOffline, Error, Event, Range, DELEGATOR_LOCK_ID,
+	EnableMarkingOffline, Error, Event, InflationInfo, Range, DELEGATOR_LOCK_ID,
 };
 use frame_support::{assert_err, assert_noop, assert_ok, pallet_prelude::*, BoundedVec};
 use sp_runtime::{traits::Zero, DispatchError, ModuleError, Perbill, Percent};
@@ -6718,4 +6718,33 @@ fn test_removed_calls() {
 			Error::<Test>::RemovedCall
 		);
 	});
+}
+
+#[test]
+fn rewards_should_be_constant_when_annual_range_is_fix() {
+	let collator = 2;
+	ExtBuilder::default()
+		.with_balances(vec![(collator, 30)])
+		.with_candidates(vec![(collator, 30)])
+		.with_rewards_account(10, 1000000000)
+		.with_inflation(InflationInfo {
+			expect: Range { min: 0, ideal: 0, max: 0 },
+			annual: Range {
+				min: Perbill::from_perthousand(75),
+				ideal: Perbill::from_perthousand(75),
+				max: Perbill::from_perthousand(75),
+			},
+			round: Range { min: Perbill::zero(), ideal: Perbill::zero(), max: Perbill::zero() },
+		})
+		.build()
+		.execute_with(|| {
+			let rewards_delay = mock::RewardPaymentDelay::get();
+			// let's check the first 100 rounds
+			for i in 1..=100 {
+				set_author(i, collator, 100);
+				roll_to_round_begin(i + rewards_delay);
+				roll_blocks(1);
+				assert_events_eq!(Event::Rewarded { account: collator, rewards: 69 });
+			}
+		});
 }
