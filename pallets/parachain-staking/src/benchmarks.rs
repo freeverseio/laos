@@ -2235,6 +2235,7 @@ benchmarks! {
 	}
 	verify {
 		assert_eq!(T::Currency::free_balance(&collator), original_free_balance + 50u32.into());
+		assert_eq!(crate::RewardsAccount::<T>::get(), None);
 	}
 
 	notify_inactive_collator {
@@ -2313,6 +2314,13 @@ mod tests {
 	pub fn new_test_ext() -> TestExternalities {
 		let t = frame_system::GenesisConfig::<Test>::default().build_storage().unwrap();
 		TestExternalities::new(t)
+	}
+
+	#[test]
+	fn bench_rewards_account() {
+		new_test_ext().execute_with(|| {
+			assert_eq!(Pallet::<Test>::rewards_account(), None);
+		});
 	}
 
 	#[test]
