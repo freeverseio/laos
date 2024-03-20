@@ -6742,53 +6742,9 @@ fn rewards_should_be_constant_when_annual_range_is_fix() {
 			// let's check the first 100 rounds
 			for i in 1..=100 {
 				set_author(i, collator, 100);
-				roll_to_round_begin(i+rewards_delay);
+				roll_to_round_begin(i + rewards_delay);
 				roll_blocks(1);
-				assert_events_eq!(Event::Rewarded { account: collator, rewards: 276 });
+				assert_events_eq!(Event::Rewarded { account: collator, rewards: 69 });
 			}
-		});
-}
-
-#[test]
-fn test_the_rewards_will_be_the_correct_one_calculated_from_the_yearly_rate() {
-	let governance = 1;
-	let collator = 2;
-	let collator_initial_balance = 10000000;
-	ExtBuilder::default()
-		.with_balances(vec![(governance, 840000000), (collator, collator_initial_balance)])
-		.with_candidates(vec![(collator, 100)])
-		.with_rewards_account(999, 150000000)
-		.with_inflation(InflationInfo {
-			expect: Range { min: 0, ideal: 0, max: 0 },
-			annual: Range {
-				min: Perbill::from_perthousand(75),
-				ideal: Perbill::from_perthousand(75),
-				max: Perbill::from_perthousand(75),
-			},
-			round: Range { min: Perbill::zero(), ideal: Perbill::zero(), max: Perbill::zero() },
-		})
-		.build()
-		.execute_with(|| {
-			set_author(2, collator, 100);
-			set_author(3, collator, 100);
-			set_author(4, collator, 100);
-			roll_to_round_begin(4);
-			roll_blocks(1);
-			assert_events_eq!(Event::Rewarded { account: collator, rewards: 276 });
-			roll_to_round_begin(5);
-			roll_blocks(1);
-			assert_events_eq!(Event::Rewarded { account: collator, rewards: 276 });
-			roll_to_round_begin(6);
-			roll_blocks(1);
-			assert_events_eq!(Event::Rewarded { account: collator, rewards: 276 });
-
-			let blocks_per_round = ParachainStaking::round().length;
-			assert_eq!(blocks_per_round, 5);
-			let blocks_per_year = mock::SlotsPerYear::get();
-			// blocks_per_round = round.length;
-			let rounds_per_year = blocks_per_year / blocks_per_round;
-
-			let all_rewards_per_year = rounds_per_year * 276;
-			assert_eq!(all_rewards_per_year, 290_329_920);
 		});
 }

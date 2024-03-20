@@ -710,17 +710,6 @@ pub mod pallet {
 
 			assert!(self.blocks_per_round > 0, "Blocks per round must be > 0");
 
-			// Set inflation configuration
-			let mut inflation_config = self.inflation_config.clone();
-			// if all the round values are 0, derive them from the annual values
-			if inflation_config.round.min.is_zero() &&
-				inflation_config.round.ideal.is_zero() &&
-				inflation_config.round.max.is_zero()
-			{
-				inflation_config.set_round_from_annual::<T>(inflation_config.annual);
-			}
-			<InflationConfig<T>>::put(inflation_config);
-
 			let mut candidate_count = 0u32;
 			// Initialize the candidates
 			for &(ref candidate, balance) in &self.candidates {
@@ -810,6 +799,18 @@ pub mod pallet {
 			// Start Round 1 at Block 0
 			let round: RoundInfo<u64> = RoundInfo::new(1u32, 0u64, self.blocks_per_round);
 			<Round<T>>::put(round);
+
+			// Set inflation configuration
+			let mut inflation_config = self.inflation_config.clone();
+			// if all the round values are 0, derive them from the annual values
+			if inflation_config.round.min.is_zero() &&
+				inflation_config.round.ideal.is_zero() &&
+				inflation_config.round.max.is_zero()
+			{
+				inflation_config.set_round_from_annual::<T>(inflation_config.annual);
+			}
+			<InflationConfig<T>>::put(inflation_config);
+
 			// Snapshot total stake
 			<Staked<T>>::insert(1u32, <Total<T>>::get());
 			<Pallet<T>>::deposit_event(Event::NewRound {
