@@ -22,5 +22,4 @@ pub mod extrinsic_weights;
 pub mod paritydb_weights;
 pub mod rocksdb_weights;
 
-pub use extrinsic_weights::constants::ExtrinsicBaseWeight;
 pub use rocksdb_weights::constants::RocksDbWeight;

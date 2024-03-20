@@ -52,7 +52,6 @@ use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 use staging_xcm_executor::XcmExecutor;
 pub use types::TransactionConverter;
-use weights::ExtrinsicBaseWeight;
 use xcm_config::{XcmConfig, XcmOriginToTransactDispatchOrigin};
 
 /// Block type as expected by this runtime.
