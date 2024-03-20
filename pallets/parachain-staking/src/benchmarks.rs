@@ -404,7 +404,7 @@ benchmarks! {
 			RawOrigin::Signed(candidate.clone()).into(),
 			3u32
 		)?;
-		roll_to_and_author::<T>(2, candidate.clone());
+		roll_to_and_author::<T>(<<T as Config>::LeaveCandidatesDelay as Get<u32>>::get(), candidate.clone());
 	}: {
 		<Pallet<T>>::execute_leave_candidates(
 			RawOrigin::Signed(candidate.clone()).into(),
@@ -492,7 +492,7 @@ benchmarks! {
 			RawOrigin::Signed(candidate.clone()).into(),
 			3u32
 		)?;
-		roll_to_and_author::<T>(2, candidate.clone());
+		roll_to_and_author::<T>(<<T as Config>::LeaveCandidatesDelay as Get<u32>>::get(), candidate.clone());
 	}: {
 		<Pallet<T>>::execute_leave_candidates_inner(candidate.clone())?;
 	}
@@ -650,7 +650,7 @@ benchmarks! {
 			state.request,
 			Some(CandidateBondLessRequest {
 				amount: min_candidate_stk,
-				when_executable: 3,
+				when_executable: 1 + <<T as Config>::CandidateBondLessDelay as Get<u32>>::get(),
 			})
 		);
 	}
@@ -685,7 +685,7 @@ benchmarks! {
 			RawOrigin::Signed(caller.clone()).into(),
 			min_candidate_stk
 		)?;
-		roll_to_and_author::<T>(2, caller.clone());
+		roll_to_and_author::<T>(<<T as Config>::LeaveCandidatesDelay as Get<u32>>::get(), caller.clone());
 	}: {
 		Pallet::<T>::execute_candidate_bond_less(
 			RawOrigin::Signed(caller.clone()).into(),
@@ -924,7 +924,7 @@ benchmarks! {
 				.cloned(),
 			Some(ScheduledRequest {
 				delegator: last_top_delegator,
-				when_executable: 3,
+				when_executable: 1 + <<T as Config>::RevokeDelegationDelay as Get<u32>>::get(),
 				action: DelegationAction::Revoke(last_top_delegator_bond),
 			}),
 		);
@@ -1146,7 +1146,7 @@ benchmarks! {
 				.cloned(),
 			Some(ScheduledRequest {
 				delegator: last_top_delegator,
-				when_executable: 3,
+				when_executable: 1 + <<T as Config>::RevokeDelegationDelay as Get<u32>>::get(),
 				action: DelegationAction::Decrease(bond_less),
 			}),
 		);
@@ -1173,7 +1173,7 @@ benchmarks! {
 			caller.clone()).into(),
 			collator.clone()
 		)?;
-		roll_to_and_author::<T>(2, collator.clone());
+		roll_to_and_author::<T>(<<T as Config>::RevokeDelegationDelay as Get<u32>>::get(), collator.clone());
 	}: {
 		Pallet::<T>::execute_delegation_request(
 			RawOrigin::Signed(caller.clone()).into(),
@@ -1295,7 +1295,7 @@ benchmarks! {
 				.map(|bd| bd.delegations.iter().any(|d| d.owner == highest_bottom_delegator))
 				.unwrap_or_default(),
 		);
-		roll_to_and_author::<T>(2, collator.clone());
+		roll_to_and_author::<T>(<<T as Config>::RevokeDelegationDelay as Get<u32>>::get(), collator.clone());
 	}: {
 		Pallet::<T>::execute_delegation_request(
 			RawOrigin::Signed(last_top_delegator.clone()).into(),
@@ -1428,7 +1428,7 @@ benchmarks! {
 				.map(|bd| bd.delegations.iter().any(|d| d.owner == highest_bottom_delegator))
 				.unwrap_or_default(),
 		);
-		roll_to_and_author::<T>(2, collator.clone());
+		roll_to_and_author::<T>(<<T as Config>::RevokeDelegationDelay as Get<u32>>::get(), collator.clone());
 	}: {
 		Pallet::<T>::execute_delegation_request(
 			RawOrigin::Signed(last_top_delegator.clone()).into(),
@@ -1509,7 +1509,7 @@ benchmarks! {
 			collator.clone(),
 			5u32.into(),
 		)?;
-		roll_to_and_author::<T>(2, collator.clone());
+		roll_to_and_author::<T>(<<T as Config>::RevokeDelegationDelay as Get<u32>>::get(), collator.clone());
 	}: {
 		Pallet::<T>::cancel_delegation_request(
 			RawOrigin::Signed(delegator.clone()).into(),
