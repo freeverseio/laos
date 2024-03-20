@@ -1,5 +1,6 @@
 use crate::{
-	currency::UNIT, AccountId, Balances, BlockNumber, Permill, Runtime, RuntimeEvent, Vec, Weight, MILLISECS_PER_BLOCK
+	currency::UNIT, AccountId, Balances, BlockNumber, Permill, Runtime, RuntimeEvent, Vec, Weight,
+	MILLISECS_PER_BLOCK,
 };
 use frame_support::{parameter_types, traits::Get};
 use frame_system::EnsureRoot;
