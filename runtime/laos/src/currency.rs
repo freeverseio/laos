@@ -12,7 +12,7 @@ const GIGAWEI: Balance = 1_000_000_000;
 const STORAGE_ITEM_FEE: Balance = 10 * UNIT;
 const STORAGE_BYTE_FEE: Balance = 10 * MILLIUNIT;
 pub(crate) const TRANSACTION_BYTE_FEE: Balance = 100 * GIGAWEI;
-pub(crate) const WEIGHT_FEE: Balance = 5 * MEGAWEI;
+pub(crate) const WEIGHT_TO_FEE: Balance = 5 * MEGAWEI;
 
 pub(crate) const fn calculate_deposit(items: u32, bytes: u32) -> Balance {
 	items as Balance * STORAGE_ITEM_FEE + (bytes as Balance) * STORAGE_BYTE_FEE

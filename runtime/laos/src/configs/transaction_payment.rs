@@ -1,5 +1,5 @@
 use crate::{
-	currency::{TRANSACTION_BYTE_FEE, WEIGHT_FEE},
+	currency::{TRANSACTION_BYTE_FEE, WEIGHT_TO_FEE},
 	types::ToAuthor,
 	Balance, Balances, Runtime, RuntimeEvent,
 };
@@ -30,7 +30,7 @@ impl pallet_transaction_payment::Config for Runtime {
 	type OnChargeTransaction =
 		pallet_transaction_payment::CurrencyAdapter<Balances, ToAuthor<Self>>;
 	type OperationalFeeMultiplier = ConstU8<5>;
-	type WeightToFee = ConstantMultiplier<Balance, ConstU128<{ WEIGHT_FEE }>>;
+	type WeightToFee = ConstantMultiplier<Balance, ConstU128<{ WEIGHT_TO_FEE }>>;
 	type LengthToFee = LengthToFee;
 	type FeeMultiplierUpdate = SlowAdjustingFeeUpdate<Self>;
 }
@@ -50,7 +50,7 @@ mod tests {
 			pallet_transaction_payment::Pallet::<Runtime>::weight_to_fee(
 				frame_support::weights::Weight::from_parts(1, 0)
 			),
-			WEIGHT_FEE
+			WEIGHT_TO_FEE
 		);
 		// in case weight to fee exceeds max_block
 		assert_eq!(
@@ -58,7 +58,7 @@ mod tests {
 				frame_support::weights::Weight::from_parts(u64::MAX, 0)
 			),
 			<Runtime as frame_system::Config>::BlockWeights::get().max_block.ref_time() as u128 *
-				WEIGHT_FEE
+				WEIGHT_TO_FEE
 		);
 	}
 
