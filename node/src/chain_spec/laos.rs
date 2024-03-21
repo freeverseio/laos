@@ -1,13 +1,9 @@
 use super::{get_collator_keys_from_seed, predefined_accounts, Extensions, SAFE_XCM_VERSION};
 use cumulus_primitives_core::ParaId;
 use fp_evm::GenesisAccount;
-use laos_runtime::{
-	configs::parachain_staking, AccountId, AuraId, Balance, Precompiles, REVERT_BYTECODE,
-};
+use laos_runtime::{AuraId, Precompiles, REVERT_BYTECODE};
 use sc_service::ChainType;
-use sp_core::{H160, U256};
 use sp_runtime::Perbill;
-use std::{collections::BTreeMap, str::FromStr};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
 pub type ChainSpec = sc_service::GenericChainSpec<laos_runtime::RuntimeGenesisConfig, Extensions>;
@@ -90,7 +86,7 @@ pub fn local_v_testnet_config() -> ChainSpec {
 		// ID
 		"laos_local_testnet",
 		ChainType::Local,
-		move || testnet_genesis(2001.into(), 1_000_000_000_000_000_000_000),
+		move || testnet_genesis(2001.into(), 1_000_000_000_000_000_000),
 		// Bootnodes
 		Vec::new(),
 		// Telemetry
