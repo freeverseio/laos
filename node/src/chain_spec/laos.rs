@@ -34,16 +34,8 @@ pub fn development_config() -> ChainSpec {
 		ChainType::Development,
 		move || {
 			testnet_genesis(
-				// initial collators.
-				vec![(
-					predefined_accounts::ALITH.into(),
-					get_collator_keys_from_seed("Alice"),
-					2 * parachain_staking::MinCandidateStk::get(),
-				)],
-				predefined_accounts::accounts(),
-				// Give Alice root privileges
-				Some(predefined_accounts::ALITH.into()),
 				2001.into(),
+				1_000_000_000_000
 			)
 		},
 		Vec::new(),
@@ -73,16 +65,8 @@ pub fn local_testnet_config() -> ChainSpec {
 		ChainType::Local,
 		move || {
 			testnet_genesis(
-				vec![(
-					predefined_accounts::ALITH.into(),
-					get_collator_keys_from_seed("Alice"),
-					2 * parachain_staking::MinCandidateStk::get(),
-				)],
-				// initial collators.
-				predefined_accounts::accounts(),
-				// Give Alice root privileges
-				Some(predefined_accounts::ALITH.into()),
 				2001.into(),
+				1_000_000_000_000_000_000
 			)
 		},
 		// Bootnodes
@@ -104,10 +88,8 @@ pub fn local_testnet_config() -> ChainSpec {
 }
 
 fn testnet_genesis(
-	stakers: Vec<(AccountId, AuraId, Balance)>,
-	endowed_accounts: Vec<AccountId>,
-	root_key: Option<AccountId>,
 	id: ParaId,
+	unit: u128,
 ) -> laos_runtime::RuntimeGenesisConfig {
 	laos_runtime::RuntimeGenesisConfig {
 		system: laos_runtime::SystemConfig {
@@ -118,8 +100,8 @@ fn testnet_genesis(
 		},
 		balances: laos_runtime::BalancesConfig {
 			balances: vec![
-				(predefined_accounts::ALITH.into(), 850000000 * 1_000_000_000_000),
-				(predefined_accounts::BALTATHAR.into(), 150000000 * 1_000_000_000_000),
+				(predefined_accounts::ALITH.into(), 850000000 * unit),
+				(predefined_accounts::BALTATHAR.into(), 150000000 * unit),
 			],
 		},
 		parachain_info: laos_runtime::ParachainInfoConfig {
