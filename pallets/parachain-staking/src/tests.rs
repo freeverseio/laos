@@ -6790,3 +6790,75 @@ fn collator_rewards_consistency_over_fixed_annual_range() {
 			}
 		});
 }
+
+#[test]
+fn rewards_with_2_collators() {
+	let col = 2;
+	let col_1 = 3;
+	let col_stake = 30;
+	let col_1_stake = 30;
+	ExtBuilder::default()
+		.with_balances(vec![(col, 30), (col_1, 30)])
+		.with_candidates(vec![(col, col_stake), (col_1, col_1_stake)])
+		.with_rewards_account(10, 1000000000)
+		.with_inflation(InflationInfo {
+			expect: Range { min: 0, ideal: 0, max: 0 },
+			annual: Range {
+				min: Perbill::from_perthousand(75),
+				ideal: Perbill::from_perthousand(75),
+				max: Perbill::from_perthousand(75),
+			},
+			round: Range { min: Perbill::zero(), ideal: Perbill::zero(), max: Perbill::zero() },
+		})
+		.build()
+		.execute_with(|| {
+			let rewards_delay = mock::RewardPaymentDelay::get();
+
+			// check the blocks per round
+			let blocks_per_round = ParachainStaking::round().length;
+			assert_eq!(blocks_per_round, 5);
+
+			let round = 1;
+			set_author(round, col, 100);
+			let round = round + rewards_delay;
+			roll_to_round_begin(round);
+			roll_blocks(1);
+			assert_no_events!();
+			roll_blocks(1);
+			assert_events_eq!(Event::Rewarded { account: col, rewards: 69 },);
+			roll_blocks(1);
+			assert_no_events!();
+			roll_blocks(1);
+			assert_no_events!();
+
+			// same points
+			let round = 5;
+			set_author(round, col, 100);
+			set_author(round, col_1, 100);
+			let round = round + rewards_delay;
+			roll_to_round_begin(round);
+			roll_blocks(1);
+			assert_events_eq!(Event::Rewarded { account: col_1, rewards: 34 },);
+			roll_blocks(1);
+			assert_events_eq!(Event::Rewarded { account: col, rewards: 34 },);
+			roll_blocks(1);
+			assert_no_events!();
+			roll_blocks(1);
+			assert_no_events!();
+
+			// same points
+			let round = 10;
+			set_author(round, col, 200);
+			set_author(round, col_1, 100);
+			let round = round + rewards_delay;
+			roll_to_round_begin(round);
+			roll_blocks(1);
+			assert_events_eq!(Event::Rewarded { account: col_1, rewards: 23 },);
+			roll_blocks(1);
+			assert_events_eq!(Event::Rewarded { account: col, rewards: 46 },);
+			roll_blocks(1);
+			assert_no_events!();
+			roll_blocks(1);
+			assert_no_events!();
+		});
+}
