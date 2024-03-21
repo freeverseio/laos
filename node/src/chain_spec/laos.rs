@@ -32,12 +32,7 @@ pub fn development_config() -> ChainSpec {
 		// ID
 		"dev",
 		ChainType::Development,
-		move || {
-			testnet_genesis(
-				2001.into(),
-				1_000_000_000_000
-			)
-		},
+		move || testnet_genesis(2001.into(), 1_000_000_000_000),
 		Vec::new(),
 		None,
 		None,
@@ -63,12 +58,7 @@ pub fn local_testnet_config() -> ChainSpec {
 		// ID
 		"laos_local_testnet",
 		ChainType::Local,
-		move || {
-			testnet_genesis(
-				2001.into(),
-				1_000_000_000_000_000_000
-			)
-		},
+		move || testnet_genesis(2001.into(), 1_000_000_000_000_000_000),
 		// Bootnodes
 		Vec::new(),
 		// Telemetry
@@ -87,10 +77,39 @@ pub fn local_testnet_config() -> ChainSpec {
 	)
 }
 
-fn testnet_genesis(
-	id: ParaId,
-	unit: u128,
-) -> laos_runtime::RuntimeGenesisConfig {
+pub fn local_v_testnet_config() -> ChainSpec {
+	// Give your base currency a unit name and decimal places
+	let mut properties = sc_chain_spec::Properties::new();
+	properties.insert("tokenSymbol".into(), "UNIT".into());
+	properties.insert("tokenDecimals".into(), 18.into());
+	properties.insert("ss58Format".into(), 42.into());
+
+	ChainSpec::from_genesis(
+		// Name
+		"Local Testnet",
+		// ID
+		"laos_local_testnet",
+		ChainType::Local,
+		move || testnet_genesis(2001.into(), 1_000_000_000_000_000_000_000),
+		// Bootnodes
+		Vec::new(),
+		// Telemetry
+		None,
+		// Protocol ID
+		Some("template-local"),
+		// Fork ID
+		None,
+		// Properties
+		Some(properties),
+		// Extensions
+		Extensions {
+			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
+			para_id: 2001,
+		},
+	)
+}
+
+fn testnet_genesis(id: ParaId, unit: u128) -> laos_runtime::RuntimeGenesisConfig {
 	laos_runtime::RuntimeGenesisConfig {
 		system: laos_runtime::SystemConfig {
 			code: laos_runtime::WASM_BINARY
