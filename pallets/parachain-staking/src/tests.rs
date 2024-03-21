@@ -6750,14 +6750,14 @@ fn rewards_should_be_constant_when_annual_range_is_fix() {
 }
 
 #[test]
-fn rewards_of_2_collators_should_be_constant_when_annual_range_is_fix() {
-	let collator = 2;
-	let collator_1 = 3;
-	let collator_stake = 30;
-	let collator_1_stake = 30;
+fn collator_rewards_consistency_over_fixed_annual_range() {
+	let col = 2;
+	let col_1 = 3;
+	let col_stake = 30;
+	let col_1_stake = 30;
 	ExtBuilder::default()
-		.with_balances(vec![(collator, 30), (collator_1, 30)])
-		.with_candidates(vec![(collator, collator_stake), (collator_1, collator_1_stake)])
+		.with_balances(vec![(col, 30), (col_1, 30)])
+		.with_candidates(vec![(col, col_stake), (col_1, col_1_stake)])
 		.build()
 		.execute_with(|| {
 			let rewards_delay = mock::RewardPaymentDelay::get();
@@ -6772,19 +6772,19 @@ fn rewards_of_2_collators_should_be_constant_when_annual_range_is_fix() {
 				assert_events_eq!(
 					Event::CollatorChosen {
 						round,
-						collator_account: collator,
-						total_exposed_amount: collator_stake,
+						collator_account: col,
+						total_exposed_amount: col_stake,
 					},
 					Event::CollatorChosen {
 						round,
-						collator_account: collator_1,
-						total_exposed_amount: collator_1_stake
+						collator_account: col_1,
+						total_exposed_amount: col_1_stake
 					},
 					Event::NewRound {
 						starting_block: (blocks_per_round * (round - 1)).into(),
 						round,
 						selected_collators_number: 2,
-						total_balance: collator_stake + collator_1_stake,
+						total_balance: col_stake + col_1_stake,
 					},
 				);
 			}
