@@ -3,7 +3,7 @@ use laos_primitives::Balance;
 // Unit = the base number of indivisible units for balances
 // 18 decimals
 pub(crate) const UNIT: Balance = 1_000_000_000_000_000_000;
-pub(crate) const MILLIUNIT: Balance = 1_000_000_000_000_000;
+pub(crate) const MILLIUNIT: Balance = UNIT / 1_000;
 
 // Constants in ETH terms
 const MEGAWEI: Balance = 1_000_000;
@@ -11,7 +11,10 @@ const GIGAWEI: Balance = 1_000_000_000;
 
 const STORAGE_ITEM_FEE: Balance = 10 * UNIT;
 const STORAGE_BYTE_FEE: Balance = 10 * MILLIUNIT;
+
+/// One byte of transaction data has a fee of 100 GigaWei.
 pub(crate) const TRANSACTION_BYTE_FEE: Balance = 100 * GIGAWEI;
+/// Weight to fee conversion factor.
 pub(crate) const WEIGHT_TO_FEE: Balance = 5 * MEGAWEI;
 
 pub(crate) const fn calculate_deposit(items: u32, bytes: u32) -> Balance {
