@@ -6748,3 +6748,45 @@ fn rewards_should_be_constant_when_annual_range_is_fix() {
 			}
 		});
 }
+
+#[test]
+fn rewards_of_2_collators_should_be_constant_when_annual_range_is_fix() {
+	let collator = 2;
+	let collator_1 = 3;
+	let collator_stake = 30;
+	let collator_1_stake = 30;
+	ExtBuilder::default()
+		.with_balances(vec![(collator, 30), (collator_1, 30)])
+		.with_candidates(vec![(collator, collator_stake), (collator_1, collator_1_stake)])
+		.build()
+		.execute_with(|| {
+			let rewards_delay = mock::RewardPaymentDelay::get();
+
+			// check the blocks per round
+			let blocks_per_round = ParachainStaking::round().length;
+			assert_eq!(blocks_per_round, 5);
+
+			for round in 2..=103 {
+				// rolling to check the rewards
+				roll_to_round_begin(round);
+				assert_events_eq!(
+					Event::CollatorChosen {
+						round,
+						collator_account: collator,
+						total_exposed_amount: collator_stake,
+					},
+					Event::CollatorChosen {
+						round,
+						collator_account: collator_1,
+						total_exposed_amount: collator_1_stake
+					},
+					Event::NewRound {
+						starting_block: (blocks_per_round * (round - 1)).into(),
+						round,
+						selected_collators_number: 2,
+						total_balance: collator_stake + collator_1_stake,
+					},
+				);
+			}
+		});
+}
