@@ -426,7 +426,7 @@ fn set_inflation_event_emits_correctly() {
 			annual_min: min,
 			annual_ideal: ideal,
 			annual_max: max,
-			round_min: Perbill::from_parts(29),
+			round_min: Perbill::from_parts(28),
 			round_ideal: Perbill::from_parts(38),
 			round_max: Perbill::from_parts(47),
 		});
@@ -462,7 +462,7 @@ fn set_inflation_storage_updates_correctly() {
 		assert_eq!(
 			ParachainStaking::inflation_config().round,
 			Range {
-				min: Perbill::from_parts(29),
+				min: Perbill::from_parts(28),
 				ideal: Perbill::from_parts(38),
 				max: Perbill::from_parts(47)
 			}
@@ -6745,7 +6745,7 @@ fn rewards_should_be_constant_when_annual_range_is_fix() {
 				set_author(i, collator, 100);
 				roll_to_round_begin(i + rewards_delay);
 				roll_blocks(1);
-				assert_events_eq!(Event::Rewarded { account: collator, rewards: 69 });
+				assert_events_eq!(Event::Rewarded { account: collator, rewards: 71 });
 			}
 		});
 }
@@ -6826,7 +6826,7 @@ fn rewards_with_2_collators() {
 			roll_blocks(1);
 			assert_no_events!();
 			roll_blocks(1);
-			assert_events_eq!(Event::Rewarded { account: col, rewards: 69 },);
+			assert_events_eq!(Event::Rewarded { account: col, rewards: 71 },);
 			roll_blocks(1);
 			assert_no_events!();
 			roll_blocks(1);
@@ -6839,9 +6839,9 @@ fn rewards_with_2_collators() {
 			let round = round + rewards_delay;
 			roll_to_round_begin(round);
 			roll_blocks(1);
-			assert_events_eq!(Event::Rewarded { account: col_1, rewards: 34 },);
+			assert_events_eq!(Event::Rewarded { account: col_1, rewards: 35 },);
 			roll_blocks(1);
-			assert_events_eq!(Event::Rewarded { account: col, rewards: 34 },);
+			assert_events_eq!(Event::Rewarded { account: col, rewards: 35 },);
 			roll_blocks(1);
 			assert_no_events!();
 			roll_blocks(1);
@@ -6854,9 +6854,9 @@ fn rewards_with_2_collators() {
 			let round = round + rewards_delay;
 			roll_to_round_begin(round);
 			roll_blocks(1);
-			assert_events_eq!(Event::Rewarded { account: col_1, rewards: 23 },);
+			assert_events_eq!(Event::Rewarded { account: col_1, rewards: 24 },);
 			roll_blocks(1);
-			assert_events_eq!(Event::Rewarded { account: col, rewards: 46 },);
+			assert_events_eq!(Event::Rewarded { account: col, rewards: 47 },);
 			roll_blocks(1);
 			assert_no_events!();
 			roll_blocks(1);

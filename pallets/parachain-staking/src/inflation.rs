@@ -235,12 +235,16 @@ mod tests {
 	}
 
 	#[test]
-	fn test_positive_inflation() {
+	fn test_use_simple_interest_per_round_calculation() {
 		let annual = Range {
 			min: Perbill::from_parts(75_000_000),   // 5%
 			ideal: Perbill::from_parts(75_000_000), // 10%
 			max: Perbill::from_parts(75_000_000),   // 15%
 		};
-		assert_eq!(perbill_annual_to_perbill_round(annual, 1).ideal.deconstruct(), 75);
+		assert_eq!(perbill_annual_to_perbill_round_simple(annual, 1).ideal.deconstruct(), 74999999);
+		assert_eq!(perbill_annual_to_perbill_round_simple(annual, 2).ideal.deconstruct(), 37499999);
+		assert_eq!(perbill_annual_to_perbill_round_simple(annual, 4).ideal.deconstruct(), 18749999);
+		assert_eq!(perbill_annual_to_perbill_round_simple(annual, 8).ideal.deconstruct(), 9374999);
+		assert_eq!(perbill_annual_to_perbill_round_simple(annual, 16).ideal.deconstruct(), 4687499);
 	}
 }
