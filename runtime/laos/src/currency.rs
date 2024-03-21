@@ -4,15 +4,13 @@ use laos_primitives::Balance;
 // 18 decimals
 pub(crate) const UNIT: Balance = 1_000_000_000_000_000_000;
 pub(crate) const MILLIUNIT: Balance = UNIT / 1000;
-pub(crate) const MICROUNIT: Balance = MILLIUNIT / 1000;
 
 // Constants in ETH terms
-pub(crate) const KILOWEI: Balance = 1_000;
-pub const MEGAWEI: Balance = 1_000_000;
-pub(crate) const GIGAWEI: Balance = 1_000_000_000;
+const MEGAWEI: Balance = 1_000_000;
+const GIGAWEI: Balance = 1_000_000_000;
 
 const STORAGE_ITEM_FEE: Balance = 10 * UNIT;
-pub(crate) const STORAGE_BYTE_FEE: Balance = 10 * MILLIUNIT;
+const STORAGE_BYTE_FEE: Balance = 10 * MILLIUNIT;
 pub(crate) const TRANSACTION_BYTE_FEE: Balance = 100 * GIGAWEI;
 pub(crate) const WEIGHT_FEE: Balance = 5 * MEGAWEI;
 
