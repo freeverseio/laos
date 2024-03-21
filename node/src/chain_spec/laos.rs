@@ -118,8 +118,8 @@ fn testnet_genesis(
 		},
 		balances: laos_runtime::BalancesConfig {
 			balances: vec![
-				(predefined_accounts::ALITH.into(), 850000000),
-				(predefined_accounts::BALTATHAR.into(), 150000000),
+				(predefined_accounts::ALITH.into(), 850000000 * 1_000_000_000_000),
+				(predefined_accounts::BALTATHAR.into(), 150000000 * 1_000_000_000_000),
 			],
 		},
 		parachain_info: laos_runtime::ParachainInfoConfig {
