@@ -144,7 +144,7 @@ fn testnet_genesis(id: ParaId, unit: u128) -> laos_runtime::RuntimeGenesisConfig
 		// EVM compatibility
 		evm_chain_id: laos_runtime::EVMChainIdConfig { chain_id: 667, ..Default::default() },
 		parachain_staking: laos_runtime::ParachainStakingConfig {
-			blocks_per_round: 2,
+			blocks_per_round: 5,
 			rewards_account: Some(predefined_accounts::BALTATHAR.into()),
 			inflation_config: laos_runtime::InflationInfo {
 				// staking expectations
