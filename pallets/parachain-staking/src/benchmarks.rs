@@ -55,11 +55,6 @@ fn create_funded_user<T: Config>(
 	(user, total)
 }
 
-fn create_rewards_account<T: Config>(amount: BalanceOf<T>) {
-	let (user, total) = create_funded_user::<T>("rewards_account", 0, amount);
-	crate::RewardsAccount::<T>::put(user);
-}
-
 /// Create a funded delegator.
 fn create_funded_delegator<T: Config>(
 	string: &'static str,
@@ -2314,13 +2309,6 @@ mod tests {
 	pub fn new_test_ext() -> TestExternalities {
 		let t = frame_system::GenesisConfig::<Test>::default().build_storage().unwrap();
 		TestExternalities::new(t)
-	}
-
-	#[test]
-	fn bench_rewards_account() {
-		new_test_ext().execute_with(|| {
-			assert_eq!(Pallet::<Test>::rewards_account(), None);
-		});
 	}
 
 	#[test]
