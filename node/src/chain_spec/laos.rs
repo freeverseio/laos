@@ -73,7 +73,7 @@ pub fn local_testnet_config() -> ChainSpec {
 	)
 }
 
-pub fn local_v_testnet_config() -> ChainSpec {
+pub fn zombienet_testnet_config() -> ChainSpec {
 	// Give your base currency a unit name and decimal places
 	let mut properties = sc_chain_spec::Properties::new();
 	properties.insert("tokenSymbol".into(), "UNIT".into());
