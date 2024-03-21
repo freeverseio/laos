@@ -7,8 +7,8 @@ pub(crate) const MILLIUNIT: Balance = UNIT / 1000;
 
 // Constants in ETH terms
 pub(crate) const WEI: Balance = 1;
-pub(crate) const KILOWEI: Balance = 1_000 * WEI;
-pub(crate) const GIGAWEI: Balance = 1_000_000_000 * WEI;
+pub(crate) const KILOWEI: Balance = 1_000;
+pub(crate) const GIGAWEI: Balance = 1_000_000_000;
 
 // Define storage fees as constants for clarity and reuse
 const STORAGE_ITEM_FEE: Balance = 10 * UNIT;
