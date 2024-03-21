@@ -237,9 +237,9 @@ mod tests {
 	#[test]
 	fn test_use_simple_interest_per_round_calculation() {
 		let annual = Range {
-			min: Perbill::from_parts(75_000_000),   // 5%
-			ideal: Perbill::from_parts(75_000_000), // 10%
-			max: Perbill::from_parts(75_000_000),   // 15%
+			min: Perbill::from_parts(75_000_000),
+			ideal: Perbill::from_parts(75_000_000),
+			max: Perbill::from_parts(75_000_000),
 		};
 		assert_eq!(perbill_annual_to_perbill_round_simple(annual, 1).ideal.deconstruct(), 74999999);
 		assert_eq!(perbill_annual_to_perbill_round_simple(annual, 2).ideal.deconstruct(), 37499999);
