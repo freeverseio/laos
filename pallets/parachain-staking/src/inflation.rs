@@ -82,10 +82,32 @@ pub fn perbill_annual_to_perbill_round(
 		max: annual_to_round(annual.max),
 	}
 }
+
+/// Convert an annual inflation rate to a per-round inflation rate without considering compounding.
+/// The calculation is simply dividing the annual rate by the number of rounds per year.
+pub fn perbill_annual_to_perbill_round_simple(
+	annual: Range<Perbill>,
+	rounds_per_year: u32,
+) -> Range<Perbill> {
+	let annual_to_round_simple = |annual: Perbill| -> Perbill {
+		// Convert the annual rate from Perbill to a fractional representation.
+		let x = I64F64::from_num(annual.deconstruct()) / I64F64::from_num(Perbill::ACCURACY);
+		// Divide the annual rate by the number of rounds to get the per-round rate.
+		let y: I64F64 = x / I64F64::from_num(rounds_per_year);
+		// Convert back to Perbill, rounding as necessary.
+		Perbill::from_parts((y * I64F64::from_num(Perbill::ACCURACY)).floor().to_num::<u32>())
+	};
+	Range {
+		min: annual_to_round_simple(annual.min),
+		ideal: annual_to_round_simple(annual.ideal),
+		max: annual_to_round_simple(annual.max),
+	}
+}
+
 /// Convert annual inflation rate range to round inflation range
 pub fn annual_to_round<T: Config>(annual: Range<Perbill>) -> Range<Perbill> {
 	let periods = rounds_per_year::<T>();
-	perbill_annual_to_perbill_round(annual, periods)
+	perbill_annual_to_perbill_round_simple(annual, periods)
 }
 
 /// Compute round issuance range from round inflation range and current total issuance
@@ -210,5 +232,15 @@ mod tests {
 		mock_round_issuance_range(u32::MAX.into(), mock_annual_to_round(schedule, 1));
 		mock_round_issuance_range(u64::MAX.into(), mock_annual_to_round(schedule, 1));
 		mock_round_issuance_range(u128::MAX.into(), mock_annual_to_round(schedule, 1));
+	}
+
+	#[test]
+	fn test_positive_inflation() {
+		let annual = Range {
+			min: Perbill::from_parts(75_000_000),   // 5%
+			ideal: Perbill::from_parts(75_000_000), // 10%
+			max: Perbill::from_parts(75_000_000),   // 15%
+		};
+		assert_eq!(perbill_annual_to_perbill_round(annual, 1).ideal.deconstruct(), 75);
 	}
 }
