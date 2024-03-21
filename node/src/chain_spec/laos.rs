@@ -117,24 +117,21 @@ fn testnet_genesis(
 			..Default::default()
 		},
 		balances: laos_runtime::BalancesConfig {
-			balances: vec![(predefined_accounts::ALITH.into(), 150000 * 1000000000000000000)],
+			balances: vec![
+				(predefined_accounts::ALITH.into(), 850000000),
+				(predefined_accounts::BALTATHAR.into(), 150000000),
+			],
 		},
 		parachain_info: laos_runtime::ParachainInfoConfig {
 			parachain_id: id,
 			..Default::default()
 		},
 		session: laos_runtime::SessionConfig {
-			keys: stakers
-				.clone()
-				.into_iter()
-				.map(|(acc, aura, _)| {
-					(
-						acc,                         // account id
-						acc,                         // validator id
-						template_session_keys(aura), // session keys
-					)
-				})
-				.collect(),
+			keys: vec![(
+				predefined_accounts::ALITH.into(),
+				predefined_accounts::ALITH.into(),
+				template_session_keys(get_collator_keys_from_seed("Alice")),
+			)],
 		},
 		// no need to pass anything to aura, in fact it will panic if we do. Session will take care
 		// of this.
@@ -145,7 +142,7 @@ fn testnet_genesis(
 			safe_xcm_version: Some(SAFE_XCM_VERSION),
 			..Default::default()
 		},
-		sudo: laos_runtime::SudoConfig { key: root_key },
+		sudo: laos_runtime::SudoConfig { key: Some(predefined_accounts::ALITH.into()) },
 		transaction_payment: Default::default(),
 		// EVM compatibility
 		evm_chain_id: laos_runtime::EVMChainIdConfig { chain_id: 667, ..Default::default() },
@@ -157,9 +154,9 @@ fn testnet_genesis(
 				expect: laos_runtime::Range { min: 1000000, ideal: 1000000, max: 1000000 },
 				// annual inflation
 				annual: laos_runtime::Range {
-					min: Perbill::from_percent(1),
-					ideal: Perbill::from_percent(1),
-					max: Perbill::from_percent(1),
+					min: Perbill::from_perthousand(75),
+					ideal: Perbill::from_perthousand(75),
+					max: Perbill::from_perthousand(75),
 				},
 				round: laos_runtime::Range {
 					min: Perbill::zero(),
@@ -183,7 +180,8 @@ fn testnet_genesis(
 						},
 					)
 				})
-				.collect()..Default::default(),
+				.collect(),
+			..Default::default()
 		},
 		..Default::default()
 	}

@@ -6739,6 +6739,7 @@ fn rewards_should_be_constant_when_annual_range_is_fix() {
 		.build()
 		.execute_with(|| {
 			let rewards_delay = mock::RewardPaymentDelay::get();
+
 			// let's check the first 100 rounds
 			for i in 1..=100 {
 				set_author(i, collator, 100);
