@@ -3,7 +3,7 @@ use laos_primitives::Balance;
 // Unit = the base number of indivisible units for balances
 // 18 decimals
 pub(crate) const UNIT: Balance = 1_000_000_000_000_000_000;
-pub(crate) const MILLIUNIT: Balance = UNIT / 1000;
+pub(crate) const MILLIUNIT: Balance = 1_000_000_000_000_000;
 
 // Constants in ETH terms
 const MEGAWEI: Balance = 1_000_000;
