@@ -6739,6 +6739,7 @@ fn rewards_should_be_constant_when_annual_range_is_fix() {
 		.build()
 		.execute_with(|| {
 			let rewards_delay = mock::RewardPaymentDelay::get();
+
 			// let's check the first 100 rounds
 			for i in 1..=100 {
 				set_author(i, collator, 100);
@@ -6746,5 +6747,117 @@ fn rewards_should_be_constant_when_annual_range_is_fix() {
 				roll_blocks(1);
 				assert_events_eq!(Event::Rewarded { account: collator, rewards: 69 });
 			}
+		});
+}
+
+#[test]
+fn collator_rewards_consistency_over_fixed_annual_range() {
+	let col = 2;
+	let col_1 = 3;
+	let col_stake = 30;
+	let col_1_stake = 30;
+	ExtBuilder::default()
+		.with_balances(vec![(col, 30), (col_1, 30)])
+		.with_candidates(vec![(col, col_stake), (col_1, col_1_stake)])
+		.build()
+		.execute_with(|| {
+			// check the blocks per round
+			let blocks_per_round = ParachainStaking::round().length;
+			assert_eq!(blocks_per_round, 5);
+
+			for round in 2..=103 {
+				// rolling to check the rewards
+				roll_to_round_begin(round);
+				assert_events_eq!(
+					Event::CollatorChosen {
+						round,
+						collator_account: col,
+						total_exposed_amount: col_stake,
+					},
+					Event::CollatorChosen {
+						round,
+						collator_account: col_1,
+						total_exposed_amount: col_1_stake
+					},
+					Event::NewRound {
+						starting_block: (blocks_per_round * (round - 1)).into(),
+						round,
+						selected_collators_number: 2,
+						total_balance: col_stake + col_1_stake,
+					},
+				);
+			}
+		});
+}
+
+#[test]
+fn rewards_with_2_collators() {
+	let col = 2;
+	let col_1 = 3;
+	let col_stake = 30;
+	let col_1_stake = 30;
+	ExtBuilder::default()
+		.with_balances(vec![(col, 30), (col_1, 30)])
+		.with_candidates(vec![(col, col_stake), (col_1, col_1_stake)])
+		.with_rewards_account(10, 1000000000)
+		.with_inflation(InflationInfo {
+			expect: Range { min: 0, ideal: 0, max: 0 },
+			annual: Range {
+				min: Perbill::from_perthousand(75),
+				ideal: Perbill::from_perthousand(75),
+				max: Perbill::from_perthousand(75),
+			},
+			round: Range { min: Perbill::zero(), ideal: Perbill::zero(), max: Perbill::zero() },
+		})
+		.build()
+		.execute_with(|| {
+			let rewards_delay = mock::RewardPaymentDelay::get();
+
+			// check the blocks per round
+			let blocks_per_round = ParachainStaking::round().length;
+			assert_eq!(blocks_per_round, 5);
+
+			let round = 1;
+			set_author(round, col, 100);
+			let round = round + rewards_delay;
+			roll_to_round_begin(round);
+			roll_blocks(1);
+			assert_no_events!();
+			roll_blocks(1);
+			assert_events_eq!(Event::Rewarded { account: col, rewards: 69 },);
+			roll_blocks(1);
+			assert_no_events!();
+			roll_blocks(1);
+			assert_no_events!();
+
+			// same points
+			let round = 5;
+			set_author(round, col, 100);
+			set_author(round, col_1, 100);
+			let round = round + rewards_delay;
+			roll_to_round_begin(round);
+			roll_blocks(1);
+			assert_events_eq!(Event::Rewarded { account: col_1, rewards: 34 },);
+			roll_blocks(1);
+			assert_events_eq!(Event::Rewarded { account: col, rewards: 34 },);
+			roll_blocks(1);
+			assert_no_events!();
+			roll_blocks(1);
+			assert_no_events!();
+
+			// same points
+			let round = 10;
+			set_author(round, col, 200);
+			set_author(round, col_1, 100);
+			let round = round + rewards_delay;
+			roll_to_round_begin(round);
+			roll_blocks(1);
+			assert_events_eq!(Event::Rewarded { account: col_1, rewards: 23 },);
+			roll_blocks(1);
+			assert_events_eq!(Event::Rewarded { account: col, rewards: 46 },);
+			roll_blocks(1);
+			assert_no_events!();
+			roll_blocks(1);
+			assert_no_events!();
 		});
 }

@@ -6,7 +6,7 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 mod apis;
 pub mod configs;
-mod currency;
+pub mod currency;
 mod impl_self_contained_call;
 mod precompiles;
 mod types;

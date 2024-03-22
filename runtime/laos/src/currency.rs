@@ -2,8 +2,9 @@ use laos_primitives::Balance;
 
 // Unit = the base number of indivisible units for balances
 // 18 decimals
-pub(crate) const UNIT: Balance = 1_000_000_000_000_000_000;
-pub(crate) const MILLIUNIT: Balance = UNIT / 1_000;
+pub const DECIMALS: u32 = 18;
+pub const UNIT: Balance = (10 as Balance).pow(DECIMALS);
+pub(crate) const MILLIUNIT: Balance = UNIT / 1000;
 
 // Constants in ETH terms
 const MEGAWEI: Balance = 1_000_000;
