@@ -115,8 +115,9 @@ fn testnet_genesis(id: ParaId, unit: u128) -> laos_runtime::RuntimeGenesisConfig
 		},
 		balances: laos_runtime::BalancesConfig {
 			balances: vec![
-				(predefined_accounts::ALITH.into(), 850000000 * unit),
+				(predefined_accounts::ALITH.into(), 800000000 * unit),
 				(predefined_accounts::BALTATHAR.into(), 150000000 * unit),
+				(predefined_accounts::FAITH.into(), 50000000 * unit),
 			],
 		},
 		parachain_info: laos_runtime::ParachainInfoConfig {
