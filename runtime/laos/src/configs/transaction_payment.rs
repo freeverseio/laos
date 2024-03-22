@@ -16,12 +16,20 @@ impl WeightToFeePolynomial for LengthToFee {
 	type Balance = Balance;
 
 	fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
-		smallvec![WeightToFeeCoefficient {
-			degree: 1,
-			coeff_frac: Perbill::zero(),
-			coeff_integer: TRANSACTION_BYTE_FEE,
-			negative: false,
-		},]
+		smallvec![
+			WeightToFeeCoefficient {
+				degree: 1,
+				coeff_frac: Perbill::zero(),
+				coeff_integer: TRANSACTION_BYTE_FEE,
+				negative: false,
+			},
+			WeightToFeeCoefficient {
+				degree: 3,
+				coeff_frac: Perbill::zero(),
+				coeff_integer: 100,
+				negative: false,
+			},
+		]
 	}
 }
 
@@ -67,13 +75,7 @@ mod tests {
 		use super::*;
 		// zero length
 		assert_eq!(pallet_transaction_payment::Pallet::<Runtime>::length_to_fee(0), 0);
-		assert_eq!(
-			pallet_transaction_payment::Pallet::<Runtime>::length_to_fee(1),
-			TRANSACTION_BYTE_FEE
-		);
-		assert_eq!(
-			pallet_transaction_payment::Pallet::<Runtime>::length_to_fee(3),
-			3 * TRANSACTION_BYTE_FEE
-		);
+		assert_eq!(pallet_transaction_payment::Pallet::<Runtime>::length_to_fee(1), 100000000100);
+		assert_eq!(pallet_transaction_payment::Pallet::<Runtime>::length_to_fee(3), 300000002700);
 	}
 }
