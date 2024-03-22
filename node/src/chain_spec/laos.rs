@@ -7,13 +7,13 @@ use laos_runtime::{
 use sc_service::ChainType;
 use sp_runtime::Perbill;
 
-pub type ChainSpec = sc_service::GenericChainSpec<laos_runtime::RuntimeGenesisConfig, Extensions>;
+pub(crate) type ChainSpec = sc_service::GenericChainSpec<laos_runtime::RuntimeGenesisConfig, Extensions>;
 
-pub fn development_config() -> ChainSpec {
+pub(crate) fn development_config() -> ChainSpec {
 	generic_chain_config("Development", "dev", ChainType::Development, None)
 }
 
-pub fn local_testnet_config() -> ChainSpec {
+pub(crate) fn local_testnet_config() -> ChainSpec {
 	generic_chain_config(
 		"Local Testnet",
 		"laos_local_testnet",
