@@ -97,9 +97,6 @@ jobs:
       - name: Build
         run: |
           cargo build --release --package laos --features=try-runtime
-      - name: Try Runtime for Caladan
-        run: |
-          RUST_LOG=try-runtime ./target/release/laos try-runtime --chain klaos-dev --runtime ./target/release/wbuild/klaos-runtime/klaos_runtime.wasm on-runtime-upgrade --checks=pre-and-post live --uri ws://161.35.247.178:9944
       - name: Try Runtime for Klaos
         run: |
           RUST_LOG=try-runtime ./target/release/laos try-runtime --chain klaos-dev --runtime ./target/release/wbuild/klaos-runtime/klaos_runtime.wasm on-runtime-upgrade --checks=pre-and-post live --uri ws://159.223.241.90:9944
