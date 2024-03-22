@@ -28,7 +28,7 @@ pub fn development_config() -> ChainSpec {
 		// ID
 		"dev",
 		ChainType::Development,
-		move || testnet_genesis(2001.into(), 1_000_000_000_000),
+		move || create_test_genesis_config(2001.into(), 1_000_000_000_000),
 		Vec::new(),
 		None,
 		None,
@@ -54,7 +54,7 @@ pub fn local_testnet_config() -> ChainSpec {
 		// ID
 		"laos_local_testnet",
 		ChainType::Local,
-		move || testnet_genesis(2001.into(), 1_000_000_000_000_000_000),
+		move || create_test_genesis_config(2001.into(), 1_000_000_000_000_000_000),
 		// Bootnodes
 		Vec::new(),
 		// Telemetry
@@ -73,7 +73,7 @@ pub fn local_testnet_config() -> ChainSpec {
 	)
 }
 
-pub fn local_v_testnet_config() -> ChainSpec {
+pub fn zombienet_testnet_config() -> ChainSpec {
 	// Give your base currency a unit name and decimal places
 	let mut properties = sc_chain_spec::Properties::new();
 	properties.insert("tokenSymbol".into(), "UNIT".into());
@@ -86,7 +86,7 @@ pub fn local_v_testnet_config() -> ChainSpec {
 		// ID
 		"laos_local_testnet",
 		ChainType::Local,
-		move || testnet_genesis(2001.into(), 1_000_000_000_000_000_000),
+		move || create_test_genesis_config(2001.into(), 1_000_000_000_000_000_000),
 		// Bootnodes
 		Vec::new(),
 		// Telemetry
@@ -105,7 +105,7 @@ pub fn local_v_testnet_config() -> ChainSpec {
 	)
 }
 
-fn testnet_genesis(id: ParaId, unit: u128) -> laos_runtime::RuntimeGenesisConfig {
+fn create_test_genesis_config(id: ParaId, unit: u128) -> laos_runtime::RuntimeGenesisConfig {
 	laos_runtime::RuntimeGenesisConfig {
 		system: laos_runtime::SystemConfig {
 			code: laos_runtime::WASM_BINARY
@@ -115,8 +115,9 @@ fn testnet_genesis(id: ParaId, unit: u128) -> laos_runtime::RuntimeGenesisConfig
 		},
 		balances: laos_runtime::BalancesConfig {
 			balances: vec![
-				(predefined_accounts::ALITH.into(), 850000000 * unit),
+				(predefined_accounts::ALITH.into(), 800000000 * unit),
 				(predefined_accounts::BALTATHAR.into(), 150000000 * unit),
+				(predefined_accounts::FAITH.into(), 50000000 * unit),
 			],
 		},
 		parachain_info: laos_runtime::ParachainInfoConfig {
@@ -130,19 +131,11 @@ fn testnet_genesis(id: ParaId, unit: u128) -> laos_runtime::RuntimeGenesisConfig
 				template_session_keys(get_collator_keys_from_seed("Alice")),
 			)],
 		},
-		// no need to pass anything to aura, in fact it will panic if we do. Session will take care
-		// of this.
-		aura: Default::default(),
-		aura_ext: Default::default(),
-		parachain_system: Default::default(),
 		polkadot_xcm: laos_runtime::PolkadotXcmConfig {
 			safe_xcm_version: Some(SAFE_XCM_VERSION),
 			..Default::default()
 		},
 		sudo: laos_runtime::SudoConfig { key: Some(predefined_accounts::ALITH.into()) },
-		transaction_payment: Default::default(),
-		// EVM compatibility
-		evm_chain_id: laos_runtime::EVMChainIdConfig { chain_id: 667, ..Default::default() },
 		parachain_staking: laos_runtime::ParachainStakingConfig {
 			blocks_per_round: 5,
 			rewards_account: Some(predefined_accounts::BALTATHAR.into()),
@@ -163,6 +156,7 @@ fn testnet_genesis(id: ParaId, unit: u128) -> laos_runtime::RuntimeGenesisConfig
 			},
 			..Default::default()
 		},
+		evm_chain_id: laos_runtime::EVMChainIdConfig { chain_id: 667, ..Default::default() },
 		evm: laos_runtime::EVMConfig {
 			accounts: Precompiles::used_addresses()
 				.iter()
