@@ -6761,8 +6761,6 @@ fn collator_rewards_consistency_over_fixed_annual_range() {
 		.with_candidates(vec![(col, col_stake), (col_1, col_1_stake)])
 		.build()
 		.execute_with(|| {
-			let rewards_delay = mock::RewardPaymentDelay::get();
-
 			// check the blocks per round
 			let blocks_per_round = ParachainStaking::round().length;
 			assert_eq!(blocks_per_round, 5);
