@@ -1,7 +1,14 @@
 use super::{get_collator_keys_from_seed, predefined_accounts, Extensions, SAFE_XCM_VERSION};
 use cumulus_primitives_core::ParaId;
 use fp_evm::GenesisAccount;
+<<<<<<< HEAD
 use laos_runtime::{AuraId, Precompiles, REVERT_BYTECODE};
+=======
+use laos_runtime::{
+	currency::{DECIMALS, UNIT},
+	AuraId, Precompiles, REVERT_BYTECODE,
+};
+>>>>>>> main
 use sc_service::ChainType;
 use sp_runtime::Perbill;
 
@@ -15,97 +22,46 @@ pub fn template_session_keys(keys: AuraId) -> laos_runtime::SessionKeys {
 	laos_runtime::SessionKeys { aura: keys }
 }
 
-pub fn development_config() -> ChainSpec {
-	// Give your base currency a unit name and decimal places
+// function for properties
+fn properties() -> sc_chain_spec::Properties {
 	let mut properties = sc_chain_spec::Properties::new();
 	properties.insert("tokenSymbol".into(), "UNIT".into());
-	properties.insert("tokenDecimals".into(), 18.into());
+	properties.insert("tokenDecimals".into(), DECIMALS.into());
 	properties.insert("ss58Format".into(), 42.into());
+	properties
+}
 
+pub fn development_config() -> ChainSpec {
 	ChainSpec::from_genesis(
-		// Name
-		"Development",
-		// ID
-		"dev",
+		"Development", // name
+		"dev",         // id
 		ChainType::Development,
-		move || create_test_genesis_config(2001.into(), 1_000_000_000_000),
+		move || create_test_genesis_config(2001.into()),
 		Vec::new(),
 		None,
 		None,
 		None,
-		None,
-		Extensions {
-			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
-			para_id: 2001,
-		},
+		Some(properties()),
+		Extensions { relay_chain: "rococo-local".into(), para_id: 2001 },
 	)
 }
 
 pub fn local_testnet_config() -> ChainSpec {
-	// Give your base currency a unit name and decimal places
-	let mut properties = sc_chain_spec::Properties::new();
-	properties.insert("tokenSymbol".into(), "UNIT".into());
-	properties.insert("tokenDecimals".into(), 18.into());
-	properties.insert("ss58Format".into(), 42.into());
-
 	ChainSpec::from_genesis(
-		// Name
-		"Local Testnet",
-		// ID
-		"laos_local_testnet",
+		"Local Testnet",      // name
+		"laos_local_testnet", // id
 		ChainType::Local,
-		move || create_test_genesis_config(2001.into(), 1_000_000_000_000_000_000),
-		// Bootnodes
-		Vec::new(),
-		// Telemetry
-		None,
-		// Protocol ID
-		Some("template-local"),
-		// Fork ID
-		None,
-		// Properties
-		Some(properties),
-		// Extensions
-		Extensions {
-			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
-			para_id: 2001,
-		},
+		move || create_test_genesis_config(2001.into()),
+		Vec::new(),             // bootnodes
+		None,                   // telemetry
+		Some("template-local"), // Protocol ID
+		None,                   // Fork ID
+		Some(properties()),
+		Extensions { relay_chain: "rococo-local".into(), para_id: 2001 },
 	)
 }
 
-pub fn zombienet_testnet_config() -> ChainSpec {
-	// Give your base currency a unit name and decimal places
-	let mut properties = sc_chain_spec::Properties::new();
-	properties.insert("tokenSymbol".into(), "UNIT".into());
-	properties.insert("tokenDecimals".into(), 18.into());
-	properties.insert("ss58Format".into(), 42.into());
-
-	ChainSpec::from_genesis(
-		// Name
-		"Local Testnet",
-		// ID
-		"laos_local_testnet",
-		ChainType::Local,
-		move || create_test_genesis_config(2001.into(), 1_000_000_000_000_000_000),
-		// Bootnodes
-		Vec::new(),
-		// Telemetry
-		None,
-		// Protocol ID
-		Some("template-local"),
-		// Fork ID
-		None,
-		// Properties
-		Some(properties),
-		// Extensions
-		Extensions {
-			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
-			para_id: 2001,
-		},
-	)
-}
-
-fn create_test_genesis_config(id: ParaId, unit: u128) -> laos_runtime::RuntimeGenesisConfig {
+fn create_test_genesis_config(id: ParaId) -> laos_runtime::RuntimeGenesisConfig {
 	laos_runtime::RuntimeGenesisConfig {
 		system: laos_runtime::SystemConfig {
 			code: laos_runtime::WASM_BINARY
@@ -115,9 +71,9 @@ fn create_test_genesis_config(id: ParaId, unit: u128) -> laos_runtime::RuntimeGe
 		},
 		balances: laos_runtime::BalancesConfig {
 			balances: vec![
-				(predefined_accounts::ALITH.into(), 800000000 * unit),
-				(predefined_accounts::BALTATHAR.into(), 150000000 * unit),
-				(predefined_accounts::FAITH.into(), 50000000 * unit),
+				(predefined_accounts::ALITH.into(), 800000000 * UNIT),
+				(predefined_accounts::BALTATHAR.into(), 150000000 * UNIT),
+				(predefined_accounts::FAITH.into(), 50000000 * UNIT),
 			],
 		},
 		parachain_info: laos_runtime::ParachainInfoConfig {

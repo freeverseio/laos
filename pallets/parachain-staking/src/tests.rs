@@ -6761,8 +6761,6 @@ fn collator_rewards_consistency_over_fixed_annual_range() {
 		.with_candidates(vec![(col, col_stake), (col_1, col_1_stake)])
 		.build()
 		.execute_with(|| {
-			let rewards_delay = mock::RewardPaymentDelay::get();
-
 			// check the blocks per round
 			let blocks_per_round = ParachainStaking::round().length;
 			assert_eq!(blocks_per_round, 5);
@@ -6826,7 +6824,11 @@ fn rewards_with_2_collators() {
 			roll_blocks(1);
 			assert_no_events!();
 			roll_blocks(1);
+<<<<<<< HEAD
 			assert_events_eq!(Event::Rewarded { account: col, rewards: 71 },);
+=======
+			assert_events_eq!(Event::Rewarded { account: col, rewards: 69 },);
+>>>>>>> main
 			roll_blocks(1);
 			assert_no_events!();
 			roll_blocks(1);
@@ -6839,9 +6841,15 @@ fn rewards_with_2_collators() {
 			let round = round + rewards_delay;
 			roll_to_round_begin(round);
 			roll_blocks(1);
+<<<<<<< HEAD
 			assert_events_eq!(Event::Rewarded { account: col_1, rewards: 35 },);
 			roll_blocks(1);
 			assert_events_eq!(Event::Rewarded { account: col, rewards: 35 },);
+=======
+			assert_events_eq!(Event::Rewarded { account: col_1, rewards: 34 },);
+			roll_blocks(1);
+			assert_events_eq!(Event::Rewarded { account: col, rewards: 34 },);
+>>>>>>> main
 			roll_blocks(1);
 			assert_no_events!();
 			roll_blocks(1);
@@ -6854,9 +6862,15 @@ fn rewards_with_2_collators() {
 			let round = round + rewards_delay;
 			roll_to_round_begin(round);
 			roll_blocks(1);
+<<<<<<< HEAD
 			assert_events_eq!(Event::Rewarded { account: col_1, rewards: 24 },);
 			roll_blocks(1);
 			assert_events_eq!(Event::Rewarded { account: col, rewards: 47 },);
+=======
+			assert_events_eq!(Event::Rewarded { account: col_1, rewards: 23 },);
+			roll_blocks(1);
+			assert_events_eq!(Event::Rewarded { account: col, rewards: 46 },);
+>>>>>>> main
 			roll_blocks(1);
 			assert_no_events!();
 			roll_blocks(1);
