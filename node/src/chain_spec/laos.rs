@@ -1,14 +1,10 @@
 use super::{get_collator_keys_from_seed, predefined_accounts, Extensions, SAFE_XCM_VERSION};
 use cumulus_primitives_core::ParaId;
 use fp_evm::GenesisAccount;
-<<<<<<< HEAD
-use laos_runtime::{AuraId, Precompiles, REVERT_BYTECODE};
-=======
 use laos_runtime::{
 	currency::{DECIMALS, UNIT},
 	AuraId, Precompiles, REVERT_BYTECODE,
 };
->>>>>>> main
 use sc_service::ChainType;
 use sp_runtime::Perbill;
 
