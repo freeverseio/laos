@@ -1,7 +1,10 @@
 use super::{get_collator_keys_from_seed, predefined_accounts, Extensions, SAFE_XCM_VERSION};
 use cumulus_primitives_core::ParaId;
 use fp_evm::GenesisAccount;
-use laos_runtime::{currency::UNIT, AuraId, Precompiles, REVERT_BYTECODE};
+use laos_runtime::{
+	currency::{DECIMALS, UNIT},
+	AuraId, Precompiles, REVERT_BYTECODE,
+};
 use sc_service::ChainType;
 use sp_runtime::Perbill;
 
@@ -19,7 +22,7 @@ pub fn template_session_keys(keys: AuraId) -> laos_runtime::SessionKeys {
 fn properties() -> sc_chain_spec::Properties {
 	let mut properties = sc_chain_spec::Properties::new();
 	properties.insert("tokenSymbol".into(), "UNIT".into());
-	properties.insert("tokenDecimals".into(), 18.into());
+	properties.insert("tokenDecimals".into(), DECIMALS.into());
 	properties.insert("ss58Format".into(), 42.into());
 	properties
 }
