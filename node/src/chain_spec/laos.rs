@@ -28,7 +28,7 @@ pub fn development_config() -> ChainSpec {
 		// ID
 		"dev",
 		ChainType::Development,
-		move || testnet_genesis(2001.into(), 1_000_000_000_000),
+		move || create_test_genesis_config(2001.into(), 1_000_000_000_000),
 		Vec::new(),
 		None,
 		None,
@@ -54,7 +54,7 @@ pub fn local_testnet_config() -> ChainSpec {
 		// ID
 		"laos_local_testnet",
 		ChainType::Local,
-		move || testnet_genesis(2001.into(), 1_000_000_000_000_000_000),
+		move || create_test_genesis_config(2001.into(), 1_000_000_000_000_000_000),
 		// Bootnodes
 		Vec::new(),
 		// Telemetry
@@ -86,7 +86,7 @@ pub fn zombienet_testnet_config() -> ChainSpec {
 		// ID
 		"laos_local_testnet",
 		ChainType::Local,
-		move || testnet_genesis(2001.into(), 1_000_000_000_000_000_000),
+		move || create_test_genesis_config(2001.into(), 1_000_000_000_000_000_000),
 		// Bootnodes
 		Vec::new(),
 		// Telemetry
@@ -105,7 +105,7 @@ pub fn zombienet_testnet_config() -> ChainSpec {
 	)
 }
 
-fn testnet_genesis(id: ParaId, unit: u128) -> laos_runtime::RuntimeGenesisConfig {
+fn create_test_genesis_config(id: ParaId, unit: u128) -> laos_runtime::RuntimeGenesisConfig {
 	laos_runtime::RuntimeGenesisConfig {
 		system: laos_runtime::SystemConfig {
 			code: laos_runtime::WASM_BINARY
