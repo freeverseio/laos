@@ -131,19 +131,11 @@ fn testnet_genesis(id: ParaId, unit: u128) -> laos_runtime::RuntimeGenesisConfig
 				template_session_keys(get_collator_keys_from_seed("Alice")),
 			)],
 		},
-		// no need to pass anything to aura, in fact it will panic if we do. Session will take care
-		// of this.
-		aura: Default::default(),
-		aura_ext: Default::default(),
-		parachain_system: Default::default(),
 		polkadot_xcm: laos_runtime::PolkadotXcmConfig {
 			safe_xcm_version: Some(SAFE_XCM_VERSION),
 			..Default::default()
 		},
 		sudo: laos_runtime::SudoConfig { key: Some(predefined_accounts::ALITH.into()) },
-		transaction_payment: Default::default(),
-		// EVM compatibility
-		evm_chain_id: laos_runtime::EVMChainIdConfig { chain_id: 667, ..Default::default() },
 		parachain_staking: laos_runtime::ParachainStakingConfig {
 			blocks_per_round: 5,
 			rewards_account: Some(predefined_accounts::BALTATHAR.into()),
@@ -164,6 +156,7 @@ fn testnet_genesis(id: ParaId, unit: u128) -> laos_runtime::RuntimeGenesisConfig
 			},
 			..Default::default()
 		},
+		evm_chain_id: laos_runtime::EVMChainIdConfig { chain_id: 667, ..Default::default() },
 		evm: laos_runtime::EVMConfig {
 			accounts: Precompiles::used_addresses()
 				.iter()
