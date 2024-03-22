@@ -229,9 +229,9 @@ fn set_blocks_per_round_event_emits_correctly() {
 			first_block: 0,
 			old: 5,
 			new: 6,
-			new_per_round_inflation_min: Perbill::from_parts(463),
-			new_per_round_inflation_ideal: Perbill::from_parts(463),
-			new_per_round_inflation_max: Perbill::from_parts(463),
+			new_per_round_inflation_min: Perbill::from_parts(570),
+			new_per_round_inflation_ideal: Perbill::from_parts(570),
+			new_per_round_inflation_max: Perbill::from_parts(570),
 		});
 	});
 }
