@@ -1,5 +1,4 @@
 use super::{get_collator_keys_from_seed, predefined_accounts, Extensions, SAFE_XCM_VERSION};
-use cumulus_primitives_core::ParaId;
 use fp_evm::GenesisAccount;
 use laos_runtime::{
 	currency::{DECIMALS, UNIT},
@@ -8,13 +7,28 @@ use laos_runtime::{
 use sc_service::ChainType;
 use sp_runtime::Perbill;
 
-/// Specialized `ChainSpec` for the normal parachain runtime.
 pub type ChainSpec = sc_service::GenericChainSpec<laos_runtime::RuntimeGenesisConfig, Extensions>;
+
+pub fn development_config() -> ChainSpec {
+	generic_chain_config("Development", "dev", ChainType::Development, None)
+}
+
+pub fn local_testnet_config() -> ChainSpec {
+	generic_chain_config(
+		"Local Testnet",
+		"laos_local_testnet",
+		ChainType::Local,
+		Some("template-local"),
+	)
+}
+
+const PARA_ID: u32 = 2001;
+const EVM_CHAIN_ID: u32 = 667;
 
 /// Generate the session keys from individual elements.
 ///
 /// The input must be a tuple of individual keys (a single arg for now since we have just one key).
-pub fn template_session_keys(keys: AuraId) -> laos_runtime::SessionKeys {
+fn template_session_keys(keys: AuraId) -> laos_runtime::SessionKeys {
 	laos_runtime::SessionKeys { aura: keys }
 }
 
@@ -27,37 +41,27 @@ fn properties() -> sc_chain_spec::Properties {
 	properties
 }
 
-pub fn development_config() -> ChainSpec {
+fn generic_chain_config(
+	name: &str,
+	id: &str,
+	chain_type: ChainType,
+	protocol_id: Option<&str>,
+) -> ChainSpec {
 	ChainSpec::from_genesis(
-		"Development", // name
-		"dev",         // id
-		ChainType::Development,
-		move || create_test_genesis_config(2001.into()),
+		name,
+		id,
+		chain_type,
+		move || create_test_genesis_config(),
 		Vec::new(),
 		None,
-		None,
+		protocol_id,
 		None,
 		Some(properties()),
-		Extensions { relay_chain: "rococo-local".into(), para_id: 2001 },
+		Extensions { relay_chain: "rococo-local".into(), para_id: PARA_ID.into() },
 	)
 }
 
-pub fn local_testnet_config() -> ChainSpec {
-	ChainSpec::from_genesis(
-		"Local Testnet",      // name
-		"laos_local_testnet", // id
-		ChainType::Local,
-		move || create_test_genesis_config(2001.into()),
-		Vec::new(),             // bootnodes
-		None,                   // telemetry
-		Some("template-local"), // Protocol ID
-		None,                   // Fork ID
-		Some(properties()),
-		Extensions { relay_chain: "rococo-local".into(), para_id: 2001 },
-	)
-}
-
-fn create_test_genesis_config(id: ParaId) -> laos_runtime::RuntimeGenesisConfig {
+fn create_test_genesis_config() -> laos_runtime::RuntimeGenesisConfig {
 	laos_runtime::RuntimeGenesisConfig {
 		system: laos_runtime::SystemConfig {
 			code: laos_runtime::WASM_BINARY
@@ -73,7 +77,7 @@ fn create_test_genesis_config(id: ParaId) -> laos_runtime::RuntimeGenesisConfig 
 			],
 		},
 		parachain_info: laos_runtime::ParachainInfoConfig {
-			parachain_id: id,
+			parachain_id: PARA_ID.into(),
 			..Default::default()
 		},
 		session: laos_runtime::SessionConfig {
@@ -108,7 +112,10 @@ fn create_test_genesis_config(id: ParaId) -> laos_runtime::RuntimeGenesisConfig 
 			},
 			..Default::default()
 		},
-		evm_chain_id: laos_runtime::EVMChainIdConfig { chain_id: 667, ..Default::default() },
+		evm_chain_id: laos_runtime::EVMChainIdConfig {
+			chain_id: EVM_CHAIN_ID.into(),
+			..Default::default()
+		},
 		evm: laos_runtime::EVMConfig {
 			accounts: Precompiles::used_addresses()
 				.iter()
