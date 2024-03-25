@@ -146,7 +146,7 @@ construct_runtime!(
 		// System support stuff.
 		System: frame_system = 0,
 		ParachainSystem: cumulus_pallet_parachain_system = 1,
-		Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent} = 2,
+		Timestamp: pallet_timestamp = 2,
 		ParachainInfo: parachain_info = 3,
 		Sudo: pallet_sudo = 4,
 		Utility: pallet_utility = 5,
