@@ -1,6 +1,6 @@
 use crate::{Aura, Runtime, MILLISECS_PER_BLOCK};
-
 use frame_support::parameter_types;
+
 parameter_types! {
 	pub const MinimumPeriod: u64 = MILLISECS_PER_BLOCK / 2;
 }
