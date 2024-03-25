@@ -42,40 +42,8 @@ use xcm_config::{XcmConfig, XcmOriginToTransactDispatchOrigin};
 /// Block type as expected by this runtime.
 pub type Block = generic::Block<Header, UncheckedExtrinsic>;
 
-/// A Block signed with a Justification
-pub type SignedBlock = generic::SignedBlock<Block>;
-
 /// BlockId type as expected by this runtime.
 pub type BlockId = generic::BlockId<Block>;
-
-/// The SignedExtension to the basic transaction logic.
-pub type SignedExtra = (
-	frame_system::CheckNonZeroSender<Runtime>,
-	frame_system::CheckSpecVersion<Runtime>,
-	frame_system::CheckTxVersion<Runtime>,
-	frame_system::CheckGenesis<Runtime>,
-	frame_system::CheckEra<Runtime>,
-	frame_system::CheckNonce<Runtime>,
-	frame_system::CheckWeight<Runtime>,
-	pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
-);
-
-/// Unchecked extrinsic type as expected by this runtime.
-pub type UncheckedExtrinsic =
-	fp_self_contained::UncheckedExtrinsic<AccountId, RuntimeCall, Signature, SignedExtra>;
-
-/// Extrinsic type that has already been checked.
-pub type CheckedExtrinsic =
-	fp_self_contained::CheckedExtrinsic<AccountId, RuntimeCall, SignedExtra, H160>;
-
-/// Executive: handles dispatch to the various modules.
-pub type Executive = frame_executive::Executive<
-	Runtime,
-	Block,
-	frame_system::ChainContext<Runtime>,
-	Runtime,
-	AllPalletsWithSystem,
->;
 
 pub type Precompiles = FrontierPrecompiles<Runtime>;
 
@@ -102,6 +70,9 @@ impl_opaque_keys! {
 	}
 }
 
+/// This determines the average expected block time that we are targeting.
+pub const MILLISECS_PER_BLOCK: u64 = 12000;
+
 /// Version of the runtime
 #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
@@ -114,9 +85,6 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	transaction_version: 1,
 	state_version: 1,
 };
-
-/// This determines the average expected block time that we are targeting.
-pub const MILLISECS_PER_BLOCK: u64 = 12000;
 
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
@@ -145,10 +113,10 @@ construct_runtime!(
 
 		// Consensus support: the order of these 5 are important and shall not change.
 		Authorship: pallet_authorship = 20,
-		Session: pallet_session = 22,
-		Aura: pallet_aura = 23,
-		AuraExt: cumulus_pallet_aura_ext = 24,
-		ParachainStaking: pallet_parachain_staking = 25,
+		Session: pallet_session = 21,
+		Aura: pallet_aura = 22,
+		AuraExt: cumulus_pallet_aura_ext = 23,
+		ParachainStaking: pallet_parachain_staking = 24,
 
 		// XCM helpers.
 		XcmpQueue: cumulus_pallet_xcmp_queue = 30,
@@ -160,14 +128,38 @@ construct_runtime!(
 		Ethereum: pallet_ethereum = 50,
 		EVM: pallet_evm = 51,
 		EVMChainId: pallet_evm_chain_id = 52,
-		// DynamicFee: pallet_dynamic_fee = 43,
-		BaseFee: pallet_base_fee = 54,
+		BaseFee: pallet_base_fee = 53,
 
 		// LAOS pallets
 		LaosEvolution: pallet_laos_evolution = 100,
 		AssetMetadataExtender: pallet_asset_metadata_extender = 101,
 	}
 );
+
+/// The SignedExtension to the basic transaction logic.
+type SignedExtra = (
+	frame_system::CheckNonZeroSender<Runtime>,
+	frame_system::CheckSpecVersion<Runtime>,
+	frame_system::CheckTxVersion<Runtime>,
+	frame_system::CheckGenesis<Runtime>,
+	frame_system::CheckEra<Runtime>,
+	frame_system::CheckNonce<Runtime>,
+	frame_system::CheckWeight<Runtime>,
+	pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
+);
+
+/// Unchecked extrinsic type as expected by this runtime.
+type UncheckedExtrinsic =
+	fp_self_contained::UncheckedExtrinsic<AccountId, RuntimeCall, Signature, SignedExtra>;
+
+/// Executive: handles dispatch to the various modules.
+type Executive = frame_executive::Executive<
+	Runtime,
+	Block,
+	frame_system::ChainContext<Runtime>,
+	Runtime,
+	AllPalletsWithSystem,
+>;
 
 #[cfg(test)]
 mod tests;

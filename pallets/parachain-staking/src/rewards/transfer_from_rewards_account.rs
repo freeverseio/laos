@@ -1,5 +1,6 @@
 use crate::{
 	traits::PayoutReward, BalanceOf, Config, Error, Event, Pallet, RewardsAccount, RoundIndex,
+	WeightInfo,
 };
 use frame_support::{
 	ensure,
@@ -62,14 +63,14 @@ impl<T: Config> Pallet<T> {
 	) -> Weight {
 		// Check if the collator's account exists; return early if not.
 		if !frame_system::Account::<T>::contains_key(&collator_id) {
-			return Weight::zero(); // TODO
+			return T::WeightInfo::send_collator_rewards();
 		}
 
 		// Attempt to get the RewardsAccount and return early if not set.
 		let rewards_account = match RewardsAccount::<T>::get() {
 			Some(account) => account,
 			None => {
-				return Weight::zero(); // TODO Adjust with the actual weight for a missing rewards account.
+				return T::WeightInfo::send_collator_rewards();
 			},
 		};
 
@@ -87,7 +88,7 @@ impl<T: Config> Pallet<T> {
 			Self::deposit_event(Event::Rewarded { account: collator_id, rewards: amount });
 		}
 
-		Weight::zero() // TODO
+		return T::WeightInfo::send_collator_rewards();
 	}
 }
 
@@ -149,7 +150,8 @@ mod tests {
 
 			assert_storage_noop!(<TransferFromRewardsAccount as PayoutReward<Test>>::payout(
 				&delegator, amount
-			));
+			)
+			.unwrap());
 		});
 	}
 
