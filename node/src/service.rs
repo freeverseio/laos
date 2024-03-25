@@ -5,7 +5,7 @@ use std::{path::Path, sync::Arc, time::Duration};
 
 use cumulus_client_cli::CollatorOptions;
 // Local Runtime Types
-use laos_runtime::{opaque::Block, Hash, RuntimeApi, TransactionConverter};
+use laos_runtime::{opaque::Block, types::TransactionConverter, Hash, RuntimeApi};
 
 // Cumulus Imports
 use cumulus_client_collator::service::CollatorService;
