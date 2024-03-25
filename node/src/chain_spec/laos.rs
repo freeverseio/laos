@@ -1,6 +1,7 @@
 use super::{get_collator_keys_from_seed, predefined_accounts, Extensions, SAFE_XCM_VERSION};
 use fp_evm::GenesisAccount;
 use laos_runtime::{
+	configs::system::SS58Prefix,
 	currency::{DECIMALS, UNIT},
 	AuraId, Precompiles, REVERT_BYTECODE,
 };
@@ -38,7 +39,7 @@ fn properties() -> sc_chain_spec::Properties {
 	let mut properties = sc_chain_spec::Properties::new();
 	properties.insert("tokenSymbol".into(), "UNIT".into());
 	properties.insert("tokenDecimals".into(), DECIMALS.into());
-	properties.insert("ss58Format".into(), 42.into());
+	properties.insert("ss58Format".into(), SS58Prefix::get().into());
 	properties
 }
 

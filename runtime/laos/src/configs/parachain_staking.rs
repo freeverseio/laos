@@ -9,6 +9,7 @@ use pallet_session::{SessionManager, ShouldEndSession};
 use sp_consensus_slots::Slot;
 use sp_staking::SessionIndex;
 
+const SECONDS_PER_YEAR: u32 = 31_557_600;
 const SECONDS_PER_BLOCK: u32 = MILLISECS_PER_BLOCK as u32 / 1000;
 
 // Define runtime constants used across the parachain staking configuration.
@@ -28,7 +29,7 @@ parameter_types! {
 	pub const MaxDelegationsPerDelegator: u32 = 100; // Max delegations per delegator.
 	pub const MinDelegation: u128 = 500 * UNIT; // Minimum stake to be a delegator.
 	pub const MaxCandidates: u32 = 200; // Max candidates allowed.
-	pub const SlotsPerYear: u32 = 31_557_600 / SECONDS_PER_BLOCK; // Number of slots per year.
+	pub const SlotsPerYear: u32 = SECONDS_PER_YEAR / SECONDS_PER_BLOCK; // Number of slots per year.
 }
 
 // Implementing the configuration trait for the parachain staking pallet.
