@@ -9,7 +9,7 @@ pub mod configs;
 pub mod currency;
 mod precompiles;
 mod self_contained_call;
-mod types;
+pub mod types;
 mod weights;
 pub mod xcm_config;
 
@@ -27,7 +27,7 @@ pub use pallet_evm_evolution_collection_factory::REVERT_BYTECODE;
 pub use pallet_parachain_staking::{InflationInfo, Range};
 use polkadot_runtime_common::BlockHashCount;
 use precompiles::FrontierPrecompiles;
-use sp_core::{H160, U256};
+use sp_core::U256;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 use sp_runtime::{create_runtime_str, generic, impl_opaque_keys, traits::ConvertInto, Permill};
@@ -36,7 +36,6 @@ use sp_std::prelude::*;
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 use staging_xcm_executor::XcmExecutor;
-pub use types::TransactionConverter;
 use xcm_config::{XcmConfig, XcmOriginToTransactDispatchOrigin};
 
 /// Block type as expected by this runtime.
