@@ -1,4 +1,10 @@
-use crate::*;
+use sp_core::H160;
+use sp_runtime::{
+	traits::{DispatchInfoOf, Dispatchable, PostDispatchInfoOf},
+	transaction_validity::{TransactionValidity, TransactionValidityError},
+};
+
+use super::{RuntimeCall, RuntimeOrigin};
 
 impl fp_self_contained::SelfContainedCall for RuntimeCall {
 	type SignedInfo = H160;
