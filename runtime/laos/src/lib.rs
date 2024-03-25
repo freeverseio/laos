@@ -33,8 +33,6 @@ use polkadot_runtime_common::BlockHashCount;
 use precompiles::FrontierPrecompiles;
 use sp_api::impl_runtime_apis;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata, H160, H256, U256};
-#[cfg(any(feature = "std", test))]
-use sp_runtime::BuildStorage;
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{Block as BlockT, ConvertInto, Get, UniqueSaturatedInto},
