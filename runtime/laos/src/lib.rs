@@ -4,7 +4,7 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
-mod apis;
+pub mod apis;
 pub mod configs;
 pub mod currency;
 mod precompiles;
@@ -122,7 +122,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	authoring_version: 1,
 	spec_version: 1201,
 	impl_version: 0,
-	apis: RUNTIME_API_VERSIONS,
+	apis: apis::PUBLIC_RUNTIME_API_VERSIONS,
 	transaction_version: 1,
 	state_version: 1,
 };
@@ -180,8 +180,6 @@ construct_runtime!(
 		AssetMetadataExtender: pallet_asset_metadata_extender = 101,
 	}
 );
-
-impl_runtime_apis_plus!();
 
 #[cfg(test)]
 mod tests;
