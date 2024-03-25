@@ -3,12 +3,14 @@ use crate::{
 	types::ToAuthor,
 	Balance, Balances, Runtime, RuntimeEvent,
 };
-use frame_support::weights::{
-	ConstantMultiplier, WeightToFeeCoefficient, WeightToFeeCoefficients, WeightToFeePolynomial,
+use frame_support::{
+	parameter_types,
+	weights::{
+		ConstantMultiplier, WeightToFeeCoefficient, WeightToFeeCoefficients, WeightToFeePolynomial,
+	},
 };
 use polkadot_runtime_common::SlowAdjustingFeeUpdate;
 use smallvec::smallvec;
-use sp_core::{ConstU128, ConstU8};
 use sp_runtime::Perbill;
 
 pub struct LengthToFee;
@@ -33,12 +35,17 @@ impl WeightToFeePolynomial for LengthToFee {
 	}
 }
 
+parameter_types! {
+	pub const OperationalFeeMultiplier: u8 = 5;
+	pub const WeightToFee: u128 = WEIGHT_TO_FEE;
+}
+
 impl pallet_transaction_payment::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type OnChargeTransaction =
 		pallet_transaction_payment::CurrencyAdapter<Balances, ToAuthor<Self>>;
-	type OperationalFeeMultiplier = ConstU8<5>;
-	type WeightToFee = ConstantMultiplier<Balance, ConstU128<{ WEIGHT_TO_FEE }>>;
+	type OperationalFeeMultiplier = OperationalFeeMultiplier;
+	type WeightToFee = ConstantMultiplier<Balance, WeightToFee>;
 	type LengthToFee = LengthToFee;
 	type FeeMultiplierUpdate = SlowAdjustingFeeUpdate<Self>;
 }
