@@ -4,7 +4,7 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
-mod apis;
+pub mod apis;
 pub mod configs;
 pub mod currency;
 mod precompiles;
@@ -15,30 +15,22 @@ pub mod xcm_config;
 
 use core::marker::PhantomData;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
-use fp_rpc::TransactionStatus;
 use frame_support::{
 	construct_runtime,
-	traits::Hooks,
 	weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight},
 };
 use frame_system::EnsureRoot;
 pub use laos_primitives::{
 	AccountId, AuraId, Balance, BlockNumber, Hash, Header, Index, Nonce, Signature,
 };
-use pallet_ethereum::{Call::transact, Transaction as EthereumTransaction};
-use pallet_evm::{Account as EVMAccount, FeeCalculator, Runner};
 pub use pallet_evm_evolution_collection_factory::REVERT_BYTECODE;
 pub use pallet_parachain_staking::{InflationInfo, Range};
 use polkadot_runtime_common::BlockHashCount;
 use precompiles::FrontierPrecompiles;
-use sp_api::impl_runtime_apis;
-use sp_core::{crypto::KeyTypeId, OpaqueMetadata, H160, H256, U256};
-use sp_runtime::{
-	create_runtime_str, generic, impl_opaque_keys,
-	traits::{Block as BlockT, ConvertInto, Get, UniqueSaturatedInto},
-	transaction_validity::{TransactionSource, TransactionValidity},
-	ApplyExtrinsicResult, Permill,
-};
+use sp_core::U256;
+#[cfg(any(feature = "std", test))]
+pub use sp_runtime::BuildStorage;
+use sp_runtime::{create_runtime_str, generic, impl_opaque_keys, traits::ConvertInto, Permill};
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
@@ -88,7 +80,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	authoring_version: 1,
 	spec_version: 1201,
 	impl_version: 0,
-	apis: RUNTIME_API_VERSIONS,
+	apis: apis::PUBLIC_RUNTIME_API_VERSIONS,
 	transaction_version: 1,
 	state_version: 1,
 };
@@ -142,8 +134,6 @@ construct_runtime!(
 		AssetMetadataExtender: pallet_asset_metadata_extender = 101,
 	}
 );
-
-impl_runtime_apis_plus!();
 
 /// The SignedExtension to the basic transaction logic.
 type SignedExtra = (
