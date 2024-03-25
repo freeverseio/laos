@@ -17,8 +17,9 @@ where
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::{generic::DigestItem, H256};
+	use crate::generic::DigestItem;
 	use frame_support::{derive_impl, parameter_types, ConsensusEngineId};
+	use sp_core::H256;
 	use sp_runtime::{
 		codec::{Decode, Encode},
 		testing::Header,
