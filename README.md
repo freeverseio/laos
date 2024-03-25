@@ -18,7 +18,7 @@ LAOS is fully open source and decentralized. The main code repositories are:
 * **[The Universal ERC721 Solidity Templates](https://github.com/freeverseio/laos-erc721)**. This template contains the minimal extensions of the ERC721 OpenZeppelin implementation that enables bridgeless minting and evolution in any EVM chain.
 
 LAOS is targeting late Q1'2024 to bid for a Parachain slot on Polkadot.
-Presently, LAOS is accessible both via its canary Parachain in Kusama, named **K-LAOS**, which stands for **K**usama LAOS, as well as through its test network, named **Caladan**. Please read the [disclaimer about K-LAOS](https://www.laosfoundation.io/disclaimer-klaos).
+Presently, LAOS is accessible via its canary Parachain in Kusama, named **K-LAOS**, which stands for **K**usama LAOS. Please read the [disclaimer about K-LAOS](https://www.laosfoundation.io/disclaimer-klaos).
 
 ### KLAOS Parachain: 
 * EVM Public RPC endpoint: https://rpc.klaos.laosfoundation.io
@@ -29,22 +29,13 @@ Presently, LAOS is accessible both via its canary Parachain in Kusama, named **K
 * ParaId: 3336
 * EVM PalletInstance: 51
 
-### Caladan Parachain: 
-* EVM Public RPC endpoint: https://caladan.gorengine.com/own
-* EVM Chain ID: 667
-* EVM Currency Symbol: CLD 
-* EVM block explorer: https://caladan.gorengine.com 
-* Substrate RPC endpoint: [wss://caladan.gorengine.com/own](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Fcaladan.gorengine.com%2Fown#/explorer)
-* ParaId: 2900
-* EVM PalletInstance: 51
-
 ## Running your own node
 
 The quickest entry point to run your own LAOS Parachain node:
 ```
-$ docker run freeverseio/laos-node:<release> --chain=<chain_name>
+$ docker run freeverseio/laos-node:<release> --chain=klaos
 ```
-using either `klaos` or `caladan` for `chain_name`. Available releases are published [here](https://github.com/freeverseio/laos/releases).
+Available releases are published [here](https://github.com/freeverseio/laos/releases).
 
 # Contributing
 

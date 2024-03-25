@@ -6,9 +6,9 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 mod apis;
 pub mod configs;
-mod currency;
-mod impl_self_contained_call;
+pub mod currency;
 mod precompiles;
+mod self_contained_call;
 mod types;
 mod weights;
 pub mod xcm_config;
@@ -38,11 +38,8 @@ use sp_core::{crypto::KeyTypeId, OpaqueMetadata, H160, H256, U256};
 pub use sp_runtime::BuildStorage;
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
-	traits::{
-		Block as BlockT, ConvertInto, DispatchInfoOf, Dispatchable, Get, PostDispatchInfoOf,
-		UniqueSaturatedInto,
-	},
-	transaction_validity::{TransactionSource, TransactionValidity, TransactionValidityError},
+	traits::{Block as BlockT, ConvertInto, Get, UniqueSaturatedInto},
+	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult,
 };
 pub use sp_runtime::{Perbill, Permill, Perquintill};
@@ -52,7 +49,6 @@ use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 use staging_xcm_executor::XcmExecutor;
 pub use types::TransactionConverter;
-use weights::ExtrinsicBaseWeight;
 use xcm_config::{XcmConfig, XcmOriginToTransactDispatchOrigin};
 
 /// Block type as expected by this runtime.
@@ -84,8 +80,6 @@ pub type UncheckedExtrinsic =
 pub type CheckedExtrinsic =
 	fp_self_contained::CheckedExtrinsic<AccountId, RuntimeCall, SignedExtra, H160>;
 
-type Migrations = precompiles::migration::InjectDamePrecompileBytecode<Runtime>; // TODO check if this is correct
-
 /// Executive: handles dispatch to the various modules.
 pub type Executive = frame_executive::Executive<
 	Runtime,
@@ -93,7 +87,6 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPalletsWithSystem,
-	Migrations,
 >;
 
 pub type Precompiles = FrontierPrecompiles<Runtime>;
@@ -150,7 +143,7 @@ construct_runtime!(
 		// System support stuff.
 		System: frame_system = 0,
 		ParachainSystem: cumulus_pallet_parachain_system = 1,
-		Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent} = 2,
+		Timestamp: pallet_timestamp = 2,
 		ParachainInfo: parachain_info = 3,
 		Sudo: pallet_sudo = 4,
 		Utility: pallet_utility = 5,
@@ -188,7 +181,6 @@ construct_runtime!(
 	}
 );
 
-impl_self_contained_call!();
 impl_runtime_apis_plus!();
 
 #[cfg(test)]

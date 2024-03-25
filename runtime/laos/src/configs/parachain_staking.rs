@@ -1,5 +1,6 @@
 use crate::{
 	currency::UNIT, AccountId, Balances, BlockNumber, Permill, Runtime, RuntimeEvent, Vec, Weight,
+	MILLISECS_PER_BLOCK,
 };
 use frame_support::{parameter_types, traits::Get};
 use frame_system::EnsureRoot;
@@ -7,6 +8,8 @@ use pallet_parachain_staking::{self as staking, rewards, Config as StakingConfig
 use pallet_session::{SessionManager, ShouldEndSession};
 use sp_consensus_slots::Slot;
 use sp_staking::SessionIndex;
+
+const SECONDS_PER_BLOCK: u32 = MILLISECS_PER_BLOCK as u32 / 1000;
 
 // Define runtime constants used across the parachain staking configuration.
 parameter_types! {
@@ -25,7 +28,7 @@ parameter_types! {
 	pub const MaxDelegationsPerDelegator: u32 = 100; // Max delegations per delegator.
 	pub const MinDelegation: u128 = 500 * UNIT; // Minimum stake to be a delegator.
 	pub const MaxCandidates: u32 = 200; // Max candidates allowed.
-	pub const SlotsPerYear: u32 = 31_557_600 / 12; // Number of slots per year.
+	pub const SlotsPerYear: u32 = 31_557_600 / SECONDS_PER_BLOCK; // Number of slots per year.
 }
 
 // Implementing the configuration trait for the parachain staking pallet.
@@ -54,9 +57,9 @@ impl StakingConfig for Runtime {
 	type OnInactiveCollator = (); // Placeholder for future implementation.
 	type OnNewRound = (); // Placeholder for future implementation.
 	type SlotProvider = StakingRoundSlotProvider;
-	type WeightInfo = staking::weights::SubstrateWeight<Runtime>;
 	type MaxCandidates = MaxCandidates;
 	type SlotsPerYear = SlotsPerYear;
+	type WeightInfo = staking::weights::SubstrateWeight<Runtime>;
 }
 
 // Custom struct for identifying the block author.
@@ -153,7 +156,7 @@ impl frame_support::traits::EstimateNextSessionRotation<BlockNumber> for Paracha
 mod tests {
 	use super::{MinCandidateStk, MinDelegation, MinSelectedCandidates};
 	use crate::{
-		configs::parachain_staking::{MinBlocksPerRound, ParachainStakingAdapter},
+		configs::parachain_staking::{MinBlocksPerRound, ParachainStakingAdapter, SlotsPerYear},
 		tests::ExtBuilder,
 		Balances, ParachainStaking, RuntimeOrigin, System,
 	};
@@ -319,5 +322,10 @@ mod tests {
 			let (next_session, _) = ParachainStakingAdapter::estimate_next_session_rotation(1);
 			assert_eq!(next_session, Some(MinBlocksPerRound::get() as u32));
 		});
+	}
+
+	#[test]
+	fn test_slot_per_year() {
+		assert_eq!(SlotsPerYear::get(), 31_557_600 / 12);
 	}
 }
