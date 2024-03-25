@@ -157,10 +157,10 @@ construct_runtime!(
 
 		// Consensus support: the order of these 5 are important and shall not change.
 		Authorship: pallet_authorship = 20,
-		Session: pallet_session = 22,
-		Aura: pallet_aura = 23,
-		AuraExt: cumulus_pallet_aura_ext = 24,
-		ParachainStaking: pallet_parachain_staking = 25,
+		Session: pallet_session = 21,
+		Aura: pallet_aura = 22,
+		AuraExt: cumulus_pallet_aura_ext = 23,
+		ParachainStaking: pallet_parachain_staking = 24,
 
 		// XCM helpers.
 		XcmpQueue: cumulus_pallet_xcmp_queue = 30,
