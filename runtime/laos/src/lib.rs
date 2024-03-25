@@ -172,8 +172,7 @@ construct_runtime!(
 		Ethereum: pallet_ethereum = 50,
 		EVM: pallet_evm = 51,
 		EVMChainId: pallet_evm_chain_id = 52,
-		// DynamicFee: pallet_dynamic_fee = 43,
-		BaseFee: pallet_base_fee = 54,
+		BaseFee: pallet_base_fee = 53,
 
 		// LAOS pallets
 		LaosEvolution: pallet_laos_evolution = 100,
