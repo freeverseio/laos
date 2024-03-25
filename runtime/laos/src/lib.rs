@@ -7,8 +7,8 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 mod apis;
 pub mod configs;
 pub mod currency;
-mod impl_self_contained_call;
 mod precompiles;
+mod self_contained_call;
 mod types;
 mod weights;
 pub mod xcm_config;
@@ -38,11 +38,8 @@ use sp_core::{crypto::KeyTypeId, OpaqueMetadata, H160, H256, U256};
 pub use sp_runtime::BuildStorage;
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
-	traits::{
-		Block as BlockT, ConvertInto, DispatchInfoOf, Dispatchable, Get, PostDispatchInfoOf,
-		UniqueSaturatedInto,
-	},
-	transaction_validity::{TransactionSource, TransactionValidity, TransactionValidityError},
+	traits::{Block as BlockT, ConvertInto, Get, UniqueSaturatedInto},
+	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult,
 };
 pub use sp_runtime::{Perbill, Permill, Perquintill};
@@ -184,7 +181,6 @@ construct_runtime!(
 	}
 );
 
-impl_self_contained_call!();
 impl_runtime_apis_plus!();
 
 #[cfg(test)]
