@@ -17,7 +17,7 @@ pub mod parachain_staking;
 mod proxy;
 mod session;
 mod sudo;
-mod system;
+pub mod system;
 mod timestamp;
 mod transaction_payment;
 mod utility;
