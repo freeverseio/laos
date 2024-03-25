@@ -6644,7 +6644,7 @@ fn test_on_initialize_weights() {
 			let weight = ParachainStaking::on_initialize(1);
 
 			// TODO: build this with proper db reads/writes
-			assert_eq!(Weight::from_parts(302168000, 0), weight);
+			assert_eq!(Weight::from_parts(331000000, 1832), weight);
 
 			// roll to the end of the round, then run on_init again, we should see round change...
 			roll_to_round_end(3);
@@ -6659,8 +6659,8 @@ fn test_on_initialize_weights() {
 			//
 			// following this assertion, we add individual weights together to show that we can
 			// derive this number independently.
-			let expected_on_init = 2504547135;
-			assert_eq!(Weight::from_parts(expected_on_init, 32562), weight);
+			let expected_on_init = 2222282921;
+			assert_eq!(Weight::from_parts(expected_on_init, 40062), weight);
 
 			// assemble weight manually to ensure it is well understood
 			let mut expected_weight = 0u64;
@@ -6682,7 +6682,7 @@ fn test_on_initialize_weights() {
 			// more reads/writes manually accounted for for on_finalize
 			expected_weight += RocksDbWeight::get().reads_writes(3, 2).ref_time();
 
-			assert_eq!(Weight::from_parts(expected_weight, 32562), weight);
+			assert_eq!(Weight::from_parts(expected_weight, 40062), weight);
 			assert_eq!(expected_on_init, expected_weight); // magic number == independent accounting
 		});
 }

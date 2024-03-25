@@ -433,7 +433,7 @@ fn geneses() {
 }
 
 #[frame_support::pallet]
-pub mod block_author {
+mod block_author {
 	use super::*;
 	use frame_support::{pallet_prelude::*, traits::Get};
 

@@ -150,7 +150,8 @@ mod tests {
 
 			assert_storage_noop!(<TransferFromRewardsAccount as PayoutReward<Test>>::payout(
 				&delegator, amount
-			));
+			)
+			.unwrap());
 		});
 	}
 
