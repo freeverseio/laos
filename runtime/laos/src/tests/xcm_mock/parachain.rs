@@ -32,9 +32,7 @@ use polkadot_parachain_primitives::primitives::Sibling;
 use sp_core::{ConstU128, ConstU32, H160, U256};
 use sp_io::storage;
 use sp_runtime::{
-	traits::{
-		AccountIdConversion, Convert, IdentityLookup, MaybeEquivalence, TryConvert,
-	},
+	traits::{AccountIdConversion, Convert, IdentityLookup, MaybeEquivalence, TryConvert},
 	ConsensusEngineId,
 };
 use sp_std::{boxed::Box, prelude::*, str::FromStr};
