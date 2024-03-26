@@ -32,7 +32,7 @@ jobs:
           cache-key: build_and_push
       - name: Build
         run: |
-          cargo build --release
+          cargo build --release --locked
       - name: Log in to Docker Hub
         uses: docker/login-action@v2.1.0
         with:
@@ -96,7 +96,7 @@ jobs:
           cache-key: try_runtime
       - name: Build
         run: |
-          cargo build --release --package laos --features=try-runtime
+          cargo build --release --locked --package laos --features=try-runtime
       - name: Try Runtime for Klaos
         run: |
           RUST_LOG=try-runtime ./target/release/laos try-runtime --chain klaos-dev --runtime ./target/release/wbuild/klaos-runtime/klaos_runtime.wasm on-runtime-upgrade --checks=pre-and-post live --uri ws://159.223.241.90:9944
@@ -114,7 +114,7 @@ jobs:
 
       - name: Build
         run: |
-          cargo build --release
+          cargo build --release --locked
 
       - name: Copy polkadot relay chain binary
         run: |
@@ -171,7 +171,7 @@ jobs:
 
       - name: Build
         run: |
-          cargo build --release
+          cargo build --release --locked
 
       - name: Copy polkadot relay chain binary
         run: |
