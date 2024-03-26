@@ -1,7 +1,6 @@
-use crate::{
-	AccountId, ParachainSystem, Runtime, RuntimeEvent, XcmConfig, XcmExecutor,
-	XcmOriginToTransactDispatchOrigin,
-};
+use crate::{AccountId, ParachainSystem, Runtime, RuntimeEvent, XcmExecutor};
+
+use super::xcm_config::{XcmConfig, XcmOriginToTransactDispatchOrigin};
 
 use frame_system::EnsureRoot;
 

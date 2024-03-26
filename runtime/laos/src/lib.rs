@@ -11,7 +11,6 @@ mod precompiles;
 mod self_contained_call;
 pub mod types;
 mod weights;
-pub mod xcm_config;
 
 use core::marker::PhantomData;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
@@ -34,7 +33,6 @@ use sp_std::prelude::*;
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 use staging_xcm_executor::XcmExecutor;
-use xcm_config::{XcmConfig, XcmOriginToTransactDispatchOrigin};
 
 /// Block type as expected by this runtime.
 pub type Block = generic::Block<Header, UncheckedExtrinsic>;

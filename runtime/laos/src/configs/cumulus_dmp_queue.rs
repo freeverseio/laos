@@ -1,4 +1,6 @@
-use crate::{AccountId, EnsureRoot, Runtime, RuntimeEvent, XcmConfig, XcmExecutor};
+use crate::{AccountId, EnsureRoot, Runtime, RuntimeEvent, XcmExecutor};
+
+use super::xcm_config::XcmConfig;
 
 impl cumulus_pallet_dmp_queue::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
