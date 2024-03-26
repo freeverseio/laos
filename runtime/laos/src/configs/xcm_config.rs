@@ -1,4 +1,4 @@
-use super::{
+use crate::{
 	types::ToAuthor, AccountId, AllPalletsWithSystem, Balances, ParachainInfo, PolkadotXcm,
 	Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin,
 };
