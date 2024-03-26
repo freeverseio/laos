@@ -3,7 +3,8 @@ use fp_evm::GenesisAccount;
 use laos_runtime::{
 	configs::system::SS58Prefix,
 	currency::{DECIMALS, UNIT},
-	AuraId, Precompiles, REVERT_BYTECODE,
+	types::Precompiles,
+	AuraId, REVERT_BYTECODE,
 };
 use sc_service::ChainType;
 use sp_runtime::Perbill;

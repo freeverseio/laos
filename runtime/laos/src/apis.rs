@@ -14,9 +14,9 @@ use sp_version::RuntimeVersion;
 
 // Local module imports
 use super::{
-	AccountId, Aura, AuraId, Balance, Block, Ethereum, Executive, Index, InherentDataExt,
-	ParachainSystem, Runtime, RuntimeCall, SessionKeys, System, TransactionPayment,
-	UncheckedExtrinsic, Weight, EVM, VERSION,
+	types::{Block, Executive, UncheckedExtrinsic},
+	AccountId, Aura, AuraId, Balance, Ethereum, Index, InherentDataExt, ParachainSystem, Runtime,
+	RuntimeCall, SessionKeys, System, TransactionPayment, Weight, EVM, VERSION,
 };
 
 /// TODO: hackish way to get the runtime version public. Waiting for substrate to expose it.

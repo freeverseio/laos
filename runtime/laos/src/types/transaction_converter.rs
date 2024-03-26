@@ -1,4 +1,4 @@
-use crate::{opaque, Runtime, UncheckedExtrinsic};
+use crate::{opaque, types::UncheckedExtrinsic, Runtime};
 use parity_scale_codec::{Decode, Encode};
 
 #[derive(Clone)]

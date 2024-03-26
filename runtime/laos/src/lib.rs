@@ -7,7 +7,7 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 pub mod apis;
 pub mod configs;
 pub mod currency;
-mod precompiles;
+pub mod precompiles;
 mod self_contained_call;
 pub mod types;
 mod weights;
@@ -25,22 +25,13 @@ pub use laos_primitives::{
 pub use pallet_evm_evolution_collection_factory::REVERT_BYTECODE;
 pub use pallet_parachain_staking::{InflationInfo, Range};
 use polkadot_runtime_common::BlockHashCount;
-use precompiles::FrontierPrecompiles;
 use sp_core::U256;
-use sp_runtime::{create_runtime_str, generic, impl_opaque_keys, traits::ConvertInto, Permill};
-use sp_std::prelude::*;
+use sp_runtime::{create_runtime_str, impl_opaque_keys, traits::ConvertInto, Permill};
+use sp_std::prelude::{Box, Vec};
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 use staging_xcm_executor::XcmExecutor;
-
-/// Block type as expected by this runtime.
-pub type Block = generic::Block<Header, UncheckedExtrinsic>;
-
-/// BlockId type as expected by this runtime.
-pub type BlockId = generic::BlockId<Block>;
-
-pub type Precompiles = FrontierPrecompiles<Runtime>;
 
 /// Opaque types. These are used by the CLI to instantiate machinery that don't need to know
 /// the specifics of the runtime. They can then be made to be agnostic over specific formats
@@ -130,31 +121,6 @@ construct_runtime!(
 		AssetMetadataExtender: pallet_asset_metadata_extender = 101,
 	}
 );
-
-/// The SignedExtension to the basic transaction logic.
-type SignedExtra = (
-	frame_system::CheckNonZeroSender<Runtime>,
-	frame_system::CheckSpecVersion<Runtime>,
-	frame_system::CheckTxVersion<Runtime>,
-	frame_system::CheckGenesis<Runtime>,
-	frame_system::CheckEra<Runtime>,
-	frame_system::CheckNonce<Runtime>,
-	frame_system::CheckWeight<Runtime>,
-	pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
-);
-
-/// Unchecked extrinsic type as expected by this runtime.
-type UncheckedExtrinsic =
-	fp_self_contained::UncheckedExtrinsic<AccountId, RuntimeCall, Signature, SignedExtra>;
-
-/// Executive: handles dispatch to the various modules.
-type Executive = frame_executive::Executive<
-	Runtime,
-	Block,
-	frame_system::ChainContext<Runtime>,
-	Runtime,
-	AllPalletsWithSystem,
->;
 
 #[cfg(test)]
 mod tests;

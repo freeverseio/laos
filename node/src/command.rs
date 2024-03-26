@@ -4,7 +4,7 @@ use cumulus_client_cli::generate_genesis_block;
 use cumulus_primitives_core::ParaId;
 use fc_db::kv::frontier_database_dir;
 use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
-use laos_runtime::Block;
+use laos_runtime::types::Block;
 use log::info;
 use parity_scale_codec::Encode;
 use polkadot_service::RococoChainSpec;

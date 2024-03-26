@@ -1,5 +1,5 @@
 use crate::{
-	weights::RocksDbWeight, AccountId, Balance, Block, BlockHashCount, PalletInfo, Runtime,
+	types::Block, weights::RocksDbWeight, AccountId, Balance, BlockHashCount, PalletInfo, Runtime,
 	RuntimeCall, RuntimeEvent, RuntimeOrigin, RuntimeVersion, VERSION,
 };
 use frame_support::{parameter_types, traits::Contains};
