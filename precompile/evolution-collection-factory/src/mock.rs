@@ -6,16 +6,10 @@ use sp_runtime::BuildStorage;
 use crate::EvolutionCollectionFactoryPrecompile;
 
 use frame_support::{
-	parameter_types,
-	traits::{ConstU16, ConstU64, FindAuthor},
-	weights::constants::RocksDbWeight,
+	derive_impl, parameter_types, traits::FindAuthor, weights::constants::RocksDbWeight,
 };
-use pallet_balances::AccountData;
-use sp_core::{H160, H256, U256};
-use sp_runtime::{
-	traits::{BlakeTwo256, IdentityLookup},
-	ConsensusEngineId,
-};
+use sp_core::{H160, U256};
+use sp_runtime::{traits::IdentityLookup, ConsensusEngineId};
 
 type Block = frame_system::mocking::MockBlock<Test>;
 
@@ -31,31 +25,15 @@ frame_support::construct_runtime!(
 );
 
 pub type AccountId = H160;
+type Balance = u64;
 
+#[derive_impl(frame_system::config_preludes::TestDefaultConfig as frame_system::DefaultConfig)]
 impl frame_system::Config for Test {
-	type BaseCallFilter = frame_support::traits::Everything;
-	type BlockWeights = ();
-	type BlockLength = ();
-	type DbWeight = RocksDbWeight;
-	type RuntimeOrigin = RuntimeOrigin;
-	type RuntimeCall = RuntimeCall;
-	type Nonce = u64;
-	type Hash = H256;
-	type Hashing = BlakeTwo256;
+	type Block = Block;
 	type AccountId = AccountId;
 	type Lookup = IdentityLookup<Self::AccountId>;
-	type Block = Block;
-	type RuntimeEvent = RuntimeEvent;
-	type BlockHashCount = ConstU64<250>;
-	type Version = ();
-	type PalletInfo = PalletInfo;
-	type AccountData = AccountData<u64>;
-	type OnNewAccount = ();
-	type OnKilledAccount = ();
-	type SystemWeightInfo = ();
-	type SS58Prefix = ConstU16<42>;
-	type OnSetCode = ();
-	type MaxConsumers = frame_support::traits::ConstU32<16>;
+	type AccountData = pallet_balances::AccountData<Balance>;
+	type DbWeight = RocksDbWeight;
 }
 
 parameter_types! {
@@ -79,20 +57,13 @@ impl pallet_laos_evolution::Config for Test {
 parameter_types! {
 	pub const ExistentialDeposit: u64 = 0;
 }
+#[derive_impl(pallet_balances::config_preludes::TestDefaultConfig as pallet_balances::DefaultConfig)]
 impl pallet_balances::Config for Test {
-	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = ();
-	type Balance = u64;
-	type DustRemoval = ();
+	type Balance = Balance;
 	type ExistentialDeposit = ExistentialDeposit;
 	type AccountStore = System;
-	type ReserveIdentifier = ();
 	type RuntimeHoldReason = ();
-	type FreezeIdentifier = ();
-	type MaxLocks = ();
-	type MaxReserves = ();
-	type MaxHolds = ();
-	type MaxFreezes = ();
+	type DustRemoval = ();
 }
 
 parameter_types! {

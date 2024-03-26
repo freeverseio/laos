@@ -53,21 +53,15 @@ mod tests {
 		pub const ExistentialDeposit: u128 = 1;
 	}
 
+	#[derive_impl(pallet_balances::config_preludes::TestDefaultConfig as pallet_balances::DefaultConfig)]
 	impl pallet_balances::Config for Test {
-		type MaxReserves = ();
-		type ReserveIdentifier = [u8; 4];
-		type MaxLocks = ();
 		type Balance = Balance;
-		type RuntimeEvent = RuntimeEvent;
-		type DustRemoval = ();
 		type ExistentialDeposit = ExistentialDeposit;
 		type AccountStore = System;
-		type WeightInfo = ();
 		type RuntimeHoldReason = ();
-		type FreezeIdentifier = ();
-		type MaxHolds = ();
-		type MaxFreezes = ();
+		type DustRemoval = ();
 	}
+
 	impl pallet_authorship::Config for Test {
 		type FindAuthor = AuthorGiven;
 		type EventHandler = ();

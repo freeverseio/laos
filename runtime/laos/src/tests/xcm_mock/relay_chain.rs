@@ -1,12 +1,11 @@
 //! Mock Kusama relay chain runtime.
 
 use frame_support::{
-	construct_runtime, parameter_types,
+	construct_runtime, derive_impl, parameter_types,
 	traits::{ConstU32, Everything, Nothing, ProcessMessage, ProcessMessageError},
 	weights::{Weight, WeightMeter},
 };
 use frame_system::EnsureRoot;
-use sp_core::H256;
 use sp_runtime::{traits::IdentityLookup, AccountId32};
 
 use polkadot_parachain_primitives::primitives::Id as ParaId;
@@ -43,30 +42,12 @@ parameter_types! {
 }
 pub type Block = frame_system::mocking::MockBlock<Runtime>;
 
+#[derive_impl(frame_system::config_preludes::TestDefaultConfig as frame_system::DefaultConfig)]
 impl frame_system::Config for Runtime {
-	type RuntimeOrigin = RuntimeOrigin;
-	type RuntimeCall = RuntimeCall;
-	type Nonce = u64;
-	type Hash = H256;
-	type Hashing = ::sp_runtime::traits::BlakeTwo256;
+	type Block = Block;
 	type AccountId = AccountId;
 	type Lookup = IdentityLookup<Self::AccountId>;
-	type RuntimeEvent = RuntimeEvent;
-	type BlockHashCount = BlockHashCount;
-	type BlockWeights = ();
-	type BlockLength = ();
-	type Version = ();
-	type PalletInfo = PalletInfo;
 	type AccountData = pallet_balances::AccountData<Balance>;
-	type OnNewAccount = ();
-	type OnKilledAccount = ();
-	type DbWeight = ();
-	type BaseCallFilter = Everything;
-	type SystemWeightInfo = ();
-	type SS58Prefix = ();
-	type OnSetCode = ();
-	type MaxConsumers = frame_support::traits::ConstU32<16>;
-	type Block = Block;
 }
 
 parameter_types! {
@@ -75,20 +56,15 @@ parameter_types! {
 	pub const MaxReserves: u32 = 50;
 }
 
+#[derive_impl(pallet_balances::config_preludes::TestDefaultConfig as pallet_balances::DefaultConfig)]
 impl pallet_balances::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = ();
 	type Balance = Balance;
-	type DustRemoval = ();
 	type ExistentialDeposit = ExistentialDeposit;
 	type AccountStore = System;
-	type ReserveIdentifier = ();
-	type FreezeIdentifier = ();
-	type MaxLocks = ();
-	type MaxReserves = ();
-	type MaxHolds = ();
-	type MaxFreezes = ();
 	type RuntimeHoldReason = ();
+	type DustRemoval = ();
+	type MaxLocks = MaxLocks;
+	type MaxReserves = MaxReserves;
 }
 
 impl shared::Config for Runtime {}
