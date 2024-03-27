@@ -1,16 +1,14 @@
 use frame_support::{
-	construct_runtime, parameter_types,
-	traits::{ConstU64, FindAuthor},
-	weights::Weight,
+	construct_runtime, derive_impl, parameter_types, traits::FindAuthor, weights::Weight,
 };
 use pallet_evm::{
 	runner, EnsureAddressNever, EnsureAddressRoot, FeeCalculator, FixedGasWeightMapping,
 	IdentityAddressMapping, SubstrateBlockHashMapping,
 };
 
-use sp_core::{H160, H256, U256};
+use sp_core::{H160, U256};
 use sp_runtime::{
-	traits::{BlakeTwo256, Convert, IdentityLookup},
+	traits::{Convert, IdentityLookup},
 	ConsensusEngineId,
 };
 use sp_std::{boxed::Box, prelude::*, str::FromStr};
@@ -19,6 +17,7 @@ use super::FrontierPrecompiles;
 
 type Block = frame_system::mocking::MockBlock<Runtime>;
 type AccountId = H160;
+type Balance = u128;
 
 // Configure a mock runtime to test the pallet.
 construct_runtime!(
@@ -30,50 +29,25 @@ construct_runtime!(
 	}
 );
 
+#[derive_impl(frame_system::config_preludes::TestDefaultConfig as frame_system::DefaultConfig)]
 impl frame_system::Config for Runtime {
-	type BaseCallFilter = frame_support::traits::Everything;
-	type BlockWeights = ();
-	type BlockLength = ();
-	type DbWeight = ();
-	type RuntimeOrigin = RuntimeOrigin;
-	type RuntimeCall = RuntimeCall;
-	type Hash = H256;
-	type Hashing = BlakeTwo256;
+	type Block = Block;
 	type AccountId = AccountId;
 	type Lookup = IdentityLookup<Self::AccountId>;
-	type RuntimeEvent = RuntimeEvent;
-	type BlockHashCount = ConstU64<250>;
-	type Version = ();
-	type PalletInfo = PalletInfo;
-	type AccountData = pallet_balances::AccountData<u128>;
-	type OnNewAccount = ();
-	type OnKilledAccount = ();
-	type SystemWeightInfo = ();
-	type SS58Prefix = ();
-	type OnSetCode = ();
-	type MaxConsumers = frame_support::traits::ConstU32<16>;
-	type Nonce = u64;
-	type Block = Block;
+	type AccountData = pallet_balances::AccountData<Balance>;
 }
 
 parameter_types! {
 	pub const ExistentialDeposit: u64 = 1;
 }
 
+#[derive_impl(pallet_balances::config_preludes::TestDefaultConfig as pallet_balances::DefaultConfig)]
 impl pallet_balances::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = ();
-	type Balance = u128;
-	type DustRemoval = ();
+	type Balance = Balance;
 	type ExistentialDeposit = ExistentialDeposit;
 	type AccountStore = System;
-	type ReserveIdentifier = ();
-	type FreezeIdentifier = ();
-	type MaxLocks = ();
-	type MaxReserves = ();
-	type MaxHolds = ();
-	type MaxFreezes = ();
 	type RuntimeHoldReason = ();
+	type DustRemoval = ();
 }
 
 parameter_types! {

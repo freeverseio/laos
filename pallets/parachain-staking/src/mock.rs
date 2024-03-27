@@ -22,18 +22,15 @@ use crate::{
 };
 use block_author::BlockAuthor as BlockAuthorMap;
 use frame_support::{
-	construct_runtime, parameter_types,
-	traits::{Everything, Get, LockIdentifier, OnFinalize, OnInitialize},
+	construct_runtime, derive_impl, parameter_types,
+	traits::{Get, LockIdentifier, OnFinalize, OnInitialize},
 	weights::{constants::RocksDbWeight, Weight},
 };
 use frame_system::pallet_prelude::BlockNumberFor;
 use sp_consensus_slots::Slot;
-use sp_core::H256;
+use sp_core::ConstU32;
 use sp_io;
-use sp_runtime::{
-	traits::{BlakeTwo256, IdentityLookup},
-	BuildStorage, Perbill, Percent,
-};
+use sp_runtime::{traits::IdentityLookup, BuildStorage, Perbill, Percent};
 
 pub use test_utils::*;
 
@@ -55,55 +52,35 @@ construct_runtime!(
 );
 
 parameter_types! {
-	pub const BlockHashCount: u32 = 250;
 	pub const MaximumBlockWeight: Weight = Weight::from_parts(1024, 1);
 	pub const MaximumBlockLength: u32 = 2 * 1024;
 	pub const AvailableBlockRatio: Perbill = Perbill::one();
 	pub const SS58Prefix: u8 = 42;
 }
+
+#[derive_impl(frame_system::config_preludes::TestDefaultConfig as frame_system::DefaultConfig)]
 impl frame_system::Config for Test {
-	type BaseCallFilter = Everything;
-	type DbWeight = RocksDbWeight;
-	type RuntimeOrigin = RuntimeOrigin;
-	type Nonce = u64;
 	type Block = Block;
-	type RuntimeCall = RuntimeCall;
-	type Hash = H256;
-	type Hashing = BlakeTwo256;
 	type AccountId = AccountId;
 	type Lookup = IdentityLookup<Self::AccountId>;
-	type RuntimeEvent = RuntimeEvent;
-	type BlockHashCount = BlockHashCount;
-	type Version = ();
-	type PalletInfo = PalletInfo;
+	type BlockHashCount = ConstU32<250>;
 	type AccountData = pallet_balances::AccountData<Balance>;
-	type OnNewAccount = ();
-	type OnKilledAccount = ();
-	type SystemWeightInfo = ();
-	type BlockWeights = ();
-	type BlockLength = ();
-	type SS58Prefix = SS58Prefix;
-	type OnSetCode = ();
-	type MaxConsumers = frame_support::traits::ConstU32<16>;
+	type DbWeight = RocksDbWeight;
 }
+
 parameter_types! {
 	pub const ExistentialDeposit: u128 = 0;
 }
+
+#[derive_impl(pallet_balances::config_preludes::TestDefaultConfig as pallet_balances::DefaultConfig)]
 impl pallet_balances::Config for Test {
-	type MaxReserves = ();
-	type ReserveIdentifier = [u8; 4];
-	type MaxLocks = ();
 	type Balance = Balance;
-	type RuntimeEvent = RuntimeEvent;
-	type DustRemoval = ();
 	type ExistentialDeposit = ExistentialDeposit;
 	type AccountStore = System;
-	type WeightInfo = ();
 	type RuntimeHoldReason = ();
-	type FreezeIdentifier = ();
-	type MaxHolds = ();
-	type MaxFreezes = ();
+	type DustRemoval = ();
 }
+
 impl block_author::Config for Test {}
 const GENESIS_BLOCKS_PER_ROUND: BlockNumber = 5;
 const GENESIS_COLLATOR_COMMISSION: Perbill = Perbill::from_percent(20);

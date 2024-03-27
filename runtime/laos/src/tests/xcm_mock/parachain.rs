@@ -9,8 +9,8 @@ use cumulus_primitives_core::{
 	MultiAsset, MultiLocation, NetworkId, Plurality, XcmContext, XcmError,
 };
 use frame_support::{
-	construct_runtime, match_types, parameter_types,
-	traits::{AsEnsureOriginWithArg, ConstU64, Everything, FindAuthor, Nothing, OriginTrait},
+	construct_runtime, derive_impl, match_types, parameter_types,
+	traits::{AsEnsureOriginWithArg, Everything, FindAuthor, Nothing, OriginTrait},
 	weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight},
 	PalletId,
 };
@@ -29,12 +29,10 @@ use orml_traits::{
 use pallet_xcm::XcmPassthrough;
 use parity_scale_codec::Encode;
 use polkadot_parachain_primitives::primitives::Sibling;
-use sp_core::{ConstU128, ConstU32, H160, H256, U256};
+use sp_core::{ConstU128, ConstU32, H160, U256};
 use sp_io::storage;
 use sp_runtime::{
-	traits::{
-		AccountIdConversion, BlakeTwo256, Convert, IdentityLookup, MaybeEquivalence, TryConvert,
-	},
+	traits::{AccountIdConversion, Convert, IdentityLookup, MaybeEquivalence, TryConvert},
 	ConsensusEngineId,
 };
 use sp_std::{boxed::Box, prelude::*, str::FromStr};
@@ -76,50 +74,26 @@ construct_runtime!(
 	}
 );
 
+#[derive_impl(frame_system::config_preludes::TestDefaultConfig as frame_system::DefaultConfig)]
 impl frame_system::Config for Runtime {
-	type BaseCallFilter = frame_support::traits::Everything;
-	type BlockWeights = ();
-	type BlockLength = ();
-	type DbWeight = ();
-	type RuntimeOrigin = RuntimeOrigin;
-	type RuntimeCall = RuntimeCall;
-	type Hash = H256;
-	type Hashing = BlakeTwo256;
+	type Block = Block;
 	type AccountId = AccountId;
 	type Lookup = IdentityLookup<Self::AccountId>;
-	type RuntimeEvent = RuntimeEvent;
-	type BlockHashCount = ConstU64<250>;
-	type Version = ();
-	type PalletInfo = PalletInfo;
 	type AccountData = pallet_balances::AccountData<Balance>;
-	type OnNewAccount = ();
-	type OnKilledAccount = ();
-	type SystemWeightInfo = ();
-	type SS58Prefix = ();
-	type OnSetCode = cumulus_pallet_parachain_system::ParachainSetCode<Self>;
-	type MaxConsumers = frame_support::traits::ConstU32<16>;
-	type Nonce = u64;
-	type Block = Block;
+	type OnSetCode = cumulus_pallet_parachain_system::ParachainSetCode<Runtime>;
 }
 
 parameter_types! {
 	pub const ExistentialDeposit: u64 = 0;
 }
 
+#[derive_impl(pallet_balances::config_preludes::TestDefaultConfig as pallet_balances::DefaultConfig)]
 impl pallet_balances::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = ();
 	type Balance = Balance;
-	type DustRemoval = ();
 	type ExistentialDeposit = ExistentialDeposit;
 	type AccountStore = System;
-	type ReserveIdentifier = ();
-	type FreezeIdentifier = ();
-	type MaxLocks = ();
-	type MaxReserves = ();
-	type MaxHolds = ();
-	type MaxFreezes = ();
 	type RuntimeHoldReason = ();
+	type DustRemoval = ();
 }
 
 parameter_types! {
