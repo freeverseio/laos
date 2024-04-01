@@ -780,7 +780,7 @@ benchmarks! {
 		} else {
 			0u32.into()
 		};
-		let (caller, _) = create_funded_user::<T>("caller", USER_SEED, extra.into());
+		let (caller, _) = create_funded_user::<T>("caller", USER_SEED, extra);
 		// Delegation count
 		let mut del_del_count = 0u32;
 		// Nominate MaxDelegationsPerDelegators collator candidates
@@ -1519,7 +1519,7 @@ benchmarks! {
 		assert!(
 			!Pallet::<T>::delegation_scheduled_requests(&collator)
 				.iter()
-				.any(|x| &x.delegator == &delegator)
+				.any(|x| x.delegator == delegator)
 		);
 	}
 
@@ -1560,7 +1560,7 @@ benchmarks! {
 			ideal: Perbill::one(),
 			max: Perbill::one(),
 		};
-		Pallet::<T>::set_inflation(RawOrigin::Root.into(), high_inflation.clone())?;
+		Pallet::<T>::set_inflation(RawOrigin::Root.into(), high_inflation)?;
 		Pallet::<T>::set_blocks_per_round(RawOrigin::Root.into(), 101u32)?;
 		Pallet::<T>::set_total_selected(RawOrigin::Root.into(), 100u32)?;
 
@@ -1606,7 +1606,7 @@ benchmarks! {
 			ideal: Perbill::one(),
 			max: Perbill::one(),
 		};
-		Pallet::<T>::set_inflation(RawOrigin::Root.into(), high_inflation.clone())?;
+		Pallet::<T>::set_inflation(RawOrigin::Root.into(), high_inflation)?;
 		Pallet::<T>::set_blocks_per_round(RawOrigin::Root.into(), 101u32)?;
 		Pallet::<T>::set_total_selected(RawOrigin::Root.into(), 100u32)?;
 
@@ -1730,7 +1730,7 @@ benchmarks! {
 		{
 			<Pallet<T>>::mint_and_compound(
 				100u32.into(),
-				auto_compound.clone(),
+				*auto_compound,
 				prime_candidate.clone(),
 				owner.clone(),
 			);
@@ -1744,7 +1744,7 @@ benchmarks! {
 		} in &delegations
 		{
 			assert!(
-				T::Currency::free_balance(&owner) > initial_delegator_balance,
+				T::Currency::free_balance(owner) > initial_delegator_balance,
 				"delegator should have been paid in pay_one_collator_reward"
 			);
 		}
@@ -1795,7 +1795,7 @@ benchmarks! {
 		// directly and then call pay_one_collator_reward directly.
 
 		let round_for_payout = 5;
-		<DelayedPayouts<T>>::insert(&round_for_payout, DelayedPayout {
+		<DelayedPayouts<T>>::insert(round_for_payout, DelayedPayout {
 			// NOTE: round_issuance is not correct here, but it doesn't seem to cause problems
 			round_issuance: 1000u32.into(),
 			total_staking_reward: total_staked,
@@ -1837,7 +1837,7 @@ benchmarks! {
 		// nominators should have been paid
 		for delegator in &delegators {
 			assert!(
-				T::Currency::free_balance(&delegator) > initial_stake_amount,
+				T::Currency::free_balance(delegator) > initial_stake_amount,
 				"delegator should have been paid in pay_one_collator_reward"
 			);
 		}
@@ -2209,7 +2209,7 @@ benchmarks! {
 		)?;
 		let original_free_balance = T::Currency::free_balance(&collator);
 	}: {
-		Pallet::<T>::mint_collator_reward(1u32.into(), collator.clone(), 50u32.into())
+		Pallet::<T>::mint_collator_reward(1u32, collator.clone(), 50u32.into())
 	}
 	verify {
 		assert_eq!(T::Currency::free_balance(&collator), original_free_balance + 50u32.into());
@@ -2226,7 +2226,7 @@ benchmarks! {
 		)?;
 		let original_free_balance = T::Currency::free_balance(&collator);
 	}: {
-		Pallet::<T>::send_collator_rewards(1u32.into(), collator.clone(), 50u32.into())
+		Pallet::<T>::send_collator_rewards(1u32, collator.clone(), 50u32.into())
 	}
 	verify {
 		assert_eq!(T::Currency::free_balance(&collator), original_free_balance + 50u32.into());

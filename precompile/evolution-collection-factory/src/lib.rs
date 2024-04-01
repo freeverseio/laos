@@ -90,9 +90,7 @@ where
 							.log2(
 								SELECTOR_LOG_NEW_COLLECTION,
 								owner,
-								EvmDataWriter::new()
-									.write(Address(collection_address.into()))
-									.build(),
+								EvmDataWriter::new().write(Address(collection_address)).build(),
 							)
 							.record(handle)?;
 
@@ -103,9 +101,7 @@ where
 						// TODO: Add `ref_time` when precompiles are benchmarked
 						handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
 
-						Ok(succeed(
-							EvmDataWriter::new().write(Address(collection_address.into())).build(),
-						))
+						Ok(succeed(EvmDataWriter::new().write(Address(collection_address)).build()))
 					},
 					Err(err) => Err(revert_dispatch_error(err)),
 				}

@@ -44,7 +44,7 @@ impl<Runtime: crate::Config> PayoutReward<Runtime> for TransferFromRewardsAccoun
 		// for clearer error handling.
 		match Runtime::Currency::transfer(
 			&rewards_account,
-			&delegator_id,
+			delegator_id,
 			amount,
 			ExistenceRequirement::KeepAlive,
 		) {
@@ -88,7 +88,7 @@ impl<T: Config> Pallet<T> {
 			Self::deposit_event(Event::Rewarded { account: collator_id, rewards: amount });
 		}
 
-		return T::WeightInfo::send_collator_rewards();
+		T::WeightInfo::send_collator_rewards()
 	}
 }
 

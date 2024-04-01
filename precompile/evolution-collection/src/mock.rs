@@ -150,7 +150,7 @@ where
 				Some(MockEvolutionCollectionPrecompile::execute(handle)),
 			H160(EVOLUTION_FACTORY_PRECOMPILE_ADDRESS) =>
 				Some(MockEvolutionCollectionFactoryPrecompile::execute(handle)),
-			_ => return None,
+			_ => None,
 		}
 	}
 

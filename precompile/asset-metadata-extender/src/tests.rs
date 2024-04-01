@@ -515,12 +515,12 @@ fn extension_by_location_and_claimer_works() {
 			.build();
 
 		precompiles()
-			.prepare_test(claimer.clone(), H160(PRECOMPILE_ADDRESS), input.clone())
+			.prepare_test(claimer, H160(PRECOMPILE_ADDRESS), input.clone())
 			.execute_returns_raw(sp_std::vec![]);
 
 		let input = EvmDataWriter::new_with_selector(Action::ExtensionOfULByClaimer)
 			.write(universal_location.clone())
-			.write(Address::from(claimer.clone()))
+			.write(Address::from(claimer))
 			.build();
 
 		precompiles()
@@ -537,7 +537,7 @@ fn extension_by_location_and_claimer_of_unexistent_claim_reverts() {
 
 		let input = EvmDataWriter::new_with_selector(Action::ExtensionOfULByClaimer)
 			.write(universal_location.clone())
-			.write(Address::from(claimer.clone()))
+			.write(Address::from(claimer))
 			.build();
 
 		precompiles()
@@ -559,12 +559,12 @@ fn has_extension_by_claim_of_existent_claim_returns_true() {
 			.build();
 
 		precompiles()
-			.prepare_test(claimer.clone(), H160(PRECOMPILE_ADDRESS), input.clone())
+			.prepare_test(claimer, H160(PRECOMPILE_ADDRESS), input.clone())
 			.execute_returns_raw(sp_std::vec![]);
 
 		let input = EvmDataWriter::new_with_selector(Action::HasExtension)
 			.write(universal_location.clone())
-			.write(Address::from(claimer.clone()))
+			.write(Address::from(claimer))
 			.build();
 
 		precompiles()
@@ -581,7 +581,7 @@ fn has_extension_by_claimer_of_unexistent_claim_returns_false() {
 
 		let input = EvmDataWriter::new_with_selector(Action::HasExtension)
 			.write(universal_location.clone())
-			.write(Address::from(claimer.clone()))
+			.write(Address::from(claimer))
 			.build();
 
 		precompiles()

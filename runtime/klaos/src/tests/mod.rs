@@ -123,11 +123,7 @@ fn account_vests_correctly_over_time() {
 		assert!(vesting_info.is_valid());
 
 		// Transfer vested funds from Alice to Bob
-		assert_ok!(Vesting::vested_transfer(
-			RuntimeOrigin::signed(alice),
-			bob.clone(),
-			vesting_info
-		));
+		assert_ok!(Vesting::vested_transfer(RuntimeOrigin::signed(alice), bob, vesting_info));
 
 		assert_eq!(Balances::total_balance(&alice), 0);
 		assert_eq!(Balances::total_balance(&bob), total_vested_amount);
@@ -136,12 +132,12 @@ fn account_vests_correctly_over_time() {
 		// Simulate block progression and check Bob's balance each block
 		for block_num in cliff_duration..=cliff_duration + vesting_duration as u32 {
 			frame_system::Pallet::<Runtime>::set_block_number(block_num);
-			assert_ok!(Vesting::vest(RuntimeOrigin::signed(bob.clone())));
+			assert_ok!(Vesting::vest(RuntimeOrigin::signed(bob)));
 			let vested_amount = (block_num - cliff_duration) as u128 * amount_vested_per_block;
-			assert_eq!(Balances::usable_balance(&bob), vested_amount);
+			assert_eq!(Balances::usable_balance(bob), vested_amount);
 		}
 
 		// Check that Bob's balance is now the total vested amount
-		assert_eq!(Balances::usable_balance(&bob), total_vested_amount);
+		assert_eq!(Balances::usable_balance(bob), total_vested_amount);
 	});
 }
