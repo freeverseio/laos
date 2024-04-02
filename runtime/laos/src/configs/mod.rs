@@ -5,6 +5,7 @@ mod balances;
 mod base_fee;
 mod cumulus_dmp_queue;
 mod cumulus_parachain_system;
+mod cumulus_xcm;
 mod cumulus_xcmp_queue;
 mod ethereum;
 mod evm;

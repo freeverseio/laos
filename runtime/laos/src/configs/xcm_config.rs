@@ -1,6 +1,6 @@
 use crate::{
 	types::ToAuthor, AccountId, AllPalletsWithSystem, Balances, ParachainInfo, PolkadotXcm,
-	Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin,
+	Runtime, RuntimeCall, RuntimeOrigin,
 };
 use core::marker::PhantomData;
 use frame_support::{
@@ -20,7 +20,6 @@ use staging_xcm_builder::{
 	SiblingParachainConvertsVia, SignedAccountKey20AsNative, SovereignSignedViaLocation,
 	TakeWeightCredit, TrailingSetTopicAsId, UsingComponents, WithComputedOrigin,
 };
-use staging_xcm_executor::XcmExecutor;
 
 parameter_types! {
 	pub const OurLocation: MultiLocation = MultiLocation::here();
@@ -159,11 +158,6 @@ pub type XcmRouter = staging_xcm_builder::WithUniqueTopic<(
 /// Use different router in `xcm-simulator` tests.
 #[cfg(test)]
 pub type XcmRouter = crate::tests::ParachainXcmRouter<ParachainInfo>;
-
-impl cumulus_pallet_xcm::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type XcmExecutor = XcmExecutor<XcmConfig>;
-}
 
 pub struct SignedToAccountId20<RuntimeOrigin, AccountId, Network>(
 	PhantomData<(RuntimeOrigin, AccountId, Network)>,
