@@ -16,8 +16,6 @@
 
 // This file is part of Substrate.
 
-
-
 pub mod constants {
 	use frame_support::{
 		parameter_types,

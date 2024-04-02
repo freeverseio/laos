@@ -16,8 +16,6 @@
 
 // This file is part of Substrate.
 
-
-
 //! Expose the auto generated weight files.
 
 pub mod block_weights;
