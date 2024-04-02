@@ -1,7 +1,7 @@
-use crate::{AccountId, ParachainSystem, Runtime, RuntimeEvent, XcmExecutor};
-
-use super::xcm_config::{XcmConfig, XcmOriginToTransactDispatchOrigin};
-
+use crate::{
+	types::xcm_config::{XcmConfig, XcmOriginToTransactDispatchOrigin},
+	AccountId, ParachainSystem, Runtime, RuntimeEvent, XcmExecutor,
+};
 use frame_system::EnsureRoot;
 
 impl cumulus_pallet_xcmp_queue::Config for Runtime {

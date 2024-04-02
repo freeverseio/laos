@@ -1,6 +1,7 @@
 mod account_id_to_h160;
 mod to_author;
 mod transaction_converter;
+pub(crate) mod xcm_config;
 mod xcm_router;
 
 pub(crate) use account_id_to_h160::AccountIdToH160;

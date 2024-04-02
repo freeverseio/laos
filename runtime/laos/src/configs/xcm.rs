@@ -1,9 +1,11 @@
 use crate::{
-	configs::xcm_config::{
-		LocationToAccountId, MaxInstructions, RelayNetwork, UnitWeightCost, UniversalLocation,
-		XcmConfig,
+	types::{
+		xcm_config::{
+			LocationToAccountId, MaxInstructions, RelayNetwork, UnitWeightCost, UniversalLocation,
+			XcmConfig,
+		},
+		XcmRouter,
 	},
-	types::XcmRouter,
 	AccountId, Balances, Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin, XcmExecutor,
 };
 use frame_support::{
