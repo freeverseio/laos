@@ -2,16 +2,13 @@ use crate::{
 	types::ToAuthor, AccountId, AllPalletsWithSystem, Balances, ParachainInfo, PolkadotXcm,
 	Runtime, RuntimeCall, RuntimeOrigin,
 };
-use core::marker::PhantomData;
 use frame_support::{
 	match_types, parameter_types,
-	traits::{ConstU32, Everything, Nothing, OriginTrait},
+	traits::{ConstU32, Everything, Nothing},
 	weights::Weight,
 };
-use frame_system::RawOrigin as SystemRawOrigin;
 use pallet_xcm::XcmPassthrough;
 use polkadot_parachain_primitives::primitives::Sibling;
-use sp_runtime::traits::TryConvert;
 use staging_xcm::latest::prelude::*;
 use staging_xcm_builder::{
 	AccountKey20Aliases, AllowExplicitUnpaidExecutionFrom, AllowTopLevelPaidExecutionFrom,
@@ -142,9 +139,6 @@ impl staging_xcm_executor::Config for XcmConfig {
 	type Aliasers = Nothing;
 }
 
-/// No local origins on this chain are allowed to dispatch XCM sends/executions.
-pub type LocalOriginToLocation = SignedToAccountId20<RuntimeOrigin, AccountId, RelayNetwork>;
-
 /// The means for routing XCM messages which are not for local execution into the right message
 /// queues.
 #[cfg(not(test))]
@@ -158,26 +152,3 @@ pub type XcmRouter = staging_xcm_builder::WithUniqueTopic<(
 /// Use different router in `xcm-simulator` tests.
 #[cfg(test)]
 pub type XcmRouter = crate::tests::ParachainXcmRouter<ParachainInfo>;
-
-pub struct SignedToAccountId20<RuntimeOrigin, AccountId, Network>(
-	PhantomData<(RuntimeOrigin, AccountId, Network)>,
-);
-impl<
-		RuntimeOrigin: OriginTrait + Clone,
-		AccountId: Into<[u8; 20]>,
-		Network: frame_support::traits::Get<Option<NetworkId>>,
-	> TryConvert<RuntimeOrigin, MultiLocation>
-	for SignedToAccountId20<RuntimeOrigin, AccountId, Network>
-where
-	RuntimeOrigin::PalletsOrigin: From<SystemRawOrigin<AccountId>>
-		+ TryInto<SystemRawOrigin<AccountId>, Error = RuntimeOrigin::PalletsOrigin>,
-{
-	fn try_convert(o: RuntimeOrigin) -> Result<MultiLocation, RuntimeOrigin> {
-		o.try_with_caller(|caller| match caller.try_into() {
-			Ok(SystemRawOrigin::Signed(who)) =>
-				Ok(Junction::AccountKey20 { network: Network::get(), key: who.into() }.into()),
-			Ok(other) => Err(other.into()),
-			Err(other) => Err(other),
-		})
-	}
-}
