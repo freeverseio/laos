@@ -19,13 +19,13 @@ impl pallet_balances::Config for Runtime {
 	type Balance = Balance;
 	type RuntimeHoldReason = ();
 	type RuntimeEvent = RuntimeEvent;
-	type FreezeIdentifier = RuntimeFreezeReason;
 	type DustRemoval = ();
 	type ExistentialDeposit = ExistentialDeposit;
 	type AccountStore = System;
+	type MaxReserves = MaxReserves;
 	type ReserveIdentifier = [u8; 8];
+	type FreezeIdentifier = RuntimeFreezeReason;
 	type MaxHolds = MaxLocks;
 	type MaxFreezes = MaxReserves;
-	type MaxReserves = MaxReserves;
 	type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
 }
