@@ -12,24 +12,20 @@ parameter_types! {
 	pub const ExistentialDeposit: Balance = 0;
 	pub const MaxLocks: u32 = 50;
 	pub const MaxReserves: u32 = 50;
-	pub const MaxHolds: u32 = 0;
-	pub const MaxFreezes: u32 = 1;
 }
 
 impl pallet_balances::Config for Runtime {
-	type MaxLocks = MaxLocks;
-	/// The type for recording an account's balance.
-	type Balance = Balance;
-	/// The ubiquitous event type.
 	type RuntimeEvent = RuntimeEvent;
+	type RuntimeHoldReason = ();
+	type FreezeIdentifier = RuntimeFreezeReason;
+	type Balance = Balance;
 	type DustRemoval = ();
 	type ExistentialDeposit = ExistentialDeposit;
 	type AccountStore = System;
-	type MaxReserves = MaxReserves;
 	type ReserveIdentifier = [u8; 8];
-	type FreezeIdentifier = RuntimeFreezeReason;
-	type MaxHolds = MaxHolds;
-	type RuntimeHoldReason = ();
-	type MaxFreezes = MaxFreezes;
+	type MaxHolds = MaxLocks;
+	type MaxFreezes = MaxReserves;
+	type MaxLocks = MaxLocks;
+	type MaxReserves = MaxReserves;
 	type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
 }
