@@ -5162,6 +5162,7 @@ dependencies = [
 name = "laos-primitives"
 version = "0.1.0"
 dependencies = [
+ "cumulus-primitives-core",
  "fp-account",
  "frame-support",
  "frame-system",

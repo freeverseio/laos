@@ -1,6 +1,6 @@
 use crate::{
-	weights::RocksDbWeight, AccountId, Balance, Block, BlockHashCount, PalletInfo, Runtime,
-	RuntimeCall, RuntimeEvent, RuntimeOrigin, RuntimeVersion, VERSION,
+	weights::RocksDbWeight, AccountId, Balance, Block, PalletInfo, Runtime, RuntimeCall,
+	RuntimeEvent, RuntimeOrigin, RuntimeVersion, VERSION,
 };
 use frame_support::{parameter_types, traits::Contains};
 use sp_runtime::traits::{BlakeTwo256, IdentityLookup};
@@ -8,6 +8,7 @@ use sp_runtime::traits::{BlakeTwo256, IdentityLookup};
 parameter_types! {
 	pub const Version: RuntimeVersion = VERSION;
 	pub const SS58Prefix: u16 = 42;
+	pub const BlockHashCount: u32 = 256;
 }
 
 impl frame_system::Config for Runtime {
