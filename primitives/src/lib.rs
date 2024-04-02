@@ -55,9 +55,6 @@ pub type Moment = u64;
 /// Nonce of a transaction in the parachain.
 pub type Nonce = u64;
 
-/// Index of a transaction in the parachain.
-pub type Index = u32;
-
 /// Weight-to-Fee type used by Laos parachain.
 pub type WeightToFee = IdentityFee<Balance>;
 
