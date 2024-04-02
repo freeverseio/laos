@@ -10,4 +10,4 @@ pub type XcmRouter = staging_xcm_builder::WithUniqueTopic<(
 
 /// Use different router in `xcm-simulator` tests.
 #[cfg(test)]
-pub type XcmRouter = crate::tests::ParachainXcmRouter<ParachainInfo>;
+pub type XcmRouter = crate::tests::ParachainXcmRouter<crate::ParachainInfo>;
