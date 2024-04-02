@@ -39,15 +39,15 @@ impl frame_system::Config for Runtime {
 	/// The data to be stored in an account.
 	type AccountData = pallet_balances::AccountData<Balance>;
 	/// What to do if a new account is created.
-	type OnNewAccount = (); // I cannot see () impl
+	type OnNewAccount = ();
 	/// What to do if an account is fully reaped from the system.
-	type OnKilledAccount = (); // I cannot see () impl
+	type OnKilledAccount = ();
 	/// The weight of database operations that the runtime can invoke.
 	type DbWeight = RocksDbWeight;
 	/// The basic call filter to use in dispatchable.
 	type BaseCallFilter = BaseCallFilter;
 	/// Weight information for the extrinsics of this pallet.
-	type SystemWeightInfo = (); // I cannot see () impl
+	type SystemWeightInfo = ();
 	/// Block & extrinsics weights: base values and limits.
 	type BlockWeights = laos_primitives::BlockWeights;
 	/// The maximum length of a block (in bytes).
