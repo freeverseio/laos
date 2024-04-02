@@ -26,7 +26,7 @@ parameter_types! {
 
 #[cfg(feature = "runtime-benchmarks")]
 parameter_types! {
-	pub ReachableDest: Option<MultiLocation> = Some(Parent.into());
+	pub ReachableDest: Option<MultiLocation> = Some(staging_xcm::latest::prelude::Parent.into());
 
 }
 
