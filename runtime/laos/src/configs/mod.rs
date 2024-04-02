@@ -19,6 +19,7 @@ mod timestamp;
 mod transaction_payment;
 mod utility;
 mod vesting;
+mod xcm;
 pub(crate) mod xcm_config;
 
 use frame_support::parameter_types;
