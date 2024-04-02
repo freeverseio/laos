@@ -13,7 +13,6 @@ pub mod types;
 mod weights;
 
 use core::marker::PhantomData;
-use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 use frame_support::{
 	construct_runtime,
 	weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight},
