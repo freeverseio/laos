@@ -22,6 +22,13 @@ use staging_xcm_builder::{
 };
 use staging_xcm_executor::XcmExecutor;
 
+parameter_types! {
+	pub const OurLocation: MultiLocation = MultiLocation::here();
+	pub const RelayNetwork: Option<NetworkId> = None;
+	pub RelayChainOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into();
+	pub UniversalLocation: InteriorMultiLocation = Parachain(ParachainInfo::parachain_id().into()).into();
+}
+
 /// Type for specifying how a `MultiLocation` can be converted into an `AccountId`. This is used
 /// when determining ownership of accounts for asset transacting and when attempting to use XCM
 /// `Transact` in order to determine the dispatch Origin.
