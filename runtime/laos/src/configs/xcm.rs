@@ -11,7 +11,7 @@ use frame_support::{
 };
 use frame_system::{EnsureRoot, RawOrigin as SystemRawOrigin};
 use sp_runtime::traits::TryConvert;
-use staging_xcm::latest::prelude::*;
+use staging_xcm::latest::prelude::{Junction, MultiLocation, NetworkId};
 use staging_xcm_builder::{EnsureXcmOrigin, FixedWeightBounds};
 
 use core::marker::PhantomData;
