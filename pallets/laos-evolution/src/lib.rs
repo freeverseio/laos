@@ -173,8 +173,8 @@ impl<T: Config> EvolutionCollection<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T>
 			Error::<T>::CollectionDoesNotExist
 		);
 		ensure!(
-			Self::is_owner(collection_id, who)
-				|| CollectionPublicMintingEnabled::<T>::contains_key(collection_id),
+			Self::is_owner(collection_id, who) ||
+				CollectionPublicMintingEnabled::<T>::contains_key(collection_id),
 			Error::<T>::NoPermission
 		);
 
