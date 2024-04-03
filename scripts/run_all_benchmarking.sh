@@ -59,15 +59,19 @@ done
 if [ "$skip_build" != true ]
 then
   echo "[+] Compiling Substrate benchmarks..."
-  cargo build --profile=production --locked --features=runtime-benchmarks --bin laos
+  cargo build --locked --features=runtime-benchmarks --release --bin laos
 fi
 
 # The executable to use.
 SUBSTRATE=./target/release/laos
 
 # Manually exclude some pallets.
+# TODO fix all pallets to be benchmarkable.
 EXCLUDED_PALLETS=(
+  "frame_system" # it fails but moonbeam does not have this
   "pallet_parachain_staking"
+  "pallet_balances"
+  "pallet_evm"
 )
 
 # Load all pallet names in an array.

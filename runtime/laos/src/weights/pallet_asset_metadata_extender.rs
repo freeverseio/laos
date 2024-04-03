@@ -42,13 +42,13 @@ impl<T: frame_system::Config> pallet_asset_metadata_extender::WeightInfo for Wei
 		// Proof Size summary in bytes:
 		//  Measured:  `4`
 		//  Estimated: `4545`
-		// Minimum execution time: 13_841_000 picoseconds.
-		Weight::from_parts(14_358_028, 0)
+		// Minimum execution time: 11_646_000 picoseconds.
+		Weight::from_parts(12_082_199, 0)
 			.saturating_add(Weight::from_parts(0, 4545))
-			// Standard Error: 336
-			.saturating_add(Weight::from_parts(1_803, 0).saturating_mul(t.into()))
-			// Standard Error: 336
-			.saturating_add(Weight::from_parts(9_947, 0).saturating_mul(u.into()))
+			// Standard Error: 123
+			.saturating_add(Weight::from_parts(61, 0).saturating_mul(t.into()))
+			// Standard Error: 123
+			.saturating_add(Weight::from_parts(8_239, 0).saturating_mul(u.into()))
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(3))
 	}
@@ -60,13 +60,13 @@ impl<T: frame_system::Config> pallet_asset_metadata_extender::WeightInfo for Wei
 		// Proof Size summary in bytes:
 		//  Measured:  `185 + u * (1 ±0)`
 		//  Estimated: `4545`
-		// Minimum execution time: 11_850_000 picoseconds.
-		Weight::from_parts(13_173_649, 0)
+		// Minimum execution time: 9_154_000 picoseconds.
+		Weight::from_parts(9_868_678, 0)
 			.saturating_add(Weight::from_parts(0, 4545))
-			// Standard Error: 212
-			.saturating_add(Weight::from_parts(18, 0).saturating_mul(t.into()))
-			// Standard Error: 212
-			.saturating_add(Weight::from_parts(6_573, 0).saturating_mul(u.into()))
+			// Standard Error: 98
+			.saturating_add(Weight::from_parts(719, 0).saturating_mul(t.into()))
+			// Standard Error: 98
+			.saturating_add(Weight::from_parts(6_715, 0).saturating_mul(u.into()))
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}

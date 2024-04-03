@@ -1,4 +1,7 @@
-use crate::{currency::calculate_deposit, Balance, Balances, Runtime, RuntimeCall, RuntimeEvent};
+use crate::{
+	currency::calculate_deposit, weights as laos_weights, Balance, Balances, Runtime, RuntimeCall,
+	RuntimeEvent,
+};
 use frame_support::parameter_types;
 
 parameter_types! {
@@ -16,7 +19,7 @@ impl pallet_multisig::Config for Runtime {
 	type DepositBase = DepositBase;
 	type DepositFactor = DepositFactor;
 	type MaxSignatories = MaxSignatories;
-	type WeightInfo = pallet_multisig::weights::SubstrateWeight<Runtime>;
+	type WeightInfo = laos_weights::pallet_multisig::WeightInfo<Runtime>;
 }
 
 #[cfg(test)]

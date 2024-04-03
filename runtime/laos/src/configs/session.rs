@@ -1,4 +1,4 @@
-use crate::{configs, ConvertInto, Runtime, RuntimeEvent, SessionKeys};
+use crate::{configs, weights as laos_weights, ConvertInto, Runtime, RuntimeEvent, SessionKeys};
 
 impl pallet_session::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
@@ -11,5 +11,5 @@ impl pallet_session::Config for Runtime {
 	// Essentially just Aura, but let's be pedantic.
 	type SessionHandler = <SessionKeys as sp_runtime::traits::OpaqueKeys>::KeyTypeIdProviders;
 	type Keys = SessionKeys;
-	type WeightInfo = pallet_session::weights::SubstrateWeight<Runtime>;
+	type WeightInfo = laos_weights::pallet_session::WeightInfo<Runtime>;
 }

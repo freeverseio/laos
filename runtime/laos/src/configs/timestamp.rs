@@ -1,4 +1,4 @@
-use crate::{Aura, Runtime, MILLISECS_PER_BLOCK};
+use crate::{weights as laos_weights, Aura, Runtime, MILLISECS_PER_BLOCK};
 use frame_support::parameter_types;
 
 parameter_types! {
@@ -10,5 +10,5 @@ impl pallet_timestamp::Config for Runtime {
 	type Moment = u64;
 	type OnTimestampSet = Aura;
 	type MinimumPeriod = MinimumPeriod;
-	type WeightInfo = pallet_timestamp::weights::SubstrateWeight<Runtime>;
+	type WeightInfo = laos_weights::pallet_timestamp::WeightInfo<Runtime>;
 }
