@@ -20,7 +20,6 @@ use crate::{
 };
 use sp_runtime::traits::{ConvertInto, OpaqueKeys};
 
-
 impl pallet_session::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type ValidatorId = AccountId;
