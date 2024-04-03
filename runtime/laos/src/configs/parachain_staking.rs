@@ -16,7 +16,7 @@
 
 use crate::{
 	currency::UNIT, weights, AccountId, Balances, BlockNumber, Permill, Runtime, RuntimeEvent, Vec,
-	Weight, MILLISECS_PER_BLOCK,
+	MILLISECS_PER_BLOCK,
 };
 use frame_support::{parameter_types, traits::Get, weights::Weight};
 use frame_system::EnsureRoot;
