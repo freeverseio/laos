@@ -42,13 +42,13 @@ impl<T: frame_system::Config> pallet_asset_metadata_extender::WeightInfo for Wei
 		// Proof Size summary in bytes:
 		//  Measured:  `4`
 		//  Estimated: `4545`
-		// Minimum execution time: 11_646_000 picoseconds.
-		Weight::from_parts(12_082_199, 0)
+		// Minimum execution time: 11_216_000 picoseconds.
+		Weight::from_parts(11_569_869, 0)
 			.saturating_add(Weight::from_parts(0, 4545))
-			// Standard Error: 123
-			.saturating_add(Weight::from_parts(61, 0).saturating_mul(t.into()))
-			// Standard Error: 123
-			.saturating_add(Weight::from_parts(8_239, 0).saturating_mul(u.into()))
+			// Standard Error: 111
+			.saturating_add(Weight::from_parts(1_024, 0).saturating_mul(t.into()))
+			// Standard Error: 111
+			.saturating_add(Weight::from_parts(8_435, 0).saturating_mul(u.into()))
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(3))
 	}
@@ -56,17 +56,15 @@ impl<T: frame_system::Config> pallet_asset_metadata_extender::WeightInfo for Wei
 	/// Proof: `AssetMetadataExtender::TokenUrisByClaimerAndLocation` (`max_values`: None, `max_size`: Some(1080), added: 3555, mode: `MaxEncodedLen`)
 	/// The range of component `t` is `[0, 512]`.
 	/// The range of component `u` is `[0, 512]`.
-	fn update_token_uri_extension(t: u32, u: u32, ) -> Weight {
+	fn update_token_uri_extension(_t: u32, u: u32, ) -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `185 + u * (1 ±0)`
 		//  Estimated: `4545`
-		// Minimum execution time: 9_154_000 picoseconds.
-		Weight::from_parts(9_868_678, 0)
+		// Minimum execution time: 9_327_000 picoseconds.
+		Weight::from_parts(10_676_708, 0)
 			.saturating_add(Weight::from_parts(0, 4545))
-			// Standard Error: 98
-			.saturating_add(Weight::from_parts(719, 0).saturating_mul(t.into()))
-			// Standard Error: 98
-			.saturating_add(Weight::from_parts(6_715, 0).saturating_mul(u.into()))
+			// Standard Error: 94
+			.saturating_add(Weight::from_parts(5_664, 0).saturating_mul(u.into()))
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}

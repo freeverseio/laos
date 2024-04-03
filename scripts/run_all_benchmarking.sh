@@ -17,7 +17,6 @@
 
 # This script has three parts which all use the Substrate runtime:
 # - Pallet benchmarking to update the pallet weights
-# - Overhead benchmarking for the Extrinsic and Block weights
 # - Machine benchmarking
 #
 # Should be run on a reference machine to gain accurate benchmarks
@@ -66,12 +65,13 @@ fi
 SUBSTRATE=./target/release/laos
 
 # Manually exclude some pallets.
-# TODO fix all pallets to be benchmarkable.
 EXCLUDED_PALLETS=(
-  "frame_system" # it fails but moonbeam does not have this
-  "pallet_parachain_staking"
-  "pallet_balances"
-  "pallet_evm"
+  # It fails but others parachain as Moonbeam does not have this
+  "frame_system" 
+  # TODO Fix (issue has been openned), see: https://github.com/freeverseio/laos/issues/534
+  "pallet_evm" 
+  # We use default weights from polkadot-sdk as benchmarking functions does not support existential deposit zero
+  "pallet_balances" 
 )
 
 # Load all pallet names in an array.

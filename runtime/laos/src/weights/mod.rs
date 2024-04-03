@@ -24,6 +24,7 @@ pub mod extrinsic_weights;
 pub mod pallet_asset_metadata_extender;
 pub mod pallet_laos_evolution;
 pub mod pallet_multisig;
+pub mod pallet_parachain_staking;
 pub mod pallet_proxy;
 pub mod pallet_session;
 pub mod pallet_sudo;
