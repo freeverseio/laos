@@ -76,6 +76,6 @@ mod tests {
 
 	#[test]
 	fn check_block_gas_limit() {
-			assert_eq!(BlockGasLimit::get(), 15000000.into());
+		assert_eq!(BlockGasLimit::get(), 15000000.into());
 	}
 }
