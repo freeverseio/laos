@@ -1,4 +1,4 @@
-// Copyright 2023-2024 Freverse.io
+// Copyright 2023-2024 LAOS Chain Foundation
 // This file is part of LAOS.
 
 // LAOS is free software: you can redistribute it and/or modify
