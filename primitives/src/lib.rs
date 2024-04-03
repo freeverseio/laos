@@ -19,8 +19,10 @@ pub type AuraId = sp_consensus_aura::sr25519::AuthorityId;
 /// This represents 0.5 seconds of compute assuming a target block time of 12 seconds.
 ///
 /// Max PoV size is set to `5Mb` as all Cumulus-based parachains do.
-pub const MAXIMUM_BLOCK_WEIGHT: Weight =
-	Weight::from_parts(WEIGHT_REF_TIME_PER_SECOND.saturating_div(2), 5 * 1024 * 1024);
+pub const MAXIMUM_BLOCK_WEIGHT: Weight = Weight::from_parts(
+	WEIGHT_REF_TIME_PER_SECOND.saturating_div(2),
+	cumulus_primitives_core::relay_chain::MAX_POV_SIZE as u64,
+);
 
 /// Represents the portion of a block that will be used by Normal extrinsics.
 pub const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
@@ -51,10 +53,7 @@ pub type Balance = u128;
 pub type Moment = u64;
 
 /// Nonce of a transaction in the parachain.
-pub type Nonce = u32;
-
-/// Index of a transaction in the parachain.
-pub type Index = u32;
+pub type Nonce = u64;
 
 /// Weight-to-Fee type used by Laos parachain.
 pub type WeightToFee = IdentityFee<Balance>;

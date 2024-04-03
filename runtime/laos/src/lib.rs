@@ -13,18 +13,16 @@ pub mod types;
 mod weights;
 
 use core::marker::PhantomData;
-use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 use frame_support::{
 	construct_runtime,
 	weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight},
 };
 use frame_system::EnsureRoot;
 pub use laos_primitives::{
-	AccountId, AuraId, Balance, BlockNumber, Hash, Header, Index, Nonce, Signature,
+	AccountId, AuraId, Balance, BlockNumber, Hash, Header, Nonce, Signature,
 };
 pub use pallet_evm_evolution_collection_factory::REVERT_BYTECODE;
 pub use pallet_parachain_staking::{InflationInfo, Range};
-use polkadot_runtime_common::BlockHashCount;
 use precompiles::FrontierPrecompiles;
 use sp_core::U256;
 use sp_runtime::{create_runtime_str, generic, impl_opaque_keys, traits::ConvertInto, Permill};

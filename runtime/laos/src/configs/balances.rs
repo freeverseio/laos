@@ -11,16 +11,14 @@ parameter_types! {
 	/// balance drops to a level that would trigger its deletion and subsequent nonce reset.
 	pub const ExistentialDeposit: Balance = 0;
 	pub const MaxLocks: u32 = 50;
+	pub const MaxFreezes: u32 = 50;
+	pub const MaxHolds: u32 = 50;
 	pub const MaxReserves: u32 = 50;
-	pub const MaxHolds: u32 = 0;
-	pub const MaxFreezes: u32 = 1;
 }
 
 impl pallet_balances::Config for Runtime {
 	type MaxLocks = MaxLocks;
-	/// The type for recording an account's balance.
 	type Balance = Balance;
-	/// The ubiquitous event type.
 	type RuntimeEvent = RuntimeEvent;
 	type DustRemoval = ();
 	type ExistentialDeposit = ExistentialDeposit;

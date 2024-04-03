@@ -14,7 +14,7 @@ use sp_version::RuntimeVersion;
 
 // Local module imports
 use super::{
-	AccountId, Aura, AuraId, Balance, Block, Ethereum, Executive, Index, InherentDataExt,
+	AccountId, Aura, AuraId, Balance, Block, Ethereum, Executive, InherentDataExt, Nonce,
 	ParachainSystem, Runtime, RuntimeCall, SessionKeys, System, TransactionPayment,
 	UncheckedExtrinsic, Weight, EVM, VERSION,
 };
@@ -110,8 +110,8 @@ impl_runtime_apis! {
 		}
 	}
 
-	impl frame_system_rpc_runtime_api::AccountNonceApi<Block, AccountId, Index> for Runtime {
-		fn account_nonce(account: AccountId) -> Index {
+	impl frame_system_rpc_runtime_api::AccountNonceApi<Block, AccountId, Nonce> for Runtime {
+		fn account_nonce(account: AccountId) -> Nonce {
 			System::account_nonce(account)
 		}
 	}
