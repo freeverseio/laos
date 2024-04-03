@@ -1,5 +1,6 @@
-use crate::{Runtime, RuntimeEvent, U256};
+use crate::{Runtime, RuntimeEvent};
 use frame_support::parameter_types;
+use sp_core::U256;
 use sp_runtime::Permill;
 
 parameter_types! {
