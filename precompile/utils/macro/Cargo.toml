@@ -1,6 +1,6 @@
 [package]
 name = "laos-precompile-utils-macro"
-authors = ["StakeTechnologies", "PureStake"]
+authors = ["Freeverse"]
 description = "Precompile macro utilities"
 version = "0.1.0"
 edition = "2021"
