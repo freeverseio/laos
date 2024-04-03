@@ -60,7 +60,7 @@ impl StakingConfig for Runtime {
 	type SlotProvider = StakingRoundSlotProvider;
 	type MaxCandidates = MaxCandidates;
 	type SlotsPerYear = SlotsPerYear;
-	type WeightInfo = staking::weights::SubstrateWeight<Runtime>;
+	type WeightInfo = staking::weights::SubstrateWeight<Runtime>; // TODO
 }
 
 // Custom struct for identifying the block author.
