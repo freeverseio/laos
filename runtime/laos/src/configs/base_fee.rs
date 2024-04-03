@@ -14,8 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
-use crate::{Runtime, RuntimeEvent, U256};
+use crate::{Runtime, RuntimeEvent};
 use frame_support::parameter_types;
+use sp_core::U256;
 use sp_runtime::Permill;
 
 parameter_types! {

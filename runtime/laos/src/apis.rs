@@ -15,7 +15,7 @@
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 use fp_rpc::TransactionStatus;
-use frame_support::traits::Hooks;
+use frame_support::{traits::Hooks, weights::Weight};
 use pallet_ethereum::{Call::transact, Transaction as EthereumTransaction};
 use pallet_evm::{Account as EVMAccount, FeeCalculator, Runner};
 use sp_api::impl_runtime_apis;
@@ -32,7 +32,7 @@ use sp_version::RuntimeVersion;
 use super::{
 	AccountId, Aura, AuraId, Balance, Block, Ethereum, Executive, InherentDataExt, Nonce,
 	ParachainSystem, Runtime, RuntimeCall, SessionKeys, System, TransactionPayment,
-	UncheckedExtrinsic, Weight, EVM, VERSION,
+	UncheckedExtrinsic, EVM, VERSION,
 };
 
 /// TODO: hackish way to get the runtime version public. Waiting for substrate to expose it.

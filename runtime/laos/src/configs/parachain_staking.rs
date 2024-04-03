@@ -15,10 +15,10 @@
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 use crate::{
-	currency::UNIT, AccountId, Balances, BlockNumber, Permill, Runtime, RuntimeEvent, Vec, Weight,
+	currency::UNIT, AccountId, Balances, BlockNumber, Permill, Runtime, RuntimeEvent, Vec,
 	MILLISECS_PER_BLOCK,
 };
-use frame_support::{parameter_types, traits::Get};
+use frame_support::{parameter_types, traits::Get, weights::Weight};
 use frame_system::EnsureRoot;
 use pallet_parachain_staking::{self as staking, rewards, Config as StakingConfig};
 use pallet_session::{SessionManager, ShouldEndSession};
