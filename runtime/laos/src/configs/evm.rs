@@ -1,10 +1,14 @@
 //! Pallets that enable EVM execution on Substrate
 use crate::{
 	precompiles::FrontierPrecompiles, types::ToAuthor, AccountId, Aura, Balances, BaseFee,
-	EVMChainId, Runtime, RuntimeEvent, Timestamp, Weight, U256, WEIGHT_REF_TIME_PER_SECOND,
+	EVMChainId, Runtime, RuntimeEvent, Timestamp,
 };
-use frame_support::parameter_types;
+use frame_support::{
+	parameter_types,
+	weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight},
+};
 use laos_primitives::{MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO};
+use sp_core::U256;
 
 /// Current approximation of the gas/s consumption considering
 /// EVM execution over compiled WASM (on 4.4Ghz CPU).
