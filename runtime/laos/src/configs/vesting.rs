@@ -1,4 +1,4 @@
-use crate::{currency::UNIT, weights as laos_weights, Balance, Balances, Runtime, RuntimeEvent};
+use crate::{currency::UNIT, weights, Balance, Balances, Runtime, RuntimeEvent};
 use frame_support::{parameter_types, traits::WithdrawReasons};
 use sp_runtime::traits::ConvertInto;
 
@@ -16,5 +16,5 @@ impl pallet_vesting::Config for Runtime {
 	type BlockNumberToBalance = ConvertInto;
 	type MinVestedTransfer = MinVestedTransfer;
 	type UnvestedFundsAllowedWithdrawReasons = UnvestedFundsAllowedWithdrawReasons;
-	type WeightInfo = laos_weights::pallet_vesting::WeightInfo<Runtime>;
+	type WeightInfo = weights::pallet_vesting::WeightInfo<Runtime>;
 }

@@ -1,6 +1,5 @@
 use crate::{
-	currency::calculate_deposit, weights as laos_weights, Balance, Balances, Runtime, RuntimeCall,
-	RuntimeEvent,
+	currency::calculate_deposit, weights, Balance, Balances, Runtime, RuntimeCall, RuntimeEvent,
 };
 use frame_support::{parameter_types, traits::InstanceFilter};
 use parity_scale_codec::{Decode, Encode, MaxEncodedLen};
@@ -34,7 +33,7 @@ impl pallet_proxy::Config for Runtime {
 	type CallHasher = BlakeTwo256;
 	type AnnouncementDepositBase = AnnouncementDepositBase;
 	type AnnouncementDepositFactor = AnnouncementDepositFactor;
-	type WeightInfo = laos_weights::pallet_proxy::WeightInfo<Runtime>;
+	type WeightInfo = weights::pallet_proxy::WeightInfo<Runtime>;
 }
 
 #[derive(

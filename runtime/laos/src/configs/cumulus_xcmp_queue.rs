@@ -1,6 +1,4 @@
-use crate::{
-	weights as laos_weights, AccountId, ParachainSystem, Runtime, RuntimeEvent, XcmExecutor,
-};
+use crate::{weights, AccountId, ParachainSystem, Runtime, RuntimeEvent, XcmExecutor};
 
 use super::xcm_config::{XcmConfig, XcmOriginToTransactDispatchOrigin};
 
@@ -15,5 +13,5 @@ impl cumulus_pallet_xcmp_queue::Config for Runtime {
 	type ControllerOrigin = EnsureRoot<AccountId>;
 	type ControllerOriginConverter = XcmOriginToTransactDispatchOrigin;
 	type PriceForSiblingDelivery = ();
-	type WeightInfo = laos_weights::cumulus_pallet_xcmp_queue::WeightInfo<Runtime>;
+	type WeightInfo = weights::cumulus_pallet_xcmp_queue::WeightInfo<Runtime>;
 }
