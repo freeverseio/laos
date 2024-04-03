@@ -11,6 +11,8 @@ parameter_types! {
 	/// balance drops to a level that would trigger its deletion and subsequent nonce reset.
 	pub const ExistentialDeposit: Balance = 0;
 	pub const MaxLocks: u32 = 50;
+	pub const MaxFreezes: u32 = 50;
+	pub const MaxHolds: u32 = 50;
 	pub const MaxReserves: u32 = 50;
 }
 
@@ -24,8 +26,8 @@ impl pallet_balances::Config for Runtime {
 	type MaxReserves = MaxReserves;
 	type ReserveIdentifier = [u8; 8];
 	type FreezeIdentifier = RuntimeFreezeReason;
-	type MaxHolds = MaxLocks;
+	type MaxHolds = MaxHolds;
 	type RuntimeHoldReason = ();
-	type MaxFreezes = MaxReserves;
+	type MaxFreezes = MaxFreezes;
 	type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
 }
