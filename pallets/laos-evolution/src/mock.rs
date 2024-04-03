@@ -1,4 +1,4 @@
-// Copyright 2023-2024 LAOS Chain Foundation
+// Copyright 2023-2024 Freeverse.io
 // This file is part of LAOS.
 
 // LAOS is free software: you can redistribute it and/or modify
