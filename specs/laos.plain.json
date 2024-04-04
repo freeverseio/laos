@@ -4,7 +4,12 @@
   "chainType": "Live",
   "bootNodes": [
   ],
-  "telemetryEndpoints": null,
+  "telemetryEndpoints": [
+    [
+      "/dns/telemetry.polkadot.io/tcp/443/x-parity-wss/%2Fsubmit%2F",
+      0
+    ]
+  ],
   "protocolId": "laos_network",
   "properties": {
     "ss58Format": 42,
@@ -118,7 +123,7 @@
         },
         "collatorCommission": 0,
         "parachainBondReservePercent": 0,
-        "blocksPerRound": 200,
+        "blocksPerRound": 1800,
         "numSelectedCandidates": 5,
         "rewardsAccount": "0xffffffffffffffffffffffffffffffffffffff01"
       },
