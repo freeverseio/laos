@@ -1,18 +1,18 @@
 {
-  "name": "Laos Paseo Network",
-  "id": "laos_paseo_network",
+  "name": "Laos Omega testnet",
+  "id": "laos_omega_network",
   "chainType": "Live",
   "bootNodes": [
   ],
   "telemetryEndpoints": null,
-  "protocolId": "laos_network",
+  "protocolId": "laos_omega_network",
   "properties": {
     "ss58Format": 42,
     "tokenDecimals": 18,
-    "tokenSymbol": "LAOS"
+    "tokenSymbol": "OMEGA"
   },
   "relay_chain": "paseo",
-  "para_id": 3370,
+  "para_id": 4006,
   "codeSubstitutes": {},
   "genesis": {
     "runtime": {
@@ -21,7 +21,7 @@
       },
       "parachainSystem": {},
       "parachainInfo": {
-        "parachainId": 3370
+        "parachainId": 4006
       },
       "balances": {
         "balances": [
@@ -266,7 +266,7 @@
         }
       },
       "evmChainId": {
-        "chainId": 6283
+        "chainId": 62831
       },
       "baseFee": {
         "baseFeePerGas": "0x3b9aca00",
