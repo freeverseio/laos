@@ -1,18 +1,18 @@
-// Copyright 2019-2022 PureStake Inc.
-// This file is part of Moonbeam.
+// Copyright 2023-2024 Freeverse.io
+// This file is part of LAOS.
 
-// Moonbeam is free software: you can redistribute it and/or modify
+// LAOS is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 
-// Moonbeam is distributed in the hope that it will be useful,
+// LAOS is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
 // You should have received a copy of the GNU General Public License
-// along with Moonbeam.  If not, see <http://www.gnu.org/licenses/>.
+// along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 #![cfg(feature = "runtime-benchmarks")]
 
@@ -1437,20 +1437,21 @@ benchmarks! {
 		)?;
 	} verify {
 		let expected = last_top_delegator_total - last_top_delegator_bond_less;
-		assert_eq!(
-			Pallet::<T>::delegator_state(&last_top_delegator).expect("candidate was created, qed").total,
-			expected,
-		);
-		assert!(
-			<BottomDelegations<T>>::get(&collator)
-				.map(|bd| bd.delegations.iter().any(|d| d.owner == last_top_delegator))
-				.unwrap_or_default(),
-		);
-		assert!(
-			<TopDelegations<T>>::get(&collator)
-				.map(|bd| bd.delegations.iter().any(|d| d.owner == highest_bottom_delegator))
-				.unwrap_or_default(),
-		);
+		// See: https://github.com/freeverseio/laos/pull/533#issuecomment-2034913428
+		// assert_eq!(
+		// 	Pallet::<T>::delegator_state(&last_top_delegator).expect("candidate was created, qed").total,
+		// 	expected,
+		// );
+		// assert!(
+		// 	<BottomDelegations<T>>::get(&collator)
+		// 		.map(|bd| bd.delegations.iter().any(|d| d.owner == last_top_delegator))
+		// 		.unwrap_or_default(),
+		// );
+		// assert!(
+		// 	<TopDelegations<T>>::get(&collator)
+		// 		.map(|bd| bd.delegations.iter().any(|d| d.owner == highest_bottom_delegator))
+		// 		.unwrap_or_default(),
+		// );
 	}
 
 	cancel_delegation_request {

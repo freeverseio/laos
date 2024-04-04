@@ -1,5 +1,21 @@
+// Copyright 2023-2024 Freeverse.io
+// This file is part of LAOS.
+
+// LAOS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// LAOS is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
+
 use crate::{
-	currency::UNIT, AccountId, Balances, BlockNumber, Permill, Runtime, RuntimeEvent, Vec,
+	currency::UNIT, weights, AccountId, Balances, BlockNumber, Permill, Runtime, RuntimeEvent, Vec,
 	MILLISECS_PER_BLOCK,
 };
 use frame_support::{parameter_types, traits::Get, weights::Weight};
@@ -60,7 +76,7 @@ impl StakingConfig for Runtime {
 	type SlotProvider = StakingRoundSlotProvider;
 	type MaxCandidates = MaxCandidates;
 	type SlotsPerYear = SlotsPerYear;
-	type WeightInfo = staking::weights::SubstrateWeight<Runtime>;
+	type WeightInfo = weights::pallet_parachain_staking::WeightInfo<Runtime>;
 }
 
 // Custom struct for identifying the block author.

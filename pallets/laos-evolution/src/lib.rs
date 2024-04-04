@@ -1,3 +1,19 @@
+// Copyright 2023-2024 Freeverse.io
+// This file is part of LAOS.
+
+// LAOS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// LAOS is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
+
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use frame_support::ensure;
@@ -22,6 +38,7 @@ use sp_runtime::{
 
 pub use traits::{EvolutionCollection, EvolutionCollectionFactory};
 pub use types::*;
+pub use weights::WeightInfo;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -281,7 +298,7 @@ impl<T: Config> EvolutionCollection<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T>
 fn slot_and_owner_to_token_id(slot: Slot, owner: H160) -> Option<TokenId> {
 	// Check if slot is larger than 96 bits
 	if slot > MAX_U96 {
-		return None
+		return None;
 	}
 
 	let mut bytes = [0u8; 32];
@@ -352,7 +369,7 @@ where
 {
 	let address_bytes: [u8; 20] = address.into();
 	if &address_bytes[0..12] != ASSET_PRECOMPILE_ADDRESS_PREFIX {
-		return Err(CollectionError::InvalidPrefix)
+		return Err(CollectionError::InvalidPrefix);
 	}
 	let mut id_bytes = [0u8; 8];
 	id_bytes.copy_from_slice(&address_bytes[12..]);
