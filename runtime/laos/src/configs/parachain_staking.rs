@@ -15,7 +15,7 @@
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 use crate::{
-	currency::UNIT, AccountId, Balances, BlockNumber, Permill, Runtime, RuntimeEvent, Vec,
+	currency::UNIT, weights, AccountId, Balances, BlockNumber, Permill, Runtime, RuntimeEvent, Vec,
 	MILLISECS_PER_BLOCK,
 };
 use frame_support::{parameter_types, traits::Get, weights::Weight};
@@ -76,7 +76,7 @@ impl StakingConfig for Runtime {
 	type SlotProvider = StakingRoundSlotProvider;
 	type MaxCandidates = MaxCandidates;
 	type SlotsPerYear = SlotsPerYear;
-	type WeightInfo = staking::weights::SubstrateWeight<Runtime>;
+	type WeightInfo = weights::pallet_parachain_staking::WeightInfo<Runtime>;
 }
 
 // Custom struct for identifying the block author.

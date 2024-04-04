@@ -30,6 +30,7 @@ use sp_runtime::{
 };
 pub use traits::AssetMetadataExtender;
 pub use types::*;
+pub use weights::WeightInfo;
 
 #[frame_support::pallet]
 pub mod pallet {

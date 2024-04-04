@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
-use crate::{Aura, Runtime, MILLISECS_PER_BLOCK};
+use crate::{weights, Aura, Runtime, MILLISECS_PER_BLOCK};
 use frame_support::parameter_types;
 
 parameter_types! {
@@ -26,5 +26,5 @@ impl pallet_timestamp::Config for Runtime {
 	type Moment = u64;
 	type OnTimestampSet = Aura;
 	type MinimumPeriod = MinimumPeriod;
-	type WeightInfo = pallet_timestamp::weights::SubstrateWeight<Runtime>;
+	type WeightInfo = weights::pallet_timestamp::WeightInfo<Runtime>;
 }

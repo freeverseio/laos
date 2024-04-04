@@ -45,5 +45,5 @@ impl pallet_balances::Config for Runtime {
 	type MaxHolds = MaxHolds;
 	type RuntimeHoldReason = ();
 	type MaxFreezes = MaxFreezes;
-	type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
+	type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>; // See: https://github.com/freeverseio/laos/pull/533#issuecomment-2034913428
 }

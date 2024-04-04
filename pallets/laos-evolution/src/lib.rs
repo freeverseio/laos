@@ -38,6 +38,7 @@ use sp_runtime::{
 
 pub use traits::{EvolutionCollection, EvolutionCollectionFactory};
 pub use types::*;
+pub use weights::WeightInfo;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -297,7 +298,7 @@ impl<T: Config> EvolutionCollection<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T>
 fn slot_and_owner_to_token_id(slot: Slot, owner: H160) -> Option<TokenId> {
 	// Check if slot is larger than 96 bits
 	if slot > MAX_U96 {
-		return None
+		return None;
 	}
 
 	let mut bytes = [0u8; 32];
@@ -368,7 +369,7 @@ where
 {
 	let address_bytes: [u8; 20] = address.into();
 	if &address_bytes[0..12] != ASSET_PRECOMPILE_ADDRESS_PREFIX {
-		return Err(CollectionError::InvalidPrefix)
+		return Err(CollectionError::InvalidPrefix);
 	}
 	let mut id_bytes = [0u8; 8];
 	id_bytes.copy_from_slice(&address_bytes[12..]);

@@ -15,7 +15,7 @@
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 use crate::{
-	configs::parachain_staking::ParachainStakingAdapter, AccountId, Runtime, RuntimeEvent,
+	configs::parachain_staking::ParachainStakingAdapter, weights, AccountId, Runtime, RuntimeEvent,
 	SessionKeys,
 };
 use sp_runtime::traits::{ConvertInto, OpaqueKeys};
@@ -29,5 +29,5 @@ impl pallet_session::Config for Runtime {
 	type SessionManager = ParachainStakingAdapter;
 	type SessionHandler = <SessionKeys as OpaqueKeys>::KeyTypeIdProviders;
 	type Keys = SessionKeys;
-	type WeightInfo = pallet_session::weights::SubstrateWeight<Runtime>;
+	type WeightInfo = weights::pallet_session::WeightInfo<Runtime>;
 }
