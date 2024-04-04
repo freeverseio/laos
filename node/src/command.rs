@@ -159,6 +159,9 @@ impl SubstrateCli for RelayChainCli {
 
 	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
 		match id {
+			"paseo" => Ok(Box::new(RococoChainSpec::from_json_bytes(
+				&include_bytes!("../../specs/rococo-freeverse-chainspec.raw.json")[..],
+			)?)),
 			"rococo_freeverse" => Ok(Box::new(RococoChainSpec::from_json_bytes(
 				&include_bytes!("../../specs/rococo-freeverse-chainspec.raw.json")[..],
 			)?)),
