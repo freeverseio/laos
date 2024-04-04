@@ -29,6 +29,10 @@ Presently, LAOS is accessible via its canary Parachain in Kusama, named **K-LAOS
 * ParaId: 3336
 * EVM PalletInstance: 51
 
+### LAOS Parachain: 
+* EVM Currency Symbol: LAOS 
+* ParaId: 3370
+
 ## Running your own node
 
 The quickest entry point to run your own LAOS Parachain node:
