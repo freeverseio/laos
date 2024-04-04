@@ -49,6 +49,9 @@ fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 		"laos" => Box::new(chain_spec::laos::ChainSpec::from_json_bytes(
 			&include_bytes!("../../specs/laos.raw.json")[..],
 		)?),
+		"laos-omega" => Box::new(chain_spec::laos::ChainSpec::from_json_bytes(
+			&include_bytes!("../../specs/laos-omega.raw.json")[..],
+		)?),
 		"klaos" => Box::new(chain_spec::klaos::ChainSpec::from_json_bytes(
 			&include_bytes!("../../specs/klaos.raw.json")[..],
 		)?),
@@ -159,6 +162,9 @@ impl SubstrateCli for RelayChainCli {
 
 	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
 		match id {
+			"paseo" => Ok(Box::new(RococoChainSpec::from_json_bytes(
+				&include_bytes!("../../specs/paseo.raw.json")[..],
+			)?)),
 			"rococo_freeverse" => Ok(Box::new(RococoChainSpec::from_json_bytes(
 				&include_bytes!("../../specs/rococo-freeverse-chainspec.raw.json")[..],
 			)?)),
