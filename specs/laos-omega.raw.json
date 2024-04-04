@@ -3,6 +3,7 @@
   "id": "laos_omega_network",
   "chainType": "Live",
   "bootNodes": [
+    "/dns4/laosomega-boot-0.gorengine.com/tcp/30334/p2p/12D3KooWG19hvUiRWHvg7qQLGH7H5qq9s9YQ7a5oFqpGUUU8nycq"
   ],
   "telemetryEndpoints": null,
   "protocolId": "laos_omega_network",
