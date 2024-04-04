@@ -1,18 +1,17 @@
 {
-  "name": "Laos Sun v2 Testnet",
-  "id": "laos_sun_v2_testnet",
+  "name": "Laos",
+  "id": "laos_network",
   "chainType": "Live",
   "bootNodes": [
-    "/dns4/laossun-boot-1.gorengine.com/tcp/30334/p2p/12D3KooWKXd2uAnD9r1LuFoEsxpVxccDw8oW1zwSV5ZXm69UnBw9"
   ],
   "telemetryEndpoints": null,
-  "protocolId": "laos_sun_v2_testnet",
+  "protocolId": "laos_network",
   "properties": {
     "ss58Format": 42,
     "tokenDecimals": 18,
-    "tokenSymbol": "SUN"
+    "tokenSymbol": "LAOS"
   },
-  "relay_chain": "rococo_freeverse",
+  "relay_chain": "polkadot",
   "para_id": 3370,
   "codeSubstitutes": {},
   "genesis": {
@@ -56,7 +55,7 @@
             "0xffffffffffffffffffffffffffffffffffffff02",
             "0xffffffffffffffffffffffffffffffffffffff02",
             {
-              "aura": "5F1i56nP2dVkUv84hhBw3g1F9AyWfGvYDUyKo6r7Fv8axnTD"
+              "aura": "5D7TF21C8jKHSKpeUFf37QWRqYnjR5LsoQWY9yY5Q4k42zEQ"
             }
           ],
           [
