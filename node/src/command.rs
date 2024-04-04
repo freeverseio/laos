@@ -30,6 +30,9 @@ use crate::{
 
 fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 	Ok(match id {
+		"laos" => Box::new(chain_spec::klaos::ChainSpec::from_json_bytes(
+			&include_bytes!("../../specs/laos.plain.json")[..],
+		)?),
 		"klaos" => Box::new(chain_spec::klaos::ChainSpec::from_json_bytes(
 			&include_bytes!("../../specs/klaos.raw.json")[..],
 		)?),
