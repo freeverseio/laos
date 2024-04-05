@@ -84,7 +84,7 @@ jobs:
         run: |
           SKIP_WASM_BUILD=1 cargo test
 
-  try-runtime-klaos:
+  try-runtime:
     runs-on:
       group: laos
       labels: ubuntu-16-cores
