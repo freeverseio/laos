@@ -6,7 +6,7 @@
     "/dns4/laossun-boot-1.gorengine.com/tcp/30334/p2p/12D3KooWKXd2uAnD9r1LuFoEsxpVxccDw8oW1zwSV5ZXm69UnBw9"
   ],
   "telemetryEndpoints": null,
-  "protocolId": "laos_sun_v2_testnet",
+  "protocolId": "laos_sun_v3_testnet",
   "properties": {
     "ss58Format": 42,
     "tokenDecimals": 18,
