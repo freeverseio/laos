@@ -1,6 +1,6 @@
 {
-  "name": "Laos Sun v2 Testnet",
-  "id": "laos_sun_v2_testnet",
+  "name": "Laos Sun v3 Testnet",
+  "id": "laos_sun_v3_testnet",
   "chainType": "Live",
   "bootNodes": [
     "/dns4/laossun-boot-1.gorengine.com/tcp/30334/p2p/12D3KooWKXd2uAnD9r1LuFoEsxpVxccDw8oW1zwSV5ZXm69UnBw9"
