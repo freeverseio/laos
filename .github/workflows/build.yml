@@ -102,7 +102,7 @@ jobs:
           RUST_LOG=try-runtime ./target/release/laos try-runtime --runtime ./target/release/wbuild/klaos-runtime/klaos_runtime.wasm on-runtime-upgrade --checks=pre-and-post live --uri ws://159.223.241.90:9944
       - name: Try Runtime for Laos Omega
         run: |
-          RUST_LOG=try-runtime ./target/release/laos try-runtime --runtime ./target/release/wbuild/laos-runtime/laos_runtime.wasm on-runtime-upgrade --checks=pre-and-post live --uri ws://159.223.241.90:9944
+          RUST_LOG=try-runtime ./target/release/laos try-runtime --runtime ./target/release/wbuild/laos-runtime/laos_runtime.wasm on-runtime-upgrade --checks=pre-and-post live --uri ws://174.138.104.13:9944
 
   e2e-tests:
     runs-on:
