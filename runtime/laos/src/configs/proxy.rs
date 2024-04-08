@@ -85,7 +85,12 @@ impl InstanceFilter<RuntimeCall> for ProxyType {
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::currency::MILLIUNIT;
+	use crate::{
+		currency::{MILLIUNIT, UNIT},
+		tests::ExtBuilder,
+		RuntimeOrigin,
+	};
+	use frame_support::assert_ok;
 
 	#[test]
 	fn check_deposits() {
@@ -100,4 +105,45 @@ mod tests {
 			560 * MILLIUNIT
 		);
 	}
+
+	const ALICE: [u8; 20] = [1; 20];
+
+	#[test]
+	fn create_pure_proxy() {
+		ExtBuilder::default()
+			.with_balances(vec![(ALICE.into(), 1000 * UNIT)])
+			.build()
+			.execute_with(|| {
+				assert_ok!(pallet_proxy::Pallet::<Runtime>::create_pure(
+					RuntimeOrigin::signed(ALICE.into()),
+					ProxyType::Any,
+					0,
+					0,
+				));
+			});
+	}
+
+	// #[test]
+	// fn add_proxy_to_pure_proxy_should_succeed() {
+	// 	let ALICE = AccountId::new([1u8; 32]);
+	// 	let BOB = AccountId::new([2u8; 32]);
+	// 	ExtBuilder::default()
+	// 		.with_balances(vec![(ALICE.into(), 4 * UNIT), (BOB.into(), 4 * UNIT)])
+	// 		.build()
+	// 		.execute_with(|| {
+	// 			assert_ok!(pallet_proxy::Proxy::<Runtime>::create_pure(
+	// 				Origin::signed(ALICE),
+	// 				ProxyType::Any,
+	// 				0,
+	// 				0,
+	// 			));
+	// 			assert_ok!(pallet_proxy::Proxy::<Runtime>::add_proxy(
+	// 				Origin::signed(ALICE),
+	// 				BOB,
+	// 				ProxyType::Any,
+	// 				0,
+	// 				0,
+	// 			));
+	// 		});
+	// }
 }
