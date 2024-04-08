@@ -87,7 +87,7 @@ mod tests {
 	use super::*;
 	use crate::{
 		currency::{MILLIUNIT, UNIT},
-		tests::ExtBuilder,
+		tests::{ExtBuilder, ALICE, BOB},
 		AccountId, RuntimeOrigin,
 	};
 	use core::str::FromStr;
@@ -107,17 +107,16 @@ mod tests {
 		);
 	}
 
-	const ALICE: [u8; 20] = [1; 20];
-	const BOB: [u8; 20] = [2; 20];
-
 	#[test]
 	fn create_pure_proxy() {
+		let alice = AccountId::from_str(ALICE).unwrap();
+
 		ExtBuilder::default()
-			.with_balances(vec![(ALICE.into(), 1000 * UNIT)])
+			.with_balances(vec![(alice, 1000 * UNIT)])
 			.build()
 			.execute_with(|| {
 				assert_ok!(pallet_proxy::Pallet::<Runtime>::create_pure(
-					RuntimeOrigin::signed(ALICE.into()),
+					RuntimeOrigin::signed(alice),
 					ProxyType::Any,
 					0,
 					0,
@@ -129,18 +128,20 @@ mod tests {
 	fn add_proxy_to_pure_proxy_should_succeed() {
 		let delay = 0;
 		let index = 0;
-		let pure_proxy = AccountId::from_str("0xdc3ad402ae77f7f0ecd253d7b41329d0142f78e6").unwrap();
+		let pure_proxy = AccountId::from_str("0x37228888117681e8afc3e6ff2de89863be918d34").unwrap();
+		let alice = AccountId::from_str(ALICE).unwrap();
+		let bob = AccountId::from_str(BOB).unwrap();
 
 		ExtBuilder::default()
 			.with_balances(vec![
-				(ALICE.into(), 1000 * UNIT),
-				(BOB.into(), 1000 * UNIT),
+				(alice, 1000 * UNIT),
+				(bob, 1000 * UNIT),
 				(pure_proxy, 1000 * UNIT),
 			])
 			.build()
 			.execute_with(|| {
 				assert_ok!(pallet_proxy::Pallet::<Runtime>::create_pure(
-					RuntimeOrigin::signed(ALICE.into()),
+					RuntimeOrigin::signed(alice),
 					ProxyType::Any,
 					delay,
 					index,
@@ -148,7 +149,7 @@ mod tests {
 
 				assert_eq!(
 					pallet_proxy::Pallet::<Runtime>::pure_account(
-						&AccountId::from(ALICE),
+						&alice,
 						&ProxyType::Any,
 						index,
 						None,
@@ -162,7 +163,7 @@ mod tests {
 				// Add a proxy and verify the count increases to 2
 				assert_ok!(pallet_proxy::Pallet::<Runtime>::add_proxy(
 					RuntimeOrigin::signed(pure_proxy),
-					BOB.into(),
+					bob,
 					ProxyType::Any,
 					delay,
 				));
