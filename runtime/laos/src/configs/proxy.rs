@@ -88,8 +88,9 @@ mod tests {
 	use crate::{
 		currency::{MILLIUNIT, UNIT},
 		tests::ExtBuilder,
-		RuntimeOrigin,
+		AccountId, RuntimeOrigin,
 	};
+	use core::str::FromStr;
 	use frame_support::assert_ok;
 
 	#[test]
@@ -107,6 +108,7 @@ mod tests {
 	}
 
 	const ALICE: [u8; 20] = [1; 20];
+	const BOB: [u8; 20] = [2; 20];
 
 	#[test]
 	fn create_pure_proxy() {
@@ -123,27 +125,48 @@ mod tests {
 			});
 	}
 
-	// #[test]
-	// fn add_proxy_to_pure_proxy_should_succeed() {
-	// 	let ALICE = AccountId::new([1u8; 32]);
-	// 	let BOB = AccountId::new([2u8; 32]);
-	// 	ExtBuilder::default()
-	// 		.with_balances(vec![(ALICE.into(), 4 * UNIT), (BOB.into(), 4 * UNIT)])
-	// 		.build()
-	// 		.execute_with(|| {
-	// 			assert_ok!(pallet_proxy::Proxy::<Runtime>::create_pure(
-	// 				Origin::signed(ALICE),
-	// 				ProxyType::Any,
-	// 				0,
-	// 				0,
-	// 			));
-	// 			assert_ok!(pallet_proxy::Proxy::<Runtime>::add_proxy(
-	// 				Origin::signed(ALICE),
-	// 				BOB,
-	// 				ProxyType::Any,
-	// 				0,
-	// 				0,
-	// 			));
-	// 		});
-	// }
+	#[test]
+	fn add_proxy_to_pure_proxy_should_succeed() {
+		let delay = 0;
+		let index = 0;
+		let pure_proxy = AccountId::from_str("0xdc3ad402ae77f7f0ecd253d7b41329d0142f78e6").unwrap();
+
+		ExtBuilder::default()
+			.with_balances(vec![
+				(ALICE.into(), 1000 * UNIT),
+				(BOB.into(), 1000 * UNIT),
+				(pure_proxy, 1000 * UNIT),
+			])
+			.build()
+			.execute_with(|| {
+				assert_ok!(pallet_proxy::Pallet::<Runtime>::create_pure(
+					RuntimeOrigin::signed(ALICE.into()),
+					ProxyType::Any,
+					delay,
+					index,
+				));
+
+				assert_eq!(
+					pallet_proxy::Pallet::<Runtime>::pure_account(
+						&AccountId::from(ALICE),
+						&ProxyType::Any,
+						index,
+						None,
+					),
+					pure_proxy
+				);
+
+				// Initially, there should be 1 proxy after creation
+				assert_eq!(pallet_proxy::Pallet::<Runtime>::proxies(&pure_proxy).0.len(), 1);
+
+				// Add a proxy and verify the count increases to 2
+				assert_ok!(pallet_proxy::Pallet::<Runtime>::add_proxy(
+					RuntimeOrigin::signed(pure_proxy),
+					BOB.into(),
+					ProxyType::Any,
+					delay,
+				));
+				assert_eq!(pallet_proxy::Pallet::<Runtime>::proxies(&pure_proxy).0.len(), 2);
+			});
+	}
 }
