@@ -92,6 +92,7 @@ mod tests {
 	};
 	use core::str::FromStr;
 	use frame_support::assert_ok;
+	use sp_runtime::traits::Dispatchable;
 
 	#[test]
 	fn check_deposits() {
@@ -115,12 +116,13 @@ mod tests {
 			.with_balances(vec![(alice, 1000 * UNIT)])
 			.build()
 			.execute_with(|| {
-				assert_ok!(pallet_proxy::Pallet::<Runtime>::create_pure(
-					RuntimeOrigin::signed(alice),
-					ProxyType::Any,
-					0,
-					0,
-				));
+				let call = RuntimeCall::Proxy(pallet_proxy::Call::create_pure {
+					proxy_type: ProxyType::Any,
+					index: 0, // index
+					delay: 0, // delay
+				});
+
+				assert_ok!(call.dispatch(RuntimeOrigin::signed(alice)));
 			});
 	}
 
@@ -140,12 +142,12 @@ mod tests {
 			])
 			.build()
 			.execute_with(|| {
-				assert_ok!(pallet_proxy::Pallet::<Runtime>::create_pure(
-					RuntimeOrigin::signed(alice),
-					ProxyType::Any,
-					delay,
-					index,
-				));
+				let call = RuntimeCall::Proxy(pallet_proxy::Call::create_pure {
+					proxy_type: ProxyType::Any,
+					index, // index
+					delay, // delay
+				});
+				assert_ok!(call.dispatch(RuntimeOrigin::signed(alice)));
 
 				assert_eq!(
 					pallet_proxy::Pallet::<Runtime>::pure_account(
@@ -161,12 +163,12 @@ mod tests {
 				assert_eq!(pallet_proxy::Pallet::<Runtime>::proxies(&pure_proxy).0.len(), 1);
 
 				// Add a proxy and verify the count increases to 2
-				assert_ok!(pallet_proxy::Pallet::<Runtime>::add_proxy(
-					RuntimeOrigin::signed(pure_proxy),
-					bob,
-					ProxyType::Any,
+				let call = RuntimeCall::Proxy(pallet_proxy::Call::add_proxy {
+					delegate: bob,
+					proxy_type: ProxyType::Any,
 					delay,
-				));
+				});
+				assert_ok!(call.dispatch(RuntimeOrigin::signed(pure_proxy)));
 				assert_eq!(pallet_proxy::Pallet::<Runtime>::proxies(&pure_proxy).0.len(), 2);
 			});
 	}
