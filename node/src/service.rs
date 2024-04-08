@@ -512,6 +512,7 @@ fn build_import_queue(
 	))
 }
 
+#[allow(clippy::too_many_arguments)]
 fn start_consensus(
 	client: Arc<ParachainClient>,
 	block_import: ParachainBlockImport,

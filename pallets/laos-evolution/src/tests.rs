@@ -547,7 +547,7 @@ fn disable_public_minting_for_nonexistent_collection_fails() {
 #[test]
 fn is_public_minting_enabled_for_nonexistent_returns_false() {
 	new_test_ext().execute_with(|| {
-		assert_eq!(LaosEvolution::is_public_minting_enabled(0), false);
+		assert!(!LaosEvolution::is_public_minting_enabled(0));
 	});
 }
 
@@ -556,11 +556,11 @@ fn is_public_minting_enabled_returns_updated_value() {
 	new_test_ext().execute_with(|| {
 		let collection_id = create_collection(ALICE);
 		let who = AccountId::from_str(ALICE).unwrap();
-		assert_eq!(LaosEvolution::is_public_minting_enabled(collection_id), false);
+		assert!(!LaosEvolution::is_public_minting_enabled(collection_id));
 		assert_ok!(LaosEvolution::enable_public_minting(who, collection_id));
-		assert_eq!(LaosEvolution::is_public_minting_enabled(collection_id), true);
+		assert!(LaosEvolution::is_public_minting_enabled(collection_id));
 		assert_ok!(LaosEvolution::disable_public_minting(who, collection_id));
-		assert_eq!(LaosEvolution::is_public_minting_enabled(collection_id), false);
+		assert!(!LaosEvolution::is_public_minting_enabled(collection_id));
 	});
 }
 

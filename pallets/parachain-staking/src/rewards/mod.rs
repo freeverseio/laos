@@ -56,7 +56,7 @@ mod tests {
 			paying_collator_rewards::<MintingRewards>(round_index, collator, amount);
 			paying_collator_rewards::<TransferFromRewardsAccount>(round_index, collator, amount);
 
-			assert_eq!(pallet_balances::Pallet::<Test>::free_balance(&collator), 0);
+			assert_eq!(pallet_balances::Pallet::<Test>::free_balance(collator), 0);
 
 			assert_no_events!();
 		});
@@ -74,7 +74,7 @@ mod tests {
 			paying_collator_rewards::<MintingRewards>(round_index, collator, amount);
 			paying_collator_rewards::<TransferFromRewardsAccount>(round_index, collator, amount);
 
-			assert_eq!(pallet_balances::Pallet::<Test>::free_balance(&collator), 17);
+			assert_eq!(pallet_balances::Pallet::<Test>::free_balance(collator), 17);
 
 			assert_events_eq_match!(
 				Event::Rewarded { account: 10, rewards: 8 },
@@ -95,7 +95,7 @@ mod tests {
 			paying_collator_rewards::<MintingRewards>(round_index, collator, amount);
 			paying_collator_rewards::<TransferFromRewardsAccount>(round_index, collator, amount);
 
-			assert_eq!(pallet_balances::Pallet::<Test>::free_balance(&collator), 1);
+			assert_eq!(pallet_balances::Pallet::<Test>::free_balance(collator), 1);
 
 			assert_events_eq_match!(
 				Event::Rewarded { account: 10, rewards: 0 },
@@ -132,7 +132,7 @@ mod tests {
 			assert_ok!(paying::<MintingRewards>(delegator, amount), 0);
 			assert_ok!(paying::<TransferFromRewardsAccount>(delegator, amount), 0);
 
-			assert_eq!(pallet_balances::Pallet::<Test>::free_balance(&delegator), 1);
+			assert_eq!(pallet_balances::Pallet::<Test>::free_balance(delegator), 1);
 		});
 	}
 
@@ -147,7 +147,7 @@ mod tests {
 			assert_ok!(paying::<MintingRewards>(delegator, amount), 100);
 			assert_ok!(paying::<TransferFromRewardsAccount>(delegator, amount), 100);
 
-			assert_eq!(pallet_balances::Pallet::<Test>::free_balance(&delegator), 201);
+			assert_eq!(pallet_balances::Pallet::<Test>::free_balance(delegator), 201);
 		});
 	}
 }

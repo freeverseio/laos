@@ -69,13 +69,13 @@ fn generic_chain_config(
 		name,
 		id,
 		chain_type,
-		move || create_test_genesis_config(),
+		create_test_genesis_config,
 		Vec::new(),
 		None,
 		protocol_id,
 		None,
 		Some(properties()),
-		Extensions { relay_chain: "rococo-local".into(), para_id: PARA_ID.into() },
+		Extensions { relay_chain: "rococo-local".into(), para_id: PARA_ID },
 	)
 }
 

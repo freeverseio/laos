@@ -237,13 +237,13 @@ mod tests {
 
 				// do some delegations for Alice, Bob and Charlie to 1, 2, 3 candidates
 				// they have the lowest stake, they should be top candidates with this delegation
-				for (i, acc) in vec![ALICE, BOB, CHARLIE].iter().enumerate() {
+				for (i, acc) in [ALICE, BOB, CHARLIE].iter().enumerate() {
 					// check that the candidate is not in the last session's candidates
 					assert!(!new_session.contains(&candidates[i].0.clone()));
 
 					ParachainStaking::delegate_with_auto_compound(
-						RuntimeOrigin::signed(acc.clone().into()),
-						candidates[i].0.clone().into(),
+						RuntimeOrigin::signed((*acc).into()),
+						candidates[i].0,
 						min_delegation * 3,
 						Percent::from_percent(100),
 						0,
@@ -337,7 +337,7 @@ mod tests {
 
 			// Estimate the next session rotation.
 			let (next_session, _) = ParachainStakingAdapter::estimate_next_session_rotation(1);
-			assert_eq!(next_session, Some(MinBlocksPerRound::get() as u32));
+			assert_eq!(next_session, Some(MinBlocksPerRound::get()));
 		});
 	}
 

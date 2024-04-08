@@ -16,12 +16,8 @@
 
 //! Living assets precompile tests.
 
-//TODO: remove this and fix clippy issues
-#![allow(clippy::redundant_closure_call)]
-
-use core::str::FromStr;
-
 use super::*;
+use core::str::FromStr;
 use evm::Context;
 use fp_evm::{Log, PrecompileSet};
 use mock::*;
@@ -47,7 +43,7 @@ fn precompiles() -> MockPrecompileSet<Test> {
 fn create_collection(owner: impl Into<H160>) -> H160 {
 	let owner: H160 = owner.into();
 	let input = EvmDataWriter::new_with_selector(CollectionFactoryAction::CreateCollection)
-		.write(Address(owner.clone()))
+		.write(Address(owner))
 		.build();
 
 	let mut handle = MockHandle::new(
@@ -63,7 +59,7 @@ fn create_collection(owner: impl Into<H160>) -> H160 {
 
 	let res = precompiles().execute(&mut handle).unwrap().unwrap();
 
-	H160::from_slice(&res.output.as_slice()[12..].as_ref())
+	H160::from_slice(res.output.as_slice()[12..].as_ref())
 }
 
 /// Utility function to mint a token with external token uri
@@ -79,7 +75,7 @@ fn mint(
 ) -> TokenId {
 	let owner: H160 = owner.into();
 	let input = EvmDataWriter::new_with_selector(Action::Mint)
-		.write(Address(owner.clone()))
+		.write(Address(owner))
 		.write(U256::from(slot))
 		.write(Bytes(token_uri))
 		.build();
@@ -160,7 +156,7 @@ fn mint_should_generate_log() {
 #[test]
 fn unexistent_selector_should_revert() {
 	new_test_ext().execute_with(|| {
-		let input = EvmDataWriter::new_with_selector(0x12345678 as u32).build();
+		let input = EvmDataWriter::new_with_selector(0x12345678_u32).build();
 
 		precompiles()
 			.prepare_test(H160([1u8; 20]), H160(EVOLUTION_FACTORY_PRECOMPILE_ADDRESS), input)
