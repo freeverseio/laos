@@ -195,28 +195,14 @@ impl_opaque_keys! {
 		pub aura: Aura,
 	}
 }
-/// Version of the runtime
-#[cfg(feature = "try-runtime")]
-#[sp_version::runtime_version]
-pub const VERSION: RuntimeVersion = RuntimeVersion {
-	spec_name: create_runtime_str!("laos"),
-	impl_name: create_runtime_str!("laos"),
-	authoring_version: 1,
-	spec_version: 1300,
-	impl_version: 0,
-	apis: RUNTIME_API_VERSIONS,
-	transaction_version: 1,
-	state_version: 1,
-};
 
 /// Version of the runtime
-#[cfg(not(feature = "try-runtime"))]
 #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("klaos"),
 	impl_name: create_runtime_str!("klaos"),
 	authoring_version: 1,
-	spec_version: 1300,
+	spec_version: 1400,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
