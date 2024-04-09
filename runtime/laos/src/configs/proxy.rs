@@ -80,6 +80,10 @@ impl InstanceFilter<RuntimeCall> for ProxyType {
 	fn filter(&self, _c: &RuntimeCall) -> bool {
 		matches!(self, ProxyType::Any)
 	}
+
+	fn is_superset(&self, o: &Self) -> bool {
+		self == &ProxyType::Any || self == o
+	}
 }
 
 #[cfg(test)]
@@ -92,6 +96,7 @@ mod tests {
 	};
 	use core::str::FromStr;
 	use frame_support::assert_ok;
+	use frame_system::RawOrigin;
 	use sp_runtime::traits::Dispatchable;
 
 	#[test]
@@ -130,18 +135,14 @@ mod tests {
 	fn add_proxy_to_pure_proxy_should_succeed() {
 		let delay = 0;
 		let index = 0;
-		let pure_proxy = AccountId::from_str("0x37228888117681e8afc3e6ff2de89863be918d34").unwrap();
 		let alice = AccountId::from_str(ALICE).unwrap();
 		let bob = AccountId::from_str(BOB).unwrap();
 
 		ExtBuilder::default()
-			.with_balances(vec![
-				(alice, 1000 * UNIT),
-				(bob, 1000 * UNIT),
-				(pure_proxy, 1000 * UNIT),
-			])
+			.with_balances(vec![(alice, 1000 * UNIT), (bob, 1000 * UNIT)])
 			.build()
 			.execute_with(|| {
+				frame_system::Pallet::<Runtime>::set_block_number(1);
 				let call = RuntimeCall::Proxy(pallet_proxy::Call::create_pure {
 					proxy_type: ProxyType::Any,
 					index, // index
@@ -149,26 +150,46 @@ mod tests {
 				});
 				assert_ok!(call.dispatch(RuntimeOrigin::signed(alice)));
 
+				// Get pure proxy address from event
+				let events = frame_system::Pallet::<Runtime>::events();
+				let pure_proxy = match events.last().unwrap().event {
+					RuntimeEvent::Proxy(pallet_proxy::Event::PureCreated { pure, .. }) => pure,
+					_ => panic!("unexpected event"),
+				};
+
 				assert_eq!(
-					pallet_proxy::Pallet::<Runtime>::pure_account(
+					&pallet_proxy::Pallet::<Runtime>::pure_account(
 						&alice,
 						&ProxyType::Any,
 						index,
 						None,
 					),
-					pure_proxy
+					&pure_proxy
 				);
+
+				// Send some money to pure proxy
+				let call = RuntimeCall::Balances(pallet_balances::Call::force_transfer {
+					source: alice,
+					dest: pure_proxy,
+					value: 100 * UNIT,
+				});
+				assert_ok!(call.dispatch(RawOrigin::Root.into()));
 
 				// Initially, there should be 1 proxy after creation
 				assert_eq!(pallet_proxy::Pallet::<Runtime>::proxies(&pure_proxy).0.len(), 1);
 
 				// Add a proxy and verify the count increases to 2
-				let call = RuntimeCall::Proxy(pallet_proxy::Call::add_proxy {
+				let call = Box::new(RuntimeCall::Proxy(pallet_proxy::Call::add_proxy {
 					delegate: bob,
 					proxy_type: ProxyType::Any,
 					delay,
-				});
-				assert_ok!(call.dispatch(RuntimeOrigin::signed(pure_proxy)));
+				}));
+				assert_ok!(pallet_proxy::Pallet::<Runtime>::proxy(
+					RuntimeOrigin::signed(alice),
+					pure_proxy,
+					None,
+					call
+				));
 				assert_eq!(pallet_proxy::Pallet::<Runtime>::proxies(&pure_proxy).0.len(), 2);
 			});
 	}
