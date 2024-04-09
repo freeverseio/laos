@@ -179,7 +179,7 @@ mod tests {
 				assert_ok!(call.dispatch(RawOrigin::Root.into()));
 
 				// Initially, there should be 1 proxy after creation
-				assert_eq!(pallet_proxy::Pallet::<Runtime>::proxies(&pure_proxy).0.len(), 1);
+				assert_eq!(pallet_proxy::Pallet::<Runtime>::proxies(pure_proxy).0.len(), 1);
 
 				// Add a proxy and verify the count increases to 2
 				let call = RuntimeCall::Proxy(pallet_proxy::Call::add_proxy {
@@ -194,7 +194,7 @@ mod tests {
 					call: Box::new(call),
 				});
 				assert_ok!(call.dispatch(RuntimeOrigin::signed(alice)));
-				assert_eq!(pallet_proxy::Pallet::<Runtime>::proxies(&pure_proxy).0.len(), 2);
+				assert_eq!(pallet_proxy::Pallet::<Runtime>::proxies(pure_proxy).0.len(), 2);
 			});
 	}
 }
