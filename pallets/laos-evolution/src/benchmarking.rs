@@ -114,7 +114,7 @@ mod benchmarks {
 		let caller: T::AccountId = whitelisted_caller();
 		let owner = caller.clone();
 		let collection_id = LaosEvolution::<T>::create_collection(owner.clone()).unwrap();
-		let _ = LaosEvolution::<T>::enable_public_minting(owner.clone(), collection_id).unwrap();
+		LaosEvolution::<T>::enable_public_minting(owner.clone(), collection_id).unwrap();
 
 		#[block]
 		{

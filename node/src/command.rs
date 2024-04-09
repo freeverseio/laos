@@ -69,15 +69,10 @@ fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 		path => {
 			let chain_spec =
 				chain_spec::laos::ChainSpec::from_json_file(std::path::PathBuf::from(path))?;
-			if chain_spec.id().starts_with("klaos") {
-				Box::new(chain_spec::klaos::ChainSpec::from_json_file(std::path::PathBuf::from(
-					path,
-				))?)
-			} else if chain_spec.id().starts_with("giedi") {
-				Box::new(chain_spec::klaos::ChainSpec::from_json_file(std::path::PathBuf::from(
-					path,
-				))?)
-			} else if chain_spec.id().starts_with("caladan") {
+			if chain_spec.id().starts_with("klaos") ||
+				chain_spec.id().starts_with("giedi") ||
+				chain_spec.id().starts_with("caladan")
+			{
 				Box::new(chain_spec::klaos::ChainSpec::from_json_file(std::path::PathBuf::from(
 					path,
 				))?)
@@ -352,6 +347,7 @@ pub fn run() -> Result<()> {
 
 			runner.async_run(|_| {
 				Ok((
+					#[allow(deprecated)]
 					cmd.run::<Block, HostFunctionsOf<ParachainNativeExecutor>, _>(Some(
 						info_provider,
 					)),

@@ -16,14 +16,9 @@
 
 //! Living assets precompile tests.
 
-//TODO: remove this and fix clippy issues
-#![allow(clippy::redundant_closure_call)]
-
-use core::str::FromStr;
-
-use crate::mock::*;
-
 use super::*;
+use crate::mock::*;
+use core::str::FromStr;
 use fp_evm::Log;
 use pallet_evm::AccountCodes;
 use precompile_utils::testing::PrecompileTesterExt;
@@ -131,7 +126,7 @@ fn create_collection_assign_collection_to_caller() {
 			.prepare_test(H160([1u8; 20]), H160(PRECOMPILE_ADDRESS), input)
 			.execute_returns(expected_output);
 
-		assert_eq!(LaosEvolution::<Test>::collection_owner(0), Some(H160([1u8; 20].into())));
+		assert_eq!(LaosEvolution::<Test>::collection_owner(0), Some(H160([1u8; 20])));
 	});
 }
 
@@ -154,10 +149,10 @@ fn create_collection_inserts_bytecode_to_address() {
 
 		let collection_address = &H160::from_str(expected_address).unwrap();
 		// Address is not empty
-		assert!(!Evm::<Test>::is_account_empty(&collection_address));
+		assert!(!Evm::<Test>::is_account_empty(collection_address));
 
 		// Address has correct code
-		assert!(AccountCodes::<Test>::get(&collection_address) == REVERT_BYTECODE);
+		assert!(AccountCodes::<Test>::get(collection_address) == REVERT_BYTECODE);
 	});
 }
 

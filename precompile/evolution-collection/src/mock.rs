@@ -139,6 +139,7 @@ impl pallet_evm::Config for Test {
 	type WeightInfo = ();
 }
 
+#[derive(Default)]
 pub struct MockPrecompileSet<Test>(sp_std::marker::PhantomData<Test>);
 
 pub type MockEvolutionCollectionPrecompile = EvolutionCollectionPrecompile<Test>;
@@ -166,12 +167,12 @@ where
 				Some(MockEvolutionCollectionPrecompile::execute(handle)),
 			H160(EVOLUTION_FACTORY_PRECOMPILE_ADDRESS) =>
 				Some(MockEvolutionCollectionFactoryPrecompile::execute(handle)),
-			_ => return None,
+			_ => None,
 		}
 	}
 
 	fn is_precompile(&self, _address: H160, _gas: u64) -> fp_evm::IsPrecompileResult {
-		return fp_evm::IsPrecompileResult::Answer { is_precompile: true, extra_cost: 0 }
+		fp_evm::IsPrecompileResult::Answer { is_precompile: true, extra_cost: 0 }
 	}
 }
 

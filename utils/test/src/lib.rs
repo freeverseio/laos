@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
+#![allow(clippy::tabs_in_doc_comments, clippy::crate_in_macro_def)]
+
 //! Contains commonly used test functions and types
 
 /// Rolls to a block number by simulating the block production
@@ -57,8 +59,8 @@ macro_rules! assert_no_events {
 /// ```
 /// assert_events_eq!(
 /// 		Foo { x: 1, y: 2 },
-/// 		Bar { value: "test" },
-/// 		Baz { a: 10, b: 20 },
+/// 	Bar { value: "test" },
+/// 	Baz { a: 10, b: 20 },
 /// );
 /// ```
 #[macro_export]
@@ -77,8 +79,8 @@ macro_rules! assert_events_eq {
 ///
 /// ```
 /// assert_events_emitted!(
-/// 		Foo { x: 1, y: 2 },
-/// 		Baz { a: 10, b: 20 },
+/// 	Foo { x: 1, y: 2 },
+/// 	Baz { a: 10, b: 20 },
 /// );
 /// ```
 #[macro_export]
@@ -107,8 +109,8 @@ macro_rules! assert_events_emitted {
 ///
 /// ```
 /// assert_events_not_emitted!(
-/// 		Foo { x: 1, y: 2 },
-/// 		Bar { value: "test" },
+/// 	Foo { x: 1, y: 2 },
+/// 	Bar { value: "test" },
 /// );
 /// ```
 #[macro_export]
@@ -137,9 +139,9 @@ macro_rules! assert_events_not_emitted {
 ///
 /// ```
 /// assert_events_eq_match!(
-/// 		Foo { x: 1, .. },
-/// 		Bar { .. },
-/// 		Baz { a: 10, b: 20 },
+/// 	Foo { x: 1, .. },
+/// 	Bar { .. },
+/// 	Baz { a: 10, b: 20 },
 /// );
 /// ```
 #[macro_export]
@@ -180,8 +182,8 @@ macro_rules! assert_events_eq_match {
 ///
 /// ```
 /// assert_events_emitted_match!(
-/// 		Foo { x: 1, .. },
-/// 		Baz { a: 10, b: 20 },
+/// 	Foo { x: 1, .. },
+/// 	Baz { a: 10, b: 20 },
 /// );
 /// ```
 #[macro_export]
@@ -208,8 +210,8 @@ macro_rules! assert_events_emitted_match {
 ///
 /// ```
 /// assert_events_not_emitted_match!(
-/// 		Foo { x: 1, .. },
-/// 		Baz { a: 10, b: 20 },
+/// 	Foo { x: 1, .. },
+/// 	Baz { a: 10, b: 20 },
 /// );
 /// ```
 #[macro_export]

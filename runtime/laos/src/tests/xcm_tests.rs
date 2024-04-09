@@ -51,6 +51,7 @@ use cumulus_primitives_core::{
 
 use frame_support::{assert_noop, assert_ok, traits::fungibles::Inspect, weights::Weight};
 use frame_system::RawOrigin;
+use laos_primitives::AccountId;
 use parity_scale_codec::Encode;
 use staging_xcm::v3;
 use xcm_simulator::TestExt;
@@ -86,11 +87,9 @@ fn transact<Runtime: pallet_xcm::Config>(dest: MultiLocation, encoded_call: Vec<
 			beneficiary: MultiLocation {
 				parents: 0,
 				interior: AccountKey20 { network: None, key: ALITH.0 }.into(),
-			}
-			.into(),
+			},
 		},
-	]
-	.into());
+	]);
 
 	assert_ok!(pallet_xcm::Pallet::<Runtime>::send(
 		RawOrigin::Root.into(),
@@ -109,7 +108,7 @@ fn basic_dmp() {
 	);
 
 	Relay::execute_with(|| {
-		transact::<MockRelayChainRuntime>(Parachain(1).into(), remark.encode().into());
+		transact::<MockRelayChainRuntime>(Parachain(1).into(), remark.encode());
 	});
 
 	// Execute remote transact and verify that `Remarked` event is emitted.
@@ -179,8 +178,7 @@ fn laos_para_to_other_para_reserver_transfer_and_back() {
 				.into(),
 			),
 			Box::new(
-				vec![MultiAsset { id: MultiLocation::here().into(), fun: Fungible(amount) }.into()]
-					.into()
+				vec![MultiAsset { id: MultiLocation::here().into(), fun: Fungible(amount) }].into()
 			),
 			0,
 			Unlimited,
@@ -246,7 +244,8 @@ fn laos_para_to_other_para_reserver_transfer_and_back() {
 		}));
 
 		// calculate the final balance of ALITH
-		let rounded_balance = LaosParachainBalances::free_balance(&ALITH.0.into()) / UNIT * UNIT;
+		let rounded_balance =
+			LaosParachainBalances::free_balance(AccountId::from(ALITH.0)) / UNIT * UNIT;
 
 		assert_eq!(rounded_balance, INITIAL_BALANCE - UNIT);
 	});
@@ -320,7 +319,6 @@ fn local_xcm_execution_is_filtered_out() {
 							parents: 0,
 							interior: AccountKey20 { network: None, key: ALITH.0 }.into(),
 						}
-						.into(),
 					},
 				]))),
 				Weight::from_parts(1_000_000_000, 1024 * 1024),
@@ -348,8 +346,7 @@ fn teleport_is_disabled() {
 				.into()
 			),
 			Box::new(
-				vec![MultiAsset { id: MultiLocation::here().into(), fun: Fungible(UNIT) }.into()]
-					.into()
+				vec![MultiAsset { id: MultiLocation::here().into(), fun: Fungible(UNIT) }].into()
 			),
 			0,
 			Unlimited,

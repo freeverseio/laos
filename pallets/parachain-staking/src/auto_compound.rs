@@ -36,13 +36,14 @@ pub struct AutoCompoundConfig<AccountId> {
 	pub value: Percent,
 }
 
+pub type AddGetOf<T> = AddGet<
+	<T as Config>::MaxTopDelegationsPerCandidate,
+	<T as Config>::MaxBottomDelegationsPerCandidate,
+>;
 /// Represents the auto-compounding [Delegations] for `T: Config`
 #[derive(Clone, Eq, PartialEq, RuntimeDebug)]
 pub struct AutoCompoundDelegations<T: Config>(
-	BoundedVec<
-		AutoCompoundConfig<T::AccountId>,
-		AddGet<T::MaxTopDelegationsPerCandidate, T::MaxBottomDelegationsPerCandidate>,
-	>,
+	BoundedVec<AutoCompoundConfig<T::AccountId>, AddGetOf<T>>,
 );
 
 impl<T> AutoCompoundDelegations<T>
@@ -53,10 +54,7 @@ where
 	/// This is used for testing purposes only.
 	#[cfg(test)]
 	pub fn new(
-		sorted_delegations: BoundedVec<
-			AutoCompoundConfig<T::AccountId>,
-			AddGet<T::MaxTopDelegationsPerCandidate, T::MaxBottomDelegationsPerCandidate>,
-		>,
+		sorted_delegations: BoundedVec<AutoCompoundConfig<T::AccountId>, AddGetOf<T>>,
 	) -> Self {
 		Self(sorted_delegations)
 	}
@@ -78,7 +76,7 @@ where
 	/// Retrieves the auto-compounding value for a delegation. The `delegations_config` must be a
 	/// sorted vector for binary_search to work.
 	pub fn get_for_delegator(&self, delegator: &T::AccountId) -> Option<Percent> {
-		match self.0.binary_search_by(|d| d.delegator.cmp(&delegator)) {
+		match self.0.binary_search_by(|d| d.delegator.cmp(delegator)) {
 			Ok(index) => Some(self.0[index].value),
 			Err(_) => None,
 		}
@@ -112,7 +110,7 @@ where
 	/// Returns `true` if the entry was removed, `false` otherwise. The `delegations_config` must be
 	/// a sorted vector for binary_search to work.
 	pub fn remove_for_delegator(&mut self, delegator: &T::AccountId) -> bool {
-		match self.0.binary_search_by(|d| d.delegator.cmp(&delegator)) {
+		match self.0.binary_search_by(|d| d.delegator.cmp(delegator)) {
 			Ok(index) => {
 				self.0.remove(index);
 				true
@@ -126,25 +124,20 @@ where
 		self.0.len() as u32
 	}
 
+	/// Is the inner vector empty?
+	pub fn is_empty(&self) -> bool {
+		self.0.is_empty()
+	}
+
 	/// Returns a reference to the inner vector.
 	#[cfg(test)]
-	pub fn inner(
-		&self,
-	) -> &BoundedVec<
-		AutoCompoundConfig<T::AccountId>,
-		AddGet<T::MaxTopDelegationsPerCandidate, T::MaxBottomDelegationsPerCandidate>,
-	> {
+	pub fn inner(&self) -> &BoundedVec<AutoCompoundConfig<T::AccountId>, AddGetOf<T>> {
 		&self.0
 	}
 
 	/// Converts the [AutoCompoundDelegations] into the inner vector.
 	#[cfg(test)]
-	pub fn into_inner(
-		self,
-	) -> BoundedVec<
-		AutoCompoundConfig<T::AccountId>,
-		AddGet<T::MaxTopDelegationsPerCandidate, T::MaxBottomDelegationsPerCandidate>,
-	> {
+	pub fn into_inner(self) -> BoundedVec<AutoCompoundConfig<T::AccountId>, AddGetOf<T>> {
 		self.0
 	}
 
@@ -219,7 +212,7 @@ where
 		// set auto-compound config if the percent is non-zero
 		if !auto_compound.is_zero() {
 			let mut auto_compounding_state = Self::get_storage(&candidate);
-			auto_compounding_state.set_for_delegator(delegator.clone(), auto_compound.clone())?;
+			auto_compounding_state.set_for_delegator(delegator.clone(), auto_compound)?;
 			auto_compounding_state.set_storage(&candidate);
 		}
 
@@ -280,16 +273,14 @@ where
 	pub(crate) fn remove_auto_compound(candidate: &T::AccountId, delegator: &T::AccountId) {
 		let mut auto_compounding_state = Self::get_storage(candidate);
 		if auto_compounding_state.remove_for_delegator(delegator) {
-			auto_compounding_state.set_storage(&candidate);
+			auto_compounding_state.set_storage(candidate);
 		}
 	}
 
 	/// Returns the value of auto-compound, if it exists for a given delegation, zero otherwise.
 	pub(crate) fn auto_compound(candidate: &T::AccountId, delegator: &T::AccountId) -> Percent {
 		let delegations_config = Self::get_storage(candidate);
-		delegations_config
-			.get_for_delegator(&delegator)
-			.unwrap_or_else(|| Percent::zero())
+		delegations_config.get_for_delegator(delegator).unwrap_or_else(Percent::zero)
 	}
 }
 
@@ -302,12 +293,9 @@ mod tests {
 	fn test_set_for_delegator_inserts_config_and_returns_true_if_entry_missing() {
 		let mut delegations_config =
 			AutoCompoundDelegations::<Test>::new(vec![].try_into().expect("must succeed"));
-		assert_eq!(
-			true,
-			delegations_config
-				.set_for_delegator(1, Percent::from_percent(50))
-				.expect("must succeed")
-		);
+		assert!(delegations_config
+			.set_for_delegator(1, Percent::from_percent(50))
+			.expect("must succeed"));
 		assert_eq!(
 			vec![AutoCompoundConfig { delegator: 1, value: Percent::from_percent(50) }],
 			delegations_config.into_inner().into_inner(),
@@ -321,12 +309,9 @@ mod tests {
 				.try_into()
 				.expect("must succeed"),
 		);
-		assert_eq!(
-			true,
-			delegations_config
-				.set_for_delegator(1, Percent::from_percent(50))
-				.expect("must succeed")
-		);
+		assert!(delegations_config
+			.set_for_delegator(1, Percent::from_percent(50))
+			.expect("must succeed"));
 		assert_eq!(
 			vec![AutoCompoundConfig { delegator: 1, value: Percent::from_percent(50) }],
 			delegations_config.into_inner().into_inner(),
@@ -340,12 +325,9 @@ mod tests {
 				.try_into()
 				.expect("must succeed"),
 		);
-		assert_eq!(
-			false,
-			delegations_config
-				.set_for_delegator(1, Percent::from_percent(10))
-				.expect("must succeed")
-		);
+		assert!(!delegations_config
+			.set_for_delegator(1, Percent::from_percent(10))
+			.expect("must succeed"));
 		assert_eq!(
 			vec![AutoCompoundConfig { delegator: 1, value: Percent::from_percent(10) }],
 			delegations_config.into_inner().into_inner(),
@@ -356,7 +338,7 @@ mod tests {
 	fn test_remove_for_delegator_returns_false_if_entry_was_missing() {
 		let mut delegations_config =
 			AutoCompoundDelegations::<Test>::new(vec![].try_into().expect("must succeed"));
-		assert_eq!(false, delegations_config.remove_for_delegator(&1),);
+		assert!(!delegations_config.remove_for_delegator(&1),);
 	}
 
 	#[test]
@@ -366,6 +348,6 @@ mod tests {
 				.try_into()
 				.expect("must succeed"),
 		);
-		assert_eq!(true, delegations_config.remove_for_delegator(&1));
+		assert!(delegations_config.remove_for_delegator(&1));
 	}
 }

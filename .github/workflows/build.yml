@@ -68,7 +68,7 @@ jobs:
           rustup component add clippy
       - name: Check clippy
         run: |
-          cargo clippy --all-targets --workspace --features runtime-benchmarks --features try-runtime
+          SKIP_WASM_BUILD=1 cargo clippy --all-targets --workspace --features runtime-benchmarks --features try-runtime -- -D warnings
   test:
     runs-on:
       group: laos
@@ -84,7 +84,7 @@ jobs:
         run: |
           SKIP_WASM_BUILD=1 cargo test
 
-  try-runtime-klaos:
+  try-runtime:
     runs-on:
       group: laos
       labels: ubuntu-16-cores
@@ -99,7 +99,10 @@ jobs:
           cargo build --release --locked --package laos --features=try-runtime
       - name: Try Runtime for Klaos
         run: |
-          RUST_LOG=try-runtime ./target/release/laos try-runtime --chain klaos-dev --runtime ./target/release/wbuild/klaos-runtime/klaos_runtime.wasm on-runtime-upgrade --checks=pre-and-post live --uri ws://159.223.241.90:9944
+          RUST_LOG=try-runtime ./target/release/laos try-runtime --runtime ./target/release/wbuild/klaos-runtime/klaos_runtime.wasm on-runtime-upgrade --checks=pre-and-post live --uri ws://159.223.241.90:9944
+      - name: Try Runtime for Laos Omega
+        run: |
+          RUST_LOG=try-runtime ./target/release/laos try-runtime --runtime ./target/release/wbuild/laos-runtime/laos_runtime.wasm on-runtime-upgrade --checks=pre-and-post live --uri ws://174.138.104.13:9944
 
   e2e-tests:
     runs-on:

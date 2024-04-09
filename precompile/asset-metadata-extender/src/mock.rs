@@ -129,6 +129,7 @@ impl FindAuthor<H160> for FindAuthorTruncated {
 	}
 }
 
+#[derive(Default)]
 pub struct MockPrecompileSet<Test>(sp_std::marker::PhantomData<Test>);
 
 pub type MockAssetMetadataExtenderPrecompile = AssetMetadataExtenderPrecompile<Test>;
@@ -151,7 +152,7 @@ where
 	}
 
 	fn is_precompile(&self, _address: H160, _gas: u64) -> fp_evm::IsPrecompileResult {
-		return fp_evm::IsPrecompileResult::Answer { is_precompile: true, extra_cost: 0 }
+		fp_evm::IsPrecompileResult::Answer { is_precompile: true, extra_cost: 0 }
 	}
 }
 

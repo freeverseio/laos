@@ -29,7 +29,6 @@ use frame_support::{
 use frame_system::pallet_prelude::BlockNumberFor;
 use sp_consensus_slots::Slot;
 use sp_core::ConstU32;
-use sp_io;
 use sp_runtime::{traits::IdentityLookup, BuildStorage, Perbill, Percent};
 
 pub use test_utils::*;
@@ -317,7 +316,7 @@ pub(crate) fn set_block_author(acc: u64) {
 
 /// fn to query the lock amount
 pub(crate) fn query_lock_amount(account_id: u64, id: LockIdentifier) -> Option<Balance> {
-	for lock in Balances::locks(&account_id) {
+	for lock in Balances::locks(account_id) {
 		if lock.id == id {
 			return Some(lock.amount);
 		}
@@ -409,8 +408,9 @@ fn geneses() {
 		});
 }
 
+#[allow(unused_imports)]
 #[frame_support::pallet]
-mod block_author {
+pub(crate) mod block_author {
 	use super::*;
 	use frame_support::{pallet_prelude::*, traits::Get};
 
