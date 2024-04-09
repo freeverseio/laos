@@ -68,7 +68,7 @@ jobs:
           rustup component add clippy
       - name: Check clippy
         run: |
-          cargo clippy --all-targets --workspace --features runtime-benchmarks --features try-runtime
+          SKIP_WASM_BUILD=1 cargo clippy --all-targets --workspace --features runtime-benchmarks --features try-runtime -- -D warnings
   test:
     runs-on:
       group: laos

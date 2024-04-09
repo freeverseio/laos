@@ -84,31 +84,20 @@ impl Contains<RuntimeCall> for BaseCallFilter {
 
 		match c {
 			// Transferability lock.
-			RuntimeCall::Balances(inner_call) => match inner_call {
-				transfer { .. } => false,
-				transfer_all { .. } => false,
-				transfer_keep_alive { .. } => false,
-				transfer_allow_death { .. } => false,
-				_ => true,
-			},
-			RuntimeCall::Vesting(inner_call) => match inner_call {
-				// Vested transfes are not allowed.
-				vested_transfer { .. } => false,
-				_ => true,
-			},
-			RuntimeCall::ParachainStaking(inner_call) => match inner_call {
-				// New candidates are not allowed.
-				join_candidates { .. } => false,
-				_ => true,
-			},
+			RuntimeCall::Balances(inner_call) => !matches!(
+				inner_call,
+				transfer { .. } |
+					transfer_all { .. } | transfer_keep_alive { .. } |
+					transfer_allow_death { .. }
+			),
+			// Vested transfes are not allowed.
+			RuntimeCall::Vesting(vested_transfer { .. }) => false,
+			// New candidates are not allowed.
+			RuntimeCall::ParachainStaking(join_candidates { .. }) => false,
 			// Ethereum pallet calls are not allowed.
-			RuntimeCall::Ethereum(inner_call) => match inner_call {
-				_ => false,
-			},
+			RuntimeCall::Ethereum(_) => false,
 			// EVM pallet calls are not allowed.
-			RuntimeCall::EVM(inner_call) => match inner_call {
-				_ => false,
-			},
+			RuntimeCall::EVM(_) => false,
 			_ => true,
 		}
 	}
@@ -136,7 +125,7 @@ mod tests {
 			let transfer_amount = 100;
 
 			let call = RuntimeCall::Balances(pallet_balances::Call::transfer {
-				dest: to_account.clone(),
+				dest: to_account,
 				value: transfer_amount,
 			});
 
@@ -154,7 +143,7 @@ mod tests {
 			let to_account = AccountId::from_str(BOB).unwrap();
 
 			let call = RuntimeCall::Balances(pallet_balances::Call::transfer_all {
-				dest: to_account.clone(),
+				dest: to_account,
 				keep_alive: false,
 			});
 
@@ -173,7 +162,7 @@ mod tests {
 			let transfer_amount = 100;
 
 			let call = RuntimeCall::Balances(pallet_balances::Call::transfer_keep_alive {
-				dest: to_account.clone(),
+				dest: to_account,
 				value: transfer_amount,
 			});
 
@@ -192,7 +181,7 @@ mod tests {
 			let transfer_amount = 100;
 
 			let call = RuntimeCall::Balances(pallet_balances::Call::transfer_allow_death {
-				dest: to_account.clone(),
+				dest: to_account,
 				value: transfer_amount,
 			});
 
@@ -216,7 +205,7 @@ mod tests {
 				pallet_vesting::VestingInfo::new(transfer_amount, per_block, starting_block);
 
 			let call = RuntimeCall::Vesting(pallet_vesting::Call::vested_transfer {
-				target: to_account.clone(),
+				target: to_account,
 				schedule: vesting_schedule,
 			});
 
