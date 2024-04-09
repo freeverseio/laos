@@ -182,17 +182,18 @@ mod tests {
 				assert_eq!(pallet_proxy::Pallet::<Runtime>::proxies(&pure_proxy).0.len(), 1);
 
 				// Add a proxy and verify the count increases to 2
-				let call = Box::new(RuntimeCall::Proxy(pallet_proxy::Call::add_proxy {
+				let call = RuntimeCall::Proxy(pallet_proxy::Call::add_proxy {
 					delegate: bob,
 					proxy_type: ProxyType::Any,
 					delay,
-				}));
-				assert_ok!(pallet_proxy::Pallet::<Runtime>::proxy(
-					RuntimeOrigin::signed(alice),
-					pure_proxy,
-					None,
-					call
-				));
+				});
+
+				let call = RuntimeCall::Proxy(pallet_proxy::Call::proxy {
+					real: pure_proxy,
+					force_proxy_type: None,
+					call: Box::new(call),
+				});
+				assert_ok!(call.dispatch(RuntimeOrigin::signed(alice)));
 				assert_eq!(pallet_proxy::Pallet::<Runtime>::proxies(&pure_proxy).0.len(), 2);
 			});
 	}
