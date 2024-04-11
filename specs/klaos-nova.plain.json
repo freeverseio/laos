@@ -1,18 +1,17 @@
 {
-  "name": "Local Testnet",
-  "id": "klaos_local_testnet",
-  "chainType": "Local",
+  "name": "Klaos Nova Testnet",
+  "id": "klaos_nova_testnet",
+  "chainType": "Live",
   "bootNodes": [
-    "/ip4/127.0.0.1/tcp/30333/p2p/12D3KooWGrzn6RHQJFU4D3bBgu2unuzchgUrh3co8qPAQF3VpSsQ"
   ],
   "telemetryEndpoints": null,
-  "protocolId": "template-local",
+  "protocolId": "klaos_nova_testnet",
   "properties": {
     "ss58Format": 42,
     "tokenDecimals": 18,
-    "tokenSymbol": "UNIT"
+    "tokenSymbol": "NOVA"
   },
-  "relay_chain": "rococo-local",
+  "relay_chain": "rococo_freeverse",
   "para_id": 2001,
   "codeSubstitutes": {},
   "genesis": {
@@ -27,28 +26,8 @@
       "balances": {
         "balances": [
           [
-            "0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac",
-            999999999999999983222784
-          ],
-          [
-            "0x3cd0a705a2dc65e5b1e1205896baa2be8a07c6e0",
-            999999999999999983222784
-          ],
-          [
-            "0x798d4ba9baf0064ec19eb4f0a1a45785ae9d6dfc",
-            999999999999999983222784
-          ],
-          [
-            "0x773539d4ac0e786233d90a233654ccee26a613d9",
-            999999999999999983222784
-          ],
-          [
-            "0xff64d3f6efe2317ee2807d223a0bdc4c0c49dfdb",
-            999999999999999983222784
-          ],
-          [
-            "0xc0f0f4ab324c46e55d02d0033343b4be8a55532d",
-            999999999999999983222784
+            "0x506543b5d64A0083Dd0faA386FfE41b75141A31C",
+            1000000000000000000000000000
           ]
         ]
       },
@@ -60,7 +39,7 @@
       },
       "collatorSelection": {
         "invulnerables": [
-          "0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac"
+          "0x506543b5d64A0083Dd0faA386FfE41b75141A31C"
         ],
         "candidacyBond": 0,
         "desiredCandidates": 0
@@ -68,10 +47,10 @@
       "session": {
         "keys": [
           [
-            "0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac",
-            "0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac",
+            "0x506543b5d64A0083Dd0faA386FfE41b75141A31C",
+            "0x506543b5d64A0083Dd0faA386FfE41b75141A31C",
             {
-              "aura": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+              "aura": "5F1i56nP2dVkUv84hhBw3g1F9AyWfGvYDUyKo6r7Fv8axnTD"
             }
           ]
         ]
@@ -84,7 +63,7 @@
         "safeXcmVersion": 3
       },
       "sudo": {
-        "key": "0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac"
+        "key": "0x506543b5d64A0083Dd0faA386FfE41b75141A31C"
       },
       "ethereum": {},
       "evm": {
@@ -220,37 +199,11 @@
               0,
               253
             ]
-          },
-          "0x1000000000000000000000000000000000000001": {
-            "nonce": "0x1",
-            "balance": "0xd3c21bcecceda1000000",
-            "storage": {},
-            "code": [
-              0
-            ]
-          },
-          "0x6be02d1d3665660d22ff9624b7be0551ee1ac91b": {
-            "nonce": "0x0",
-            "balance": "0xffffffffffffffffffffffffffffffff",
-            "storage": {},
-            "code": []
-          },
-          "0xc0f0f4ab324c46e55d02d0033343b4be8a55532d": {
-            "nonce": "0x0",
-            "balance": "0xef000000000000000000000000000",
-            "storage": {},
-            "code": []
-          },
-          "0xd43593c715fdd31c61141abd04a99fd6822c8558": {
-            "nonce": "0x0",
-            "balance": "0xffffffffffffffffffffffffffffffff",
-            "storage": {},
-            "code": []
           }
         }
       },
       "evmChainId": {
-        "chainId": 667
+        "chainId": 27181
       },
       "baseFee": {
         "baseFeePerGas": "0x3b9aca00",
