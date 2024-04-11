@@ -3,7 +3,7 @@
   "id": "klaos_nova_testnet",
   "chainType": "Live",
   "bootNodes": [
-    "/dns4/klaosnova-boot-0.gorengine.com/tcp/30334/p2p/12D3KooWR1PDDcV9Q7V2ZPJv7kLu3DqESLXtMASRjpucBDyad1rM"
+    "/dns4/klaosnova-boot-0.gorengine.com/tcp/30334/p2p/12D3KooWEAGy9uPP4JsSdvD8RiWebEMXD7ZXAzCs7YcdQwmCXSPB"
   ],
   "telemetryEndpoints": null,
   "protocolId": "klaos_nova_testnet",
