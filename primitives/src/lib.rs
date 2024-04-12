@@ -90,11 +90,9 @@ mod tests {
 
 	#[test]
 	fn test_block_weights() {
-		// Assuming BlockWeights::get() is a valid function returning configured BlockWeights
 		let weights = BlockWeights::get();
 
-		// Test base_block and max_block
-		assert_eq!(weights.base_block, Weight::from_parts(390584000, 0)); // Adjusted to your use case
+		assert_eq!(weights.base_block, Weight::from_parts(390584000, 0)); 
 		assert_eq!(weights.max_block, Weight::from_parts(500000000000, 5242880));
 
 		let normal = weights.per_class.get(DispatchClass::Normal);
