@@ -69,7 +69,7 @@ pub type Balance = u128;
 pub type Moment = u64;
 
 /// Nonce of a transaction in the parachain.
-pub type Nonce = u64;
+pub type Nonce = u32;
 
 /// Weight-to-Fee type used by Laos parachain.
 pub type WeightToFee = IdentityFee<Balance>;
@@ -80,5 +80,5 @@ frame_support::parameter_types! {
 		limits::BlockLength::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
 	/// Weight limit of the Laos parachain blocks.
 	pub BlockWeights: limits::BlockWeights =
-		limits::BlockWeights::with_sensible_defaults(MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO);
+		limits::BlockWeights::with_sensible_defaults(MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO); // TODO! Urgent .. this is the setting for a solochain
 }
