@@ -82,3 +82,43 @@ frame_support::parameter_types! {
 	pub BlockWeights: limits::BlockWeights =
 		limits::BlockWeights::with_sensible_defaults(MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO);
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use frame_support::dispatch::DispatchClass;
+
+	#[test]
+	fn test_block_weights() {
+		// Assuming BlockWeights::get() is a valid function returning configured BlockWeights
+		let weights = BlockWeights::get();
+
+		// Test base_block and max_block
+		assert_eq!(weights.base_block, Weight::from_parts(390584000, 0)); // Adjusted to your use case
+		assert_eq!(weights.max_block, Weight::from_parts(500000000000, 5242880));
+
+		let per_class_normal = weights.per_class.get(DispatchClass::Normal);
+		assert_eq!(per_class_normal.base_extrinsic, Weight::from_parts(124414000, 0));
+		assert_eq!(per_class_normal.max_extrinsic, Some(Weight::from_parts(324875586000, 3407872)));
+		assert_eq!(per_class_normal.max_total, Some(Weight::from_parts(375000000000, 3932160)));
+		assert_eq!(per_class_normal.reserved, Some(Weight::from_parts(0, 0)));
+
+		let per_class_mandatory = weights.per_class.get(DispatchClass::Mandatory);
+		assert_eq!(per_class_mandatory.base_extrinsic, Weight::from_parts(124414000, 0));
+		assert_eq!(per_class_mandatory.max_extrinsic, None);
+		assert_eq!(per_class_mandatory.max_total, None);
+		assert_eq!(per_class_mandatory.reserved, None);
+
+		let per_class_operational = weights.per_class.get(DispatchClass::Operational);
+		assert_eq!(per_class_operational.base_extrinsic, Weight::from_parts(124414000, 0));
+		assert_eq!(
+			per_class_operational.max_extrinsic,
+			Some(Weight::from_parts(449875586000, 4718592))
+		);
+		assert_eq!(
+			per_class_operational.max_total,
+			Some(Weight::from_parts(500000000000, 5242880))
+		);
+		assert_eq!(per_class_operational.reserved, Some(Weight::from_parts(125000000000, 1310720)));
+	}
+}
