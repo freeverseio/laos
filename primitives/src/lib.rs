@@ -19,7 +19,13 @@
 #![warn(missing_docs)]
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use frame_support::weights::{constants::WEIGHT_REF_TIME_PER_SECOND, IdentityFee, Weight};
+use frame_support::{
+	pallet_prelude::DispatchClass,
+	weights::{
+		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_REF_TIME_PER_SECOND},
+		IdentityFee, Weight,
+	},
+};
 use frame_system::limits;
 use sp_core::Hasher as HasherT;
 use sp_runtime::{
@@ -42,6 +48,10 @@ pub const MAXIMUM_BLOCK_WEIGHT: Weight = Weight::from_parts(
 
 /// Represents the portion of a block that will be used by Normal extrinsics.
 pub const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
+
+/// We assume that ~5% of the block weight is consumed by `on_initialize` handlers. This is
+/// used to limit the maximal weight of a single extrinsic.
+const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_percent(5);
 
 /// Block number type used in Laos chain.
 pub type BlockNumber = u32;
@@ -79,8 +89,24 @@ frame_support::parameter_types! {
 	pub BlockLength: limits::BlockLength =
 		limits::BlockLength::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
 	/// Weight limit of the Laos parachain blocks.
-	pub BlockWeights: limits::BlockWeights =
-		limits::BlockWeights::with_sensible_defaults(MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO);
+	pub BlockWeights: limits::BlockWeights = limits::BlockWeights::builder()
+		.base_block(BlockExecutionWeight::get())
+		.for_class(DispatchClass::all(), |weights| {
+			weights.base_extrinsic = ExtrinsicBaseWeight::get();
+		})
+		.for_class(DispatchClass::Normal, |weights| {
+			weights.max_total = Some(NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT);
+		})
+		.for_class(DispatchClass::Operational, |weights| {
+			weights.max_total = Some(MAXIMUM_BLOCK_WEIGHT);
+			// Operational transactions have some extra reserved space, so that they
+			// are included even if block reached `MAXIMUM_BLOCK_WEIGHT`.
+			weights.reserved = Some(
+				MAXIMUM_BLOCK_WEIGHT - NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT
+			);
+		})
+		.avg_block_initialization(AVERAGE_ON_INITIALIZE_RATIO)
+		.build_or_panic();
 }
 
 #[cfg(test)]
@@ -99,7 +125,7 @@ mod tests {
 
 		let per_class_normal = weights.per_class.get(DispatchClass::Normal);
 		assert_eq!(per_class_normal.base_extrinsic, Weight::from_parts(124414000, 0));
-		assert_eq!(per_class_normal.max_extrinsic, Some(Weight::from_parts(324875586000, 3407872)));
+		assert_eq!(per_class_normal.max_extrinsic, Some(Weight::from_parts(349875586000, 3670016)));
 		assert_eq!(per_class_normal.max_total, Some(Weight::from_parts(375000000000, 3932160)));
 		assert_eq!(per_class_normal.reserved, Some(Weight::from_parts(0, 0)));
 
@@ -113,7 +139,7 @@ mod tests {
 		assert_eq!(per_class_operational.base_extrinsic, Weight::from_parts(124414000, 0));
 		assert_eq!(
 			per_class_operational.max_extrinsic,
-			Some(Weight::from_parts(449875586000, 4718592))
+			Some(Weight::from_parts(474875586000, 4980736))
 		);
 		assert_eq!(
 			per_class_operational.max_total,
