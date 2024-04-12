@@ -31,15 +31,15 @@
             849920000000000000000000000
           ],
           [
-            "0xffffffffffffffffffffffffffffffffffffff01",
+            "0xf01fffffffffffffffffffffffffffffffffffff",
             150000000000000000000000000
           ],
           [
-            "0xffffffffffffffffffffffffffffffffffffff02",
+            "0xf02fffffffffffffffffffffffffffffffffffff",
             40000000000000000000000
           ],
           [
-            "0xffffffffffffffffffffffffffffffffffffff03",
+            "0xf03fffffffffffffffffffffffffffffffffffff",
             40000000000000000000000
           ]
         ]
@@ -53,15 +53,15 @@
       "session": {
         "keys": [
           [
-            "0xffffffffffffffffffffffffffffffffffffff02",
-            "0xffffffffffffffffffffffffffffffffffffff02",
+            "0xf02fffffffffffffffffffffffffffffffffffff",
+            "0xf02fffffffffffffffffffffffffffffffffffff",
             {
               "aura": "5F1i56nP2dVkUv84hhBw3g1F9AyWfGvYDUyKo6r7Fv8axnTD"
             }
           ],
           [
-            "0xffffffffffffffffffffffffffffffffffffff03",
-            "0xffffffffffffffffffffffffffffffffffffff03",
+            "0xf03fffffffffffffffffffffffffffffffffffff",
+            "0xf03fffffffffffffffffffffffffffffffffffff",
             {
               "aura": "5HQmMyrZQgxzM8tprXxRrV6C68WHemm47ZnbxQfnrTQDrS9Y"
             }
@@ -75,11 +75,11 @@
       "parachainStaking": {
         "candidates": [
           [
-            "0xffffffffffffffffffffffffffffffffffffff02",
+            "0xf02fffffffffffffffffffffffffffffffffffff",
             40000000000000000000000
           ],
           [ 
-            "0xffffffffffffffffffffffffffffffffffffff03",
+            "0xf03fffffffffffffffffffffffffffffffffffff",
             40000000000000000000000
           ]
         ],
@@ -105,7 +105,7 @@
         "parachainBondReservePercent": 0,
         "blocksPerRound": 5,
         "numSelectedCandidates": 5,
-        "rewardsAccount": "0xffffffffffffffffffffffffffffffffffffff01"
+        "rewardsAccount": "0xf01fffffffffffffffffffffffffffffffffffff"
       },
       "polkadotXcm": {
         "safeXcmVersion": 3
