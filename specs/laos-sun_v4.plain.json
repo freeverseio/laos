@@ -1,23 +1,19 @@
 {
-  "name": "Laos Network",
-  "id": "laos_network",
+  "name": "Laos Sun v4 Testnet",
+  "id": "laos_sun_v4_testnet",
   "chainType": "Live",
   "bootNodes": [
+    "/dns4/laossun-boot-1.gorengine.com/tcp/30334/p2p/12D3KooWKXd2uAnD9r1LuFoEsxpVxccDw8oW1zwSV5ZXm69UnBw9"
   ],
-  "telemetryEndpoints": [
-    [
-      "/dns/telemetry.polkadot.io/tcp/443/x-parity-wss/%2Fsubmit%2F",
-      0
-    ]
-  ],
-  "protocolId": "laos_network",
+  "telemetryEndpoints": null,
+  "protocolId": "laos_sun_v4_testnet",
   "properties": {
     "ss58Format": 42,
     "tokenDecimals": 18,
-    "tokenSymbol": "LAOS"
+    "tokenSymbol": "SUN"
   },
-  "relay_chain": "polkadot",
-  "para_id": 3370,
+  "relay_chain": "rococo_freeverse",
+  "para_id": 2000,
   "codeSubstitutes": {},
   "genesis": {
     "runtime": {
@@ -26,13 +22,13 @@
       },
       "parachainSystem": {},
       "parachainInfo": {
-        "parachainId": 3370
+        "parachainId": 2000
       },
       "balances": {
         "balances": [
           [
-            "0x0310D083E2674af95B2386b1527F1879b8D24a49",
-            849916000000000000000000000
+            "0x506543b5d64A0083Dd0faA386FfE41b75141A31C",
+            849920000000000000000000000
           ],
           [
             "0xf01fffffffffffffffffffffffffffffffffffff",
@@ -45,22 +41,6 @@
           [
             "0xf03fffffffffffffffffffffffffffffffffffff",
             40000000000000000000000
-          ],
-          [
-            "0xB7469C43535c826E29C30D25a9F3a035759cf132",
-            1000000000000000000000
-          ],
-          [
-            "0xAafd833d0eFDb939bC2c080Fa9486Baaa5E777E2",
-            1000000000000000000000
-          ],
-          [
-            "0x469EbE23cd290bBf7D90755DE4c0ca9B26152742",
-            1000000000000000000000
-          ],
-          [
-            "0x1f18dE699Ef1465Fff7DF9C46A03d2DcBa35616f",
-            1000000000000000000000
           ]
         ]
       },
@@ -76,14 +56,14 @@
             "0xf02fffffffffffffffffffffffffffffffffffff",
             "0xf02fffffffffffffffffffffffffffffffffffff",
             {
-              "aura": "5D7TF21C8jKHSKpeUFf37QWRqYnjR5LsoQWY9yY5Q4k42zEQ"
+              "aura": "5F1i56nP2dVkUv84hhBw3g1F9AyWfGvYDUyKo6r7Fv8axnTD"
             }
           ],
           [
             "0xf03fffffffffffffffffffffffffffffffffffff",
             "0xf03fffffffffffffffffffffffffffffffffffff",
             {
-              "aura": "5HmHaRgeBMPwPc13LDWr9xGNA9s46Je3pQ71zFyeoThswP1U"
+              "aura": "5HQmMyrZQgxzM8tprXxRrV6C68WHemm47ZnbxQfnrTQDrS9Y"
             }
           ]
         ]
@@ -123,7 +103,7 @@
         },
         "collatorCommission": 0,
         "parachainBondReservePercent": 0,
-        "blocksPerRound": 1800,
+        "blocksPerRound": 5,
         "numSelectedCandidates": 5,
         "rewardsAccount": "0xf01fffffffffffffffffffffffffffffffffffff"
       },
@@ -131,7 +111,7 @@
         "safeXcmVersion": 3
       },
       "sudo": {
-        "key": "0x0310D083E2674af95B2386b1527F1879b8D24a49"
+        "key": "0x506543b5d64A0083Dd0faA386FfE41b75141A31C"
       },
       "ethereum": {},
       "evm": {
@@ -271,7 +251,7 @@
         }
       },
       "evmChainId": {
-        "chainId": 6283
+        "chainId": 6000
       },
       "baseFee": {
         "baseFeePerGas": "0x3b9aca00",
