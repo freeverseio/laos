@@ -55,11 +55,14 @@ fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 		"klaos" => Box::new(chain_spec::klaos::ChainSpec::from_json_bytes(
 			&include_bytes!("../../specs/klaos.raw.json")[..],
 		)?),
+		"klaos-nova" => Box::new(chain_spec::klaos::ChainSpec::from_json_bytes(
+			&include_bytes!("../../specs/klaos-nova.raw.json")[..],
+		)?),
 		"giedi" => Box::new(chain_spec::klaos::ChainSpec::from_json_bytes(
 			&include_bytes!("../../specs/giedi.raw.json")[..],
 		)?),
-		"laossun" => Box::new(chain_spec::laos::ChainSpec::from_json_bytes(
-			&include_bytes!("../../specs/laossun.raw.json")[..],
+		"laos-sun" => Box::new(chain_spec::laos::ChainSpec::from_json_bytes(
+			&include_bytes!("../../specs/laos-sun.raw.json")[..],
 		)?),
 		"klaos-dev" => Box::new(chain_spec::klaos::development_config()),
 		"klaos-local" | "klaos-local-v" => Box::new(chain_spec::klaos::local_testnet_config()),
