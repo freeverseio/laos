@@ -91,7 +91,8 @@ fn create_test_genesis_config() -> laos_runtime::RuntimeGenesisConfig {
 			balances: vec![
 				(predefined_accounts::ALITH.into(), 800000000 * UNIT),
 				(predefined_accounts::BALTATHAR.into(), 150000000 * UNIT),
-				(predefined_accounts::FAITH.into(), 50000000 * UNIT),
+				(predefined_accounts::FAITH.into(), 40000000 * UNIT),
+				(predefined_accounts::EVM_BENCHMARK_ACCOUNT.into(), 10000000 * UNIT),
 			],
 		},
 		parachain_info: laos_runtime::ParachainInfoConfig {
@@ -149,6 +150,10 @@ fn create_test_genesis_config() -> laos_runtime::RuntimeGenesisConfig {
 					)
 				})
 				.collect(),
+			..Default::default()
+		},
+		transaction_payment: laos_runtime::TransactionPaymentConfig {
+			// multiplier: Multiplier::from(8u128),
 			..Default::default()
 		},
 		..Default::default()
