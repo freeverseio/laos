@@ -66,8 +66,8 @@ fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 		)?),
 		"klaos-dev" => Box::new(chain_spec::klaos::development_config()),
 		"klaos-local" | "klaos-local-v" => Box::new(chain_spec::klaos::local_testnet_config()),
-		"dev" => Box::new(chain_spec::laos::development_config()),
-		"local" => Box::new(chain_spec::laos::local_testnet_config()),
+		"dev" | "laos-dev"  => Box::new(chain_spec::laos::development_config()),
+		"local" | "laos-local" => Box::new(chain_spec::laos::local_testnet_config()),
 		"local-v" => Box::new(chain_spec::laos::local_testnet_config()),
 		path => {
 			let chain_spec =
