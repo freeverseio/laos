@@ -92,7 +92,9 @@ fn create_test_genesis_config() -> laos_runtime::RuntimeGenesisConfig {
 				(predefined_accounts::ALITH.into(), 800000000 * UNIT),
 				(predefined_accounts::BALTATHAR.into(), 150000000 * UNIT),
 				(predefined_accounts::FAITH.into(), 40000000 * UNIT),
-				(predefined_accounts::EVM_BENCHMARK_ACCOUNT.into(), 10000000 * UNIT),
+				// Prefund the benchmark account for frontier, if compiling for benchmarks
+				#[cfg(feature = "runtime-benchmarks")]
+				(predefined_accounts::EVM_BENCHMARK_ACCOUNT.into(), 800000000 * UNIT),
 			],
 		},
 		parachain_info: laos_runtime::ParachainInfoConfig {

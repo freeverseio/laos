@@ -22,4 +22,6 @@ pub const CHARLETH: [u8; 20] = hex!("798d4Ba9baf0064Ec19eB4F0a1a45785ae9D6DFc");
 pub const DOROTHY: [u8; 20] = hex!("773539d4Ac0e786233D90A233654ccEE26a613D9");
 pub const ETHAN: [u8; 20] = hex!("Ff64d3F6efE2317EE2807d223a0Bdc4c0c49dfDB");
 pub const FAITH: [u8; 20] = hex!("C0F0f4ab324C46e55D02D0033343B4Be8A55532d");
+// Prefund the benchmark account for frontier, if compiling for benchmarks
+#[cfg(feature = "runtime-benchmarks")]
 pub const EVM_BENCHMARK_ACCOUNT: [u8; 20] = hex!("1000000000000000000000000000000000000001");
