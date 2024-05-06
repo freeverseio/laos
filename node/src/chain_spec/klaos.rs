@@ -23,6 +23,18 @@ use sp_core::{H160, U256};
 use sp_runtime::traits::Zero;
 use std::{collections::BTreeMap, str::FromStr};
 
+/// Returns the accounts that are predefined in the runtime.
+fn accounts() -> Vec<AccountId> {
+	vec![
+		predefined_accounts::ALITH.into(),
+		predefined_accounts::BALTATHAR.into(),
+		predefined_accounts::CHARLETH.into(),
+		predefined_accounts::DOROTHY.into(),
+		predefined_accounts::ETHAN.into(),
+		predefined_accounts::FAITH.into(),
+	]
+}
+
 /// Specialized `ChainSpec` for the normal parachain runtime.
 pub type ChainSpec = sc_service::GenericChainSpec<klaos_runtime::RuntimeGenesisConfig, Extensions>;
 
@@ -50,7 +62,7 @@ pub fn development_config() -> ChainSpec {
 			testnet_genesis(
 				// initial collators.
 				vec![(predefined_accounts::ALITH.into(), get_collator_keys_from_seed("Alice"))],
-				predefined_accounts::accounts(),
+				accounts(),
 				// Give Alice root privileges
 				Some(predefined_accounts::ALITH.into()),
 				2001.into(),
@@ -85,7 +97,7 @@ pub fn local_testnet_config() -> ChainSpec {
 			testnet_genesis(
 				// initial collators.
 				vec![(predefined_accounts::ALITH.into(), get_collator_keys_from_seed("Alice"))],
-				predefined_accounts::accounts(),
+				accounts(),
 				// Give Alice root privileges
 				Some(predefined_accounts::ALITH.into()),
 				2001.into(),
