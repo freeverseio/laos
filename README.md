@@ -6,8 +6,8 @@ LAOS is the Universal layer 1 for digital assets across all blockchains, introdu
 
 LAOS's main documentation can be found here:
 - **[LAOS Whitepaper](https://github.com/freeverseio/laos-whitepaper/blob/main/laos.pdf)**, for an in-depth, fully detailed description.
+- **[LAOS Developer Docs](https://docs.laosnetwork.io/)**, to start building your DApp using LAOS.
 - **[LAOS Litepaper](https://laosnetwork.io/downloads/LAOS_litepaper.pdf)**, for a high-level, use case oriented description.
-- **[SBP Roadmap](https://github.com/freeverseio/laos-roadmap)**, the engineering roadmap within the Substrate Builders Program, ending on Q1 2024.
 
 LAOS is fully open source and decentralized. The main code repositories are:
 
@@ -17,17 +17,33 @@ LAOS is fully open source and decentralized. The main code repositories are:
 
 * **[The Universal ERC721 Solidity Templates](https://github.com/freeverseio/laos-erc721)**. This template contains the minimal extensions of the ERC721 OpenZeppelin implementation that enables bridgeless minting and evolution in any EVM chain.
 
-LAOS is targeting late Q1'2024 to bid for a Parachain slot on Polkadot.
-Presently, LAOS is accessible via its canary Parachain in Kusama, named **K-LAOS**, which stands for **K**usama LAOS. Please read the [disclaimer about K-LAOS](https://www.laosfoundation.io/disclaimer-klaos).
+LAOS secured a slot as a Parachain in Polkadot after winning auction 68,
+and it is targeting July 11th to start producing blocks.
 
-### KLAOS Parachain: 
-* EVM Public RPC endpoint: https://rpc.klaos.laosfoundation.io
-* EVM Chain ID: 2718
+### LAOS Testnets
+
+LAOS currently has two testnets, named *KLAOS Nova* and *LAOS Omega*. 
+After launching to mainnet, KLAOS Nova will eventually be deprecated,
+leaving *LAOS Omega* as the only officially supported testnet.
+
+KLAOS Nova is the testnet aimed at building your DApp, leveraging bridgeless minting, and all other EVM functionalities.
+
+* Testnet: **KLAOS Nova**
+* EVM Public RPC endpoint: https://rpc.klaosnova.laosfoundation.io
+* EVM Chain ID: 27181
 * EVM Currency Symbol: KLAOS 
-* EVM block explorer: https://blockscout.klaos.laosfoundation.io
-* Substrate RPC endpoint: [wss://rpc.klaos.laosfoundation.io](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Frpc.klaos.laosfoundation.io#/rpc)   
-* ParaId: 3336
+* EVM block explorer: https://blockscout.klaosnova.laosfoundation.io
+* Substrate RPC endpoint: [wss://rpc.klaos.laosfoundation.io](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Frpc.klaosnova.laosfoundation.io#/rpc)   
+* ParaId: 2001
 * EVM PalletInstance: 51
+
+LAOS Omega is the testnet where all development undergoes final testing before being integrated in LAOS mainnet. Currently, LAOS Omega can be used to test staking functionality. Token transfers and EVM functionalities will be soon integrated.
+
+* Testnet: **LAOS Omega**
+* Substrate RPC endpoint: [wss://rpc.laosomega.laosfoundation.io](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Frpc.laosomega.laosfoundation.io#/rpc)   
+* ParaId: 4006
+* EVM Chain ID: 62831
+
 
 ### LAOS Parachain: 
 * ParaId: 3370
@@ -36,9 +52,11 @@ Presently, LAOS is accessible via its canary Parachain in Kusama, named **K-LAOS
 
 The quickest entry point to run your own LAOS Parachain node:
 ```
-$ docker run freeverseio/laos-node:<release> --chain=klaos
+$ docker run freeverseio/laos-node:<release> --chain=<chain_name>
 ```
-Available releases are published [here](https://github.com/freeverseio/laos/releases).
+where:
+* `<chain_name>` shall be set to `klaosnova` or `laosomega` to operate on the testnets, and
+* `<release>` shall be chosen among the available releases published [here](https://github.com/freeverseio/laos/releases).
 
 # Contributing
 
