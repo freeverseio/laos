@@ -26,9 +26,7 @@ use cumulus_primitives_core::{
 };
 use frame_support::{
 	construct_runtime, derive_impl, match_types, parameter_types,
-	traits::{
-		AsEnsureOriginWithArg, Currency, Everything, FindAuthor, Nothing, OnUnbalanced, OriginTrait,
-	},
+	traits::{AsEnsureOriginWithArg, Everything, FindAuthor, Nothing, OriginTrait},
 	weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight},
 	PalletId,
 };
@@ -127,13 +125,6 @@ impl pallet_timestamp::Config for Runtime {
 
 parameter_types! {
 	pub NullAddress: AccountId = AccountId::zero();
-}
-
-pub struct MockAssetIdToInitialOwner;
-impl Convert<U256, AccountId> for MockAssetIdToInitialOwner {
-	fn convert(_asset_id: U256) -> AccountId {
-		H160::zero()
-	}
 }
 
 pub struct FixedGasPrice;
@@ -616,24 +607,6 @@ where
 			Ok(other) => Err(other.into()),
 			Err(other) => Err(other),
 		})
-	}
-}
-
-/// Logic for sending fees to the treasury account. On every unbalanced change, the amount is
-/// transferred to the treasury account.
-pub struct ToTreasury<R>(PhantomData<R>);
-
-type NegativeImbalanceOfBalances<T> = pallet_balances::NegativeImbalance<T>;
-
-impl<R> OnUnbalanced<NegativeImbalanceOfBalances<R>> for ToTreasury<R>
-where
-	R: pallet_balances::Config,
-	<R as frame_system::Config>::AccountId: From<AccountId>,
-	<R as frame_system::Config>::AccountId: Into<AccountId>,
-{
-	fn on_nonzero_unbalanced(amount: NegativeImbalanceOfBalances<R>) {
-		let treasury = PalletId(*b"py/trsry").into_account_truncating();
-		<pallet_balances::Pallet<R>>::resolve_creating(&treasury, amount);
 	}
 }
 
