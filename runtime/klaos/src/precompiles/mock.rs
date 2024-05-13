@@ -23,10 +23,7 @@ use pallet_evm::{
 };
 
 use sp_core::{H160, U256};
-use sp_runtime::{
-	traits::{Convert, IdentityLookup},
-	ConsensusEngineId,
-};
+use sp_runtime::{traits::IdentityLookup, ConsensusEngineId};
 use sp_std::{boxed::Box, prelude::*, str::FromStr};
 
 use super::FrontierPrecompiles;
@@ -79,13 +76,6 @@ impl pallet_timestamp::Config for Runtime {
 
 parameter_types! {
 	pub NullAddress: AccountId = AccountId::zero();
-}
-
-pub struct MockAssetIdToInitialOwner;
-impl Convert<U256, AccountId> for MockAssetIdToInitialOwner {
-	fn convert(_asset_id: U256) -> AccountId {
-		H160::zero()
-	}
 }
 
 pub struct FixedGasPrice;

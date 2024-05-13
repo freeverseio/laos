@@ -37,6 +37,7 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
 	type CheckAssociatedRelayNumber = cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 }
 
+#[allow(dead_code)] // TODO: https://github.com/moonbeam-foundation/moonbeam/blob/26a88a553563647992f39fbd1cce3d45a363e991/runtime/moonbeam/src/lib.rs#L1585-L1614
 struct CheckInherents;
 
 impl cumulus_pallet_parachain_system::CheckInherents<Block> for CheckInherents {
