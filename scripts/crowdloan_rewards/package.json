@@ -1,0 +1,22 @@
+{
+  "name": "typescript",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "tsc && node index.js",
+    "bifrostMap": "tsc && node bifrostMap.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@polkadot/api": "^11.0.3",
+    "@polkadot/keyring": "^12.6.2",
+    "@polkadot/types": "^11.0.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}
