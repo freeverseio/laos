@@ -218,8 +218,9 @@ mod tests {
 					candidate_count: 32,
 				});
 
-			assert_ok!(
-				call.dispatch(RuntimeOrigin::signed(account))
+			assert_err!(
+				call.dispatch(RuntimeOrigin::signed(account)),
+				frame_system::Error::<Runtime>::CallFiltered
 			);
 		});
 	}
