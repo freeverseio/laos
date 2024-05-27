@@ -83,15 +83,6 @@ impl Contains<RuntimeCall> for BaseCallFilter {
 		use pallet_vesting::Call::*;
 
 		match c {
-			// Transferability lock.
-			RuntimeCall::Balances(inner_call) => !matches!(
-				inner_call,
-				transfer { .. } |
-					transfer_all { .. } | transfer_keep_alive { .. } |
-					transfer_allow_death { .. }
-			),
-			// Vested transfes are not allowed.
-			RuntimeCall::Vesting(vested_transfer { .. }) => false,
 			// New candidates are not allowed.
 			RuntimeCall::ParachainStaking(join_candidates { .. }) => false,
 			// Ethereum pallet calls are not allowed.
@@ -108,75 +99,78 @@ impl Contains<RuntimeCall> for BaseCallFilter {
 mod tests {
 	use super::*;
 	use crate::{
-		tests::{new_test_ext, ALICE, BOB},
+		tests::{ExtBuilder, ALICE, BOB},
 		Runtime,
+		currency::{UNIT},
 	};
 	use core::str::FromStr;
-	use frame_support::assert_err;
+	use frame_support::{assert_err, assert_ok};
 	use pallet_ethereum::Transaction;
 	use sp_core::{H160, H256, U256};
 	use sp_runtime::traits::Dispatchable;
 
 	#[test]
-	fn transfer_should_not_be_allowed() {
-		new_test_ext().execute_with(|| {
-			let from_account = AccountId::from_str(ALICE).unwrap();
+	fn transfer_should_be_allowed() {
+		let alice = AccountId::from_str(ALICE).unwrap();
+
+		ExtBuilder::default()
+		.with_balances(vec![(alice, 1000 * UNIT)])
+		.build()
+		.execute_with(|| {
 			let to_account = AccountId::from_str(BOB).unwrap();
 			let transfer_amount = 100;
-
 			let call = RuntimeCall::Balances(pallet_balances::Call::transfer {
 				dest: to_account,
 				value: transfer_amount,
 			});
-
-			assert_err!(
-				call.dispatch(RuntimeOrigin::signed(from_account)),
-				frame_system::Error::<Runtime>::CallFiltered
-			);
+			assert_ok!(call.dispatch(RuntimeOrigin::signed(alice)));
 		});
 	}
 
 	#[test]
-	fn transfer_all_should_not_be_allowed() {
-		new_test_ext().execute_with(|| {
-			let from_account = AccountId::from_str(ALICE).unwrap();
-			let to_account = AccountId::from_str(BOB).unwrap();
+	fn transfer_all_should_be_allowed() {
+		let alice = AccountId::from_str(ALICE).unwrap();
 
+		ExtBuilder::default()
+		.with_balances(vec![(alice, 1000 * UNIT)])
+		.build()
+		.execute_with(|| {
+			let to_account = AccountId::from_str(BOB).unwrap();
 			let call = RuntimeCall::Balances(pallet_balances::Call::transfer_all {
 				dest: to_account,
 				keep_alive: false,
 			});
-
-			assert_err!(
-				call.dispatch(RuntimeOrigin::signed(from_account)),
-				frame_system::Error::<Runtime>::CallFiltered
-			);
+			assert_ok!(call.dispatch(RuntimeOrigin::signed(alice)));
 		});
 	}
 
 	#[test]
-	fn transfer_keep_alive_should_not_be_allowed() {
-		new_test_ext().execute_with(|| {
-			let from_account = AccountId::from_str(ALICE).unwrap();
+	fn transfer_keep_alive_should_be_allowed() {
+		let alice = AccountId::from_str(ALICE).unwrap();
+
+		ExtBuilder::default()
+		.with_balances(vec![(alice, 1000 * UNIT)])
+		.build()
+		.execute_with(|| {
 			let to_account = AccountId::from_str(BOB).unwrap();
-			let transfer_amount = 100;
+			let transfer_amount = 1000000000000000000;
 
 			let call = RuntimeCall::Balances(pallet_balances::Call::transfer_keep_alive {
 				dest: to_account,
 				value: transfer_amount,
 			});
-
-			assert_err!(
-				call.dispatch(RuntimeOrigin::signed(from_account)),
-				frame_system::Error::<Runtime>::CallFiltered
-			);
+			assert_ok!(call.dispatch(RuntimeOrigin::signed(alice)));
 		});
 	}
 
 	#[test]
-	fn transfer_allow_death_should_not_be_allowed() {
-		new_test_ext().execute_with(|| {
-			let from_account = AccountId::from_str(ALICE).unwrap();
+	fn transfer_allow_death_should_be_allowed() {
+		let alice = AccountId::from_str(ALICE).unwrap();
+
+		ExtBuilder::default()
+		.with_balances(vec![(alice, 1000 * UNIT)])
+		.build()
+		.execute_with(|| {
 			let to_account = AccountId::from_str(BOB).unwrap();
 			let transfer_amount = 100;
 
@@ -184,20 +178,20 @@ mod tests {
 				dest: to_account,
 				value: transfer_amount,
 			});
-
-			assert_err!(
-				call.dispatch(RuntimeOrigin::signed(from_account)),
-				frame_system::Error::<Runtime>::CallFiltered
-			);
+			assert_ok!(call.dispatch(RuntimeOrigin::signed(alice)));
 		});
 	}
 
 	#[test]
-	fn vested_transfer_should_not_be_allowed() {
-		new_test_ext().execute_with(|| {
-			let from_account = AccountId::from_str(ALICE).unwrap();
+	fn vested_transfer_should_be_allowed() {
+		let alice = AccountId::from_str(ALICE).unwrap();
+
+		ExtBuilder::default()
+		.with_balances(vec![(alice, 100000 * UNIT)])
+		.build()
+		.execute_with(|| {
 			let to_account = AccountId::from_str(BOB).unwrap();
-			let transfer_amount = 1000;
+			let transfer_amount = 1000000000000000000;
 			let per_block = 10;
 			let starting_block = 100;
 
@@ -208,11 +202,7 @@ mod tests {
 				target: to_account,
 				schedule: vesting_schedule,
 			});
-
-			assert_err!(
-				call.dispatch(RuntimeOrigin::signed(from_account)),
-				frame_system::Error::<Runtime>::CallFiltered
-			);
+			assert_ok!(call.dispatch(RuntimeOrigin::signed(alice)));
 		});
 	}
 
@@ -228,9 +218,8 @@ mod tests {
 					candidate_count: 32,
 				});
 
-			assert_err!(
-				call.dispatch(RuntimeOrigin::signed(account)),
-				frame_system::Error::<Runtime>::CallFiltered
+			assert_ok!(
+				call.dispatch(RuntimeOrigin::signed(account))
 			);
 		});
 	}
