@@ -99,7 +99,7 @@ impl Contains<RuntimeCall> for BaseCallFilter {
 mod tests {
 	use super::*;
 	use crate::{
-		tests::{ExtBuilder, ALICE, BOB},
+		tests::{new_test_ext, ExtBuilder, ALICE, BOB},
 		Runtime,
 		currency::{UNIT},
 	};
