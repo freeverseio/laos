@@ -99,9 +99,9 @@ impl Contains<RuntimeCall> for BaseCallFilter {
 mod tests {
 	use super::*;
 	use crate::{
+		currency::UNIT,
 		tests::{new_test_ext, ExtBuilder, ALICE, BOB},
 		Runtime,
-		currency::{UNIT},
 	};
 	use core::str::FromStr;
 	use frame_support::{assert_err, assert_ok};
@@ -114,17 +114,17 @@ mod tests {
 		let alice = AccountId::from_str(ALICE).unwrap();
 
 		ExtBuilder::default()
-		.with_balances(vec![(alice, 1000 * UNIT)])
-		.build()
-		.execute_with(|| {
-			let to_account = AccountId::from_str(BOB).unwrap();
-			let transfer_amount = 100;
-			let call = RuntimeCall::Balances(pallet_balances::Call::transfer {
-				dest: to_account,
-				value: transfer_amount,
+			.with_balances(vec![(alice, 1000 * UNIT)])
+			.build()
+			.execute_with(|| {
+				let to_account = AccountId::from_str(BOB).unwrap();
+				let transfer_amount = 100;
+				let call = RuntimeCall::Balances(pallet_balances::Call::transfer {
+					dest: to_account,
+					value: transfer_amount,
+				});
+				assert_ok!(call.dispatch(RuntimeOrigin::signed(alice)));
 			});
-			assert_ok!(call.dispatch(RuntimeOrigin::signed(alice)));
-		});
 	}
 
 	#[test]
@@ -132,16 +132,16 @@ mod tests {
 		let alice = AccountId::from_str(ALICE).unwrap();
 
 		ExtBuilder::default()
-		.with_balances(vec![(alice, 1000 * UNIT)])
-		.build()
-		.execute_with(|| {
-			let to_account = AccountId::from_str(BOB).unwrap();
-			let call = RuntimeCall::Balances(pallet_balances::Call::transfer_all {
-				dest: to_account,
-				keep_alive: false,
+			.with_balances(vec![(alice, 1000 * UNIT)])
+			.build()
+			.execute_with(|| {
+				let to_account = AccountId::from_str(BOB).unwrap();
+				let call = RuntimeCall::Balances(pallet_balances::Call::transfer_all {
+					dest: to_account,
+					keep_alive: false,
+				});
+				assert_ok!(call.dispatch(RuntimeOrigin::signed(alice)));
 			});
-			assert_ok!(call.dispatch(RuntimeOrigin::signed(alice)));
-		});
 	}
 
 	#[test]
@@ -149,18 +149,18 @@ mod tests {
 		let alice = AccountId::from_str(ALICE).unwrap();
 
 		ExtBuilder::default()
-		.with_balances(vec![(alice, 1000 * UNIT)])
-		.build()
-		.execute_with(|| {
-			let to_account = AccountId::from_str(BOB).unwrap();
-			let transfer_amount = 1000000000000000000;
+			.with_balances(vec![(alice, 1000 * UNIT)])
+			.build()
+			.execute_with(|| {
+				let to_account = AccountId::from_str(BOB).unwrap();
+				let transfer_amount = 1000000000000000000;
 
-			let call = RuntimeCall::Balances(pallet_balances::Call::transfer_keep_alive {
-				dest: to_account,
-				value: transfer_amount,
+				let call = RuntimeCall::Balances(pallet_balances::Call::transfer_keep_alive {
+					dest: to_account,
+					value: transfer_amount,
+				});
+				assert_ok!(call.dispatch(RuntimeOrigin::signed(alice)));
 			});
-			assert_ok!(call.dispatch(RuntimeOrigin::signed(alice)));
-		});
 	}
 
 	#[test]
@@ -168,18 +168,18 @@ mod tests {
 		let alice = AccountId::from_str(ALICE).unwrap();
 
 		ExtBuilder::default()
-		.with_balances(vec![(alice, 1000 * UNIT)])
-		.build()
-		.execute_with(|| {
-			let to_account = AccountId::from_str(BOB).unwrap();
-			let transfer_amount = 100;
+			.with_balances(vec![(alice, 1000 * UNIT)])
+			.build()
+			.execute_with(|| {
+				let to_account = AccountId::from_str(BOB).unwrap();
+				let transfer_amount = 100;
 
-			let call = RuntimeCall::Balances(pallet_balances::Call::transfer_allow_death {
-				dest: to_account,
-				value: transfer_amount,
+				let call = RuntimeCall::Balances(pallet_balances::Call::transfer_allow_death {
+					dest: to_account,
+					value: transfer_amount,
+				});
+				assert_ok!(call.dispatch(RuntimeOrigin::signed(alice)));
 			});
-			assert_ok!(call.dispatch(RuntimeOrigin::signed(alice)));
-		});
 	}
 
 	#[test]
@@ -187,23 +187,23 @@ mod tests {
 		let alice = AccountId::from_str(ALICE).unwrap();
 
 		ExtBuilder::default()
-		.with_balances(vec![(alice, 100000 * UNIT)])
-		.build()
-		.execute_with(|| {
-			let to_account = AccountId::from_str(BOB).unwrap();
-			let transfer_amount = 1000000000000000000;
-			let per_block = 10;
-			let starting_block = 100;
+			.with_balances(vec![(alice, 100000 * UNIT)])
+			.build()
+			.execute_with(|| {
+				let to_account = AccountId::from_str(BOB).unwrap();
+				let transfer_amount = 1000000000000000000;
+				let per_block = 10;
+				let starting_block = 100;
 
-			let vesting_schedule =
-				pallet_vesting::VestingInfo::new(transfer_amount, per_block, starting_block);
+				let vesting_schedule =
+					pallet_vesting::VestingInfo::new(transfer_amount, per_block, starting_block);
 
-			let call = RuntimeCall::Vesting(pallet_vesting::Call::vested_transfer {
-				target: to_account,
-				schedule: vesting_schedule,
+				let call = RuntimeCall::Vesting(pallet_vesting::Call::vested_transfer {
+					target: to_account,
+					schedule: vesting_schedule,
+				});
+				assert_ok!(call.dispatch(RuntimeOrigin::signed(alice)));
 			});
-			assert_ok!(call.dispatch(RuntimeOrigin::signed(alice)));
-		});
 	}
 
 	#[test]
