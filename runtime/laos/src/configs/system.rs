@@ -78,9 +78,7 @@ impl frame_system::Config for Runtime {
 pub struct BaseCallFilter;
 impl Contains<RuntimeCall> for BaseCallFilter {
 	fn contains(c: &RuntimeCall) -> bool {
-		use pallet_balances::Call::*;
 		use pallet_parachain_staking::Call::*;
-		use pallet_vesting::Call::*;
 
 		match c {
 			// New candidates are not allowed.
