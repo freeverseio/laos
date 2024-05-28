@@ -37,7 +37,7 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
 	type CheckAssociatedRelayNumber = cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 }
 
-#[warn(dead_code)] // this is because it has only associated functions => never instantiated
+#[allow(dead_code)] // this is because it has only associated functions => never instantiated
 struct CheckInherents;
 
 impl cumulus_pallet_parachain_system::CheckInherents<Block> for CheckInherents {
