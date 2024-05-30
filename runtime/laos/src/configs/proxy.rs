@@ -100,12 +100,10 @@ impl InstanceFilter<RuntimeCall> for ProxyType {
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::Proxy;
-	use crate::System;
 	use crate::{
 		currency::{MILLIUNIT, UNIT},
 		tests::{ExtBuilder, ALICE, BOB},
-		AccountId, RuntimeOrigin,
+		AccountId, Proxy, RuntimeOrigin, System,
 	};
 	use core::str::FromStr;
 	use frame_support::assert_ok;
