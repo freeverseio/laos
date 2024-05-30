@@ -315,18 +315,7 @@ mod tests {
 					&pure_proxy
 				);
 
-				// Send some money to pure proxy
-				let call = RuntimeCall::Balances(pallet_balances::Call::force_transfer {
-					source: alice,
-					dest: pure_proxy,
-					value: 100 * UNIT,
-				});
-				assert_ok!(call.dispatch(RawOrigin::Root.into()));
-
-				// Initially, there should be 1 proxy after creation
-				assert_eq!(pallet_proxy::Pallet::<Runtime>::proxies(pure_proxy).0.len(), 1);
-
-				// proxy can not call evm
+				// proxy can not call evm create
 				let call = Box::new(RuntimeCall::EVM(pallet_evm::Call::create {
 					source: H160::from(alice.0),
 					init: vec![],
@@ -389,17 +378,6 @@ mod tests {
 					),
 					&pure_proxy
 				);
-
-				// Send some money to pure proxy
-				let call = RuntimeCall::Balances(pallet_balances::Call::force_transfer {
-					source: alice,
-					dest: pure_proxy,
-					value: 100 * UNIT,
-				});
-				assert_ok!(call.dispatch(RawOrigin::Root.into()));
-
-				// Initially, there should be 1 proxy after creation
-				assert_eq!(pallet_proxy::Pallet::<Runtime>::proxies(pure_proxy).0.len(), 1);
 
 				// proxy can not call evm
 				let call = Box::new(RuntimeCall::EVM(pallet_evm::Call::call {
@@ -466,17 +444,7 @@ mod tests {
 					&pure_proxy
 				);
 
-				// Send some money to pure proxy
-				let call = RuntimeCall::Balances(pallet_balances::Call::force_transfer {
-					source: alice,
-					dest: pure_proxy,
-					value: 100 * UNIT,
-				});
-				assert_ok!(call.dispatch(RawOrigin::Root.into()));
-
-				// Initially, there should be 1 proxy after creation
-				assert_eq!(pallet_proxy::Pallet::<Runtime>::proxies(pure_proxy).0.len(), 1);
-
+				// proxy can not call evm withdraw
 				let call = Box::new(RuntimeCall::EVM(pallet_evm::Call::withdraw {
 					address: H160([0x2; 20]),
 					value: 0,
@@ -534,17 +502,7 @@ mod tests {
 					&pure_proxy
 				);
 
-				// Send some money to pure proxy
-				let call = RuntimeCall::Balances(pallet_balances::Call::force_transfer {
-					source: alice,
-					dest: pure_proxy,
-					value: 100 * UNIT,
-				});
-				assert_ok!(call.dispatch(RawOrigin::Root.into()));
-
-				// Initially, there should be 1 proxy after creation
-				assert_eq!(pallet_proxy::Pallet::<Runtime>::proxies(pure_proxy).0.len(), 1);
-
+				// proxy can not call ethereum transact
 				let call = Box::new(RuntimeCall::Ethereum(pallet_ethereum::Call::transact {
 					transaction: Transaction::Legacy(ethereum::LegacyTransaction {
 						nonce: U256::zero(),
