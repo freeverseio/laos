@@ -109,10 +109,10 @@ mod tests {
 	use frame_support::assert_ok;
 	use frame_system::RawOrigin;
 	use pallet_balances::Call as BalancesCall;
-	use pallet_proxy::Event as ProxyEvent;
-	use sp_runtime::traits::Dispatchable;
-	use sp_core::{U256, H160, H256};
 	use pallet_ethereum::Transaction;
+	use pallet_proxy::Event as ProxyEvent;
+	use sp_core::{H160, H256, U256};
+	use sp_runtime::traits::Dispatchable;
 	#[test]
 	fn check_deposits() {
 		assert_eq!(<Runtime as pallet_proxy::Config>::ProxyDepositBase::get(), 10_080 * MILLIUNIT);
@@ -337,7 +337,7 @@ mod tests {
 					access_list: vec![],
 					value: U256::zero(),
 				}));
-	
+
 				assert_ok!(Proxy::proxy(
 					RuntimeOrigin::signed(alice),
 					pure_proxy,
@@ -413,7 +413,7 @@ mod tests {
 					nonce: None,
 					access_list: vec![],
 				}));
-	
+
 				assert_ok!(Proxy::proxy(
 					RuntimeOrigin::signed(alice),
 					pure_proxy,
@@ -477,9 +477,11 @@ mod tests {
 				// Initially, there should be 1 proxy after creation
 				assert_eq!(pallet_proxy::Pallet::<Runtime>::proxies(pure_proxy).0.len(), 1);
 
-				let call =
-				Box::new(RuntimeCall::EVM(pallet_evm::Call::withdraw { address: H160([0x2; 20]), value: 0 }));
-	
+				let call = Box::new(RuntimeCall::EVM(pallet_evm::Call::withdraw {
+					address: H160([0x2; 20]),
+					value: 0,
+				}));
+
 				assert_ok!(Proxy::proxy(
 					RuntimeOrigin::signed(alice),
 					pure_proxy,
