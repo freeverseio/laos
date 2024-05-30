@@ -37,6 +37,10 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
 	type CheckAssociatedRelayNumber = cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 }
 
+// This struct is never instantiated, it is only used for the `CheckInherents` implementation.
+// It will be deprecated soon:
+// https://github.com/moonbeam-foundation/moonbeam/blob/26a88a553563647992f39fbd1cce3d45a363e991/runtime/moonbeam/src/lib.rs#L1585-L1614
+#[allow(dead_code)]
 struct CheckInherents;
 
 impl cumulus_pallet_parachain_system::CheckInherents<Block> for CheckInherents {

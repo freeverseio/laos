@@ -202,7 +202,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("klaos"),
 	impl_name: create_runtime_str!("klaos"),
 	authoring_version: 1,
-	spec_version: 1402,
+	spec_version: 1500,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -764,6 +764,7 @@ construct_runtime!(
 	}
 );
 
+#[allow(dead_code)] // https://github.com/moonbeam-foundation/moonbeam/blob/26a88a553563647992f39fbd1cce3d45a363e991/runtime/moonbeam/src/lib.rs#L1585-L1614
 struct CheckInherents;
 
 impl cumulus_pallet_parachain_system::CheckInherents<Block> for CheckInherents {

@@ -127,13 +127,6 @@ parameter_types! {
 	pub NullAddress: AccountId = AccountId::zero();
 }
 
-pub struct MockAssetIdToInitialOwner;
-impl Convert<U256, AccountId> for MockAssetIdToInitialOwner {
-	fn convert(_asset_id: U256) -> AccountId {
-		H160::zero()
-	}
-}
-
 pub struct FixedGasPrice;
 impl FeeCalculator for FixedGasPrice {
 	fn min_gas_price() -> (U256, Weight) {
