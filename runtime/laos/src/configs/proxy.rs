@@ -106,7 +106,6 @@ mod tests {
 	};
 	use core::str::FromStr;
 	use frame_support::assert_ok;
-	use frame_system::RawOrigin;
 	use pallet_balances::Call as BalancesCall;
 	use pallet_ethereum::Transaction;
 	use pallet_proxy::Event as ProxyEvent;
