@@ -91,8 +91,7 @@ impl InstanceFilter<RuntimeCall> for ProxyType {
 		match (self, o) {
 			(x, y) if x == y => true,
 			(ProxyType::Any, _) => true,
-			(_, ProxyType::Staking) => false,
-			(ProxyType::Staking, _) => false,
+			_ => false,
 		}
 	}
 }
@@ -259,7 +258,7 @@ mod tests {
 				// proxy can not make a transfer
 				let transfer_amount = 10;
 
-				let call = Box::new(RuntimeCall::Balances(BalancesCall::transfer_allow_death {
+				let call = Box::new(RuntimeCall::Balances(BalancesCall::transfer {
 					dest: bob,
 					value: transfer_amount,
 				}));
