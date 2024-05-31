@@ -68,6 +68,7 @@ impl pallet_proxy::Config for Runtime {
 pub enum ProxyType {
 	/// Represents a proxy type that allows any call to be proxied.
 	Any = 0,
+	Staking,
 }
 
 impl Default for ProxyType {
@@ -77,14 +78,20 @@ impl Default for ProxyType {
 }
 
 impl InstanceFilter<RuntimeCall> for ProxyType {
-	fn filter(&self, _c: &RuntimeCall) -> bool {
-		matches!(self, ProxyType::Any)
+	fn filter(&self, c: &RuntimeCall) -> bool {
+		match self {
+			ProxyType::Any => true,
+			ProxyType::Staking => {
+				matches!(c, RuntimeCall::ParachainStaking(..))
+			},
+		}
 	}
 
 	fn is_superset(&self, o: &Self) -> bool {
 		match (self, o) {
 			(x, y) if x == y => true,
 			(ProxyType::Any, _) => true,
+			_ => false,
 		}
 	}
 }
@@ -95,13 +102,15 @@ mod tests {
 	use crate::{
 		currency::{MILLIUNIT, UNIT},
 		tests::{ExtBuilder, ALICE, BOB},
-		AccountId, RuntimeOrigin,
+		AccountId, Proxy, RuntimeOrigin, System,
 	};
 	use core::str::FromStr;
 	use frame_support::assert_ok;
-	use frame_system::RawOrigin;
+	use pallet_balances::Call as BalancesCall;
+	use pallet_ethereum::Transaction;
+	use pallet_proxy::Event as ProxyEvent;
+	use sp_core::{H160, H256, U256};
 	use sp_runtime::traits::Dispatchable;
-
 	#[test]
 	fn check_deposits() {
 		assert_eq!(<Runtime as pallet_proxy::Config>::ProxyDepositBase::get(), 10_080 * MILLIUNIT);
@@ -171,12 +180,11 @@ mod tests {
 				);
 
 				// Send some money to pure proxy
-				let call = RuntimeCall::Balances(pallet_balances::Call::force_transfer {
-					source: alice,
+				let call = RuntimeCall::Balances(pallet_balances::Call::transfer {
 					dest: pure_proxy,
 					value: 100 * UNIT,
 				});
-				assert_ok!(call.dispatch(RawOrigin::Root.into()));
+				assert_ok!(call.dispatch(RuntimeOrigin::signed(alice)));
 
 				// Initially, there should be 1 proxy after creation
 				assert_eq!(pallet_proxy::Pallet::<Runtime>::proxies(pure_proxy).0.len(), 1);
@@ -195,6 +203,331 @@ mod tests {
 				});
 				assert_ok!(call.dispatch(RuntimeOrigin::signed(alice)));
 				assert_eq!(pallet_proxy::Pallet::<Runtime>::proxies(pure_proxy).0.len(), 2);
+			});
+	}
+
+	#[test]
+	fn proxy_staking_should_not_be_able_to_transfer() {
+		let delay = 0;
+		let index = 0;
+		let alice = AccountId::from_str(ALICE).unwrap();
+		let bob = AccountId::from_str(BOB).unwrap();
+
+		ExtBuilder::default()
+			.with_balances(vec![(alice, 1000 * UNIT), (bob, 1000 * UNIT)])
+			.build()
+			.execute_with(|| {
+				frame_system::Pallet::<Runtime>::set_block_number(1);
+				let call = RuntimeCall::Proxy(pallet_proxy::Call::create_pure {
+					proxy_type: ProxyType::Staking,
+					index, // index
+					delay, // delay
+				});
+				assert_ok!(call.dispatch(RuntimeOrigin::signed(alice)));
+
+				// Get pure proxy address from event
+				let events = frame_system::Pallet::<Runtime>::events();
+				let pure_proxy = match events.last().unwrap().event {
+					RuntimeEvent::Proxy(pallet_proxy::Event::PureCreated { pure, .. }) => pure,
+					_ => panic!("unexpected event"),
+				};
+
+				assert_eq!(
+					&pallet_proxy::Pallet::<Runtime>::pure_account(
+						&alice,
+						&ProxyType::Staking,
+						index,
+						None,
+					),
+					&pure_proxy
+				);
+
+				// Send some money to pure proxy
+				let call = RuntimeCall::Balances(pallet_balances::Call::transfer {
+					dest: pure_proxy,
+					value: 100 * UNIT,
+				});
+				assert_ok!(call.dispatch(RuntimeOrigin::signed(alice)));
+
+				// Initially, there should be 1 proxy after creation
+				assert_eq!(pallet_proxy::Pallet::<Runtime>::proxies(pure_proxy).0.len(), 1);
+
+				// proxy can not make a transfer
+				let transfer_amount = 10;
+
+				let call = Box::new(RuntimeCall::Balances(BalancesCall::transfer {
+					dest: bob,
+					value: transfer_amount,
+				}));
+
+				assert_ok!(Proxy::proxy(
+					RuntimeOrigin::signed(alice),
+					pure_proxy,
+					Some(ProxyType::Staking),
+					call
+				));
+				System::assert_last_event(
+					ProxyEvent::ProxyExecuted {
+						result: Err(frame_system::Error::<Runtime>::CallFiltered.into()),
+					}
+					.into(),
+				);
+			});
+	}
+
+	#[test]
+	fn proxy_staking_should_not_be_able_to_evm_create() {
+		let delay = 0;
+		let index = 0;
+		let alice = AccountId::from_str(ALICE).unwrap();
+		let bob = AccountId::from_str(BOB).unwrap();
+
+		ExtBuilder::default()
+			.with_balances(vec![(alice, 1000 * UNIT), (bob, 1000 * UNIT)])
+			.build()
+			.execute_with(|| {
+				frame_system::Pallet::<Runtime>::set_block_number(1);
+				let call = RuntimeCall::Proxy(pallet_proxy::Call::create_pure {
+					proxy_type: ProxyType::Staking,
+					index, // index
+					delay, // delay
+				});
+				assert_ok!(call.dispatch(RuntimeOrigin::signed(alice)));
+
+				// Get pure proxy address from event
+				let events = frame_system::Pallet::<Runtime>::events();
+				let pure_proxy = match events.last().unwrap().event {
+					RuntimeEvent::Proxy(pallet_proxy::Event::PureCreated { pure, .. }) => pure,
+					_ => panic!("unexpected event"),
+				};
+
+				assert_eq!(
+					&pallet_proxy::Pallet::<Runtime>::pure_account(
+						&alice,
+						&ProxyType::Staking,
+						index,
+						None,
+					),
+					&pure_proxy
+				);
+
+				// proxy can not call evm create
+				let call = Box::new(RuntimeCall::EVM(pallet_evm::Call::create {
+					source: H160::from(alice.0),
+					init: vec![],
+					gas_limit: 100_000,
+					max_fee_per_gas: U256::from(100_000),
+					max_priority_fee_per_gas: None,
+					nonce: None,
+					access_list: vec![],
+					value: U256::zero(),
+				}));
+
+				assert_ok!(Proxy::proxy(
+					RuntimeOrigin::signed(alice),
+					pure_proxy,
+					Some(ProxyType::Staking),
+					call
+				));
+
+				System::assert_last_event(
+					ProxyEvent::ProxyExecuted {
+						result: Err(frame_system::Error::<Runtime>::CallFiltered.into()),
+					}
+					.into(),
+				);
+			});
+	}
+
+	#[test]
+	fn proxy_staking_should_not_be_able_to_evm_call() {
+		let delay = 0;
+		let index = 0;
+		let alice = AccountId::from_str(ALICE).unwrap();
+		let bob = AccountId::from_str(BOB).unwrap();
+
+		ExtBuilder::default()
+			.with_balances(vec![(alice, 1000 * UNIT), (bob, 1000 * UNIT)])
+			.build()
+			.execute_with(|| {
+				frame_system::Pallet::<Runtime>::set_block_number(1);
+				let call = RuntimeCall::Proxy(pallet_proxy::Call::create_pure {
+					proxy_type: ProxyType::Staking,
+					index, // index
+					delay, // delay
+				});
+				assert_ok!(call.dispatch(RuntimeOrigin::signed(alice)));
+
+				// Get pure proxy address from event
+				let events = frame_system::Pallet::<Runtime>::events();
+				let pure_proxy = match events.last().unwrap().event {
+					RuntimeEvent::Proxy(pallet_proxy::Event::PureCreated { pure, .. }) => pure,
+					_ => panic!("unexpected event"),
+				};
+
+				assert_eq!(
+					&pallet_proxy::Pallet::<Runtime>::pure_account(
+						&alice,
+						&ProxyType::Staking,
+						index,
+						None,
+					),
+					&pure_proxy
+				);
+
+				// proxy can not call evm
+				let call = Box::new(RuntimeCall::EVM(pallet_evm::Call::call {
+					source: H160::from(alice.0),
+					target: H160([0x2; 20]),
+					value: U256::zero(),
+					input: vec![],
+					gas_limit: 100_000,
+					max_fee_per_gas: U256::from(100_000),
+					max_priority_fee_per_gas: None,
+					nonce: None,
+					access_list: vec![],
+				}));
+
+				assert_ok!(Proxy::proxy(
+					RuntimeOrigin::signed(alice),
+					pure_proxy,
+					Some(ProxyType::Staking),
+					call
+				));
+
+				System::assert_last_event(
+					ProxyEvent::ProxyExecuted {
+						result: Err(frame_system::Error::<Runtime>::CallFiltered.into()),
+					}
+					.into(),
+				);
+			});
+	}
+
+	#[test]
+	fn proxy_staking_should_not_be_able_to_evm_withdraw() {
+		let delay = 0;
+		let index = 0;
+		let alice = AccountId::from_str(ALICE).unwrap();
+		let bob = AccountId::from_str(BOB).unwrap();
+
+		ExtBuilder::default()
+			.with_balances(vec![(alice, 1000 * UNIT), (bob, 1000 * UNIT)])
+			.build()
+			.execute_with(|| {
+				frame_system::Pallet::<Runtime>::set_block_number(1);
+				let call = RuntimeCall::Proxy(pallet_proxy::Call::create_pure {
+					proxy_type: ProxyType::Staking,
+					index, // index
+					delay, // delay
+				});
+				assert_ok!(call.dispatch(RuntimeOrigin::signed(alice)));
+
+				// Get pure proxy address from event
+				let events = frame_system::Pallet::<Runtime>::events();
+				let pure_proxy = match events.last().unwrap().event {
+					RuntimeEvent::Proxy(pallet_proxy::Event::PureCreated { pure, .. }) => pure,
+					_ => panic!("unexpected event"),
+				};
+
+				assert_eq!(
+					&pallet_proxy::Pallet::<Runtime>::pure_account(
+						&alice,
+						&ProxyType::Staking,
+						index,
+						None,
+					),
+					&pure_proxy
+				);
+
+				// proxy can not call evm withdraw
+				let call = Box::new(RuntimeCall::EVM(pallet_evm::Call::withdraw {
+					address: H160([0x2; 20]),
+					value: 0,
+				}));
+
+				assert_ok!(Proxy::proxy(
+					RuntimeOrigin::signed(alice),
+					pure_proxy,
+					Some(ProxyType::Staking),
+					call
+				));
+
+				System::assert_last_event(
+					ProxyEvent::ProxyExecuted {
+						result: Err(frame_system::Error::<Runtime>::CallFiltered.into()),
+					}
+					.into(),
+				);
+			});
+	}
+
+	#[test]
+	fn proxy_staking_should_not_be_able_to_ethereum_transact() {
+		let delay = 0;
+		let index = 0;
+		let alice = AccountId::from_str(ALICE).unwrap();
+		let bob = AccountId::from_str(BOB).unwrap();
+
+		ExtBuilder::default()
+			.with_balances(vec![(alice, 1000 * UNIT), (bob, 1000 * UNIT)])
+			.build()
+			.execute_with(|| {
+				frame_system::Pallet::<Runtime>::set_block_number(1);
+				let call = RuntimeCall::Proxy(pallet_proxy::Call::create_pure {
+					proxy_type: ProxyType::Staking,
+					index, // index
+					delay, // delay
+				});
+				assert_ok!(call.dispatch(RuntimeOrigin::signed(alice)));
+
+				// Get pure proxy address from event
+				let events = frame_system::Pallet::<Runtime>::events();
+				let pure_proxy = match events.last().unwrap().event {
+					RuntimeEvent::Proxy(pallet_proxy::Event::PureCreated { pure, .. }) => pure,
+					_ => panic!("unexpected event"),
+				};
+
+				assert_eq!(
+					&pallet_proxy::Pallet::<Runtime>::pure_account(
+						&alice,
+						&ProxyType::Staking,
+						index,
+						None,
+					),
+					&pure_proxy
+				);
+
+				// proxy can not call ethereum transact
+				let call = Box::new(RuntimeCall::Ethereum(pallet_ethereum::Call::transact {
+					transaction: Transaction::Legacy(ethereum::LegacyTransaction {
+						nonce: U256::zero(),
+						gas_price: U256::zero(),
+						gas_limit: U256::from(100_000),
+						action: ethereum::TransactionAction::Call(H160::zero()),
+						value: U256::zero(),
+						input: vec![],
+						signature: ethereum::TransactionSignature::new(
+							123,
+							H256::from_low_u64_be(1),
+							H256::from_low_u64_be(2),
+						)
+						.unwrap(),
+					}),
+				}));
+				assert_ok!(Proxy::proxy(
+					RuntimeOrigin::signed(alice),
+					pure_proxy,
+					Some(ProxyType::Staking),
+					call
+				));
+
+				System::assert_last_event(
+					ProxyEvent::ProxyExecuted {
+						result: Err(frame_system::Error::<Runtime>::CallFiltered.into()),
+					}
+					.into(),
+				);
 			});
 	}
 }
