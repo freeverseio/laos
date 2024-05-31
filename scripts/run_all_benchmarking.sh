@@ -54,7 +54,6 @@ while getopts 'bfp:v' flag; do
   esac
 done
 
-
 if [ "$skip_build" != true ]
 then
   echo "[+] Compiling Substrate benchmarks..."
@@ -64,27 +63,14 @@ fi
 # The executable to use.
 SUBSTRATE=./target/release/laos
 
-# Manually exclude some pallets.
-EXCLUDED_PALLETS=(
-  # It fails but others parachain as Moonbeam does not have this
-  "frame_system" 
-  # TODO Fix (issue has been openned), see: https://github.com/freeverseio/laos/issues/534
-  "pallet_evm" 
-  # We use default weights from polkadot-sdk as benchmarking functions does not support existential deposit zero
-  "pallet_balances" 
-)
-
 # Load all pallet names in an array.
-ALL_PALLETS=($(
+PALLETS=($(
   $SUBSTRATE benchmark pallet --list --chain=dev |\
     tail -n+2 |\
     cut -d',' -f1 |\
     sort |\
     uniq
 ))
-
-# Filter out the excluded pallets by concatenating the arrays and discarding duplicates.
-PALLETS=($({ printf '%s\n' "${ALL_PALLETS[@]}" "${EXCLUDED_PALLETS[@]}"; } | sort | uniq -u))
 
 echo "[+] Benchmarking ${#PALLETS[@]} Substrate pallets by excluding ${#EXCLUDED_PALLETS[@]} from ${#ALL_PALLETS[@]}."
 
@@ -109,13 +95,20 @@ for PALLET in "${PALLETS[@]}"; do
 
   echo "[+] Benchmarking $PALLET with weight file $WEIGHT_FILE";
 
+  # Check if the pallet is pallet_evm and set extrinsic accordingly
+  if [ "$PALLET" == "pallet_evm" ]; then
+    EXTRINSIC="withdraw"
+  else
+    EXTRINSIC="*"
+  fi
+
   OUTPUT=$(
     $SUBSTRATE benchmark pallet \
     --chain=dev \
     --steps=50 \
     --repeat=20 \
     --pallet="$PALLET" \
-    --extrinsic="*" \
+    --extrinsic="$EXTRINSIC" \
     --wasm-execution=compiled \
     --output="$WEIGHT_FILE" 2>&1
   )
