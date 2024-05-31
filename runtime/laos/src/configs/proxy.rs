@@ -181,12 +181,11 @@ mod tests {
 				);
 
 				// Send some money to pure proxy
-				let call = RuntimeCall::Balances(pallet_balances::Call::force_transfer {
-					source: alice,
+				let call = RuntimeCall::Balances(pallet_balances::Call::transfer {
 					dest: pure_proxy,
 					value: 100 * UNIT,
 				});
-				assert_ok!(call.dispatch(RawOrigin::Root.into()));
+				assert_ok!(call.dispatch(RuntimeOrigin::signed(alice)));
 
 				// Initially, there should be 1 proxy after creation
 				assert_eq!(pallet_proxy::Pallet::<Runtime>::proxies(pure_proxy).0.len(), 1);
@@ -245,12 +244,11 @@ mod tests {
 				);
 
 				// Send some money to pure proxy
-				let call = RuntimeCall::Balances(pallet_balances::Call::force_transfer {
-					source: alice,
+				let call = RuntimeCall::Balances(pallet_balances::Call::transfer {
 					dest: pure_proxy,
 					value: 100 * UNIT,
 				});
-				assert_ok!(call.dispatch(RawOrigin::Root.into()));
+				assert_ok!(call.dispatch(RuntimeOrigin::signed(alice)));
 
 				// Initially, there should be 1 proxy after creation
 				assert_eq!(pallet_proxy::Pallet::<Runtime>::proxies(pure_proxy).0.len(), 1);
