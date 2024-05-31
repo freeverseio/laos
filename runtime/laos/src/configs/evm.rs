@@ -69,7 +69,7 @@ impl pallet_evm::Config for Runtime {
 	type Timestamp = Timestamp;
 	type WeightPerGas = WeightPerGas;
 	type WithdrawOrigin = pallet_evm::EnsureAddressNever<AccountId>;
-	type WeightInfo = pallet_evm::weights::SubstrateWeight<Runtime>; // TODO
+	type WeightInfo = weights::pallet_evm::WeightInfo<Runtime>;
 }
 
 pub struct CustomFindAuthor<Inner>(sp_std::marker::PhantomData<Inner>);
