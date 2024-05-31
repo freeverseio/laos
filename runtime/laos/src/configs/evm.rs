@@ -16,7 +16,7 @@
 
 //! Pallets that enable EVM execution on Substrate
 use crate::{
-	precompiles::FrontierPrecompiles, types::ToAuthor, AccountId, Aura, Balances, BaseFee,
+	precompiles::FrontierPrecompiles, types::ToAuthor, weights, AccountId, Aura, Balances, BaseFee,
 	EVMChainId, Runtime, RuntimeEvent, Timestamp,
 };
 use frame_support::{
