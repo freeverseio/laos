@@ -593,4 +593,9 @@ mod tests {
 				);
 			});
 	}
+
+	#[test]
+    fn proxy_staking_is_always_three() {
+        assert_eq!(ProxyType::Staking as u8, 3);
+    }
 }
