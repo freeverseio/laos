@@ -34,9 +34,9 @@ use pallet_laos_evolution::address_to_collection_id;
 
 use crate::Runtime;
 
-pub struct FrontierPrecompiles<Runtime>(PhantomData<Runtime>);
+pub struct LaosPrecompiles<Runtime>(PhantomData<Runtime>);
 
-impl<Runtime> FrontierPrecompiles<Runtime>
+impl<Runtime> LaosPrecompiles<Runtime>
 where
 	Runtime: pallet_evm::Config,
 {
@@ -87,7 +87,7 @@ type EvolutionCollectionFactory = EvolutionCollectionFactoryPrecompile<Runtime>;
 
 type EvolutionCollection = EvolutionCollectionPrecompile<Runtime>;
 
-impl<Runtime> PrecompileSet for FrontierPrecompiles<Runtime>
+impl<Runtime> PrecompileSet for LaosPrecompiles<Runtime>
 where
 	Runtime: pallet_evm::Config,
 {
@@ -122,7 +122,7 @@ where
 
 	fn is_precompile(&self, address: H160, _gas: u64) -> IsPrecompileResult {
 		if address_to_collection_id(address).is_ok() {
-			return IsPrecompileResult::Answer { is_precompile: true, extra_cost: 0 }
+			return IsPrecompileResult::Answer { is_precompile: true, extra_cost: 0 };
 		}
 
 		IsPrecompileResult::Answer {

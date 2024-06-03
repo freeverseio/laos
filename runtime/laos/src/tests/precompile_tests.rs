@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
-use crate::precompiles::FrontierPrecompiles;
+use crate::precompiles::LaosPrecompiles;
 
 use crate::Runtime;
 use core::str::FromStr;
@@ -32,7 +32,7 @@ fn hash(a: u64) -> H160 {
 
 // Check if a given address corresponds to a precompile.
 fn is_precompile(address: H160) -> Result<bool, &'static str> {
-	let p = FrontierPrecompiles::<Runtime>::new();
+	let p = LaosPrecompiles::<Runtime>::new();
 	match p.is_precompile(address, 0) {
 		IsPrecompileResult::Answer { is_precompile, .. } => Ok(is_precompile),
 		_ => Err("Unexpected result variant"),
@@ -68,7 +68,7 @@ fn check_ethereum_precompiled_addresses() {
 /// correctly.
 #[test]
 fn delegatecall_to_non_precompile_is_recognized() {
-	let precompiles = FrontierPrecompiles::<Runtime>::new();
+	let precompiles = LaosPrecompiles::<Runtime>::new();
 
 	// Address outside the range of standard precompiles
 	let code_address = hash(11);
@@ -83,7 +83,7 @@ fn delegatecall_to_non_precompile_is_recognized() {
 /// Test to ensure that delegate calls to non-standard Ethereum precompile addresses are recognized.
 #[test]
 fn delegatecall_to_custom_precompile_is_recognized() {
-	let precompiles = FrontierPrecompiles::<Runtime>::new();
+	let precompiles = LaosPrecompiles::<Runtime>::new();
 
 	// Address representing a non-standard precompile
 	let code_address = hash(1027);
@@ -99,7 +99,7 @@ fn delegatecall_to_custom_precompile_is_recognized() {
 /// as custom precompiles.
 #[test]
 fn delegatecall_to_standard_precompile_not_recognized_as_custom() {
-	let precompiles = FrontierPrecompiles::<Runtime>::new();
+	let precompiles = LaosPrecompiles::<Runtime>::new();
 
 	let context_address = hash(123456);
 
@@ -116,7 +116,7 @@ fn delegatecall_to_standard_precompile_not_recognized_as_custom() {
 
 #[test]
 fn execute_delegate_call_on_custom_precompile_should_fail() {
-	let p = FrontierPrecompiles::<Runtime>::new();
+	let p = LaosPrecompiles::<Runtime>::new();
 
 	let code_address = hash(1027);
 	let context_address = hash(123456);
@@ -143,7 +143,7 @@ fn execute_delegate_call_on_custom_precompile_should_fail() {
 fn call_unknown_address_does_not_revert() {
 	ExtBuilder::default().build().execute_with(|| {
 		let dummy_contract = H160::from_str("0xe4BdA39B4E2730a578D5E2461A0Cc74FCAa64d62").unwrap();
-		let p = FrontierPrecompiles::<Runtime>::new();
+		let p = LaosPrecompiles::<Runtime>::new();
 
 		// call data for `mint_with_external_uri`
 		let mint_with_external_uri_input = "0xfd024566000000000000000000000000f24ff3a9cf04c71dbc94d0b566f7a27b94566cac000000000000000000000000000000000000000000000000000000000000007b0000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000000e746573742d746f6b656e2d757269000000000000000000000000000000000000";
@@ -203,7 +203,7 @@ fn call_unknown_address_is_noop() {
 
 		handle.input = evolve_with_external_uri.as_bytes().to_vec();
 
-		let p = FrontierPrecompiles::<Runtime>::new();
+		let p = LaosPrecompiles::<Runtime>::new();
 
 		assert_noop!(
 			p.execute(&mut handle).ok_or("returned None"),
