@@ -60,7 +60,7 @@ impl pallet_evm::Config for Runtime {
 	type FindAuthor = CustomFindAuthor<pallet_session::FindAccountFromAuthorIndex<Self, Aura>>;
 	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
-	type OnChargeTransaction = pallet_evm::EVMCurrencyAdapter<Balances, ToAuthor<Self>>; // todo
+	type OnChargeTransaction = pallet_evm::EVMCurrencyAdapter<Balances, ToAuthor<Self>>;
 	type OnCreate = ();
 	type PrecompilesType = LaosPrecompiles<Self>;
 	type PrecompilesValue = PrecompilesValue;
