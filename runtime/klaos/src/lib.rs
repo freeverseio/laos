@@ -202,7 +202,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("klaos"),
 	impl_name: create_runtime_str!("klaos"),
 	authoring_version: 1,
-	spec_version: 1500,
+	spec_version: 1600,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
