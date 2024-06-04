@@ -26,7 +26,7 @@ use sp_core::{H160, U256};
 use sp_runtime::{traits::IdentityLookup, ConsensusEngineId};
 use sp_std::{boxed::Box, prelude::*, str::FromStr};
 
-use super::FrontierPrecompiles;
+use super::LaosPrecompiles;
 
 type Block = frame_system::mocking::MockBlock<Runtime>;
 type AccountId = H160;
@@ -102,7 +102,7 @@ parameter_types! {
 	pub BlockGasLimit: U256 = U256::from(BLOCK_GAS_LIMIT);
 	pub const GasLimitPovSizeRatio: u64 = BLOCK_GAS_LIMIT.saturating_div(MAX_POV_SIZE);
 	pub WeightPerGas: Weight = Weight::from_parts(20_000, 0);
-	pub PrecompilesValue: FrontierPrecompiles<Runtime> = FrontierPrecompiles::<_>::new();
+	pub PrecompilesValue: LaosPrecompiles<Runtime> = LaosPrecompiles::<_>::new();
 }
 
 impl pallet_evm::Config for Runtime {
@@ -115,7 +115,7 @@ impl pallet_evm::Config for Runtime {
 	type AddressMapping = IdentityAddressMapping;
 	type Currency = Balances;
 	type RuntimeEvent = RuntimeEvent;
-	type PrecompilesType = FrontierPrecompiles<Self>;
+	type PrecompilesType = LaosPrecompiles<Self>;
 	type PrecompilesValue = PrecompilesValue;
 	type ChainId = ();
 	type BlockGasLimit = BlockGasLimit;

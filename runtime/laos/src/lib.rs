@@ -36,7 +36,7 @@ pub use laos_primitives::{
 };
 pub use pallet_evm_evolution_collection_factory::REVERT_BYTECODE;
 pub use pallet_parachain_staking::{InflationInfo, Range};
-use precompiles::FrontierPrecompiles;
+use precompiles::LaosPrecompiles;
 use sp_runtime::{create_runtime_str, generic, impl_opaque_keys, Permill};
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
@@ -50,7 +50,7 @@ pub type Block = generic::Block<Header, UncheckedExtrinsic>;
 /// BlockId type as expected by this runtime.
 pub type BlockId = generic::BlockId<Block>;
 
-pub type Precompiles = FrontierPrecompiles<Runtime>;
+pub type Precompiles = LaosPrecompiles<Runtime>;
 
 /// Opaque types. These are used by the CLI to instantiate machinery that don't need to know
 /// the specifics of the runtime. They can then be made to be agnostic over specific formats

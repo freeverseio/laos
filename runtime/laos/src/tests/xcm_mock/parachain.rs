@@ -64,7 +64,7 @@ use staging_xcm_builder::{
 use staging_xcm_executor::{traits::WeightTrader, XcmExecutor};
 use xcm_simulator::PhantomData;
 
-use crate::precompiles::FrontierPrecompiles;
+use crate::precompiles::LaosPrecompiles;
 
 pub type Block = frame_system::mocking::MockBlock<Runtime>;
 pub type AccountId = H160;
@@ -151,7 +151,7 @@ parameter_types! {
 	pub BlockGasLimit: U256 = U256::from(BLOCK_GAS_LIMIT);
 	pub const GasLimitPovSizeRatio: u64 = BLOCK_GAS_LIMIT.saturating_div(MAX_POV_SIZE);
 	pub WeightPerGas: Weight = Weight::from_parts(20_000, 0);
-	pub PrecompilesValue: FrontierPrecompiles<Runtime> = FrontierPrecompiles::<_>::new();
+	pub PrecompilesValue: LaosPrecompiles<Runtime> = LaosPrecompiles::<_>::new();
 }
 
 impl pallet_evm::Config for Runtime {
@@ -164,7 +164,7 @@ impl pallet_evm::Config for Runtime {
 	type AddressMapping = IdentityAddressMapping;
 	type Currency = Balances;
 	type RuntimeEvent = RuntimeEvent;
-	type PrecompilesType = FrontierPrecompiles<Self>;
+	type PrecompilesType = LaosPrecompiles<Self>;
 	type PrecompilesValue = PrecompilesValue;
 	type ChainId = ();
 	type BlockGasLimit = BlockGasLimit;
