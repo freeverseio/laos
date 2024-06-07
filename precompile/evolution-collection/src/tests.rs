@@ -555,6 +555,10 @@ fn test_expected_cost_evolve_with_external_uri() {
 		let alice = H160::from_str(ALICE).unwrap();
 		let collection_address = create_collection(alice);
 		let token_id = mint(alice, collection_address, 0, Vec::new());
+		// here:
+		// like it is ver si da el mismo result (no ref_time) what is ref_time?
+		// with pallet weights
+		// with new weights from run all_bench
 
 		let input = EvmDataWriter::new_with_selector(Action::Evolve)
 			.write(token_id)
@@ -664,6 +668,8 @@ fn collection_transfer_of_ownership_records_costs() {
 		let input = EvmDataWriter::new_with_selector(Action::TransferOwnership)
 			.write(Address(bob))
 			.build();
+
+		// let call = RuntimeCall::LaosEvolutionPallet(pallet_laos_evolution::Call::PrecompileCall);
 
 		// 1 read and 1 write
 		precompiles()

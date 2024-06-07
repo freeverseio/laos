@@ -381,7 +381,6 @@ impl_runtime_apis! {
 		) {
 			use frame_benchmarking::{Benchmarking, BenchmarkList};
 			use frame_support::traits::StorageInfoTrait;
-			use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
 			use super::*;
 
 			let mut list = Vec::<BenchmarkList>::new();
@@ -398,7 +397,6 @@ impl_runtime_apis! {
 
 			impl frame_system_benchmarking::Config for Runtime {}
 
-			use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
 			impl cumulus_pallet_session_benchmarking::Config for Runtime {}
 
 			use frame_support::traits::WhitelistedStorageKeys;
