@@ -83,10 +83,6 @@ impl Contains<RuntimeCall> for BaseCallFilter {
 		match c {
 			// New candidates are not allowed.
 			RuntimeCall::ParachainStaking(join_candidates { .. }) => false,
-			// Ethereum pallet calls are not allowed.
-			RuntimeCall::Ethereum(_) => false,
-			// EVM pallet calls are not allowed.
-			RuntimeCall::EVM(_) => false,
 			_ => true,
 		}
 	}
