@@ -33,5 +33,6 @@ pub mod pallet_vesting;
 pub mod paritydb_weights;
 pub mod rocksdb_weights;
 pub mod pallet_laos_evolution;
+pub mod pallet_asset_metadata_extender;
 
 pub use rocksdb_weights::constants::RocksDbWeight;
