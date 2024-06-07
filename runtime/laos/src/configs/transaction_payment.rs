@@ -88,8 +88,8 @@ mod tests {
 			pallet_transaction_payment::Pallet::<Runtime>::weight_to_fee(
 				frame_support::weights::Weight::from_parts(u64::MAX, 0)
 			),
-			<Runtime as frame_system::Config>::BlockWeights::get().max_block.ref_time() as u128
-				* WEIGHT_TO_FEE
+			<Runtime as frame_system::Config>::BlockWeights::get().max_block.ref_time() as u128 *
+				WEIGHT_TO_FEE
 		);
 	}
 

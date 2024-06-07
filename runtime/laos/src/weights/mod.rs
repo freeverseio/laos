@@ -21,7 +21,9 @@
 pub mod block_weights;
 pub mod cumulus_pallet_xcmp_queue;
 pub mod extrinsic_weights;
+pub mod pallet_asset_metadata_extender;
 pub mod pallet_evm;
+pub mod pallet_laos_evolution;
 pub mod pallet_multisig;
 pub mod pallet_parachain_staking;
 pub mod pallet_proxy;
@@ -32,7 +34,5 @@ pub mod pallet_utility;
 pub mod pallet_vesting;
 pub mod paritydb_weights;
 pub mod rocksdb_weights;
-pub mod pallet_laos_evolution;
-pub mod pallet_asset_metadata_extender;
 
 pub use rocksdb_weights::constants::RocksDbWeight;
