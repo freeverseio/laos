@@ -98,10 +98,13 @@ mod tests {
 		Runtime,
 	};
 	use core::str::FromStr;
-	use frame_support::{assert_err, assert_ok};
+	use frame_support::{assert_err, assert_ok, dispatch::PostDispatchInfo, pallet_prelude::Pays};
 	use pallet_ethereum::Transaction;
 	use sp_core::{H160, H256, U256};
-	use sp_runtime::traits::Dispatchable;
+	use sp_runtime::{
+		traits::Dispatchable,
+		DispatchError::{BadOrigin, Other},
+	};
 
 	#[test]
 	fn transfer_should_be_allowed() {
@@ -220,7 +223,7 @@ mod tests {
 	}
 
 	#[test]
-	fn evm_create_should_not_be_allowed() {
+	fn evm_create_should_be_allowed() {
 		new_test_ext().execute_with(|| {
 			let account = AccountId::from_str(ALICE).unwrap();
 
@@ -237,7 +240,10 @@ mod tests {
 
 			assert_err!(
 				call.dispatch(RuntimeOrigin::signed(account)),
-				frame_system::Error::<Runtime>::CallFiltered
+				sp_runtime::DispatchErrorWithPostInfo {
+					post_info: PostDispatchInfo { actual_weight: None, pays_fee: Pays::Yes },
+					error: BadOrigin,
+				}
 			);
 
 			let call_2 = RuntimeCall::EVM(pallet_evm::Call::create2 {
@@ -254,13 +260,16 @@ mod tests {
 
 			assert_err!(
 				call_2.dispatch(RuntimeOrigin::signed(account)),
-				frame_system::Error::<Runtime>::CallFiltered
+				sp_runtime::DispatchErrorWithPostInfo {
+					post_info: PostDispatchInfo { actual_weight: None, pays_fee: Pays::Yes },
+					error: BadOrigin,
+				}
 			);
 		});
 	}
 
 	#[test]
-	fn evm_call_should_not_be_allowed() {
+	fn evm_call_should_be_allowed() {
 		new_test_ext().execute_with(|| {
 			let account = AccountId::from_str(ALICE).unwrap();
 
@@ -278,13 +287,16 @@ mod tests {
 
 			assert_err!(
 				call.dispatch(RuntimeOrigin::signed(account)),
-				frame_system::Error::<Runtime>::CallFiltered
+				sp_runtime::DispatchErrorWithPostInfo {
+					post_info: PostDispatchInfo { actual_weight: None, pays_fee: Pays::Yes },
+					error: BadOrigin,
+				}
 			);
 		});
 	}
 
 	#[test]
-	fn evm_withdraw_should_not_be_allowed() {
+	fn evm_withdraw_should_be_allowed() {
 		new_test_ext().execute_with(|| {
 			let call =
 				RuntimeCall::EVM(pallet_evm::Call::withdraw { address: H160([0x2; 20]), value: 0 });
@@ -292,13 +304,16 @@ mod tests {
 
 			assert_err!(
 				call.dispatch(RuntimeOrigin::signed(account)),
-				frame_system::Error::<Runtime>::CallFiltered
+				sp_runtime::DispatchErrorWithPostInfo {
+					post_info: PostDispatchInfo { actual_weight: None, pays_fee: Pays::Yes },
+					error: BadOrigin,
+				}
 			);
 		});
 	}
 
 	#[test]
-	fn ethereum_transact_should_not_be_allowed() {
+	fn ethereum_transact_should_be_allowed() {
 		new_test_ext().execute_with(|| {
 			let call = RuntimeCall::Ethereum(pallet_ethereum::Call::transact {
 				transaction: Transaction::Legacy(ethereum::LegacyTransaction {
@@ -321,7 +336,10 @@ mod tests {
 
 			assert_err!(
 				call.dispatch(RuntimeOrigin::signed(account)),
-				frame_system::Error::<Runtime>::CallFiltered
+				sp_runtime::DispatchErrorWithPostInfo {
+					post_info: PostDispatchInfo { actual_weight: None, pays_fee: Pays::Yes },
+					error: Other("bad origin: expected to be an Ethereum transaction"),
+				}
 			);
 		});
 	}
