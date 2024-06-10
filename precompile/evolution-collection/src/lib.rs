@@ -193,7 +193,6 @@ where
 
 				// Record EVM cost
 				handle.record_cost(GasCalculator::<Runtime>::weight_to_gas(consumed_weight))?;
-				// duda que implicacion tiene este handle? puedo ver en algun sitio el resultado?
 
 				// Record Substrate related costs
 				// TODO: Add `ref_time` when precompiles are benchmarked

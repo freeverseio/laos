@@ -555,6 +555,7 @@ fn test_expected_cost_evolve_with_external_uri() {
 		let alice = H160::from_str(ALICE).unwrap();
 		let collection_address = create_collection(alice);
 		let token_id = mint(alice, collection_address, 0, Vec::new());
+
 		let input = EvmDataWriter::new_with_selector(Action::Evolve)
 			.write(token_id)
 			.write(Bytes([1u8; 20].to_vec()))
