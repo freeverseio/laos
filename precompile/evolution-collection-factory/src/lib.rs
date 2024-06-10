@@ -81,6 +81,7 @@ where
 
 				match LaosEvolution::<Runtime>::create_collection(owner.into()) {
 					Ok(collection_id) => {
+						// TODO default weights are being used here and the ones created calculated using runtime should be used
 						let mut consumed_weight =
 							LaosEvolutionWeights::<Runtime>::create_collection();
 
@@ -115,7 +116,10 @@ where
 
 						// Record Substrate related costs
 						// TODO: Add `ref_time` when precompiles are benchmarked
-						handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
+						handle.record_external_cost(
+							Some(consumed_weight.ref_time()), // TODO why this addition doesn't change anything at all? also comment the whole line doesn't have any effect
+							Some(consumed_weight.proof_size()),
+						)?;
 
 						Ok(succeed(EvmDataWriter::new().write(Address(collection_address)).build()))
 					},

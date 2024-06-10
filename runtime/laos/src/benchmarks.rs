@@ -15,7 +15,7 @@
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 frame_benchmarking::define_benchmarks!(
-	[frame_system, SystemBench::<Runtime>] // It fails but others parachain as Moonbeam does not have this
+	// [frame_system, SystemBench::<Runtime>] // It fails but others parachain as Moonbeam does not have this
 	[pallet_timestamp, Timestamp]
 	[pallet_sudo, Sudo]
 	[pallet_utility, Utility]

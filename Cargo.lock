@@ -5205,6 +5205,7 @@ dependencies = [
  "frame-try-runtime",
  "hex",
  "hex-literal",
+ "laos-precompile-utils",
  "laos-primitives",
  "log",
  "orml-traits",

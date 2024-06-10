@@ -25,6 +25,7 @@ use frame_support::{
 };
 use laos_primitives::{MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO};
 use sp_core::U256;
+use weights::pallet_laos_evolution::WeightInfo;
 
 /// Current approximation of the gas/s consumption considering
 /// EVM execution over compiled WASM (on 4.4Ghz CPU).
@@ -88,10 +89,92 @@ where
 
 #[cfg(test)]
 mod tests {
+	// fn evm_call(input: Vec<u8>) -> pallet_evm::Call<Runtime> {
+	// 	pallet_evm::Call::call {
+	// 		source: AccountId::from_str(ALICE).unwrap(),
+	// 		target: H160::from_low_u64_be(0),
+	// 		input,
+	// 		value: U256::zero(), // No value sent in EVM
+	// 		gas_limit: u64::max_value(),
+	// 		max_fee_per_gas: 0.into(),
+	// 		max_priority_fee_per_gas: Some(U256::zero()),
+	// 		nonce: None, // Use the next nonce
+	// 		access_list: Vec::new(),
+	// 	}
+	// }
+
+	use core::str::FromStr;
+	// TODO clean imports
+
+	use crate::currency::UNIT;
+	use frame_support::assert_ok;
+	use laos_precompile_utils::{Address, EvmDataWriter, GasCalculator};
+	use pallet_evm::FeeCalculator;
+	use pallet_evm_evolution_collection_factory::Action as CollectionFactoryAction;
+	use pallet_laos_evolution::WeightInfo;
+	use sp_core::H160;
+	use sp_runtime::traits::Dispatchable;
+
+	use crate::{
+		tests::{ExtBuilder, ALICE},
+		RuntimeCall, RuntimeOrigin,
+	};
+
 	use super::*;
 
 	#[test]
 	fn check_block_gas_limit() {
 		assert_eq!(BlockGasLimit::get(), 15000000.into());
+	}
+
+	#[test]
+	fn check_min_gas_price() {
+		let min_gas_price = <Runtime as pallet_evm::Config>::FeeCalculator::min_gas_price();
+		assert_eq!(min_gas_price.0, U256::from(1_000_000_000));
+		assert_eq!(min_gas_price.1, Weight::from_parts(25_000_000, 0));
+	}
+
+	#[test]
+	fn precompiles_have_cost() {
+		let alice = AccountId::from_str(ALICE).unwrap();
+
+		ExtBuilder::default()
+			.with_balances(vec![(alice, 1000 * UNIT)])
+			.build()
+			.execute_with(|| {
+				let owner = H160([1u8; 20]);
+				let input =
+					EvmDataWriter::new_with_selector(CollectionFactoryAction::CreateCollection)
+						.write(Address(owner))
+						.build();
+
+				let call = pallet_evm::Call::call {
+					source: H160::from(alice.0),
+					target: H160::from_low_u64_be(1027), // TODO move to var
+					input,
+					value: U256::zero(), // No value sent in EVM
+					gas_limit: 100_000,
+					max_fee_per_gas: <Runtime as pallet_evm::Config>::FeeCalculator::min_gas_price(
+					)
+					.0,
+					max_priority_fee_per_gas: Some(U256::zero()),
+					nonce: None, // Use the next nonce
+					access_list: Vec::new(),
+				};
+				let call_result = RuntimeCall::EVM(call).dispatch(RuntimeOrigin::root()).unwrap(); // TODO sign as alice
+				assert_eq!(
+					call_result.actual_weight.unwrap(),
+					Weight::from_parts(931_911_000, 10_563)
+				);
+				assert_eq!(
+					GasCalculator::<Runtime>::weight_to_gas(call_result.actual_weight.unwrap()),
+					37_276
+				);
+
+				let weight_from_pallet =
+					weights::pallet_laos_evolution::WeightInfo::<Runtime>::create_collection(); // TODO I have used the default ones because the runtime's are not public
+				assert_eq!(weight_from_pallet, Weight::from_parts(232_059_000, 1_493));
+				assert_eq!(GasCalculator::<Runtime>::weight_to_gas(weight_from_pallet), 9_282);
+			});
 	}
 }
