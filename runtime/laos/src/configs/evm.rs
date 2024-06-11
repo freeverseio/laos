@@ -16,9 +16,8 @@
 
 //! Pallets that enable EVM execution on Substrate
 use crate::{
-	precompiles::{AstarPrecompiles, LaosPrecompiles},
-	types::ToAuthor,
-	weights, AccountId, Aura, Balances, BaseFee, EVMChainId, Runtime, RuntimeEvent, Timestamp,
+	precompiles::LaosPrecompiles, types::ToAuthor, weights, AccountId, Aura, Balances, BaseFee,
+	EVMChainId, Runtime, RuntimeEvent, Timestamp,
 };
 use frame_support::{
 	parameter_types,
@@ -41,7 +40,6 @@ const WEIGHT_PER_GAS: u64 = WEIGHT_REF_TIME_PER_SECOND / GAS_PER_SECOND;
 parameter_types! {
 	pub BlockGasLimit: U256 = U256::from(NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT.ref_time() / WEIGHT_PER_GAS);
 	pub PrecompilesValue: LaosPrecompiles<Runtime> = LaosPrecompiles::<_>::new();
-	pub AstarPrecompilesValue: AstarPrecompiles<Runtime> = AstarPrecompiles::<_>::new();
 	pub WeightPerGas: Weight = Weight::from_parts(WEIGHT_PER_GAS, 0);
 	/// The amount of gas per pov. A ratio of 4 if we convert ref_time to gas and we compare
 	/// it with the pov_size for a block. E.g.
