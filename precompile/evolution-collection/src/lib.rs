@@ -4,17 +4,25 @@ use fp_evm::ExitError;
 use precompile_utils::prelude::*;
 use sp_core::H160;
 use sp_runtime::traits::PhantomData;
+use frame_support::DefaultNoBound;
 
-pub struct EvolutionCollectionPrecompile<R>(PhantomData<R>);
+#[derive(Clone, DefaultNoBound)]
+pub struct EvolutionCollectionPrecompileSet<R>(PhantomData<R>);
+
+impl<R> EvolutionCollectionPrecompileSet<R> {
+	pub fn new() -> Self {
+		Self(PhantomData)
+	}
+}
 
 #[precompile_utils::precompile]
 #[precompile::precompile_set]
-impl<R> EvolutionCollectionPrecompile<R>
+impl<R> EvolutionCollectionPrecompileSet<R>
 where
 	R: pallet_evm::Config,
 {
 	#[precompile::discriminant]
-	fn discriminant(address: H160, gas: u64) -> DiscriminantResult<R> {
+	fn discriminant(_address: H160, gas: u64) -> DiscriminantResult<u64> {
 		DiscriminantResult::None(gas)
 		// Replace with your discriminant logic.
 		// Some(match address {
@@ -24,9 +32,9 @@ where
 		// })
 	}
 
-	// #[precompile::public("example(uint32)")]
-	// fn example(discriminant: u8, handle: &mut impl PrecompileHandle, arg: u32) -> EvmResult {
-	//     // Discriminant can be used here.
-	//     Ok(arg * discriminant)
-	// }
+	#[precompile::public("example(uint32)")]
+	fn example(_discriminant: u64, _handle: &mut impl PrecompileHandle, _arg: u64) -> EvmResult {
+		// Discriminant can be used here.
+		Ok(())
+	}
 }

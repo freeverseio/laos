@@ -19,7 +19,7 @@
 use frame_support::parameter_types;
 
 use pallet_evm_asset_metadata_extender::AssetMetadataExtenderPrecompile;
-use pallet_evm_evolution_collection::EvolutionCollectionPrecompile;
+use pallet_evm_evolution_collection::EvolutionCollectionPrecompileSet;
 use pallet_evm_evolution_collection_factory::EvolutionCollectionFactoryPrecompile;
 use pallet_evm_precompile_blake2::Blake2F;
 use pallet_evm_precompile_bn128::{Bn128Add, Bn128Mul, Bn128Pairing};
@@ -35,7 +35,6 @@ use crate::Runtime;
 
 type AssetMetadataExtender = AssetMetadataExtenderPrecompile<Runtime>;
 type EvolutionCollectionFactory = EvolutionCollectionFactoryPrecompile<Runtime>;
-type EvolutionCollection = EvolutionCollectionPrecompile<Runtime>;
 
 /// Precompile checks for ethereum spec precompiles
 /// We allow DELEGATECALL to stay compliant with Ethereum behavior.
@@ -80,7 +79,7 @@ pub type LaosPrecompiles<R> = PrecompileSetBuilder<
 			(AddressU64<1>, AddressU64<4096>),
 			LaosPrecompilesSetAt,
 		>,
-		PrecompileSetStartingWith<AssetPrefix, EvolutionCollection, CallableByContract>,
+		PrecompileSetStartingWith<AssetPrefix, EvolutionCollectionPrecompileSet<R>, CallableByContract>,
 	),
 >;
 

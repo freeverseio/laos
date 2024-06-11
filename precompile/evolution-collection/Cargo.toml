@@ -13,6 +13,7 @@ sp-core = { workspace = true }
 sp-std = { workspace = true }
 sp-runtime = { workspace = true }
 fp-evm = { workspace = true }
+frame-support = { workspace = true }
 
 # Frontier precompile utils
 precompile-utils = { workspace = true, default-features = false }
@@ -26,5 +27,6 @@ std = [
 	"sp-std/std",
 	"sp-runtime/std",
 	"fp-evm/std",
+	"frame-support/std",
 	"precompile-utils/std",
 ]
