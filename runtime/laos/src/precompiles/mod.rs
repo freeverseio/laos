@@ -35,7 +35,7 @@ use crate::Runtime;
 
 type AssetMetadataExtender = AssetMetadataExtenderPrecompile<Runtime>;
 type EvolutionCollectionFactory = EvolutionCollectionFactoryPrecompile<Runtime>;
-type EvolutionCollection = EvolutionCollectionPrecompile<Runtime>;
+type EvolutionCollectionSet = EvolutionCollectionPrecompile<Runtime>;
 
 /// Precompile checks for ethereum spec precompiles
 /// We allow DELEGATECALL to stay compliant with Ethereum behavior.
@@ -80,7 +80,7 @@ pub type LaosPrecompiles<R> = PrecompileSetBuilder<
 			(AddressU64<1>, AddressU64<4096>),
 			LaosPrecompilesSetAt,
 		>,
-		// PrecompileSetStartingWith<AssetPrefix, EvolutionCollection, CallableByContract>,
+		PrecompileSetStartingWith<AssetPrefix, EvolutionCollection, CallableByContract>,
 	),
 >;
 
