@@ -31,7 +31,10 @@ use pallet_evm_precompile_bn128::{Bn128Add, Bn128Mul, Bn128Pairing};
 use pallet_evm_precompile_modexp::Modexp;
 use pallet_evm_precompile_simple::{ECRecover, Identity, Ripemd160, Sha256};
 use pallet_laos_evolution::address_to_collection_id;
-use precompile_utils::precompile_set::PrecompileSetBuilder;
+use precompile_utils::precompile_set::{
+	AcceptDelegateCall, AddressU64, CallableByContract, CallableByPrecompile, PrecompileAt,
+	PrecompileSetBuilder, PrecompilesInRangeInclusive,
+};
 
 use crate::Runtime;
 
@@ -137,22 +140,46 @@ pub(crate) fn hash(a: u64) -> H160 {
 	H160::from_low_u64_be(a)
 }
 
+/// Precompile checks for ethereum spec precompiles
+/// We allow DELEGATECALL to stay compliant with Ethereum behavior.
+type EthereumPrecompilesChecks = (AcceptDelegateCall, CallableByContract, CallableByPrecompile);
+
+#[precompile_utils::precompile_name_from_address]
+pub type LaosPrecompilesSetAt = (
+	// Ethereum precompiles:
+	// We allow DELEGATECALL to stay compliant with Ethereum behavior.
+	PrecompileAt<AddressU64<1>, ECRecover, EthereumPrecompilesChecks>,
+	PrecompileAt<AddressU64<2>, Sha256, EthereumPrecompilesChecks>,
+	PrecompileAt<AddressU64<3>, Ripemd160, EthereumPrecompilesChecks>,
+	PrecompileAt<AddressU64<4>, Identity, EthereumPrecompilesChecks>,
+	PrecompileAt<AddressU64<5>, Modexp, EthereumPrecompilesChecks>,
+	PrecompileAt<AddressU64<6>, Bn128Add, EthereumPrecompilesChecks>,
+	PrecompileAt<AddressU64<7>, Bn128Mul, EthereumPrecompilesChecks>,
+	PrecompileAt<AddressU64<8>, Bn128Pairing, EthereumPrecompilesChecks>,
+	PrecompileAt<AddressU64<9>, Blake2F, EthereumPrecompilesChecks>,
+);
+
 pub type AstarPrecompiles<R> = PrecompileSetBuilder<
-    R,
-	(),
-    // (
-    //     // Skip precompiles if out of range.
-    //     PrecompilesInRangeInclusive<
-    //         // We take range as last precompile index, UPDATE this once new prcompile is added
-    //         (AddressU64<1>, AddressU64<20487>),
-    //         AstarPrecompilesSetAt<R, C>,
-    //     >,
-    //     // Prefixed precompile sets (XC20)
-    //     PrecompileSetStartingWith<AssetPrefix, Erc20AssetsPrecompileSet<R>, CallableByContract>,
-    // ),
+	R,
+	(
+		// Skip precompiles if out of range.
+		PrecompilesInRangeInclusive<
+			// range of precompiles reserved addresses
+			(AddressU64<1>, AddressU64<4096>),
+			LaosPrecompilesSetAt,
+		>,
+	),
+	// (
+	//     // Skip precompiles if out of range.
+	//     PrecompilesInRangeInclusive<
+	//         // We take range as last precompile index, UPDATE this once new prcompile is added
+	//         (AddressU64<1>, AddressU64<20487>),
+	//         AstarPrecompilesSetAt<R, C>,
+	//     >,
+	//     // Prefixed precompile sets (XC20)
+	//     PrecompileSetStartingWith<AssetPrefix, Erc20AssetsPrecompileSet<R>, CallableByContract>,
+	// ),
 >;
-
-
 
 #[cfg(test)]
 mod mock;
