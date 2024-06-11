@@ -35,7 +35,7 @@ use crate::Runtime;
 
 type AssetMetadataExtender = AssetMetadataExtenderPrecompile<Runtime>;
 type EvolutionCollectionFactory = EvolutionCollectionFactoryPrecompile<Runtime>;
-type EvolutionCollectionSet = EvolutionCollectionPrecompile<Runtime>;
+type EvolutionCollection = EvolutionCollectionPrecompile<Runtime>;
 
 /// Precompile checks for ethereum spec precompiles
 /// We allow DELEGATECALL to stay compliant with Ethereum behavior.

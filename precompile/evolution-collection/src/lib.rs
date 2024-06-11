@@ -1,13 +1,15 @@
+#![cfg_attr(not(feature = "std"), no_std)]
+
 use fp_evm::ExitError;
 use precompile_utils::prelude::*;
 use sp_core::H160;
 use sp_runtime::traits::PhantomData;
 
-pub struct EvolutionCollection<R>(PhantomData<R>);
+pub struct EvolutionCollectionPrecompile<R>(PhantomData<R>);
 
 #[precompile_utils::precompile]
 #[precompile::precompile_set]
-impl<R> EvolutionCollection<R>
+impl<R> EvolutionCollectionPrecompile<R>
 where
 	R: pallet_evm::Config,
 {
