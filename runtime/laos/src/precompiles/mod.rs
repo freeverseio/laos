@@ -31,6 +31,7 @@ use pallet_evm_precompile_bn128::{Bn128Add, Bn128Mul, Bn128Pairing};
 use pallet_evm_precompile_modexp::Modexp;
 use pallet_evm_precompile_simple::{ECRecover, Identity, Ripemd160, Sha256};
 use pallet_laos_evolution::address_to_collection_id;
+use precompile_utils::precompile_set::PrecompileSetBuilder;
 
 use crate::Runtime;
 
@@ -135,6 +136,23 @@ where
 pub(crate) fn hash(a: u64) -> H160 {
 	H160::from_low_u64_be(a)
 }
+
+pub type AstarPrecompiles<R> = PrecompileSetBuilder<
+    R,
+	(),
+    // (
+    //     // Skip precompiles if out of range.
+    //     PrecompilesInRangeInclusive<
+    //         // We take range as last precompile index, UPDATE this once new prcompile is added
+    //         (AddressU64<1>, AddressU64<20487>),
+    //         AstarPrecompilesSetAt<R, C>,
+    //     >,
+    //     // Prefixed precompile sets (XC20)
+    //     PrecompileSetStartingWith<AssetPrefix, Erc20AssetsPrecompileSet<R>, CallableByContract>,
+    // ),
+>;
+
+
 
 #[cfg(test)]
 mod mock;

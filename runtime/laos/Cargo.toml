@@ -100,6 +100,8 @@ pallet-evm-precompile-blake2 = { workspace = true }
 
 pallet-parachain-staking = { workspace = true }
 
+precompile-utils = { workspace = true }
+
 [dev-dependencies]
 static_assertions = { workspace = true }
 precompile-utils = { workspace = true, features = ["testing"] }
