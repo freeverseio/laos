@@ -55,7 +55,7 @@ pallet-asset-metadata-extender = { workspace = true }
 pallet-laos-evolution = { workspace = true }
 
 pallet-evm-evolution-collection-factory = { workspace = true }
-pallet-evm-evolution-collection = { workspace = true }
+pallet-evm-evolution-collection-legacy = { workspace = true }
 pallet-evm-asset-metadata-extender = { workspace = true }
 
 # Polkadot
@@ -170,7 +170,7 @@ std = [
 	"pallet-evm/std",
 	"pallet-evm-evolution-collection-factory/std",
 	"pallet-evm-asset-metadata-extender/std",
-	"pallet-evm-evolution-collection/std",
+	"pallet-evm-evolution-collection-legacy/std",
 	"pallet-evm-chain-id/std",
 	"pallet-evm-precompile-modexp/std",
 	"pallet-evm-precompile-simple/std",

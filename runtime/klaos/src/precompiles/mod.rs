@@ -24,7 +24,7 @@ use sp_core::H160;
 use sp_std::marker::PhantomData;
 
 use pallet_evm_asset_metadata_extender::AssetMetadataExtenderPrecompile;
-use pallet_evm_evolution_collection::EvolutionCollectionPrecompile;
+use pallet_evm_evolution_collection_legacy::EvolutionCollectionPrecompile;
 use pallet_evm_evolution_collection_factory::EvolutionCollectionFactoryPrecompile;
 use pallet_evm_precompile_blake2::Blake2F;
 use pallet_evm_precompile_bn128::{Bn128Add, Bn128Mul, Bn128Pairing};
