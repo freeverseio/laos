@@ -7256,7 +7256,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-evm-evolution-collection-origin"
+name = "pallet-evm-evolution-collection-legacy"
 version = "2.0.0-dev"
 dependencies = [
  "evm",
