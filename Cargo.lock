@@ -7220,11 +7220,16 @@ version = "2.0.0-dev"
 dependencies = [
  "fp-evm",
  "frame-support",
+ "frame-system",
+ "pallet-balances",
  "pallet-evm",
  "pallet-laos-evolution",
+ "pallet-timestamp",
  "parity-scale-codec",
  "precompile-utils",
+ "scale-info",
  "sp-core",
+ "sp-io",
  "sp-runtime",
  "sp-std",
 ]
@@ -7243,33 +7248,6 @@ dependencies = [
  "num_enum",
  "pallet-balances",
  "pallet-evm",
- "pallet-laos-evolution",
- "pallet-timestamp",
- "parity-scale-codec",
- "precompile-utils",
- "scale-info",
- "sp-arithmetic",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "pallet-evm-evolution-collection-origin"
-version = "2.0.0-dev"
-dependencies = [
- "evm",
- "fp-evm",
- "frame-support",
- "frame-system",
- "hex",
- "laos-precompile-utils",
- "laos-precompile-utils-macro",
- "num_enum",
- "pallet-balances",
- "pallet-evm",
- "pallet-evm-evolution-collection-factory",
  "pallet-laos-evolution",
  "pallet-timestamp",
  "parity-scale-codec",
