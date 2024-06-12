@@ -44,35 +44,38 @@ fn owner_of_non_existent_collection_should_revert() {
 	})
 }
 
-// #[test]
-// fn owner_of_invalid_collection_address() {
-// 	new_test_ext().execute_with(|| {
-// 		let _invalid_address = H160::from_str("0000000000000000000000000000000000000005").unwrap();
+#[test]
+fn owner_of_invalid_collection_address() {
+	new_test_ext().execute_with(|| {
+		let _invalid_address = H160::from_str("0000000000000000000000000000000000000005").unwrap();
 
-// 		let _input = EvmDataWriter::new_with_selector(Action::Owner).build();
+		// let _input = EvmDataWriter::new_with_selector(Action::Owner).build();
 
-// 		// TODO: Uncomment this when this PR is merged: https://github.com/paritytech/frontier/pull/1248
-// 		// Above PR fixes a bug in `execute_none()`
-// 		// precompiles()
-// 		// 	.prepare_test(H160([1u8; 20]), invalid_address, input)
-// 		// 	.execute_none();
-// 	});
-// }
+		// TODO: Uncomment this when this PR is merged: https://github.com/paritytech/frontier/pull/1248
+		// Above PR fixes a bug in `execute_none()`
+		// precompiles()
+		// 	.prepare_test(H160([1u8; 20]), invalid_address, PrecompileCall::owner {})
+		// 	.execute_none();
+	});
+}
 
 // #[test]
 // fn owner_of_collection_works() {
 // 	new_test_ext().execute_with(|| {
 // 		let alice = H160::from_str(ALICE).unwrap();
-// 		let collection_address = create_collection(alice);
+// 		// let collection_address = create_collection(alice);
+// 		LaosEvolutionCollectionFactory::create_collection {
 
-// 		let input = EvmDataWriter::new_with_selector(Action::Owner).build();
+// 		}
 
-// 		precompiles().prepare_test(alice, collection_address, input).execute_returns(
-// 			H256::from_str(
-// 				format!("000000000000000000000000{}", ALICE.trim_start_matches("0x")).as_str(),
-// 			)
-// 			.unwrap(),
-// 		);
+// 		// output is padded with 12 bytes of zeros
+// 		let expected_output = H256::from_str(
+// 			format!("000000000000000000000000{}", ALICE.trim_start_matches("0x")).as_str(),
+// 		)
+// 		.unwrap();
+// 		precompiles()
+// 			.prepare_test(alice, collection_address, PrecompileCall::owner {})
+// 			.execute_returns(expected_output);
 // 	});
 // }
 
