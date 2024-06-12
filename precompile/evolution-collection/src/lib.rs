@@ -3,7 +3,7 @@
 use fp_evm::ExitError;
 use frame_support::DefaultNoBound;
 use pallet_laos_evolution::{address_to_collection_id, types::CollectionId};
-use precompile_utils::prelude::*; // TODO remove *
+use precompile_utils::prelude::{DiscriminantResult, EvmResult, PrecompileHandle, RuntimeHelper};
 use sp_core::H160;
 use sp_runtime::traits::PhantomData;
 
@@ -24,17 +24,16 @@ where
 {
 	#[precompile::discriminant]
 	fn discriminant(address: H160, gas: u64) -> DiscriminantResult<CollectionId> {
-		match address_to_collection_id(address) {
-			Ok(id) => DiscriminantResult::Some(id, gas),
-			Err(_) => DiscriminantResult::None(gas),
+		let extra_cost = RuntimeHelper::<R>::db_read_gas_cost();
+		if gas < extra_cost {
+			return DiscriminantResult::OutOfGas;
 		}
 
-		// Replace with your discriminant logic.
-		// Some(match address {
-		//     a if a == H160::from(42) => 1
-		//     a if a == H160::from(43) => 2,
-		//     _ => return None,
-		// })
+		// maybe here we could avoid the extra_cost calculation cause there's no db read
+		match address_to_collection_id(address) {
+			Ok(id) => DiscriminantResult::Some(id, extra_cost),
+			Err(_) => DiscriminantResult::None(extra_cost),
+		}
 	}
 
 	#[precompile::public("example(uint32)")]
