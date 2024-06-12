@@ -4953,8 +4953,8 @@ dependencies = [
  "pallet-evm",
  "pallet-evm-asset-metadata-extender",
  "pallet-evm-chain-id",
- "pallet-evm-evolution-collection",
  "pallet-evm-evolution-collection-factory",
+ "pallet-evm-evolution-collection-legacy",
  "pallet-evm-precompile-blake2",
  "pallet-evm-precompile-bn128",
  "pallet-evm-precompile-modexp",
@@ -7248,6 +7248,33 @@ dependencies = [
  "num_enum",
  "pallet-balances",
  "pallet-evm",
+ "pallet-laos-evolution",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "precompile-utils",
+ "scale-info",
+ "sp-arithmetic",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-evm-evolution-collection-legacy"
+version = "2.0.0-dev"
+dependencies = [
+ "evm",
+ "fp-evm",
+ "frame-support",
+ "frame-system",
+ "hex",
+ "laos-precompile-utils",
+ "laos-precompile-utils-macro",
+ "num_enum",
+ "pallet-balances",
+ "pallet-evm",
+ "pallet-evm-evolution-collection-factory",
  "pallet-laos-evolution",
  "pallet-timestamp",
  "parity-scale-codec",
