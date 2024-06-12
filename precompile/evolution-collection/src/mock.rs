@@ -22,7 +22,10 @@ use frame_support::{
 	derive_impl, parameter_types, traits::FindAuthor, weights::constants::RocksDbWeight,
 };
 use sp_core::{H160, U256};
-use sp_runtime::{traits::{IdentityLookup, PhantomData}, BuildStorage, ConsensusEngineId};
+use sp_runtime::{
+	traits::{IdentityLookup, PhantomData},
+	BuildStorage, ConsensusEngineId,
+};
 
 type Block = frame_system::mocking::MockBlock<Test>;
 

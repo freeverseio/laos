@@ -14,67 +14,67 @@ fn precompiles() -> EvolutionCollectionPrecompileSet<Test> {
 #[test]
 fn selectors() {
 	assert!(PrecompileCall::owner_selectors().contains(&0x8DA5CB5B));
-// 	assert_eq!(Action::TokenURI as u32, 0xC87B56DD);
-// 	assert_eq!(Action::Mint as u32, 0xFD024566);
-// 	assert_eq!(Action::Evolve as u32, 0x2FD38F4D);
+	// 	assert_eq!(Action::TokenURI as u32, 0xC87B56DD);
+	// 	assert_eq!(Action::Mint as u32, 0xFD024566);
+	// 	assert_eq!(Action::Evolve as u32, 0x2FD38F4D);
 }
 
 // #[test]
 // fn check_log_selectors() {
-	// 	assert_eq!(
-		// 		hex::encode(SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI),
-		// 		"a7135052b348b0b4e9943bae82d8ef1c5ac225e594ef4271d12f0744cfc98348"
-		// 	);
-		// 	assert_eq!(
-			// 		hex::encode(SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI),
-			// 		"dde18ad2fe10c12a694de65b920c02b851c382cf63115967ea6f7098902fa1c8"
-			// 	);
-			// }
-			
-			#[test]
-			fn owner_of_non_existent_collection_should_revert() {
-				new_test_ext().execute_with(|| {
-					let alice = H160::from_str(ALICE).unwrap();
-					let collection_address =
-					H160::from_str("fffffffffffffffffffffffe0000000000000000").unwrap();
-					
-					precompiles()
-					.prepare_test(alice, collection_address, PrecompileCall::owner {})
-					.execute_reverts(|r| r == b"collection does not exist");
-			})
-			}
-			
-			// #[test]
-			// fn owner_of_invalid_collection_address() {
-			// 	new_test_ext().execute_with(|| {
-			// 		let _invalid_address = H160::from_str("0000000000000000000000000000000000000005").unwrap();
-			
-			// 		let _input = EvmDataWriter::new_with_selector(Action::Owner).build();
-			
-			// 		// TODO: Uncomment this when this PR is merged: https://github.com/paritytech/frontier/pull/1248
-			// 		// Above PR fixes a bug in `execute_none()`
-			// 		// precompiles()
-			// 		// 	.prepare_test(H160([1u8; 20]), invalid_address, input)
-			// 		// 	.execute_none();
-			// 	});
-			// }
-			
-			// #[test]
-			// fn owner_of_collection_works() {
-			// 	new_test_ext().execute_with(|| {
-			// 		let alice = H160::from_str(ALICE).unwrap();
-			// 		let collection_address = create_collection(alice);
-			
-			// 		let input = EvmDataWriter::new_with_selector(Action::Owner).build();
-			
-			// 		precompiles().prepare_test(alice, collection_address, input).execute_returns(
-			// 			H256::from_str(
-			// 				format!("000000000000000000000000{}", ALICE.trim_start_matches("0x")).as_str(),
-			// 			)
-			// 			.unwrap(),
-			// 		);
-			// 	});
-			// }
+// 	assert_eq!(
+// 		hex::encode(SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI),
+// 		"a7135052b348b0b4e9943bae82d8ef1c5ac225e594ef4271d12f0744cfc98348"
+// 	);
+// 	assert_eq!(
+// 		hex::encode(SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI),
+// 		"dde18ad2fe10c12a694de65b920c02b851c382cf63115967ea6f7098902fa1c8"
+// 	);
+// }
+
+#[test]
+fn owner_of_non_existent_collection_should_revert() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let collection_address =
+			H160::from_str("fffffffffffffffffffffffe0000000000000000").unwrap();
+
+		precompiles()
+			.prepare_test(alice, collection_address, PrecompileCall::owner {})
+			.execute_reverts(|r| r == b"collection does not exist");
+	})
+}
+
+// #[test]
+// fn owner_of_invalid_collection_address() {
+// 	new_test_ext().execute_with(|| {
+// 		let _invalid_address = H160::from_str("0000000000000000000000000000000000000005").unwrap();
+
+// 		let _input = EvmDataWriter::new_with_selector(Action::Owner).build();
+
+// 		// TODO: Uncomment this when this PR is merged: https://github.com/paritytech/frontier/pull/1248
+// 		// Above PR fixes a bug in `execute_none()`
+// 		// precompiles()
+// 		// 	.prepare_test(H160([1u8; 20]), invalid_address, input)
+// 		// 	.execute_none();
+// 	});
+// }
+
+// #[test]
+// fn owner_of_collection_works() {
+// 	new_test_ext().execute_with(|| {
+// 		let alice = H160::from_str(ALICE).unwrap();
+// 		let collection_address = create_collection(alice);
+
+// 		let input = EvmDataWriter::new_with_selector(Action::Owner).build();
+
+// 		precompiles().prepare_test(alice, collection_address, input).execute_returns(
+// 			H256::from_str(
+// 				format!("000000000000000000000000{}", ALICE.trim_start_matches("0x")).as_str(),
+// 			)
+// 			.unwrap(),
+// 		);
+// 	});
+// }
 
 // #[test]
 // fn mint_should_generate_log() {
@@ -127,8 +127,6 @@ fn selectors() {
 // 			.execute_reverts(|r| r == b"unknown selector");
 // 	});
 // }
-
-
 
 // #[test]
 // fn token_uri_reverts_when_asset_does_not_exist() {
