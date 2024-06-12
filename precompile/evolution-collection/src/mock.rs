@@ -111,7 +111,7 @@ frame_support::parameter_types! {
 	/// 1 weight to 1 gas, for testing purposes
 	pub WeightPerGas: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(1, 0);
 	// pub MockPrecompiles: MockPrecompileSet<Test> = MockPrecompileSet::<_>::new();
-	pub LaosPrecompiles: EvolutionCollectionPrecompileSet<Test> = EvolutionCollectionPrecompileSet(PhantomData);
+	pub const LaosPrecompiles: EvolutionCollectionPrecompileSet<Test> = EvolutionCollectionPrecompileSet(PhantomData);
 }
 
 impl pallet_evm::Config for Test {
