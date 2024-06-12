@@ -7222,6 +7222,7 @@ dependencies = [
  "frame-support",
  "pallet-evm",
  "pallet-laos-evolution",
+ "parity-scale-codec",
  "precompile-utils",
  "sp-core",
  "sp-runtime",
