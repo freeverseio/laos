@@ -79,7 +79,11 @@ pub type LaosPrecompiles<R> = PrecompileSetBuilder<
 			(AddressU64<1>, AddressU64<4096>),
 			LaosPrecompilesSetAt,
 		>,
-		PrecompileSetStartingWith<AssetPrefix, EvolutionCollectionPrecompileSet<R>, CallableByContract>,
+		PrecompileSetStartingWith<
+			AssetPrefix,
+			EvolutionCollectionPrecompileSet<R>,
+			CallableByContract,
+		>,
 	),
 >;
 

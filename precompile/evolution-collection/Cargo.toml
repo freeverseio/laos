@@ -14,6 +14,7 @@ sp-std = { workspace = true }
 sp-runtime = { workspace = true }
 fp-evm = { workspace = true }
 frame-support = { workspace = true }
+pallet-laos-evolution = { workspace = true }
 
 # Frontier precompile utils
 precompile-utils = { workspace = true, default-features = false }
@@ -29,4 +30,5 @@ std = [
 	"fp-evm/std",
 	"frame-support/std",
 	"precompile-utils/std",
+	"pallet-laos-evolution/std",
 ]
