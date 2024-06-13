@@ -3,7 +3,7 @@ use evm::Context;
 use fp_evm::PrecompileSet;
 use mock::*;
 use precompile_utils::testing::*;
-use sp_core::{H160, U256};
+use sp_core::{H160, H256, U256};
 use std::str::FromStr;
 
 const ALICE: &str = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
@@ -18,17 +18,14 @@ fn precompiles() -> LaosPrecompiles<Test> {
 /// Note: this function is used instead of `PrecompileTesterExt::execute_returns` because the latter
 /// does not return the output of the precompile. And `PrecompileTester::execute` is a private
 /// function.
-fn create_collection(owner: impl Into<H160> + std::marker::Copy) -> H160 {
-	// let owner: H160 = owner.into();
-	// let input = EvmDataWriter::new_with_selector(CollectionFactoryAction::CreateCollection)
-	// 	.write(Address(owner))
-	// 	.build();
+fn create_collection(owner: impl Into<H160>) -> H160 {
+	let owner: H160 = owner.into();
 
 	let mut handle = MockHandle::new(
 		Precompile1.into(),
-		Context { address: Precompile1.into(), caller: owner.into(), apparent_value: U256::zero() },
+		Context { address: Precompile1.into(), caller: owner, apparent_value: U256::zero() },
 	);
-	handle.input = FactoryPrecompileCall::create_collection { owner: Address(owner.into()) }.into();
+	handle.input = FactoryPrecompileCall::create_collection { owner: Address(owner) }.into();
 
 	let res = precompiles().execute(&mut handle).unwrap().unwrap();
 
@@ -87,10 +84,7 @@ fn owner_of_invalid_collection_address() {
 // fn owner_of_collection_works() {
 // 	new_test_ext().execute_with(|| {
 // 		let alice = H160::from_str(ALICE).unwrap();
-// 		// let collection_address = create_collection(alice);
-// 		LaosEvolutionCollectionFactory::create_collection {
-
-// 		}
+// 		let collection_address = create_collection(Alice);
 
 // 		// output is padded with 12 bytes of zeros
 // 		let expected_output = H256::from_str(
