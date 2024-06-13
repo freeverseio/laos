@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 parity-scale-codec = { workspace = true, features = ["derive"] }
 pallet-evm = { workspace = true }
+scale-info = { workspace = true, features = ["derive"] }
 
 # Substrate
 sp-core = { workspace = true }
@@ -15,10 +16,17 @@ sp-std = { workspace = true }
 sp-runtime = { workspace = true }
 fp-evm = { workspace = true }
 frame-support = { workspace = true }
+frame-system = { workspace = true }
 pallet-laos-evolution = { workspace = true }
 
 # Frontier precompile utils
 precompile-utils = { workspace = true, default-features = false }
+
+[dev-dependencies]
+pallet-balances = { workspace = true, features = ["std", "insecure_zero_ed"] }
+pallet-timestamp = { workspace = true }
+sp-io = { workspace = true }
+precompile-utils = { workspace = true, features = ["testing"]}
 
 [features]
 default = ["std"]
@@ -30,6 +38,8 @@ std = [
 	"sp-runtime/std",
 	"fp-evm/std",
 	"frame-support/std",
+	"frame-system/std",
 	"precompile-utils/std",
 	"pallet-laos-evolution/std",
+	"scale-info/std",
 ]

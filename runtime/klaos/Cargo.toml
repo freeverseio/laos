@@ -54,7 +54,7 @@ sp-version = { workspace = true }
 pallet-asset-metadata-extender = { workspace = true }
 pallet-laos-evolution = { workspace = true }
 
-pallet-evm-evolution-collection-factory = { workspace = true }
+pallet-evm-evolution-collection-factory-legacy = { workspace = true }
 pallet-evm-evolution-collection-legacy = { workspace = true }
 pallet-evm-asset-metadata-extender = { workspace = true }
 
@@ -168,7 +168,7 @@ std = [
 	"pallet-base-fee/std",
 	"pallet-ethereum/std",
 	"pallet-evm/std",
-	"pallet-evm-evolution-collection-factory/std",
+	"pallet-evm-evolution-collection-factory-legacy/std",
 	"pallet-evm-asset-metadata-extender/std",
 	"pallet-evm-evolution-collection-legacy/std",
 	"pallet-evm-chain-id/std",
