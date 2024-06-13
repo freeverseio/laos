@@ -25,34 +25,33 @@ impl<R> EvolutionCollectionPrecompileSet<R> {
 #[precompile::precompile_set]
 impl<R> EvolutionCollectionPrecompileSet<R>
 where
-	R: pallet_evm::Config + crate::Config,
-	R::AccountId: From<H160> + Into<H160> + Encode,
+	R: crate::Config,
+	// R::AccountId: From<H160> + Into<H160> + Encode,
 {
 	#[precompile::discriminant]
 	fn discriminant(address: H160, gas: u64) -> DiscriminantResult<CollectionId> {
-		let extra_cost = RuntimeHelper::<R>::db_read_gas_cost();
-		if gas < extra_cost {
-			return DiscriminantResult::OutOfGas;
-		}
+
 
 		// maybe here we could avoid the extra_cost calculation cause there's no db read
 		match address_to_collection_id(address) {
-			Ok(id) => DiscriminantResult::Some(id, extra_cost),
-			Err(_) => DiscriminantResult::None(extra_cost),
+			Ok(id) => DiscriminantResult::Some(id, gas),
+			Err(_) => DiscriminantResult::None(gas),
 		}
 	}
 
 	#[precompile::public("owner()")]
 	#[precompile::view]
-	fn owner(
+	pub fn owner(
 		collection_id: CollectionId,
-		_handle: &mut impl PrecompileHandle,
+		handle: &mut impl PrecompileHandle,
 	) -> EvmResult<Address> {
 		if let Some(owner) = LaosEvolution::<R>::collection_owner(collection_id) {
 			// TODO: handle the cost
 			// handle.record_cost(GasCalculator::<Runtime>::db_read_gas_cost(1))?;
+			let weight = <LaosEvolution as crate::WeightInfo>::create_collection();
+			handle.record_external_cost(Some(weight.ref_time()), Some(weight.proof_size()))?;
 
-			Ok(Address(owner.into()))
+			Ok(Address::default())
 		} else {
 			Err(revert("collection does not exist"))
 		}

@@ -22,10 +22,88 @@ use super::*;
 use crate::Pallet as LaosEvolution;
 use frame_benchmarking::v2::*;
 use sp_std::vec;
+use crate::precompiles::EvolutionCollectionPrecompileSet;
+use fp_evm::Transfer;
+use sp_std::vec::Vec;
+
+	struct MockPrecompileHandle;
+	impl pallet_evm::PrecompileHandle for MockPrecompileHandle {
+		fn call(
+			&mut self,
+			_: sp_core::H160,
+			_: Option<Transfer>,
+			_: Vec<u8>,
+			_: Option<u64>,
+			_: bool,
+			_: &pallet_evm::Context,
+		) -> (pallet_evm::ExitReason, Vec<u8>) {
+			unimplemented!()
+		}
+
+		fn record_cost(&mut self, _: u64) -> Result<(), pallet_evm::ExitError> {
+			unimplemented!()
+		}
+
+		fn remaining_gas(&self) -> u64 {
+			unimplemented!()
+		}
+
+		fn log(
+			&mut self,
+			_: sp_core::H160,
+			_: Vec<sp_core::H256>,
+			_: Vec<u8>,
+		) -> Result<(), pallet_evm::ExitError> {
+			unimplemented!()
+		}
+
+		fn code_address(&self) -> sp_core::H160 {
+			unimplemented!()
+		}
+
+		fn input(&self) -> &[u8] {
+			unimplemented!()
+		}
+
+		fn context(&self) -> &pallet_evm::Context {
+			unimplemented!()
+		}
+
+		fn is_static(&self) -> bool {
+			true
+		}
+
+		fn gas_limit(&self) -> Option<u64> {
+			unimplemented!()
+		}
+
+		fn record_external_cost(
+			&mut self,
+			_ref_time: Option<u64>,
+			_proof_size: Option<u64>,
+		) -> Result<(), fp_evm::ExitError> {
+			Ok(())
+		}
+
+		fn refund_external_cost(&mut self, _ref_time: Option<u64>, _proof_size: Option<u64>) {}
+	}
 
 #[benchmarks]
 mod benchmarks {
 	use super::*;
+
+	#[benchmark]
+	fn precompile_owner() {
+		let caller: T::AccountId = whitelisted_caller();
+		let owner = caller.clone();
+		let collection_id = LaosEvolution::<T>::create_collection(owner).unwrap();
+		let mut handle = MockPrecompileHandle;
+
+		#[block]
+		{
+			EvolutionCollectionPrecompileSet::<T>::owner(collection_id, &mut handle).unwrap();
+		}
+	}
 
 	#[benchmark]
 	fn create_collection() {
