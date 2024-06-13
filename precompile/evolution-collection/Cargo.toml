@@ -21,6 +21,7 @@ pallet-laos-evolution = { workspace = true }
 
 # Frontier precompile utils
 precompile-utils = { workspace = true, default-features = false }
+laos-precompile-utils = { workspace = true, default-features = false }
 
 [dev-dependencies]
 pallet-balances = { workspace = true, features = ["std", "insecure_zero_ed"] }
@@ -40,6 +41,7 @@ std = [
 	"frame-support/std",
 	"frame-system/std",
 	"precompile-utils/std",
+	"laos-precompile-utils/std",
 	"pallet-laos-evolution/std",
 	"scale-info/std",
 ]

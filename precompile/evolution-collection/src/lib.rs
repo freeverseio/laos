@@ -2,6 +2,7 @@
 
 use fp_evm::ExitError;
 use frame_support::DefaultNoBound;
+use laos_precompile_utils::EvmDataWriter; // TODO this should be removed after the refactor
 use pallet_laos_evolution::{
 	address_to_collection_id, types::CollectionId, Pallet as LaosEvolution,
 };

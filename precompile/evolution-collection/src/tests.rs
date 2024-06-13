@@ -44,6 +44,28 @@ fn owner_of_non_existent_collection_should_revert() {
 	})
 }
 
+fn create_collection(owner: impl Into<H160>) -> H160 {
+	let owner: H160 = owner.into();
+	let input = EvmDataWriter::new_with_selector(CollectionFactoryAction::CreateCollection)
+		.write(Address(owner))
+		.build();
+
+	let mut handle = MockHandle::new(
+		EVOLUTION_FACTORY_PRECOMPILE_ADDRESS.into(),
+		Context {
+			address: EVOLUTION_FACTORY_PRECOMPILE_ADDRESS.into(),
+			caller: owner,
+			apparent_value: U256::zero(),
+		},
+	);
+
+	handle.input = input;
+
+	let res = precompiles().execute(&mut handle).unwrap().unwrap();
+
+	H160::from_slice(res.output.as_slice()[12..].as_ref())
+}
+
 #[test]
 fn owner_of_invalid_collection_address() {
 	new_test_ext().execute_with(|| {
@@ -59,25 +81,25 @@ fn owner_of_invalid_collection_address() {
 	});
 }
 
-// #[test]
-// fn owner_of_collection_works() {
-// 	new_test_ext().execute_with(|| {
-// 		let alice = H160::from_str(ALICE).unwrap();
-// 		// let collection_address = create_collection(alice);
-// 		LaosEvolutionCollectionFactory::create_collection {
+#[test]
+fn owner_of_collection_works() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		// let collection_address = create_collection(alice);
+		LaosEvolutionCollectionFactory::create_collection {
 
-// 		}
+		}
 
-// 		// output is padded with 12 bytes of zeros
-// 		let expected_output = H256::from_str(
-// 			format!("000000000000000000000000{}", ALICE.trim_start_matches("0x")).as_str(),
-// 		)
-// 		.unwrap();
-// 		precompiles()
-// 			.prepare_test(alice, collection_address, PrecompileCall::owner {})
-// 			.execute_returns(expected_output);
-// 	});
-// }
+		// output is padded with 12 bytes of zeros
+		let expected_output = H256::from_str(
+			format!("000000000000000000000000{}", ALICE.trim_start_matches("0x")).as_str(),
+		)
+		.unwrap();
+		precompiles()
+			.prepare_test(alice, collection_address, PrecompileCall::owner {})
+			.execute_returns(expected_output);
+	});
+}
 
 // #[test]
 // fn mint_should_generate_log() {
