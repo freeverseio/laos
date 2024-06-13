@@ -18,7 +18,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use precompile_utils::prelude::PrecompileHandle;
+use precompile_utils::prelude::{Address, EvmResult, PrecompileHandle};
 use sp_runtime::traits::PhantomData;
 
 // This is the simplest bytecode to revert without returning any data.
@@ -36,4 +36,15 @@ impl<R> EvolutionCollectionFactoryPrecompile<R> {
 }
 
 #[precompile_utils::precompile]
-impl<R> EvolutionCollectionFactoryPrecompile<R> where R: pallet_evm::Config {}
+impl<R> EvolutionCollectionFactoryPrecompile<R>
+where
+	R: pallet_evm::Config,
+{
+	#[precompile::public("createCollection(address)")]
+	fn create_collection(
+		_handle: &mut impl PrecompileHandle,
+		owner: Address,
+	) -> EvmResult<Address> {
+		Ok(Address(owner.into()))
+	}
+}
