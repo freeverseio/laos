@@ -30,7 +30,7 @@ use precompile_utils::precompile_set::{
 };
 use sp_core::{H160, U256};
 use sp_runtime::{
-	traits::{IdentityLookup, PhantomData},
+	traits::{IdentityLookup},
 	BuildStorage, ConsensusEngineId,
 };
 
