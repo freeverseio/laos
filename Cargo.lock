@@ -7449,10 +7449,13 @@ dependencies = [
 name = "pallet-laos-evolution"
 version = "4.0.0-dev"
 dependencies = [
+ "fp-evm",
  "frame-benchmarking",
  "frame-support",
  "frame-system",
+ "pallet-evm",
  "parity-scale-codec",
+ "precompile-utils",
  "scale-info",
  "sp-core",
  "sp-io",

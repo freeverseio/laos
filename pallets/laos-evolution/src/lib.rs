@@ -28,6 +28,7 @@ mod benchmarking;
 pub mod traits;
 pub mod types;
 pub mod weights;
+mod evolution_collection_precompileset;
 
 use frame_support::pallet_prelude::*;
 use sp_core::H160;
