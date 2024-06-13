@@ -21,12 +21,8 @@ use crate::mock::*;
 use core::str::FromStr;
 use fp_evm::Log;
 use pallet_evm::AccountCodes;
+use precompile_utils::testing::{Alice, Precompile1, PrecompileTesterExt};
 use sp_core::{H160, H256, U256};
-
-const ALICE: &str = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
-
-/// Fixed precompile address for testing.
-const PRECOMPILE_ADDRESS: [u8; 20] = [5u8; 20];
 
 /// Get precompiles from the mock.
 fn precompiles() -> LaosPrecompiles<Test> {
@@ -41,33 +37,29 @@ fn check_log_selectors() {
 	);
 }
 
-// #[test]
-// fn function_selectors() {
-// 	assert_eq!(Action::CreateCollection as u32, 0x2069E953);
-// }
 #[test]
 fn selectors() {
 	assert!(PrecompileCall::create_collection_selectors().contains(&0x2069E953));
 }
 
-// #[test]
-// fn create_collection_returns_address() {
-// 	new_test_ext().execute_with(|| {
-// 		let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
-// 			.write(Address(H160([1u8; 20])))
-// 			.build();
+#[test]
+fn create_collection_returns_address() {
+	new_test_ext().execute_with(|| {
+		let expected_address = "fffffffffffffffffffffffe0000000000000000";
+		// output is padded with 12 bytes of zeros
+		let expected_output =
+			H256::from_str(format!("000000000000000000000000{}", expected_address).as_str())
+				.unwrap();
 
-// 		let expected_address = "fffffffffffffffffffffffe0000000000000000";
-// 		// output is padded with 12 bytes of zeros
-// 		let expected_output =
-// 			H256::from_str(format!("000000000000000000000000{}", expected_address).as_str())
-// 				.unwrap();
-
-// 		precompiles()
-// 			.prepare_test(H160([1u8; 20]), H160(PRECOMPILE_ADDRESS), input)
-// 			.execute_returns(expected_output);
-// 	})
-// }
+		precompiles()
+			.prepare_test(
+				Alice,
+				Precompile1,
+				PrecompileCall::create_collection { owner: Address(Alice.into()) },
+			)
+			.execute_returns(expected_output);
+	})
+}
 
 // #[test]
 // fn create_collection_should_generate_log() {

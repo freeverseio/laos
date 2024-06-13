@@ -1,7 +1,9 @@
 use super::*;
+use evm::Context;
+use fp_evm::PrecompileSet;
 use mock::*;
 use precompile_utils::testing::*;
-use sp_core::H160;
+use sp_core::{H160, U256};
 use std::str::FromStr;
 
 const ALICE: &str = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
@@ -9,6 +11,28 @@ const ALICE: &str = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
 /// Get precompiles from the mock.
 fn precompiles() -> LaosPrecompiles<Test> {
 	PrecompilesInstance::get()
+}
+
+/// Utility function to create a collection
+///
+/// Note: this function is used instead of `PrecompileTesterExt::execute_returns` because the latter
+/// does not return the output of the precompile. And `PrecompileTester::execute` is a private
+/// function.
+fn create_collection(owner: impl Into<H160> + std::marker::Copy) -> H160 {
+	// let owner: H160 = owner.into();
+	// let input = EvmDataWriter::new_with_selector(CollectionFactoryAction::CreateCollection)
+	// 	.write(Address(owner))
+	// 	.build();
+
+	let mut handle = MockHandle::new(
+		Precompile1.into(),
+		Context { address: Precompile1.into(), caller: owner.into(), apparent_value: U256::zero() },
+	);
+	handle.input = FactoryPrecompileCall::create_collection { owner: Address(owner.into()) }.into();
+
+	let res = precompiles().execute(&mut handle).unwrap().unwrap();
+
+	H160::from_slice(res.output.as_slice()[12..].as_ref())
 }
 
 #[test]
