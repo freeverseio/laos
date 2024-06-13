@@ -21,7 +21,10 @@ use crate::mock::*;
 use core::str::FromStr;
 use fp_evm::Log;
 use pallet_evm::AccountCodes;
-use precompile_utils::testing::{Alice, Precompile1, PrecompileTesterExt};
+use precompile_utils::{
+	prelude::log2,
+	testing::{Alice, Precompile1, PrecompileTesterExt},
+};
 use sp_core::{H160, H256, U256};
 
 /// Get precompiles from the mock.
@@ -45,11 +48,23 @@ fn selectors() {
 #[test]
 fn create_collection_returns_address() {
 	new_test_ext().execute_with(|| {
-		let expected_address = "fffffffffffffffffffffffe0000000000000000";
-		// output is padded with 12 bytes of zeros
-		let expected_output =
-			H256::from_str(format!("000000000000000000000000{}", expected_address).as_str())
-				.unwrap();
+		let expected_collection_address =
+			H160::from_str("fffffffffffffffffffffffe0000000000000000").unwrap();
+		precompiles()
+			.prepare_test(
+				Alice,
+				Precompile1,
+				PrecompileCall::create_collection { owner: Address(Alice.into()) },
+			)
+			.execute_returns(Address(expected_collection_address.into()));
+	})
+}
+
+#[test]
+fn create_collection_should_generate_log() {
+	new_test_ext().execute_with(|| {
+		let expected_collection_address =
+			H160::from_str("fffffffffffffffffffffffe0000000000000000").unwrap();
 
 		precompiles()
 			.prepare_test(
@@ -57,38 +72,15 @@ fn create_collection_returns_address() {
 				Precompile1,
 				PrecompileCall::create_collection { owner: Address(Alice.into()) },
 			)
-			.execute_returns(expected_output);
-	})
+			.expect_log(log2(
+				Precompile1,
+				SELECTOR_LOG_NEW_COLLECTION,
+				Alice,
+				solidity::encode_event_data(Address(expected_collection_address.into())),
+			))
+			.execute_some();
+	});
 }
-
-// #[test]
-// fn create_collection_should_generate_log() {
-// 	new_test_ext().execute_with(|| {
-// 		let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
-// 			.write(Address(H160::from_str(ALICE).unwrap()))
-// 			.build();
-
-// 		let expected_log = Log {
-// 			address: H160(PRECOMPILE_ADDRESS),
-// 			topics: vec![
-// 				SELECTOR_LOG_NEW_COLLECTION.into(),
-// 				H256::from_str(
-// 					"0x000000000000000000000000f24ff3a9cf04c71dbc94d0b566f7a27b94566cac",
-// 				)
-// 				.unwrap(),
-// 			],
-// 			data: vec![
-// 				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-// 				255, 255, 254, 0, 0, 0, 0, 0, 0, 0, 0,
-// 			],
-// 		};
-
-// 		precompiles()
-// 			.prepare_test(H160([1u8; 20]), H160(PRECOMPILE_ADDRESS), input)
-// 			.expect_log(expected_log)
-// 			.execute_some();
-// 	});
-// }
 
 // #[test]
 // fn create_collection_on_mock_with_nonzero_value_fails() {

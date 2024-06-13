@@ -29,10 +29,7 @@ use precompile_utils::precompile_set::{
 	AddressU64, PrecompileAt, PrecompileSetBuilder, PrecompileSetStartingWith,
 };
 use sp_core::{H160, U256};
-use sp_runtime::{
-	traits::{IdentityLookup},
-	BuildStorage, ConsensusEngineId,
-};
+use sp_runtime::{traits::IdentityLookup, BuildStorage, ConsensusEngineId};
 
 type Block = frame_system::mocking::MockBlock<Test>;
 
