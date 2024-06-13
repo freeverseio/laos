@@ -27,8 +27,9 @@ use pallet_laos_evolution::{
 	Pallet as LaosEvolution,
 };
 use parity_scale_codec::Encode;
-use precompile_utils::prelude::{
-	keccak256, log2, revert, solidity, Address, EvmResult, LogExt, PrecompileHandle,
+use precompile_utils::{
+	prelude::{keccak256, log2, solidity, Address, EvmResult, LogExt, PrecompileHandle},
+	substrate::TryDispatchError,
 };
 use sp_core::{Get, H160};
 use sp_runtime::traits::PhantomData;
@@ -61,9 +62,6 @@ where
 {
 	#[precompile::public("createCollection(address)")]
 	fn create_collection(handle: &mut impl PrecompileHandle, owner: Address) -> EvmResult<Address> {
-		// TODO check selector?
-		// let owner = input.read::<Address>()?.0;
-
 		match LaosEvolution::<Runtime>::create_collection(owner.0.into()) {
 			Ok(collection_id) => {
 				// TODO this weights are not the actual from runtime
@@ -106,7 +104,7 @@ where
 
 				Ok(Address(collection_address))
 			},
-			Err(err) => Err(revert("TODO")), // TODO
+			Err(err) => Err(TryDispatchError::Substrate(err).into()),
 		}
 	}
 }

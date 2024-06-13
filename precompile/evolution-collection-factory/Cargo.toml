@@ -24,10 +24,6 @@ sp-std = { workspace = true }
 # Local pallet
 pallet-laos-evolution = { workspace = true }
 
-# Utils
-laos-precompile-utils = { workspace = true }
-laos-precompile-utils-macro = { workspace = true }
-
 # Frontier precompile utils
 precompile-utils = { workspace = true }
 
@@ -36,7 +32,6 @@ num_enum = { workspace = true }
 [dev-dependencies]
 evm = { workspace = true }
 hex = { workspace = true }
-laos-precompile-utils = { workspace = true, features = ["testing"]}
 precompile-utils = { workspace = true, features = ["testing"]}
 parity-scale-codec = { workspace = true, features = ["derive"] }
 pallet-balances = { workspace = true, features = ["std", "insecure_zero_ed"] }
@@ -57,7 +52,6 @@ std = [
 	"frame-support/std",
 	"frame-system/std",
 	"sp-arithmetic/std",
-	"laos-precompile-utils/std",
 	"parity-scale-codec/std",
 	"scale-info/std",
 ]

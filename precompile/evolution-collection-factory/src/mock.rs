@@ -17,7 +17,7 @@
 use core::str::FromStr;
 
 use precompile_utils::precompile_set::{AddressU64, PrecompileAt, PrecompileSetBuilder};
-use sp_runtime::{traits::PhantomData, BuildStorage};
+use sp_runtime::BuildStorage;
 
 use crate::{EvolutionCollectionFactoryPrecompile, EvolutionCollectionFactoryPrecompileCall};
 

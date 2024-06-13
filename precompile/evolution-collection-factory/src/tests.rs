@@ -19,13 +19,12 @@
 use super::*;
 use crate::mock::*;
 use core::str::FromStr;
-use fp_evm::Log;
 use pallet_evm::AccountCodes;
 use precompile_utils::{
 	prelude::log2,
 	testing::{Alice, Precompile1, PrecompileTesterExt},
 };
-use sp_core::{H160, H256, U256};
+use sp_core::{H160, U256};
 
 /// Get precompiles from the mock.
 fn precompiles() -> LaosPrecompiles<Test> {
@@ -82,83 +81,74 @@ fn create_collection_should_generate_log() {
 	});
 }
 
-// #[test]
-// fn create_collection_on_mock_with_nonzero_value_fails() {
-// 	new_test_ext().execute_with(|| {
-// 		let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
-// 			.write(Address(H160([1u8; 20])))
-// 			.build();
+#[test]
+fn create_collection_with_nonzero_value_fails() {
+	new_test_ext().execute_with(|| {
+		precompiles()
+			.prepare_test(
+				Alice,
+				Precompile1,
+				PrecompileCall::create_collection { owner: Address(Alice.into()) },
+			)
+			.with_value(U256::from(1))
+			.execute_reverts(|r| r == b"Function is not payable");
+	});
+}
 
-// 		precompiles()
-// 			.prepare_test(H160([1u8; 20]), H160(PRECOMPILE_ADDRESS), input)
-// 			.with_value(U256::from(1))
-// 			.execute_reverts(|r| r == b"function is not payable");
-// 	});
-// }
+#[test]
+fn create_collection_assign_collection_to_caller() {
+	new_test_ext().execute_with(|| {
+		let expected_collection_address =
+			H160::from_str("fffffffffffffffffffffffe0000000000000000").unwrap();
+		precompiles()
+			.prepare_test(
+				Alice,
+				Precompile1,
+				PrecompileCall::create_collection { owner: Address(Alice.into()) },
+			)
+			.execute_returns(Address(expected_collection_address.into()));
 
-// #[test]
-// fn create_collection_assign_collection_to_caller() {
-// 	new_test_ext().execute_with(|| {
-// 		let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
-// 			.write(Address(H160([1u8; 20])))
-// 			.build();
+		assert_eq!(LaosEvolution::<Test>::collection_owner(0), Some(Alice.into()));
+	});
+}
 
-// 		let expected_address = "fffffffffffffffffffffffe0000000000000000";
-// 		// output is padded with 12 bytes of zeros
-// 		let expected_output =
-// 			H256::from_str(format!("000000000000000000000000{}", expected_address).as_str())
-// 				.unwrap();
+#[test]
+fn create_collection_inserts_bytecode_to_address() {
+	new_test_ext().execute_with(|| {
+		let expected_collection_address =
+			H160::from_str("fffffffffffffffffffffffe0000000000000000").unwrap();
+		precompiles()
+			.prepare_test(
+				Alice,
+				Precompile1,
+				PrecompileCall::create_collection { owner: Address(Alice.into()) },
+			)
+			.execute_returns(Address(expected_collection_address.into()));
 
-// 		precompiles()
-// 			.prepare_test(H160([1u8; 20]), H160(PRECOMPILE_ADDRESS), input)
-// 			.execute_returns(expected_output);
+		// Address is not empty
+		assert!(!Evm::<Test>::is_account_empty(&expected_collection_address));
 
-// 		assert_eq!(LaosEvolution::<Test>::collection_owner(0), Some(H160([1u8; 20])));
-// 	});
-// }
+		// Address has correct code
+		assert!(AccountCodes::<Test>::get(expected_collection_address) == REVERT_BYTECODE);
+	});
+}
 
-// #[test]
-// fn create_collection_inserts_bytecode_to_address() {
-// 	new_test_ext().execute_with(|| {
-// 		let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
-// 			.write(Address(H160([1u8; 20])))
-// 			.build();
-
-// 		let expected_address = "fffffffffffffffffffffffe0000000000000000";
-// 		// output is padded with 12 bytes of zeros
-// 		let expected_output =
-// 			H256::from_str(format!("000000000000000000000000{}", expected_address).as_str())
-// 				.unwrap();
-
-// 		precompiles()
-// 			.prepare_test(H160([1u8; 20]), H160(PRECOMPILE_ADDRESS), input)
-// 			.execute_returns(expected_output);
-
-// 		let collection_address = &H160::from_str(expected_address).unwrap();
-// 		// Address is not empty
-// 		assert!(!Evm::<Test>::is_account_empty(collection_address));
-
-// 		// Address has correct code
-// 		assert!(AccountCodes::<Test>::get(collection_address) == REVERT_BYTECODE);
-// 	});
-// }
-
-// #[test]
-// fn test_expected_cost_create_collection() {
-// 	new_test_ext().execute_with(|| {
-// 		let input = EvmDataWriter::new_with_selector(Action::CreateCollection)
-// 			.write(Address(H160([1u8; 20])))
-// 			.build();
-
-// 		// Expected weight of the precompile call implementation.
-// 		// Since benchmarking precompiles is not supported yet, we are benchmarking
-// 		// functions that precompile calls internally.
-// 		//
-// 		// The weight of this precompile call is calculated as:
-// 		// `create_collection` weight + insert account bytecode for the collection + log costs
-// 		precompiles()
-// 			.prepare_test(H160([1u8; 20]), H160(PRECOMPILE_ADDRESS), input)
-// 			.expect_cost(486001381) //[`WeightToGas`] set to 1:1 in mock
-// 			.execute_some();
-// 	})
-// }
+#[test]
+fn expected_cost_create_collection() {
+	new_test_ext().execute_with(|| {
+		// Expected weight of the precompile call implementation.
+		// Since benchmarking precompiles is not supported yet, we are benchmarking
+		// functions that precompile calls internally.
+		//
+		// The weight of this precompile call is calculated as:
+		// `create_collection` weight + insert account bytecode for the collection + log costs
+		precompiles()
+			.prepare_test(
+				Alice,
+				Precompile1,
+				PrecompileCall::create_collection { owner: Address(Alice.into()) },
+			)
+			.expect_cost(511000000) //[`WeightToGas`] set to 1:1 in mock
+			.execute_some();
+	})
+}

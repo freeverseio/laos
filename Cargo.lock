@@ -7245,8 +7245,6 @@ dependencies = [
  "frame-support",
  "frame-system",
  "hex",
- "laos-precompile-utils",
- "laos-precompile-utils-macro",
  "num_enum",
  "pallet-balances",
  "pallet-evm",
