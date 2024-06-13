@@ -18,6 +18,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use frame_support::DefaultNoBound;
 use pallet_evm::{GasWeightMapping, Pallet as Evm};
 use pallet_laos_evolution::{
 	collection_id_to_address,
@@ -40,6 +41,8 @@ pub const SELECTOR_LOG_NEW_COLLECTION: [u8; 32] = keccak256!("NewCollection(addr
 // within contracts.
 // (PUSH1 0x00 PUSH1 0x00 REVERT)
 pub const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
+
+#[derive(Clone, DefaultNoBound)]
 
 pub struct EvolutionCollectionFactoryPrecompile<R>(PhantomData<R>);
 
@@ -103,7 +106,12 @@ where
 
 				Ok(Address(collection_address))
 			},
-			Err(err) => Err(revert(format!("{:?}", err))),
+			Err(err) => Err(revert("TODO")), // TODO
 		}
 	}
 }
+
+#[cfg(test)]
+mod mock;
+#[cfg(test)]
+mod tests;

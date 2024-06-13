@@ -7,8 +7,8 @@ use std::str::FromStr;
 const ALICE: &str = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
 
 /// Get precompiles from the mock.
-fn precompiles() -> EvolutionCollectionPrecompileSet<Test> {
-	LaosPrecompiles::get()
+fn precompiles() -> LaosPrecompiles<Test> {
+	PrecompilesInstance::get()
 }
 
 #[test]

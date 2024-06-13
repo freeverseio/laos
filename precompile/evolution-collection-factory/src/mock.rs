@@ -16,16 +16,16 @@
 
 use core::str::FromStr;
 
-use crate::{EvolutionCollectionPrecompileSet, EvolutionCollectionPrecompileSetCall};
+use precompile_utils::precompile_set::{AddressU64, PrecompileAt, PrecompileSetBuilder};
+use sp_runtime::{traits::PhantomData, BuildStorage};
+
+use crate::{EvolutionCollectionFactoryPrecompile, EvolutionCollectionFactoryPrecompileCall};
 
 use frame_support::{
 	derive_impl, parameter_types, traits::FindAuthor, weights::constants::RocksDbWeight,
 };
 use sp_core::{H160, U256};
-use sp_runtime::{
-	traits::{IdentityLookup, PhantomData},
-	BuildStorage, ConsensusEngineId,
-};
+use sp_runtime::{traits::IdentityLookup, ConsensusEngineId};
 
 type Block = frame_system::mocking::MockBlock<Test>;
 
@@ -106,16 +106,19 @@ impl FindAuthor<H160> for FindAuthorTruncated {
 pub const BLOCK_GAS_LIMIT: u64 = 15_000_000;
 pub const MAX_POV_SIZE: u64 = 5 * 1024 * 1024;
 
-pub type PrecompileCall = EvolutionCollectionPrecompileSetCall<Test>;
+pub type PrecompileCall = EvolutionCollectionFactoryPrecompileCall<Test>;
 
-pub type LaosPrecompiles<Test> = EvolutionCollectionPrecompileSet<Test>;
+pub type LaosPrecompiles<Test> = PrecompileSetBuilder<
+	Test,
+	(PrecompileAt<AddressU64<1>, EvolutionCollectionFactoryPrecompile<Test>>,),
+>;
 
 frame_support::parameter_types! {
 	pub BlockGasLimit: U256 = U256::from(crate::mock::BLOCK_GAS_LIMIT);
 	pub const GasLimitPovSizeRatio: u64 = crate::mock::BLOCK_GAS_LIMIT.saturating_div(crate::mock::MAX_POV_SIZE);
 	/// 1 weight to 1 gas, for testing purposes
 	pub WeightPerGas: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(1, 0);
-	pub PrecompilesInstance:  LaosPrecompiles<Test> = LaosPrecompiles::new();
+	pub PrecompilesInstance: LaosPrecompiles<Test> = LaosPrecompiles::new();
 }
 
 impl pallet_evm::Config for Test {
@@ -128,7 +131,7 @@ impl pallet_evm::Config for Test {
 	type AddressMapping = pallet_evm::IdentityAddressMapping;
 	type Currency = Balances;
 	type RuntimeEvent = RuntimeEvent;
-	type PrecompilesType = EvolutionCollectionPrecompileSet<Self>;
+	type PrecompilesType = LaosPrecompiles<Self>;
 	type PrecompilesValue = PrecompilesInstance;
 	type ChainId = ();
 	type BlockGasLimit = BlockGasLimit;
