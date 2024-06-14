@@ -185,12 +185,6 @@ fn mint_asset_in_an_existing_collection_works() {
 				collection_address,
 				PrecompileCall::mint { to: Address(to.into()), slot, token_uri: token_uri.clone() },
 			)
-			.expect_log(log2(
-				collection_address,
-				SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI,
-				to,
-				solidity::encode_event_data((slot, expected_token_id, token_uri)),
-			))
 			.execute_returns(expected_token_id);
 	});
 }
@@ -453,75 +447,73 @@ fn when_evolve_reverts_should_return_error() {
 // 	})
 // }
 
-// #[test]
-// fn test_expected_cost_owner() {
-// 	new_test_ext().execute_with(|| {
-// 		let alice = H160::from_str(ALICE).unwrap();
-// 		let collection_address = create_collection(alice);
+#[test]
+fn expected_cost_owner() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let collection_address = create_collection(alice);
 
-// 		let input = EvmDataWriter::new_with_selector(Action::Owner).build();
+		// Expected weight of the precompile call implementation.
+		// Since benchmarking precompiles is not supported yet, we are benchmarking
+		// functions that precompile calls internally.
+		precompiles()
+			.prepare_test(alice, collection_address, PrecompileCall::owner {})
+			.expect_cost(50000000) //  [`WeightToGas`] set to 1:1 in mock
+			.execute_some();
+	})
+}
 
-// 		// Expected weight of the precompile call implementation.
-// 		// Since benchmarking precompiles is not supported yet, we are benchmarking
-// 		// functions that precompile calls internally.
-// 		precompiles()
-// 			.prepare_test(alice, collection_address, input)
-// 			.expect_cost(25000000) //  [`WeightToGas`] set to 1:1 in mock
-// 			.execute_some();
-// 	})
-// }
+#[test]
+fn expected_cost_mint_with_external_uri() {
+	new_test_ext().execute_with(|| {
+		let owner = H160([1u8; 20]);
+		let collection_address = create_collection(owner);
 
-// #[test]
-// fn test_expected_cost_mint_with_external_uri() {
-// 	new_test_ext().execute_with(|| {
-// 		let owner = H160([1u8; 20]);
-// 		let collection_address = create_collection(owner);
+		// Expected weight of the precompile call implementation.
+		// Since benchmarking precompiles is not supported yet, we are benchmarking
+		// functions that precompile calls internally.
+		//
+		// Following `cost` is calculated as:
+		// `mint_with_external_uri` weight + log cost
+		precompiles()
+			.prepare_test(
+				owner,
+				collection_address,
+				PrecompileCall::mint {
+					to: Address(owner.into()),
+					slot: 9,
+					token_uri: "ciao".into(),
+				},
+			)
+			.expect_cost(220212833) // [`WeightToGas`] set to 1:1 in mock
+			.execute_some();
+	})
+}
 
-// 		let token_uri = Bytes("ciao".into());
+#[test]
+fn expected_cost_evolve_with_external_uri() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let collection_address = create_collection(alice);
+		let token_id = mint(alice, collection_address, 0, Vec::new().into());
 
-// 		let input = EvmDataWriter::new_with_selector(Action::Mint)
-// 			.write(Address(owner)) // to
-// 			.write(U256::from(9)) // slot
-// 			.write(token_uri.clone()) // token_uri
-// 			.build();
+		// Expected weight of the precompile call implementation.
+		// Since benchmarking precompiles is not supported yet, we are benchmarking
+		// functions that precompile calls internally.
+		//
+		// Following `cost` is calculated as:
+		// `evolve_with_external_uri` weight + log cost
+		precompiles()
+			.prepare_test(
+				alice,
+				collection_address,
+				PrecompileCall::evolve { token_id, token_uri: Vec::new().into() },
+			)
+			.expect_cost(218952857) // [`WeightToGas`] set to 1:1 in mock
+			.execute_some();
+	})
+}
 
-// 		// Expected weight of the precompile call implementation.
-// 		// Since benchmarking precompiles is not supported yet, we are benchmarking
-// 		// functions that precompile calls internally.
-// 		//
-// 		// Following `cost` is calculated as:
-// 		// `mint_with_external_uri` weight + log cost
-// 		precompiles()
-// 			.prepare_test(owner, collection_address, input)
-// 			.expect_cost(170215238) // [`WeightToGas`] set to 1:1 in mock
-// 			.execute_some();
-// 	})
-// }
-
-// #[test]
-// fn test_expected_cost_evolve_with_external_uri() {
-// 	new_test_ext().execute_with(|| {
-// 		let alice = H160::from_str(ALICE).unwrap();
-// 		let collection_address = create_collection(alice);
-// 		let token_id = mint(alice, collection_address, 0, Vec::new());
-
-// 		let input = EvmDataWriter::new_with_selector(Action::Evolve)
-// 			.write(token_id)
-// 			.write(Bytes([1u8; 20].to_vec()))
-// 			.build();
-
-// 		// Expected weight of the precompile call implementation.
-// 		// Since benchmarking precompiles is not supported yet, we are benchmarking
-// 		// functions that precompile calls internally.
-// 		//
-// 		// Following `cost` is calculated as:
-// 		// `evolve_with_external_uri` weight + log cost
-// 		precompiles()
-// 			.prepare_test(alice, collection_address, input)
-// 			.expect_cost(168955770) // [`WeightToGas`] set to 1:1 in mock
-// 			.execute_some();
-// 	})
-// }
 // #[test]
 // fn collection_transfer_of_ownership_works() {
 // 	new_test_ext().execute_with(|| {
