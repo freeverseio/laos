@@ -66,8 +66,8 @@ fn mint(
 fn selectors() {
 	assert!(PrecompileCall::owner_selectors().contains(&0x8DA5CB5B));
 	assert!(PrecompileCall::mint_selectors().contains(&0xFD024566));
+	assert!(PrecompileCall::evolve_selectors().contains(&0x2FD38F4D));
 	// 	assert_eq!(Action::TokenURI as u32, 0xC87B56DD);
-	// 	assert_eq!(Action::Evolve as u32, 0x2FD38F4D);
 }
 
 #[test]
@@ -249,79 +249,64 @@ fn when_mint_reverts_should_return_error() {
 // 	});
 // }
 
-// #[test]
-// fn evolve_a_minted_asset_works() {
-// 	new_test_ext().execute_with(|| {
-// 		let alice = H160::from_str(ALICE).unwrap();
-// 		let collection_address = create_collection(alice);
-// 		let token_id = mint(alice, collection_address, 0, Vec::new());
+#[test]
+fn evolve_a_minted_asset_works() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let collection_address = create_collection(alice);
+		let token_uri: UnboundedString = Vec::new().into();
+		let token_id = mint(alice, collection_address, 0, token_uri.clone());
 
-// 		let input = EvmDataWriter::new_with_selector(Action::Evolve)
-// 			.write(token_id)
-// 			.write(Bytes([1u8; 20].to_vec()))
-// 			.build();
+		precompiles()
+			.prepare_test(alice, collection_address, PrecompileCall::evolve { token_id, token_uri })
+			.execute_returns_raw(vec![]);
+	});
+}
 
-// 		precompiles()
-// 			.prepare_test(alice, collection_address, input)
-// 			.execute_returns_raw(vec![]);
-// 	});
-// }
+#[test]
+fn evolve_generates_log() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let collection_address = create_collection(alice);
+		let token_uri: UnboundedString = Vec::new().into();
+		let token_id = mint(alice, collection_address, 0, token_uri.clone());
 
-// #[test]
-// fn evolve_generates_log() {
-// 	new_test_ext().execute_with(|| {
-// 		let alice = H160::from_str(ALICE).unwrap();
-// 		let collection_address = create_collection(alice);
-// 		let token_id = mint(alice, collection_address, 0, Vec::new());
+		let mut token_id_bytes = [0u8; 32];
+		token_id.to_big_endian(&mut token_id_bytes);
 
-// 		let input = EvmDataWriter::new_with_selector(Action::Evolve)
-// 			.write(token_id)
-// 			.write(Bytes([1u8; 20].to_vec()))
-// 			.build();
+		precompiles()
+			.prepare_test(
+				alice,
+				collection_address,
+				PrecompileCall::evolve { token_id, token_uri: token_uri.clone() },
+			)
+			.expect_log(log2(
+				collection_address,
+				SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI,
+				token_id_bytes,
+				solidity::encode_event_data(token_uri),
+			))
+			.execute_some();
+	});
+}
 
-// 		let expected_log = Log {
-// 			address: collection_address,
-// 			topics: vec![
-// 				SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI.into(),
-// 				H256::from_str(
-// 					"0x000000000000000000000000f24ff3a9cf04c71dbc94d0b566f7a27b94566cac",
-// 				)
-// 				.unwrap(),
-// 			],
-// 			data: vec![
-// 				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-// 				0, 0, 0, 32, // offset
-// 				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-// 				0, 0, 0, 20, // length of token_uri
-// 				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-// 				0, 0, 0, 0, // token_uri
-// 			],
-// 		};
+#[test]
+fn when_evolve_reverts_should_return_error() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let collection_address = create_collection(alice);
+		let token_uri: UnboundedString = Vec::new().into();
+		let token_id = U256::from(1);
 
-// 		precompiles()
-// 			.prepare_test(alice, collection_address, input)
-// 			.expect_log(expected_log)
-// 			.execute_some();
-// 	});
-// }
-
-// #[test]
-// fn when_evolve_reverts_should_return_error() {
-// 	new_test_ext().execute_with(|| {
-// 		let alice = H160::from_str(ALICE).unwrap();
-// 		let collection_address = create_collection(alice);
-// 		let token_id = U256::from(1);
-
-// 		let input = EvmDataWriter::new_with_selector(Action::Evolve)
-// 			.write(token_id)
-// 			.write(Bytes([1u8; 20].to_vec()))
-// 			.build();
-
-// 		precompiles()
-// 			.prepare_test(alice, collection_address, input)
-// 			.execute_reverts(|r| r == b"AssetDoesNotExist");
-// 	});
-// }
+		precompiles()
+			.prepare_test(alice, collection_address, PrecompileCall::evolve { token_id, token_uri })
+			.execute_reverts(|r: &[u8]| {
+				// TODO use TryDispatchError::Module
+				let expected_error_message = "Dispatched call failed with error: Module(ModuleError { index: 1, error: [4, 0, 0, 0], message: Some(\"AssetDoesNotExist\") })";
+				r == expected_error_message.as_bytes()
+			});
+	});
+}
 
 // #[test]
 // fn enable_public_minting_generates_log() {

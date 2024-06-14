@@ -6,7 +6,7 @@ use pallet_laos_evolution::{
 	address_to_collection_id,
 	types::CollectionId,
 	weights::{SubstrateWeight as LaosEvolutionWeights, WeightInfo},
-	Config, EvolutionCollection, Pallet as LaosEvolution, Slot,
+	Config, EvolutionCollection, Pallet as LaosEvolution, Slot, TokenId,
 };
 use parity_scale_codec::Encode;
 use precompile_utils::{
@@ -24,6 +24,10 @@ use sp_runtime::{traits::PhantomData, BoundedVec};
 /// Solidity selector of the MintedWithExternalURI log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
 	keccak256!("MintedWithExternalURI(address,uint96,uint256,string)");
+
+/// Solidity selector of the EvolvedWithExternalURI log, which is the Keccak of the Log signature.
+pub const SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
+	keccak256!("EvolvedWithExternalURI(uint256,string)");
 
 #[derive(Clone, DefaultNoBound)]
 pub struct EvolutionCollectionPrecompileSet<R>(PhantomData<R>);
@@ -106,7 +110,7 @@ where
 					handle.context().address,
 					SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI,
 					to,
-					solidity::encode_event_data((slot, token_id, token_uri)),
+					solidity::encode_event_data((slot, token_id, token_uri)), // TODO token_uri_bounded
 				)
 				.record(handle)?;
 
@@ -120,6 +124,59 @@ where
 				handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
 
 				Ok(token_id)
+			},
+			Err(err) => Err(TryDispatchError::Substrate(err).into()),
+		}
+	}
+
+	// TODO use custom type for slot, it needs to be uint96, otherwise test file
+	#[precompile::public("evolveWithExternalURI(uint256,string)")]
+	fn evolve(
+		collection_id: CollectionId,
+		handle: &mut impl PrecompileHandle,
+		token_id: TokenId,
+		token_uri: UnboundedString, /* TODO use bounded vec or stringkind from solidity
+		                             * BoundedString<<R as Config>::MaxTokenUriLength> */
+	) -> EvmResult<()> {
+		// TODO this might be remove when we have the bounded string as param
+		let token_uri_bounded: BoundedVec<u8, <R as Config>::MaxTokenUriLength> = token_uri
+			.as_bytes()
+			.to_vec()
+			.try_into()
+			.map_err(|_| revert("invalid token uri length"))?;
+
+		match LaosEvolution::<R>::evolve_with_external_uri(
+			handle.context().caller.into(),
+			collection_id,
+			token_id,
+			token_uri_bounded.clone(),
+		) {
+			Ok(()) => {
+				let consumed_weight = LaosEvolutionWeights::<R>::evolve_with_external_uri(
+					token_uri_bounded.len() as u32,
+				);
+
+				let mut token_id_bytes = [0u8; 32];
+				token_id.to_big_endian(&mut token_id_bytes);
+
+				log2(
+					handle.context().address,
+					SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI,
+					token_id_bytes,
+					solidity::encode_event_data(token_uri),
+				)
+				.record(handle)?;
+
+				// Record EVM cost
+				handle.record_cost(<R as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
+					consumed_weight,
+				))?;
+
+				// Record Substrate related costs
+				// TODO: Add `ref_time` when precompiles are benchmarked
+				handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
+
+				Ok(())
 			},
 			Err(err) => Err(TryDispatchError::Substrate(err).into()),
 		}
