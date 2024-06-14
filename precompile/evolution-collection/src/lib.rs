@@ -12,7 +12,7 @@ use parity_scale_codec::Encode;
 use precompile_utils::{
 	keccak256,
 	prelude::{
-		log2, revert, Address, DiscriminantResult, EvmResult, LogExt, PrecompileHandle,
+		log1, log2, revert, Address, DiscriminantResult, EvmResult, LogExt, PrecompileHandle,
 		RuntimeHelper,
 	},
 	solidity::{self, codec::UnboundedString},
@@ -28,6 +28,15 @@ pub const SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
 /// Solidity selector of the EvolvedWithExternalURI log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
 	keccak256!("EvolvedWithExternalURI(uint256,string)");
+
+/// Solidity selector of the EnabledPublicMinting log, which is the Keccak of the Log signature.
+pub const SELECTOR_LOG_ENABLED_PUBLIC_MINTING: [u8; 32] = keccak256!("EnabledPublicMinting()");
+/// Solidity selector of the DisabledPublicMinting log, which is the Keccak of the Log signature.
+pub const SELECTOR_LOG_DISABLED_PUBLIC_MINTING: [u8; 32] = keccak256!("DisabledPublicMinting()");
+
+/// Solidity selector of the `OwnershipTransferred` log, which is the Keccak of the Log signature.
+pub const SELECTOR_LOG_OWNERSHIP_TRANSFERRED: [u8; 32] =
+	keccak256!("OwnershipTransferred(address,address)");
 
 #[derive(Clone, DefaultNoBound)]
 pub struct EvolutionCollectionPrecompileSet<R>(PhantomData<R>);
@@ -129,7 +138,6 @@ where
 		}
 	}
 
-	// TODO use custom type for slot, it needs to be uint96, otherwise test file
 	#[precompile::public("evolveWithExternalURI(uint256,string)")]
 	fn evolve(
 		collection_id: CollectionId,
@@ -180,6 +188,86 @@ where
 			},
 			Err(err) => Err(TryDispatchError::Substrate(err).into()),
 		}
+	}
+
+	#[precompile::public("enablePublicMinting()")]
+	fn enable_public_minting(
+		collection_id: CollectionId,
+		handle: &mut impl PrecompileHandle,
+	) -> EvmResult<()> {
+		match LaosEvolution::<R>::enable_public_minting(
+			handle.context().caller.into(),
+			collection_id,
+		) {
+			Ok(()) => {
+				let consumed_weight = LaosEvolutionWeights::<R>::enable_public_minting();
+
+				log1(
+					handle.context().address,
+					SELECTOR_LOG_ENABLED_PUBLIC_MINTING,
+					solidity::encode_event_data(()),
+				)
+				.record(handle)?;
+
+				// Record EVM cost
+				handle.record_cost(<R as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
+					consumed_weight,
+				))?;
+
+				// Record Substrate related costs
+				// TODO: Add `ref_time` when precompiles are benchmarked
+				handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
+
+				Ok(())
+			},
+			Err(err) => Err(TryDispatchError::Substrate(err).into()),
+		}
+	}
+
+	#[precompile::public("disablePublicMinting()")]
+	fn disable_public_minting(
+		collection_id: CollectionId,
+		handle: &mut impl PrecompileHandle,
+	) -> EvmResult<()> {
+		match LaosEvolution::<R>::disable_public_minting(
+			handle.context().caller.into(),
+			collection_id,
+		) {
+			Ok(()) => {
+				let consumed_weight = LaosEvolutionWeights::<R>::disable_public_minting();
+
+				log1(
+					handle.context().address,
+					SELECTOR_LOG_DISABLED_PUBLIC_MINTING,
+					solidity::encode_event_data(()),
+				)
+				.record(handle)?;
+
+				// Record EVM cost
+				handle.record_cost(<R as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
+					consumed_weight,
+				))?;
+
+				// Record Substrate related costs
+				// TODO: Add `ref_time` when precompiles are benchmarked
+				handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
+
+				Ok(())
+			},
+			Err(err) => Err(TryDispatchError::Substrate(err).into()),
+		}
+	}
+
+	#[precompile::public("isPublicMintingEnabled()")]
+	#[precompile::view]
+	fn is_public_minting_enabled(
+		collection_id: CollectionId,
+		handle: &mut impl PrecompileHandle,
+	) -> EvmResult<bool> {
+		let is_enabled = LaosEvolution::<R>::is_public_minting_enabled(collection_id);
+		let consumed_gas: u64 = RuntimeHelper::<R>::db_read_gas_cost();
+		handle.record_cost(consumed_gas)?;
+		Ok(is_enabled)
 	}
 }
 

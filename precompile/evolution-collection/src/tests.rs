@@ -1,6 +1,6 @@
 use super::*;
 use evm::Context;
-use fp_evm::PrecompileSet;
+use fp_evm::{Precompile, PrecompileSet};
 use mock::*;
 use pallet_laos_evolution::TokenId;
 use precompile_utils::testing::*;
@@ -67,6 +67,9 @@ fn selectors() {
 	assert!(PrecompileCall::owner_selectors().contains(&0x8DA5CB5B));
 	assert!(PrecompileCall::mint_selectors().contains(&0xFD024566));
 	assert!(PrecompileCall::evolve_selectors().contains(&0x2FD38F4D));
+	assert!(PrecompileCall::is_public_minting_enabled_selectors().contains(&0x441F06AC));
+	assert!(PrecompileCall::enable_public_minting_selectors().contains(&0xF7BEB98A));
+	assert!(PrecompileCall::disable_public_minting_selectors().contains(&0x9190AD47));
 	// 	assert_eq!(Action::TokenURI as u32, 0xC87B56DD);
 }
 
@@ -302,77 +305,68 @@ fn when_evolve_reverts_should_return_error() {
 	});
 }
 
-// #[test]
-// fn enable_public_minting_generates_log() {
-// 	new_test_ext().execute_with(|| {
-// 		let alice = H160::from_str(ALICE).unwrap();
-// 		let collection_address = create_collection(alice);
-// 		let input = EvmDataWriter::new_with_selector(Action::EnablePublicMinting).build();
-// 		let expected_log = Log {
-// 			address: collection_address,
-// 			topics: vec![SELECTOR_LOG_ENABLED_PUBLIC_MINTING.into()],
-// 			data: vec![],
-// 		};
-// 		precompiles()
-// 			.prepare_test(alice, collection_address, input)
-// 			.expect_log(expected_log)
-// 			.execute_some();
+#[test]
+fn enable_public_minting_generates_log() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let collection_address = create_collection(alice);
+		precompiles()
+			.prepare_test(alice, collection_address, PrecompileCall::enable_public_minting {})
+			.expect_log(log1(collection_address, SELECTOR_LOG_ENABLED_PUBLIC_MINTING, vec![]))
+			.execute_some();
 
-// 		let input = EvmDataWriter::new_with_selector(Action::IsPublicMintingEnabled).build();
-// 		precompiles()
-// 			.prepare_test(alice, collection_address, input)
-// 			.execute_returns(true);
-// 	})
-// }
+		precompiles()
+			.prepare_test(alice, collection_address, PrecompileCall::is_public_minting_enabled {})
+			.execute_returns(true);
+	})
+}
 
-// #[test]
-// fn when_enable_public_minting_reverts_should_return_error() {
-// 	new_test_ext().execute_with(|| {
-// 		let alice = H160::from_str(ALICE).unwrap();
-// 		let collection_address = create_collection(alice);
-// 		let input = EvmDataWriter::new_with_selector(Action::EnablePublicMinting).build();
+#[test]
+fn when_enable_public_minting_reverts_should_return_error() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let collection_address = create_collection(alice);
 
-// 		precompiles()
-// 			.prepare_test(collection_address, collection_address, input)
-// 			.execute_reverts(|r| r == b"NoPermission");
-// 	})
-// }
+		precompiles()
+			.prepare_test(Bob, collection_address, PrecompileCall::enable_public_minting {})
+			.execute_reverts(|r: &[u8]| {
+				// TODO use TryDispatchError::Module
+				let expected_error_message = "Dispatched call failed with error: Module(ModuleError { index: 1, error: [1, 0, 0, 0], message: Some(\"NoPermission\") })";
+				r == expected_error_message.as_bytes()
+			});
+	})
+}
 
-// #[test]
-// fn disable_public_minting_generates_log() {
-// 	new_test_ext().execute_with(|| {
-// 		let alice = H160::from_str(ALICE).unwrap();
-// 		let collection_address = create_collection(alice);
-// 		let input = EvmDataWriter::new_with_selector(Action::DisablePublicMinting).build();
-// 		let expected_log = Log {
-// 			address: collection_address,
-// 			topics: vec![SELECTOR_LOG_DISABLED_PUBLIC_MINTING.into()],
-// 			data: vec![],
-// 		};
-// 		precompiles()
-// 			.prepare_test(alice, collection_address, input)
-// 			.expect_log(expected_log)
-// 			.execute_some();
+#[test]
+fn disable_public_minting_generates_log() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let collection_address = create_collection(alice);
+		precompiles()
+			.prepare_test(alice, collection_address, PrecompileCall::disable_public_minting {})
+			.expect_log(log1(collection_address, SELECTOR_LOG_DISABLED_PUBLIC_MINTING, vec![]))
+			.execute_some();
 
-// 		let input = EvmDataWriter::new_with_selector(Action::IsPublicMintingEnabled).build();
-// 		precompiles()
-// 			.prepare_test(alice, collection_address, input)
-// 			.execute_returns(false);
-// 	})
-// }
+		precompiles()
+			.prepare_test(alice, collection_address, PrecompileCall::is_public_minting_enabled {})
+			.execute_returns(false);
+	})
+}
 
-// #[test]
-// fn when_disable_public_minting_reverts_should_return_error() {
-// 	new_test_ext().execute_with(|| {
-// 		let alice = H160::from_str(ALICE).unwrap();
-// 		let collection_address = create_collection(alice);
-// 		let input = EvmDataWriter::new_with_selector(Action::DisablePublicMinting).build();
-
-// 		precompiles()
-// 			.prepare_test(collection_address, collection_address, input)
-// 			.execute_reverts(|r| r == b"NoPermission");
-// 	})
-// }
+#[test]
+fn when_disable_public_minting_reverts_should_return_error() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let collection_address = create_collection(alice);
+				precompiles()
+			.prepare_test(Bob, collection_address, PrecompileCall::disable_public_minting {})
+			.execute_reverts(|r: &[u8]| {
+				// TODO use TryDispatchError::Module
+				let expected_error_message = "Dispatched call failed with error: Module(ModuleError { index: 1, error: [1, 0, 0, 0], message: Some(\"NoPermission\") })";
+				r == expected_error_message.as_bytes()
+			});
+	})
+}
 
 // #[test]
 // fn test_expected_cost_token_uri() {
@@ -393,59 +387,53 @@ fn when_evolve_reverts_should_return_error() {
 // 	})
 // }
 
-// #[test]
-// fn enable_public_minting_has_a_cost() {
-// 	new_test_ext().execute_with(|| {
-// 		let alice = H160::from_str(ALICE).unwrap();
-// 		let collection_address = create_collection(alice);
+#[test]
+fn enable_public_minting_has_a_cost() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let collection_address = create_collection(alice);
 
-// 		let input = EvmDataWriter::new_with_selector(Action::EnablePublicMinting).build();
+		// Expected weight of the precompile call implementation.
+		// Since benchmarking precompiles is not supported yet, we are benchmarking
+		// functions that precompile calls internally.
+		precompiles()
+			.prepare_test(alice, collection_address, PrecompileCall::enable_public_minting {})
+			.expect_cost(189000000) //  [`WeightToGas`] set to 1:1 in mock
+			.execute_some();
+	})
+}
 
-// 		// Expected weight of the precompile call implementation.
-// 		// Since benchmarking precompiles is not supported yet, we are benchmarking
-// 		// functions that precompile calls internally.
-// 		precompiles()
-// 			.prepare_test(alice, collection_address, input)
-// 			.expect_cost(139000750) //  [`WeightToGas`] set to 1:1 in mock
-// 			.execute_some();
-// 	})
-// }
+#[test]
+fn disable_public_minting_has_a_cost() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let collection_address = create_collection(alice);
 
-// #[test]
-// fn disable_public_minting_has_a_cost() {
-// 	new_test_ext().execute_with(|| {
-// 		let alice = H160::from_str(ALICE).unwrap();
-// 		let collection_address = create_collection(alice);
+		// Expected weight of the precompile call implementation.
+		// Since benchmarking precompiles is not supported yet, we are benchmarking
+		// functions that precompile calls internally.
+		precompiles()
+			.prepare_test(alice, collection_address, PrecompileCall::disable_public_minting {})
+			.expect_cost(188000000) //  [`WeightToGas`] set to 1:1 in mock // TODO why is lower than enable?
+			.execute_some();
+	})
+}
 
-// 		let input = EvmDataWriter::new_with_selector(Action::DisablePublicMinting).build();
+#[test]
+fn is_public_minting_enabled_has_a_cost() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let collection_address = create_collection(alice);
 
-// 		// Expected weight of the precompile call implementation.
-// 		// Since benchmarking precompiles is not supported yet, we are benchmarking
-// 		// functions that precompile calls internally.
-// 		precompiles()
-// 			.prepare_test(alice, collection_address, input)
-// 			.expect_cost(139000750) //  [`WeightToGas`] set to 1:1 in mock
-// 			.execute_some();
-// 	})
-// }
-
-// #[test]
-// fn is_public_minting_enabled_has_a_cost() {
-// 	new_test_ext().execute_with(|| {
-// 		let alice = H160::from_str(ALICE).unwrap();
-// 		let collection_address = create_collection(alice);
-
-// 		let input = EvmDataWriter::new_with_selector(Action::IsPublicMintingEnabled).build();
-
-// 		// Expected weight of the precompile call implementation.
-// 		// Since benchmarking precompiles is not supported yet, we are benchmarking
-// 		// functions that precompile calls internally.
-// 		precompiles()
-// 			.prepare_test(alice, collection_address, input)
-// 			.expect_cost(25000000) //  [`WeightToGas`] set to 1:1 in mock
-// 			.execute_some();
-// 	})
-// }
+		// Expected weight of the precompile call implementation.
+		// Since benchmarking precompiles is not supported yet, we are benchmarking
+		// functions that precompile calls internally.
+		precompiles()
+			.prepare_test(alice, collection_address, PrecompileCall::is_public_minting_enabled {})
+			.expect_cost(75000000) //  [`WeightToGas`] set to 1:1 in mock
+			.execute_some();
+	})
+}
 
 #[test]
 fn expected_cost_owner() {
