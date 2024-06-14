@@ -12,7 +12,7 @@ use parity_scale_codec::Encode;
 use precompile_utils::{
 	keccak256,
 	prelude::{
-		log1, log2, revert, Address, DiscriminantResult, EvmResult, LogExt, PrecompileHandle,
+		log1, log2, log3, revert, Address, DiscriminantResult, EvmResult, LogExt, PrecompileHandle,
 		RuntimeHelper,
 	},
 	solidity::{self, codec::UnboundedString},
@@ -188,6 +188,41 @@ where
 			},
 			Err(err) => Err(TryDispatchError::Substrate(err).into()),
 		}
+	}
+
+	#[precompile::public("transferOwnership(address)")]
+	fn transfer_ownership(
+		collection_id: CollectionId,
+		handle: &mut impl PrecompileHandle,
+		to: Address,
+	) -> EvmResult<()> {
+		let to: H160 = to.into();
+		LaosEvolution::<R>::transfer_ownership(
+			handle.context().caller.into(),
+			to.into(),
+			collection_id,
+		)
+		.map_err(|err| TryDispatchError::Substrate(err))?;
+
+		let consumed_weight = LaosEvolutionWeights::<R>::transfer_ownership();
+
+		log3(
+			handle.context().address,
+			SELECTOR_LOG_OWNERSHIP_TRANSFERRED,
+			handle.context().caller,
+			to,
+			solidity::encode_event_data(()),
+		)
+		.record(handle)?;
+
+		// Record EVM cost
+		handle.record_cost(<R as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
+			consumed_weight,
+		))?;
+
+		// Record Substrate related costs
+		handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
+		Ok(())
 	}
 
 	#[precompile::public("enablePublicMinting()")]

@@ -70,6 +70,7 @@ fn selectors() {
 	assert!(PrecompileCall::is_public_minting_enabled_selectors().contains(&0x441F06AC));
 	assert!(PrecompileCall::enable_public_minting_selectors().contains(&0xF7BEB98A));
 	assert!(PrecompileCall::disable_public_minting_selectors().contains(&0x9190AD47));
+	assert!(PrecompileCall::transfer_ownership_selectors().contains(&0xF2FDE38B));
 	// 	assert_eq!(Action::TokenURI as u32, 0xC87B56DD);
 }
 
@@ -502,102 +503,109 @@ fn expected_cost_evolve_with_external_uri() {
 	})
 }
 
-// #[test]
-// fn collection_transfer_of_ownership_works() {
-// 	new_test_ext().execute_with(|| {
-// 		let alice = H160::from_str(ALICE).unwrap();
-// 		let bob = H160([2u8; 20]);
+#[test]
+fn collection_transfer_of_ownership_works() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let bob = H160([2u8; 20]);
 
-// 		let collection_address = create_collection(alice);
+		let collection_address = create_collection(alice);
 
-// 		let input = EvmDataWriter::new_with_selector(Action::TransferOwnership)
-// 			.write(Address(bob))
-// 			.build();
+		precompiles()
+			.prepare_test(
+				alice,
+				collection_address,
+				PrecompileCall::transfer_ownership { to: bob.into() },
+			)
+			.execute_some();
+	});
+}
 
-// 		precompiles().prepare_test(alice, collection_address, input).execute_some();
-// 	});
-// }
+#[test]
+fn non_existent_collection_cannot_be_transferred() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let bob = H160([2u8; 20]);
 
-// #[test]
-// fn non_existent_collection_cannot_be_transferred() {
-// 	new_test_ext().execute_with(|| {
-// 		let alice = H160::from_str(ALICE).unwrap();
-// 		let bob = H160([2u8; 20]);
+		// non existing collection address
+		let non_existing_collection_address =
+			H160::from_str("fffffffffffffffffffffffe0000000000000000").unwrap();
 
-// 		// non existing collection address
-// 		let non_existing_collection_address =
-// 			H160::from_str("fffffffffffffffffffffffe0000000000000000").unwrap();
+		precompiles()
+			.prepare_test(
+				alice,
+				non_existing_collection_address,
+				PrecompileCall::transfer_ownership { to: bob.into() },
+			)
+			.execute_reverts(|r: &[u8]| {
+				// TODO use TryDispatchError::Module
+				let expected_error_message = "Dispatched call failed with error: Module(ModuleError { index: 1, error: [0, 0, 0, 0], message: Some(\"CollectionDoesNotExist\") })";
+				r == expected_error_message.as_bytes()
+			});
+	})
+}
 
-// 		let input = EvmDataWriter::new_with_selector(Action::TransferOwnership)
-// 			.write(Address(bob))
-// 			.build();
+#[test]
+fn non_owner_cannot_transfer_collection_ownership() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let bob = H160([2u8; 20]);
 
-// 		precompiles()
-// 			.prepare_test(alice, non_existing_collection_address, input)
-// 			.execute_reverts(|r| r == b"CollectionDoesNotExist");
-// 	})
-// }
+		let collection_address = create_collection(alice);
 
-// #[test]
-// fn non_owner_cannot_transfer_collection_ownership() {
-// 	new_test_ext().execute_with(|| {
-// 		let alice = H160::from_str(ALICE).unwrap();
-// 		let bob = H160([2u8; 20]);
+		precompiles()
+			.prepare_test(
+				bob,
+				collection_address,
+				PrecompileCall::transfer_ownership { to: alice.into() },
+			)
+			.execute_reverts(|r: &[u8]| {
+				// TODO use TryDispatchError::Module
+				let expected_error_message = "Dispatched call failed with error: Module(ModuleError { index: 1, error: [1, 0, 0, 0], message: Some(\"NoPermission\") })";
+				r == expected_error_message.as_bytes()
+			});
+	});
+}
 
-// 		let collection_address = create_collection(alice);
+#[test]
+fn collection_transfer_of_ownership_emits_log() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let bob = H160([2u8; 20]);
+		let collection_address = create_collection(alice);
 
-// 		// non owner cannot transfer ownership
-// 		let invalid_input = EvmDataWriter::new_with_selector(Action::TransferOwnership)
-// 			.write(Address(alice))
-// 			.build();
+		precompiles()
+			.prepare_test(
+				alice,
+				collection_address,
+				PrecompileCall::transfer_ownership { to: bob.into() },
+			)
+			.expect_log(log3(
+				collection_address,
+				SELECTOR_LOG_OWNERSHIP_TRANSFERRED,
+				alice,
+				bob,
+				vec![],
+			))
+			.execute_some();
+	});
+}
 
-// 		precompiles()
-// 			.prepare_test(bob, collection_address, invalid_input)
-// 			.execute_reverts(|r| r == b"NoPermission");
-// 	});
-// }
+#[test]
+fn collection_transfer_of_ownership_records_costs() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let bob = H160([2u8; 20]);
+		let collection_address = create_collection(alice);
 
-// #[test]
-// fn collection_transfer_of_ownership_emits_log() {
-// 	new_test_ext().execute_with(|| {
-// 		let alice = H160::from_str(ALICE).unwrap();
-// 		let bob = H160([2u8; 20]);
-
-// 		let collection_address = create_collection(alice);
-
-// 		let input = EvmDataWriter::new_with_selector(Action::TransferOwnership)
-// 			.write(Address(bob))
-// 			.build();
-
-// 		let expected_log = Log {
-// 			address: collection_address,
-// 			topics: vec![SELECTOR_LOG_OWNERSHIP_TRANSFERRED.into(), alice.into(), bob.into()],
-// 			data: vec![],
-// 		};
-
-// 		precompiles()
-// 			.prepare_test(alice, collection_address, input)
-// 			.expect_log(expected_log)
-// 			.execute_some();
-// 	});
-// }
-
-// #[test]
-// fn collection_transfer_of_ownership_records_costs() {
-// 	new_test_ext().execute_with(|| {
-// 		let alice = H160::from_str(ALICE).unwrap();
-// 		let bob = H160([2u8; 20]);
-
-// 		let collection_address = create_collection(alice);
-
-// 		let input = EvmDataWriter::new_with_selector(Action::TransferOwnership)
-// 			.write(Address(bob))
-// 			.build();
-
-// 		// 1 read and 1 write
-// 		precompiles()
-// 			.prepare_test(alice, collection_address, input)
-// 			.expect_cost(137001500) //  [`WeightToGas`] set to 1:1 in mock
-// 			.execute_some();
-// 	});
-// }
+		// 1 read and 1 write
+		precompiles()
+			.prepare_test(
+				alice,
+				collection_address,
+				PrecompileCall::transfer_ownership { to: bob.into() },
+			)
+			.expect_cost(187000000) //  [`WeightToGas`] set to 1:1 in mock
+			.execute_some();
+	});
+}
