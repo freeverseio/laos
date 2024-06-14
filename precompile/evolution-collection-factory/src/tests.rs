@@ -24,6 +24,7 @@ use precompile_utils::{
 	prelude::log2,
 	testing::{Alice, Precompile1, PrecompileTesterExt},
 };
+use solidity::codec::Writer;
 use sp_core::{H160, U256};
 
 /// Get precompiles from the mock.
@@ -42,6 +43,17 @@ fn check_log_selectors() {
 #[test]
 fn selectors() {
 	assert!(PrecompileCall::create_collection_selectors().contains(&0x2069E953));
+}
+
+#[test]
+fn unexistent_selector_should_revert() {
+	new_test_ext().execute_with(|| {
+		let input = Writer::new_with_selector(0x12345678_u32).build();
+
+		precompiles()
+			.prepare_test(H160([1u8; 20]), Precompile1, input)
+			.execute_reverts(|r| r == b"Unknown selector");
+	});
 }
 
 #[test]

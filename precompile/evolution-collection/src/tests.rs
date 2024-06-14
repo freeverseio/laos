@@ -2,8 +2,11 @@ use super::*;
 use evm::Context;
 use fp_evm::PrecompileSet;
 use mock::*;
+use pallet_laos_evolution::TokenId;
 use precompile_utils::testing::*;
+use solidity::codec::{UnboundedBytes, Writer};
 use sp_core::{H160, H256, U256};
+use sp_runtime::DispatchError;
 use std::str::FromStr;
 
 const ALICE: &str = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
@@ -32,25 +35,64 @@ fn create_collection(owner: impl Into<H160>) -> H160 {
 	H160::from_slice(res.output.as_slice()[12..].as_ref())
 }
 
+/// Utility function to mint a token with external token uri
+///
+/// Note: this function is used instead of `PrecompileTesterExt::execute_returns` because the latter
+/// does not return the output of the precompile. And `PrecompileTester::execute` is a private
+/// function.
+fn mint(
+	owner: impl Into<H160>,
+	collection_address: H160,
+	slot: Slot,
+	token_uri: UnboundedString,
+) -> TokenId {
+	let owner: H160 = owner.into();
+
+	let mut handle = MockHandle::new(
+		collection_address,
+		Context { address: collection_address, caller: owner, apparent_value: U256::zero() },
+	);
+
+	handle.input =
+		PrecompileCall::mint { to: Address(owner.into()), slot, token_uri: token_uri.clone() }
+			.into();
+
+	let res = precompiles().execute(&mut handle).unwrap().unwrap();
+
+	TokenId::from(res.output.as_slice())
+}
+
 #[test]
 fn selectors() {
 	assert!(PrecompileCall::owner_selectors().contains(&0x8DA5CB5B));
+	assert!(PrecompileCall::mint_selectors().contains(&0xFD024566));
 	// 	assert_eq!(Action::TokenURI as u32, 0xC87B56DD);
-	// 	assert_eq!(Action::Mint as u32, 0xFD024566);
 	// 	assert_eq!(Action::Evolve as u32, 0x2FD38F4D);
 }
 
-// #[test]
-// fn check_log_selectors() {
-// 	assert_eq!(
-// 		hex::encode(SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI),
-// 		"a7135052b348b0b4e9943bae82d8ef1c5ac225e594ef4271d12f0744cfc98348"
-// 	);
-// 	assert_eq!(
-// 		hex::encode(SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI),
-// 		"dde18ad2fe10c12a694de65b920c02b851c382cf63115967ea6f7098902fa1c8"
-// 	);
-// }
+#[test]
+fn unexistent_selector_should_revert() {
+	new_test_ext().execute_with(|| {
+		let collection_address = create_collection(Alice);
+		let input = Writer::new_with_selector(0x12345678_u32).build();
+
+		precompiles()
+			.prepare_test(H160([1u8; 20]), collection_address, input)
+			.execute_reverts(|r| r == b"Unknown selector");
+	});
+}
+
+#[test]
+fn check_log_selectors() {
+	assert_eq!(
+		hex::encode(SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI),
+		"a7135052b348b0b4e9943bae82d8ef1c5ac225e594ef4271d12f0744cfc98348"
+	);
+	// assert_eq!(
+	// 	hex::encode(SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI),
+	// 	"dde18ad2fe10c12a694de65b920c02b851c382cf63115967ea6f7098902fa1c8"
+	// );
+}
 
 #[test]
 fn owner_of_non_existent_collection_should_revert() {
@@ -93,16 +135,12 @@ fn owner_of_collection_works() {
 fn mint_should_generate_log() {
 	new_test_ext().execute_with(|| {
 		let collection_address = create_collection(Alice);
-		let owner = H160([1u8; 20]);
-
 		let slot: Slot = 9;
 		let token_uri: UnboundedString = "ciao".into();
-		println!("expected_token_id: {:?}", owner.to_string().trim_start_matches("0x"));
-		let expected_token_id = H256::from_str(
-			format!("{}{}", "000000000000000000000009", owner.to_string().trim_start_matches("0x"))
-				.as_str(),
-		)
-		.unwrap();
+		let expected_token_id =
+			U256::from_str("0000000000000000000000090101010101010101010101010101010101010101")
+				.unwrap();
+		let owner = H160([1u8; 20]);
 
 		precompiles()
 			.prepare_test(
@@ -124,17 +162,62 @@ fn mint_should_generate_log() {
 	});
 }
 
-// #[test]
-// fn unexistent_selector_should_revert() {
-// 	new_test_ext().execute_with(|| {
-// 		let input = EvmDataWriter::new_with_selector(0x12345678_u32).build();
+#[test]
+fn mint_asset_in_an_existing_collection_works() {
+	new_test_ext().execute_with(|| {
+		let to = H160::from_str(ALICE).unwrap();
+		let collection_address = create_collection(to);
+		let slot = 1;
+		let token_uri: UnboundedString = [1u8; 20].into();
 
-// 		precompiles()
-// 			.prepare_test(H160([1u8; 20]), H160(EVOLUTION_FACTORY_PRECOMPILE_ADDRESS), input)
-// 			.execute_reverts(|r| r == b"unknown selector");
-// 	});
-// }
+		// concat of `slot` and `owner` is used as token id
+		// note: slot is u96, owner is H160
+		let expected_token_id = U256::from_str(&format!(
+			"{}{}",
+			"000000000000000000000001",
+			ALICE.trim_start_matches("0x")
+		))
+		.unwrap();
 
+		precompiles()
+			.prepare_test(
+				to,
+				collection_address,
+				PrecompileCall::mint { to: Address(to.into()), slot, token_uri: token_uri.clone() },
+			)
+			.expect_log(log2(
+				collection_address,
+				SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI,
+				to,
+				solidity::encode_event_data((slot, expected_token_id, token_uri)),
+			))
+			.execute_returns(expected_token_id);
+	});
+}
+
+#[test]
+fn when_mint_reverts_should_return_error() {
+	new_test_ext().execute_with(|| {
+		let to = H160::from_str(ALICE).unwrap();
+		let collection_address = create_collection(to);
+		let slot = 0;
+		let token_uri: UnboundedString = Vec::new().into();
+
+		let _occupied_slot_token_id = mint(to, collection_address, slot, token_uri.clone());
+
+		precompiles()
+			.prepare_test(
+				to,
+				collection_address,
+				PrecompileCall::mint { to: Address(to.into()), slot, token_uri },
+			)
+			.execute_reverts(|r: &[u8]| {
+				// TODO use TryDispatchError::Module
+				let expected_error_message = "Dispatched call failed with error: Module(ModuleError { index: 1, error: [2, 0, 0, 0], message: Some(\"AlreadyMinted\") })";
+				r == expected_error_message.as_bytes()
+			});
+	});
+}
 // #[test]
 // fn token_uri_reverts_when_asset_does_not_exist() {
 // 	new_test_ext().execute_with(|| {
@@ -163,49 +246,6 @@ fn mint_should_generate_log() {
 // 		precompiles()
 // 			.prepare_test(alice, collection_address, input)
 // 			.execute_returns(BoundedBytes::<MaxTokenUriLength>::from(Vec::new()));
-// 	});
-// }
-
-// #[test]
-// fn mint_asset_in_an_existing_collection_works() {
-// 	new_test_ext().execute_with(|| {
-// 		let to = H160::from_str(ALICE).unwrap();
-// 		let collection_address = create_collection(to);
-
-// 		let input = EvmDataWriter::new_with_selector(Action::Mint)
-// 			.write(Address(to))
-// 			.write(U256::from(1))
-// 			.write(Bytes([1u8; 20].to_vec()))
-// 			.build();
-
-// 		// concat of `slot` and `owner` is used as token id
-// 		// note: slot is u96, owner is H160
-// 		let expected_token_id =
-// 			format!("{}{}", "000000000000000000000001", ALICE.trim_start_matches("0x"));
-
-// 		precompiles()
-// 			.prepare_test(to, collection_address, input)
-// 			.execute_returns(H256::from_str(expected_token_id.as_str()).unwrap());
-// 	});
-// }
-
-// #[test]
-// fn when_mint_reverts_should_return_error() {
-// 	new_test_ext().execute_with(|| {
-// 		let to = H160::from_str(ALICE).unwrap();
-// 		let collection_address = create_collection(to);
-
-// 		let _occupied_slot_token_id = mint(to, collection_address, 0, Vec::new());
-
-// 		let input = EvmDataWriter::new_with_selector(Action::Mint)
-// 			.write(Address(to))
-// 			.write(U256::zero())
-// 			.write(Bytes([1u8; 20].to_vec()))
-// 			.build();
-
-// 		precompiles()
-// 			.prepare_test(to, collection_address, input)
-// 			.execute_reverts(|r| r == b"AlreadyMinted");
 // 	});
 // }
 

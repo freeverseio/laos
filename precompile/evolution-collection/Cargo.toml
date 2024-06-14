@@ -29,6 +29,7 @@ sp-io = { workspace = true }
 precompile-utils = { workspace = true, features = ["testing"]}
 pallet-evm-evolution-collection-factory = { workspace = true }
 evm = { workspace = true }
+hex = { workspace = true }
 
 [features]
 default = ["std"]

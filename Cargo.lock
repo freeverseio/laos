@@ -7222,6 +7222,7 @@ dependencies = [
  "fp-evm",
  "frame-support",
  "frame-system",
+ "hex",
  "pallet-balances",
  "pallet-evm",
  "pallet-evm-evolution-collection-factory",
