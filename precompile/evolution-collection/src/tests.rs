@@ -5,6 +5,7 @@ use mock::*;
 use precompile_utils::testing::*;
 use sp_core::{H160, H256, U256};
 use std::str::FromStr;
+use pallet_laos_evolution::TokenId;
 
 const ALICE: &str = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
 
@@ -149,21 +150,24 @@ fn owner_of_collection_works() {
 // 	});
 // }
 
-// #[test]
-// fn token_uri_reverts_when_asset_does_not_exist() {
-// 	new_test_ext().execute_with(|| {
-// 		let alice = H160::from_str(ALICE).unwrap();
-// 		let collection_address = create_collection(alice);
+#[test]
+fn token_uri_reverts_when_asset_does_not_exist() {
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let collection_address = create_collection(alice);
 
-// 		let input = EvmDataWriter::new_with_selector(Action::TokenURI)
-// 			.write(TokenId::from(0))
-// 			.build();
 
-// 		precompiles()
-// 			.prepare_test(alice, collection_address, input)
-// 			.execute_reverts(|r| r == b"asset does not exist");
-// 	});
-// }
+		let mut handle = MockHandle::new(
+			Precompile1.into(),
+			Context { address: Precompile1.into(), caller: alice, apparent_value: U256::zero() },
+		);
+		handle.input = PrecompileCall::tokenURI { token_id: TokenId::from(0) }.into();
+
+
+		let res = precompiles().prepare_test(alice, collection_address, handle.input).execute_reverts(|r| r == b"asset does not exist");
+
+	});
+}
 
 // #[test]
 // fn token_uri_returns_the_result_from_source() {

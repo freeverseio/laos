@@ -9,7 +9,7 @@ use parity_scale_codec::Encode;
 use precompile_utils::prelude::{
 	revert, Address, DiscriminantResult, EvmResult, PrecompileHandle, RuntimeHelper,
 };
-use sp_core::H160;
+use sp_core::{ U256, H160 };
 use sp_runtime::traits::PhantomData;
 
 #[derive(Clone, DefaultNoBound)]
@@ -55,6 +55,23 @@ where
 			Ok(Address(owner.into()))
 		} else {
 			Err(revert("collection does not exist"))
+		}
+	}
+
+
+	#[precompile::public("tokenURI()")]
+	#[precompile::public("token_uri()")]
+	#[precompile::view]
+	fn tokenURI(
+		collection_id: CollectionId,
+		_handle: &mut impl PrecompileHandle,
+		token_id: U256,
+	) -> EvmResult<Vec<u8>> {
+		if let Some(token_uri) = LaosEvolution::<R>::token_uri(collection_id, token_id) {
+            
+			Ok(token_uri.into_inner())
+		} else {
+			Err(revert("asset does not exist"))
 		}
 	}
 }
