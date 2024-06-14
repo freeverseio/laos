@@ -1,16 +1,29 @@
 #![cfg_attr(not(feature = "std"), no_std)]
-
 use fp_evm::ExitError;
 use frame_support::DefaultNoBound;
+use pallet_evm::GasWeightMapping;
 use pallet_laos_evolution::{
-	address_to_collection_id, types::CollectionId, Pallet as LaosEvolution,
+	address_to_collection_id,
+	types::CollectionId,
+	weights::{SubstrateWeight as LaosEvolutionWeights, WeightInfo},
+	Config, EvolutionCollection, Pallet as LaosEvolution, Slot,
 };
 use parity_scale_codec::Encode;
-use precompile_utils::prelude::{
-	revert, Address, DiscriminantResult, EvmResult, PrecompileHandle, RuntimeHelper,
+use precompile_utils::{
+	keccak256,
+	prelude::{
+		log2, revert, Address, DiscriminantResult, EvmResult, LogExt, PrecompileHandle,
+		RuntimeHelper,
+	},
+	solidity::{self, codec::UnboundedString},
+	substrate::TryDispatchError,
 };
-use sp_core::H160;
-use sp_runtime::traits::PhantomData;
+use sp_core::{H160, U256};
+use sp_runtime::{traits::PhantomData, BoundedVec};
+
+/// Solidity selector of the MintedWithExternalURI log, which is the Keccak of the Log signature.
+pub const SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
+	keccak256!("MintedWithExternalURI(address,uint96,uint256,string)");
 
 #[derive(Clone, DefaultNoBound)]
 pub struct EvolutionCollectionPrecompileSet<R>(PhantomData<R>);
@@ -25,7 +38,7 @@ impl<R> EvolutionCollectionPrecompileSet<R> {
 #[precompile::precompile_set]
 impl<R> EvolutionCollectionPrecompileSet<R>
 where
-	R: pallet_evm::Config + pallet_laos_evolution::Config,
+	R: pallet_evm::Config + pallet_laos_evolution::Config + frame_system::Config,
 	R::AccountId: From<H160> + Into<H160> + Encode,
 {
 	#[precompile::discriminant]
@@ -55,6 +68,60 @@ where
 			Ok(Address(owner.into()))
 		} else {
 			Err(revert("collection does not exist"))
+		}
+	}
+
+	// TODO use custom type for slot, it needs to be uint96, otherwise test file
+	#[precompile::public("mintWithExternalURI(address,uint128,string)")]
+	fn mint(
+		collection_id: CollectionId,
+		handle: &mut impl PrecompileHandle,
+		to: Address,
+		slot: Slot,
+		token_uri: UnboundedString, /* TODO use bounded vec or stringkind from solidity
+		                             * BoundedString<<R as Config>::MaxTokenUriLength> */
+	) -> EvmResult<U256> {
+		let to: H160 = to.into();
+
+		// TODO this might be remove when we have the bounded string as param
+		let token_uri_bounded: BoundedVec<u8, <R as Config>::MaxTokenUriLength> = token_uri
+			.as_bytes()
+			.to_vec()
+			.try_into()
+			.map_err(|_| revert("invalid token uri length"))?;
+
+		match LaosEvolution::<R>::mint_with_external_uri(
+			handle.context().caller.into(),
+			collection_id,
+			slot,
+			to.into(),
+			token_uri_bounded.clone(),
+		) {
+			Ok(token_id) => {
+				let consumed_weight = LaosEvolutionWeights::<R>::mint_with_external_uri(
+					token_uri_bounded.len() as u32,
+				);
+
+				log2(
+					handle.context().address,
+					SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI,
+					to,
+					solidity::encode_event_data((slot, token_id, token_uri)),
+				)
+				.record(handle)?;
+
+				// Record EVM cost
+				handle.record_cost(<R as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
+					consumed_weight,
+				))?;
+
+				// Record Substrate related costs
+				// TODO: Add `ref_time` when precompiles are benchmarked
+				handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
+
+				Ok(token_id)
+			},
+			Err(err) => Err(TryDispatchError::Substrate(err).into()),
 		}
 	}
 }

@@ -55,12 +55,11 @@ fn selectors() {
 #[test]
 fn owner_of_non_existent_collection_should_revert() {
 	new_test_ext().execute_with(|| {
-		let alice = H160::from_str(ALICE).unwrap();
 		let collection_address =
 			H160::from_str("fffffffffffffffffffffffe0000000000000000").unwrap();
 
 		precompiles()
-			.prepare_test(alice, collection_address, PrecompileCall::owner {})
+			.prepare_test(Alice, collection_address, PrecompileCall::owner {})
 			.execute_reverts(|r| r == b"collection does not exist");
 	})
 }
@@ -83,60 +82,47 @@ fn owner_of_invalid_collection_address() {
 #[test]
 fn owner_of_collection_works() {
 	new_test_ext().execute_with(|| {
-		let alice = H160::from_str(ALICE).unwrap();
-		let collection_address = create_collection(alice);
-
-		// output is padded with 12 bytes of zeros
-		let expected_output = H256::from_str(
-			format!("000000000000000000000000{}", ALICE.trim_start_matches("0x")).as_str(),
-		)
-		.unwrap();
+		let collection_address = create_collection(Alice);
 		precompiles()
-			.prepare_test(alice, collection_address, PrecompileCall::owner {})
-			.execute_returns(expected_output);
+			.prepare_test(Alice, collection_address, PrecompileCall::owner {})
+			.execute_returns(Address(Alice.into()));
 	});
 }
 
-// #[test]
-// fn mint_should_generate_log() {
-// 	new_test_ext().execute_with(|| {
-// 		let owner = H160([1u8; 20]);
-// 		let collection_address = create_collection(owner);
+#[test]
+fn mint_should_generate_log() {
+	new_test_ext().execute_with(|| {
+		let collection_address = create_collection(Alice);
+		let owner = H160([1u8; 20]);
 
-// 		let input = EvmDataWriter::new_with_selector(Action::Mint)
-// 			.write(Address(owner)) // to
-// 			.write(U256::from(9)) // slot
-// 			.write(Bytes("ciao".into())) // token_uri
-// 			.build();
+		let slot: Slot = 9;
+		let token_uri: UnboundedString = "ciao".into();
+		println!("expected_token_id: {:?}", owner.to_string().trim_start_matches("0x"));
+		let expected_token_id = H256::from_str(
+			format!("{}{}", "000000000000000000000009", owner.to_string().trim_start_matches("0x"))
+				.as_str(),
+		)
+		.unwrap();
 
-// 		let expected_log = Log {
-// 			address: collection_address,
-// 			topics: vec![
-// 				SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI.into(),
-// 				H256::from_str(
-// 					"0x0000000000000000000000000101010101010101010101010101010101010101",
-// 				)
-// 				.unwrap(),
-// 			],
-// 			data: vec![
-// 				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-// 				0, 0, 0, 9, // slot
-// 				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-// 				1, 1, 1, 1, // token id
-// 				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-// 				0, 0, 0, 96, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-// 				0, 0, 0, 0, 0, 0, 0, 0, 4, // token uri length
-// 				99, 105, 97, 111, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-// 				0, 0, 0, 0, 0, 0, // token uri
-// 			],
-// 		};
-
-// 		precompiles()
-// 			.prepare_test(owner, collection_address, input)
-// 			.expect_log(expected_log)
-// 			.execute_some();
-// 	});
-// }
+		precompiles()
+			.prepare_test(
+				Alice,
+				collection_address,
+				PrecompileCall::mint {
+					to: Address(owner.into()),
+					slot,
+					token_uri: token_uri.clone(),
+				},
+			)
+			.expect_log(log2(
+				collection_address,
+				SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI,
+				owner,
+				solidity::encode_event_data((slot, expected_token_id, token_uri)),
+			))
+			.execute_some();
+	});
+}
 
 // #[test]
 // fn unexistent_selector_should_revert() {
