@@ -39,6 +39,7 @@ construct_runtime!(
 		Balances: pallet_balances,
 		Timestamp: pallet_timestamp,
 		EVM: pallet_evm,
+		LaosEvolution: pallet_laos_evolution,
 	}
 );
 
@@ -126,4 +127,22 @@ impl pallet_evm::Config for Runtime {
 	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
 	type Timestamp = Timestamp;
 	type WeightInfo = ();
+}
+
+parameter_types! {
+	pub const MaxTokenUriLength: u32 = 512;
+}
+
+pub struct AccountIdToH160;
+
+impl sp_runtime::traits::Convert<AccountId, H160> for AccountIdToH160 {
+	fn convert(account_id: AccountId) -> H160 {
+		account_id
+	}
+}
+
+impl pallet_laos_evolution::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type AccountIdToH160 = AccountIdToH160;
+	type MaxTokenUriLength = MaxTokenUriLength;
 }
