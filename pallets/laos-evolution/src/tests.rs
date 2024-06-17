@@ -20,7 +20,7 @@ use crate::{
 	mock::*,
 	slot_and_owner_to_token_id,
 	traits::{EvolutionCollection, EvolutionCollectionFactory},
-	types::{TokenId, TokenUriOf, MAX_U96},
+	types::{Slot, TokenId, TokenUriOf},
 	CollectionId, Error, Event,
 };
 use frame_support::{assert_noop, assert_ok, assert_storage_noop};
@@ -161,7 +161,7 @@ fn mint_with_external_uri_works() {
 		let collection_id = create_collection(ALICE);
 		let token_uri: TokenUriOf<Test> =
 			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
-		let slot = 0;
+		let slot = 0u128.try_into().unwrap();
 		let owner = AccountId::from_str(ALICE).unwrap();
 
 		assert_ok!(LaosEvolution::mint_with_external_uri(
@@ -174,7 +174,7 @@ fn mint_with_external_uri_works() {
 
 		let expected_token_id = {
 			let mut buf = [0u8; 32];
-			buf[..12].copy_from_slice(&slot.to_be_bytes()[4..]);
+			buf[..12].copy_from_slice(&slot.as_u128().to_be_bytes()[4..]);
 			let owner_bytes = owner.encode();
 			buf[12..].copy_from_slice(&owner_bytes[..]);
 
@@ -200,47 +200,35 @@ fn mint_with_external_uri_works() {
 }
 
 #[test]
-fn slot_and_owner_should_fail_if_slot_is_greater_than_96_bits() {
-	new_test_ext().execute_with(|| {
-		let slot = 1_u128 << 95;
-		let owner = H160::zero();
-
-		assert!(slot_and_owner_to_token_id(slot, owner).is_some());
-
-		let slot = 1_u128 << 96;
-		assert_eq!(slot_and_owner_to_token_id(slot, owner), None);
-	});
-}
-#[test]
 fn slot_and_owner_to_asset_id_works() {
 	// Helper function to encapsulate the common logic of generating a token_id
 	// and comparing it to an expected value.
-	fn check_token_id(slot: u128, owner_hex: &str, expected_hex: &str) {
+	fn check_token_id(slot: Slot, owner_hex: &str, expected_hex: &str) {
 		let owner = AccountId::from_str(owner_hex).unwrap();
 		let token_id = slot_and_owner_to_token_id(slot, owner).unwrap();
 		assert_eq!(format!("0x{:064x}", token_id), expected_hex);
 	}
 
 	check_token_id(
-		0_u128,
+		0_u128.try_into().unwrap(),
 		"0x0000000000000000000000000000000000000000",
 		"0x0000000000000000000000000000000000000000000000000000000000000000",
 	);
 
 	check_token_id(
-		1_u128,
+		1_u128.try_into().unwrap(),
 		"0x0000000000000000000000000000000000000000",
 		"0x0000000000000000000000010000000000000000000000000000000000000000",
 	);
 
 	check_token_id(
-		1_u128,
+		1_u128.try_into().unwrap(),
 		"0xe00000000000000000000000000000000000000f",
 		"0x000000000000000000000001e00000000000000000000000000000000000000f",
 	);
 
 	check_token_id(
-		MAX_U96,
+		Slot::MAX_SLOT,
 		"0xe00000000000000000000000000000000000000f",
 		"0xffffffffffffffffffffffffe00000000000000000000000000000000000000f",
 	);
@@ -257,7 +245,7 @@ fn mint_with_external_uri_non_owner() {
 			LaosEvolution::mint_with_external_uri(
 				AccountId::from_str(BOB).unwrap(),
 				collection_id,
-				0,
+				0.try_into().unwrap(),
 				AccountId::from_str(BOB).unwrap(),
 				token_uri.clone()
 			),
@@ -281,7 +269,7 @@ fn mint_with_external_uri_collection_does_not_exist() {
 			LaosEvolution::mint_with_external_uri(
 				test_account,
 				collection_id,
-				0,
+				0.try_into().unwrap(),
 				test_account,
 				token_uri.clone()
 			),
@@ -303,36 +291,20 @@ fn mint_with_external_uri_asset_already_minted() {
 		assert_ok!(LaosEvolution::mint_with_external_uri(
 			owner,
 			collection_id,
-			0,
+			0.try_into().unwrap(),
 			to,
 			token_uri.clone()
 		));
 
 		assert_noop!(
-			LaosEvolution::mint_with_external_uri(owner, collection_id, 0, to, token_uri.clone()),
-			Error::<Test>::AlreadyMinted
-		);
-	});
-}
-
-#[test]
-fn slot_overflow() {
-	new_test_ext().execute_with(|| {
-		let test_account =
-			AccountId::from_str("0x0000000000000000000000000000000000000001").unwrap();
-		let collection_id = create_collection("0x0000000000000000000000000000000000000001");
-		let token_uri: TokenUriOf<Test> =
-			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
-
-		assert_noop!(
 			LaosEvolution::mint_with_external_uri(
-				test_account,
+				owner,
 				collection_id,
-				MAX_U96 + 1, // pass a value greater than 2^96 - 1
-				test_account,
+				0.try_into().unwrap(),
+				to,
 				token_uri.clone()
 			),
-			Error::<Test>::SlotOverflow
+			Error::<Test>::AlreadyMinted
 		);
 	});
 }
@@ -374,7 +346,7 @@ fn token_uri_of_existent_token_returns_correct_token_uri() {
 	new_test_ext().execute_with(|| {
 		let who = AccountId::from_str(ALICE).unwrap();
 		let collection_id = create_collection(ALICE);
-		let slot = 1;
+		let slot = 1.try_into().unwrap();
 		let to = AccountId::from_str(BOB).unwrap();
 		let token_uri: TokenUriOf<Test> =
 			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
@@ -391,7 +363,7 @@ fn evolve_with_external_uri_when_unexistent_collection_id_should_fail() {
 	new_test_ext().execute_with(|| {
 		let who = AccountId::from_str(ALICE).unwrap();
 		let collection_id = LaosEvolution::collection_counter();
-		let slot = 0;
+		let slot = 0.try_into().unwrap();
 		let owner = AccountId::from_str(ALICE).unwrap();
 		let token_id = slot_and_owner_to_token_id(slot, owner).unwrap();
 		let new_token_uri: TokenUriOf<Test> =
@@ -410,7 +382,7 @@ fn evolve_with_external_uri_when_sender_is_not_collection_owner_should_fail() {
 		let who = AccountId::from_str(ALICE).unwrap();
 		let owner = AccountId::from_str(BOB).unwrap();
 		let collection_id = create_collection(BOB);
-		let slot = 0;
+		let slot = 0.try_into().unwrap();
 		let token_id = slot_and_owner_to_token_id(slot, owner).unwrap();
 		let new_token_uri: TokenUriOf<Test> =
 			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
@@ -428,7 +400,7 @@ fn evolve_with_external_uri_when_asset_doesnt_exist_should_fail() {
 		let who = AccountId::from_str(ALICE).unwrap();
 		let owner = AccountId::from_str(BOB).unwrap();
 		let collection_id = create_collection(ALICE);
-		let slot = 0;
+		let slot = 0.try_into().unwrap();
 		let token_id = slot_and_owner_to_token_id(slot, owner).unwrap();
 		let new_token_uri: TokenUriOf<Test> =
 			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
@@ -447,7 +419,7 @@ fn evolve_with_external_uri_happy_path() {
 
 		let owner = AccountId::from_str(BOB).unwrap();
 		let collection_id = create_collection(BOB);
-		let slot = 0;
+		let slot = 0.try_into().unwrap();
 		let token_id = slot_and_owner_to_token_id(slot, owner).unwrap();
 		let token_uri: TokenUriOf<Test> =
 			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
@@ -601,7 +573,7 @@ fn anyone_can_mint_when_public_minting_is_enabled() {
 		assert_ok!(LaosEvolution::mint_with_external_uri(
 			AccountId::from_str(non_owner).unwrap(),
 			collection_id,
-			0,
+			0.try_into().unwrap(),
 			AccountId::from_str(non_owner).unwrap(),
 			token_uri.clone()
 		));
@@ -630,7 +602,7 @@ fn nobody_can_mint_when_public_minting_is_disabled() {
 			LaosEvolution::mint_with_external_uri(
 				AccountId::from_str(non_owner).unwrap(),
 				collection_id,
-				0,
+				0.try_into().unwrap(),
 				AccountId::from_str(non_owner).unwrap(),
 				token_uri.clone()
 			),
@@ -656,7 +628,7 @@ fn collection_owner_can_mint_when_public_minting_is_enabled() {
 		assert_ok!(LaosEvolution::mint_with_external_uri(
 			H160::from_str(owner).unwrap(),
 			collection_id,
-			0,
+			0.try_into().unwrap(),
 			H160::from_str(non_owner).unwrap(),
 			token_uri.clone()
 		));
@@ -671,7 +643,7 @@ fn non_collection_owner_cannot_evolve_when_public_minting_is_enabled() {
 			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
 		let owner = ALICE;
 		let non_owner = BOB;
-		let slot = 0;
+		let slot = 0.try_into().unwrap();
 		let token_id =
 			slot_and_owner_to_token_id(slot, AccountId::from_str(non_owner).unwrap()).unwrap();
 

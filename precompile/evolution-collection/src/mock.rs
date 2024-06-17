@@ -21,11 +21,15 @@ use crate::{EvolutionCollectionPrecompileSet, EvolutionCollectionPrecompileSetCa
 use frame_support::{
 	derive_impl, parameter_types, traits::FindAuthor, weights::constants::RocksDbWeight,
 };
-use sp_core::{H160, U256};
-use sp_runtime::{
-	traits::{IdentityLookup, PhantomData},
-	BuildStorage, ConsensusEngineId,
+use pallet_evm_evolution_collection_factory::{
+	EvolutionCollectionFactoryPrecompile, EvolutionCollectionFactoryPrecompileCall,
 };
+use pallet_laos_evolution::ASSET_PRECOMPILE_ADDRESS_PREFIX;
+use precompile_utils::precompile_set::{
+	AddressU64, PrecompileAt, PrecompileSetBuilder, PrecompileSetStartingWith,
+};
+use sp_core::{H160, U256};
+use sp_runtime::{traits::IdentityLookup, BuildStorage, ConsensusEngineId};
 
 type Block = frame_system::mocking::MockBlock<Test>;
 
@@ -107,15 +111,26 @@ pub const BLOCK_GAS_LIMIT: u64 = 15_000_000;
 pub const MAX_POV_SIZE: u64 = 5 * 1024 * 1024;
 
 pub type PrecompileCall = EvolutionCollectionPrecompileSetCall<Test>;
+pub type FactoryPrecompileCall = EvolutionCollectionFactoryPrecompileCall<Test>;
 
-pub type LaosPrecompiles<Test> = EvolutionCollectionPrecompileSet<Test>;
+parameter_types! {
+	pub AssetPrefix: &'static [u8] = ASSET_PRECOMPILE_ADDRESS_PREFIX;
+}
+
+pub type LaosPrecompiles<Test> = PrecompileSetBuilder<
+	Test,
+	(
+		PrecompileAt<AddressU64<1>, EvolutionCollectionFactoryPrecompile<Test>>,
+		PrecompileSetStartingWith<AssetPrefix, EvolutionCollectionPrecompileSet<Test>>,
+	),
+>;
 
 frame_support::parameter_types! {
 	pub BlockGasLimit: U256 = U256::from(crate::mock::BLOCK_GAS_LIMIT);
 	pub const GasLimitPovSizeRatio: u64 = crate::mock::BLOCK_GAS_LIMIT.saturating_div(crate::mock::MAX_POV_SIZE);
 	/// 1 weight to 1 gas, for testing purposes
 	pub WeightPerGas: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(1, 0);
-	pub PrecompilesInstance:  LaosPrecompiles<Test> = LaosPrecompiles::new();
+	pub PrecompilesInstance:  LaosPrecompiles<Test> = LaosPrecompiles::<_>::new();
 }
 
 impl pallet_evm::Config for Test {
@@ -128,7 +143,7 @@ impl pallet_evm::Config for Test {
 	type AddressMapping = pallet_evm::IdentityAddressMapping;
 	type Currency = Balances;
 	type RuntimeEvent = RuntimeEvent;
-	type PrecompilesType = EvolutionCollectionPrecompileSet<Self>;
+	type PrecompilesType = LaosPrecompiles<Self>;
 	type PrecompilesValue = PrecompilesInstance;
 	type ChainId = ();
 	type BlockGasLimit = BlockGasLimit;
