@@ -36,7 +36,6 @@ where
 		}
 	}
 
-	// #[pallet::weight(<T as Config>::WeightInfo::schedule_leave_candidates(*candidate_count))]
 	#[precompile::public("owner()")]
 	#[precompile::view]
 	pub fn owner(
