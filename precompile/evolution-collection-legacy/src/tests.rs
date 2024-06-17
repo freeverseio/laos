@@ -74,7 +74,7 @@ fn mint(
 	token_uri: Vec<u8>,
 ) -> TokenId {
 	let owner: H160 = owner.into();
-	let slot: u128 = slot.0.try_into().unwrap();
+	let slot: u128 = slot.0.into();
 	let input = EvmDataWriter::new_with_selector(Action::Mint)
 		.write(Address(owner))
 		.write(U256::from(slot))

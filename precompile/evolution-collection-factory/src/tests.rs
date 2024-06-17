@@ -67,7 +67,7 @@ fn create_collection_returns_address() {
 				Precompile1,
 				PrecompileCall::create_collection { owner: Address(Alice.into()) },
 			)
-			.execute_returns(Address(expected_collection_address.into()));
+			.execute_returns(Address(expected_collection_address));
 	})
 }
 
@@ -87,7 +87,7 @@ fn create_collection_should_generate_log() {
 				Precompile1,
 				SELECTOR_LOG_NEW_COLLECTION,
 				Alice,
-				solidity::encode_event_data(Address(expected_collection_address.into())),
+				solidity::encode_event_data(Address(expected_collection_address)),
 			))
 			.execute_some();
 	});
@@ -118,7 +118,7 @@ fn create_collection_assign_collection_to_caller() {
 				Precompile1,
 				PrecompileCall::create_collection { owner: Address(Alice.into()) },
 			)
-			.execute_returns(Address(expected_collection_address.into()));
+			.execute_returns(Address(expected_collection_address));
 
 		assert_eq!(LaosEvolution::<Test>::collection_owner(0), Some(Alice.into()));
 	});
@@ -135,7 +135,7 @@ fn create_collection_inserts_bytecode_to_address() {
 				Precompile1,
 				PrecompileCall::create_collection { owner: Address(Alice.into()) },
 			)
-			.execute_returns(Address(expected_collection_address.into()));
+			.execute_returns(Address(expected_collection_address));
 
 		// Address is not empty
 		assert!(!Evm::<Test>::is_account_empty(&expected_collection_address));

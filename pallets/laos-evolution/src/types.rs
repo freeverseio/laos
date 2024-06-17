@@ -91,9 +91,9 @@ impl TryFrom<u128> for Slot {
 	}
 }
 
-impl Into<u128> for Slot {
-	fn into(self) -> u128 {
-		self.as_u128()
+impl From<Slot> for u128 {
+	fn from(slot: Slot) -> u128 {
+		slot.as_u128()
 	}
 }
 

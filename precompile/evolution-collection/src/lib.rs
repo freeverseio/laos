@@ -322,8 +322,7 @@ where
 
 fn convert_dispatch_error_to_string(err: DispatchError) -> String {
 	match err {
-		DispatchError::Module(mod_err) =>
-			mod_err.message.unwrap_or_else(|| "Unknown module error").into(),
+		DispatchError::Module(mod_err) => mod_err.message.unwrap_or("Unknown module error").into(),
 		_ => format!("{:?}", err),
 	}
 }
