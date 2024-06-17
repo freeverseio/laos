@@ -21,7 +21,7 @@ use core::str::FromStr;
 use evm::Context;
 use fp_evm::{Log, PrecompileSet};
 use mock::*;
-use pallet_evm_evolution_collection_factory::Action as CollectionFactoryAction;
+use pallet_evm_evolution_collection_factory_legacy::Action as CollectionFactoryAction;
 use precompile_utils::{
 	solidity::codec::BoundedBytes,
 	testing::{execution::PrecompileTesterExt, MockHandle},
@@ -70,10 +70,11 @@ fn create_collection(owner: impl Into<H160>) -> H160 {
 fn mint(
 	owner: impl Into<H160>,
 	collection_address: H160,
-	slot: Slot,
+	slot: LegacySlot,
 	token_uri: Vec<u8>,
 ) -> TokenId {
 	let owner: H160 = owner.into();
+	let slot: u128 = slot.0.try_into().unwrap();
 	let input = EvmDataWriter::new_with_selector(Action::Mint)
 		.write(Address(owner))
 		.write(U256::from(slot))
@@ -232,7 +233,8 @@ fn token_uri_returns_the_result_from_source() {
 	new_test_ext().execute_with(|| {
 		let alice = H160::from_str(ALICE).unwrap();
 		let collection_address = create_collection(alice);
-		let token_id = mint(alice, collection_address, 0, Vec::new());
+		let token_id =
+			mint(alice, collection_address, LegacySlot(0.try_into().unwrap()), Vec::new());
 
 		let input = EvmDataWriter::new_with_selector(Action::TokenURI).write(token_id).build();
 
@@ -271,7 +273,8 @@ fn when_mint_reverts_should_return_error() {
 		let to = H160::from_str(ALICE).unwrap();
 		let collection_address = create_collection(to);
 
-		let _occupied_slot_token_id = mint(to, collection_address, 0, Vec::new());
+		let _occupied_slot_token_id =
+			mint(to, collection_address, LegacySlot(0.try_into().unwrap()), Vec::new());
 
 		let input = EvmDataWriter::new_with_selector(Action::Mint)
 			.write(Address(to))
@@ -290,7 +293,8 @@ fn evolve_a_minted_asset_works() {
 	new_test_ext().execute_with(|| {
 		let alice = H160::from_str(ALICE).unwrap();
 		let collection_address = create_collection(alice);
-		let token_id = mint(alice, collection_address, 0, Vec::new());
+		let token_id =
+			mint(alice, collection_address, LegacySlot(0.try_into().unwrap()), Vec::new());
 
 		let input = EvmDataWriter::new_with_selector(Action::Evolve)
 			.write(token_id)
@@ -308,7 +312,8 @@ fn evolve_generates_log() {
 	new_test_ext().execute_with(|| {
 		let alice = H160::from_str(ALICE).unwrap();
 		let collection_address = create_collection(alice);
-		let token_id = mint(alice, collection_address, 0, Vec::new());
+		let token_id =
+			mint(alice, collection_address, LegacySlot(0.try_into().unwrap()), Vec::new());
 
 		let input = EvmDataWriter::new_with_selector(Action::Evolve)
 			.write(token_id)
@@ -436,7 +441,8 @@ fn test_expected_cost_token_uri() {
 	new_test_ext().execute_with(|| {
 		let alice = H160::from_str(ALICE).unwrap();
 		let collection_address = create_collection(alice);
-		let token_id = mint(alice, collection_address, 0, Vec::new());
+		let token_id =
+			mint(alice, collection_address, LegacySlot(0.try_into().unwrap()), Vec::new());
 
 		let input = EvmDataWriter::new_with_selector(Action::TokenURI).write(token_id).build();
 
@@ -554,7 +560,8 @@ fn test_expected_cost_evolve_with_external_uri() {
 	new_test_ext().execute_with(|| {
 		let alice = H160::from_str(ALICE).unwrap();
 		let collection_address = create_collection(alice);
-		let token_id = mint(alice, collection_address, 0, Vec::new());
+		let token_id =
+			mint(alice, collection_address, LegacySlot(0.try_into().unwrap()), Vec::new());
 
 		let input = EvmDataWriter::new_with_selector(Action::Evolve)
 			.write(token_id)
