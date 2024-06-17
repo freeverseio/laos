@@ -25,10 +25,10 @@ mod mock;
 mod tests;
 
 mod benchmarking;
+pub mod precompiles;
 pub mod traits;
 pub mod types;
 pub mod weights;
-pub mod precompiles;
 
 use frame_support::pallet_prelude::*;
 use sp_core::H160;
@@ -59,6 +59,7 @@ pub mod pallet {
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		/// Converts `Self::AccountId` to `H160`
 		type AccountIdToH160: Convert<Self::AccountId, H160>;
+		type WeightInfo: WeightInfo;
 		/// Limit for the length of `token_uri`
 		#[pallet::constant]
 		type MaxTokenUriLength: Get<u32>;

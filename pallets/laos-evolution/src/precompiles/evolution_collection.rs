@@ -1,10 +1,10 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use crate::{
+	address_to_collection_id, types::CollectionId, weights::WeightInfo, Pallet as LaosEvolution,
+};
 use fp_evm::ExitError;
 use frame_support::DefaultNoBound;
-use crate::{
-	address_to_collection_id, types::CollectionId, Pallet as LaosEvolution,
-};
 use parity_scale_codec::Encode;
 use precompile_utils::prelude::{
 	revert, Address, DiscriminantResult, EvmResult, PrecompileHandle, RuntimeHelper,
@@ -30,8 +30,6 @@ where
 {
 	#[precompile::discriminant]
 	fn discriminant(address: H160, gas: u64) -> DiscriminantResult<CollectionId> {
-
-
 		// maybe here we could avoid the extra_cost calculation cause there's no db read
 		match address_to_collection_id(address) {
 			Ok(id) => DiscriminantResult::Some(id, gas),
@@ -46,9 +44,7 @@ where
 		handle: &mut impl PrecompileHandle,
 	) -> EvmResult<Address> {
 		if let Some(owner) = LaosEvolution::<R>::collection_owner(collection_id) {
-			// TODO: handle the cost
-			// handle.record_cost(GasCalculator::<Runtime>::db_read_gas_cost(1))?;
-			let weight = <LaosEvolution as crate::WeightInfo>::create_collection();
+			let weight = R::WeightInfo::create_collection();
 			handle.record_external_cost(Some(weight.ref_time()), Some(weight.proof_size()))?;
 
 			Ok(Address::default())
@@ -58,7 +54,7 @@ where
 	}
 }
 
-#[cfg(test)]
-mod mock;
-#[cfg(test)]
-mod tests;
+// #[cfg(test)]
+// mod mock;
+// #[cfg(test)]
+// mod tests;

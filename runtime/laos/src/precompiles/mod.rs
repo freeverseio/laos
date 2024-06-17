@@ -24,7 +24,9 @@ use pallet_evm_precompile_blake2::Blake2F;
 use pallet_evm_precompile_bn128::{Bn128Add, Bn128Mul, Bn128Pairing};
 use pallet_evm_precompile_modexp::Modexp;
 use pallet_evm_precompile_simple::{ECRecover, Identity, Ripemd160, Sha256};
-use pallet_laos_evolution::{ precompiles::EvolutionCollectionPrecompileSet, ASSET_PRECOMPILE_ADDRESS_PREFIX};
+use pallet_laos_evolution::{
+	precompiles::EvolutionCollectionPrecompileSet, ASSET_PRECOMPILE_ADDRESS_PREFIX,
+};
 use precompile_utils::precompile_set::{
 	AcceptDelegateCall, AddressU64, CallableByContract, CallableByPrecompile, PrecompileAt,
 	PrecompileSetBuilder, PrecompileSetStartingWith, PrecompilesInRangeInclusive,
