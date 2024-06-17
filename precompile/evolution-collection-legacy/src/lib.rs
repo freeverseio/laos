@@ -26,7 +26,7 @@ use pallet_laos_evolution::{
 	address_to_collection_id,
 	traits::EvolutionCollection as EvolutionCollectionT,
 	weights::{SubstrateWeight as LaosEvolutionWeights, WeightInfo},
-	Pallet as LaosEvolution, Slot, TokenId, TokenUriOf,
+	LegacySlot, Pallet as LaosEvolution, Slot, TokenId, TokenUriOf,
 };
 use parity_scale_codec::Encode;
 use precompile_utils::solidity::revert::revert;
@@ -160,7 +160,7 @@ where
 		let collection_id = address_to_collection_id(context.address)
 			.map_err(|_| revert("invalid collection address"))?;
 		let to = input.read::<Address>()?.0;
-		let slot = input.read::<Slot>()?;
+		let slot = input.read::<LegacySlot>()?;
 		let token_uri_raw = input.read::<Bytes>()?.0;
 		let token_uri = token_uri_raw
 			.clone()
@@ -170,7 +170,7 @@ where
 		match LaosEvolution::<Runtime>::mint_with_external_uri(
 			caller.into(),
 			collection_id,
-			slot,
+			slot.0,
 			to.into(),
 			token_uri,
 		) {

@@ -296,20 +296,15 @@ impl<T: Config> EvolutionCollection<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T>
 ///
 /// Returns `None` if `Slot` is larger than 96 bits
 fn slot_and_owner_to_token_id(slot: Slot, owner: H160) -> Option<TokenId> {
-	// Check if slot is larger than 96 bits
-	if slot > MAX_U96 {
-		return None;
-	}
-
 	let mut bytes = [0u8; 32];
 
-	let slot_bytes = slot.to_be_bytes();
+	let slot_bytes = slot.as_u128().to_be_bytes(); // TODO slot type returns this
 
 	// we also use the last 12 bytes of the slot, since the first 4 bytes are always 0
 	bytes[..12].copy_from_slice(&slot_bytes[4..]);
 	bytes[12..].copy_from_slice(&owner.0);
 
-	Some(TokenId::from(bytes))
+	Some(TokenId::from(bytes)) // TODO there is no need to return Option
 }
 
 /// `ASSET_PRECOMPILE_ADDRESS_PREFIX` is a predefined prefix used to identify collection addresses.

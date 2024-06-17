@@ -85,7 +85,7 @@ where
 	}
 
 	// TODO use custom type for slot, it needs to be uint96, otherwise test file
-	#[precompile::public("mintWithExternalURI(address,uint128,string)")]
+	#[precompile::public("mintWithExternalURI(address,uint96,string)")]
 	fn mint(
 		collection_id: CollectionId,
 		handle: &mut impl PrecompileHandle,

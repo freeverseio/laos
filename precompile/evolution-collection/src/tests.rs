@@ -4,6 +4,7 @@ use fp_evm::PrecompileSet;
 use mock::*;
 use pallet_laos_evolution::TokenId;
 use precompile_utils::testing::*;
+use scale_info::prelude::string::String;
 use solidity::codec::Writer;
 use sp_core::{H160, U256};
 use std::str::FromStr;
@@ -64,7 +65,7 @@ fn mint(
 #[test]
 fn selectors() {
 	assert!(PrecompileCall::owner_selectors().contains(&0x8DA5CB5B));
-	assert!(PrecompileCall::mint_selectors().contains(&0xFAB462EA));
+	assert!(PrecompileCall::mint_selectors().contains(&0xFD024566));
 	assert!(PrecompileCall::evolve_selectors().contains(&0x2FD38F4D));
 	assert!(PrecompileCall::is_public_minting_enabled_selectors().contains(&0x441F06AC));
 	assert!(PrecompileCall::enable_public_minting_selectors().contains(&0xF7BEB98A));
@@ -138,7 +139,7 @@ fn owner_of_collection_works() {
 fn mint_should_generate_log() {
 	new_test_ext().execute_with(|| {
 		let collection_address = create_collection(Alice);
-		let slot: Slot = 9;
+		let slot: Slot = 9.try_into().unwrap();
 		let token_uri: UnboundedString = "ciao".into();
 		let expected_token_id =
 			U256::from_str("0000000000000000000000090101010101010101010101010101010101010101")
@@ -170,7 +171,7 @@ fn mint_asset_in_an_existing_collection_works() {
 	new_test_ext().execute_with(|| {
 		let to = H160::from_str(ALICE).unwrap();
 		let collection_address = create_collection(to);
-		let slot = 1;
+		let slot = 1.try_into().unwrap();
 		let token_uri: UnboundedString = [1u8; 20].into();
 
 		// concat of `slot` and `owner` is used as token id
@@ -197,7 +198,7 @@ fn when_mint_reverts_should_return_error() {
 	new_test_ext().execute_with(|| {
 		let to = H160::from_str(ALICE).unwrap();
 		let collection_address = create_collection(to);
-		let slot = 0;
+		let slot = 0.try_into().unwrap();
 		let token_uri: UnboundedString = Vec::new().into();
 
 		let _occupied_slot_token_id = mint(to, collection_address, slot, token_uri.clone());
@@ -234,7 +235,8 @@ fn token_uri_returns_the_result_from_source() {
 		let alice = H160::from_str(ALICE).unwrap();
 		let collection_address = create_collection(alice);
 		let token_uri: UnboundedString = "ciao".into();
-		let token_id = mint(alice, collection_address, 0, token_uri.clone().into());
+		let token_id =
+			mint(alice, collection_address, 0.try_into().unwrap(), token_uri.clone().into());
 
 		precompiles()
 			.prepare_test(alice, collection_address, PrecompileCall::token_uri { token_id })
@@ -248,7 +250,7 @@ fn evolve_a_minted_asset_works() {
 		let alice = H160::from_str(ALICE).unwrap();
 		let collection_address = create_collection(alice);
 		let token_uri: UnboundedString = Vec::new().into();
-		let token_id = mint(alice, collection_address, 0, token_uri.clone());
+		let token_id = mint(alice, collection_address, 0.try_into().unwrap(), token_uri.clone());
 
 		precompiles()
 			.prepare_test(alice, collection_address, PrecompileCall::evolve { token_id, token_uri })
@@ -262,7 +264,7 @@ fn evolve_generates_log() {
 		let alice = H160::from_str(ALICE).unwrap();
 		let collection_address = create_collection(alice);
 		let token_uri: UnboundedString = Vec::new().into();
-		let token_id = mint(alice, collection_address, 0, token_uri.clone());
+		let token_id = mint(alice, collection_address, 0.try_into().unwrap(), token_uri.clone());
 
 		let mut token_id_bytes = [0u8; 32];
 		token_id.to_big_endian(&mut token_id_bytes);
@@ -453,7 +455,7 @@ fn expected_cost_mint_with_external_uri() {
 				collection_address,
 				PrecompileCall::mint {
 					to: Address(owner.into()),
-					slot: 9,
+					slot: 9.try_into().unwrap(),
 					token_uri: "ciao".into(),
 				},
 			)
@@ -467,11 +469,11 @@ fn expected_cost_evolve_with_external_uri() {
 	new_test_ext().execute_with(|| {
 		let alice = H160::from_str(ALICE).unwrap();
 		let collection_address = create_collection(alice);
-		let token_id = mint(alice, collection_address, 0, Vec::new().into());
+		let token_id = mint(alice, collection_address, 0.try_into().unwrap(), Vec::new().into());
 
 		// Expected weight of the precompile call implementation.
-		// Since benchmarking precompiles is not supported yet, we are benchmarking
-		// functions that precompile calls internally.
+		// Since benchmarking precompiles is not support.try_into().unwrap()ed yet, we are
+		// benchmarking functions that precompile calls internally.
 		//
 		// Following `cost` is calculated as:
 		// `evolve_with_external_uri` weight + log cost
