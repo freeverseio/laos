@@ -5,7 +5,6 @@ use crate::{
 };
 use fp_evm::ExitError;
 use frame_support::DefaultNoBound;
-use parity_scale_codec::Encode;
 use precompile_utils::prelude::{
 	revert, Address, DiscriminantResult, EvmResult, PrecompileHandle, RuntimeHelper,
 };
@@ -44,11 +43,11 @@ where
 		collection_id: CollectionId,
 		handle: &mut impl PrecompileHandle,
 	) -> EvmResult<Address> {
-		if let Some(owner) = LaosEvolution::<R>::collection_owner(collection_id) {
+		if let Some(_owner) = LaosEvolution::<R>::collection_owner(collection_id) {
 			let weight = R::WeightInfo::precompile_owner();
 			handle.record_external_cost(Some(weight.ref_time()), Some(weight.proof_size()))?;
 
-			Ok(Address::default())
+			Ok(Address::default()) // TODO
 		} else {
 			Err(revert("collection does not exist"))
 		}
