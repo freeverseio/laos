@@ -7435,7 +7435,7 @@ dependencies = [
  "num_enum",
  "pallet-balances",
  "pallet-evm",
- "pallet-evm-evolution-collection-factory",
+ "pallet-evm-evolution-collection-factory-legacy",
  "pallet-laos-evolution",
  "pallet-timestamp",
  "parity-scale-codec",

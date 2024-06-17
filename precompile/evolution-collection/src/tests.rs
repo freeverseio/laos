@@ -4,7 +4,6 @@ use fp_evm::PrecompileSet;
 use mock::*;
 use pallet_laos_evolution::TokenId;
 use precompile_utils::testing::*;
-use scale_info::prelude::string::String;
 use solidity::codec::Writer;
 use sp_core::{H160, U256};
 use std::str::FromStr;
