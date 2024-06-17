@@ -6,10 +6,11 @@ use crate::{
 use fp_evm::ExitError;
 use frame_support::DefaultNoBound;
 use precompile_utils::prelude::{
-	revert, Address, DiscriminantResult, EvmResult, PrecompileHandle, RuntimeHelper,
+	revert, Address, DiscriminantResult, EvmResult, PrecompileHandle, 
 };
 use sp_core::H160;
 use sp_runtime::traits::PhantomData;
+use parity_scale_codec::Encode;
 
 #[derive(Clone, DefaultNoBound)]
 pub struct EvolutionCollectionPrecompileSet<R>(PhantomData<R>);
@@ -25,7 +26,7 @@ impl<R> EvolutionCollectionPrecompileSet<R> {
 impl<R> EvolutionCollectionPrecompileSet<R>
 where
 	R: crate::Config,
-	// R::AccountId: From<H160> + Into<H160> + Encode,
+	R::AccountId: From<H160> + Into<H160> + Encode,
 {
 	#[precompile::discriminant]
 	fn discriminant(address: H160, gas: u64) -> DiscriminantResult<CollectionId> {
@@ -42,11 +43,11 @@ where
 		collection_id: CollectionId,
 		handle: &mut impl PrecompileHandle,
 	) -> EvmResult<Address> {
-		if let Some(_owner) = LaosEvolution::<R>::collection_owner(collection_id) {
+		if let Some(owner) = LaosEvolution::<R>::collection_owner(collection_id) {
 			let weight = R::WeightInfo::precompile_owner();
 			handle.record_external_cost(Some(weight.ref_time()), Some(weight.proof_size()))?;
 
-			Ok(Address::default()) // TODO
+			Ok(Address(owner.into())) 
 		} else {
 			Err(revert("collection does not exist"))
 		}
