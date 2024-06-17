@@ -304,6 +304,21 @@ where
 		handle.record_cost(consumed_gas)?;
 		Ok(is_enabled)
 	}
+
+	#[precompile::public("tokenURI()")]
+	#[precompile::view]
+	fn token_uri(
+		collection_id: CollectionId,
+		_handle: &mut impl PrecompileHandle,
+		token_id: U256,
+	) -> EvmResult<Vec<u8>> {
+		if let Some(token_uri) = LaosEvolution::<R>::token_uri(collection_id, token_id) {
+            
+			Ok(token_uri.into_inner())
+		} else {
+			Err(revert("asset does not exist"))
+		}
+	}
 }
 
 #[cfg(test)]

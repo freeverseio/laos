@@ -64,14 +64,15 @@ fn mint(
 
 #[test]
 fn selectors() {
+	println!("Selectors: {:?}", PrecompileCall::mint_selectors());
 	assert!(PrecompileCall::owner_selectors().contains(&0x8DA5CB5B));
-	assert!(PrecompileCall::mint_selectors().contains(&0xFD024566));
+	assert!(PrecompileCall::mint_selectors().contains(&0xFAB462EA));
 	assert!(PrecompileCall::evolve_selectors().contains(&0x2FD38F4D));
 	assert!(PrecompileCall::is_public_minting_enabled_selectors().contains(&0x441F06AC));
 	assert!(PrecompileCall::enable_public_minting_selectors().contains(&0xF7BEB98A));
 	assert!(PrecompileCall::disable_public_minting_selectors().contains(&0x9190AD47));
 	assert!(PrecompileCall::transfer_ownership_selectors().contains(&0xF2FDE38B));
-	// 	assert_eq!(Action::TokenURI as u32, 0xC87B56DD);
+	assert!(PrecompileCall::token_uri_selectors().contains(&0x3C130D90));
 }
 
 #[test]
@@ -216,36 +217,46 @@ fn when_mint_reverts_should_return_error() {
 			});
 	});
 }
-// #[test]
-// fn token_uri_reverts_when_asset_does_not_exist() {
-// 	new_test_ext().execute_with(|| {
-// 		let alice = H160::from_str(ALICE).unwrap();
-// 		let collection_address = create_collection(alice);
 
-// 		let input = EvmDataWriter::new_with_selector(Action::TokenURI)
-// 			.write(TokenId::from(0))
-// 			.build();
+#[test]
+fn token_uri_reverts_when_asset_does_not_exist() {
+    new_test_ext().execute_with(|| {
+        let alice = H160::from_str(ALICE).unwrap();
+        let collection_address = create_collection(alice);
 
-// 		precompiles()
-// 			.prepare_test(alice, collection_address, input)
-// 			.execute_reverts(|r| r == b"asset does not exist");
-// 	});
-// }
 
-// #[test]
-// fn token_uri_returns_the_result_from_source() {
-// 	new_test_ext().execute_with(|| {
-// 		let alice = H160::from_str(ALICE).unwrap();
-// 		let collection_address = create_collection(alice);
-// 		let token_id = mint(alice, collection_address, 0, Vec::new());
+        let mut handle = MockHandle::new(
+            Precompile1.into(),
+            Context { address: Precompile1.into(), caller: alice, apparent_value: U256::zero() },
+        );
+        handle.input = PrecompileCall::token_uri { token_id: TokenId::from(0) }.into();
 
-// 		let input = EvmDataWriter::new_with_selector(Action::TokenURI).write(token_id).build();
 
-// 		precompiles()
-// 			.prepare_test(alice, collection_address, input)
-// 			.execute_returns(BoundedBytes::<MaxTokenUriLength>::from(Vec::new()));
-// 	});
-// }
+        let res = precompiles().prepare_test(alice, collection_address, handle.input).execute_reverts(|r| r == b"asset does not exist");
+
+    });
+}
+
+#[test]
+fn token_uri_returns_the_result_from_source() {
+    new_test_ext().execute_with(|| {
+        let alice = H160::from_str(ALICE).unwrap();
+        let collection_address = create_collection(alice);
+        let token_uri: Vec<u8> = "ciao".into();
+        let token_id = mint(alice, collection_address, 0, token_uri.clone().into());
+
+        let mut handle = MockHandle::new(
+            Precompile1.into(),
+            Context { address: Precompile1.into(), caller: alice, apparent_value: U256::zero() },
+        );
+        handle.input = PrecompileCall::token_uri { token_id: token_id }.into();
+
+        precompiles()
+            .prepare_test(alice, collection_address, handle.input)
+            .execute_returns(token_uri);
+    });
+}
+
 
 #[test]
 fn evolve_a_minted_asset_works() {
