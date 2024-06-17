@@ -208,11 +208,7 @@ fn when_mint_reverts_should_return_error() {
 				collection_address,
 				PrecompileCall::mint { to: Address(to.into()), slot, token_uri },
 			)
-			.execute_reverts(|r: &[u8]| {
-				// TODO use TryDispatchError::Module
-				let expected_error_message = "Dispatched call failed with error: Module(ModuleError { index: 1, error: [2, 0, 0, 0], message: Some(\"AlreadyMinted\") })";
-				r == expected_error_message.as_bytes()
-			});
+			.execute_reverts(|r| r == b"AlreadyMinted");
 	});
 }
 
@@ -297,11 +293,7 @@ fn when_evolve_reverts_should_return_error() {
 
 		precompiles()
 			.prepare_test(alice, collection_address, PrecompileCall::evolve { token_id, token_uri })
-			.execute_reverts(|r: &[u8]| {
-				// TODO use TryDispatchError::Module
-				let expected_error_message = "Dispatched call failed with error: Module(ModuleError { index: 1, error: [4, 0, 0, 0], message: Some(\"AssetDoesNotExist\") })";
-				r == expected_error_message.as_bytes()
-			});
+			.execute_reverts(|r| r == b"AssetDoesNotExist");
 	});
 }
 
@@ -329,11 +321,7 @@ fn when_enable_public_minting_reverts_should_return_error() {
 
 		precompiles()
 			.prepare_test(Bob, collection_address, PrecompileCall::enable_public_minting {})
-			.execute_reverts(|r: &[u8]| {
-				// TODO use TryDispatchError::Module
-				let expected_error_message = "Dispatched call failed with error: Module(ModuleError { index: 1, error: [1, 0, 0, 0], message: Some(\"NoPermission\") })";
-				r == expected_error_message.as_bytes()
-			});
+			.execute_reverts(|r| r == b"NoPermission");
 	})
 }
 
@@ -358,13 +346,9 @@ fn when_disable_public_minting_reverts_should_return_error() {
 	new_test_ext().execute_with(|| {
 		let alice = H160::from_str(ALICE).unwrap();
 		let collection_address = create_collection(alice);
-				precompiles()
+		precompiles()
 			.prepare_test(Bob, collection_address, PrecompileCall::disable_public_minting {})
-			.execute_reverts(|r: &[u8]| {
-				// TODO use TryDispatchError::Module
-				let expected_error_message = "Dispatched call failed with error: Module(ModuleError { index: 1, error: [1, 0, 0, 0], message: Some(\"NoPermission\") })";
-				r == expected_error_message.as_bytes()
-			});
+			.execute_reverts(|r| r == b"NoPermission");
 	})
 }
 
@@ -536,11 +520,7 @@ fn non_existent_collection_cannot_be_transferred() {
 				non_existing_collection_address,
 				PrecompileCall::transfer_ownership { to: bob.into() },
 			)
-			.execute_reverts(|r: &[u8]| {
-				// TODO use TryDispatchError::Module
-				let expected_error_message = "Dispatched call failed with error: Module(ModuleError { index: 1, error: [0, 0, 0, 0], message: Some(\"CollectionDoesNotExist\") })";
-				r == expected_error_message.as_bytes()
-			});
+			.execute_reverts(|r| r == b"CollectionDoesNotExist");
 	})
 }
 
@@ -558,11 +538,7 @@ fn non_owner_cannot_transfer_collection_ownership() {
 				collection_address,
 				PrecompileCall::transfer_ownership { to: alice.into() },
 			)
-			.execute_reverts(|r: &[u8]| {
-				// TODO use TryDispatchError::Module
-				let expected_error_message = "Dispatched call failed with error: Module(ModuleError { index: 1, error: [1, 0, 0, 0], message: Some(\"NoPermission\") })";
-				r == expected_error_message.as_bytes()
-			});
+			.execute_reverts(|r| r == b"NoPermission");
 	});
 }
 

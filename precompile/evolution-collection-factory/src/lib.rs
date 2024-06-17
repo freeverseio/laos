@@ -27,12 +27,11 @@ use pallet_laos_evolution::{
 	Pallet as LaosEvolution,
 };
 use parity_scale_codec::Encode;
-use precompile_utils::{
-	prelude::{keccak256, log2, solidity, Address, EvmResult, LogExt, PrecompileHandle},
-	substrate::TryDispatchError,
+use precompile_utils::prelude::{
+	keccak256, log2, revert, solidity, Address, EvmResult, LogExt, PrecompileHandle,
 };
 use sp_core::{Get, H160};
-use sp_runtime::traits::PhantomData;
+use sp_runtime::{traits::PhantomData, DispatchError};
 
 /// Solidity selector of the CreateCollection log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_NEW_COLLECTION: [u8; 32] = keccak256!("NewCollection(address,address)");
@@ -104,8 +103,17 @@ where
 
 				Ok(Address(collection_address))
 			},
-			Err(err) => Err(TryDispatchError::Substrate(err).into()),
+			Err(err) => Err(revert(convert_dispatch_error_to_string(err))),
 		}
+	}
+}
+
+fn convert_dispatch_error_to_string(err: DispatchError) -> String {
+	match err {
+		DispatchError::Module(mod_err) => {
+			mod_err.message.unwrap_or_else(|| "Unknown module error").into()
+		},
+		_ => format!("{:?}", err),
 	}
 }
 

@@ -16,10 +16,9 @@ use precompile_utils::{
 		RuntimeHelper,
 	},
 	solidity::{self, codec::UnboundedString},
-	substrate::TryDispatchError,
 };
 use sp_core::{H160, U256};
-use sp_runtime::{traits::PhantomData, BoundedVec};
+use sp_runtime::{traits::PhantomData, BoundedVec, DispatchError};
 
 /// Solidity selector of the MintedWithExternalURI log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
@@ -119,7 +118,7 @@ where
 					handle.context().address,
 					SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI,
 					to,
-					solidity::encode_event_data((slot, token_id, token_uri)), // TODO token_uri_bounded
+					solidity::encode_event_data((slot, token_id, token_uri)), /* TODO token_uri_bounded */
 				)
 				.record(handle)?;
 
@@ -134,7 +133,7 @@ where
 
 				Ok(token_id)
 			},
-			Err(err) => Err(TryDispatchError::Substrate(err).into()),
+			Err(err) => Err(revert(convert_dispatch_error_to_string(err))),
 		}
 	}
 
@@ -186,7 +185,7 @@ where
 
 				Ok(())
 			},
-			Err(err) => Err(TryDispatchError::Substrate(err).into()),
+			Err(err) => Err(revert(convert_dispatch_error_to_string(err))),
 		}
 	}
 
@@ -202,7 +201,7 @@ where
 			to.into(),
 			collection_id,
 		)
-		.map_err(|err| TryDispatchError::Substrate(err))?;
+		.map_err(|err| revert(convert_dispatch_error_to_string(err)))?;
 
 		let consumed_weight = LaosEvolutionWeights::<R>::transfer_ownership();
 
@@ -255,7 +254,7 @@ where
 
 				Ok(())
 			},
-			Err(err) => Err(TryDispatchError::Substrate(err).into()),
+			Err(err) => Err(revert(convert_dispatch_error_to_string(err))),
 		}
 	}
 
@@ -289,7 +288,7 @@ where
 
 				Ok(())
 			},
-			Err(err) => Err(TryDispatchError::Substrate(err).into()),
+			Err(err) => Err(revert(convert_dispatch_error_to_string(err))),
 		}
 	}
 
@@ -317,6 +316,14 @@ where
 		} else {
 			Err(revert("asset does not exist"))
 		}
+	}
+}
+
+fn convert_dispatch_error_to_string(err: DispatchError) -> String {
+	match err {
+		DispatchError::Module(mod_err) =>
+			mod_err.message.unwrap_or_else(|| "Unknown module error").into(),
+		_ => format!("{:?}", err),
 	}
 }
 
