@@ -30,6 +30,7 @@ use parity_scale_codec::Encode;
 use precompile_utils::prelude::{
 	keccak256, log2, revert, solidity, Address, EvmResult, LogExt, PrecompileHandle,
 };
+use scale_info::prelude::{format, string::String};
 use sp_core::{Get, H160};
 use sp_runtime::{traits::PhantomData, DispatchError};
 

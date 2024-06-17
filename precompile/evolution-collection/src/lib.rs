@@ -17,6 +17,7 @@ use precompile_utils::{
 	},
 	solidity::{self, codec::UnboundedString},
 };
+use scale_info::prelude::{format, string::String};
 use sp_core::{H160, U256};
 use sp_runtime::{traits::PhantomData, BoundedVec, DispatchError};
 
