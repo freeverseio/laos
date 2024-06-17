@@ -118,10 +118,9 @@ impl Codec for Slot {
 	}
 }
 
-
 /// This is a legacy type that is used for compatibility with the legacy Laos EVM Pallets
 /// used in Klaos runtime.
-/// 
+///
 /// NOTE: remove once the legacy pallets are removed
 pub struct LegacySlot(pub Slot);
 

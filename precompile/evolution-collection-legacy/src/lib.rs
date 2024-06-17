@@ -26,7 +26,7 @@ use pallet_laos_evolution::{
 	address_to_collection_id,
 	traits::EvolutionCollection as EvolutionCollectionT,
 	weights::{SubstrateWeight as LaosEvolutionWeights, WeightInfo},
-	LegacySlot, Pallet as LaosEvolution, Slot, TokenId, TokenUriOf,
+	LegacySlot, Pallet as LaosEvolution, TokenId, TokenUriOf,
 };
 use parity_scale_codec::Encode;
 use precompile_utils::solidity::revert::revert;
