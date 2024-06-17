@@ -305,16 +305,15 @@ where
 		Ok(is_enabled)
 	}
 
-	#[precompile::public("tokenURI()")]
+	#[precompile::public("tokenURI(uint256)")]
 	#[precompile::view]
 	fn token_uri(
 		collection_id: CollectionId,
 		_handle: &mut impl PrecompileHandle,
 		token_id: U256,
-	) -> EvmResult<Vec<u8>> {
+	) -> EvmResult<UnboundedString> {
 		if let Some(token_uri) = LaosEvolution::<R>::token_uri(collection_id, token_id) {
-            
-			Ok(token_uri.into_inner())
+			Ok(token_uri.to_vec().into())
 		} else {
 			Err(revert("asset does not exist"))
 		}

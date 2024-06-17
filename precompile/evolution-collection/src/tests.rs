@@ -1,12 +1,11 @@
 use super::*;
 use evm::Context;
-use fp_evm::{Precompile, PrecompileSet};
+use fp_evm::PrecompileSet;
 use mock::*;
 use pallet_laos_evolution::TokenId;
 use precompile_utils::testing::*;
-use solidity::codec::{UnboundedBytes, Writer};
-use sp_core::{H160, H256, U256};
-use sp_runtime::DispatchError;
+use solidity::codec::Writer;
+use sp_core::{H160, U256};
 use std::str::FromStr;
 
 const ALICE: &str = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
@@ -64,7 +63,6 @@ fn mint(
 
 #[test]
 fn selectors() {
-	println!("Selectors: {:?}", PrecompileCall::mint_selectors());
 	assert!(PrecompileCall::owner_selectors().contains(&0x8DA5CB5B));
 	assert!(PrecompileCall::mint_selectors().contains(&0xFAB462EA));
 	assert!(PrecompileCall::evolve_selectors().contains(&0x2FD38F4D));
@@ -72,7 +70,7 @@ fn selectors() {
 	assert!(PrecompileCall::enable_public_minting_selectors().contains(&0xF7BEB98A));
 	assert!(PrecompileCall::disable_public_minting_selectors().contains(&0x9190AD47));
 	assert!(PrecompileCall::transfer_ownership_selectors().contains(&0xF2FDE38B));
-	assert!(PrecompileCall::token_uri_selectors().contains(&0x3C130D90));
+	assert!(PrecompileCall::token_uri_selectors().contains(&0xC87B56DD));
 }
 
 #[test]
@@ -220,43 +218,33 @@ fn when_mint_reverts_should_return_error() {
 
 #[test]
 fn token_uri_reverts_when_asset_does_not_exist() {
-    new_test_ext().execute_with(|| {
-        let alice = H160::from_str(ALICE).unwrap();
-        let collection_address = create_collection(alice);
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let collection_address = create_collection(alice);
 
-
-        let mut handle = MockHandle::new(
-            Precompile1.into(),
-            Context { address: Precompile1.into(), caller: alice, apparent_value: U256::zero() },
-        );
-        handle.input = PrecompileCall::token_uri { token_id: TokenId::from(0) }.into();
-
-
-        let res = precompiles().prepare_test(alice, collection_address, handle.input).execute_reverts(|r| r == b"asset does not exist");
-
-    });
+		precompiles()
+			.prepare_test(
+				alice,
+				collection_address,
+				PrecompileCall::token_uri { token_id: TokenId::from(0) },
+			)
+			.execute_reverts(|r| r == b"asset does not exist");
+	});
 }
 
 #[test]
 fn token_uri_returns_the_result_from_source() {
-    new_test_ext().execute_with(|| {
-        let alice = H160::from_str(ALICE).unwrap();
-        let collection_address = create_collection(alice);
-        let token_uri: Vec<u8> = "ciao".into();
-        let token_id = mint(alice, collection_address, 0, token_uri.clone().into());
+	new_test_ext().execute_with(|| {
+		let alice = H160::from_str(ALICE).unwrap();
+		let collection_address = create_collection(alice);
+		let token_uri: UnboundedString = "ciao".into();
+		let token_id = mint(alice, collection_address, 0, token_uri.clone().into());
 
-        let mut handle = MockHandle::new(
-            Precompile1.into(),
-            Context { address: Precompile1.into(), caller: alice, apparent_value: U256::zero() },
-        );
-        handle.input = PrecompileCall::token_uri { token_id: token_id }.into();
-
-        precompiles()
-            .prepare_test(alice, collection_address, handle.input)
-            .execute_returns(token_uri);
-    });
+		precompiles()
+			.prepare_test(alice, collection_address, PrecompileCall::token_uri { token_id })
+			.execute_returns(token_uri);
+	});
 }
-
 
 #[test]
 fn evolve_a_minted_asset_works() {
