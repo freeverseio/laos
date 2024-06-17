@@ -100,7 +100,7 @@ mod benchmarks {
 
 		#[block]
 		{
-			EvolutionCollectionPrecompileSet::<T>::owner(collection_id, &mut handle).unwrap();
+			EvolutionCollectionPrecompileSet::<T>::owner(collection_id, &mut handle);
 		}
 	}
 

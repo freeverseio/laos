@@ -37,6 +37,7 @@ where
 		}
 	}
 
+	// #[pallet::weight(<T as Config>::WeightInfo::schedule_leave_candidates(*candidate_count))]
 	#[precompile::public("owner()")]
 	#[precompile::view]
 	pub fn owner(
@@ -44,7 +45,7 @@ where
 		handle: &mut impl PrecompileHandle,
 	) -> EvmResult<Address> {
 		if let Some(owner) = LaosEvolution::<R>::collection_owner(collection_id) {
-			let weight = R::WeightInfo::create_collection();
+			let weight = R::WeightInfo::precompile_owner();
 			handle.record_external_cost(Some(weight.ref_time()), Some(weight.proof_size()))?;
 
 			Ok(Address::default())
