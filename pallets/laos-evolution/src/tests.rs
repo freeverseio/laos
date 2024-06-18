@@ -24,7 +24,6 @@ use crate::{
 	CollectionId, Error, Event,
 };
 use frame_support::{assert_noop, assert_ok, assert_storage_noop};
-use parity_scale_codec::Encode;
 use sp_core::{H160, U256};
 
 const ALICE: &str = "0x0000000000000000000000000000000000000005";
@@ -154,6 +153,17 @@ fn transfer_collection_emits_event() {
 }
 
 #[test]
+fn slot_and_owner_to_token_id_works() {
+	let slot = Slot::MAX_SLOT;
+	let owner = AccountId::from_str("0x8000000000000000000000000000000000000001").unwrap();
+	let token_id = slot_and_owner_to_token_id(slot, owner).unwrap();
+	assert_eq!(
+		format!("0x{:064x}", token_id),
+		"0xffffffffffffffffffffffff8000000000000000000000000000000000000001"
+	);
+}
+
+#[test]
 fn mint_with_external_uri_works() {
 	new_test_ext().execute_with(|| {
 		System::set_block_number(1);
@@ -172,29 +182,13 @@ fn mint_with_external_uri_works() {
 			token_uri.clone()
 		));
 
-		let expected_token_id = {
-			let mut buf = [0u8; 32];
-			buf[..12].copy_from_slice(&slot.as_u128().to_be_bytes()[4..]);
-			let owner_bytes = owner.encode();
-			buf[12..].copy_from_slice(&owner_bytes[..]);
-
-			TokenId::from(buf)
-		};
-
 		let token_id = slot_and_owner_to_token_id(slot, owner).unwrap();
 
-		assert_eq!(token_id, expected_token_id);
 		assert_eq!(LaosEvolution::token_uri(collection_id, token_id), Some(token_uri.clone()));
 
 		System::assert_has_event(
-			Event::MintedWithExternalURI {
-				collection_id,
-				slot,
-				to: owner,
-				token_id: expected_token_id,
-				token_uri,
-			}
-			.into(),
+			Event::MintedWithExternalURI { collection_id, slot, to: owner, token_id, token_uri }
+				.into(),
 		);
 	});
 }
