@@ -27,3 +27,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_DESCRIPTION.PUBLISH_LABELS: false
           PR_DESCRIPTION.KEEP_ORIGINAL_USER_TITLE: false
+          PR_DESCRIPTION.GENERATE_AI_TITLE: true
