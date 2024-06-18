@@ -55,7 +55,6 @@ where
 {
 	#[precompile::discriminant]
 	fn discriminant(address: H160, _gas: u64) -> DiscriminantResult<CollectionId> {
-		// TODO maybe here we could avoid the extra_cost calculation cause there's no db read
 		let no_cost = 0;
 		match address_to_collection_id(address) {
 			Ok(id) => DiscriminantResult::Some(id, no_cost),
