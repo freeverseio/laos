@@ -32,6 +32,7 @@ pallet-evm-evolution-collection-factory = { workspace = true }
 evm = { workspace = true }
 pallet-balances = { workspace = true, features = ["std", "insecure_zero_ed"] }
 pallet-timestamp = { workspace = true }
+hex = { workspace = true }
 
 [features]
 default = ["std"]

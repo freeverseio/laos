@@ -7589,6 +7589,7 @@ dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
+ "hex",
  "laos-precompile-utils",
  "pallet-balances",
  "pallet-evm",
