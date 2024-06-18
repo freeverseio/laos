@@ -21,7 +21,6 @@ jobs:
           echo "COMMENTER=$COMMENTER" >> $GITHUB_ENV
           echo "Commenter is $COMMENTER"
       - name: Run if Commenter
-        if: env.COMMENTER != ''
         uses: Codium-ai/pr-agent@v0.22
         env:
           OPENAI_KEY: ${{ secrets.OPENAI_API_KEY }}
