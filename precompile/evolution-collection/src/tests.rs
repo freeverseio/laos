@@ -15,7 +15,6 @@
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 //! Living assets precompile tests.
-//!
 use super::*;
 use evm::Context;
 use fp_evm::PrecompileSet;
