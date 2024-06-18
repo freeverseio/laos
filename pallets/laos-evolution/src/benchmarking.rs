@@ -18,7 +18,7 @@
 #![cfg(feature = "runtime-benchmarks")]
 use super::*;
 
-use crate::precompiles::EvolutionCollectionPrecompileSet;
+use crate::precompiles::evolution_collection::EvolutionCollectionPrecompileSet;
 #[allow(unused)]
 use crate::Pallet as LaosEvolution;
 use fp_evm::Transfer;

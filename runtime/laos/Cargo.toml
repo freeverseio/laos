@@ -265,5 +265,3 @@ try-runtime = [
 	"pallet-proxy/try-runtime",
 	"pallet-utility/try-runtime",
 ]
-
-fast-runtime = []

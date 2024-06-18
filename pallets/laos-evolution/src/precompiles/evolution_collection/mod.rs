@@ -1,5 +1,3 @@
-#![cfg_attr(not(feature = "std"), no_std)]
-
 use crate::{
 	address_to_collection_id,
 	traits::EvolutionCollection,
