@@ -142,8 +142,6 @@ pub mod pallet {
 		NoPermission,
 		/// [`Slot`] is already minted
 		AlreadyMinted,
-		/// This happens when `Slot` is larger than 96 bits
-		SlotOverflow,
 		/// Asset does not exist
 		AssetDoesNotExist,
 	}
@@ -196,8 +194,7 @@ impl<T: Config> EvolutionCollection<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T>
 
 		let to_as_h160 = T::AccountIdToH160::convert(to.clone());
 		// compose asset_id	from slot and owner
-		let token_id =
-			slot_and_owner_to_token_id(slot, to_as_h160).ok_or(Error::<T>::SlotOverflow)?;
+		let token_id = slot_and_owner_to_token_id(slot, to_as_h160);
 
 		ensure!(TokenURI::<T>::get(collection_id, token_id).is_none(), Error::<T>::AlreadyMinted);
 
@@ -294,19 +291,18 @@ impl<T: Config> EvolutionCollection<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T>
 /// Every slot is identified by a unique `token_id` where `token_id = concat(slot #,
 /// owner_address)`
 ///
-/// Returns `None` if `Slot` is larger than 96 bits
-fn slot_and_owner_to_token_id(slot: Slot, owner: H160) -> Option<TokenId> {
+/// Returns `Slot`
+fn slot_and_owner_to_token_id(slot: Slot, owner: H160) -> TokenId {
 	let mut bytes = [0u8; 32];
 
-	let slot_u128: u128 = slot.into();
-	let slot_bytes = slot_u128.to_be_bytes(); // TODO slot type returns this
+	let slot_bytes = slot.to_be_bytes();
 
-	// Copy the last 12 bytes of the slot into the first 12 bytes of the array
-	bytes[..12].copy_from_slice(&slot_bytes[4..]);
+	// Copy the slot into the first 12 bytes of the array
+	bytes[..12].copy_from_slice(&slot_bytes);
 	// Copy the owner address bytes into the array
 	bytes[12..].copy_from_slice(&owner.0);
 
-	Some(TokenId::from(bytes)) // TODO there is no need to return Option
+	TokenId::from(bytes)
 }
 
 /// `ASSET_PRECOMPILE_ADDRESS_PREFIX` is a predefined prefix used to identify collection addresses.

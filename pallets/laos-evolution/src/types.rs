@@ -66,6 +66,14 @@ impl Slot {
 	pub fn new(bytes: [u8; 12]) -> Self {
 		Slot(bytes)
 	}
+
+	pub fn to_be_bytes(&self) -> [u8; 12] {
+		let mut bytes = [0u8; 12];
+		let slot_u128: u128 = (*self).into();
+		let slot_bytes = slot_u128.to_be_bytes();
+		bytes.copy_from_slice(&slot_bytes[4..]); // Copy the last 12 bytes
+		bytes
+	}
 }
 
 impl TryFrom<u128> for Slot {
