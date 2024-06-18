@@ -298,10 +298,12 @@ impl<T: Config> EvolutionCollection<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T>
 fn slot_and_owner_to_token_id(slot: Slot, owner: H160) -> Option<TokenId> {
 	let mut bytes = [0u8; 32];
 
-	let slot_bytes = slot.as_u128().to_be_bytes(); // TODO slot type returns this
+	let slot_u128: u128 = slot.into();
+	let slot_bytes = slot_u128.to_be_bytes(); // TODO slot type returns this
 
-	// we also use the last 12 bytes of the slot, since the first 4 bytes are always 0
+	// Copy the last 12 bytes of the slot into the first 12 bytes of the array
 	bytes[..12].copy_from_slice(&slot_bytes[4..]);
+	// Copy the owner address bytes into the array
 	bytes[12..].copy_from_slice(&owner.0);
 
 	Some(TokenId::from(bytes)) // TODO there is no need to return Option

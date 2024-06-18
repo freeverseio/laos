@@ -66,12 +66,6 @@ impl Slot {
 	pub fn new(bytes: [u8; 12]) -> Self {
 		Slot(bytes)
 	}
-
-	pub fn as_u128(&self) -> u128 {
-		let mut bytes = [0u8; 16];
-		bytes[4..].copy_from_slice(&self.0);
-		u128::from_be_bytes(bytes)
-	}
 }
 
 impl TryFrom<u128> for Slot {
