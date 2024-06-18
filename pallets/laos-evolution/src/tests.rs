@@ -161,7 +161,7 @@ fn mint_with_external_uri_works() {
 		let collection_id = create_collection(ALICE);
 		let token_uri: TokenUriOf<Test> =
 			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
-		let slot = 0u128.try_into().unwrap();
+		let slot = Slot::try_from(0).unwrap();
 		let owner = AccountId::from_str(ALICE).unwrap();
 
 		assert_ok!(LaosEvolution::mint_with_external_uri(
@@ -210,19 +210,19 @@ fn slot_and_owner_to_asset_id_works() {
 	}
 
 	check_token_id(
-		0_u128.try_into().unwrap(),
+		Slot::try_from(0).unwrap(),
 		"0x0000000000000000000000000000000000000000",
 		"0x0000000000000000000000000000000000000000000000000000000000000000",
 	);
 
 	check_token_id(
-		1_u128.try_into().unwrap(),
+		Slot::try_from(1).unwrap(),
 		"0x0000000000000000000000000000000000000000",
 		"0x0000000000000000000000010000000000000000000000000000000000000000",
 	);
 
 	check_token_id(
-		1_u128.try_into().unwrap(),
+		Slot::try_from(1).unwrap(),
 		"0xe00000000000000000000000000000000000000f",
 		"0x000000000000000000000001e00000000000000000000000000000000000000f",
 	);
@@ -346,7 +346,7 @@ fn token_uri_of_existent_token_returns_correct_token_uri() {
 	new_test_ext().execute_with(|| {
 		let who = AccountId::from_str(ALICE).unwrap();
 		let collection_id = create_collection(ALICE);
-		let slot = 1.try_into().unwrap();
+		let slot = Slot::try_from(1).unwrap();
 		let to = AccountId::from_str(BOB).unwrap();
 		let token_uri: TokenUriOf<Test> =
 			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
@@ -363,7 +363,7 @@ fn evolve_with_external_uri_when_unexistent_collection_id_should_fail() {
 	new_test_ext().execute_with(|| {
 		let who = AccountId::from_str(ALICE).unwrap();
 		let collection_id = LaosEvolution::collection_counter();
-		let slot = 0.try_into().unwrap();
+		let slot = Slot::try_from(0).unwrap();
 		let owner = AccountId::from_str(ALICE).unwrap();
 		let token_id = slot_and_owner_to_token_id(slot, owner).unwrap();
 		let new_token_uri: TokenUriOf<Test> =
@@ -382,7 +382,7 @@ fn evolve_with_external_uri_when_sender_is_not_collection_owner_should_fail() {
 		let who = AccountId::from_str(ALICE).unwrap();
 		let owner = AccountId::from_str(BOB).unwrap();
 		let collection_id = create_collection(BOB);
-		let slot = 0.try_into().unwrap();
+		let slot = Slot::try_from(0).unwrap();
 		let token_id = slot_and_owner_to_token_id(slot, owner).unwrap();
 		let new_token_uri: TokenUriOf<Test> =
 			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
@@ -400,7 +400,7 @@ fn evolve_with_external_uri_when_asset_doesnt_exist_should_fail() {
 		let who = AccountId::from_str(ALICE).unwrap();
 		let owner = AccountId::from_str(BOB).unwrap();
 		let collection_id = create_collection(ALICE);
-		let slot = 0.try_into().unwrap();
+		let slot = Slot::try_from(0).unwrap();
 		let token_id = slot_and_owner_to_token_id(slot, owner).unwrap();
 		let new_token_uri: TokenUriOf<Test> =
 			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
@@ -419,7 +419,7 @@ fn evolve_with_external_uri_happy_path() {
 
 		let owner = AccountId::from_str(BOB).unwrap();
 		let collection_id = create_collection(BOB);
-		let slot = 0.try_into().unwrap();
+		let slot = Slot::try_from(0).unwrap();
 		let token_id = slot_and_owner_to_token_id(slot, owner).unwrap();
 		let token_uri: TokenUriOf<Test> =
 			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
