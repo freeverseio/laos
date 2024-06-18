@@ -118,5 +118,5 @@ fn convert_dispatch_error_to_string(err: DispatchError) -> String {
 
 #[cfg(test)]
 mod mock;
-// #[cfg(test)]
-// mod tests;
+#[cfg(test)]
+mod tests;
