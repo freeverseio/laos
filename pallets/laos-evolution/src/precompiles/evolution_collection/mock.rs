@@ -16,14 +16,14 @@
 
 use core::str::FromStr;
 
-use crate::precompiles::evolution_collection::{EvolutionCollectionPrecompileSet, EvolutionCollectionPrecompileSetCall};
+use super::{EvolutionCollectionPrecompileSet, EvolutionCollectionPrecompileSetCall};
 use crate as pallet_laos_evolution;
 
+use crate::precompiles::evolution_collection_factory::{
+	EvolutionCollectionFactoryPrecompile, EvolutionCollectionFactoryPrecompileCall,
+};
 use frame_support::{
 	derive_impl, parameter_types, traits::FindAuthor, weights::constants::RocksDbWeight,
-};
-use pallet_evm_evolution_collection_factory::{
-	EvolutionCollectionFactoryPrecompile, EvolutionCollectionFactoryPrecompileCall,
 };
 use pallet_laos_evolution::ASSET_PRECOMPILE_ADDRESS_PREFIX;
 use precompile_utils::precompile_set::{
@@ -157,7 +157,6 @@ impl pallet_evm::Config for Test {
 	type Timestamp = Timestamp;
 	type WeightInfo = ();
 }
-
 
 /// New Test Ext
 // Build genesis storage according to the mock runtime.
