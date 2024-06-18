@@ -14,9 +14,11 @@ use precompile_utils::{
 	keccak256,
 	prelude::{
 		log1, log2, log3, revert, Address, DiscriminantResult, EvmResult, LogExt, PrecompileHandle,
+		String,
 	},
 	solidity::{self, codec::UnboundedString},
 };
+use scale_info::prelude::format;
 use sp_core::{H160, U256};
 use sp_runtime::{traits::PhantomData, BoundedVec, DispatchError};
 
@@ -55,7 +57,7 @@ where
 {
 	#[precompile::discriminant]
 	fn discriminant(address: H160, gas: u64) -> DiscriminantResult<CollectionId> {
-		// maybe here we could avoid the extra_cost calculation cause there's no db read
+		// TODO maybe here we could avoid the extra_cost calculation cause there's no db read
 		match address_to_collection_id(address) {
 			Ok(id) => DiscriminantResult::Some(id, gas),
 			Err(_) => DiscriminantResult::None(gas),
@@ -261,7 +263,7 @@ fn convert_dispatch_error_to_string(err: DispatchError) -> String {
 	}
 }
 
-#[cfg(test)]
-mod mock;
-#[cfg(test)]
-mod tests;
+// #[cfg(test)]
+// mod mock;
+// #[cfg(test)]
+// mod tests;

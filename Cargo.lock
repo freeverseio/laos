@@ -7584,12 +7584,16 @@ dependencies = [
 name = "pallet-laos-evolution"
 version = "4.0.0-dev"
 dependencies = [
+ "evm",
  "fp-evm",
  "frame-benchmarking",
  "frame-support",
  "frame-system",
  "laos-precompile-utils",
+ "pallet-balances",
  "pallet-evm",
+ "pallet-evm-evolution-collection-factory",
+ "pallet-timestamp",
  "parity-scale-codec",
  "precompile-utils",
  "scale-info",
