@@ -26,7 +26,6 @@ use scale_info::{prelude::string::String, TypeInfo};
 use serde::{Deserialize, Serialize};
 use sp_core::U256;
 use sp_runtime::{BoundedVec, RuntimeDebug};
-use sp_std::fmt;
 
 /// Collection id type
 pub type CollectionId = u64;
@@ -76,11 +75,11 @@ impl Slot {
 }
 
 impl TryFrom<u128> for Slot {
-	type Error = SlotError;
+	type Error = &'static str;
 
 	fn try_from(value: u128) -> Result<Self, Self::Error> {
 		if value > ((1u128 << 96) - 1) {
-			Err(SlotError::Exceeds96BitLimit)
+			Err("Value exceeds 96-bit limit")
 		} else {
 			let bytes = value.to_be_bytes();
 			Ok(Slot(bytes[4..].try_into().unwrap()))
@@ -116,21 +115,6 @@ impl Codec for Slot {
 		String::from("uint96")
 	}
 }
-
-#[derive(Debug, PartialEq)]
-pub enum SlotError {
-	Exceeds96BitLimit,
-}
-
-impl fmt::Display for SlotError {
-	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		match self {
-			SlotError::Exceeds96BitLimit => write!(f, "Value exceeds 96-bit limit"),
-		}
-	}
-}
-
-impl std::error::Error for SlotError {}
 
 /// This is a legacy type that is used for compatibility with the legacy Laos EVM Pallets
 /// used in Klaos runtime.
@@ -172,7 +156,7 @@ mod test {
 		let value = 1u128 << 100;
 		let result = Slot::try_from(value);
 		assert!(result.is_err());
-		assert_eq!(result.unwrap_err(), SlotError::Exceeds96BitLimit);
+		assert_eq!(result.unwrap_err(), "Value exceeds 96-bit limit");
 	}
 
 	#[test]
