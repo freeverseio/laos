@@ -82,7 +82,9 @@ impl TryFrom<u128> for Slot {
 			Err("Value exceeds 96-bit limit")
 		} else {
 			let bytes = value.to_be_bytes();
-			Ok(Slot(bytes[4..].try_into().unwrap()))
+			let slot_bytes: [u8; 12] =
+				bytes[4..].try_into().map_err(|_| "Slice conversion failed")?;
+			Ok(Slot(slot_bytes))
 		}
 	}
 }
