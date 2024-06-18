@@ -3,7 +3,8 @@ name: ChatGPT
 on:
   pull_request:
   issue_comment:
-  
+  workflow_dispatch:
+
 jobs:
   review:
     runs-on: ubuntu-latest
@@ -21,9 +22,10 @@ jobs:
           echo "Commenter is $COMMENTER"
       - name: Run if Commenter
         if: env.COMMENTER != ''
-        uses: Codium-ai/pr-agent@v0.12
+        uses: Codium-ai/pr-agent@v0.22
         env:
           OPENAI_KEY: ${{ secrets.OPENAI_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_DESCRIPTION.PUBLISH_LABELS: false
           PR_DESCRIPTION.KEEP_ORIGINAL_USER_TITLE: false
+          PR_DESCRIPTION.GENERATE_AI_TITLE: true
