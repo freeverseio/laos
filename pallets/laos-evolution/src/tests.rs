@@ -24,7 +24,6 @@ use crate::{
 	CollectionId, Error, Event,
 };
 use frame_support::{assert_noop, assert_ok, assert_storage_noop};
-use parity_scale_codec::Encode;
 use sp_core::{H160, U256};
 
 const ALICE: &str = "0x0000000000000000000000000000000000000005";
@@ -154,6 +153,17 @@ fn transfer_collection_emits_event() {
 }
 
 #[test]
+fn slot_and_owner_to_token_id_works() {
+	let slot = Slot::MAX_SLOT;
+	let owner = AccountId::from_str("0x8000000000000000000000000000000000000001").unwrap();
+	let token_id = slot_and_owner_to_token_id(slot, owner);
+	assert_eq!(
+		format!("0x{:064x}", token_id),
+		"0xffffffffffffffffffffffff8000000000000000000000000000000000000001"
+	);
+}
+
+#[test]
 fn mint_with_external_uri_works() {
 	new_test_ext().execute_with(|| {
 		System::set_block_number(1);
@@ -161,7 +171,7 @@ fn mint_with_external_uri_works() {
 		let collection_id = create_collection(ALICE);
 		let token_uri: TokenUriOf<Test> =
 			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
-		let slot = 0u128.try_into().unwrap();
+		let slot = Slot::try_from(0).unwrap();
 		let owner = AccountId::from_str(ALICE).unwrap();
 
 		assert_ok!(LaosEvolution::mint_with_external_uri(
@@ -172,29 +182,13 @@ fn mint_with_external_uri_works() {
 			token_uri.clone()
 		));
 
-		let expected_token_id = {
-			let mut buf = [0u8; 32];
-			buf[..12].copy_from_slice(&slot.as_u128().to_be_bytes()[4..]);
-			let owner_bytes = owner.encode();
-			buf[12..].copy_from_slice(&owner_bytes[..]);
+		let token_id = slot_and_owner_to_token_id(slot, owner);
 
-			TokenId::from(buf)
-		};
-
-		let token_id = slot_and_owner_to_token_id(slot, owner).unwrap();
-
-		assert_eq!(token_id, expected_token_id);
 		assert_eq!(LaosEvolution::token_uri(collection_id, token_id), Some(token_uri.clone()));
 
 		System::assert_has_event(
-			Event::MintedWithExternalURI {
-				collection_id,
-				slot,
-				to: owner,
-				token_id: expected_token_id,
-				token_uri,
-			}
-			.into(),
+			Event::MintedWithExternalURI { collection_id, slot, to: owner, token_id, token_uri }
+				.into(),
 		);
 	});
 }
@@ -205,24 +199,24 @@ fn slot_and_owner_to_asset_id_works() {
 	// and comparing it to an expected value.
 	fn check_token_id(slot: Slot, owner_hex: &str, expected_hex: &str) {
 		let owner = AccountId::from_str(owner_hex).unwrap();
-		let token_id = slot_and_owner_to_token_id(slot, owner).unwrap();
+		let token_id = slot_and_owner_to_token_id(slot, owner);
 		assert_eq!(format!("0x{:064x}", token_id), expected_hex);
 	}
 
 	check_token_id(
-		0_u128.try_into().unwrap(),
+		Slot::try_from(0).unwrap(),
 		"0x0000000000000000000000000000000000000000",
 		"0x0000000000000000000000000000000000000000000000000000000000000000",
 	);
 
 	check_token_id(
-		1_u128.try_into().unwrap(),
+		Slot::try_from(1).unwrap(),
 		"0x0000000000000000000000000000000000000000",
 		"0x0000000000000000000000010000000000000000000000000000000000000000",
 	);
 
 	check_token_id(
-		1_u128.try_into().unwrap(),
+		Slot::try_from(1).unwrap(),
 		"0xe00000000000000000000000000000000000000f",
 		"0x000000000000000000000001e00000000000000000000000000000000000000f",
 	);
@@ -346,7 +340,7 @@ fn token_uri_of_existent_token_returns_correct_token_uri() {
 	new_test_ext().execute_with(|| {
 		let who = AccountId::from_str(ALICE).unwrap();
 		let collection_id = create_collection(ALICE);
-		let slot = 1.try_into().unwrap();
+		let slot = Slot::try_from(1).unwrap();
 		let to = AccountId::from_str(BOB).unwrap();
 		let token_uri: TokenUriOf<Test> =
 			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
@@ -363,9 +357,9 @@ fn evolve_with_external_uri_when_unexistent_collection_id_should_fail() {
 	new_test_ext().execute_with(|| {
 		let who = AccountId::from_str(ALICE).unwrap();
 		let collection_id = LaosEvolution::collection_counter();
-		let slot = 0.try_into().unwrap();
+		let slot = Slot::try_from(0).unwrap();
 		let owner = AccountId::from_str(ALICE).unwrap();
-		let token_id = slot_and_owner_to_token_id(slot, owner).unwrap();
+		let token_id = slot_and_owner_to_token_id(slot, owner);
 		let new_token_uri: TokenUriOf<Test> =
 			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
 
@@ -382,8 +376,8 @@ fn evolve_with_external_uri_when_sender_is_not_collection_owner_should_fail() {
 		let who = AccountId::from_str(ALICE).unwrap();
 		let owner = AccountId::from_str(BOB).unwrap();
 		let collection_id = create_collection(BOB);
-		let slot = 0.try_into().unwrap();
-		let token_id = slot_and_owner_to_token_id(slot, owner).unwrap();
+		let slot = Slot::try_from(0).unwrap();
+		let token_id = slot_and_owner_to_token_id(slot, owner);
 		let new_token_uri: TokenUriOf<Test> =
 			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
 
@@ -400,8 +394,8 @@ fn evolve_with_external_uri_when_asset_doesnt_exist_should_fail() {
 		let who = AccountId::from_str(ALICE).unwrap();
 		let owner = AccountId::from_str(BOB).unwrap();
 		let collection_id = create_collection(ALICE);
-		let slot = 0.try_into().unwrap();
-		let token_id = slot_and_owner_to_token_id(slot, owner).unwrap();
+		let slot = Slot::try_from(0).unwrap();
+		let token_id = slot_and_owner_to_token_id(slot, owner);
 		let new_token_uri: TokenUriOf<Test> =
 			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
 
@@ -419,8 +413,8 @@ fn evolve_with_external_uri_happy_path() {
 
 		let owner = AccountId::from_str(BOB).unwrap();
 		let collection_id = create_collection(BOB);
-		let slot = 0.try_into().unwrap();
-		let token_id = slot_and_owner_to_token_id(slot, owner).unwrap();
+		let slot = Slot::try_from(0).unwrap();
+		let token_id = slot_and_owner_to_token_id(slot, owner);
 		let token_uri: TokenUriOf<Test> =
 			vec![1, MaxTokenUriLength::get() as u8].try_into().unwrap();
 		let new_token_uri: TokenUriOf<Test> =
@@ -644,8 +638,7 @@ fn non_collection_owner_cannot_evolve_when_public_minting_is_enabled() {
 		let owner = ALICE;
 		let non_owner = BOB;
 		let slot = 0.try_into().unwrap();
-		let token_id =
-			slot_and_owner_to_token_id(slot, AccountId::from_str(non_owner).unwrap()).unwrap();
+		let token_id = slot_and_owner_to_token_id(slot, AccountId::from_str(non_owner).unwrap());
 
 		create_collection(owner);
 		assert_ok!(LaosEvolution::enable_public_minting(

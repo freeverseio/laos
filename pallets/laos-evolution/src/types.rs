@@ -67,33 +67,35 @@ impl Slot {
 		Slot(bytes)
 	}
 
-	pub fn from_u128(value: u128) -> Result<Self, &'static str> {
-		if value > ((1u128 << 96) - 1) {
-			Err("Value exceeds 96-bit limit")
-		} else {
-			let bytes = value.to_be_bytes();
-			Ok(Slot(bytes[4..].try_into().unwrap()))
-		}
-	}
-
-	pub fn as_u128(&self) -> u128 {
-		let mut bytes = [0u8; 16];
-		bytes[4..].copy_from_slice(&self.0);
-		u128::from_be_bytes(bytes)
+	pub fn to_be_bytes(&self) -> [u8; 12] {
+		let mut bytes = [0u8; 12];
+		let slot_u128: u128 = (*self).into();
+		let slot_bytes = slot_u128.to_be_bytes();
+		bytes.copy_from_slice(&slot_bytes[4..]); // Copy the last 12 bytes
+		bytes
 	}
 }
 
 impl TryFrom<u128> for Slot {
 	type Error = &'static str;
 
-	fn try_from(num: u128) -> Result<Self, Self::Error> {
-		Slot::from_u128(num)
+	fn try_from(value: u128) -> Result<Self, Self::Error> {
+		if value > ((1u128 << 96) - 1) {
+			Err("Value exceeds 96-bit limit")
+		} else {
+			let bytes = value.to_be_bytes();
+			let slot_bytes: [u8; 12] =
+				bytes[4..].try_into().map_err(|_| "Slice conversion failed")?;
+			Ok(Slot(slot_bytes))
+		}
 	}
 }
 
 impl From<Slot> for u128 {
 	fn from(slot: Slot) -> u128 {
-		slot.as_u128()
+		let mut bytes = [0u8; 16];
+		bytes[4..].copy_from_slice(&slot.0);
+		u128::from_be_bytes(bytes)
 	}
 }
 
