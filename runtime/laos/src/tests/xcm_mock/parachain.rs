@@ -87,6 +87,7 @@ construct_runtime!(
 
 		Xtokens: orml_xtokens,
 		Assets: pallet_assets = 123,
+		LaosEvolution: pallet_laos_evolution,
 	}
 );
 
@@ -680,4 +681,22 @@ impl orml_xtokens::Config for Runtime {
 	type MinXcmFee = ParachainMinFee;
 	type MultiLocationsFilter = Everything;
 	type ReserveProvider = AbsoluteAndRelativeReserveProvider<UniversalLocation>;
+}
+
+parameter_types! {
+	pub const MaxTokenUriLength: u32 = 512;
+}
+
+pub struct AccountIdToH160;
+
+impl sp_runtime::traits::Convert<AccountId, H160> for AccountIdToH160 {
+	fn convert(account_id: AccountId) -> H160 {
+		account_id
+	}
+}
+
+impl pallet_laos_evolution::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type AccountIdToH160 = AccountIdToH160;
+	type MaxTokenUriLength = MaxTokenUriLength;
 }

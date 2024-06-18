@@ -1,10 +1,26 @@
+// Copyright 2023-2024 Freeverse.io
+// This file is part of LAOS.
+
+// LAOS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// LAOS is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
+
+//! Living assets precompile tests.
 use super::*;
 use evm::Context;
 use fp_evm::PrecompileSet;
 use mock::*;
 use pallet_laos_evolution::TokenId;
 use precompile_utils::testing::*;
-use scale_info::prelude::string::String;
 use solidity::codec::Writer;
 use sp_core::{H160, U256};
 use std::str::FromStr;
@@ -54,8 +70,7 @@ fn mint(
 	);
 
 	handle.input =
-		PrecompileCall::mint { to: Address(owner.into()), slot, token_uri: token_uri.clone() }
-			.into();
+		PrecompileCall::mint { to: Address(owner), slot, token_uri: token_uri.clone() }.into();
 
 	let res = precompiles().execute(&mut handle).unwrap().unwrap();
 
@@ -150,11 +165,7 @@ fn mint_should_generate_log() {
 			.prepare_test(
 				Alice,
 				collection_address,
-				PrecompileCall::mint {
-					to: Address(owner.into()),
-					slot,
-					token_uri: token_uri.clone(),
-				},
+				PrecompileCall::mint { to: Address(owner), slot, token_uri: token_uri.clone() },
 			)
 			.expect_log(log2(
 				collection_address,
@@ -187,7 +198,7 @@ fn mint_asset_in_an_existing_collection_works() {
 			.prepare_test(
 				to,
 				collection_address,
-				PrecompileCall::mint { to: Address(to.into()), slot, token_uri: token_uri.clone() },
+				PrecompileCall::mint { to: Address(to), slot, token_uri: token_uri.clone() },
 			)
 			.execute_returns(expected_token_id);
 	});
@@ -207,7 +218,7 @@ fn when_mint_reverts_should_return_error() {
 			.prepare_test(
 				to,
 				collection_address,
-				PrecompileCall::mint { to: Address(to.into()), slot, token_uri },
+				PrecompileCall::mint { to: Address(to), slot, token_uri },
 			)
 			.execute_reverts(|r| r == b"AlreadyMinted");
 	});
@@ -235,8 +246,7 @@ fn token_uri_returns_the_result_from_source() {
 		let alice = H160::from_str(ALICE).unwrap();
 		let collection_address = create_collection(alice);
 		let token_uri: UnboundedString = "ciao".into();
-		let token_id =
-			mint(alice, collection_address, 0.try_into().unwrap(), token_uri.clone().into());
+		let token_id = mint(alice, collection_address, 0.try_into().unwrap(), token_uri.clone());
 
 		precompiles()
 			.prepare_test(alice, collection_address, PrecompileCall::token_uri { token_id })
@@ -454,7 +464,7 @@ fn expected_cost_mint_with_external_uri() {
 				owner,
 				collection_address,
 				PrecompileCall::mint {
-					to: Address(owner.into()),
+					to: Address(owner),
 					slot: 9.try_into().unwrap(),
 					token_uri: "ciao".into(),
 				},

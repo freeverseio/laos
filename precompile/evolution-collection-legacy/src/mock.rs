@@ -17,7 +17,7 @@
 use core::str::FromStr;
 
 use fp_evm::{Precompile, PrecompileHandle};
-use pallet_evm_evolution_collection_factory::EvolutionCollectionFactoryPrecompile;
+use pallet_evm_evolution_collection_factory_legacy::EvolutionCollectionFactoryPrecompile;
 use pallet_laos_evolution::address_to_collection_id;
 use sp_runtime::BuildStorage;
 
