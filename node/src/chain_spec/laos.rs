@@ -136,9 +136,9 @@ fn create_test_genesis_config() -> laos_runtime::RuntimeGenesisConfig {
 		},
 		evm: laos_runtime::EVMConfig {
 			accounts: Precompiles::used_addresses()
-				.map(|addr| {
+				.map(|address| {
 					(
-						addr.into(),
+						address.into(),
 						GenesisAccount {
 							nonce: Default::default(),
 							balance: Default::default(),
