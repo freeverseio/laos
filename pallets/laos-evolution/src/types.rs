@@ -75,21 +75,6 @@ impl Slot {
 	}
 }
 
-#[derive(Debug, PartialEq)]
-pub enum SlotError {
-	Exceeds96BitLimit,
-}
-
-impl fmt::Display for SlotError {
-	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		match self {
-			SlotError::Exceeds96BitLimit => write!(f, "Value exceeds 96-bit limit"),
-		}
-	}
-}
-
-impl std::error::Error for SlotError {}
-
 impl TryFrom<u128> for Slot {
 	type Error = SlotError;
 
@@ -131,6 +116,21 @@ impl Codec for Slot {
 		String::from("uint96")
 	}
 }
+
+#[derive(Debug, PartialEq)]
+pub enum SlotError {
+	Exceeds96BitLimit,
+}
+
+impl fmt::Display for SlotError {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		match self {
+			SlotError::Exceeds96BitLimit => write!(f, "Value exceeds 96-bit limit"),
+		}
+	}
+}
+
+impl std::error::Error for SlotError {}
 
 /// This is a legacy type that is used for compatibility with the legacy Laos EVM Pallets
 /// used in Klaos runtime.
