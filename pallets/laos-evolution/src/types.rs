@@ -26,6 +26,7 @@ use scale_info::{prelude::string::String, TypeInfo};
 use serde::{Deserialize, Serialize};
 use sp_core::U256;
 use sp_runtime::{BoundedVec, RuntimeDebug};
+use sp_std::fmt;
 
 /// Collection id type
 pub type CollectionId = u64;
@@ -74,12 +75,27 @@ impl Slot {
 	}
 }
 
+#[derive(Debug, PartialEq)]
+pub enum SlotError {
+	Exceeds96BitLimit,
+}
+
+impl fmt::Display for SlotError {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		match self {
+			SlotError::Exceeds96BitLimit => write!(f, "Value exceeds 96-bit limit"),
+		}
+	}
+}
+
+impl std::error::Error for SlotError {}
+
 impl TryFrom<u128> for Slot {
-	type Error = &'static str;
+	type Error = SlotError;
 
 	fn try_from(value: u128) -> Result<Self, Self::Error> {
 		if value > ((1u128 << 96) - 1) {
-			Err("Value exceeds 96-bit limit")
+			Err(SlotError::Exceeds96BitLimit)
 		} else {
 			let bytes = value.to_be_bytes();
 			Ok(Slot(bytes[4..].try_into().unwrap()))
@@ -89,7 +105,9 @@ impl TryFrom<u128> for Slot {
 
 impl From<Slot> for u128 {
 	fn from(slot: Slot) -> u128 {
-		slot.as_u128()
+		let mut bytes = [0u8; 16];
+		bytes[4..].copy_from_slice(&slot.0);
+		u128::from_be_bytes(bytes)
 	}
 }
 
@@ -154,7 +172,7 @@ mod test {
 		let value = 1u128 << 100;
 		let result = Slot::try_from(value);
 		assert!(result.is_err());
-		assert_eq!(result.unwrap_err(), "Value exceeds 96-bit limit");
+		assert_eq!(result.unwrap_err(), SlotError::Exceeds96BitLimit);
 	}
 
 	#[test]
