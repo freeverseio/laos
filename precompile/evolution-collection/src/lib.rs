@@ -17,22 +17,27 @@
 //! LAOS precompile module.
 
 #![cfg_attr(not(feature = "std"), no_std)]
-use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
-use laos_precompile_utils::{
-	keccak256, revert_dispatch_error, succeed, Address, Bytes, EvmDataWriter, EvmResult,
-	FunctionModifier, GasCalculator, LogExt, LogsBuilder, PrecompileHandleExt,
-};
+use fp_evm::ExitError;
+use frame_support::DefaultNoBound;
+use pallet_evm::GasWeightMapping;
 use pallet_laos_evolution::{
 	address_to_collection_id,
-	traits::EvolutionCollection as EvolutionCollectionT,
+	types::CollectionId,
 	weights::{SubstrateWeight as LaosEvolutionWeights, WeightInfo},
-	Pallet as LaosEvolution, Slot, TokenId, TokenUriOf,
+	Config, EvolutionCollection, Pallet as LaosEvolution, Slot, TokenId,
 };
 use parity_scale_codec::Encode;
-use precompile_utils::solidity::revert::revert;
-
-use sp_core::H160;
-use sp_std::{fmt::Debug, marker::PhantomData};
+use precompile_utils::{
+	keccak256,
+	prelude::{
+		log1, log2, log3, revert, Address, DiscriminantResult, EvmResult, LogExt, PrecompileHandle,
+		RuntimeHelper,
+	},
+	solidity::{self, codec::UnboundedString},
+};
+use scale_info::prelude::{format, string::String};
+use sp_core::{H160, U256};
+use sp_runtime::{traits::PhantomData, BoundedVec, DispatchError};
 
 /// Solidity selector of the MintedWithExternalURI log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
@@ -41,6 +46,7 @@ pub const SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
 /// Solidity selector of the EvolvedWithExternalURI log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
 	keccak256!("EvolvedWithExternalURI(uint256,string)");
+
 /// Solidity selector of the EnabledPublicMinting log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_ENABLED_PUBLIC_MINTING: [u8; 32] = keccak256!("EnabledPublicMinting()");
 /// Solidity selector of the DisabledPublicMinting log, which is the Keccak of the Log signature.
@@ -50,321 +56,292 @@ pub const SELECTOR_LOG_DISABLED_PUBLIC_MINTING: [u8; 32] = keccak256!("DisabledP
 pub const SELECTOR_LOG_OWNERSHIP_TRANSFERRED: [u8; 32] =
 	keccak256!("OwnershipTransferred(address,address)");
 
-#[laos_precompile_utils_macro::generate_function_selector]
-#[derive(Debug, PartialEq)]
-pub enum Action {
-	/// Get owner of the collection
-	Owner = "owner()",
-	/// Get tokenURI of the token in collection
-	TokenURI = "tokenURI(uint256)",
-	/// Mint token
-	Mint = "mintWithExternalURI(address,uint96,string)",
-	/// Evolve token
-	Evolve = "evolveWithExternalURI(uint256,string)",
-	/// Transfer ownership of the collection
-	TransferOwnership = "transferOwnership(address)",
-	/// Enable public minting
-	EnablePublicMinting = "enablePublicMinting()",
-	/// Disable public minting
-	DisablePublicMinting = "disablePublicMinting()",
-	/// Check if public minting is enabled
-	IsPublicMintingEnabled = "isPublicMintingEnabled()",
-}
+#[derive(Clone, DefaultNoBound)]
+pub struct EvolutionCollectionPrecompileSet<R>(PhantomData<R>);
 
-impl<Runtime> Precompile for EvolutionCollectionPrecompile<Runtime>
-where
-	Runtime: pallet_laos_evolution::Config + pallet_evm::Config,
-	Runtime::AccountId: From<H160> + Into<H160> + Encode + Debug,
-	LaosEvolution<Runtime>: EvolutionCollectionT<Runtime::AccountId, TokenUriOf<Runtime>>,
-{
-	fn execute(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
-		let selector = handle.read_selector()?;
-
-		handle.check_function_modifier(match selector {
-			Action::Mint => FunctionModifier::NonPayable,
-			Action::Owner => FunctionModifier::View,
-			Action::TokenURI => FunctionModifier::View,
-			Action::Evolve => FunctionModifier::NonPayable,
-			Action::EnablePublicMinting => FunctionModifier::NonPayable,
-			Action::DisablePublicMinting => FunctionModifier::NonPayable,
-			Action::IsPublicMintingEnabled => FunctionModifier::View,
-			Action::TransferOwnership => FunctionModifier::NonPayable,
-		})?;
-
-		match selector {
-			Action::Owner => Self::owner(handle),
-			Action::TokenURI => Self::token_uri(handle),
-			Action::Mint => Self::mint(handle),
-			Action::Evolve => Self::evolve(handle),
-			Action::EnablePublicMinting => Self::enable_public_minting(handle),
-			Action::DisablePublicMinting => Self::disable_public_minting(handle),
-			Action::IsPublicMintingEnabled => Self::is_public_minting_enabled(handle),
-			Action::TransferOwnership => Self::transfer_ownership(handle),
-		}
+impl<R> EvolutionCollectionPrecompileSet<R> {
+	pub fn new() -> Self {
+		Self(PhantomData)
 	}
 }
 
-pub struct EvolutionCollectionPrecompile<Runtime>(PhantomData<Runtime>)
+#[precompile_utils::precompile]
+#[precompile::precompile_set]
+impl<R> EvolutionCollectionPrecompileSet<R>
 where
-	Runtime: pallet_laos_evolution::Config;
-
-impl<Runtime> EvolutionCollectionPrecompile<Runtime>
-where
-	Runtime: pallet_laos_evolution::Config + pallet_evm::Config,
-	Runtime::AccountId: From<H160> + Into<H160> + Encode + Debug,
-	LaosEvolution<Runtime>: EvolutionCollectionT<Runtime::AccountId, TokenUriOf<Runtime>>,
+	R: pallet_evm::Config + pallet_laos_evolution::Config + frame_system::Config,
+	R::AccountId: From<H160> + Into<H160> + Encode,
 {
-	fn owner(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
-		let context = handle.context();
+	#[precompile::discriminant]
+	fn discriminant(address: H160, gas: u64) -> DiscriminantResult<CollectionId> {
+		let extra_cost = RuntimeHelper::<R>::db_read_gas_cost();
+		if gas < extra_cost {
+			return DiscriminantResult::OutOfGas;
+		}
 
-		// collection id is encoded into the contract address
-		let collection_id = address_to_collection_id(context.address)
-			.map_err(|_| revert("invalid collection address"))?;
+		// maybe here we could avoid the extra_cost calculation cause there's no db read
+		match address_to_collection_id(address) {
+			Ok(id) => DiscriminantResult::Some(id, extra_cost),
+			Err(_) => DiscriminantResult::None(extra_cost),
+		}
+	}
 
-		if let Some(owner) = LaosEvolution::<Runtime>::collection_owner(collection_id) {
-			handle.record_cost(GasCalculator::<Runtime>::db_read_gas_cost(1))?;
+	#[precompile::public("owner()")]
+	#[precompile::view]
+	fn owner(
+		collection_id: CollectionId,
+		_handle: &mut impl PrecompileHandle,
+	) -> EvmResult<Address> {
+		if let Some(owner) = LaosEvolution::<R>::collection_owner(collection_id) {
+			// TODO: handle the cost
+			// handle.record_cost(GasCalculator::<Runtime>::db_read_gas_cost(1))?;
 
-			Ok(succeed(EvmDataWriter::new().write(Address(owner.into())).build()))
+			Ok(Address(owner.into()))
 		} else {
 			Err(revert("collection does not exist"))
 		}
 	}
 
-	fn token_uri(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
-		let mut input = handle.read_input()?;
-		let context = handle.context();
-		input.expect_arguments(1)?;
+	// TODO use custom type for slot, it needs to be uint96, otherwise test file
+	#[precompile::public("mintWithExternalURI(address,uint96,string)")]
+	fn mint(
+		collection_id: CollectionId,
+		handle: &mut impl PrecompileHandle,
+		to: Address,
+		slot: Slot,
+		token_uri: UnboundedString, /* TODO use bounded vec or stringkind from solidity
+		                             * BoundedString<<R as Config>::MaxTokenUriLength> */
+	) -> EvmResult<U256> {
+		let to: H160 = to.into();
 
-		// collection id is encoded into the contract address
-		let collection_id = address_to_collection_id(context.address)
-			.map_err(|_| revert("invalid collection address"))?;
-		let token_id = input.read::<TokenId>()?;
-
-		if let Some(token_uri) = LaosEvolution::<Runtime>::token_uri(collection_id, token_id) {
-			let consumed_gas: u64 = GasCalculator::<Runtime>::db_read_gas_cost(1);
-			handle.record_cost(consumed_gas)?;
-			Ok(succeed(EvmDataWriter::new().write(Bytes(token_uri.into())).build()))
-		} else {
-			Err(revert("asset does not exist"))
-		}
-	}
-
-	fn mint(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
-		let mut input = handle.read_input()?;
-		let context = handle.context();
-		let caller = context.caller;
-
-		input.expect_arguments(3)?;
-
-		// collection id is encoded into the contract address
-		let collection_id = address_to_collection_id(context.address)
-			.map_err(|_| revert("invalid collection address"))?;
-		let to = input.read::<Address>()?.0;
-		let slot = input.read::<Slot>()?;
-		let token_uri_raw = input.read::<Bytes>()?.0;
-		let token_uri = token_uri_raw
-			.clone()
+		// TODO this might be remove when we have the bounded string as param
+		let token_uri_bounded: BoundedVec<u8, <R as Config>::MaxTokenUriLength> = token_uri
+			.as_bytes()
+			.to_vec()
 			.try_into()
 			.map_err(|_| revert("invalid token uri length"))?;
 
-		match LaosEvolution::<Runtime>::mint_with_external_uri(
-			caller.into(),
+		match LaosEvolution::<R>::mint_with_external_uri(
+			handle.context().caller.into(),
 			collection_id,
 			slot,
 			to.into(),
-			token_uri,
+			token_uri_bounded.clone(),
 		) {
 			Ok(token_id) => {
-				let consumed_weight = LaosEvolutionWeights::<Runtime>::mint_with_external_uri(
-					token_uri_raw.len() as u32,
+				let consumed_weight = LaosEvolutionWeights::<R>::mint_with_external_uri(
+					token_uri_bounded.len() as u32,
 				);
 
-				LogsBuilder::new(context.address)
-					.log2(
-						SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI,
-						to,
-						EvmDataWriter::new()
-							.write(slot)
-							.write(token_id)
-							.write(Bytes(token_uri_raw))
-							.build(),
-					)
-					.record(handle)?;
+				log2(
+					handle.context().address,
+					SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI,
+					to,
+					solidity::encode_event_data((slot, token_id, token_uri)), /* TODO token_uri_bounded */
+				)
+				.record(handle)?;
 
 				// Record EVM cost
-				handle.record_cost(GasCalculator::<Runtime>::weight_to_gas(consumed_weight))?;
+				handle.record_cost(<R as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
+					consumed_weight,
+				))?;
 
 				// Record Substrate related costs
 				// TODO: Add `ref_time` when precompiles are benchmarked
 				handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
 
-				Ok(succeed(EvmDataWriter::new().write(token_id).build()))
+				Ok(token_id)
 			},
-			Err(err) => Err(revert_dispatch_error(err)),
+			Err(err) => Err(revert(convert_dispatch_error_to_string(err))),
 		}
 	}
 
-	fn evolve(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
-		let mut input = handle.read_input()?;
-		let context = handle.context();
-
-		let caller = context.caller;
-
-		input.expect_arguments(3)?;
-
-		// collection id is encoded into the contract address
-		let collection_id = address_to_collection_id(context.address)
-			.map_err(|_| revert("invalid collection address"))?;
-		let token_id = input.read::<TokenId>()?;
-		let token_uri_raw = input.read::<Bytes>()?.0;
-		let token_uri = token_uri_raw
-			.clone()
+	#[precompile::public("evolveWithExternalURI(uint256,string)")]
+	fn evolve(
+		collection_id: CollectionId,
+		handle: &mut impl PrecompileHandle,
+		token_id: TokenId,
+		token_uri: UnboundedString, /* TODO use bounded vec or stringkind from solidity
+		                             * BoundedString<<R as Config>::MaxTokenUriLength> */
+	) -> EvmResult<()> {
+		// TODO this might be remove when we have the bounded string as param
+		let token_uri_bounded: BoundedVec<u8, <R as Config>::MaxTokenUriLength> = token_uri
+			.as_bytes()
+			.to_vec()
 			.try_into()
 			.map_err(|_| revert("invalid token uri length"))?;
 
-		match LaosEvolution::<Runtime>::evolve_with_external_uri(
-			caller.into(),
+		match LaosEvolution::<R>::evolve_with_external_uri(
+			handle.context().caller.into(),
 			collection_id,
 			token_id,
-			token_uri,
+			token_uri_bounded.clone(),
 		) {
 			Ok(()) => {
-				let consumed_weight = LaosEvolutionWeights::<Runtime>::evolve_with_external_uri(
-					token_uri_raw.len() as u32,
+				let consumed_weight = LaosEvolutionWeights::<R>::evolve_with_external_uri(
+					token_uri_bounded.len() as u32,
 				);
 
 				let mut token_id_bytes = [0u8; 32];
 				token_id.to_big_endian(&mut token_id_bytes);
 
-				LogsBuilder::new(context.address)
-					.log2(
-						SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI,
-						token_id_bytes,
-						EvmDataWriter::new().write(Bytes(token_uri_raw)).build(),
-					)
-					.record(handle)?;
+				log2(
+					handle.context().address,
+					SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI,
+					token_id_bytes,
+					solidity::encode_event_data(token_uri),
+				)
+				.record(handle)?;
 
 				// Record EVM cost
-				handle.record_cost(GasCalculator::<Runtime>::weight_to_gas(consumed_weight))?;
+				handle.record_cost(<R as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
+					consumed_weight,
+				))?;
 
 				// Record Substrate related costs
 				// TODO: Add `ref_time` when precompiles are benchmarked
 				handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
 
-				Ok(succeed(sp_std::vec![]))
+				Ok(())
 			},
-			Err(err) => Err(revert_dispatch_error(err)),
+			Err(err) => Err(revert(convert_dispatch_error_to_string(err))),
 		}
 	}
 
-	fn enable_public_minting(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
-		let input = handle.read_input()?;
-		input.expect_arguments(0)?;
-		let context = handle.context();
-		let caller = context.caller;
-
-		// collection id is encoded into the contract address
-		let collection_id = address_to_collection_id(context.address)
-			.map_err(|_| revert("invalid collection address"))?;
-
-		match LaosEvolution::<Runtime>::enable_public_minting(caller.into(), collection_id) {
-			Ok(()) => {
-				let consumed_weight = LaosEvolutionWeights::<Runtime>::enable_public_minting();
-
-				LogsBuilder::new(context.address)
-					.log1(SELECTOR_LOG_ENABLED_PUBLIC_MINTING, sp_std::vec![])
-					.record(handle)?;
-
-				// Record EVM cost
-				handle.record_cost(GasCalculator::<Runtime>::weight_to_gas(consumed_weight))?;
-
-				// Record Substrate related costs
-				// TODO: Add `ref_time` when precompiles are benchmarked
-				handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
-
-				Ok(succeed(EvmDataWriter::new().build()))
-			},
-			Err(err) => Err(revert_dispatch_error(err)),
-		}
-	}
-
-	fn disable_public_minting(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
-		let input = handle.read_input()?;
-		input.expect_arguments(0)?;
-		let context = handle.context();
-		let caller = context.caller;
-
-		// collection id is encoded into the contract address
-		let collection_id = address_to_collection_id(context.address)
-			.map_err(|_| revert("invalid collection address"))?;
-
-		match LaosEvolution::<Runtime>::disable_public_minting(caller.into(), collection_id) {
-			Ok(()) => {
-				let consumed_weight = LaosEvolutionWeights::<Runtime>::enable_public_minting();
-
-				LogsBuilder::new(context.address)
-					.log1(SELECTOR_LOG_DISABLED_PUBLIC_MINTING, sp_std::vec![])
-					.record(handle)?;
-
-				// Record EVM cost
-				handle.record_cost(GasCalculator::<Runtime>::weight_to_gas(consumed_weight))?;
-
-				// Record Substrate related costs
-				// TODO: Add `ref_time` when precompiles are benchmarked
-				handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
-
-				Ok(succeed(EvmDataWriter::new().build()))
-			},
-			Err(err) => Err(revert_dispatch_error(err)),
-		}
-	}
-
-	fn is_public_minting_enabled(
+	#[precompile::public("transferOwnership(address)")]
+	fn transfer_ownership(
+		collection_id: CollectionId,
 		handle: &mut impl PrecompileHandle,
-	) -> EvmResult<PrecompileOutput> {
-		let input = handle.read_input()?;
-		input.expect_arguments(0)?;
-		let context = handle.context();
+		to: Address,
+	) -> EvmResult<()> {
+		let to: H160 = to.into();
+		LaosEvolution::<R>::transfer_ownership(
+			handle.context().caller.into(),
+			to.into(),
+			collection_id,
+		)
+		.map_err(|err| revert(convert_dispatch_error_to_string(err)))?;
 
-		// collection id is encoded into the contract address
-		let collection_id = address_to_collection_id(context.address)
-			.map_err(|_| revert("invalid collection address"))?;
+		let consumed_weight = LaosEvolutionWeights::<R>::transfer_ownership();
 
-		let is_enabled = LaosEvolution::<Runtime>::is_public_minting_enabled(collection_id);
-		let consumed_gas: u64 = GasCalculator::<Runtime>::db_read_gas_cost(1);
-		handle.record_cost(consumed_gas)?;
-		Ok(succeed(EvmDataWriter::new().write(is_enabled).build()))
-	}
-
-	fn transfer_ownership(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
-		let context = handle.context();
-		let caller = context.caller;
-
-		// collection id is encoded into the contract address
-		let collection_id = address_to_collection_id(context.address)
-			.map_err(|_| revert("invalid collection address"))?;
-
-		let mut input = handle.read_input()?;
-		input.expect_arguments(1)?;
-
-		let to = input.read::<Address>()?.0;
-
-		LaosEvolution::<Runtime>::transfer_ownership(caller.into(), to.into(), collection_id)
-			.map_err(revert_dispatch_error)?;
-
-		let consumed_weight = LaosEvolutionWeights::<Runtime>::transfer_ownership();
-
-		LogsBuilder::new(context.address)
-			.log3(SELECTOR_LOG_OWNERSHIP_TRANSFERRED, caller, to, EvmDataWriter::new().build())
-			.record(handle)?;
+		log3(
+			handle.context().address,
+			SELECTOR_LOG_OWNERSHIP_TRANSFERRED,
+			handle.context().caller,
+			to,
+			solidity::encode_event_data(()),
+		)
+		.record(handle)?;
 
 		// Record EVM cost
-		handle.record_cost(GasCalculator::<Runtime>::weight_to_gas(consumed_weight))?;
+		handle.record_cost(<R as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
+			consumed_weight,
+		))?;
 
 		// Record Substrate related costs
 		handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
+		Ok(())
+	}
 
-		Ok(succeed(EvmDataWriter::new().build()))
+	#[precompile::public("enablePublicMinting()")]
+	fn enable_public_minting(
+		collection_id: CollectionId,
+		handle: &mut impl PrecompileHandle,
+	) -> EvmResult<()> {
+		match LaosEvolution::<R>::enable_public_minting(
+			handle.context().caller.into(),
+			collection_id,
+		) {
+			Ok(()) => {
+				let consumed_weight = LaosEvolutionWeights::<R>::enable_public_minting();
+
+				log1(
+					handle.context().address,
+					SELECTOR_LOG_ENABLED_PUBLIC_MINTING,
+					solidity::encode_event_data(()),
+				)
+				.record(handle)?;
+
+				// Record EVM cost
+				handle.record_cost(<R as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
+					consumed_weight,
+				))?;
+
+				// Record Substrate related costs
+				// TODO: Add `ref_time` when precompiles are benchmarked
+				handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
+
+				Ok(())
+			},
+			Err(err) => Err(revert(convert_dispatch_error_to_string(err))),
+		}
+	}
+
+	#[precompile::public("disablePublicMinting()")]
+	fn disable_public_minting(
+		collection_id: CollectionId,
+		handle: &mut impl PrecompileHandle,
+	) -> EvmResult<()> {
+		match LaosEvolution::<R>::disable_public_minting(
+			handle.context().caller.into(),
+			collection_id,
+		) {
+			Ok(()) => {
+				let consumed_weight = LaosEvolutionWeights::<R>::disable_public_minting();
+
+				log1(
+					handle.context().address,
+					SELECTOR_LOG_DISABLED_PUBLIC_MINTING,
+					solidity::encode_event_data(()),
+				)
+				.record(handle)?;
+
+				// Record EVM cost
+				handle.record_cost(<R as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
+					consumed_weight,
+				))?;
+
+				// Record Substrate related costs
+				// TODO: Add `ref_time` when precompiles are benchmarked
+				handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
+
+				Ok(())
+			},
+			Err(err) => Err(revert(convert_dispatch_error_to_string(err))),
+		}
+	}
+
+	#[precompile::public("isPublicMintingEnabled()")]
+	#[precompile::view]
+	fn is_public_minting_enabled(
+		collection_id: CollectionId,
+		handle: &mut impl PrecompileHandle,
+	) -> EvmResult<bool> {
+		let is_enabled = LaosEvolution::<R>::is_public_minting_enabled(collection_id);
+		let consumed_gas: u64 = RuntimeHelper::<R>::db_read_gas_cost();
+		handle.record_cost(consumed_gas)?;
+		Ok(is_enabled)
+	}
+
+	#[precompile::public("tokenURI(uint256)")]
+	#[precompile::view]
+	fn token_uri(
+		collection_id: CollectionId,
+		_handle: &mut impl PrecompileHandle,
+		token_id: U256,
+	) -> EvmResult<UnboundedString> {
+		if let Some(token_uri) = LaosEvolution::<R>::token_uri(collection_id, token_id) {
+			Ok(token_uri.to_vec().into())
+		} else {
+			Err(revert("asset does not exist"))
+		}
+	}
+}
+
+fn convert_dispatch_error_to_string(err: DispatchError) -> String {
+	match err {
+		DispatchError::Module(mod_err) => mod_err.message.unwrap_or("Unknown module error").into(),
+		_ => format!("{:?}", err),
 	}
 }
 

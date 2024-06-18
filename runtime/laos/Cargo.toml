@@ -16,6 +16,7 @@ hex = { workspace = true }
 scale-info = { workspace = true, features = ["derive"] }
 smallvec = { workspace = true } 
 log = { workspace = true }
+num_enum = { workspace = true }
 
 # Runtime primitives
 laos-primitives = { workspace = true }
@@ -99,6 +100,8 @@ pallet-evm-precompile-bn128 = { workspace = true }
 pallet-evm-precompile-blake2 = { workspace = true }
 
 pallet-parachain-staking = { workspace = true }
+
+precompile-utils = { workspace = true }
 
 [dev-dependencies]
 static_assertions = { workspace = true }

@@ -8,7 +8,6 @@
 		"fmt": "prettier ./tests --write",
 		"build": "cp -r ../precompile/evolution-collection-factory/contracts contracts && cp -r ../precompile/evolution-collection/contracts contracts && cp -r ../precompile/asset-metadata-extender/contracts contracts && truffle compile && rm -rf contracts",
 		"test": "mocha -r ts-node/register 'tests/**/*.ts'",
-		"test:laos": "mocha -r ts-node/register 'tests/test_txpool.ts' 'tests/test-web3api.ts'",
 		"test-sql": "FRONTIER_BACKEND_TYPE='sql' mocha -r ts-node/register 'tests/**/*.ts'"
 	},
 	"author": "",

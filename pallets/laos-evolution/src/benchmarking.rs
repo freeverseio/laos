@@ -52,7 +52,7 @@ mod benchmarks {
 			let token_id = LaosEvolution::<T>::mint_with_external_uri(
 				owner.clone(),
 				collection_id,
-				s as Slot,
+				(s as u128).try_into().unwrap(),
 				owner.clone(),
 				vec![1u8; s as usize].try_into().unwrap(),
 			)
@@ -73,7 +73,7 @@ mod benchmarks {
 		let token_id = LaosEvolution::<T>::mint_with_external_uri(
 			owner.clone(),
 			0,
-			s as Slot,
+			(s as u128).try_into().unwrap(),
 			owner.clone(),
 			vec![0u8; s as usize].try_into().unwrap(),
 		)

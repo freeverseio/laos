@@ -1,7 +1,7 @@
 [package]
-name = "pallet-evm-evolution-collection-factory"
+name = "pallet-evm-evolution-collection-legacy"
 version = "2.0.0-dev"
-description = "Evolution collection factory precompile"
+description = "Collection evolver and minter precompile"
 repository = "https://github.com/freeverseio/laos"
 edition = "2021"
 
@@ -15,7 +15,6 @@ pallet-evm = { workspace = true }
 
 # Substrate
 frame-support = { workspace = true }
-frame-system = { workspace = true }
 sp-arithmetic = { workspace = true }
 sp-core = { workspace = true }
 sp-runtime = { workspace = true }
@@ -23,6 +22,10 @@ sp-std = { workspace = true }
 
 # Local pallet
 pallet-laos-evolution = { workspace = true }
+
+# Local precompile utils
+laos-precompile-utils-macro = { workspace = true }
+laos-precompile-utils = { workspace = true }
 
 # Frontier precompile utils
 precompile-utils = { workspace = true }
@@ -32,11 +35,14 @@ num_enum = { workspace = true }
 [dev-dependencies]
 evm = { workspace = true }
 hex = { workspace = true }
+laos-precompile-utils = { workspace = true, features = ["testing"]}
 precompile-utils = { workspace = true, features = ["testing"]}
 parity-scale-codec = { workspace = true, features = ["derive"] }
+frame-system = { workspace = true }
 pallet-balances = { workspace = true, features = ["std", "insecure_zero_ed"] }
 pallet-timestamp = { workspace = true }
 sp-io = { workspace = true }
+pallet-evm-evolution-collection-factory-legacy = { workspace = true }
 
 [features]
 default = ["std"]
@@ -50,8 +56,8 @@ std = [
 	"pallet-laos-evolution/std",
 	"num_enum/std",
 	"frame-support/std",
-	"frame-system/std",
 	"sp-arithmetic/std",
+	"laos-precompile-utils/std",
 	"parity-scale-codec/std",
 	"scale-info/std",
 ]
