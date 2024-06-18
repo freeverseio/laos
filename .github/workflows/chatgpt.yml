@@ -24,7 +24,7 @@ jobs:
         if: env.COMMENTER != ''
         uses: Codium-ai/pr-agent@v0.22
         env:
-          OPENAI_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_KEY: ${{ secrets.FORK_AI }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_DESCRIPTION.PUBLISH_LABELS: false
           PR_DESCRIPTION.KEEP_ORIGINAL_USER_TITLE: false
