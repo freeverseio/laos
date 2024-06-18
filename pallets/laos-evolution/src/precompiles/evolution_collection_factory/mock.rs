@@ -19,8 +19,8 @@ use core::str::FromStr;
 use precompile_utils::precompile_set::{AddressU64, PrecompileAt, PrecompileSetBuilder};
 use sp_runtime::BuildStorage;
 
-use crate as pallet_laos_evolution;
 use super::{EvolutionCollectionFactoryPrecompile, EvolutionCollectionFactoryPrecompileCall};
+use crate as pallet_laos_evolution;
 
 use frame_support::{
 	derive_impl, parameter_types, traits::FindAuthor, weights::constants::RocksDbWeight,

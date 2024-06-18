@@ -17,8 +17,8 @@
 //! Living assets precompile tests.
 
 use super::*;
-use mock::*;
 use core::str::FromStr;
+use mock::*;
 use pallet_evm::AccountCodes;
 use precompile_utils::{
 	prelude::log2,
