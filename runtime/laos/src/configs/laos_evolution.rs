@@ -15,11 +15,15 @@
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 use super::MaxTokenUriLength;
-use crate::{types::AccountIdToH160, weights, Runtime, RuntimeEvent};
+use crate::{
+	types::{AccountIdToH160, H160ToAccountId},
+	weights, Runtime, RuntimeEvent,
+};
 
 impl pallet_laos_evolution::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type AccountIdToH160 = AccountIdToH160;
+	type H160ToAccountId = H160ToAccountId;
 	type MaxTokenUriLength = MaxTokenUriLength;
 	type WeightInfo = weights::pallet_laos_evolution::WeightInfo<Runtime>;
 }
