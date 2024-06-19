@@ -15,19 +15,19 @@
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 frame_benchmarking::define_benchmarks!(
-	// [frame_system, SystemBench::<Runtime>] // It fails but others parachain as Moonbeam does not
-	// have this [pallet_timestamp, Timestamp]
-	// [pallet_sudo, Sudo]
-	// [pallet_utility, Utility]
-	// [pallet_multisig, Multisig]
-	// [pallet_proxy, Proxy]
-	// // [pallet_balances, Balances] // We use default weights from polkadot-sdk as benchmarking
+	// [frame_system, SystemBench::<Runtime>] // It fails but others parachain as Moonbeam does not have this
+	[pallet_timestamp, Timestamp]
+	[pallet_sudo, Sudo]
+	[pallet_utility, Utility]
+	[pallet_multisig, Multisig]
+	[pallet_proxy, Proxy]
+	// [pallet_balances, Balances] // We use default weights from polkadot-sdk as benchmarking
 	// functions does not support existential deposit zero [pallet_vesting, Vesting]
-	// [pallet_session, SessionBench::<Runtime>] // TODO check why SessionBench::<Runtime>
-	// [pallet_parachain_staking, ParachainStaking]
-	// [cumulus_pallet_xcmp_queue, XcmpQueue]
-	// [pallet_evm, EVM]
-	[pallet_laos_evolution, LaosEvolution] /* [pallet_asset_metadata_extender,
-	                                        * AssetMetadataExtender]
-	                                        * TODO pallet_xcm? */
+	[pallet_session, SessionBench::<Runtime>] // TODO check why SessionBench::<Runtime>
+	[pallet_parachain_staking, ParachainStaking]
+	[cumulus_pallet_xcmp_queue, XcmpQueue]
+	[pallet_evm, EVM]
+	[pallet_laos_evolution, LaosEvolution]
+	// [pallet_asset_metadata_extender, AssetMetadataExtender]
+	/* TODO pallet_xcm? */
 );
