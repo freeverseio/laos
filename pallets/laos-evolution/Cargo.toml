@@ -28,7 +28,6 @@ laos-precompile-utils = { workspace = true, default-features = false }
 sp-io = { workspace = true }
 sp-runtime = { workspace = true }
 precompile-utils = { workspace = true, features = ["testing"]}
-pallet-evm-evolution-collection-factory = { workspace = true }
 evm = { workspace = true }
 pallet-balances = { workspace = true, features = ["std", "insecure_zero_ed"] }
 pallet-timestamp = { workspace = true }

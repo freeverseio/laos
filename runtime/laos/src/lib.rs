@@ -34,7 +34,7 @@ use frame_system::EnsureRoot;
 pub use laos_primitives::{
 	AccountId, AuraId, Balance, BlockNumber, Hash, Header, Nonce, Signature,
 };
-pub use pallet_evm_evolution_collection_factory::REVERT_BYTECODE;
+pub use pallet_laos_evolution::precompiles::evolution_collection_factory::REVERT_BYTECODE;
 pub use pallet_parachain_staking::{InflationInfo, Range};
 use precompiles::LaosPrecompiles;
 use sp_runtime::{create_runtime_str, generic, impl_opaque_keys, Permill};
