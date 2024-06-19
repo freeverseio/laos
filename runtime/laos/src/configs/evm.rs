@@ -126,6 +126,8 @@ mod tests {
 		}
 	}
 
+	const WRONG_ADDRESS: u64 = 1028;
+
 	#[test]
 	fn check_block_gas_limit() {
 		assert_eq!(BlockGasLimit::get(), 15000000.into());
@@ -157,7 +159,7 @@ mod tests {
 				// wrong call to get the base cost
 				let call = create_evm_call(
 					H160::from(alice.0),
-					H160::from_low_u64_be(1), // wrong address
+					H160::from_low_u64_be(WRONG_ADDRESS),
 					precompile_call.clone(),
 				);
 				let wrong_address_call_result =
@@ -172,10 +174,9 @@ mod tests {
 				let call_result = RuntimeCall::EVM(call).dispatch(RuntimeOrigin::root()).unwrap();
 
 				// check weights
-				assert!(
-					wrong_address_call_result.actual_weight.unwrap().ref_time() <
-						call_result.actual_weight.unwrap().ref_time(),
-					"There is no call recorded within the precompile",
+				assert_eq!(
+					wrong_address_call_result.actual_weight.unwrap(),
+					Weight::from_parts(411_386_000, 5_358)
 				);
 				assert_eq!(
 					call_result.actual_weight.unwrap(),
@@ -217,10 +218,9 @@ mod tests {
 						owner: Address(alice.into()),
 					}
 					.into();
-				let precompile_address = H160::from_low_u64_be(1027);
 				let call = create_evm_call(
 					H160::from(alice.0),
-					precompile_address,
+					H160::from_low_u64_be(WRONG_ADDRESS),
 					precompile_call.clone(),
 				);
 				assert_ok!(RuntimeCall::EVM(call).dispatch(RuntimeOrigin::root()));
@@ -231,7 +231,7 @@ mod tests {
 				// wrong call to get the base cost
 				let call = create_evm_call(
 					H160::from(alice.0),
-					H160::from_low_u64_be(1027), // wrong address
+					H160::from_low_u64_be(1027),
 					precompile_call.clone(),
 				);
 				let wrong_address_call_result =
@@ -256,13 +256,9 @@ mod tests {
 				let call_result = RuntimeCall::EVM(call).dispatch(RuntimeOrigin::root()).unwrap();
 
 				// check weights
-				assert!(
-					wrong_address_call_result.actual_weight.unwrap().ref_time() + 25_000 // +25_000(1 gas) compare to base cost because of this line: https://github.com/freeverseio/laos/blob/b0a4682f05302a433d5fb2f5d6a8928214b0cf15/pallets/laos-evolution/src/precompiles/evolution_collection/mod.rs#L72-L73
-						== call_result.actual_weight.unwrap().ref_time()
-				);
 				assert_eq!(
 					call_result.actual_weight.unwrap(),
-					Weight::from_parts(402_211_000, 5_266)
+					Weight::from_parts(402_211_000, 5_266) // +25000 and same proof
 				);
 
 				// check gas
@@ -270,7 +266,7 @@ mod tests {
 					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
 						call_result.actual_weight.unwrap()
 					),
-					16_088
+					16_088 // +1 gas
 				);
 
 				// check weights from benchmarking
