@@ -59,6 +59,9 @@ pub mod pallet {
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		/// Converts `Self::AccountId` to `H160`
 		type AccountIdToH160: Convert<Self::AccountId, H160>;
+		/// Converts `H160` to `Self::AccountId`
+		type H160ToAccountId: Convert<H160, Self::AccountId>;
+		/// The weight information of this pallet.
 		type WeightInfo: WeightInfo;
 		/// Limit for the length of `token_uri`
 		#[pallet::constant]

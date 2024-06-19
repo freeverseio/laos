@@ -53,7 +53,6 @@ impl<R> EvolutionCollectionPrecompileSet<R> {
 impl<R> EvolutionCollectionPrecompileSet<R>
 where
 	R: Config,
-	R::AccountId: From<H160>,
 {
 	#[precompile::discriminant]
 	fn discriminant(address: H160, _gas: u64) -> DiscriminantResult<CollectionId> {
@@ -99,10 +98,10 @@ where
 			.map_err(|_| revert("invalid token uri length"))?;
 
 		match LaosEvolution::<R>::mint_with_external_uri(
-			handle.context().caller.into(),
+			R::H160ToAccountId::convert(handle.context().caller),
 			collection_id,
 			slot,
-			to.into(),
+			R::H160ToAccountId::convert(to),
 			token_uri_bounded.clone(),
 		) {
 			Ok(token_id) => {
@@ -136,7 +135,7 @@ where
 			.map_err(|_| revert("invalid token uri length"))?;
 
 		match LaosEvolution::<R>::evolve_with_external_uri(
-			handle.context().caller.into(),
+			R::H160ToAccountId::convert(handle.context().caller),
 			collection_id,
 			token_id,
 			token_uri_bounded.clone(),
@@ -167,8 +166,8 @@ where
 	) -> EvmResult<()> {
 		let to: H160 = to.into();
 		LaosEvolution::<R>::transfer_ownership(
-			handle.context().caller.into(),
-			to.into(),
+			R::H160ToAccountId::convert(handle.context().caller),
+			R::H160ToAccountId::convert(to),
 			collection_id,
 		)
 		.map_err(|err| revert(convert_dispatch_error_to_string(err)))?;
@@ -191,7 +190,7 @@ where
 		handle: &mut impl PrecompileHandle,
 	) -> EvmResult<()> {
 		match LaosEvolution::<R>::enable_public_minting(
-			handle.context().caller.into(),
+			R::H160ToAccountId::convert(handle.context().caller),
 			collection_id,
 		) {
 			Ok(()) => {
@@ -214,7 +213,7 @@ where
 		handle: &mut impl PrecompileHandle,
 	) -> EvmResult<()> {
 		match LaosEvolution::<R>::disable_public_minting(
-			handle.context().caller.into(),
+			R::H160ToAccountId::convert(handle.context().caller),
 			collection_id,
 		) {
 			Ok(()) => {
