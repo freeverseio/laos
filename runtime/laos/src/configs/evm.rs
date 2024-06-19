@@ -156,7 +156,7 @@ mod tests {
 					}
 					.into();
 
-				// wrong address to get the base cost
+				// wrong address is used to get the base cost
 				let call = create_evm_call(
 					H160::from(alice.0),
 					H160::from_low_u64_be(WRONG_ADDRESS),
@@ -234,7 +234,7 @@ mod tests {
 				let precompile_call: Vec<u8> =
 					EvolutionCollectionPrecompileSetCall::<Runtime>::owner {}.into();
 
-				// wrong call to get the base cost
+				// wrong address is used to get the base cost
 				let call = create_evm_call(
 					H160::from(alice.0),
 					H160::from_low_u64_be(1027),
