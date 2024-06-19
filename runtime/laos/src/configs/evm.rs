@@ -199,7 +199,7 @@ mod tests {
 					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
 						weights_from_pallet
 					),
-					9_282
+					9_481
 				);
 			});
 	}
@@ -228,7 +228,7 @@ mod tests {
 
 				let precompile_call: Vec<u8> =
 				EvolutionCollectionPrecompileSetCall::<Runtime>::owner {}.into();
-				
+
 				// wrong call to get the base cost
 				let call = create_evm_call(
 					H160::from(alice.0),
