@@ -5081,8 +5081,8 @@ dependencies = [
  "pallet-evm",
  "pallet-evm-asset-metadata-extender",
  "pallet-evm-chain-id",
- "pallet-evm-evolution-collection-factory-legacy",
- "pallet-evm-evolution-collection-legacy",
+ "pallet-evm-evolution-collection",
+ "pallet-evm-evolution-collection-factory",
  "pallet-evm-precompile-blake2",
  "pallet-evm-precompile-bn128",
  "pallet-evm-precompile-modexp",
@@ -7347,7 +7347,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-evm-evolution-collection-factory-legacy"
+name = "pallet-evm-evolution-collection"
 version = "2.0.0-dev"
 dependencies = [
  "evm",
@@ -7360,6 +7360,7 @@ dependencies = [
  "num_enum",
  "pallet-balances",
  "pallet-evm",
+ "pallet-evm-evolution-collection-factory",
  "pallet-laos-evolution",
  "pallet-timestamp",
  "parity-scale-codec",
@@ -7373,7 +7374,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-evm-evolution-collection-legacy"
+name = "pallet-evm-evolution-collection-factory"
 version = "2.0.0-dev"
 dependencies = [
  "evm",
@@ -7386,7 +7387,6 @@ dependencies = [
  "num_enum",
  "pallet-balances",
  "pallet-evm",
- "pallet-evm-evolution-collection-factory-legacy",
  "pallet-laos-evolution",
  "pallet-timestamp",
  "parity-scale-codec",

@@ -70,7 +70,7 @@ use frame_support::{
 };
 use frame_system::EnsureRoot;
 use pallet_balances::NegativeImbalance;
-pub use pallet_evm_evolution_collection_factory_legacy::REVERT_BYTECODE;
+pub use pallet_evm_evolution_collection_factory::REVERT_BYTECODE;
 use pallet_xcm::{EnsureXcm, IsVoiceOfBody};
 pub use sp_runtime::{Perbill, Permill};
 
