@@ -71,13 +71,13 @@ impl sp_runtime::traits::Convert<H160, AccountId> for H160ToAccountId {
 		h160
 	}
 }
-
-pub struct CreateEVMAccountWithDummyCode;
-impl crate::traits::OnCreateCollection for CreateEVMAccountWithDummyCode {
-	fn create_account(_address: H160, _code: Vec<u8>) {
-		// Test::create_account(address, REVERT_BYTECODE.into());
-	}
-}
+// TODO
+// pub struct CreateEVMAccountWithDummyCode<T: pallet_evm::Config>;
+// impl crate::traits::OnCreateCollection for CreateEVMAccountWithDummyCode<Test> {
+// 	fn create_account(address: H160, code: Vec<u8>) {
+// 		pallet_evm::Pallet::<T>::create_account(address, code);
+// 	}
+// }
 
 impl pallet_laos_evolution::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
@@ -85,7 +85,6 @@ impl pallet_laos_evolution::Config for Test {
 	type H160ToAccountId = H160ToAccountId;
 	type MaxTokenUriLength = MaxTokenUriLength;
 	type WeightInfo = ();
-	type OnCreateCollection = CreateEVMAccountWithDummyCode;
 }
 
 parameter_types! {

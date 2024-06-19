@@ -74,6 +74,7 @@ where
 				// This is done to ensure internal calls to the collection address do not
 				// fail.
 				// Evm::<Runtime>::create_account(collection_address, REVERT_BYTECODE.into());
+				// TODO
 
 				log2(
 					handle.context().address,

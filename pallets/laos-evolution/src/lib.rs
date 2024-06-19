@@ -64,7 +64,7 @@ pub mod pallet {
 		/// The weight information of this pallet.
 		type WeightInfo: WeightInfo;
 		/// Callback for creating a new collection
-		type OnCreateCollection: traits::OnCreateCollection;
+		// type OnCreateCollection: traits::OnCreateCollection; // TODO
 		/// Limit for the length of `token_uri`
 		#[pallet::constant]
 		type MaxTokenUriLength: Get<u32>;
