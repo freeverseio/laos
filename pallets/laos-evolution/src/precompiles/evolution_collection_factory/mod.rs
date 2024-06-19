@@ -23,7 +23,6 @@ use crate::{
 	Pallet as LaosEvolution,
 };
 use frame_support::DefaultNoBound;
-use pallet_evm::Pallet as Evm;
 use precompile_utils::prelude::{
 	keccak256, log2, revert, solidity, Address, EvmResult, LogExt, PrecompileHandle,
 };
@@ -56,11 +55,13 @@ impl<R> EvolutionCollectionFactoryPrecompile<R> {
 #[precompile_utils::precompile]
 impl<Runtime> EvolutionCollectionFactoryPrecompile<Runtime>
 where
-	Runtime: crate::Config + pallet_evm::Config,
-	// LaosEvolution<Runtime>: EvolutionCollectionFactoryT<Runtime::AccountId>,
+	Runtime: crate::Config,
 {
 	#[precompile::public("createCollection(address)")]
-	fn create_collection(handle: &mut impl PrecompileHandle, owner: Address) -> EvmResult<Address> {
+	pub(crate) fn create_collection(
+		handle: &mut impl PrecompileHandle,
+		owner: Address,
+	) -> EvmResult<Address> {
 		match LaosEvolution::<Runtime>::create_collection(Runtime::H160ToAccountId::convert(
 			owner.0,
 		)) {
@@ -72,7 +73,7 @@ where
 				//
 				// This is done to ensure internal calls to the collection address do not
 				// fail.
-				Evm::<Runtime>::create_account(collection_address, REVERT_BYTECODE.into());
+				// Evm::<Runtime>::create_account(collection_address, REVERT_BYTECODE.into());
 
 				log2(
 					handle.context().address,

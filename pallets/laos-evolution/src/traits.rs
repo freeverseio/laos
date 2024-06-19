@@ -18,7 +18,9 @@
 
 use crate::types::{CollectionId, Slot, TokenId};
 use frame_support::pallet_prelude::DispatchResult;
+use sp_core::H160;
 use sp_runtime::DispatchError;
+use sp_std::vec::Vec;
 
 /// `EvolutionCollectionFactory` trait for managing collections
 pub trait EvolutionCollectionFactory<AccountId> {
@@ -66,4 +68,12 @@ pub trait EvolutionCollection<AccountId, TokenUri> {
 
 	/// Checks if public minting is enabled for a specific collection.
 	fn is_public_minting_enabled(collection_id: CollectionId) -> bool;
+}
+
+pub trait OnCreateCollection {
+	fn create_account(address: H160, code: Vec<u8>);
+}
+
+impl OnCreateCollection for () {
+	fn create_account(_address: H160, _code: Vec<u8>) {}
 }

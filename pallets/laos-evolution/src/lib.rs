@@ -63,6 +63,8 @@ pub mod pallet {
 		type H160ToAccountId: Convert<H160, Self::AccountId>;
 		/// The weight information of this pallet.
 		type WeightInfo: WeightInfo;
+		/// Callback for creating a new collection
+		type OnCreateCollection: traits::OnCreateCollection;
 		/// Limit for the length of `token_uri`
 		#[pallet::constant]
 		type MaxTokenUriLength: Get<u32>;

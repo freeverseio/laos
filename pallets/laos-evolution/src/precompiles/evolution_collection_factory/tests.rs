@@ -19,7 +19,7 @@
 use super::*;
 use core::str::FromStr;
 use mock::*;
-use pallet_evm::AccountCodes;
+use pallet_evm::{AccountCodes, Pallet as Evm};
 use precompile_utils::{
 	prelude::log2,
 	testing::{Alice, Precompile1, PrecompileTesterExt},

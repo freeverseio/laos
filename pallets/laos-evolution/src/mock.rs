@@ -64,6 +64,7 @@ impl pallet_laos_evolution::Config for Test {
 	type H160ToAccountId = H160ToAccountId;
 	type MaxTokenUriLength = MaxTokenUriLength;
 	type WeightInfo = ();
+	type OnCreateCollection = ();
 }
 
 // Build genesis storage according to the mock runtime.
