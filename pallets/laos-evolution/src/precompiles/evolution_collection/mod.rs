@@ -69,6 +69,7 @@ where
 		handle: &mut impl PrecompileHandle,
 	) -> EvmResult<Address> {
 		let weight = R::WeightInfo::precompile_owner();
+		handle.record_cost(1)?;
 		handle.record_external_cost(Some(weight.ref_time()), Some(weight.proof_size()))?;
 
 		if let Some(owner) = LaosEvolution::<R>::collection_owner(collection_id) {

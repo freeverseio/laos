@@ -88,10 +88,201 @@ where
 
 #[cfg(test)]
 mod tests {
+	// TODO clean imports
 	use super::*;
+	use crate::currency::UNIT;
+	use core::str::FromStr;
+	use pallet_evm::{Call, FeeCalculator, GasWeightMapping};
+	use pallet_laos_evolution::{
+		precompiles::{
+			evolution_collection::EvolutionCollectionPrecompileSetCall,
+			evolution_collection_factory::EvolutionCollectionFactoryPrecompileCall,
+		},
+		WeightInfo,
+	};
+	use sp_core::H160;
+	use sp_runtime::traits::Dispatchable;
+
+	use crate::{
+		tests::{ExtBuilder, ALICE},
+		RuntimeCall, RuntimeOrigin,
+	};
+	use frame_support::assert_ok;
+	use precompile_utils::prelude::Address;
+
+	fn create_evm_call<R>(source: H160, target: H160, input: Vec<u8>) -> Call<R>
+	where
+		R: pallet_evm::Config,
+	{
+		Call::call {
+			source,
+			target,
+			input,
+			value: U256::zero(), // No value sent in EVM
+			gas_limit: 100_000,
+			max_fee_per_gas: R::FeeCalculator::min_gas_price().0,
+			max_priority_fee_per_gas: Some(U256::zero()),
+			nonce: None, // Use the next nonce
+			access_list: Vec::new(),
+		}
+	}
 
 	#[test]
 	fn check_block_gas_limit() {
 		assert_eq!(BlockGasLimit::get(), 15000000.into());
+	}
+
+	#[test]
+	fn check_min_gas_price() {
+		ExtBuilder::default().build().execute_with(|| {
+			let min_gas_price = <Runtime as pallet_evm::Config>::FeeCalculator::min_gas_price();
+			assert_eq!(min_gas_price.0, U256::from(1_000_000_000));
+			assert_eq!(min_gas_price.1, Weight::from_parts(25_000_000, 0));
+		});
+	}
+
+	#[test]
+	fn create_collection_precompile_call_has_a_cost() {
+		let alice = AccountId::from_str(ALICE).unwrap();
+
+		ExtBuilder::default()
+			.with_balances(vec![(alice, 1000 * UNIT)])
+			.build()
+			.execute_with(|| {
+				let precompile_call: Vec<u8> =
+					EvolutionCollectionFactoryPrecompileCall::<Runtime>::create_collection {
+						owner: Address(alice.into()),
+					}
+					.into();
+
+				// wrong call to get the base cost
+				let call = create_evm_call(
+					H160::from(alice.0),
+					H160::from_low_u64_be(1), // wrong address
+					precompile_call.clone(),
+				);
+				let wrong_address_call_result =
+					RuntimeCall::EVM(call).dispatch(RuntimeOrigin::root()).unwrap();
+
+				// the actual call
+				let call = create_evm_call(
+					H160::from(alice.0),
+					H160::from_low_u64_be(1027),
+					precompile_call.clone(),
+				);
+				let call_result = RuntimeCall::EVM(call).dispatch(RuntimeOrigin::root()).unwrap();
+
+				// check weights
+				assert!(
+					wrong_address_call_result.actual_weight.unwrap().ref_time() <
+						call_result.actual_weight.unwrap().ref_time(),
+					"There is no call recorded within the precompile",
+				);
+				assert_eq!(
+					call_result.actual_weight.unwrap(),
+					Weight::from_parts(896_061_000, 10_204)
+				);
+
+				// check gas
+				assert_eq!(
+					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
+						call_result.actual_weight.unwrap()
+					),
+					35_842
+				);
+
+				// check weights from benchmarking
+				let weights_from_pallet =
+					weights::pallet_laos_evolution::WeightInfo::<Runtime>::create_collection(); // TODO use from runtime benchmarking when they are ready
+				assert_eq!(weights_from_pallet, Weight::from_parts(237_029_000, 1_493));
+				assert_eq!(
+					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
+						weights_from_pallet
+					),
+					9_282
+				);
+			});
+	}
+
+	#[test]
+	fn owner_precompile_call_has_a_cost() {
+		let alice = AccountId::from_str(ALICE).unwrap();
+
+		ExtBuilder::default()
+			.with_balances(vec![(alice, 1000 * UNIT)])
+			.build()
+			.execute_with(|| {
+				// create collection
+				let precompile_call: Vec<u8> =
+					EvolutionCollectionFactoryPrecompileCall::<Runtime>::create_collection {
+						owner: Address(alice.into()),
+					}
+					.into();
+				let precompile_address = H160::from_low_u64_be(1027);
+				let call = create_evm_call(
+					H160::from(alice.0),
+					precompile_address,
+					precompile_call.clone(),
+				);
+				assert_ok!(RuntimeCall::EVM(call).dispatch(RuntimeOrigin::root()));
+
+				let precompile_call: Vec<u8> =
+				EvolutionCollectionPrecompileSetCall::<Runtime>::owner {}.into();
+				
+				// wrong call to get the base cost
+				let call = create_evm_call(
+					H160::from(alice.0),
+					H160::from_low_u64_be(1027), // wrong address
+					precompile_call.clone(),
+				);
+				let wrong_address_call_result = RuntimeCall::EVM(call).dispatch(RuntimeOrigin::root()).unwrap();
+				assert_eq!(
+					wrong_address_call_result.actual_weight.unwrap(),
+					Weight::from_parts(402_186_000, 5_266)
+				);
+				assert_eq!(
+					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
+						wrong_address_call_result.actual_weight.unwrap()
+					),
+					16_087
+				);
+
+				// the actual call
+				let call = create_evm_call(
+					H160::from(alice.0),
+					H160::from_str("fffffffffffffffffffffffe0000000000000000").unwrap(),
+					precompile_call.clone(),
+				);
+				let call_result = RuntimeCall::EVM(call).dispatch(RuntimeOrigin::root()).unwrap();
+
+				// check weights
+				assert!(
+					wrong_address_call_result.actual_weight.unwrap().ref_time()
+						< call_result.actual_weight.unwrap().ref_time(), "There is no call recorded within the precompile",
+				);
+				assert_eq!(
+					call_result.actual_weight.unwrap(),
+					Weight::from_parts(402_211_000, 5_266) // +25_000(1 gas) compare to base cost because of this line: https://github.com/freeverseio/laos/blob/b0a4682f05302a433d5fb2f5d6a8928214b0cf15/pallets/laos-evolution/src/precompiles/evolution_collection/mod.rs#L72-L73
+				);
+
+				// check gas
+				assert_eq!(
+					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
+						call_result.actual_weight.unwrap()
+					),
+					16_088
+				);
+
+				// check weights from benchmarking
+				let weights_from_pallet =
+					weights::pallet_laos_evolution::WeightInfo::<Runtime>::precompile_owner(); // TODO use from runtime benchmarking when they are ready
+				assert_eq!(weights_from_pallet, Weight::from_parts(31_215_000, 3_509));
+				assert_eq!(
+					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
+						weights_from_pallet
+					),
+					1_248
+				);
+			});
 	}
 }
