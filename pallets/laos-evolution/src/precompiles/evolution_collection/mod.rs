@@ -7,7 +7,6 @@ use crate::{
 };
 use fp_evm::ExitError;
 use frame_support::DefaultNoBound;
-use parity_scale_codec::Encode;
 use precompile_utils::{
 	keccak256,
 	prelude::{
@@ -54,7 +53,7 @@ impl<R> EvolutionCollectionPrecompileSet<R> {
 impl<R> EvolutionCollectionPrecompileSet<R>
 where
 	R: Config,
-	R::AccountId: From<H160> + Encode,
+	R::AccountId: From<H160>,
 {
 	#[precompile::discriminant]
 	fn discriminant(address: H160, _gas: u64) -> DiscriminantResult<CollectionId> {
