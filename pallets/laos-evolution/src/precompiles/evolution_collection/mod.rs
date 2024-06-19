@@ -18,7 +18,10 @@ use precompile_utils::{
 };
 use scale_info::prelude::format;
 use sp_core::{H160, U256};
-use sp_runtime::{traits::PhantomData, BoundedVec, DispatchError};
+use sp_runtime::{
+	traits::{Convert, PhantomData},
+	BoundedVec, DispatchError,
+};
 
 /// Solidity selector of the MintedWithExternalURI log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
@@ -51,7 +54,7 @@ impl<R> EvolutionCollectionPrecompileSet<R> {
 impl<R> EvolutionCollectionPrecompileSet<R>
 where
 	R: Config,
-	R::AccountId: From<H160> + Into<H160> + Encode,
+	R::AccountId: From<H160> + Encode,
 {
 	#[precompile::discriminant]
 	fn discriminant(address: H160, _gas: u64) -> DiscriminantResult<CollectionId> {
@@ -72,7 +75,7 @@ where
 		handle.record_external_cost(Some(weight.ref_time()), Some(weight.proof_size()))?;
 
 		if let Some(owner) = LaosEvolution::<R>::collection_owner(collection_id) {
-			Ok(Address(owner.into()))
+			Ok(Address(R::AccountIdToH160::convert(owner)))
 		} else {
 			Err(revert("collection does not exist"))
 		}
