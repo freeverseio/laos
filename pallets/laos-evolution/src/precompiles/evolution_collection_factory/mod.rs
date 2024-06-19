@@ -26,13 +26,15 @@ use crate::{
 };
 use frame_support::DefaultNoBound;
 use pallet_evm::{GasWeightMapping, Pallet as Evm};
-use parity_scale_codec::Encode;
 use precompile_utils::prelude::{
 	keccak256, log2, revert, solidity, Address, EvmResult, LogExt, PrecompileHandle,
 };
 use scale_info::prelude::{format, string::String};
 use sp_core::{Get, H160};
-use sp_runtime::{traits::PhantomData, DispatchError};
+use sp_runtime::{
+	traits::{Convert, PhantomData},
+	DispatchError,
+};
 
 /// Solidity selector of the CreateCollection log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_NEW_COLLECTION: [u8; 32] = keccak256!("NewCollection(address,address)");
@@ -56,13 +58,14 @@ impl<R> EvolutionCollectionFactoryPrecompile<R> {
 #[precompile_utils::precompile]
 impl<Runtime> EvolutionCollectionFactoryPrecompile<Runtime>
 where
-	Runtime: pallet_evm::Config,
+	Runtime: crate::Config + pallet_evm::Config,
 	LaosEvolution<Runtime>: EvolutionCollectionFactoryT<Runtime::AccountId>,
-	Runtime::AccountId: From<H160> + Into<H160> + Encode,
 {
 	#[precompile::public("createCollection(address)")]
 	fn create_collection(handle: &mut impl PrecompileHandle, owner: Address) -> EvmResult<Address> {
-		match LaosEvolution::<Runtime>::create_collection(owner.0.into()) {
+		match LaosEvolution::<Runtime>::create_collection(Runtime::H160ToAccountId::convert(
+			owner.0,
+		)) {
 			Ok(collection_id) => {
 				// TODO this weights are not the actual from runtime
 				let mut consumed_weight = LaosEvolutionWeights::<Runtime>::create_collection();

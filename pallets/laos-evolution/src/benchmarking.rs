@@ -18,7 +18,10 @@
 #![cfg(feature = "runtime-benchmarks")]
 use super::*;
 
-use crate::precompiles::evolution_collection::EvolutionCollectionPrecompileSet;
+use crate::precompiles::{
+	evolution_collection::EvolutionCollectionPrecompileSet,
+	evolution_collection_factory::EvolutionCollectionFactoryPrecompile,
+};
 #[allow(unused)]
 use crate::Pallet as LaosEvolution;
 use fp_evm::Transfer;
@@ -90,6 +93,19 @@ impl pallet_evm::PrecompileHandle for MockPrecompileHandle {
 #[benchmarks]
 mod benchmarks {
 	use super::*;
+
+	#[benchmark]
+	fn precompile_create_collection() {
+		let mut handle = MockPrecompileHandle;
+
+		#[block]
+		{
+			let _ = EvolutionCollectionFactoryPrecompile::<T>::create_collection(
+				&mut handle,
+				H160::zero(),
+			);
+		}
+	}
 
 	#[benchmark]
 	fn precompile_owner() {
