@@ -88,9 +88,7 @@ where
 
 #[cfg(test)]
 mod tests {
-	// TODO clean imports
 	use super::*;
-	use crate::currency::UNIT;
 	use core::str::FromStr;
 	use pallet_evm::{Call, FeeCalculator, GasWeightMapping};
 	use pallet_laos_evolution::{
@@ -104,6 +102,7 @@ mod tests {
 	use sp_runtime::traits::Dispatchable;
 
 	use crate::{
+		currency::UNIT,
 		tests::{ExtBuilder, ALICE},
 		RuntimeCall, RuntimeOrigin,
 	};
@@ -227,7 +226,7 @@ mod tests {
 				assert_ok!(RuntimeCall::EVM(call).dispatch(RuntimeOrigin::root()));
 
 				let precompile_call: Vec<u8> =
-				EvolutionCollectionPrecompileSetCall::<Runtime>::owner {}.into();
+					EvolutionCollectionPrecompileSetCall::<Runtime>::owner {}.into();
 
 				// wrong call to get the base cost
 				let call = create_evm_call(
@@ -235,7 +234,8 @@ mod tests {
 					H160::from_low_u64_be(1027), // wrong address
 					precompile_call.clone(),
 				);
-				let wrong_address_call_result = RuntimeCall::EVM(call).dispatch(RuntimeOrigin::root()).unwrap();
+				let wrong_address_call_result =
+					RuntimeCall::EVM(call).dispatch(RuntimeOrigin::root()).unwrap();
 				assert_eq!(
 					wrong_address_call_result.actual_weight.unwrap(),
 					Weight::from_parts(402_186_000, 5_266)
@@ -258,7 +258,8 @@ mod tests {
 				// check weights
 				assert!(
 					wrong_address_call_result.actual_weight.unwrap().ref_time()
-						< call_result.actual_weight.unwrap().ref_time(), "There is no call recorded within the precompile",
+						< call_result.actual_weight.unwrap().ref_time(),
+					"There is no call recorded within the precompile",
 				);
 				assert_eq!(
 					call_result.actual_weight.unwrap(),
