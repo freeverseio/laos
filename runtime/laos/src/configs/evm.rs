@@ -257,13 +257,12 @@ mod tests {
 
 				// check weights
 				assert!(
-					wrong_address_call_result.actual_weight.unwrap().ref_time()
-						< call_result.actual_weight.unwrap().ref_time(),
-					"There is no call recorded within the precompile",
+					wrong_address_call_result.actual_weight.unwrap().ref_time() + 25_000 // +25_000(1 gas) compare to base cost because of this line: https://github.com/freeverseio/laos/blob/b0a4682f05302a433d5fb2f5d6a8928214b0cf15/pallets/laos-evolution/src/precompiles/evolution_collection/mod.rs#L72-L73
+						== call_result.actual_weight.unwrap().ref_time()
 				);
 				assert_eq!(
 					call_result.actual_weight.unwrap(),
-					Weight::from_parts(402_211_000, 5_266) // +25_000(1 gas) compare to base cost because of this line: https://github.com/freeverseio/laos/blob/b0a4682f05302a433d5fb2f5d6a8928214b0cf15/pallets/laos-evolution/src/precompiles/evolution_collection/mod.rs#L72-L73
+					Weight::from_parts(402_211_000, 5_266)
 				);
 
 				// check gas
