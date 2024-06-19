@@ -156,7 +156,7 @@ mod tests {
 					}
 					.into();
 
-				// wrong call to get the base cost
+				// wrong address to get the base cost
 				let call = create_evm_call(
 					H160::from(alice.0),
 					H160::from_low_u64_be(WRONG_ADDRESS),
@@ -184,6 +184,12 @@ mod tests {
 				);
 
 				// check gas
+				assert_eq!(
+					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
+						wrong_address_call_result.actual_weight.unwrap()
+					),
+					16_455
+				);
 				assert_eq!(
 					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
 						call_result.actual_weight.unwrap()
@@ -236,16 +242,6 @@ mod tests {
 				);
 				let wrong_address_call_result =
 					RuntimeCall::EVM(call).dispatch(RuntimeOrigin::root()).unwrap();
-				assert_eq!(
-					wrong_address_call_result.actual_weight.unwrap(),
-					Weight::from_parts(402_186_000, 5_266)
-				);
-				assert_eq!(
-					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
-						wrong_address_call_result.actual_weight.unwrap()
-					),
-					16_087
-				);
 
 				// the actual call
 				let call = create_evm_call(
@@ -257,11 +253,21 @@ mod tests {
 
 				// check weights
 				assert_eq!(
+					wrong_address_call_result.actual_weight.unwrap(),
+					Weight::from_parts(402_186_000, 5_266)
+				);
+				assert_eq!(
 					call_result.actual_weight.unwrap(),
 					Weight::from_parts(402_211_000, 5_266) // +25000 and same proof
 				);
 
 				// check gas
+				assert_eq!(
+					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
+						wrong_address_call_result.actual_weight.unwrap()
+					),
+					16_087
+				);
 				assert_eq!(
 					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
 						call_result.actual_weight.unwrap()
