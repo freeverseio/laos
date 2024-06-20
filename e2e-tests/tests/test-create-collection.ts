@@ -10,6 +10,7 @@ import {
 	GENESIS_ACCOUNT_PRIVATE_KEY,
 	REVERT_BYTECODE,
 	SELECTOR_LOG_NEW_COLLECTION,
+	EVOLUTION_COLLECTION_ABI,
 } from "./config";
 import { createCollection, describeWithExistingNode } from "./util";
 
@@ -76,4 +77,27 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
 		// non-contract address doesn't have any code
 		expect(await context.web3.eth.getCode(GENESIS_ACCOUNT)).to.be.eq("0x");
 	});
+
+	step("createCollection can call estimateGas", async function () {
+		this.timeout(70000);
+
+		const contract = new context.web3.eth.Contract(EVOLUTION_COLLETION_FACTORY_ABI, CONTRACT_ADDRESS, {
+			from: GENESIS_ACCOUNT,
+			gasPrice: GAS_PRICE,
+		});
+		
+		let nonce = await context.web3.eth.getTransactionCount(GENESIS_ACCOUNT);
+		context.web3.eth.accounts.wallet.add(GENESIS_ACCOUNT_PRIVATE_KEY);
+		
+		const estimatedGas = await contract.methods.createCollection(GENESIS_ACCOUNT).estimateGas({
+			from: GENESIS_ACCOUNT,
+			gas: GAS_LIMIT,
+			gasPrice: GAS_PRICE,
+			nonce: nonce++,
+		});
+		
+		expect(estimatedGas).to.be.a('number');
+		
+		
+	// });
 });
