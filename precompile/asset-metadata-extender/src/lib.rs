@@ -16,18 +16,18 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 use fp_evm::PrecompileHandle;
+use frame_support::DefaultNoBound;
 use pallet_asset_metadata_extender::{
 	traits::AssetMetadataExtender as AssetMetadataExtenderT,
 	weights::{SubstrateWeight as AssetMetadataExtenderWeights, WeightInfo},
 	Config, Pallet as AssetMetadataExtender,
 };
+use pallet_evm::GasWeightMapping;
 use parity_scale_codec::Encode;
 use precompile_utils::{
 	prelude::{keccak256, log3, Address, EvmResult, LogExt},
 	solidity::{self, codec::UnboundedString, revert::revert},
 };
-
-use pallet_evm::GasWeightMapping;
 use scale_info::prelude::{format, string::String};
 use sp_core::H160;
 use sp_io::hashing::keccak_256;
@@ -43,25 +43,7 @@ pub const SELECTOR_LOG_EXTENDED_UL_WITH_EXTERNAL_URI: [u8; 32] =
 pub const SELECTOR_LOG_UPDATED_EXTENDED_UL_WITH_EXTERNAL_URI: [u8; 32] =
 	keccak256!("UpdatedExtendedULWithExternalURI(address,bytes32,string,string)");
 
-// #[laos_precompile_utils_macro::generate_function_selector]
-// #[derive(Debug, PartialEq)]
-// pub enum Action {
-// 	/// Extend asset metadata (token uri)
-// 	Extend = "extendULWithExternalURI(string,string)",
-// 	/// Get extensions balance for a given universal location
-// 	Balance = "balanceOfUL(string)",
-// 	/// Get claimer of a given universal location using indexation
-// 	Claimer = "claimerOfULByIndex(string,uint32)",
-// 	/// Get token uri of a given universal location using indexation
-// 	Extension = "extensionOfULByIndex(string,uint32)", // TODO rename `extension` for `tokenURI`?
-// 	/// Update token uri of a given universal location using indexation
-// 	Update = "updateExtendedULWithExternalURI(string,string)",
-// 	/// Get extension of a given universal location using claimer
-// 	ExtensionOfULByClaimer = "extensionOfULByClaimer(string,address)",
-// 	/// Check if a given universal location has an extension
-// 	HasExtension = "hasExtensionByClaimer(string,address)",
-// }
-
+#[derive(DefaultNoBound)]
 pub struct AssetMetadataExtenderPrecompile<Runtime>(PhantomData<Runtime>);
 
 impl<Runtime> AssetMetadataExtenderPrecompile<Runtime> {
@@ -112,7 +94,7 @@ where
 			token_uri.as_bytes().to_vec().len() as u32,
 		);
 
-		let ul_hash = keccak_256(&universal_location.as_bytes().to_vec());
+		let ul_hash = keccak_256(universal_location.as_bytes());
 		log3(
 			handle.context().address,
 			SELECTOR_LOG_EXTENDED_UL_WITH_EXTERNAL_URI,
@@ -169,7 +151,7 @@ where
 			token_uri.as_bytes().to_vec().len() as u32,
 		);
 
-		let ul_hash = keccak_256(&universal_location.as_bytes().to_vec());
+		let ul_hash = keccak_256(universal_location.as_bytes());
 		log3(
 			handle.context().address,
 			SELECTOR_LOG_UPDATED_EXTENDED_UL_WITH_EXTERNAL_URI,

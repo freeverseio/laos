@@ -84,7 +84,7 @@ fn create_token_uri_extension_should_emit_log() {
 				Precompile1,
 				SELECTOR_LOG_EXTENDED_UL_WITH_EXTERNAL_URI,
 				Alice,
-				keccak_256(&universal_location.as_bytes().to_vec()),
+				keccak_256(universal_location.as_bytes()),
 				solidity::encode_event_data((universal_location, token_uri)),
 			))
 			.execute_some();
@@ -299,7 +299,7 @@ fn update_of_extension_should_emit_a_log() {
 				Precompile1,
 				SELECTOR_LOG_UPDATED_EXTENDED_UL_WITH_EXTERNAL_URI,
 				Alice,
-				keccak_256(&universal_location.as_bytes().to_vec()),
+				keccak_256(universal_location.as_bytes()),
 				solidity::encode_event_data((universal_location, new_token_uri)),
 			))
 			.execute_returns(());
