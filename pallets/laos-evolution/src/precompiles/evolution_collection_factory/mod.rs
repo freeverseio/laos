@@ -16,11 +16,9 @@
 
 //! LAOS precompile module.
 
-#![cfg_attr(not(feature = "std"), no_std)]
-
 use crate::{
 	collection_id_to_address, traits::EvolutionCollectionFactory as EvolutionCollectionFactoryT,
-	Pallet as LaosEvolution,
+	weights::WeightInfo, Pallet as LaosEvolution,
 };
 use frame_support::DefaultNoBound;
 use precompile_utils::prelude::{
@@ -62,6 +60,9 @@ where
 		handle: &mut impl PrecompileHandle,
 		owner: Address,
 	) -> EvmResult<Address> {
+		let weight = Runtime::WeightInfo::precompile_create_collection();
+		handle.record_external_cost(Some(weight.ref_time()), Some(weight.proof_size()))?;
+
 		match LaosEvolution::<Runtime>::create_collection(Runtime::H160ToAccountId::convert(
 			owner.0,
 		)) {

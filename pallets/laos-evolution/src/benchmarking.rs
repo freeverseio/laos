@@ -26,10 +26,10 @@ use crate::precompiles::{
 use crate::Pallet as LaosEvolution;
 use fp_evm::Transfer;
 use frame_benchmarking::v2::*;
+use pallet_evm::{Context, ExitError, ExitReason, Log, PrecompileHandle};
+use precompile_utils::prelude::Address;
+use sp_core::{H160, H256, U256};
 use sp_std::{vec, vec::Vec};
-use precompile_utils::prelude::{ Address };
-use pallet_evm::{Context, Log, ExitError, ExitReason, PrecompileHandle};
-use sp_core::{ H256 , H160};
 
 pub struct MockHandle {
 	pub input: Vec<u8>,
@@ -42,11 +42,15 @@ pub struct MockHandle {
 }
 
 impl MockHandle {
-	pub fn new(input: Vec<u8>, gas_limit: Option<u64>, context: Context) -> Self {
+	pub fn new() -> Self {
 		Self {
-			input,
-			gas_limit,
-			context,
+			input: vec![],
+			gas_limit: None,
+			context: Context {
+				address: H160::zero(),
+				caller: H160::zero(),
+				apparent_value: U256::zero(),
+			},
 			is_static: false,
 			gas_used: 0,
 			logs: vec![],
@@ -112,82 +116,19 @@ impl PrecompileHandle for MockHandle {
 	}
 }
 
-struct MockPrecompileHandle{}
-impl pallet_evm::PrecompileHandle for MockPrecompileHandle {
-	fn call(
-		&mut self,
-		_: sp_core::H160,
-		_: Option<Transfer>,
-		_: Vec<u8>,
-		_: Option<u64>,
-		_: bool,
-		_: &pallet_evm::Context,
-	) -> (pallet_evm::ExitReason, Vec<u8>) {
-		unimplemented!()
-	}
-
-	fn record_cost(&mut self, _: u64) -> Result<(), pallet_evm::ExitError> {
-		unimplemented!()
-	}
-
-	fn remaining_gas(&self) -> u64 {
-		unimplemented!()
-	}
-
-	fn log(
-		&mut self,
-		_: sp_core::H160,
-		_: Vec<sp_core::H256>,
-		_: Vec<u8>,
-	) -> Result<(), pallet_evm::ExitError> {
-		unimplemented!()
-	}
-
-	fn code_address(&self) -> sp_core::H160 {
-		unimplemented!()
-	}
-
-	fn input(&self) -> &[u8] {
-		unimplemented!()
-	}
-
-	fn context(&self) -> &pallet_evm::Context {
-		unimplemented!()
-	}
-
-	fn is_static(&self) -> bool {
-		true
-	}
-
-	fn gas_limit(&self) -> Option<u64> {
-		unimplemented!()
-	}
-
-	fn record_external_cost(
-		&mut self,
-		_ref_time: Option<u64>,
-		_proof_size: Option<u64>,
-	) -> Result<(), fp_evm::ExitError> {
-		Ok(())
-	}
-
-	fn refund_external_cost(&mut self, _ref_time: Option<u64>, _proof_size: Option<u64>) {}
-}
-
 #[benchmarks]
 mod benchmarks {
 	use super::*;
 
 	#[benchmark]
 	fn precompile_create_collection() {
-		let mut handle = MockHandle::new(vec![], None, Context::default());
+		let owner = Address::from(H160::zero());
+		let mut handle = MockHandle::new();
 
 		#[block]
 		{
-			let _ = EvolutionCollectionFactoryPrecompile::<T>::create_collection(
-				&mut handle,
-				Address::from(H160::zero()),
-			);
+			let _ =
+				EvolutionCollectionFactoryPrecompile::<T>::create_collection(&mut handle, owner);
 		}
 	}
 
@@ -196,7 +137,7 @@ mod benchmarks {
 		let caller: T::AccountId = whitelisted_caller();
 		let owner = caller.clone();
 		let collection_id = LaosEvolution::<T>::create_collection(owner).unwrap();
-		let mut handle = MockPrecompileHandle{};
+		let mut handle = MockHandle::new();
 
 		#[block]
 		{
