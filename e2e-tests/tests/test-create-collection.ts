@@ -99,5 +99,5 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
 		expect(estimatedGas).to.be.a('number');
 		
 		
-	// });
+	});
 });
