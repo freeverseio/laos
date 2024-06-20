@@ -10,7 +10,6 @@ import {
 	GENESIS_ACCOUNT_PRIVATE_KEY,
 	REVERT_BYTECODE,
 	SELECTOR_LOG_NEW_COLLECTION,
-	EVOLUTION_COLLECTION_ABI,
 } from "./config";
 import { createCollection, describeWithExistingNode } from "./util";
 
