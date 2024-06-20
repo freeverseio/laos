@@ -258,6 +258,7 @@ pallet-evm-evolution-collection-legacy = { path = "./precompile/evolution-collec
 pallet-evm-erc721 = { path = "./precompile/erc721", default-features = false }
 pallet-asset-metadata-extender = { path = "./pallets/asset-metadata-extender", default-features = false }
 pallet-evm-asset-metadata-extender = { path = "./precompile/asset-metadata-extender", default-features = false }
+pallet-evm-asset-metadata-extender-legacy = { path = "./precompile/asset-metadata-extender-legacy", default-features = false }
 pallet-parachain-staking = { path = "./pallets/parachain-staking", default-features = false }
 
 # Precompiles
