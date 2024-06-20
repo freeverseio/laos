@@ -493,46 +493,42 @@ fn extension_by_location_and_claimer_of_unexistent_claim_reverts() {
 	});
 }
 
-// #[test]
-// fn has_extension_by_claim_of_existent_claim_returns_true() {
-// 	new_test_ext().execute_with(|| {
-// 		let universal_location = Bytes("some_universal_location".as_bytes().to_vec());
-// 		let claimer = H160::from_str(TEST_CLAIMER).unwrap();
-// 		let claim = Bytes(vec![1u8; 10]);
+#[test]
+fn has_extension_by_claim_of_existent_claim_returns_true() {
+	new_test_ext().execute_with(|| {
+		let universal_location: UnboundedString = "my_awesome_universal_location".into();
+		let token_uri: UnboundedString = "ciao".into();
 
-// 		let input = EvmDataWriter::new_with_selector(Action::Extend)
-// 			.write(universal_location.clone())
-// 			.write(claim.clone())
-// 			.build();
+		extend(universal_location.clone(), token_uri.clone());
 
-// 		precompiles()
-// 			.prepare_test(claimer, H160(PRECOMPILE_ADDRESS), input.clone())
-// 			.execute_returns_raw(sp_std::vec![]);
+		precompiles()
+			.prepare_test(
+				Alice,
+				Precompile1,
+				PrecompileCall::has_extension_by_claimer {
+					universal_location: universal_location.clone(),
+					claimer: Address(Alice.into()),
+				},
+			)
+			.execute_returns(true);
+	});
+}
 
-// 		let input = EvmDataWriter::new_with_selector(Action::HasExtension)
-// 			.write(universal_location.clone())
-// 			.write(Address::from(claimer))
-// 			.build();
+#[test]
+fn has_extension_by_claimer_of_unexistent_claim_returns_false() {
+	new_test_ext().execute_with(|| {
+		let universal_location: UnboundedString = "my_awesome_universal_location".into();
+		let token_uri: UnboundedString = "ciao".into();
 
-// 		precompiles()
-// 			.prepare_test(claimer, H160(PRECOMPILE_ADDRESS), input)
-// 			.execute_returns(true);
-// 	});
-// }
-
-// #[test]
-// fn has_extension_by_claimer_of_unexistent_claim_returns_false() {
-// 	new_test_ext().execute_with(|| {
-// 		let universal_location = Bytes("some_universal_location".as_bytes().to_vec());
-// 		let claimer = H160::from_str(TEST_CLAIMER).unwrap();
-
-// 		let input = EvmDataWriter::new_with_selector(Action::HasExtension)
-// 			.write(universal_location.clone())
-// 			.write(Address::from(claimer))
-// 			.build();
-
-// 		precompiles()
-// 			.prepare_test(claimer, H160(PRECOMPILE_ADDRESS), input)
-// 			.execute_returns(false);
-// 	});
-// }
+		precompiles()
+			.prepare_test(
+				Alice,
+				Precompile1,
+				PrecompileCall::has_extension_by_claimer {
+					universal_location: universal_location.clone(),
+					claimer: Address(Alice.into()),
+				},
+			)
+			.execute_returns(false);
+	});
+}
