@@ -112,7 +112,7 @@ where
 			token_uri.as_bytes().to_vec().len() as u32,
 		);
 
-		let ul_hash = keccak_256(&universal_location.as_bytes().to_vec()); // TODO see if this can be improved
+		let ul_hash = keccak_256(&universal_location.as_bytes().to_vec());
 		log3(
 			handle.context().address,
 			SELECTOR_LOG_EXTENDED_UL_WITH_EXTERNAL_URI,
@@ -172,7 +172,7 @@ where
 		let ul_hash = keccak_256(&universal_location.as_bytes().to_vec());
 		log3(
 			handle.context().address,
-			SELECTOR_LOG_EXTENDED_UL_WITH_EXTERNAL_URI,
+			SELECTOR_LOG_UPDATED_EXTENDED_UL_WITH_EXTERNAL_URI,
 			handle.context().caller,
 			ul_hash,
 			solidity::encode_event_data((universal_location, token_uri)),

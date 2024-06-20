@@ -17,11 +17,11 @@
 use super::*;
 use crate::mock::*;
 use core::str::FromStr;
-use fp_evm::Log;
+use fp_evm::{Context, Log, PrecompileSet};
 use precompile_utils::{
 	prelude::{keccak256, log3},
 	solidity::codec::BoundedBytes,
-	testing::{Alice, Precompile1, PrecompileTesterExt},
+	testing::{Alice, MockHandle, Precompile1, PrecompileTesterExt},
 };
 use sp_core::{H160, H256, U256};
 use sp_io::hashing::keccak_256;
@@ -31,7 +31,20 @@ fn precompiles() -> LaosPrecompiles<Test> {
 	PrecompilesInstance::get()
 }
 
-const TEST_CLAIMER: &str = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
+/// Utility function to extend an universal location.
+///
+/// Note: this function is used instead of `PrecompileTesterExt::execute_returns` because the latter
+/// does not return the output of the precompile. And `PrecompileTester::execute` is a private
+/// function.
+fn extend(universal_location: UnboundedString, token_uri: UnboundedString) {
+	let mut handle = MockHandle::new(
+		Precompile1.into(),
+		Context { address: Precompile1.into(), caller: Alice.into(), apparent_value: U256::zero() },
+	);
+	handle.input = PrecompileCall::extend { universal_location, token_uri }.into();
+
+	precompiles().execute(&mut handle).unwrap().unwrap();
+}
 
 #[test]
 fn check_log_selectors() {
@@ -39,19 +52,19 @@ fn check_log_selectors() {
 		hex::encode(SELECTOR_LOG_EXTENDED_UL_WITH_EXTERNAL_URI),
 		"f744da499cb735a8fc987aa2a331a1cbeca79e449e4c04eeccfe57c538e79070"
 	);
-	// assert_eq!(
-	// 	hex::encode(SELECTOR_LOG_UPDATED_EXTENDED_UL_WITH_EXTERNAL_URI),
-	// 	"e7ebe38355126fe0c3eab0ec03eb1b94ff501458a80713c9eb8b737334a651ff"
-	// );
+	assert_eq!(
+		hex::encode(SELECTOR_LOG_UPDATED_EXTENDED_UL_WITH_EXTERNAL_URI),
+		"e7ebe38355126fe0c3eab0ec03eb1b94ff501458a80713c9eb8b737334a651ff"
+	);
 }
 
 #[test]
 fn selectors() {
 	assert!(PrecompileCall::extend_selectors().contains(&0xA5FBDF1D));
+	assert!(PrecompileCall::update_selectors().contains(&0xCD79C745));
 	// assert_eq!(Action::Balance as u32, 0x7B65DED5);
 	// assert_eq!(Action::Claimer as u32, 0xA565BB04);
 	// assert_eq!(Action::Extension as u32, 0xB2B7C05A);
-	// assert_eq!(Action::Update as u32, 0xCD79C745);
 }
 
 #[test]
@@ -196,124 +209,104 @@ fn create_token_uri_extension_records_cost() {
 	})
 }
 
-// #[test]
-// fn update_inexistent_extension_should_fail() {
-// 	new_test_ext().execute_with(|| {
-// 		let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
-// 		let token_uri = Bytes("my_awesome_token_uri".as_bytes().to_vec());
+#[test]
+fn update_inexistent_extension_should_fail() {
+	new_test_ext().execute_with(|| {
+		let universal_location: UnboundedString = "my_awesome_universal_location".into();
+		let token_uri: UnboundedString = "ciao".into();
 
-// 		let input = EvmDataWriter::new_with_selector(Action::Update)
-// 			.write(universal_location)
-// 			.write(token_uri)
-// 			.build();
+		precompiles()
+			.prepare_test(
+				Alice,
+				Precompile1,
+				PrecompileCall::update {
+					universal_location: universal_location.clone(),
+					token_uri: token_uri.clone(),
+				},
+			)
+			.execute_reverts(|r| r == b"ExtensionDoesNotExist");
+	});
+}
 
-// 		precompiles()
-// 			.prepare_test(H160::from_str(TEST_CLAIMER).unwrap(), H160(PRECOMPILE_ADDRESS), input)
-// 			.execute_reverts(|r| r == b"ExtensionDoesNotExist");
-// 	});
-// }
+#[test]
+fn update_of_extension_should_succeed() {
+	new_test_ext().execute_with(|| {
+		let universal_location: UnboundedString = "my_awesome_universal_location".into();
+		let token_uri: UnboundedString = "my_awesome_token_uri".into();
+		extend(universal_location.clone(), token_uri.clone());
 
-// #[test]
-// fn update_token_uri_extension_records_cost() {
-// 	new_test_ext().execute_with(|| {
-// 		let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
-// 		let token_uri = Bytes("my_awesome_token_uri".as_bytes().to_vec());
+		let new_token_uri: UnboundedString = "my_awesome_new_token_uri".into();
 
-// 		let input = EvmDataWriter::new_with_selector(Action::Extend)
-// 			.write(universal_location.clone())
-// 			.write(token_uri.clone())
-// 			.build();
+		precompiles()
+			.prepare_test(
+				Alice,
+				Precompile1,
+				PrecompileCall::update {
+					universal_location: universal_location.clone(),
+					token_uri: new_token_uri.clone(),
+				},
+			)
+			.execute_returns(());
+	});
+}
 
-// 		precompiles()
-// 			.prepare_test(H160::from_str(TEST_CLAIMER).unwrap(), H160(PRECOMPILE_ADDRESS), input)
-// 			.execute_returns_raw(vec![]);
+#[test]
+fn update_token_uri_extension_records_cost() {
+	new_test_ext().execute_with(|| {
+		let universal_location: UnboundedString = "my_awesome_universal_location".into();
+		let token_uri: UnboundedString = "my_awesome_token_uri".into();
+		extend(universal_location.clone(), token_uri.clone());
 
-// 		let new_token_uri = Bytes("my_awesome_new_token_uri".as_bytes().to_vec());
-// 		let input = EvmDataWriter::new_with_selector(Action::Update)
-// 			.write(universal_location)
-// 			.write(new_token_uri)
-// 			.build();
+		let new_token_uri: UnboundedString = "my_awesome_new_token_uri".into();
 
-// 		// Expected weight of the precompile call implementation.
-// 		// Since benchmarking precompiles is not supported yet, we are benchmarking
-// 		// functions that precompile calls internally.
-// 		//
-// 		// Following `cost` is calculated as:
-// 		// `create_token_uri_extension` weight + log cost
-// 		precompiles()
-// 			.prepare_test(H160::from_str(TEST_CLAIMER).unwrap(), H160(PRECOMPILE_ADDRESS), input)
-// 			.expect_cost(136659074) // [`WeightToGas`] set to 1:1 in mock
-// 			.execute_some();
-// 	})
-// }
+		// Expected weight of the precompile call implementation.
+		// Since benchmarking precompiles is not supported yet, we are benchmarking
+		// functions that precompile calls internally.
+		//
+		// Following `cost` is calculated as:
+		// `create_token_uri_extension` weight + log cost
+		precompiles()
+			.prepare_test(
+				Alice,
+				Precompile1,
+				PrecompileCall::update {
+					universal_location: universal_location.clone(),
+					token_uri: new_token_uri.clone(),
+				},
+			)
+			.expect_cost(161656038) // [`WeightToGas`] set to 1:1 in mock
+			.execute_some();
+	})
+}
 
-// #[test]
-// fn update_of_extension_should_succeed() {
-// 	new_test_ext().execute_with(|| {
-// 		let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
-// 		let token_uri = Bytes("my_awesome_token_uri".as_bytes().to_vec());
+#[test]
+fn update_of_extension_should_emit_a_log() {
+	new_test_ext().execute_with(|| {
+		let universal_location: UnboundedString = "my_awesome_universal_location".into();
+		let token_uri: UnboundedString = "my_awesome_token_uri".into();
+		extend(universal_location.clone(), token_uri.clone());
 
-// 		let input = EvmDataWriter::new_with_selector(Action::Extend)
-// 			.write(universal_location.clone())
-// 			.write(token_uri.clone())
-// 			.build();
+		let new_token_uri: UnboundedString = "my_awesome_new_token_uri".into();
 
-// 		precompiles()
-// 			.prepare_test(H160::from_str(TEST_CLAIMER).unwrap(), H160(PRECOMPILE_ADDRESS), input)
-// 			.execute_returns_raw(vec![]);
-
-// 		let new_token_uri = Bytes("my_awesome_new_token_uri".as_bytes().to_vec());
-
-// 		let input = EvmDataWriter::new_with_selector(Action::Update)
-// 			.write(universal_location)
-// 			.write(new_token_uri)
-// 			.build();
-
-// 		precompiles()
-// 			.prepare_test(H160::from_str(TEST_CLAIMER).unwrap(), H160(PRECOMPILE_ADDRESS), input)
-// 			.execute_returns_raw(vec![]);
-// 	});
-// }
-
-// #[test]
-// fn update_of_extension_should_emit_a_log() {
-// 	new_test_ext().execute_with(|| {
-// 		let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
-// 		let token_uri = Bytes("my_awesome_token_uri".as_bytes().to_vec());
-
-// 		let input = EvmDataWriter::new_with_selector(Action::Extend)
-// 			.write(universal_location.clone())
-// 			.write(token_uri.clone())
-// 			.build();
-
-// 		precompiles()
-// 			.prepare_test(H160::from_str(TEST_CLAIMER).unwrap(), H160(PRECOMPILE_ADDRESS), input)
-// 			.execute_returns_raw(vec![]);
-
-// 		let new_token_uri = Bytes("my_awesome_new_token_uri".as_bytes().to_vec());
-
-// 		let input = EvmDataWriter::new_with_selector(Action::Update)
-// 			.write(universal_location)
-// 			.write(new_token_uri)
-// 			.build();
-
-// 		let expected_log = Log {
-// 			address: H160(PRECOMPILE_ADDRESS),
-// 			topics: vec![
-// 				SELECTOR_LOG_UPDATED_EXTENDED_UL_WITH_EXTERNAL_URI.into(),
-// 				H160::from_str(TEST_CLAIMER).unwrap().into(),
-// 				keccak256!("my_awesome_universal_location").into(),
-// 			],
-// 			data: hex::decode("00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000001D6D795F617765736F6D655F756E6976657273616C5F6C6F636174696F6E00000000000000000000000000000000000000000000000000000000000000000000186D795F617765736F6D655F6E65775F746F6B656E5F7572690000000000000000")
-// 				.unwrap(),
-// 		};
-
-// 		precompiles()
-// 			.prepare_test(H160::from_str(TEST_CLAIMER).unwrap(), H160(PRECOMPILE_ADDRESS), input)
-// 			.expect_log(expected_log)
-// 			.execute_returns_raw(vec![]);
-// 	});
-// }
+		precompiles()
+			.prepare_test(
+				Alice,
+				Precompile1,
+				PrecompileCall::update {
+					universal_location: universal_location.clone(),
+					token_uri: new_token_uri.clone(),
+				},
+			)
+			.expect_log(log3(
+				Precompile1,
+				SELECTOR_LOG_UPDATED_EXTENDED_UL_WITH_EXTERNAL_URI,
+				Alice,
+				keccak_256(&universal_location.as_bytes().to_vec()),
+				solidity::encode_event_data((universal_location, new_token_uri)),
+			))
+			.execute_returns(());
+	});
+}
 
 // #[test]
 // fn claimer_by_index_invalid_index_fails() {
