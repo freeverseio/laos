@@ -170,6 +170,32 @@ fn create_token_uri_extension_on_mock_with_nonzero_value_fails() {
 	});
 }
 
+#[test]
+fn create_token_uri_extension_records_cost() {
+	new_test_ext().execute_with(|| {
+		let universal_location: UnboundedString = "my_awesome_universal_location".into();
+		let token_uri: UnboundedString = "ciao".into();
+
+		// Expected weight of the precompile call implementation.
+		// Since benchmarking precompiles is not supported yet, we are benchmarking
+		// functions that precompile calls internally.
+		//
+		// Following `cost` is calculated as:
+		// `create_token_uri_extension` weight + log cost
+		precompiles()
+			.prepare_test(
+				Alice,
+				Precompile1,
+				PrecompileCall::extend {
+					universal_location: universal_location.clone(),
+					token_uri: token_uri.clone(),
+				},
+			)
+			.expect_cost(389431817) // [`WeightToGas`] set to 1:1 in mock
+			.execute_some();
+	})
+}
+
 // #[test]
 // fn update_inexistent_extension_should_fail() {
 // 	new_test_ext().execute_with(|| {
@@ -185,29 +211,6 @@ fn create_token_uri_extension_on_mock_with_nonzero_value_fails() {
 // 			.prepare_test(H160::from_str(TEST_CLAIMER).unwrap(), H160(PRECOMPILE_ADDRESS), input)
 // 			.execute_reverts(|r| r == b"ExtensionDoesNotExist");
 // 	});
-// }
-
-// #[test]
-// fn create_token_uri_extension_records_cost() {
-// 	new_test_ext().execute_with(|| {
-// 		let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
-// 		let token_uri = Bytes("my_awesome_token_uri".as_bytes().to_vec());
-// 		let input = EvmDataWriter::new_with_selector(Action::Extend)
-// 			.write(universal_location)
-// 			.write(token_uri)
-// 			.build();
-
-// 		// Expected weight of the precompile call implementation.
-// 		// Since benchmarking precompiles is not supported yet, we are benchmarking
-// 		// functions that precompile calls internally.
-// 		//
-// 		// Following `cost` is calculated as:
-// 		// `create_token_uri_extension` weight + log cost
-// 		precompiles()
-// 			.prepare_test(H160::from_str(TEST_CLAIMER).unwrap(), H160(PRECOMPILE_ADDRESS), input)
-// 			.expect_cost(364560357) // [`WeightToGas`] set to 1:1 in mock
-// 			.execute_some();
-// 	})
 // }
 
 // #[test]

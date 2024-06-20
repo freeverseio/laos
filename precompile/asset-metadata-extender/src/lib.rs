@@ -113,7 +113,6 @@ where
 		);
 
 		let ul_hash = keccak_256(&universal_location.as_bytes().to_vec()); // TODO see if this can be improved
-
 		log3(
 			handle.context().address,
 			SELECTOR_LOG_EXTENDED_UL_WITH_EXTERNAL_URI,
@@ -135,53 +134,58 @@ where
 		Ok(())
 	}
 
-	// fn update(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
-	// 	let context = handle.context();
+	#[precompile::public("updateExtendedULWithExternalURI(string,string)")]
+	fn update(
+		handle: &mut impl PrecompileHandle,
+		universal_location: UnboundedString,
+		token_uri: UnboundedString,
+	) -> EvmResult<()> {
+		// TODO this might be remove when we have the bounded string as param
+		let universal_location_bounded: BoundedVec<
+			u8,
+			<Runtime as Config>::MaxUniversalLocationLength,
+		> = universal_location
+			.as_bytes()
+			.to_vec()
+			.try_into()
+			.map_err(|_| revert("invalid universal location length"))?;
 
-	// 	let mut input = handle.read_input()?;
-	// 	input.expect_arguments(2)?;
+		// TODO this might be remove when we have the bounded string as param
+		let token_uri_bounded: BoundedVec<u8, <Runtime as Config>::MaxTokenUriLength> = token_uri
+			.as_bytes()
+			.to_vec()
+			.try_into()
+			.map_err(|_| revert("invalid token uri length"))?;
 
-	// 	let universal_location = Self::read_bounded_vec(&mut input)
-	// 		.map_err(|_| revert("invalid universal location length"))?;
+		AssetMetadataExtender::<Runtime>::update_token_uri_extension(
+			handle.context().caller.into(),
+			universal_location_bounded.clone(),
+			token_uri_bounded.clone(),
+		)
+		.map_err(|err| revert(convert_dispatch_error_to_string(err)))?;
 
-	// 	let token_uri =
-	// 		Self::read_bounded_vec(&mut input).map_err(|_| revert("invalid token uri length"))?;
+		let consumed_weight = AssetMetadataExtenderWeights::<Runtime>::update_token_uri_extension(
+			universal_location.as_bytes().to_vec().len() as u32,
+			token_uri.as_bytes().to_vec().len() as u32,
+		);
 
-	// 	let claimer = context.caller;
-	// 	let universal_location_hash = keccak_256(&universal_location);
+		let ul_hash = keccak_256(&universal_location.as_bytes().to_vec());
+		log3(
+			handle.context().address,
+			SELECTOR_LOG_EXTENDED_UL_WITH_EXTERNAL_URI,
+			handle.context().caller,
+			ul_hash,
+			solidity::encode_event_data((universal_location, token_uri)),
+		)
+		.record(handle)?;
 
-	// 	AssetMetadataExtender::<Runtime>::update_token_uri_extension(
-	// 		claimer.into(),
-	// 		universal_location.clone(),
-	// 		token_uri.clone(),
-	// 	)
-	// 	.map_err(revert_dispatch_error)?;
+		// Record EVM cost
+		handle.record_cost(<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
+			consumed_weight,
+		))?;
 
-	// 	let universal_location_raw = universal_location.into_inner();
-	// 	let token_uri_raw = token_uri.into_inner();
-	// 	let consumed_weight = AssetMetadataExtenderWeights::<Runtime>::update_token_uri_extension(
-	// 		universal_location_raw.len() as u32,
-	// 		token_uri_raw.len() as u32,
-	// 	);
-
-	// 	LogsBuilder::new(context.address)
-	// 		.log3(
-	// 			SELECTOR_LOG_UPDATED_EXTENDED_UL_WITH_EXTERNAL_URI,
-	// 			claimer,
-	// 			universal_location_hash,
-	// 			EvmDataWriter::new()
-	// 				.write(Bytes(universal_location_raw))
-	// 				.write(Bytes(token_uri_raw))
-	// 				.build(),
-	// 		)
-	// 		.record(handle)?;
-
-	// 	// Record EVM cost
-	// 	handle.record_cost(<Runtime as
-	// pallet_evm::Config>::GasWeightMapping::weight_to_gas(consumed_weight))?;
-
-	// 	Ok(succeed(EvmDataWriter::new().build()))
-	// }
+		Ok(())
+	}
 
 	// fn balance_of(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
 	// 	let mut input = handle.read_input()?;
