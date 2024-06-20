@@ -272,25 +272,30 @@ where
 	// 	raw_vec.try_into().map_err(|_| ())
 	// }
 
-	// fn extension_by_location_and_claimer(
-	// 	handle: &mut impl PrecompileHandle,
-	// ) -> EvmResult<PrecompileOutput> {
-	// 	let mut input = handle.read_input()?;
-	// 	input.expect_arguments(2)?;
+	#[precompile::public("extensionOfULByClaimer(string,address)")]
+	fn extension_by_location_and_claimer(
+		handle: &mut impl PrecompileHandle,
+		universal_location: UnboundedString,
+		claimer: Address,
+	) -> EvmResult<UnboundedString> {
+		let claimer: H160 = claimer.into();
+		let universal_location_bounded: BoundedVec<
+			u8,
+			<Runtime as Config>::MaxUniversalLocationLength,
+		> = universal_location
+			.as_bytes()
+			.to_vec()
+			.try_into()
+			.map_err(|_| revert("invalid universal location length"))?;
 
-	// 	let universal_location = Self::read_bounded_vec(&mut input)
-	// 		.map_err(|_| revert("invalid universal location length"))?;
+		let token_uri = AssetMetadataExtender::<Runtime>::extension_by_location_and_claimer(
+			universal_location_bounded.clone(),
+			claimer.into(),
+		)
+		.ok_or_else(|| revert("invalid ul"))?;
 
-	// 	let claimer = input.read::<Address>().map_err(|_| revert("invalid claimer"))?.0;
-
-	// 	let token_uri = AssetMetadataExtender::<Runtime>::extension_by_location_and_claimer(
-	// 		universal_location.clone(),
-	// 		claimer.into(),
-	// 	)
-	// 	.ok_or_else(|| revert("invalid ul"))?;
-
-	// 	Ok(succeed(EvmDataWriter::new().write(Bytes(token_uri.into_inner())).build()))
-	// }
+		Ok(token_uri.to_vec().into())
+	}
 
 	// fn has_extension_by_claimer(handle: &mut impl PrecompileHandle) ->
 	// EvmResult<PrecompileOutput> { 	let mut input = handle.read_input()?;
