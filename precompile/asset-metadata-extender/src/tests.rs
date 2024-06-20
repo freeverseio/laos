@@ -16,14 +16,12 @@
 
 use super::*;
 use crate::mock::*;
-use core::str::FromStr;
-use fp_evm::{Context, Log, PrecompileSet};
+use fp_evm::{Context, PrecompileSet};
 use precompile_utils::{
-	prelude::{keccak256, log3},
-	solidity::codec::BoundedBytes,
+	prelude::log3,
 	testing::{Alice, MockHandle, Precompile1, PrecompileTesterExt},
 };
-use sp_core::{H160, H256, U256};
+use sp_core::U256;
 use sp_io::hashing::keccak_256;
 
 /// Get precompiles from the mock.
@@ -478,7 +476,6 @@ fn extension_by_location_and_claimer_works() {
 fn extension_by_location_and_claimer_of_unexistent_claim_reverts() {
 	new_test_ext().execute_with(|| {
 		let universal_location: UnboundedString = "my_awesome_universal_location".into();
-		let token_uri: UnboundedString = "ciao".into();
 
 		precompiles()
 			.prepare_test(
@@ -518,7 +515,6 @@ fn has_extension_by_claim_of_existent_claim_returns_true() {
 fn has_extension_by_claimer_of_unexistent_claim_returns_false() {
 	new_test_ext().execute_with(|| {
 		let universal_location: UnboundedString = "my_awesome_universal_location".into();
-		let token_uri: UnboundedString = "ciao".into();
 
 		precompiles()
 			.prepare_test(

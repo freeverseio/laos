@@ -15,7 +15,7 @@
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 #![cfg_attr(not(feature = "std"), no_std)]
-use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
+use fp_evm::PrecompileHandle;
 use pallet_asset_metadata_extender::{
 	traits::AssetMetadataExtender as AssetMetadataExtenderT,
 	weights::{SubstrateWeight as AssetMetadataExtenderWeights, WeightInfo},
@@ -29,7 +29,7 @@ use precompile_utils::{
 
 use pallet_evm::GasWeightMapping;
 use scale_info::prelude::{format, string::String};
-use sp_core::{Get, H160};
+use sp_core::H160;
 use sp_io::hashing::keccak_256;
 use sp_runtime::{BoundedVec, DispatchError};
 use sp_std::{fmt::Debug, marker::PhantomData};
@@ -189,7 +189,7 @@ where
 
 	#[precompile::public("balanceOfUL(string)")]
 	fn balance_of(
-		handle: &mut impl PrecompileHandle,
+		_handle: &mut impl PrecompileHandle,
 		universal_location: UnboundedString,
 	) -> EvmResult<u32> {
 		// TODO this might be remove when we have the bounded string as param
@@ -209,7 +209,7 @@ where
 
 	#[precompile::public("claimerOfULByIndex(string,uint32)")]
 	fn claimer_by_index(
-		handle: &mut impl PrecompileHandle,
+		_handle: &mut impl PrecompileHandle,
 		universal_location: UnboundedString,
 		index: u32,
 	) -> EvmResult<Address> {
@@ -238,7 +238,7 @@ where
 
 	#[precompile::public("extensionOfULByIndex(string,uint32)")]
 	fn extension_by_index(
-		handle: &mut impl PrecompileHandle,
+		_handle: &mut impl PrecompileHandle,
 		universal_location: UnboundedString,
 		index: u32,
 	) -> EvmResult<UnboundedString> {
@@ -266,7 +266,7 @@ where
 
 	#[precompile::public("extensionOfULByClaimer(string,address)")]
 	fn extension_by_location_and_claimer(
-		handle: &mut impl PrecompileHandle,
+		_handle: &mut impl PrecompileHandle,
 		universal_location: UnboundedString,
 		claimer: Address,
 	) -> EvmResult<UnboundedString> {
@@ -291,7 +291,7 @@ where
 
 	#[precompile::public("hasExtensionByClaimer(string,address)")]
 	fn has_extension_by_claimer(
-		handle: &mut impl PrecompileHandle,
+		_handle: &mut impl PrecompileHandle,
 		universal_location: UnboundedString,
 		claimer: Address,
 	) -> EvmResult<bool> {

@@ -15,7 +15,6 @@
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 use core::str::FromStr;
-use fp_evm::{Precompile, PrecompileHandle};
 use frame_support::{
 	derive_impl, parameter_types, traits::FindAuthor, weights::constants::RocksDbWeight,
 };
@@ -134,33 +133,6 @@ impl FindAuthor<H160> for FindAuthorTruncated {
 		I: 'a + IntoIterator<Item = (ConsensusEngineId, &'a [u8])>,
 	{
 		Some(H160::from_str("1234500000000000000000000000000000000000").unwrap())
-	}
-}
-
-#[derive(Default)]
-pub struct MockPrecompileSet<Test>(sp_std::marker::PhantomData<Test>);
-
-pub type MockAssetMetadataExtenderPrecompile = AssetMetadataExtenderPrecompile<Test>;
-
-impl<Test> MockPrecompileSet<Test>
-where
-	Test: pallet_evm::Config,
-{
-	pub fn new() -> Self {
-		Self(Default::default())
-	}
-}
-
-impl<Test> fp_evm::PrecompileSet for MockPrecompileSet<Test>
-where
-	Test: pallet_evm::Config + pallet_asset_metadata_extender::Config,
-{
-	fn execute(&self, handle: &mut impl PrecompileHandle) -> Option<fp_evm::PrecompileResult> {
-		Some(MockAssetMetadataExtenderPrecompile::execute(handle))
-	}
-
-	fn is_precompile(&self, _address: H160, _gas: u64) -> fp_evm::IsPrecompileResult {
-		fp_evm::IsPrecompileResult::Answer { is_precompile: true, extra_cost: 0 }
 	}
 }
 
