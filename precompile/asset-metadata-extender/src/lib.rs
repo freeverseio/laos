@@ -236,27 +236,33 @@ where
 		Ok(Address(claimer.into()))
 	}
 
-	// fn extension_by_index(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
-	// 	let mut input = handle.read_input()?;
-	// 	input.expect_arguments(2)?;
+	#[precompile::public("extensionOfULByIndex(string,uint32)")]
+	fn extension_by_index(
+		handle: &mut impl PrecompileHandle,
+		universal_location: UnboundedString,
+		index: u32,
+	) -> EvmResult<UnboundedString> {
+		let universal_location_bounded: BoundedVec<
+			u8,
+			<Runtime as Config>::MaxUniversalLocationLength,
+		> = universal_location
+			.as_bytes()
+			.to_vec()
+			.try_into()
+			.map_err(|_| revert("invalid universal location length"))?;
 
-	// 	let universal_location = Self::read_bounded_vec(&mut input)
-	// 		.map_err(|_| revert("invalid universal location length"))?;
+		if AssetMetadataExtender::balance_of(universal_location_bounded.clone()) <= index {
+			return Err(revert("invalid index"));
+		}
 
-	// 	let index = input.read::<u32>()?;
+		let token_uri = AssetMetadataExtender::<Runtime>::token_uri_extension_by_index(
+			universal_location_bounded.clone(),
+			index,
+		)
+		.ok_or_else(|| revert("invalid ul"))?;
 
-	// 	if AssetMetadataExtender::balance_of(universal_location.clone()) <= index {
-	// 		return Err(revert("invalid index"));
-	// 	}
-
-	// 	let token_uri = AssetMetadataExtender::<Runtime>::token_uri_extension_by_index(
-	// 		universal_location.clone(),
-	// 		index,
-	// 	)
-	// 	.ok_or_else(|| revert("invalid ul"))?;
-
-	// 	Ok(succeed(EvmDataWriter::new().write(Bytes(token_uri.into_inner())).build()))
-	// }
+		Ok(token_uri.to_vec().into())
+	}
 
 	// /// Generic function to read a bounded vector from the input.
 	// fn read_bounded_vec<Bound: Get<u32>>(

@@ -64,7 +64,7 @@ fn selectors() {
 	assert!(PrecompileCall::update_selectors().contains(&0xCD79C745));
 	assert!(PrecompileCall::balance_of_selectors().contains(&0x7B65DED5));
 	assert!(PrecompileCall::claimer_by_index_selectors().contains(&0xA565BB04));
-	// assert_eq!(Action::Extension as u32, 0xB2B7C05A);
+	assert!(PrecompileCall::extension_by_index_selectors().contains(&0xB2B7C05A));
 }
 
 #[test]
@@ -358,94 +358,74 @@ fn claimer_by_index_works() {
 	});
 }
 
-// #[test]
-// fn extension_by_index_works() {
-// 	new_test_ext().execute_with(|| {
-// 		let universal_location = Bytes("some_universal_location".as_bytes().to_vec());
+#[test]
+fn extension_by_index_works() {
+	new_test_ext().execute_with(|| {
+		let universal_location: UnboundedString = "my_awesome_universal_location".into();
+		let token_uri: UnboundedString = "ciao".into();
+		extend(universal_location.clone(), token_uri.clone());
 
-// 		let input = EvmDataWriter::new_with_selector(Action::Extend)
-// 			.write(universal_location.clone())
-// 			.write(Bytes(vec![1u8; 10]))
-// 			.build();
+		precompiles()
+			.prepare_test(
+				Alice,
+				Precompile1,
+				PrecompileCall::extension_by_index {
+					universal_location: universal_location.clone(),
+					index: 0u32,
+				},
+			)
+			.execute_returns(token_uri);
+	});
+}
 
-// 		precompiles()
-// 			.prepare_test(
-// 				H160::from_str(TEST_CLAIMER).unwrap(),
-// 				H160(PRECOMPILE_ADDRESS),
-// 				input.clone(),
-// 			)
-// 			.execute_returns_raw(sp_std::vec![]);
+#[test]
+fn extension_by_index_invalid_ul_and_index_fails() {
+	new_test_ext().execute_with(|| {
+		let universal_location: UnboundedString = "my_awesome_universal_location".into();
+		let token_uri: UnboundedString = "ciao".into();
 
-// 		let input = EvmDataWriter::new_with_selector(Action::Extension)
-// 			.write(universal_location.clone())
-// 			.write(0_u32)
-// 			.build();
+		precompiles()
+			.prepare_test(
+				Alice,
+				Precompile1,
+				PrecompileCall::extension_by_index {
+					universal_location: universal_location.clone(),
+					index: 0u32,
+				},
+			)
+			.execute_reverts(|r| r == b"invalid index");
 
-// 		precompiles()
-// 			.prepare_test(H160::from_str(TEST_CLAIMER).unwrap(), H160(PRECOMPILE_ADDRESS), input)
-// 			.execute_returns(BoundedBytes::<MaxTokenUriLength>::from(vec![1u8; 10]));
-// 	});
-// }
+		// now create an extension
+		extend(universal_location.clone(), token_uri.clone());
 
-// #[test]
-// fn extension_by_index_invalid_ul_and_index_fails() {
-// 	new_test_ext().execute_with(|| {
-// 		let universal_location = Bytes("invalid_universal_location".as_bytes().to_vec());
+		// now try to get an extension with an invalid index
+		let other_universal_location: UnboundedString = "some_other_ul".into();
 
-// 		let input = EvmDataWriter::new_with_selector(Action::Extension)
-// 			.write(universal_location.clone())
-// 			.write(0_u32)
-// 			.build();
+		// reverts
+		precompiles()
+			.prepare_test(
+				Alice,
+				Precompile1,
+				PrecompileCall::extension_by_index {
+					universal_location: other_universal_location.clone(),
+					index: 0u32,
+				},
+			)
+			.execute_reverts(|r| r == b"invalid index");
 
-// 		precompiles()
-// 			.prepare_test(
-// 				H160::from_str(TEST_CLAIMER).unwrap(),
-// 				H160(PRECOMPILE_ADDRESS),
-// 				input.clone(),
-// 			)
-// 			.execute_reverts(|r| r == b"invalid index");
-
-// 		// now create an extension
-// 		let input = EvmDataWriter::new_with_selector(Action::Extend)
-// 			.write(universal_location.clone())
-// 			.write(Bytes(vec![1u8; 10]))
-// 			.build();
-
-// 		precompiles()
-// 			.prepare_test(
-// 				H160::from_str(TEST_CLAIMER).unwrap(),
-// 				H160(PRECOMPILE_ADDRESS),
-// 				input.clone(),
-// 			)
-// 			.execute_returns_raw(sp_std::vec![]);
-
-// 		// now try to get an extension with an invalid index
-// 		let input = EvmDataWriter::new_with_selector(Action::Extension)
-// 			.write(Bytes("some_other_ul".as_bytes().to_vec()).clone())
-// 			.write(0_u32)
-// 			.build();
-
-// 		// reverts
-// 		precompiles()
-// 			.prepare_test(
-// 				H160::from_str(TEST_CLAIMER).unwrap(),
-// 				H160(PRECOMPILE_ADDRESS),
-// 				input.clone(),
-// 			)
-// 			.execute_reverts(|r| r == b"invalid index");
-
-// 		// now try to get an extension with an invalid index
-// 		let input = EvmDataWriter::new_with_selector(Action::Extension)
-// 			.write(universal_location)
-// 			.write(1_u32)
-// 			.build();
-
-// 		// reverts
-// 		precompiles()
-// 			.prepare_test(H160::from_str(TEST_CLAIMER).unwrap(), H160(PRECOMPILE_ADDRESS), input)
-// 			.execute_reverts(|r| r == b"invalid index");
-// 	});
-// }
+		// now try to get an extension with an invalid index
+		precompiles()
+			.prepare_test(
+				Alice,
+				Precompile1,
+				PrecompileCall::extension_by_index {
+					universal_location: universal_location.clone(),
+					index: 1u32,
+				},
+			)
+			.execute_reverts(|r| r == b"invalid index");
+	});
+}
 
 #[test]
 fn balance_of_works() {
