@@ -178,18 +178,18 @@ impl pallet_evm::PrecompileHandle for MockPrecompileHandle {
 mod benchmarks {
 	use super::*;
 
-	// #[benchmark]
-	// fn precompile_create_collection() {
-	// 	let mut handle = MockPrecompileHandle;
+	#[benchmark]
+	fn precompile_create_collection() {
+		let mut handle = MockHandle::new(vec![], None, Context::default());
 
-	// 	#[block]
-	// 	{
-	// 		let _ = EvolutionCollectionFactoryPrecompile::<T>::create_collection(
-	// 			&mut handle,
-	// 			Address::from(H160::zero()),
-	// 		);
-	// 	}
-	// }
+		#[block]
+		{
+			let _ = EvolutionCollectionFactoryPrecompile::<T>::create_collection(
+				&mut handle,
+				Address::from(H160::zero()),
+			);
+		}
+	}
 
 	#[benchmark]
 	fn precompile_owner() {
