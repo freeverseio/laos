@@ -187,17 +187,25 @@ where
 		Ok(())
 	}
 
-	// fn balance_of(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
-	// 	let mut input = handle.read_input()?;
-	// 	input.expect_arguments(1)?;
+	#[precompile::public("balanceOfUL(string)")]
+	fn balance_of(
+		handle: &mut impl PrecompileHandle,
+		universal_location: UnboundedString,
+	) -> EvmResult<u32> {
+		// TODO this might be remove when we have the bounded string as param
+		let universal_location_bounded: BoundedVec<
+			u8,
+			<Runtime as Config>::MaxUniversalLocationLength,
+		> = universal_location
+			.as_bytes()
+			.to_vec()
+			.try_into()
+			.map_err(|_| revert("invalid universal location length"))?;
 
-	// 129	let universal_location = Self::read_bounded_vec(&mut input)
-	// 		.map_err(|_| revert("invalid universal location length"))?;
+		let balance = AssetMetadataExtender::<Runtime>::balance_of(universal_location_bounded);
 
-	// 	let balance = AssetMetadataExtender::<Runtime>::balance_of(universal_location);
-
-	// 	Ok(succeed(EvmDataWriter::new().write(balance).build()))
-	// }
+		Ok(balance)
+	}
 
 	// fn claimer_by_index(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
 	// 	let mut input = handle.read_input()?;

@@ -62,7 +62,7 @@ fn check_log_selectors() {
 fn selectors() {
 	assert!(PrecompileCall::extend_selectors().contains(&0xA5FBDF1D));
 	assert!(PrecompileCall::update_selectors().contains(&0xCD79C745));
-	// assert_eq!(Action::Balance as u32, 0x7B65DED5);
+	assert!(PrecompileCall::balance_of_selectors().contains(&0x7B65DED5));
 	// assert_eq!(Action::Claimer as u32, 0xA565BB04);
 	// assert_eq!(Action::Extension as u32, 0xB2B7C05A);
 }
@@ -469,46 +469,31 @@ fn update_of_extension_should_emit_a_log() {
 // 	});
 // }
 
-// #[test]
-// fn balance_of_works() {
-// 	new_test_ext().execute_with(|| {
-// 		let universal_location = Bytes("some_universal_location".as_bytes().to_vec());
+#[test]
+fn balance_of_works() {
+	new_test_ext().execute_with(|| {
+		let universal_location: UnboundedString = "my_awesome_universal_location".into();
 
-// 		let input = EvmDataWriter::new_with_selector(Action::Balance)
-// 			.write(universal_location.clone())
-// 			.build();
+		// default balance is 0
+		precompiles()
+			.prepare_test(
+				Alice,
+				Precompile1,
+				PrecompileCall::balance_of { universal_location: universal_location.clone() },
+			)
+			.execute_returns(0_u32);
 
-// 		// default balance is 0
-// 		precompiles()
-// 			.prepare_test(
-// 				H160::from_str(TEST_CLAIMER).unwrap(),
-// 				H160(PRECOMPILE_ADDRESS),
-// 				input.clone(),
-// 			)
-// 			.execute_returns(0_u32);
+		extend(universal_location.clone(), "ciao".into());
 
-// 		let input = EvmDataWriter::new_with_selector(Action::Extend)
-// 			.write(universal_location.clone())
-// 			.write(Bytes(vec![1u8; 10]))
-// 			.build();
-
-// 		precompiles()
-// 			.prepare_test(
-// 				H160::from_str(TEST_CLAIMER).unwrap(),
-// 				H160(PRECOMPILE_ADDRESS),
-// 				input.clone(),
-// 			)
-// 			.execute_returns_raw(sp_std::vec![]);
-
-// 		let input = EvmDataWriter::new_with_selector(Action::Balance)
-// 			.write(universal_location.clone())
-// 			.build();
-
-// 		precompiles()
-// 			.prepare_test(H160::from_str(TEST_CLAIMER).unwrap(), H160(PRECOMPILE_ADDRESS), input)
-// 			.execute_returns(1_u32);
-// 	});
-// }
+		precompiles()
+			.prepare_test(
+				Alice,
+				Precompile1,
+				PrecompileCall::balance_of { universal_location: universal_location.clone() },
+			)
+			.execute_returns(1_u32);
+	});
+}
 
 // #[test]
 // fn extension_by_location_and_claimer_works() {
