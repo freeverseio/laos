@@ -63,7 +63,7 @@ fn selectors() {
 	assert!(PrecompileCall::extend_selectors().contains(&0xA5FBDF1D));
 	assert!(PrecompileCall::update_selectors().contains(&0xCD79C745));
 	assert!(PrecompileCall::balance_of_selectors().contains(&0x7B65DED5));
-	// assert_eq!(Action::Claimer as u32, 0xA565BB04);
+	assert!(PrecompileCall::claimer_by_index_selectors().contains(&0xA565BB04));
 	// assert_eq!(Action::Extension as u32, 0xB2B7C05A);
 }
 
@@ -308,77 +308,55 @@ fn update_of_extension_should_emit_a_log() {
 	});
 }
 
-// #[test]
-// fn claimer_by_index_invalid_index_fails() {
-// 	new_test_ext().execute_with(|| {
-// 		let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
-// 		let input = EvmDataWriter::new_with_selector(Action::Claimer)
-// 			.write(universal_location.clone())
-// 			.write(2u32)
-// 			.build();
+#[test]
+fn claimer_by_index_invalid_index_fails() {
+	new_test_ext().execute_with(|| {
+		let universal_location: UnboundedString = "my_awesome_universal_location".into();
 
-// 		precompiles()
-// 			.prepare_test(
-// 				H160::from_str(TEST_CLAIMER).unwrap(),
-// 				H160(PRECOMPILE_ADDRESS),
-// 				input.clone(),
-// 			)
-// 			.execute_reverts(|r| r == b"invalid index");
+		precompiles()
+			.prepare_test(
+				Alice,
+				Precompile1,
+				PrecompileCall::claimer_by_index {
+					universal_location: universal_location.clone(),
+					index: 2u32,
+				},
+			)
+			.execute_reverts(|r| r == b"invalid index");
 
-// 		let input = EvmDataWriter::new_with_selector(Action::Extend)
-// 			.write(universal_location.clone())
-// 			.write(Bytes(vec![1u8; 10]))
-// 			.build();
+		extend(universal_location.clone(), "ciao".into());
 
-// 		precompiles()
-// 			.prepare_test(
-// 				H160::from_str(TEST_CLAIMER).unwrap(),
-// 				H160(PRECOMPILE_ADDRESS),
-// 				input.clone(),
-// 			)
-// 			.execute_returns_raw(sp_std::vec![]);
+		precompiles()
+			.prepare_test(
+				Alice,
+				Precompile1,
+				PrecompileCall::claimer_by_index {
+					universal_location: universal_location.clone(),
+					index: 1u32,
+				},
+			)
+			.execute_reverts(|r| r == b"invalid index");
+	});
+}
 
-// 		let input = EvmDataWriter::new_with_selector(Action::Claimer)
-// 			.write(universal_location)
-// 			.write(1u32)
-// 			.build();
+#[test]
+fn claimer_by_index_works() {
+	new_test_ext().execute_with(|| {
+		let universal_location: UnboundedString = "my_awesome_universal_location".into();
+		extend(universal_location.clone(), "ciao".into());
 
-// 		precompiles()
-// 			.prepare_test(H160::from_str(TEST_CLAIMER).unwrap(), H160(PRECOMPILE_ADDRESS), input)
-// 			.execute_reverts(|r| r == b"invalid index");
-// 	});
-// }
-
-// #[test]
-// fn claimer_by_index_works() {
-// 	new_test_ext().execute_with(|| {
-// 		let universal_location = Bytes("some_universal_location".as_bytes().to_vec());
-
-// 		let input = EvmDataWriter::new_with_selector(Action::Extend)
-// 			.write(universal_location.clone())
-// 			.write(Bytes("some_token_uri".as_bytes().to_vec()))
-// 			.build();
-
-// 		precompiles()
-// 			.prepare_test(H160::from_str(TEST_CLAIMER).unwrap(), H160(PRECOMPILE_ADDRESS), input)
-// 			.execute_returns_raw(vec![]);
-
-// 		let input = EvmDataWriter::new_with_selector(Action::Claimer)
-// 			.write(universal_location.clone())
-// 			.write(0u32)
-// 			.build();
-
-// 		precompiles()
-// 			.prepare_test(
-// 				H160::from_str(TEST_CLAIMER).unwrap(),
-// 				H160(PRECOMPILE_ADDRESS),
-// 				input.clone(),
-// 			)
-// 			.execute_returns(precompile_utils::prelude::Address(
-// 				H160::from_str(TEST_CLAIMER).unwrap(),
-// 			));
-// 	});
-// }
+		precompiles()
+			.prepare_test(
+				Alice,
+				Precompile1,
+				PrecompileCall::claimer_by_index {
+					universal_location: universal_location.clone(),
+					index: 0u32,
+				},
+			)
+			.execute_returns(Address(Alice.into()));
+	});
+}
 
 // #[test]
 // fn extension_by_index_works() {

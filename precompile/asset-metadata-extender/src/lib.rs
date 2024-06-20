@@ -207,25 +207,34 @@ where
 		Ok(balance)
 	}
 
-	// fn claimer_by_index(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
-	// 	let mut input = handle.read_input()?;
-	// 	input.expect_arguments(2)?;
+	#[precompile::public("claimerOfULByIndex(string,uint32)")]
+	fn claimer_by_index(
+		handle: &mut impl PrecompileHandle,
+		universal_location: UnboundedString,
+		index: u32,
+	) -> EvmResult<Address> {
+		// TODO this might be remove when we have the bounded string as param
+		let universal_location_bounded: BoundedVec<
+			u8,
+			<Runtime as Config>::MaxUniversalLocationLength,
+		> = universal_location
+			.as_bytes()
+			.to_vec()
+			.try_into()
+			.map_err(|_| revert("invalid universal location length"))?;
 
-	// 	let universal_location = Self::read_bounded_vec(&mut input)
-	// 		.map_err(|_| revert("invalid universal location length"))?;
+		if AssetMetadataExtender::balance_of(universal_location_bounded.clone()) <= index {
+			return Err(revert("invalid index"));
+		}
 
-	// 	let index = input.read::<u32>()?;
+		let claimer = AssetMetadataExtender::<Runtime>::claimer_by_index(
+			universal_location_bounded.clone(),
+			index,
+		)
+		.ok_or_else(|| revert("invalid ul"))?;
 
-	// 	if AssetMetadataExtender::balance_of(universal_location.clone()) <= index {
-	// 		return Err(revert("invalid index"));
-	// 	}
-
-	// 	let claimer =
-	// 		AssetMetadataExtender::<Runtime>::claimer_by_index(universal_location.clone(), index)
-	// 			.ok_or_else(|| revert("invalid ul"))?;
-
-	// 	Ok(succeed(EvmDataWriter::new().write(Address(claimer.into())).build()))
-	// }
+		Ok(Address(claimer.into()))
+	}
 
 	// fn extension_by_index(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
 	// 	let mut input = handle.read_input()?;
