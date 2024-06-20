@@ -19,9 +19,9 @@ use fp_evm::{Precompile, PrecompileHandle};
 use frame_support::{
 	derive_impl, parameter_types, traits::FindAuthor, weights::constants::RocksDbWeight,
 };
+use precompile_utils::precompile_set::{AddressU64, PrecompileAt, PrecompileSetBuilder};
 use sp_core::{H160, U256};
 use sp_runtime::{traits::IdentityLookup, BuildStorage, ConsensusEngineId};
-use precompile_utils::precompile_set::{AddressU64, PrecompileAt, PrecompileSetBuilder};
 
 use crate::{AssetMetadataExtenderPrecompile, AssetMetadataExtenderPrecompileCall};
 

@@ -80,86 +80,95 @@ fn create_token_uri_extension_should_emit_log() {
 	});
 }
 
-// #[test]
-// fn create_token_uri_extension_reverts_when_ul_exceeds_length() {
-// 	new_test_ext().execute_with(|| {
-// 		let unallowed_size = (MaxUniversalLocationLength::get() + 10).try_into().unwrap();
-// 		let universal_location = Bytes(vec![b'a'; unallowed_size]);
-// 		let token_uri = Bytes(vec![b'b'; MaxTokenUriLength::get().try_into().unwrap()]);
+#[test]
+fn create_token_uri_extension_reverts_when_ul_exceeds_length() {
+	new_test_ext().execute_with(|| {
+		let unallowed_size = (MaxUniversalLocationLength::get() + 10).try_into().unwrap();
+		let universal_location: UnboundedString = vec![b'a'; unallowed_size].into();
+		let token_uri: UnboundedString = "ciao".into();
 
-// 		let input = EvmDataWriter::new_with_selector(Action::Extend)
-// 			.write(universal_location)
-// 			.write(token_uri)
-// 			.build();
+		precompiles()
+			.prepare_test(
+				Alice,
+				Precompile1,
+				PrecompileCall::extend {
+					universal_location: universal_location.clone(),
+					token_uri: token_uri.clone(),
+				},
+			)
+			.execute_reverts(|r| r == b"invalid universal location length");
+	});
+}
 
-// 		precompiles()
-// 			.prepare_test(H160::from_str(TEST_CLAIMER).unwrap(), H160(PRECOMPILE_ADDRESS), input)
-// 			.execute_reverts(|r| r == b"invalid universal location length");
-// 	});
-// }
+#[test]
+fn create_token_uri_extension_reverts_when_token_uri_exceeds_length() {
+	new_test_ext().execute_with(|| {
+		let unallowed_size = (MaxTokenUriLength::get() + 10).try_into().unwrap();
+		let token_uri: UnboundedString = vec![b'a'; unallowed_size].into();
+		let universal_location: UnboundedString = "ciao".into();
+		precompiles()
+			.prepare_test(
+				Alice,
+				Precompile1,
+				PrecompileCall::extend {
+					universal_location: universal_location.clone(),
+					token_uri: token_uri.clone(),
+				},
+			)
+			.execute_reverts(|r| r == b"invalid token uri length");
+	});
+}
 
-// #[test]
-// fn create_token_uri_extension_reverts_when_token_uri_exceeds_length() {
-// 	new_test_ext().execute_with(|| {
-// 		let unallowed_size = (MaxTokenUriLength::get() + 1).try_into().unwrap();
-// 		let token_uri = Bytes(vec![b'a'; unallowed_size]);
-// 		let universal_location =
-// 			Bytes(vec![b'b'; MaxUniversalLocationLength::get().try_into().unwrap()]);
+#[test]
+fn create_token_uri_extension_reverts_when_claimer_already_has_metadata_extension_for_universal_location(
+) {
+	new_test_ext().execute_with(|| {
+		let universal_location: UnboundedString = "my_awesome_universal_location".into();
+		let token_uri: UnboundedString = "ciao".into();
 
-// 		let input = EvmDataWriter::new_with_selector(Action::Extend)
-// 			.write(universal_location)
-// 			.write(token_uri)
-// 			.build();
+		precompiles()
+			.prepare_test(
+				Alice,
+				Precompile1,
+				PrecompileCall::extend {
+					universal_location: universal_location.clone(),
+					token_uri: token_uri.clone(),
+				},
+			)
+			.execute_returns(());
 
-// 		precompiles()
-// 			.prepare_test(H160::from_str(TEST_CLAIMER).unwrap(), H160(PRECOMPILE_ADDRESS), input)
-// 			.execute_reverts(|r| r == b"invalid token uri length");
-// 	});
-// }
+		precompiles()
+			.prepare_test(
+				Alice,
+				Precompile1,
+				PrecompileCall::extend {
+					universal_location: universal_location.clone(),
+					token_uri: token_uri.clone(),
+				},
+			)
+			.execute_reverts(|r| r == b"ExtensionAlreadyExists");
+	});
+}
 
-// #[test]
-// fn create_token_uri_extension_reverts_when_claimer_already_has_metadata_extension_for_universal_location(
-// ) {
-// 	new_test_ext().execute_with(|| {
-// 		let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
-// 		let token_uri = Bytes("my_awesome_token_uri".as_bytes().to_vec());
+#[test]
+fn create_token_uri_extension_on_mock_with_nonzero_value_fails() {
+	new_test_ext().execute_with(|| {
+		let universal_location: UnboundedString = "my_awesome_universal_location".into();
+		let token_uri: UnboundedString = "ciao".into();
 
-// 		let input = EvmDataWriter::new_with_selector(Action::Extend)
-// 			.write(universal_location.clone())
-// 			.write(token_uri.clone())
-// 			.build();
-
-// 		precompiles()
-// 			.prepare_test(H160::from_str(TEST_CLAIMER).unwrap(), H160(PRECOMPILE_ADDRESS), input)
-// 			.execute_returns_raw(vec![]);
-
-// 		let input = EvmDataWriter::new_with_selector(Action::Extend)
-// 			.write(universal_location)
-// 			.write(token_uri)
-// 			.build();
-
-// 		precompiles()
-// 			.prepare_test(H160::from_str(TEST_CLAIMER).unwrap(), H160(PRECOMPILE_ADDRESS), input)
-// 			.execute_reverts(|r| r == b"ExtensionAlreadyExists");
-// 	});
-// }
-
-// #[test]
-// fn create_token_uri_extension_on_mock_with_nonzero_value_fails() {
-// 	new_test_ext().execute_with(|| {
-// 		let universal_location = Bytes("my_awesome_universal_location".as_bytes().to_vec());
-// 		let token_uri = Bytes("my_awesome_token_uri".as_bytes().to_vec());
-// 		let input = EvmDataWriter::new_with_selector(Action::Extend)
-// 			.write(universal_location)
-// 			.write(token_uri)
-// 			.build();
-
-// 		precompiles()
-// 			.prepare_test(H160::from_str(TEST_CLAIMER).unwrap(), H160(PRECOMPILE_ADDRESS), input)
-// 			.with_value(U256::from(1))
-// 			.execute_reverts(|r| r == b"function is not payable");
-// 	});
-// }
+		precompiles()
+			.prepare_test(
+				Alice,
+				Precompile1,
+				PrecompileCall::extend {
+					universal_location: universal_location.clone(),
+					token_uri: token_uri.clone(),
+				},
+			)
+			.with_value(U256::from(1))
+			.execute_reverts(|r| r == b"Function is not payable");
+	});
+}
 
 // #[test]
 // fn update_inexistent_extension_should_fail() {

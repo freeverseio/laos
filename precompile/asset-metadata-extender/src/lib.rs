@@ -19,17 +19,20 @@ use fp_evm::{Precompile, PrecompileHandle, PrecompileOutput};
 use pallet_asset_metadata_extender::{
 	traits::AssetMetadataExtender as AssetMetadataExtenderT,
 	weights::{SubstrateWeight as AssetMetadataExtenderWeights, WeightInfo},
-	Pallet as AssetMetadataExtender, Config,
+	Config, Pallet as AssetMetadataExtender,
 };
 use parity_scale_codec::Encode;
-use precompile_utils::{solidity::{self, revert::revert, codec::UnboundedString}, prelude::{log3, keccak256, Address, EvmResult, LogExt}};
+use precompile_utils::{
+	prelude::{keccak256, log3, Address, EvmResult, LogExt},
+	solidity::{self, codec::UnboundedString, revert::revert},
+};
 
+use pallet_evm::GasWeightMapping;
+use scale_info::prelude::{format, string::String};
 use sp_core::{Get, H160};
 use sp_io::hashing::keccak_256;
 use sp_runtime::{BoundedVec, DispatchError};
 use sp_std::{fmt::Debug, marker::PhantomData};
-use scale_info::prelude::{format, string::String};
-use pallet_evm::GasWeightMapping;
 
 /// Solidity selector of the ExtendedULWithExternalURI log, which is the Keccak of the Log
 /// signature.
@@ -75,10 +78,16 @@ where
 	AssetMetadataExtender<Runtime>: AssetMetadataExtenderT<Runtime>,
 {
 	#[precompile::public("extendULWithExternalURI(string,string)")]
-	fn extend(handle: &mut impl PrecompileHandle, universal_location: UnboundedString, token_uri: UnboundedString) -> EvmResult<()> {
-
+	fn extend(
+		handle: &mut impl PrecompileHandle,
+		universal_location: UnboundedString,
+		token_uri: UnboundedString,
+	) -> EvmResult<()> {
 		// TODO this might be remove when we have the bounded string as param
-		let universal_location_bounded: BoundedVec<u8, <Runtime as Config>::MaxUniversalLocationLength> = universal_location
+		let universal_location_bounded: BoundedVec<
+			u8,
+			<Runtime as Config>::MaxUniversalLocationLength,
+		> = universal_location
 			.as_bytes()
 			.to_vec()
 			.try_into()
@@ -115,7 +124,9 @@ where
 		.record(handle)?;
 
 		// Record EVM cost
-		handle.record_cost(<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(consumed_weight))?;
+		handle.record_cost(<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
+			consumed_weight,
+		))?;
 
 		// Record Substrate related costs
 		// TODO: Add `ref_time` when precompiles are benchmarked
@@ -166,7 +177,8 @@ where
 	// 		.record(handle)?;
 
 	// 	// Record EVM cost
-	// 	handle.record_cost(<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(consumed_weight))?;
+	// 	handle.record_cost(<Runtime as
+	// pallet_evm::Config>::GasWeightMapping::weight_to_gas(consumed_weight))?;
 
 	// 	Ok(succeed(EvmDataWriter::new().build()))
 	// }
@@ -253,8 +265,8 @@ where
 	// 	Ok(succeed(EvmDataWriter::new().write(Bytes(token_uri.into_inner())).build()))
 	// }
 
-	// fn has_extension_by_claimer(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
-	// 	let mut input = handle.read_input()?;
+	// fn has_extension_by_claimer(handle: &mut impl PrecompileHandle) ->
+	// EvmResult<PrecompileOutput> { 	let mut input = handle.read_input()?;
 	// 	input.expect_arguments(2)?;
 
 	// 	let universal_location = Self::read_bounded_vec(&mut input)
@@ -277,7 +289,6 @@ fn convert_dispatch_error_to_string(err: DispatchError) -> String {
 		_ => format!("{:?}", err),
 	}
 }
-
 
 #[cfg(test)]
 mod mock;
