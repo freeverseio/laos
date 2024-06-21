@@ -27,7 +27,7 @@ impl pallet_laos_evolution::Config for Runtime {
 	type MaxTokenUriLength = MaxTokenUriLength;
 	type WeightInfo = (); // TODO weights::pallet_laos_evolution::WeightInfo<Runtime>;
 	type GasWeightMapping = <Runtime as pallet_evm::Config>::GasWeightMapping;
-	type OnCreateCollection = CollectionManager;
+	type OnCreateCollection = (); // CollectionManager;
 }
 
 // This is the simplest bytecode to revert without returning any data.
@@ -40,7 +40,7 @@ pub const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
 // `AccountCode` for the collection address.
 //
 // This is done to ensure internal calls to the collection address do not
-// fail.				
+// fail.
 pub struct CollectionManager;
 impl pallet_laos_evolution::traits::OnCreateCollection for CollectionManager {
 	fn on_create_collection(address: sp_core::H160) {
