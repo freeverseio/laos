@@ -37,6 +37,7 @@ use sp_runtime::{
 	ArithmeticError, DispatchError,
 };
 
+use pallet_evm::GasWeightMapping;
 pub use traits::{EvolutionCollection, EvolutionCollectionFactory};
 pub use types::*;
 pub use weights::WeightInfo;
@@ -63,6 +64,8 @@ pub mod pallet {
 		type H160ToAccountId: Convert<H160, Self::AccountId>;
 		/// The weight information of this pallet.
 		type WeightInfo: WeightInfo;
+		/// Gas weight mapping
+		type GasWeightMapping: GasWeightMapping;
 		/// Callback for creating a new collection
 		// type OnCreateCollection: traits::OnCreateCollection; // TODO
 		/// Limit for the length of `token_uri`
