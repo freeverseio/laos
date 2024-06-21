@@ -58,16 +58,16 @@ where
 	#[precompile::discriminant]
 	pub fn discriminant(address: H160, gas: u64) -> DiscriminantResult<CollectionId> {
 		// required gas for this function
-		let required_gas = <R as Config>::GasWeightMapping::weight_to_gas(
+		let extra_cost = <R as Config>::GasWeightMapping::weight_to_gas(
 			R::WeightInfo::precompile_discriminant(),
 		);
-		if gas < required_gas {
-			return DiscriminantResult::None(required_gas);
+		if gas < extra_cost {
+			return DiscriminantResult::OutOfGas;
 		}
 
 		match address_to_collection_id(address) {
-			Ok(id) => DiscriminantResult::Some(id, required_gas),
-			Err(_) => DiscriminantResult::None(gas),
+			Ok(id) => DiscriminantResult::Some(id, extra_cost),
+			Err(_) => DiscriminantResult::None(extra_cost),
 		}
 	}
 
