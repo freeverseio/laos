@@ -67,7 +67,7 @@ pub mod pallet {
 		/// Gas weight mapping
 		type GasWeightMapping: GasWeightMapping;
 		/// Callback for creating a new collection
-		// type OnCreateCollection: traits::OnCreateCollection; // TODO
+		type OnCreateCollection: traits::OnCreateCollection;
 		/// Limit for the length of `token_uri`
 		#[pallet::constant]
 		type MaxTokenUriLength: Get<u32>;

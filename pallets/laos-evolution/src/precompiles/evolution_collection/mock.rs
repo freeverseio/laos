@@ -83,6 +83,7 @@ impl pallet_laos_evolution::Config for Test {
 	type MaxTokenUriLength = MaxTokenUriLength;
 	type WeightInfo = ();
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
+	type OnCreateCollection = ();
 }
 
 parameter_types! {

@@ -17,8 +17,10 @@
 //! LAOS precompile module.
 
 use crate::{
-	collection_id_to_address, traits::EvolutionCollectionFactory as EvolutionCollectionFactoryT,
-	weights::WeightInfo, Pallet as LaosEvolution,
+	collection_id_to_address,
+	traits::{EvolutionCollectionFactory as EvolutionCollectionFactoryT, OnCreateCollection},
+	weights::WeightInfo,
+	Pallet as LaosEvolution,
 };
 use fp_evm::ExitError;
 use frame_support::{pallet_prelude::Weight, DefaultNoBound};
@@ -87,8 +89,10 @@ where
 				//
 				// This is done to ensure internal calls to the collection address do not
 				// fail.
-				// Evm::<Runtime>::create_account(collection_address, REVERT_BYTECODE.into());
-				// TODO
+				Runtime::OnCreateCollection::create_account(
+					collection_address,
+					REVERT_BYTECODE.into(),
+				);
 
 				log2(
 					handle.context().address,

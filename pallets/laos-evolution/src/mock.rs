@@ -65,6 +65,7 @@ impl pallet_laos_evolution::Config for Test {
 	type MaxTokenUriLength = MaxTokenUriLength;
 	type WeightInfo = ();
 	type GasWeightMapping = MockGasWeightMapping;
+	type OnCreateCollection = ();
 }
 
 // Build genesis storage according to the mock runtime.
