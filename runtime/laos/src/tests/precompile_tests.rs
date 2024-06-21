@@ -144,10 +144,11 @@ fn create_collection_inserts_bytecode_to_address() {
 		let expected_collection_address =
 			H160::from_str("fffffffffffffffffffffffe0000000000000000").unwrap();
 
-			let precompiles = <Runtime as pallet_evm::Config>::PrecompilesValue::get();
-			precompiles.prepare_test(
+		let precompiles = <Runtime as pallet_evm::Config>::PrecompilesValue::get();
+		precompiles
+			.prepare_test(
 				Alice,
-			 hash(1027),
+				hash(1027),
 				EvolutionCollectionFactoryPrecompileCall::<Runtime>::create_collection {
 					owner: Address(Alice.into()),
 				},
