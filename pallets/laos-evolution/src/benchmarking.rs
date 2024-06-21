@@ -92,7 +92,7 @@ impl PrecompileHandle for MockHandle {
 	}
 
 	fn remaining_gas(&self) -> u64 {
-		return 1000000000000;
+		1000000000000
 	}
 
 	fn code_address(&self) -> H160 {
