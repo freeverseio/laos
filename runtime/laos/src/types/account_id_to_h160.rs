@@ -35,3 +35,23 @@ impl Convert<H160, AccountId> for H160ToAccountId {
 		AccountId::from(h160)
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use sp_core::H160;
+
+	#[test]
+	fn convert_account_id_to_h160() {
+		let account_id = AccountId::from([1u8; 20]);
+		let h160 = AccountIdToH160::convert(account_id);
+		assert_eq!(h160, H160([1u8; 20]));
+	}
+
+	#[test]
+	fn convert_h160_to_account_id() {
+		let h160 = H160([1u8; 20]);
+		let account_id = H160ToAccountId::convert(h160);
+		assert_eq!(account_id, AccountId::from([1u8; 20]));
+	}
+}
