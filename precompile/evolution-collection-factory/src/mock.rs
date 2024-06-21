@@ -78,6 +78,8 @@ impl pallet_laos_evolution::Config for Test {
 	type H160ToAccountId = H160ToAccountId;
 	type MaxTokenUriLength = MaxTokenUriLength;
 	type WeightInfo = ();
+	type GasWeightMapping = <Test as pallet_evm::Config>::GasWeightMapping;
+	type OnCreateCollection = ();
 }
 
 parameter_types! {

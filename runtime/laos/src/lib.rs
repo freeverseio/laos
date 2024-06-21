@@ -28,6 +28,7 @@ mod self_contained_call;
 pub mod types;
 mod weights;
 
+pub use configs::laos_evolution::REVERT_BYTECODE;
 use core::marker::PhantomData;
 use frame_support::construct_runtime;
 use frame_system::EnsureRoot;
