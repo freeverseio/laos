@@ -469,7 +469,7 @@ fn enable_public_minting_has_a_cost() {
 		// functions that precompile calls internally.
 		precompiles()
 			.prepare_test(alice, collection_address, input)
-			.expect_cost(141177750) //  [`WeightToGas`] set to 1:1 in mock
+			.expect_cost(135532750) //  [`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	})
 }
@@ -487,7 +487,7 @@ fn disable_public_minting_has_a_cost() {
 		// functions that precompile calls internally.
 		precompiles()
 			.prepare_test(alice, collection_address, input)
-			.expect_cost(141177750) //  [`WeightToGas`] set to 1:1 in mock
+			.expect_cost(135532750) //  [`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	})
 }
@@ -550,7 +550,7 @@ fn test_expected_cost_mint_with_external_uri() {
 		// `mint_with_external_uri` weight + log cost
 		precompiles()
 			.prepare_test(owner, collection_address, input)
-			.expect_cost(168931978) // [`WeightToGas`] set to 1:1 in mock
+			.expect_cost(166436094) // [`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	})
 }
@@ -576,7 +576,7 @@ fn test_expected_cost_evolve_with_external_uri() {
 		// `evolve_with_external_uri` weight + log cost
 		precompiles()
 			.prepare_test(alice, collection_address, input)
-			.expect_cost(168535518) // [`WeightToGas`] set to 1:1 in mock
+			.expect_cost(165755860) // [`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	})
 }
@@ -675,7 +675,7 @@ fn collection_transfer_of_ownership_records_costs() {
 		// 1 read and 1 write
 		precompiles()
 			.prepare_test(alice, collection_address, input)
-			.expect_cost(135245500) //  [`WeightToGas`] set to 1:1 in mock
+			.expect_cost(134128500) //  [`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	});
 }
