@@ -83,7 +83,7 @@ where
 				//
 				// This is done to ensure internal calls to the collection address do not
 				// fail.
-				Runtime::OnCreateCollection::create_account(collection_address);
+				Runtime::OnCreateCollection::on_create_collection(collection_address);
 
 				log2(
 					handle.context().address,

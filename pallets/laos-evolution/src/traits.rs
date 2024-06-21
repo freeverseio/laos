@@ -70,9 +70,9 @@ pub trait EvolutionCollection<AccountId, TokenUri> {
 }
 
 pub trait OnCreateCollection {
-	fn create_account(address: H160);
+	fn on_create_collection(address: H160);
 }
 
 impl OnCreateCollection for () {
-	fn create_account(_address: H160) {}
+	fn on_create_collection(_address: H160) {}
 }

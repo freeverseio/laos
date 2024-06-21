@@ -16,7 +16,10 @@
 
 use crate::precompiles::LaosPrecompiles;
 
-use crate::{configs::evm::PrecompilesInstance, Runtime};
+use crate::{
+	configs::{evm::PrecompilesInstance, laos_evolution::REVERT_BYTECODE},
+	Runtime,
+};
 use core::str::FromStr;
 use evm::Context;
 use frame_support::assert_noop;
@@ -137,12 +140,6 @@ fn call_unknown_address_is_noop() {
 		);
 	});
 }
-
-// This is the simplest bytecode to revert without returning any data.
-// We will pre-deploy it under all of our precompiles to ensure they can be called from
-// within contracts.
-// (PUSH1 0x00 PUSH1 0x00 REVERT)
-pub const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
 
 #[test]
 fn create_collection_inserts_bytecode_to_address() {

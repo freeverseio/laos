@@ -38,7 +38,7 @@ pub const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
 
 pub struct CollectionManager;
 impl pallet_laos_evolution::traits::OnCreateCollection for CollectionManager {
-	fn create_account(address: sp_core::H160) {
+	fn on_create_collection(address: sp_core::H160) {
 		pallet_evm::Pallet::<Runtime>::create_account(address, REVERT_BYTECODE.into());
 	}
 }
