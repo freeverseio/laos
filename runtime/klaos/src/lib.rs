@@ -500,6 +500,7 @@ impl pallet_laos_evolution::Config for Runtime {
 	type H160ToAccountId = H160ToAccountId;
 	type MaxTokenUriLength = MaxTokenUriLength;
 	type WeightInfo = ();
+	type GasWeightMapping = <Runtime as pallet_evm::Config>::GasWeightMapping;
 }
 
 impl pallet_asset_metadata_extender::Config for Runtime {

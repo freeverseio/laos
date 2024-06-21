@@ -21,7 +21,8 @@ use crate::{
 	weights::WeightInfo, Pallet as LaosEvolution,
 };
 use fp_evm::ExitError;
-use frame_support::DefaultNoBound;
+use frame_support::{pallet_prelude::Weight, DefaultNoBound};
+use pallet_evm::GasWeightMapping;
 use precompile_utils::prelude::{
 	keccak256, log2, revert, solidity, Address, EvmResult, LogExt, PrecompileHandle,
 };
@@ -51,6 +52,18 @@ impl<R> EvolutionCollectionFactoryPrecompile<R> {
 	}
 }
 
+pub fn register_cost<Runtime: crate::Config>(
+	handle: &mut impl PrecompileHandle,
+	weight: Weight,
+) -> Result<(), ExitError> {
+	let required_gas = Runtime::GasWeightMapping::weight_to_gas(weight);
+	let remaining_gas = handle.remaining_gas();
+	if required_gas > remaining_gas {
+		return Err(ExitError::OutOfGas);
+	}
+	handle.record_cost(required_gas)
+}
+
 #[precompile_utils::precompile]
 impl<Runtime> EvolutionCollectionFactoryPrecompile<Runtime>
 where
@@ -61,12 +74,8 @@ where
 		handle: &mut impl PrecompileHandle,
 		owner: Address,
 	) -> EvmResult<Address> {
-		// let weight = Runtime::WeightInfo::precompile_create_collection();
-		// let required_gas = Runtime::GasWeightMapping::weight_to_gas(weight);
-		// let remaining_gas = handle.remaining_gas();
-		// if required_gas > remaining_gas {
-		// 	return Err(ExitError::OutOfGas);
-		// }
+		let weight = Runtime::WeightInfo::precompile_create_collection();
+		register_cost::<Runtime>(handle, weight)?;
 
 		match LaosEvolution::<Runtime>::create_collection(Runtime::H160ToAccountId::convert(
 			owner.0,
