@@ -36,6 +36,11 @@ impl pallet_laos_evolution::Config for Runtime {
 // (PUSH1 0x00 PUSH1 0x00 REVERT)
 pub const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
 
+// Currently, we insert [`REVERT_BYTECODE`] as an
+// `AccountCode` for the collection address.
+//
+// This is done to ensure internal calls to the collection address do not
+// fail.				
 pub struct CollectionManager;
 impl pallet_laos_evolution::traits::OnCreateCollection for CollectionManager {
 	fn on_create_collection(address: sp_core::H160) {

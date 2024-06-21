@@ -78,11 +78,6 @@ where
 			Ok(collection_id) => {
 				let collection_address: H160 = collection_id_to_address(collection_id);
 
-				// Currently, we insert [`REVERT_BYTECODE`] as an
-				// `AccountCode` for the collection address.
-				//
-				// This is done to ensure internal calls to the collection address do not
-				// fail.
 				Runtime::OnCreateCollection::on_create_collection(collection_address);
 
 				log2(
