@@ -27,7 +27,7 @@ impl pallet_laos_evolution::Config for Runtime {
 	type MaxTokenUriLength = MaxTokenUriLength;
 	type WeightInfo = (); // TODO weights::pallet_laos_evolution::WeightInfo<Runtime>;
 	type GasWeightMapping = <Runtime as pallet_evm::Config>::GasWeightMapping;
-	type OnCreateCollection = (); // CollectionManager;
+	type OnCreateCollection = CollectionManager;
 }
 
 // This is the simplest bytecode to revert without returning any data.
