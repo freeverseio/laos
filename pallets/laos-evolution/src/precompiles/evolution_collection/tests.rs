@@ -438,7 +438,7 @@ fn expected_cost_owner() {
 		// functions that precompile calls internally.
 		precompiles()
 			.prepare_test(alice, collection_address, PrecompileCall::owner {})
-			.expect_cost(25000000) //  [`WeightToGas`] set to 1:1 in mock
+			.expect_cost(55382000) //  [`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	})
 }

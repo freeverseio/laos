@@ -55,7 +55,7 @@ where
 	R: Config,
 {
 	#[precompile::discriminant]
-	fn discriminant(address: H160, _gas: u64) -> DiscriminantResult<CollectionId> {
+	pub fn discriminant(address: H160, _gas: u64) -> DiscriminantResult<CollectionId> {
 		let no_cost = 0;
 		match address_to_collection_id(address) {
 			Ok(id) => DiscriminantResult::Some(id, no_cost),
@@ -69,8 +69,7 @@ where
 		collection_id: CollectionId,
 		handle: &mut impl PrecompileHandle,
 	) -> EvmResult<Address> {
-		let weight = R::WeightInfo::precompile_owner();
-		handle.record_external_cost(Some(weight.ref_time()), Some(weight.proof_size()))?;
+		super::register_cost::<R>(handle, R::WeightInfo::precompile_owner())?;
 
 		if let Some(owner) = LaosEvolution::<R>::collection_owner(collection_id) {
 			Ok(Address(R::AccountIdToH160::convert(owner)))

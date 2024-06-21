@@ -92,7 +92,7 @@ impl PrecompileHandle for MockHandle {
 	}
 
 	fn remaining_gas(&self) -> u64 {
-		unimplemented!()
+		return 1000000000000;
 	}
 
 	fn code_address(&self) -> H160 {
@@ -119,6 +119,16 @@ impl PrecompileHandle for MockHandle {
 #[benchmarks]
 mod benchmarks {
 	use super::*;
+
+	#[benchmark]
+	fn precompile_discriminant() {
+		let address = H160::zero();
+		let gas = 100000000;
+		#[block]
+		{
+			let _ = EvolutionCollectionPrecompileSet::<T>::discriminant(address, gas);
+		}
+	}
 
 	#[benchmark]
 	fn precompile_create_collection() {
