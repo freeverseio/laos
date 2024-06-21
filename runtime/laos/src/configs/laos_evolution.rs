@@ -17,7 +17,7 @@
 use super::MaxTokenUriLength;
 use crate::{
 	types::{AccountIdToH160, H160ToAccountId},
-	weights, Runtime, RuntimeEvent,
+	Runtime, RuntimeEvent,
 };
 
 impl pallet_laos_evolution::Config for Runtime {
@@ -27,4 +27,18 @@ impl pallet_laos_evolution::Config for Runtime {
 	type MaxTokenUriLength = MaxTokenUriLength;
 	type WeightInfo = (); // TODO weights::pallet_laos_evolution::WeightInfo<Runtime>;
 	type GasWeightMapping = <Runtime as pallet_evm::Config>::GasWeightMapping;
+	type OnCreateCollection = CollectionManager;
+}
+
+// This is the simplest bytecode to revert without returning any data.
+// We will pre-deploy it under all of our precompiles to ensure they can be called from
+// within contracts.
+// (PUSH1 0x00 PUSH1 0x00 REVERT)
+pub const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
+
+pub struct CollectionManager;
+impl pallet_laos_evolution::traits::OnCreateCollection for CollectionManager {
+	fn create_account(address: sp_core::H160) {
+		pallet_evm::Pallet::<Runtime>::create_account(address, REVERT_BYTECODE.into());
+	}
 }

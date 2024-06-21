@@ -87,6 +87,3 @@ pub type LaosPrecompiles<R> = PrecompileSetBuilder<
 		>,
 	),
 >;
-
-#[cfg(test)]
-mod mock;

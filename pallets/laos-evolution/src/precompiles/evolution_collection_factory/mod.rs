@@ -38,12 +38,6 @@ use sp_runtime::{
 /// Solidity selector of the CreateCollection log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_NEW_COLLECTION: [u8; 32] = keccak256!("NewCollection(address,address)");
 
-// This is the simplest bytecode to revert without returning any data.
-// We will pre-deploy it under all of our precompiles to ensure they can be called from
-// within contracts.
-// (PUSH1 0x00 PUSH1 0x00 REVERT)
-pub const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
-
 #[derive(Clone, DefaultNoBound)]
 
 pub struct EvolutionCollectionFactoryPrecompile<R>(PhantomData<R>);
@@ -89,10 +83,7 @@ where
 				//
 				// This is done to ensure internal calls to the collection address do not
 				// fail.
-				Runtime::OnCreateCollection::create_account(
-					collection_address,
-					REVERT_BYTECODE.into(),
-				);
+				Runtime::OnCreateCollection::create_account(collection_address);
 
 				log2(
 					handle.context().address,

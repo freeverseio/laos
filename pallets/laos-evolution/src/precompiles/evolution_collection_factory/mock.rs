@@ -71,13 +71,15 @@ impl sp_runtime::traits::Convert<H160, AccountId> for H160ToAccountId {
 		h160
 	}
 }
-// TODO
-// pub struct CreateEVMAccountWithDummyCode<T: pallet_evm::Config>;
-// impl crate::traits::OnCreateCollection for CreateEVMAccountWithDummyCode<Test> {
-// 	fn create_account(address: H160, code: Vec<u8>) {
-// 		pallet_evm::Pallet::<T>::create_account(address, code);
-// 	}
-// }
+
+pub const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
+
+pub struct CollectionManager;
+impl pallet_laos_evolution::traits::OnCreateCollection for CollectionManager {
+	fn create_account(address: sp_core::H160) {
+		pallet_evm::Pallet::<Test>::create_account(address, REVERT_BYTECODE.into());
+	}
+}
 
 impl pallet_laos_evolution::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
@@ -86,7 +88,7 @@ impl pallet_laos_evolution::Config for Test {
 	type MaxTokenUriLength = MaxTokenUriLength;
 	type WeightInfo = ();
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
-	type OnCreateCollection = ();
+	type OnCreateCollection = CollectionManager;
 }
 
 parameter_types! {

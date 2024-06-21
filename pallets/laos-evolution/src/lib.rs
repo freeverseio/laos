@@ -38,7 +38,7 @@ use sp_runtime::{
 };
 
 use pallet_evm::GasWeightMapping;
-pub use traits::{EvolutionCollection, EvolutionCollectionFactory};
+pub use traits::{EvolutionCollection, EvolutionCollectionFactory, OnCreateCollection};
 pub use types::*;
 pub use weights::WeightInfo;
 
@@ -67,7 +67,7 @@ pub mod pallet {
 		/// Gas weight mapping
 		type GasWeightMapping: GasWeightMapping;
 		/// Callback for creating a new collection
-		type OnCreateCollection: traits::OnCreateCollection;
+		type OnCreateCollection: OnCreateCollection;
 		/// Limit for the length of `token_uri`
 		#[pallet::constant]
 		type MaxTokenUriLength: Get<u32>;

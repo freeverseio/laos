@@ -23,7 +23,7 @@ mod cumulus_dmp_queue;
 mod cumulus_parachain_system;
 mod cumulus_xcmp_queue;
 mod ethereum;
-mod evm;
+pub(crate) mod evm;
 mod laos_evolution;
 mod multisig;
 pub(crate) mod parachain_staking;

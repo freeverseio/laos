@@ -16,12 +16,16 @@
 
 use crate::precompiles::LaosPrecompiles;
 
-use crate::Runtime;
+use crate::{configs::evm::PrecompilesInstance, Runtime};
 use core::str::FromStr;
 use evm::Context;
 use frame_support::assert_noop;
-use pallet_evm::{ExitRevert, PrecompileFailure, PrecompileSet};
-use precompile_utils::testing::MockHandle;
+use pallet_evm::{AccountCodes, ExitRevert, PrecompileFailure, PrecompileSet};
+use pallet_laos_evolution::precompiles::evolution_collection_factory::EvolutionCollectionFactoryPrecompileCall;
+use precompile_utils::{
+	prelude::Address,
+	testing::{Alice, MockHandle, Precompile1, PrecompileTesterExt},
+};
 use sp_core::H160;
 
 use super::ExtBuilder;
@@ -131,5 +135,34 @@ fn call_unknown_address_is_noop() {
 			p.execute(&mut handle).ok_or("returned None"),
 			"returned None"
 		);
+	});
+}
+
+// This is the simplest bytecode to revert without returning any data.
+// We will pre-deploy it under all of our precompiles to ensure they can be called from
+// within contracts.
+// (PUSH1 0x00 PUSH1 0x00 REVERT)
+pub const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
+
+#[test]
+fn create_collection_inserts_bytecode_to_address() {
+	ExtBuilder::default().build().execute_with(|| {
+		let expected_collection_address =
+			H160::from_str("fffffffffffffffffffffffe0000000000000000").unwrap();
+		PrecompilesInstance::get()
+			.prepare_test(
+				Alice,
+				Precompile1,
+				EvolutionCollectionFactoryPrecompileCall::<Runtime>::create_collection {
+					owner: Address(Alice.into()),
+				},
+			)
+			.execute_returns(Address(expected_collection_address));
+
+		// Address is not empty
+		assert!(!pallet_evm::Pallet::<Runtime>::is_account_empty(&expected_collection_address));
+
+		// Address has correct code
+		assert!(AccountCodes::<Runtime>::get(expected_collection_address) == REVERT_BYTECODE);
 	});
 }
