@@ -74,8 +74,7 @@ where
 		handle: &mut impl PrecompileHandle,
 		owner: Address,
 	) -> EvmResult<Address> {
-		let weight = Runtime::WeightInfo::precompile_create_collection();
-		register_cost::<Runtime>(handle, weight)?;
+		register_cost::<Runtime>(handle, Runtime::WeightInfo::precompile_create_collection())?;
 
 		match LaosEvolution::<Runtime>::create_collection(Runtime::H160ToAccountId::convert(
 			owner.0,
