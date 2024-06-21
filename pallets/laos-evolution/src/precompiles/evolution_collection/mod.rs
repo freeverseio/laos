@@ -7,6 +7,7 @@ use crate::{
 };
 use fp_evm::ExitError;
 use frame_support::DefaultNoBound;
+use pallet_evm::GasWeightMapping;
 use precompile_utils::{
 	keccak256,
 	prelude::{
@@ -55,11 +56,18 @@ where
 	R: Config,
 {
 	#[precompile::discriminant]
-	pub fn discriminant(address: H160, _gas: u64) -> DiscriminantResult<CollectionId> {
-		let no_cost = 0;
+	pub fn discriminant(address: H160, gas: u64) -> DiscriminantResult<CollectionId> {
+		// required gas for this function
+		let required_gas = <R as Config>::GasWeightMapping::weight_to_gas(
+			R::WeightInfo::precompile_discriminant(),
+		);
+		if gas < required_gas {
+			return DiscriminantResult::None(required_gas);
+		}
+
 		match address_to_collection_id(address) {
-			Ok(id) => DiscriminantResult::Some(id, no_cost),
-			Err(_) => DiscriminantResult::None(no_cost),
+			Ok(id) => DiscriminantResult::Some(id, required_gas),
+			Err(_) => DiscriminantResult::None(gas),
 		}
 	}
 
