@@ -37,8 +37,6 @@ use precompile_utils::precompile_set::{
 
 use crate::Runtime;
 
-type AssetMetadataExtender = AssetMetadataExtenderPrecompile<Runtime>;
-
 /// Precompile checks for ethereum spec precompiles
 /// We allow DELEGATECALL to stay compliant with Ethereum behavior.
 type EthereumPrecompilesChecks = (AcceptDelegateCall, CallableByContract, CallableByPrecompile);
@@ -64,7 +62,7 @@ pub type LaosPrecompilesSetAt = (
 	>,
 	PrecompileAt<
 		AddressU64<1029>,
-		AssetMetadataExtender,
+		AssetMetadataExtenderPrecompile<Runtime>,
 		(CallableByContract, CallableByPrecompile),
 	>,
 );
