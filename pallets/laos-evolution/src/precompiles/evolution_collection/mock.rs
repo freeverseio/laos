@@ -75,17 +75,9 @@ impl sp_runtime::traits::ConvertBack<H160, AccountId> for AccountIdToH160 {
 	}
 }
 
-pub struct H160ToAccountId;
-impl sp_runtime::traits::Convert<H160, AccountId> for H160ToAccountId {
-	fn convert(h160: H160) -> AccountId {
-		h160
-	}
-}
-
 impl pallet_laos_evolution::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type AccountIdToH160 = AccountIdToH160;
-	type H160ToAccountId = H160ToAccountId;
 	type MaxTokenUriLength = MaxTokenUriLength;
 	type WeightInfo = ();
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;

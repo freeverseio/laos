@@ -33,7 +33,7 @@ pub mod weights;
 use frame_support::pallet_prelude::*;
 use sp_core::H160;
 use sp_runtime::{
-	traits::{ConvertBack, Convert, One},
+	traits::{Convert, ConvertBack, One},
 	ArithmeticError, DispatchError,
 };
 
@@ -60,8 +60,6 @@ pub mod pallet {
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		/// Converts `Self::AccountId` to `H160`
 		type AccountIdToH160: ConvertBack<Self::AccountId, H160>;
-		/// Converts `H160` to `Self::AccountId`
-		type H160ToAccountId: Convert<H160, Self::AccountId>;
 		/// The weight information of this pallet.
 		type WeightInfo: WeightInfo;
 		/// Gas weight mapping
