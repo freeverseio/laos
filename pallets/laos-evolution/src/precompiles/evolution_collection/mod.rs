@@ -87,7 +87,7 @@ where
 	}
 
 	#[precompile::public("mintWithExternalURI(address,uint96,string)")]
-	fn mint(
+	pub fn mint(
 		collection_id: CollectionId,
 		handle: &mut impl PrecompileHandle,
 		to: Address,
@@ -127,7 +127,7 @@ where
 	}
 
 	#[precompile::public("evolveWithExternalURI(uint256,string)")]
-	fn evolve(
+	pub fn evolve(
 		collection_id: CollectionId,
 		handle: &mut impl PrecompileHandle,
 		token_id: TokenId,

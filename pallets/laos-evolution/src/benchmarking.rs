@@ -143,6 +143,48 @@ mod benchmarks {
 	}
 
 	#[benchmark]
+	fn precompile_mint() {
+		let caller: T::AccountId = whitelisted_caller();
+		let owner = caller.clone();
+		let to = Address::from(H160::from_low_u64_be(1));
+		let slot = Slot::try_from(2).unwrap();
+		let token_uri = vec![1u8; 100].try_into().unwrap();
+		let collection_id = LaosEvolution::<T>::create_collection(owner).unwrap();
+		let mut handle = MockHandle::new();
+
+		#[block]
+		{
+			let _ = EvolutionCollectionPrecompileSet::<T>::mint(
+				collection_id,
+				&mut handle,
+				to,
+				slot,
+				token_uri,
+			);
+		}
+	}
+
+	#[benchmark]
+	fn precompile_evolve() {
+		let caller: T::AccountId = whitelisted_caller();
+		let owner = caller.clone();
+		let token_uri = vec![1u8; 100].try_into().unwrap();
+		let token_id = TokenId::try_from(1).unwrap();
+		let collection_id = LaosEvolution::<T>::create_collection(owner).unwrap();
+		let mut handle = MockHandle::new();
+
+		#[block]
+		{
+			let _ = EvolutionCollectionPrecompileSet::<T>::evolve(
+				collection_id,
+				&mut handle,
+				token_id,
+				token_uri,
+			);
+		}
+	}
+
+	#[benchmark]
 	fn precompile_owner() {
 		let caller: T::AccountId = whitelisted_caller();
 		let owner = caller.clone();
