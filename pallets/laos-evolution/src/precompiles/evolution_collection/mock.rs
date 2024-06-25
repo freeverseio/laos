@@ -69,6 +69,12 @@ impl sp_runtime::traits::Convert<AccountId, H160> for AccountIdToH160 {
 	}
 }
 
+impl sp_runtime::traits::ConvertBack<H160, AccountId> for AccountIdToH160 {
+	fn convert_back(h160: H160) -> AccountId {
+		h160
+	}
+}
+
 pub struct H160ToAccountId;
 impl sp_runtime::traits::Convert<H160, AccountId> for H160ToAccountId {
 	fn convert(h160: H160) -> AccountId {
