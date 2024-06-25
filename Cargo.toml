@@ -152,37 +152,37 @@ ethereum = { version = "0.14.0", default-features = false }
 
 # Frontier
 # (wasm)
-pallet-base-fee = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
-pallet-evm = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
-pallet-ethereum = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
-pallet-evm-chain-id = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
-pallet-evm-precompile-modexp = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
-pallet-evm-precompile-simple = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
-pallet-evm-precompile-bn128 = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
-pallet-evm-precompile-blake2 = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
-pallet-hotfix-sufficients = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
-pallet-evm-precompile-sha3fips = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
-pallet-dynamic-fee = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
-fp-self-contained = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
-fp-rpc = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
-fp-evm = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
-fp-account = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
+pallet-base-fee = { path = "/home/carla/dev/magecnion/frontier/frame/base-fee", default-features = false }
+pallet-evm = { path = "/home/carla/dev/magecnion/frontier/frame/evm", default-features = false }
+pallet-ethereum = { path = "/home/carla/dev/magecnion/frontier/frame/ethereum", default-features = false }
+pallet-evm-chain-id = { path = "/home/carla/dev/magecnion/frontier/frame/evm-chain-id", default-features = false }
+pallet-evm-precompile-modexp = { path = "/home/carla/dev/magecnion/frontier/frame/evm/precompile/modexp", default-features = false }
+pallet-evm-precompile-simple = { path = "/home/carla/dev/magecnion/frontier/frame/evm/precompile/simple", default-features = false }
+pallet-evm-precompile-bn128 = { path = "/home/carla/dev/magecnion/frontier/frame/evm/precompile/bn128", default-features = false }
+pallet-evm-precompile-blake2 = { path = "/home/carla/dev/magecnion/frontier/frame/evm/precompile/blake2", default-features = false }
+pallet-hotfix-sufficients = { path = "/home/carla/dev/magecnion/frontier/frame/hotfix-sufficients", default-features = false }
+pallet-evm-precompile-sha3fips = { path = "/home/carla/dev/magecnion/frontier/frame/evm/precompile/sha3fips", default-features = false }
+pallet-dynamic-fee = { path = "/home/carla/dev/magecnion/frontier/frame/dynamic-fee", default-features = false }
+fp-self-contained = { path = "/home/carla/dev/magecnion/frontier/primitives/self-contained", default-features = false }
+fp-rpc = { path = "/home/carla/dev/magecnion/frontier/primitives/rpc", default-features = false }
+fp-evm = { path = "/home/carla/dev/magecnion/frontier/primitives/evm", default-features = false }
+fp-account = { path = "/home/carla/dev/magecnion/frontier/primitives/account", default-features = false }
 
 # Utils
-precompile-utils = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
-precompile-utils-macro = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
+precompile-utils = { path = "/home/carla/dev/magecnion/frontier/precompiles", default-features = false }
+precompile-utils-macro = { path = "/home/carla/dev/magecnion/frontier", default-features = false }
 
 # Frontier
 # (native)
-fc-api = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0" }
-fc-cli = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0" }
-fc-rpc = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", features = [ "rpc-binary-search-estimate" ] }
-fc-rpc-core = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0" }
-fc-mapping-sync = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0" }
-fc-db = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0" }
-fc-consensus = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0" }
-fc-storage = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0" }
-fp-dynamic-fee = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0" }
+fc-api = { path = "/home/carla/dev/magecnion/frontier/client/api" }
+fc-cli = { path = "/home/carla/dev/magecnion/frontier/client/cli" }
+fc-rpc = { path = "/home/carla/dev/magecnion/frontier/client/rpc", features = [ "rpc-binary-search-estimate" ] }
+fc-rpc-core = { path = "/home/carla/dev/magecnion/frontier/client/rpc-core" }
+fc-mapping-sync = { path = "/home/carla/dev/magecnion/frontier/client/mapping-sync" }
+fc-db = { path = "/home/carla/dev/magecnion/frontier/client/db" }
+fc-consensus = { path = "/home/carla/dev/magecnion/frontier/client/consensus" }
+fc-storage = { path = "/home/carla/dev/magecnion/frontier/client/storage" }
+fp-dynamic-fee = { path = "/home/carla/dev/magecnion/frontier/primitives/dynamic-fee" }
 
 # Cumulus
 # (wasm)
