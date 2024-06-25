@@ -16,10 +16,11 @@
 
 use core::str::FromStr;
 
-use fp_evm::{Precompile, PrecompileHandle};
+use precompile_utils::precompile_set::{AddressU64, PrecompileAt, PrecompileSetBuilder};
 use sp_runtime::BuildStorage;
 
-use crate::EvolutionCollectionFactoryPrecompile;
+use super::{EvolutionCollectionFactoryPrecompile, EvolutionCollectionFactoryPrecompileCall};
+use crate as pallet_laos_evolution;
 
 use frame_support::{
 	derive_impl, parameter_types, traits::FindAuthor, weights::constants::RocksDbWeight,
@@ -65,10 +66,18 @@ impl sp_runtime::traits::Convert<AccountId, H160> for AccountIdToH160 {
 }
 
 pub struct H160ToAccountId;
-
 impl sp_runtime::traits::Convert<H160, AccountId> for H160ToAccountId {
 	fn convert(h160: H160) -> AccountId {
-		AccountId::from(h160)
+		h160
+	}
+}
+
+pub const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
+
+pub struct CollectionManager;
+impl pallet_laos_evolution::traits::OnCreateCollection for CollectionManager {
+	fn on_create_collection(address: sp_core::H160) {
+		pallet_evm::Pallet::<Test>::create_account(address, REVERT_BYTECODE.into());
 	}
 }
 
@@ -78,8 +87,8 @@ impl pallet_laos_evolution::Config for Test {
 	type H160ToAccountId = H160ToAccountId;
 	type MaxTokenUriLength = MaxTokenUriLength;
 	type WeightInfo = ();
-	type GasWeightMapping = <Test as pallet_evm::Config>::GasWeightMapping;
-	type OnCreateCollection = ();
+	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
+	type OnCreateCollection = CollectionManager;
 }
 
 parameter_types! {
@@ -118,12 +127,19 @@ impl FindAuthor<H160> for FindAuthorTruncated {
 pub const BLOCK_GAS_LIMIT: u64 = 15_000_000;
 pub const MAX_POV_SIZE: u64 = 5 * 1024 * 1024;
 
+pub type PrecompileCall = EvolutionCollectionFactoryPrecompileCall<Test>;
+
+pub type LaosPrecompiles<Test> = PrecompileSetBuilder<
+	Test,
+	(PrecompileAt<AddressU64<1>, EvolutionCollectionFactoryPrecompile<Test>>,),
+>;
+
 frame_support::parameter_types! {
-	pub BlockGasLimit: U256 = U256::from(crate::mock::BLOCK_GAS_LIMIT);
-	pub const GasLimitPovSizeRatio: u64 = crate::mock::BLOCK_GAS_LIMIT.saturating_div(crate::mock::MAX_POV_SIZE);
+	pub BlockGasLimit: U256 = U256::from(BLOCK_GAS_LIMIT);
+	pub const GasLimitPovSizeRatio: u64 = BLOCK_GAS_LIMIT.saturating_div(MAX_POV_SIZE);
 	/// 1 weight to 1 gas, for testing purposes
 	pub WeightPerGas: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(1, 0);
-	pub MockPrecompiles: MockPrecompileSet<Test> = MockPrecompileSet::<_>::new();
+	pub PrecompilesInstance: LaosPrecompiles<Test> = LaosPrecompiles::new();
 }
 
 impl pallet_evm::Config for Test {
@@ -136,8 +152,8 @@ impl pallet_evm::Config for Test {
 	type AddressMapping = pallet_evm::IdentityAddressMapping;
 	type Currency = Balances;
 	type RuntimeEvent = RuntimeEvent;
-	type PrecompilesType = MockPrecompileSet<Self>;
-	type PrecompilesValue = MockPrecompiles;
+	type PrecompilesType = LaosPrecompiles<Self>;
+	type PrecompilesValue = PrecompilesInstance;
 	type ChainId = ();
 	type BlockGasLimit = BlockGasLimit;
 	type Runner = pallet_evm::runner::stack::Runner<Self>;
@@ -147,33 +163,6 @@ impl pallet_evm::Config for Test {
 	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
 	type Timestamp = Timestamp;
 	type WeightInfo = ();
-}
-
-#[derive(Default)]
-pub struct MockPrecompileSet<Test>(sp_std::marker::PhantomData<Test>);
-
-pub type MockEvolutionCollectionFactoryPrecompile = EvolutionCollectionFactoryPrecompile<Test>;
-
-impl<Test> MockPrecompileSet<Test>
-where
-	Test: pallet_evm::Config,
-{
-	pub fn new() -> Self {
-		Self(Default::default())
-	}
-}
-
-impl<Test> fp_evm::PrecompileSet for MockPrecompileSet<Test>
-where
-	Test: pallet_evm::Config + pallet_laos_evolution::Config,
-{
-	fn execute(&self, handle: &mut impl PrecompileHandle) -> Option<fp_evm::PrecompileResult> {
-		Some(MockEvolutionCollectionFactoryPrecompile::execute(handle))
-	}
-
-	fn is_precompile(&self, _address: H160, _gas: u64) -> fp_evm::IsPrecompileResult {
-		fp_evm::IsPrecompileResult::Answer { is_precompile: true, extra_cost: 0 }
-	}
 }
 
 /// New Test Ext

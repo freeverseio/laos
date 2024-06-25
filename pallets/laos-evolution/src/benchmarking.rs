@@ -18,14 +18,142 @@
 #![cfg(feature = "runtime-benchmarks")]
 use super::*;
 
+use crate::precompiles::{
+	evolution_collection::EvolutionCollectionPrecompileSet,
+	evolution_collection_factory::EvolutionCollectionFactoryPrecompile,
+};
 #[allow(unused)]
 use crate::Pallet as LaosEvolution;
+use fp_evm::Transfer;
 use frame_benchmarking::v2::*;
-use sp_std::vec;
+use pallet_evm::{Context, ExitError, ExitReason, Log, PrecompileHandle};
+use precompile_utils::prelude::Address;
+use sp_core::{H160, H256, U256};
+use sp_std::{vec, vec::Vec};
+
+pub struct MockHandle {
+	pub input: Vec<u8>,
+	pub gas_limit: Option<u64>,
+	pub context: Context,
+	pub is_static: bool,
+	pub gas_used: u64,
+	pub logs: Vec<Log>,
+	pub code_address: H160,
+}
+
+impl MockHandle {
+	pub fn new() -> Self {
+		Self {
+			input: vec![],
+			gas_limit: None,
+			context: Context {
+				address: H160::zero(),
+				caller: H160::zero(),
+				apparent_value: U256::zero(),
+			},
+			is_static: false,
+			gas_used: 0,
+			logs: vec![],
+			code_address: H160::zero(),
+		}
+	}
+}
+
+impl PrecompileHandle for MockHandle {
+	/// Perform subcall in provided context.
+	/// Precompile specifies in which context the subcall is executed.
+	fn call(
+		&mut self,
+		_: H160,
+		_: Option<Transfer>,
+		_: Vec<u8>,
+		_: Option<u64>,
+		_: bool,
+		_: &Context,
+	) -> (ExitReason, Vec<u8>) {
+		unimplemented!()
+	}
+
+	fn record_cost(&mut self, cost: u64) -> Result<(), ExitError> {
+		self.gas_used += cost;
+		Ok(())
+	}
+
+	fn record_external_cost(&mut self, _: Option<u64>, _: Option<u64>) -> Result<(), ExitError> {
+		Ok(())
+	}
+
+	fn refund_external_cost(&mut self, _: Option<u64>, _: Option<u64>) {}
+
+	fn log(&mut self, address: H160, topics: Vec<H256>, data: Vec<u8>) -> Result<(), ExitError> {
+		let log = Log { address, topics, data };
+		self.logs.push(log);
+		Ok(())
+	}
+
+	fn remaining_gas(&self) -> u64 {
+		1000000000000
+	}
+
+	fn code_address(&self) -> H160 {
+		self.code_address
+	}
+
+	fn input(&self) -> &[u8] {
+		&self.input
+	}
+
+	fn context(&self) -> &Context {
+		&self.context
+	}
+
+	fn is_static(&self) -> bool {
+		self.is_static
+	}
+
+	fn gas_limit(&self) -> Option<u64> {
+		self.gas_limit
+	}
+}
 
 #[benchmarks]
 mod benchmarks {
 	use super::*;
+
+	#[benchmark]
+	fn precompile_discriminant() {
+		let address = H160::zero();
+		let gas = 100000000;
+		#[block]
+		{
+			let _ = EvolutionCollectionPrecompileSet::<T>::discriminant(address, gas);
+		}
+	}
+
+	#[benchmark]
+	fn precompile_create_collection() {
+		let owner = Address::from(H160::zero());
+		let mut handle = MockHandle::new();
+
+		#[block]
+		{
+			let _ =
+				EvolutionCollectionFactoryPrecompile::<T>::create_collection(&mut handle, owner);
+		}
+	}
+
+	#[benchmark]
+	fn precompile_owner() {
+		let caller: T::AccountId = whitelisted_caller();
+		let owner = caller.clone();
+		let collection_id = LaosEvolution::<T>::create_collection(owner).unwrap();
+		let mut handle = MockHandle::new();
+
+		#[block]
+		{
+			let _ = EvolutionCollectionPrecompileSet::<T>::owner(collection_id, &mut handle);
+		}
+	}
 
 	#[benchmark]
 	fn create_collection() {

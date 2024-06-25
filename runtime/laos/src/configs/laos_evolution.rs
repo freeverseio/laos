@@ -15,10 +15,35 @@
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 use super::MaxTokenUriLength;
-use crate::{types::AccountIdToH160, Runtime, RuntimeEvent};
+use crate::{
+	types::{AccountIdToH160, H160ToAccountId},
+	Runtime, RuntimeEvent,
+};
 
 impl pallet_laos_evolution::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type AccountIdToH160 = AccountIdToH160;
+	type H160ToAccountId = H160ToAccountId;
 	type MaxTokenUriLength = MaxTokenUriLength;
+	type WeightInfo = (); // TODO weights::pallet_laos_evolution::WeightInfo<Runtime>;
+	type GasWeightMapping = <Runtime as pallet_evm::Config>::GasWeightMapping;
+	type OnCreateCollection = CollectionManager;
+}
+
+// This is the simplest bytecode to revert without returning any data.
+// We will pre-deploy it under all of our precompiles to ensure they can be called from
+// within contracts.
+// (PUSH1 0x00 PUSH1 0x00 REVERT)
+pub const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
+
+// Currently, we insert [`REVERT_BYTECODE`] as an
+// `AccountCode` for the collection address.
+//
+// This is done to ensure internal calls to the collection address do not
+// fail.
+pub struct CollectionManager;
+impl pallet_laos_evolution::traits::OnCreateCollection for CollectionManager {
+	fn on_create_collection(address: sp_core::H160) {
+		pallet_evm::Pallet::<Runtime>::create_account(address, REVERT_BYTECODE.into());
+	}
 }

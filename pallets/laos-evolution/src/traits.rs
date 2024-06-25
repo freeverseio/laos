@@ -18,6 +18,7 @@
 
 use crate::types::{CollectionId, Slot, TokenId};
 use frame_support::pallet_prelude::DispatchResult;
+use sp_core::H160;
 use sp_runtime::DispatchError;
 
 /// `EvolutionCollectionFactory` trait for managing collections
@@ -66,4 +67,12 @@ pub trait EvolutionCollection<AccountId, TokenUri> {
 
 	/// Checks if public minting is enabled for a specific collection.
 	fn is_public_minting_enabled(collection_id: CollectionId) -> bool;
+}
+
+pub trait OnCreateCollection {
+	fn on_create_collection(address: H160);
+}
+
+impl OnCreateCollection for () {
+	fn on_create_collection(_address: H160) {}
 }
