@@ -27,7 +27,7 @@ use crate::Pallet as LaosEvolution;
 use fp_evm::Transfer;
 use frame_benchmarking::v2::*;
 use pallet_evm::{Context, ExitError, ExitReason, Log, PrecompileHandle};
-use precompile_utils::prelude::Address;
+use precompile_utils::{solidity::codec::UnboundedString, prelude::Address};
 use sp_core::{H160, H256, U256};
 use sp_std::{vec, vec::Vec};
 
@@ -168,10 +168,18 @@ mod benchmarks {
 	fn precompile_evolve() {
 		let caller: T::AccountId = whitelisted_caller();
 		let owner = caller.clone();
-		let token_uri = vec![1u8; 100].try_into().unwrap();
-		let token_id = TokenId::try_from(1).unwrap();
+		let token_uri: UnboundedString = vec![1u8; 100].try_into().unwrap();
 		let collection_id = LaosEvolution::<T>::create_collection(owner).unwrap();
 		let mut handle = MockHandle::new();
+		let to = Address::from(H160::from_low_u64_be(1));
+		let slot = Slot::try_from(2).unwrap();
+		let token_id = EvolutionCollectionPrecompileSet::<T>::mint(
+				collection_id,
+				&mut handle,
+				to,
+				slot,
+				token_uri.clone(),
+			).unwrap();
 
 		#[block]
 		{
