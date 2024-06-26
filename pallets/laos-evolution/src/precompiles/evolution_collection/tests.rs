@@ -390,7 +390,7 @@ fn enable_public_minting_has_a_cost() {
 		// functions that precompile calls internally.
 		precompiles()
 			.prepare_test(alice, collection_address, PrecompileCall::enable_public_minting {})
-			.expect_cost(25229000) //  [`WeightToGas`] set to 1:1 in mock
+			.expect_cost(167624000) //  [`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	})
 }
@@ -406,7 +406,7 @@ fn disable_public_minting_has_a_cost() {
 		// functions that precompile calls internally.
 		precompiles()
 			.prepare_test(alice, collection_address, PrecompileCall::disable_public_minting {})
-			.expect_cost(25229000) //  [`WeightToGas`] set to 1:1 in mock // TODO why is lower than enable?
+			.expect_cost(167277000) //  [`WeightToGas`] set to 1:1 in mock // TODO why is lower than enable?
 			.execute_some();
 	})
 }
@@ -422,7 +422,7 @@ fn is_public_minting_enabled_has_a_cost() {
 		// functions that precompile calls internally.
 		precompiles()
 			.prepare_test(alice, collection_address, PrecompileCall::is_public_minting_enabled {})
-			.expect_cost(25229000) //  [`WeightToGas`] set to 1:1 in mock
+			.expect_cost(56049000) //  [`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	})
 }
@@ -438,7 +438,7 @@ fn expected_cost_owner() {
 		// functions that precompile calls internally.
 		precompiles()
 			.prepare_test(alice, collection_address, PrecompileCall::owner {})
-			.expect_cost(55611000) //  [`WeightToGas`] set to 1:1 in mock
+			.expect_cost(57662000) //  [`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	})
 }
@@ -465,7 +465,7 @@ fn expected_cost_mint_with_external_uri() {
 					token_uri: "ciao".into(),
 				},
 			)
-			.expect_cost(25229000) // [`WeightToGas`] set to 1:1 in mock
+			.expect_cost(199716000) // [`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	})
 }
@@ -489,7 +489,7 @@ fn expected_cost_evolve_with_external_uri() {
 				collection_address,
 				PrecompileCall::evolve { token_id, token_uri: Vec::new().into() },
 			)
-			.expect_cost(25229000) // [`WeightToGas`] set to 1:1 in mock
+			.expect_cost(204278000) // [`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	})
 }
@@ -588,7 +588,7 @@ fn collection_transfer_of_ownership_records_costs() {
 				collection_address,
 				PrecompileCall::transfer_ownership { to: bob.into() },
 			)
-			.expect_cost(25229000) //  [`WeightToGas`] set to 1:1 in mock
+			.expect_cost(165231000) //  [`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	});
 }
