@@ -21,7 +21,7 @@ frame_benchmarking::define_benchmarks!(
 	[pallet_utility, Utility]
 	[pallet_multisig, Multisig]
 	[pallet_proxy, Proxy]
-	[pallet_balances, Balances] // We use default weights from polkadot-sdk as benchmarking functions does not support existential deposit zero [pallet_vesting, Vesting]
+	// [pallet_balances, Balances] // We use default weights from polkadot-sdk as benchmarking functions does not support existential deposit zero [pallet_vesting, Vesting]
 	[pallet_session, SessionBench::<Runtime>] // TODO check why SessionBench::<Runtime>
 	[pallet_parachain_staking, ParachainStaking]
 	[cumulus_pallet_xcmp_queue, XcmpQueue]
