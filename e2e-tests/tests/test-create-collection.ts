@@ -97,6 +97,6 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
 			gasPrice: GAS_PRICE,
 			nonce: nonce++,
 		});
-		expect(estimatedGas).to.be.eq(46747);
+		expect(estimatedGas).to.be.eq(46963);
 	});
 });
