@@ -42,13 +42,13 @@ pub struct MockHandle {
 }
 
 impl MockHandle {
-	pub fn new() -> Self {
+	pub fn new(caller: H160) -> Self {
 		Self {
 			input: vec![],
 			gas_limit: None,
 			context: Context {
 				address: H160::zero(),
-				caller: H160::zero(),
+				caller,
 				apparent_value: U256::zero(),
 			},
 			is_static: false,
@@ -133,7 +133,7 @@ mod benchmarks {
 	#[benchmark]
 	fn precompile_create_collection() {
 		let owner = Address::from(H160::zero());
-		let mut handle = MockHandle::new();
+		let mut handle = MockHandle::new(owner.into());
 
 		#[block]
 		{
@@ -150,7 +150,7 @@ mod benchmarks {
 		let slot = Slot::try_from(2).unwrap();
 		let token_uri = vec![1u8; 100].try_into().unwrap();
 		let collection_id = LaosEvolution::<T>::create_collection(owner).unwrap();
-		let mut handle = MockHandle::new();
+		let mut handle = MockHandle::new(T::AccountIdToH160::convert(caller));
 
 		#[block]
 		{
@@ -168,9 +168,9 @@ mod benchmarks {
 	fn precompile_evolve() {
 		let caller: T::AccountId = whitelisted_caller();
 		let owner = caller.clone();
-		let token_uri: UnboundedString = vec![1u8; 100].try_into().unwrap();
+		let token_uri: UnboundedString = vec![1u8; 10].try_into().unwrap();
 		let collection_id = LaosEvolution::<T>::create_collection(owner).unwrap();
-		let mut handle = MockHandle::new();
+		let mut handle = MockHandle::new(T::AccountIdToH160::convert(caller));
 		let to = Address::from(H160::from_low_u64_be(1));
 		let slot = Slot::try_from(2).unwrap();
 		let token_id = EvolutionCollectionPrecompileSet::<T>::mint(
@@ -198,7 +198,7 @@ mod benchmarks {
 		let caller: T::AccountId = whitelisted_caller();
 		let owner = caller.clone();
 		let collection_id = LaosEvolution::<T>::create_collection(owner).unwrap();
-		let mut handle = MockHandle::new();
+		let mut handle = MockHandle::new(T::AccountIdToH160::convert(caller));
 		let to = Address::from(H160::from_low_u64_be(1));
 
 		#[block]
@@ -216,7 +216,7 @@ mod benchmarks {
 		let caller: T::AccountId = whitelisted_caller();
 		let owner = caller.clone();
 		let collection_id = LaosEvolution::<T>::create_collection(owner).unwrap();
-		let mut handle = MockHandle::new();
+		let mut handle = MockHandle::new(T::AccountIdToH160::convert(caller));
 
 		#[block]
 		{
@@ -232,7 +232,7 @@ mod benchmarks {
 		let caller: T::AccountId = whitelisted_caller();
 		let owner = caller.clone();
 		let collection_id = LaosEvolution::<T>::create_collection(owner).unwrap();
-		let mut handle = MockHandle::new();
+		let mut handle = MockHandle::new(T::AccountIdToH160::convert(caller));
 
 		#[block]
 		{
@@ -248,7 +248,7 @@ mod benchmarks {
 		let caller: T::AccountId = whitelisted_caller();
 		let owner = caller.clone();
 		let collection_id = LaosEvolution::<T>::create_collection(owner).unwrap();
-		let mut handle = MockHandle::new();
+		let mut handle = MockHandle::new(T::AccountIdToH160::convert(caller));
 
 		#[block]
 		{
@@ -261,7 +261,7 @@ mod benchmarks {
 		let caller: T::AccountId = whitelisted_caller();
 		let owner = caller.clone();
 		let collection_id = LaosEvolution::<T>::create_collection(owner).unwrap();
-		let mut handle = MockHandle::new();
+		let mut handle = MockHandle::new(T::AccountIdToH160::convert(caller));
 
 		#[block]
 		{
@@ -278,7 +278,7 @@ mod benchmarks {
 		let owner = caller.clone();
 		let token_uri: UnboundedString = vec![1u8; 100].try_into().unwrap();
 		let collection_id = LaosEvolution::<T>::create_collection(owner).unwrap();
-		let mut handle = MockHandle::new();
+		let mut handle = MockHandle::new(T::AccountIdToH160::convert(caller));
 		let to = Address::from(H160::from_low_u64_be(1));
 		let slot = Slot::try_from(2).unwrap();
 		let token_id = EvolutionCollectionPrecompileSet::<T>::mint(
