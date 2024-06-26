@@ -23,7 +23,7 @@ use pallet_evm::{
 use sp_core::H160;
 use sp_std::marker::PhantomData;
 
-use pallet_evm_asset_metadata_extender::AssetMetadataExtenderPrecompile;
+use pallet_evm_asset_metadata_extender_legacy::AssetMetadataExtenderPrecompile;
 use pallet_evm_evolution_collection::EvolutionCollectionPrecompile;
 use pallet_evm_evolution_collection_factory::EvolutionCollectionFactoryPrecompile;
 use pallet_evm_precompile_blake2::Blake2F;

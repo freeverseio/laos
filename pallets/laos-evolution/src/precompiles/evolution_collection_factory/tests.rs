@@ -19,7 +19,7 @@
 use super::*;
 use core::str::FromStr;
 use mock::*;
-use pallet_evm::AccountCodes;
+use pallet_evm::{AccountCodes, Pallet as Evm};
 use precompile_utils::{
 	prelude::log2,
 	testing::{Alice, Precompile1, PrecompileTesterExt},
@@ -160,7 +160,7 @@ fn expected_cost_create_collection() {
 				Precompile1,
 				PrecompileCall::create_collection { owner: Address(Alice.into()) },
 			)
-			.expect_cost(509687000) //[`WeightToGas`] set to 1:1 in mock
+			.expect_cost(649501000) //[`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	})
 }

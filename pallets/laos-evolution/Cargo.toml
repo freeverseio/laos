@@ -27,11 +27,11 @@ laos-precompile-utils = { workspace = true, default-features = false }
 [dev-dependencies]
 sp-io = { workspace = true }
 sp-runtime = { workspace = true }
-precompile-utils = { workspace = true, features = ["testing"]}
 evm = { workspace = true }
 pallet-balances = { workspace = true, features = ["std", "insecure_zero_ed"] }
 pallet-timestamp = { workspace = true }
 hex = { workspace = true }
+precompile-utils = { workspace = true, features = ["testing"] }
 
 [features]
 default = ["std"]

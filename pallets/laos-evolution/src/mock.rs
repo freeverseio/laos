@@ -15,7 +15,7 @@
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 use crate as pallet_laos_evolution;
-use frame_support::{derive_impl, parameter_types};
+use frame_support::{derive_impl, pallet_prelude::Weight, parameter_types};
 use sp_core::H160;
 use sp_runtime::{traits::IdentityLookup, BuildStorage};
 
@@ -51,14 +51,32 @@ impl sp_runtime::traits::Convert<AccountId, H160> for AccountIdToH160 {
 	}
 }
 
+impl sp_runtime::traits::ConvertBack<AccountId, H160> for AccountIdToH160 {
+	fn convert_back(h160: H160) -> AccountId {
+		h160
+	}
+}
+
 impl pallet_laos_evolution::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type AccountIdToH160 = AccountIdToH160;
 	type MaxTokenUriLength = MaxTokenUriLength;
 	type WeightInfo = ();
+	type GasWeightMapping = MockGasWeightMapping;
+	type OnCreateCollection = ();
 }
 
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
 	frame_system::GenesisConfig::<Test>::default().build_storage().unwrap().into()
+}
+
+pub struct MockGasWeightMapping;
+impl pallet_evm::GasWeightMapping for MockGasWeightMapping {
+	fn gas_to_weight(gas: u64, _without_base_weight: bool) -> Weight {
+		Weight::from_parts(gas, 0)
+	}
+	fn weight_to_gas(weight: Weight) -> u64 {
+		weight.ref_time()
+	}
 }

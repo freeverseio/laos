@@ -34,7 +34,7 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
 
 		const collectionContract = await createCollection(context);
 		testCollectionContract = collectionContract;
-
+		
 		const owner = await collectionContract.methods.owner().call();
 		expect(owner).to.be.eq(GENESIS_ACCOUNT);
 	});
@@ -75,5 +75,28 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
 
 		// non-contract address doesn't have any code
 		expect(await context.web3.eth.getCode(GENESIS_ACCOUNT)).to.be.eq("0x");
+	});
+
+	step("owner call can estimate gas", async function () {
+		const estimateGas = await testCollectionContract.methods.owner().estimateGas();
+		expect(estimateGas).to.be.eq(22428);
+	});
+
+	step("create collection call can estimate gas", async function () {
+		const contract = new context.web3.eth.Contract(EVOLUTION_COLLETION_FACTORY_ABI, CONTRACT_ADDRESS, {
+			from: GENESIS_ACCOUNT,
+			gasPrice: GAS_PRICE,
+		});
+		
+		let nonce = await context.web3.eth.getTransactionCount(GENESIS_ACCOUNT);
+		context.web3.eth.accounts.wallet.add(GENESIS_ACCOUNT_PRIVATE_KEY);
+		
+		const estimatedGas = await contract.methods.createCollection(GENESIS_ACCOUNT).estimateGas({
+			from: GENESIS_ACCOUNT,
+			gas: GAS_LIMIT,
+			gasPrice: GAS_PRICE,
+			nonce: nonce++,
+		});
+		expect(estimatedGas).to.be.eq(46747);
 	});
 });

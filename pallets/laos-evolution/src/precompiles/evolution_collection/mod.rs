@@ -7,7 +7,7 @@ use crate::{
 };
 use fp_evm::ExitError;
 use frame_support::DefaultNoBound;
-use parity_scale_codec::Encode;
+use pallet_evm::GasWeightMapping;
 use precompile_utils::{
 	keccak256,
 	prelude::{
@@ -18,7 +18,10 @@ use precompile_utils::{
 };
 use scale_info::prelude::format;
 use sp_core::{H160, U256};
-use sp_runtime::{traits::PhantomData, BoundedVec, DispatchError};
+use sp_runtime::{
+	traits::{Convert, ConvertBack, PhantomData},
+	BoundedVec, DispatchError,
+};
 
 /// Solidity selector of the MintedWithExternalURI log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
@@ -51,14 +54,20 @@ impl<R> EvolutionCollectionPrecompileSet<R> {
 impl<R> EvolutionCollectionPrecompileSet<R>
 where
 	R: Config,
-	R::AccountId: From<H160> + Into<H160> + Encode,
 {
 	#[precompile::discriminant]
-	fn discriminant(address: H160, _gas: u64) -> DiscriminantResult<CollectionId> {
-		let no_cost = 0;
+	pub fn discriminant(address: H160, gas: u64) -> DiscriminantResult<CollectionId> {
+		// required gas for this function
+		let extra_cost = <R as Config>::GasWeightMapping::weight_to_gas(
+			R::WeightInfo::precompile_discriminant(),
+		);
+		if gas < extra_cost {
+			return DiscriminantResult::OutOfGas;
+		}
+
 		match address_to_collection_id(address) {
-			Ok(id) => DiscriminantResult::Some(id, no_cost),
-			Err(_) => DiscriminantResult::None(no_cost),
+			Ok(id) => DiscriminantResult::Some(id, extra_cost),
+			Err(_) => DiscriminantResult::None(extra_cost),
 		}
 	}
 
@@ -68,12 +77,10 @@ where
 		collection_id: CollectionId,
 		handle: &mut impl PrecompileHandle,
 	) -> EvmResult<Address> {
-		let weight = R::WeightInfo::precompile_owner();
-		handle.record_cost(1)?;
-		handle.record_external_cost(Some(weight.ref_time()), Some(weight.proof_size()))?;
+		super::register_cost::<R>(handle, R::WeightInfo::precompile_owner())?;
 
 		if let Some(owner) = LaosEvolution::<R>::collection_owner(collection_id) {
-			Ok(Address(owner.into()))
+			Ok(Address(R::AccountIdToH160::convert(owner)))
 		} else {
 			Err(revert("collection does not exist"))
 		}
@@ -98,10 +105,10 @@ where
 			.map_err(|_| revert("invalid token uri length"))?;
 
 		match LaosEvolution::<R>::mint_with_external_uri(
-			handle.context().caller.into(),
+			R::AccountIdToH160::convert_back(handle.context().caller),
 			collection_id,
 			slot,
-			to.into(),
+			R::AccountIdToH160::convert_back(to),
 			token_uri_bounded.clone(),
 		) {
 			Ok(token_id) => {
@@ -135,7 +142,7 @@ where
 			.map_err(|_| revert("invalid token uri length"))?;
 
 		match LaosEvolution::<R>::evolve_with_external_uri(
-			handle.context().caller.into(),
+			R::AccountIdToH160::convert_back(handle.context().caller),
 			collection_id,
 			token_id,
 			token_uri_bounded.clone(),
@@ -166,8 +173,8 @@ where
 	) -> EvmResult<()> {
 		let to: H160 = to.into();
 		LaosEvolution::<R>::transfer_ownership(
-			handle.context().caller.into(),
-			to.into(),
+			R::AccountIdToH160::convert_back(handle.context().caller),
+			R::AccountIdToH160::convert_back(to),
 			collection_id,
 		)
 		.map_err(|err| revert(convert_dispatch_error_to_string(err)))?;
@@ -190,7 +197,7 @@ where
 		handle: &mut impl PrecompileHandle,
 	) -> EvmResult<()> {
 		match LaosEvolution::<R>::enable_public_minting(
-			handle.context().caller.into(),
+			R::AccountIdToH160::convert_back(handle.context().caller),
 			collection_id,
 		) {
 			Ok(()) => {
@@ -213,7 +220,7 @@ where
 		handle: &mut impl PrecompileHandle,
 	) -> EvmResult<()> {
 		match LaosEvolution::<R>::disable_public_minting(
-			handle.context().caller.into(),
+			R::AccountIdToH160::convert_back(handle.context().caller),
 			collection_id,
 		) {
 			Ok(()) => {

@@ -65,11 +65,28 @@ impl sp_runtime::traits::Convert<AccountId, H160> for AccountIdToH160 {
 	}
 }
 
+impl sp_runtime::traits::ConvertBack<AccountId, H160> for AccountIdToH160 {
+	fn convert_back(h160: H160) -> AccountId {
+		h160
+	}
+}
+
+pub const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
+
+pub struct CollectionManager;
+impl pallet_laos_evolution::traits::OnCreateCollection for CollectionManager {
+	fn on_create_collection(address: sp_core::H160) {
+		pallet_evm::Pallet::<Test>::create_account(address, REVERT_BYTECODE.into());
+	}
+}
+
 impl pallet_laos_evolution::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type AccountIdToH160 = AccountIdToH160;
 	type MaxTokenUriLength = MaxTokenUriLength;
 	type WeightInfo = ();
+	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
+	type OnCreateCollection = CollectionManager;
 }
 
 parameter_types! {

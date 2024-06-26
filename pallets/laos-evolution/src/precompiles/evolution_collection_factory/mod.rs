@@ -16,32 +16,25 @@
 
 //! LAOS precompile module.
 
-#![cfg_attr(not(feature = "std"), no_std)]
-
 use crate::{
 	collection_id_to_address,
-	traits::EvolutionCollectionFactory as EvolutionCollectionFactoryT,
-	weights::{SubstrateWeight as LaosEvolutionWeights, WeightInfo},
+	traits::{EvolutionCollectionFactory as EvolutionCollectionFactoryT, OnCreateCollection},
+	weights::WeightInfo,
 	Pallet as LaosEvolution,
 };
 use frame_support::DefaultNoBound;
-use pallet_evm::{GasWeightMapping, Pallet as Evm};
-use parity_scale_codec::Encode;
 use precompile_utils::prelude::{
 	keccak256, log2, revert, solidity, Address, EvmResult, LogExt, PrecompileHandle,
 };
 use scale_info::prelude::{format, string::String};
-use sp_core::{Get, H160};
-use sp_runtime::{traits::PhantomData, DispatchError};
+use sp_core::H160;
+use sp_runtime::{
+	traits::{ConvertBack, PhantomData},
+	DispatchError,
+};
 
 /// Solidity selector of the CreateCollection log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_NEW_COLLECTION: [u8; 32] = keccak256!("NewCollection(address,address)");
-
-// This is the simplest bytecode to revert without returning any data.
-// We will pre-deploy it under all of our precompiles to ensure they can be called from
-// within contracts.
-// (PUSH1 0x00 PUSH1 0x00 REVERT)
-pub const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
 
 #[derive(Clone, DefaultNoBound)]
 
@@ -56,36 +49,25 @@ impl<R> EvolutionCollectionFactoryPrecompile<R> {
 #[precompile_utils::precompile]
 impl<Runtime> EvolutionCollectionFactoryPrecompile<Runtime>
 where
-	Runtime: pallet_evm::Config,
-	LaosEvolution<Runtime>: EvolutionCollectionFactoryT<Runtime::AccountId>,
-	Runtime::AccountId: From<H160> + Into<H160> + Encode,
+	Runtime: crate::Config,
 {
 	#[precompile::public("createCollection(address)")]
-	fn create_collection(handle: &mut impl PrecompileHandle, owner: Address) -> EvmResult<Address> {
-		match LaosEvolution::<Runtime>::create_collection(owner.0.into()) {
-			Ok(collection_id) => {
-				// TODO this weights are not the actual from runtime
-				let mut consumed_weight = LaosEvolutionWeights::<Runtime>::create_collection();
+	pub(crate) fn create_collection(
+		handle: &mut impl PrecompileHandle,
+		owner: Address,
+	) -> EvmResult<Address> {
+		super::register_cost::<Runtime>(
+			handle,
+			Runtime::WeightInfo::precompile_create_collection(),
+		)?;
 
+		match LaosEvolution::<Runtime>::create_collection(Runtime::AccountIdToH160::convert_back(
+			owner.0,
+		)) {
+			Ok(collection_id) => {
 				let collection_address: H160 = collection_id_to_address(collection_id);
 
-				// Currently, we insert [`REVERT_BYTECODE`] as an
-				// `AccountCode` for the collection address.
-				//
-				// This is done to ensure internal calls to the collection address do not
-				// fail.
-				Evm::<Runtime>::create_account(collection_address, REVERT_BYTECODE.into());
-
-				// `AccountCode` -> 1 write, 1 read
-				// `Suicided` -> 1 read
-				// `AccountMetadata` -> 1 write
-				consumed_weight = consumed_weight.saturating_add(
-					<Runtime as frame_system::Config>::DbWeight::get().reads_writes(2, 2),
-				); // TODO sustitute by handler.record_db_cost?
-
-				let consumed_gas = <Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
-					consumed_weight,
-				);
+				Runtime::OnCreateCollection::on_create_collection(collection_address);
 
 				log2(
 					handle.context().address,
@@ -94,13 +76,6 @@ where
 					solidity::encode_event_data(Address(collection_address)),
 				)
 				.record(handle)?;
-
-				// record EVM cost
-				handle.record_cost(consumed_gas)?;
-
-				// Record Substrate related costs
-				// TODO: Add `ref_time` when precompiles are benchmarked
-				handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
 
 				Ok(Address(collection_address))
 			},

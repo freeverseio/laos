@@ -486,11 +486,31 @@ impl sp_runtime::traits::Convert<AccountId, H160> for AccountIdToH160 {
 	}
 }
 
+impl sp_runtime::traits::ConvertBack<AccountId, H160> for AccountIdToH160 {
+	fn convert_back(h160: H160) -> AccountId {
+		AccountId::from(h160)
+	}
+}
+
+// Currently, we insert [`REVERT_BYTECODE`] as an
+// `AccountCode` for the collection address.
+//
+// This is done to ensure internal calls to the collection address do not
+// fail.
+pub struct CollectionManager;
+impl pallet_laos_evolution::traits::OnCreateCollection for CollectionManager {
+	fn on_create_collection(address: sp_core::H160) {
+		pallet_evm::Pallet::<Runtime>::create_account(address, REVERT_BYTECODE.into());
+	}
+}
+
 impl pallet_laos_evolution::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type AccountIdToH160 = AccountIdToH160;
 	type MaxTokenUriLength = MaxTokenUriLength;
 	type WeightInfo = ();
+	type GasWeightMapping = <Runtime as pallet_evm::Config>::GasWeightMapping;
+	type OnCreateCollection = CollectionManager;
 }
 
 impl pallet_asset_metadata_extender::Config for Runtime {

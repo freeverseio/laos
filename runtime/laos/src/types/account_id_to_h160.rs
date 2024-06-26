@@ -16,13 +16,39 @@
 
 use crate::AccountId;
 use sp_core::H160;
+use sp_runtime::traits::{Convert, ConvertBack};
 
-use sp_runtime::traits::Convert;
 /// Converts [`AccountId`] to [`H160`]
 pub struct AccountIdToH160;
 
 impl Convert<AccountId, H160> for AccountIdToH160 {
 	fn convert(account_id: AccountId) -> H160 {
 		H160(account_id.0)
+	}
+}
+
+impl ConvertBack<AccountId, H160> for AccountIdToH160 {
+	fn convert_back(account_id: H160) -> AccountId {
+		AccountId::from(account_id)
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use sp_core::H160;
+
+	#[test]
+	fn convert_account_id_to_h160() {
+		let account_id = AccountId::from([1u8; 20]);
+		let h160 = AccountIdToH160::convert(account_id);
+		assert_eq!(h160, H160([1u8; 20]));
+	}
+
+	#[test]
+	fn convert_h160_to_account_id() {
+		let h160 = H160([1u8; 20]);
+		let account_id = AccountIdToH160::convert_back(h160);
+		assert_eq!(account_id, AccountId::from([1u8; 20]));
 	}
 }
