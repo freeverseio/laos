@@ -17,7 +17,7 @@
 use super::MaxTokenUriLength;
 use crate::{
 	types::{AccountIdToH160, H160ToAccountId},
-	Runtime, RuntimeEvent,
+	weights, Runtime, RuntimeEvent,
 };
 
 impl pallet_laos_evolution::Config for Runtime {
@@ -25,7 +25,7 @@ impl pallet_laos_evolution::Config for Runtime {
 	type AccountIdToH160 = AccountIdToH160;
 	type H160ToAccountId = H160ToAccountId;
 	type MaxTokenUriLength = MaxTokenUriLength;
-	type WeightInfo = (); // TODO weights::pallet_laos_evolution::WeightInfo<Runtime>;
+	type WeightInfo = weights::pallet_laos_evolution::WeightInfo<Runtime>;
 	type GasWeightMapping = <Runtime as pallet_evm::Config>::GasWeightMapping;
 	type OnCreateCollection = CollectionManager;
 }
