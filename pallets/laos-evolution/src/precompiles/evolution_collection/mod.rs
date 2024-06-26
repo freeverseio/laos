@@ -19,7 +19,7 @@ use precompile_utils::{
 use scale_info::prelude::format;
 use sp_core::{H160, U256};
 use sp_runtime::{
-	traits::{Convert, PhantomData},
+	traits::{Convert, ConvertBack, PhantomData},
 	BoundedVec, DispatchError,
 };
 
@@ -105,10 +105,10 @@ where
 			.map_err(|_| revert("invalid token uri length"))?;
 
 		match LaosEvolution::<R>::mint_with_external_uri(
-			R::H160ToAccountId::convert(handle.context().caller),
+			R::AccountIdToH160::convert_back(handle.context().caller),
 			collection_id,
 			slot,
-			R::H160ToAccountId::convert(to),
+			R::AccountIdToH160::convert_back(to),
 			token_uri_bounded.clone(),
 		) {
 			Ok(token_id) => {
@@ -142,7 +142,7 @@ where
 			.map_err(|_| revert("invalid token uri length"))?;
 
 		match LaosEvolution::<R>::evolve_with_external_uri(
-			R::H160ToAccountId::convert(handle.context().caller),
+			R::AccountIdToH160::convert_back(handle.context().caller),
 			collection_id,
 			token_id,
 			token_uri_bounded.clone(),
@@ -173,8 +173,8 @@ where
 	) -> EvmResult<()> {
 		let to: H160 = to.into();
 		LaosEvolution::<R>::transfer_ownership(
-			R::H160ToAccountId::convert(handle.context().caller),
-			R::H160ToAccountId::convert(to),
+			R::AccountIdToH160::convert_back(handle.context().caller),
+			R::AccountIdToH160::convert_back(to),
 			collection_id,
 		)
 		.map_err(|err| revert(convert_dispatch_error_to_string(err)))?;
@@ -197,7 +197,7 @@ where
 		handle: &mut impl PrecompileHandle,
 	) -> EvmResult<()> {
 		match LaosEvolution::<R>::enable_public_minting(
-			R::H160ToAccountId::convert(handle.context().caller),
+			R::AccountIdToH160::convert_back(handle.context().caller),
 			collection_id,
 		) {
 			Ok(()) => {
@@ -220,7 +220,7 @@ where
 		handle: &mut impl PrecompileHandle,
 	) -> EvmResult<()> {
 		match LaosEvolution::<R>::disable_public_minting(
-			R::H160ToAccountId::convert(handle.context().caller),
+			R::AccountIdToH160::convert_back(handle.context().caller),
 			collection_id,
 		) {
 			Ok(()) => {
