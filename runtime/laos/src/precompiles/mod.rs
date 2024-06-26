@@ -19,13 +19,17 @@
 use frame_support::parameter_types;
 
 use pallet_evm_asset_metadata_extender::AssetMetadataExtenderPrecompile;
-use pallet_evm_evolution_collection::EvolutionCollectionPrecompileSet;
-use pallet_evm_evolution_collection_factory::EvolutionCollectionFactoryPrecompile;
 use pallet_evm_precompile_blake2::Blake2F;
 use pallet_evm_precompile_bn128::{Bn128Add, Bn128Mul, Bn128Pairing};
 use pallet_evm_precompile_modexp::Modexp;
 use pallet_evm_precompile_simple::{ECRecover, Identity, Ripemd160, Sha256};
-use pallet_laos_evolution::ASSET_PRECOMPILE_ADDRESS_PREFIX;
+use pallet_laos_evolution::{
+	precompiles::{
+		evolution_collection::EvolutionCollectionPrecompileSet,
+		evolution_collection_factory::EvolutionCollectionFactoryPrecompile,
+	},
+	ASSET_PRECOMPILE_ADDRESS_PREFIX,
+};
 use precompile_utils::precompile_set::{
 	AcceptDelegateCall, AddressU64, CallableByContract, CallableByPrecompile, PrecompileAt,
 	PrecompileSetBuilder, PrecompileSetStartingWith, PrecompilesInRangeInclusive,
@@ -83,6 +87,3 @@ pub type LaosPrecompiles<R> = PrecompileSetBuilder<
 		>,
 	),
 >;
-
-#[cfg(test)]
-mod mock;

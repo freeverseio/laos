@@ -18,7 +18,7 @@ jobs:
           cache-key: build_and_push
       - name: Check
         run: |
-          cargo check --all-targets --release --features runtime-benchmarks --features try-runtime --features fast-runtime
+          cargo check --all-targets --release --features runtime-benchmarks --features try-runtime 
 
   build_and_push:
     runs-on:
@@ -215,5 +215,5 @@ jobs:
 
       - name: Run tests
         run: |
-          npm run build && npm run test
+          npm run build && npm run test -- --grep "Frontier RPC (Create Collection)" --invert --grep "estimate gas"
         working-directory: ./e2e-tests

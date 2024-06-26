@@ -25,6 +25,7 @@ mod mock;
 mod tests;
 
 mod benchmarking;
+pub mod precompiles;
 pub mod traits;
 pub mod types;
 pub mod weights;
@@ -32,11 +33,12 @@ pub mod weights;
 use frame_support::pallet_prelude::*;
 use sp_core::H160;
 use sp_runtime::{
-	traits::{Convert, One},
+	traits::{Convert, ConvertBack, One},
 	ArithmeticError, DispatchError,
 };
 
-pub use traits::{EvolutionCollection, EvolutionCollectionFactory};
+use pallet_evm::GasWeightMapping;
+pub use traits::{EvolutionCollection, EvolutionCollectionFactory, OnCreateCollection};
 pub use types::*;
 pub use weights::WeightInfo;
 
@@ -57,7 +59,13 @@ pub mod pallet {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		/// Converts `Self::AccountId` to `H160`
-		type AccountIdToH160: Convert<Self::AccountId, H160>;
+		type AccountIdToH160: ConvertBack<Self::AccountId, H160>;
+		/// The weight information of this pallet.
+		type WeightInfo: WeightInfo;
+		/// Gas weight mapping
+		type GasWeightMapping: GasWeightMapping;
+		/// Callback for creating a new collection
+		type OnCreateCollection: OnCreateCollection;
 		/// Limit for the length of `token_uri`
 		#[pallet::constant]
 		type MaxTokenUriLength: Get<u32>;
