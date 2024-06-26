@@ -29,7 +29,7 @@ use precompile_utils::prelude::{
 use scale_info::prelude::{format, string::String};
 use sp_core::H160;
 use sp_runtime::{
-	traits::{Convert, PhantomData},
+	traits::{ConvertBack, PhantomData},
 	DispatchError,
 };
 
@@ -61,7 +61,7 @@ where
 			Runtime::WeightInfo::precompile_create_collection(),
 		)?;
 
-		match LaosEvolution::<Runtime>::create_collection(Runtime::H160ToAccountId::convert(
+		match LaosEvolution::<Runtime>::create_collection(Runtime::AccountIdToH160::convert_back(
 			owner.0,
 		)) {
 			Ok(collection_id) => {
