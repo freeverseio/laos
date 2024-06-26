@@ -166,7 +166,7 @@ where
 	}
 
 	#[precompile::public("transferOwnership(address)")]
-	fn transfer_ownership(
+	pub fn transfer_ownership(
 		collection_id: CollectionId,
 		handle: &mut impl PrecompileHandle,
 		to: Address,
@@ -192,7 +192,7 @@ where
 	}
 
 	#[precompile::public("enablePublicMinting()")]
-	fn enable_public_minting(
+	pub fn enable_public_minting(
 		collection_id: CollectionId,
 		handle: &mut impl PrecompileHandle,
 	) -> EvmResult<()> {
@@ -215,7 +215,7 @@ where
 	}
 
 	#[precompile::public("disablePublicMinting()")]
-	fn disable_public_minting(
+	pub fn disable_public_minting(
 		collection_id: CollectionId,
 		handle: &mut impl PrecompileHandle,
 	) -> EvmResult<()> {
@@ -239,7 +239,7 @@ where
 
 	#[precompile::public("isPublicMintingEnabled()")]
 	#[precompile::view]
-	fn is_public_minting_enabled(
+	pub fn is_public_minting_enabled(
 		collection_id: CollectionId,
 		_handle: &mut impl PrecompileHandle,
 	) -> EvmResult<bool> {
@@ -249,7 +249,7 @@ where
 
 	#[precompile::public("tokenURI(uint256)")]
 	#[precompile::view]
-	fn token_uri(
+	pub fn token_uri(
 		collection_id: CollectionId,
 		_handle: &mut impl PrecompileHandle,
 		token_id: U256,

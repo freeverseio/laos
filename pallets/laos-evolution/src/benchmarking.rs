@@ -27,7 +27,7 @@ use crate::Pallet as LaosEvolution;
 use fp_evm::Transfer;
 use frame_benchmarking::v2::*;
 use pallet_evm::{Context, ExitError, ExitReason, Log, PrecompileHandle};
-use precompile_utils::{solidity::codec::UnboundedString, prelude::Address};
+use precompile_utils::{prelude::Address, solidity::codec::UnboundedString};
 use sp_core::{H160, H256, U256};
 use sp_std::{vec, vec::Vec};
 
@@ -174,12 +174,13 @@ mod benchmarks {
 		let to = Address::from(H160::from_low_u64_be(1));
 		let slot = Slot::try_from(2).unwrap();
 		let token_id = EvolutionCollectionPrecompileSet::<T>::mint(
-				collection_id,
-				&mut handle,
-				to,
-				slot,
-				token_uri.clone(),
-			).unwrap();
+			collection_id,
+			&mut handle,
+			to,
+			slot,
+			token_uri.clone(),
+		)
+		.unwrap();
 
 		#[block]
 		{
@@ -188,6 +189,56 @@ mod benchmarks {
 				&mut handle,
 				token_id,
 				token_uri,
+			);
+		}
+	}
+
+	#[benchmark]
+	fn precompile_transfer_ownership() {
+		let caller: T::AccountId = whitelisted_caller();
+		let owner = caller.clone();
+		let collection_id = LaosEvolution::<T>::create_collection(owner).unwrap();
+		let mut handle = MockHandle::new();
+		let to = Address::from(H160::from_low_u64_be(1));
+
+		#[block]
+		{
+			let _ = EvolutionCollectionPrecompileSet::<T>::transfer_ownership(
+				collection_id,
+				&mut handle,
+				to,
+			);
+		}
+	}
+
+	#[benchmark]
+	fn precompile_enable_public_minting() {
+		let caller: T::AccountId = whitelisted_caller();
+		let owner = caller.clone();
+		let collection_id = LaosEvolution::<T>::create_collection(owner).unwrap();
+		let mut handle = MockHandle::new();
+
+		#[block]
+		{
+			let _ = EvolutionCollectionPrecompileSet::<T>::enable_public_minting(
+				collection_id,
+				&mut handle,
+			);
+		}
+	}
+
+	#[benchmark]
+	fn precompile_disable_public_minting() {
+		let caller: T::AccountId = whitelisted_caller();
+		let owner = caller.clone();
+		let collection_id = LaosEvolution::<T>::create_collection(owner).unwrap();
+		let mut handle = MockHandle::new();
+
+		#[block]
+		{
+			let _ = EvolutionCollectionPrecompileSet::<T>::disable_public_minting(
+				collection_id,
+				&mut handle,
 			);
 		}
 	}
@@ -202,6 +253,50 @@ mod benchmarks {
 		#[block]
 		{
 			let _ = EvolutionCollectionPrecompileSet::<T>::owner(collection_id, &mut handle);
+		}
+	}
+
+	#[benchmark]
+	fn precompile_is_public_minting_enabled() {
+		let caller: T::AccountId = whitelisted_caller();
+		let owner = caller.clone();
+		let collection_id = LaosEvolution::<T>::create_collection(owner).unwrap();
+		let mut handle = MockHandle::new();
+
+		#[block]
+		{
+			let _ = EvolutionCollectionPrecompileSet::<T>::is_public_minting_enabled(
+				collection_id,
+				&mut handle,
+			);
+		}
+	}
+
+	#[benchmark]
+	fn precompile_token_uri() {
+		let caller: T::AccountId = whitelisted_caller();
+		let owner = caller.clone();
+		let token_uri: UnboundedString = vec![1u8; 100].try_into().unwrap();
+		let collection_id = LaosEvolution::<T>::create_collection(owner).unwrap();
+		let mut handle = MockHandle::new();
+		let to = Address::from(H160::from_low_u64_be(1));
+		let slot = Slot::try_from(2).unwrap();
+		let token_id = EvolutionCollectionPrecompileSet::<T>::mint(
+			collection_id,
+			&mut handle,
+			to,
+			slot,
+			token_uri.clone(),
+		)
+		.unwrap();
+
+		#[block]
+		{
+			let _ = EvolutionCollectionPrecompileSet::<T>::token_uri(
+				collection_id,
+				&mut handle,
+				token_id,
+			);
 		}
 	}
 
