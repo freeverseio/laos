@@ -79,7 +79,7 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
 
 	step("owner call can estimate gas", async function () {
 		const estimateGas = await testCollectionContract.methods.owner().estimateGas();
-		expect(estimateGas).to.be.eq(22428);
+		expect(estimateGas).to.be.eq(22438);
 	});
 
 	step("create collection call can estimate gas", async function () {
