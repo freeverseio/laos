@@ -46,11 +46,7 @@ impl MockHandle {
 		Self {
 			input: vec![],
 			gas_limit: None,
-			context: Context {
-				address: H160::zero(),
-				caller,
-				apparent_value: U256::zero(),
-			},
+			context: Context { address: H160::zero(), caller, apparent_value: U256::zero() },
 			is_static: false,
 			gas_used: 0,
 			logs: vec![],
