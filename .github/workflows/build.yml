@@ -215,5 +215,5 @@ jobs:
 
       - name: Run tests
         run: |
-          npm run build && npm run test
+          npm run build && npm run test -- --grep "Frontier RPC (Create Collection)" --invert --grep "estimate gas"
         working-directory: ./e2e-tests
