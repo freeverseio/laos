@@ -161,10 +161,10 @@ mod benchmarks {
 	}
 
 	#[benchmark]
-	fn precompile_evolve() {
+	fn precompile_evolve(s: Linear<0, { <T as Config>::MaxTokenUriLength::get() }>) {
 		let caller: T::AccountId = whitelisted_caller();
 		let owner = caller.clone();
-		let token_uri: UnboundedString = vec![1u8; 10].try_into().unwrap();
+		let token_uri: UnboundedString = vec![1u8; s.try_into().unwrap()].try_into().unwrap();
 		let collection_id = LaosEvolution::<T>::create_collection(owner).unwrap();
 		let mut handle = MockHandle::new(T::AccountIdToH160::convert(caller));
 		let to = Address::from(H160::from_low_u64_be(1));
