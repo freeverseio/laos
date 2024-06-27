@@ -59,7 +59,6 @@ sp-staking = { workspace = true }
 pallet-asset-metadata-extender = { workspace = true }
 pallet-laos-evolution = { workspace = true }
 
-pallet-evm-asset-metadata-extender = { workspace = true }
 
 # Polkadot
 pallet-xcm = { workspace = true }
@@ -175,7 +174,6 @@ std = [
 	"pallet-base-fee/std",
 	"pallet-ethereum/std",
 	"pallet-evm/std",
-	"pallet-evm-asset-metadata-extender/std",
 	"pallet-evm-chain-id/std",
 	"pallet-evm-precompile-modexp/std",
 	"pallet-evm-precompile-simple/std",
