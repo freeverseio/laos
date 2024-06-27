@@ -30,7 +30,8 @@ use core::marker::PhantomData;
 
 /// Weight functions needed for `pallet_asset_metadata_extender`.
 pub trait WeightInfo {
-	fn precompile_create_token_uri_extension(t: u32, u: u32, ) -> Weight;
+	fn precompile_extend(t: u32, u: u32, ) -> Weight;
+	fn precompile_update(t: u32, u: u32, ) -> Weight;
 	fn create_token_uri_extension(t: u32, u: u32, ) -> Weight;
 	fn update_token_uri_extension(t: u32, u: u32, ) -> Weight;
 }
@@ -46,18 +47,33 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	/// Proof: `AssetMetadataExtender::ClaimersByLocationAndIndex` (`max_values`: None, `max_size`: Some(570), added: 3045, mode: `MaxEncodedLen`)
 	/// The range of component `t` is `[0, 512]`.
 	/// The range of component `u` is `[0, 512]`.
-	fn precompile_create_token_uri_extension(t: u32, u: u32, ) -> Weight {
+	fn precompile_extend(t: u32, u: u32, ) -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `4`
 		//  Estimated: `4545`
-		// Minimum execution time: 14_023_000 picoseconds.
-		Weight::from_parts(14_415_525, 4545)
-			// Standard Error: 68
-			.saturating_add(Weight::from_parts(1_576, 0).saturating_mul(t.into()))
-			// Standard Error: 68
-			.saturating_add(Weight::from_parts(10_663, 0).saturating_mul(u.into()))
+		// Minimum execution time: 15_167_000 picoseconds.
+		Weight::from_parts(15_884_425, 4545)
+			// Standard Error: 230
+			.saturating_add(Weight::from_parts(1_745, 0).saturating_mul(t.into()))
+			// Standard Error: 230
+			.saturating_add(Weight::from_parts(10_833, 0).saturating_mul(u.into()))
 			.saturating_add(T::DbWeight::get().reads(2_u64))
 			.saturating_add(T::DbWeight::get().writes(3_u64))
+	}
+	/// Storage: `AssetMetadataExtender::TokenUrisByClaimerAndLocation` (r:1 w:1)
+	/// Proof: `AssetMetadataExtender::TokenUrisByClaimerAndLocation` (`max_values`: None, `max_size`: Some(1080), added: 3555, mode: `MaxEncodedLen`)
+	/// The range of component `t` is `[0, 512]`.
+	/// The range of component `u` is `[0, 512]`.
+	fn precompile_update(_t: u32, u: u32, ) -> Weight {
+		// Proof Size summary in bytes:
+		//  Measured:  `185 + u * (1 ±0)`
+		//  Estimated: `4545`
+		// Minimum execution time: 13_045_000 picoseconds.
+		Weight::from_parts(15_048_370, 4545)
+			// Standard Error: 138
+			.saturating_add(Weight::from_parts(8_883, 0).saturating_mul(u.into()))
+			.saturating_add(T::DbWeight::get().reads(1_u64))
+			.saturating_add(T::DbWeight::get().writes(1_u64))
 	}
 	/// Storage: `AssetMetadataExtender::TokenUrisByClaimerAndLocation` (r:1 w:1)
 	/// Proof: `AssetMetadataExtender::TokenUrisByClaimerAndLocation` (`max_values`: None, `max_size`: Some(1080), added: 3555, mode: `MaxEncodedLen`)
@@ -71,12 +87,12 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 		// Proof Size summary in bytes:
 		//  Measured:  `4`
 		//  Estimated: `4545`
-		// Minimum execution time: 11_308_000 picoseconds.
-		Weight::from_parts(11_671_808, 4545)
-			// Standard Error: 51
-			.saturating_add(Weight::from_parts(663, 0).saturating_mul(t.into()))
-			// Standard Error: 51
-			.saturating_add(Weight::from_parts(7_685, 0).saturating_mul(u.into()))
+		// Minimum execution time: 12_087_000 picoseconds.
+		Weight::from_parts(13_170_500, 4545)
+			// Standard Error: 136
+			.saturating_add(Weight::from_parts(955, 0).saturating_mul(t.into()))
+			// Standard Error: 136
+			.saturating_add(Weight::from_parts(6_756, 0).saturating_mul(u.into()))
 			.saturating_add(T::DbWeight::get().reads(2_u64))
 			.saturating_add(T::DbWeight::get().writes(3_u64))
 	}
@@ -88,12 +104,12 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 		// Proof Size summary in bytes:
 		//  Measured:  `185 + u * (1 ±0)`
 		//  Estimated: `4545`
-		// Minimum execution time: 9_502_000 picoseconds.
-		Weight::from_parts(9_998_238, 4545)
-			// Standard Error: 57
-			.saturating_add(Weight::from_parts(538, 0).saturating_mul(t.into()))
-			// Standard Error: 57
-			.saturating_add(Weight::from_parts(6_241, 0).saturating_mul(u.into()))
+		// Minimum execution time: 10_389_000 picoseconds.
+		Weight::from_parts(10_659_664, 4545)
+			// Standard Error: 70
+			.saturating_add(Weight::from_parts(818, 0).saturating_mul(t.into()))
+			// Standard Error: 70
+			.saturating_add(Weight::from_parts(6_654, 0).saturating_mul(u.into()))
 			.saturating_add(T::DbWeight::get().reads(1_u64))
 			.saturating_add(T::DbWeight::get().writes(1_u64))
 	}
@@ -109,18 +125,33 @@ impl WeightInfo for () {
 	/// Proof: `AssetMetadataExtender::ClaimersByLocationAndIndex` (`max_values`: None, `max_size`: Some(570), added: 3045, mode: `MaxEncodedLen`)
 	/// The range of component `t` is `[0, 512]`.
 	/// The range of component `u` is `[0, 512]`.
-	fn precompile_create_token_uri_extension(t: u32, u: u32, ) -> Weight {
+	fn precompile_extend(t: u32, u: u32, ) -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `4`
 		//  Estimated: `4545`
-		// Minimum execution time: 14_023_000 picoseconds.
-		Weight::from_parts(14_415_525, 4545)
-			// Standard Error: 68
-			.saturating_add(Weight::from_parts(1_576, 0).saturating_mul(t.into()))
-			// Standard Error: 68
-			.saturating_add(Weight::from_parts(10_663, 0).saturating_mul(u.into()))
+		// Minimum execution time: 15_167_000 picoseconds.
+		Weight::from_parts(15_884_425, 4545)
+			// Standard Error: 230
+			.saturating_add(Weight::from_parts(1_745, 0).saturating_mul(t.into()))
+			// Standard Error: 230
+			.saturating_add(Weight::from_parts(10_833, 0).saturating_mul(u.into()))
 			.saturating_add(RocksDbWeight::get().reads(2_u64))
 			.saturating_add(RocksDbWeight::get().writes(3_u64))
+	}
+	/// Storage: `AssetMetadataExtender::TokenUrisByClaimerAndLocation` (r:1 w:1)
+	/// Proof: `AssetMetadataExtender::TokenUrisByClaimerAndLocation` (`max_values`: None, `max_size`: Some(1080), added: 3555, mode: `MaxEncodedLen`)
+	/// The range of component `t` is `[0, 512]`.
+	/// The range of component `u` is `[0, 512]`.
+	fn precompile_update(_t: u32, u: u32, ) -> Weight {
+		// Proof Size summary in bytes:
+		//  Measured:  `185 + u * (1 ±0)`
+		//  Estimated: `4545`
+		// Minimum execution time: 13_045_000 picoseconds.
+		Weight::from_parts(15_048_370, 4545)
+			// Standard Error: 138
+			.saturating_add(Weight::from_parts(8_883, 0).saturating_mul(u.into()))
+			.saturating_add(RocksDbWeight::get().reads(1_u64))
+			.saturating_add(RocksDbWeight::get().writes(1_u64))
 	}
 	/// Storage: `AssetMetadataExtender::TokenUrisByClaimerAndLocation` (r:1 w:1)
 	/// Proof: `AssetMetadataExtender::TokenUrisByClaimerAndLocation` (`max_values`: None, `max_size`: Some(1080), added: 3555, mode: `MaxEncodedLen`)
@@ -134,12 +165,12 @@ impl WeightInfo for () {
 		// Proof Size summary in bytes:
 		//  Measured:  `4`
 		//  Estimated: `4545`
-		// Minimum execution time: 11_308_000 picoseconds.
-		Weight::from_parts(11_671_808, 4545)
-			// Standard Error: 51
-			.saturating_add(Weight::from_parts(663, 0).saturating_mul(t.into()))
-			// Standard Error: 51
-			.saturating_add(Weight::from_parts(7_685, 0).saturating_mul(u.into()))
+		// Minimum execution time: 12_087_000 picoseconds.
+		Weight::from_parts(13_170_500, 4545)
+			// Standard Error: 136
+			.saturating_add(Weight::from_parts(955, 0).saturating_mul(t.into()))
+			// Standard Error: 136
+			.saturating_add(Weight::from_parts(6_756, 0).saturating_mul(u.into()))
 			.saturating_add(RocksDbWeight::get().reads(2_u64))
 			.saturating_add(RocksDbWeight::get().writes(3_u64))
 	}
@@ -151,12 +182,12 @@ impl WeightInfo for () {
 		// Proof Size summary in bytes:
 		//  Measured:  `185 + u * (1 ±0)`
 		//  Estimated: `4545`
-		// Minimum execution time: 9_502_000 picoseconds.
-		Weight::from_parts(9_998_238, 4545)
-			// Standard Error: 57
-			.saturating_add(Weight::from_parts(538, 0).saturating_mul(t.into()))
-			// Standard Error: 57
-			.saturating_add(Weight::from_parts(6_241, 0).saturating_mul(u.into()))
+		// Minimum execution time: 10_389_000 picoseconds.
+		Weight::from_parts(10_659_664, 4545)
+			// Standard Error: 70
+			.saturating_add(Weight::from_parts(818, 0).saturating_mul(t.into()))
+			// Standard Error: 70
+			.saturating_add(Weight::from_parts(6_654, 0).saturating_mul(u.into()))
 			.saturating_add(RocksDbWeight::get().reads(1_u64))
 			.saturating_add(RocksDbWeight::get().writes(1_u64))
 	}

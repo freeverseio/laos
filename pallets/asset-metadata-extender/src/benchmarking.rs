@@ -46,11 +46,7 @@ impl MockHandle {
 		Self {
 			input: vec![],
 			gas_limit: None,
-			context: Context {
-				address: H160::zero(),
-				caller: caller,
-				apparent_value: U256::zero(),
-			},
+			context: Context { address: H160::zero(), caller, apparent_value: U256::zero() },
 			is_static: false,
 			gas_used: 0,
 			logs: vec![],
@@ -127,7 +123,7 @@ mod benchmarks {
 	);
 
 	#[benchmark]
-	fn precompile_create_token_uri_extension(
+	fn precompile_extend(
 		t: Linear<0, { <T as Config>::MaxTokenUriLength::get() }>,
 		u: Linear<0, { <T as Config>::MaxUniversalLocationLength::get() }>,
 	) {
@@ -151,6 +147,48 @@ mod benchmarks {
 		assert_eq!(
 			AssetMetadataExtender::<T>::token_uris_by_claimer_and_location(claimer, ul),
 			Some(token_uri)
+		);
+	}
+
+	#[benchmark]
+	fn precompile_update(
+		t: Linear<0, { <T as Config>::MaxTokenUriLength::get() }>,
+		u: Linear<0, { <T as Config>::MaxUniversalLocationLength::get() }>,
+	) {
+		let mut handle = MockHandle::new();
+
+		let caller: T::AccountId = whitelisted_caller();
+		let claimer = caller.clone();
+		let universal_location: UniversalLocationOf<T> = vec![1u8; u as usize].try_into().unwrap();
+		let token_uri: TokenUriOf<T> = vec![1u8; t as usize].try_into().unwrap();
+
+		{
+			AssetMetadataExtender::<T>::create_token_uri_extension(
+				claimer.clone(),
+				universal_location.clone(),
+				token_uri,
+			)
+			.unwrap();
+		};
+
+		let new_token_uri: TokenUriOf<T> = vec![2u8; t as usize].try_into().unwrap();
+
+		#[block]
+		{
+			AssetMetadataExtenderPrecompile::<T>::update(
+				&mut handle,
+				universal_location.clone().to_vec().try_into().unwrap(),
+				new_token_uri.clone().to_vec().try_into().unwrap(),
+			)
+			.unwrap();
+		};
+
+		assert_eq!(
+			AssetMetadataExtender::<T>::token_uris_by_claimer_and_location(
+				claimer,
+				universal_location
+			),
+			Some(new_token_uri)
 		);
 	}
 
@@ -203,11 +241,19 @@ mod benchmarks {
 		#[block]
 		{
 			AssetMetadataExtender::<T>::update_token_uri_extension(
-				claimer,
-				universal_location,
-				new_token_uri,
+				claimer.clone(),
+				universal_location.clone(),
+				new_token_uri.clone(),
 			)
 			.unwrap();
 		};
+
+		assert_eq!(
+			AssetMetadataExtender::<T>::token_uris_by_claimer_and_location(
+				claimer,
+				universal_location
+			),
+			Some(new_token_uri)
+		);
 	}
 }

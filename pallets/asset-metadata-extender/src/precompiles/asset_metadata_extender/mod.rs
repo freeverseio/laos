@@ -16,9 +16,8 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 use crate::{
-	traits::AssetMetadataExtender as AssetMetadataExtenderT, Config,
+	traits::AssetMetadataExtender as AssetMetadataExtenderT, weights::WeightInfo, Config,
 	Pallet as AssetMetadataExtender,
-	weights::WeightInfo,
 };
 use fp_evm::PrecompileHandle;
 use frame_support::DefaultNoBound;
@@ -67,7 +66,10 @@ where
 	) -> EvmResult<()> {
 		super::register_cost::<Runtime>(
 			handle,
-			Runtime::WeightInfo::precompile_create_token_uri_extension(token_uri.len(), universal_location.len()), // wip
+			Runtime::WeightInfo::precompile_extend(
+				token_uri.as_bytes().len().try_into().unwrap(),
+				universal_location.as_bytes().len().try_into().unwrap(),
+			),
 		)?;
 
 		// TODO this might be remove when we have the bounded string as param
@@ -108,12 +110,18 @@ where
 	}
 
 	#[precompile::public("updateExtendedULWithExternalURI(string,string)")]
-	fn update(
+	pub fn update(
 		handle: &mut impl PrecompileHandle,
 		universal_location: UnboundedString,
 		token_uri: UnboundedString,
 	) -> EvmResult<()> {
-		// TODO register_cost
+		super::register_cost::<Runtime>(
+			handle,
+			Runtime::WeightInfo::precompile_update(
+				token_uri.as_bytes().len().try_into().unwrap(),
+				universal_location.as_bytes().len().try_into().unwrap(),
+			),
+		)?;
 
 		// TODO this might be remove when we have the bounded string as param
 		let universal_location_bounded: BoundedVec<
