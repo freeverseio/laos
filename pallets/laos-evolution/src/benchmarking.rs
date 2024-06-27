@@ -133,8 +133,9 @@ mod benchmarks {
 
 		#[block]
 		{
-			let _ =
+			let res =
 				EvolutionCollectionFactoryPrecompile::<T>::create_collection(&mut handle, owner);
+			assert!(res.is_ok());
 		}
 	}
 
@@ -150,13 +151,14 @@ mod benchmarks {
 
 		#[block]
 		{
-			let _ = EvolutionCollectionPrecompileSet::<T>::mint(
+			let res = EvolutionCollectionPrecompileSet::<T>::mint(
 				collection_id,
 				&mut handle,
 				to,
 				slot,
 				token_uri,
 			);
+			assert!(res.is_ok());
 		}
 	}
 
@@ -180,12 +182,13 @@ mod benchmarks {
 
 		#[block]
 		{
-			let _ = EvolutionCollectionPrecompileSet::<T>::evolve(
+			let res = EvolutionCollectionPrecompileSet::<T>::evolve(
 				collection_id,
 				&mut handle,
 				token_id,
 				token_uri,
 			);
+			assert!(res.is_ok());
 		}
 	}
 
@@ -199,11 +202,12 @@ mod benchmarks {
 
 		#[block]
 		{
-			let _ = EvolutionCollectionPrecompileSet::<T>::transfer_ownership(
+			let res = EvolutionCollectionPrecompileSet::<T>::transfer_ownership(
 				collection_id,
 				&mut handle,
 				to,
 			);
+			assert!(res.is_ok());
 		}
 	}
 
@@ -216,10 +220,11 @@ mod benchmarks {
 
 		#[block]
 		{
-			let _ = EvolutionCollectionPrecompileSet::<T>::enable_public_minting(
+			let res = EvolutionCollectionPrecompileSet::<T>::enable_public_minting(
 				collection_id,
 				&mut handle,
 			);
+			assert!(res.is_ok());
 		}
 	}
 
@@ -232,10 +237,11 @@ mod benchmarks {
 
 		#[block]
 		{
-			let _ = EvolutionCollectionPrecompileSet::<T>::disable_public_minting(
+			let res = EvolutionCollectionPrecompileSet::<T>::disable_public_minting(
 				collection_id,
 				&mut handle,
 			);
+			assert!(res.is_ok());
 		}
 	}
 
@@ -248,7 +254,8 @@ mod benchmarks {
 
 		#[block]
 		{
-			let _ = EvolutionCollectionPrecompileSet::<T>::owner(collection_id, &mut handle);
+			let res = EvolutionCollectionPrecompileSet::<T>::owner(collection_id, &mut handle);
+			assert!(res.is_ok());
 		}
 	}
 
@@ -261,10 +268,11 @@ mod benchmarks {
 
 		#[block]
 		{
-			let _ = EvolutionCollectionPrecompileSet::<T>::is_public_minting_enabled(
+			let res = EvolutionCollectionPrecompileSet::<T>::is_public_minting_enabled(
 				collection_id,
 				&mut handle,
 			);
+			assert!(res.is_ok());
 		}
 	}
 
@@ -288,11 +296,12 @@ mod benchmarks {
 
 		#[block]
 		{
-			let _ = EvolutionCollectionPrecompileSet::<T>::token_uri(
+			let res = EvolutionCollectionPrecompileSet::<T>::token_uri(
 				collection_id,
 				&mut handle,
 				token_id,
 			);
+			assert!(res.is_ok());
 		}
 	}
 
