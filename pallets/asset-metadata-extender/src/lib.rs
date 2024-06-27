@@ -24,12 +24,12 @@ pub mod weights;
 
 use frame_support::pallet_prelude::*;
 pub use pallet::*;
+use pallet_evm::GasWeightMapping;
 use sp_core::H160;
 use sp_runtime::{
 	traits::{Convert, One},
 	ArithmeticError, DispatchResult,
 };
-use pallet_evm::GasWeightMapping;
 pub use traits::AssetMetadataExtender;
 pub use types::*;
 pub use weights::WeightInfo;

@@ -15,13 +15,13 @@
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 #![cfg_attr(not(feature = "std"), no_std)]
-use fp_evm::PrecompileHandle;
-use frame_support::DefaultNoBound;
 use crate::{
 	traits::AssetMetadataExtender as AssetMetadataExtenderT,
 	weights::{SubstrateWeight as AssetMetadataExtenderWeights, WeightInfo},
 	Config, Pallet as AssetMetadataExtender,
 };
+use fp_evm::PrecompileHandle;
+use frame_support::DefaultNoBound;
 use pallet_evm::GasWeightMapping;
 use parity_scale_codec::Encode;
 use precompile_utils::{
