@@ -161,11 +161,16 @@ where
 	}
 
 	#[precompile::public("balanceOfUL(string)")]
-	fn balance_of(
-		_handle: &mut impl PrecompileHandle,
+	pub fn balance_of(
+		handle: &mut impl PrecompileHandle,
 		universal_location: UnboundedString,
 	) -> EvmResult<u32> {
-		// TODO register_cost
+		super::register_cost::<Runtime>(
+			handle,
+			Runtime::WeightInfo::precompile_balance_of(
+				universal_location.as_bytes().len().try_into().unwrap(),
+			),
+		)?;
 
 		// TODO this might be remove when we have the bounded string as param
 		let universal_location_bounded: BoundedVec<
@@ -183,12 +188,17 @@ where
 	}
 
 	#[precompile::public("claimerOfULByIndex(string,uint32)")]
-	fn claimer_by_index(
-		_handle: &mut impl PrecompileHandle,
+	pub fn claimer_by_index(
+		handle: &mut impl PrecompileHandle,
 		universal_location: UnboundedString,
 		index: u32,
 	) -> EvmResult<Address> {
-		// TODO register_cost
+		super::register_cost::<Runtime>(
+			handle,
+			Runtime::WeightInfo::precompile_claimer_by_index(
+				universal_location.as_bytes().len().try_into().unwrap(),
+			),
+		)?;
 
 		// TODO this might be remove when we have the bounded string as param
 		let universal_location_bounded: BoundedVec<
@@ -214,12 +224,17 @@ where
 	}
 
 	#[precompile::public("extensionOfULByIndex(string,uint32)")]
-	fn extension_by_index(
-		_handle: &mut impl PrecompileHandle,
+	pub fn extension_by_index(
+		handle: &mut impl PrecompileHandle,
 		universal_location: UnboundedString,
 		index: u32,
 	) -> EvmResult<UnboundedString> {
-		// TODO register_cost
+		super::register_cost::<Runtime>(
+			handle,
+			Runtime::WeightInfo::precompile_extension_by_index(
+				universal_location.as_bytes().len().try_into().unwrap(),
+			),
+		)?;
 
 		let universal_location_bounded: BoundedVec<
 			u8,
@@ -244,12 +259,17 @@ where
 	}
 
 	#[precompile::public("extensionOfULByClaimer(string,address)")]
-	fn extension_by_location_and_claimer(
-		_handle: &mut impl PrecompileHandle,
+	pub fn extension_by_location_and_claimer(
+		handle: &mut impl PrecompileHandle,
 		universal_location: UnboundedString,
 		claimer: Address,
 	) -> EvmResult<UnboundedString> {
-		// TODO register_cost
+		super::register_cost::<Runtime>(
+			handle,
+			Runtime::WeightInfo::precompile_extension_by_location_and_claimer(
+				universal_location.as_bytes().len().try_into().unwrap(),
+			),
+		)?;
 
 		let claimer: H160 = claimer.into();
 		let universal_location_bounded: BoundedVec<
@@ -271,12 +291,17 @@ where
 	}
 
 	#[precompile::public("hasExtensionByClaimer(string,address)")]
-	fn has_extension_by_claimer(
-		_handle: &mut impl PrecompileHandle,
+	pub fn has_extension_by_claimer(
+		handle: &mut impl PrecompileHandle,
 		universal_location: UnboundedString,
 		claimer: Address,
 	) -> EvmResult<bool> {
-		// TODO register_cost
+		super::register_cost::<Runtime>(
+			handle,
+			Runtime::WeightInfo::precompile_has_extension_by_claimer(
+				universal_location.as_bytes().len().try_into().unwrap(),
+			),
+		)?;
 
 		let claimer: H160 = claimer.into();
 		let universal_location_bounded: BoundedVec<

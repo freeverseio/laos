@@ -27,7 +27,9 @@ use crate::{
 use fp_evm::Transfer;
 use frame_benchmarking::v2::*;
 use pallet_evm::{Context, ExitError, ExitReason, Log, PrecompileHandle};
+use precompile_utils::prelude::Address;
 use sp_core::{H160, H256, U256};
+use sp_runtime::traits::Convert;
 use sp_std::{vec, vec::Vec};
 
 pub struct MockHandle {
@@ -138,8 +140,8 @@ mod benchmarks {
 		{
 			AssetMetadataExtenderPrecompile::<T>::extend(
 				&mut handle,
-				ul.clone().to_vec().try_into().unwrap(),
-				token_uri.clone().to_vec().try_into().unwrap(),
+				ul.clone().to_vec().into(),
+				token_uri.clone().to_vec().into(),
 			)
 			.unwrap();
 		};
@@ -177,8 +179,8 @@ mod benchmarks {
 		{
 			AssetMetadataExtenderPrecompile::<T>::update(
 				&mut handle,
-				universal_location.clone().to_vec().try_into().unwrap(),
-				new_token_uri.clone().to_vec().try_into().unwrap(),
+				universal_location.clone().to_vec().into(),
+				new_token_uri.clone().to_vec().into(),
 			)
 			.unwrap();
 		};
@@ -190,6 +192,133 @@ mod benchmarks {
 			),
 			Some(new_token_uri)
 		);
+	}
+
+	#[benchmark]
+	fn precompile_balance_of(u: Linear<0, { <T as Config>::MaxUniversalLocationLength::get() }>) {
+		let mut handle = MockHandle::new();
+		let universal_location: UniversalLocationOf<T> = vec![1u8; u as usize].try_into().unwrap();
+
+		#[block]
+		{
+			AssetMetadataExtenderPrecompile::<T>::balance_of(
+				&mut handle,
+				universal_location.clone().to_vec().into(),
+			)
+			.unwrap();
+		};
+	}
+
+	#[benchmark]
+	fn precompile_claimer_by_index(
+		u: Linear<0, { <T as Config>::MaxUniversalLocationLength::get() }>,
+	) {
+		let mut handle = MockHandle::new();
+
+		let caller: T::AccountId = whitelisted_caller();
+		let claimer = caller.clone();
+		let universal_location: UniversalLocationOf<T> = vec![1u8; u as usize].try_into().unwrap();
+		let token_uri: TokenUriOf<T> = vec![1u8; 100usize].try_into().unwrap();
+
+		{
+			AssetMetadataExtender::<T>::create_token_uri_extension(
+				claimer.clone(),
+				universal_location.clone(),
+				token_uri,
+			)
+			.unwrap();
+		};
+
+		#[block]
+		{
+			AssetMetadataExtenderPrecompile::<T>::claimer_by_index(
+				&mut handle,
+				universal_location.clone().to_vec().into(),
+				0u32,
+			)
+			.unwrap();
+		};
+	}
+
+	#[benchmark]
+	fn precompile_extension_by_index(
+		u: Linear<0, { <T as Config>::MaxUniversalLocationLength::get() }>,
+	) {
+		let mut handle = MockHandle::new();
+
+		let caller: T::AccountId = whitelisted_caller();
+		let claimer = caller.clone();
+		let universal_location: UniversalLocationOf<T> = vec![1u8; u as usize].try_into().unwrap();
+		let token_uri: TokenUriOf<T> = vec![1u8; 100usize].try_into().unwrap();
+
+		{
+			AssetMetadataExtender::<T>::create_token_uri_extension(
+				claimer.clone(),
+				universal_location.clone(),
+				token_uri,
+			)
+			.unwrap();
+		};
+
+		#[block]
+		{
+			AssetMetadataExtenderPrecompile::<T>::extension_by_index(
+				&mut handle,
+				universal_location.clone().to_vec().into(),
+				0u32,
+			)
+			.unwrap();
+		};
+	}
+
+	#[benchmark]
+	fn precompile_extension_by_location_and_claimer(
+		u: Linear<0, { <T as Config>::MaxUniversalLocationLength::get() }>,
+	) {
+		let mut handle = MockHandle::new();
+
+		let caller: T::AccountId = whitelisted_caller();
+		let claimer = caller.clone();
+		let universal_location: UniversalLocationOf<T> = vec![1u8; u as usize].try_into().unwrap();
+		let token_uri: TokenUriOf<T> = vec![1u8; 100usize].try_into().unwrap();
+
+		{
+			AssetMetadataExtender::<T>::create_token_uri_extension(
+				claimer.clone(),
+				universal_location.clone(),
+				token_uri,
+			)
+			.unwrap();
+		};
+
+		#[block]
+		{
+			AssetMetadataExtenderPrecompile::<T>::extension_by_location_and_claimer(
+				&mut handle,
+				universal_location.clone().to_vec().into(),
+				Address(<T as Config>::AccountIdToH160::convert(claimer)),
+			)
+			.unwrap();
+		};
+	}
+
+	#[benchmark]
+	fn precompile_has_extension_by_claimer(
+		u: Linear<0, { <T as Config>::MaxUniversalLocationLength::get() }>,
+	) {
+		let mut handle = MockHandle::new();
+		let universal_location: UniversalLocationOf<T> = vec![1u8; u as usize].try_into().unwrap();
+		let claimer = Address::from(H160::zero());
+
+		#[block]
+		{
+			AssetMetadataExtenderPrecompile::<T>::has_extension_by_claimer(
+				&mut handle,
+				universal_location.clone().to_vec().into(),
+				claimer,
+			)
+			.unwrap();
+		};
 	}
 
 	#[benchmark]
