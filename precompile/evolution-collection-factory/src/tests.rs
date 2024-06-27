@@ -171,7 +171,7 @@ fn test_expected_cost_create_collection() {
 		// `create_collection` weight + insert account bytecode for the collection + log costs
 		precompiles()
 			.prepare_test(H160([1u8; 20]), H160(PRECOMPILE_ADDRESS), input)
-			.expect_cost(487987381) //[`WeightToGas`] set to 1:1 in mock
+			.expect_cost(488179381) //[`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	})
 }
