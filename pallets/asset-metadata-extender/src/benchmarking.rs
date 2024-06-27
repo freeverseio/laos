@@ -18,11 +18,103 @@
 #![cfg(feature = "runtime-benchmarks")]
 use super::*;
 
-use crate::traits::AssetMetadataExtender as AssetMetadataExtenderT;
 #[allow(unused)]
 use crate::Pallet as AssetMetadataExtender;
+use crate::{
+	precompiles::asset_metadata_extender::AssetMetadataExtenderPrecompile,
+	traits::AssetMetadataExtender as AssetMetadataExtenderT,
+};
+use fp_evm::Transfer;
 use frame_benchmarking::v2::*;
-use sp_std::vec;
+use pallet_evm::{Context, ExitError, ExitReason, Log, PrecompileHandle};
+use sp_core::{H160, H256, U256};
+use sp_std::{vec, vec::Vec};
+
+pub struct MockHandle {
+	pub input: Vec<u8>,
+	pub gas_limit: Option<u64>,
+	pub context: Context,
+	pub is_static: bool,
+	pub gas_used: u64,
+	pub logs: Vec<Log>,
+	pub code_address: H160,
+}
+
+impl MockHandle {
+	pub fn new() -> Self {
+		let caller = whitelisted_caller();
+		Self {
+			input: vec![],
+			gas_limit: None,
+			context: Context {
+				address: H160::zero(),
+				caller: caller,
+				apparent_value: U256::zero(),
+			},
+			is_static: false,
+			gas_used: 0,
+			logs: vec![],
+			code_address: H160::zero(),
+		}
+	}
+}
+
+impl PrecompileHandle for MockHandle {
+	/// Perform subcall in provided context.
+	/// Precompile specifies in which context the subcall is executed.
+	fn call(
+		&mut self,
+		_: H160,
+		_: Option<Transfer>,
+		_: Vec<u8>,
+		_: Option<u64>,
+		_: bool,
+		_: &Context,
+	) -> (ExitReason, Vec<u8>) {
+		unimplemented!()
+	}
+
+	fn record_cost(&mut self, cost: u64) -> Result<(), ExitError> {
+		self.gas_used += cost;
+		Ok(())
+	}
+
+	fn record_external_cost(&mut self, _: Option<u64>, _: Option<u64>) -> Result<(), ExitError> {
+		Ok(())
+	}
+
+	fn refund_external_cost(&mut self, _: Option<u64>, _: Option<u64>) {}
+
+	fn log(&mut self, address: H160, topics: Vec<H256>, data: Vec<u8>) -> Result<(), ExitError> {
+		let log = Log { address, topics, data };
+		self.logs.push(log);
+		Ok(())
+	}
+
+	fn remaining_gas(&self) -> u64 {
+		1000000000000
+	}
+
+	fn code_address(&self) -> H160 {
+		self.code_address
+	}
+
+	fn input(&self) -> &[u8] {
+		&self.input
+	}
+
+	fn context(&self) -> &Context {
+		&self.context
+	}
+
+	fn is_static(&self) -> bool {
+		self.is_static
+	}
+
+	fn gas_limit(&self) -> Option<u64> {
+		self.gas_limit
+	}
+}
 
 #[benchmarks]
 mod benchmarks {
@@ -33,6 +125,34 @@ mod benchmarks {
 		crate::mock::new_test_ext(),
 		crate::mock::Test
 	);
+
+	#[benchmark]
+	fn precompile_create_token_uri_extension(
+		t: Linear<0, { <T as Config>::MaxTokenUriLength::get() }>,
+		u: Linear<0, { <T as Config>::MaxUniversalLocationLength::get() }>,
+	) {
+		let mut handle = MockHandle::new();
+
+		let ul: UniversalLocationOf<T> = vec![1u8; u.try_into().unwrap()].try_into().unwrap();
+		let token_uri: TokenUriOf<T> = vec![1u8; t.try_into().unwrap()].try_into().unwrap();
+		let caller: T::AccountId = whitelisted_caller();
+		let claimer = caller.clone();
+
+		#[block]
+		{
+			AssetMetadataExtenderPrecompile::<T>::extend(
+				&mut handle,
+				ul.clone().to_vec().try_into().unwrap(),
+				token_uri.clone().to_vec().try_into().unwrap(),
+			)
+			.unwrap();
+		};
+
+		assert_eq!(
+			AssetMetadataExtender::<T>::token_uris_by_claimer_and_location(claimer, ul),
+			Some(token_uri)
+		);
+	}
 
 	#[benchmark]
 	fn create_token_uri_extension(

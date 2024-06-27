@@ -26,7 +26,7 @@ frame_benchmarking::define_benchmarks!(
 	[pallet_parachain_staking, ParachainStaking]
 	[cumulus_pallet_xcmp_queue, XcmpQueue]
 	[pallet_evm, EVM]
-	[pallet_laos_evolution, LaosEvolution] /* [pallet_asset_metadata_extender,
-											* AssetMetadataExtender]
-											* TODO pallet_xcm? */
+	[pallet_laos_evolution, LaosEvolution]
+	[pallet_asset_metadata_extender, AssetMetadataExtender]
+	// TODO pallet_xcm?
 );

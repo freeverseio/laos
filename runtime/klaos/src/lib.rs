@@ -519,6 +519,7 @@ impl pallet_asset_metadata_extender::Config for Runtime {
 	type MaxTokenUriLength = MaxTokenUriLength;
 	type MaxUniversalLocationLength = MaxUniversalLocationLength;
 	type GasWeightMapping = <Runtime as pallet_evm::Config>::GasWeightMapping;
+	type WeightInfo = ();
 }
 
 impl pallet_sudo::Config for Runtime {

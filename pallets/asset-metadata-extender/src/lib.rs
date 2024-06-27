@@ -27,7 +27,7 @@ pub use pallet::*;
 use pallet_evm::GasWeightMapping;
 use sp_core::H160;
 use sp_runtime::{
-	traits::{Convert, One},
+	traits::{ConvertBack, One},
 	ArithmeticError, DispatchResult,
 };
 pub use traits::AssetMetadataExtender;
@@ -60,10 +60,13 @@ pub mod pallet {
 		type MaxUniversalLocationLength: Get<u32>;
 
 		/// Converts `Self::AccountId` to `H160`
-		type AccountIdToH160: Convert<Self::AccountId, H160>;
+		type AccountIdToH160: ConvertBack<Self::AccountId, H160>;
 
 		/// Gas weight mapping
 		type GasWeightMapping: GasWeightMapping;
+
+		/// The weight information of this pallet.
+		type WeightInfo: WeightInfo;
 	}
 
 	/// Extensions counter for a given location
