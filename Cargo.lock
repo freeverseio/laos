@@ -6885,10 +6885,13 @@ dependencies = [
 name = "pallet-asset-metadata-extender"
 version = "0.1.0"
 dependencies = [
+ "fp-evm",
  "frame-benchmarking",
  "frame-support",
  "frame-system",
+ "pallet-evm",
  "parity-scale-codec",
+ "precompile-utils",
  "scale-info",
  "sp-core",
  "sp-io",

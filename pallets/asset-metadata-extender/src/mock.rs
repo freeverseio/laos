@@ -15,7 +15,7 @@
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 use crate as pallet_asset_metadata_extender;
-use frame_support::{derive_impl, parameter_types};
+use frame_support::{derive_impl, parameter_types, pallet_prelude::Weight};
 use sp_core::H160;
 use sp_runtime::{traits::IdentityLookup, BuildStorage};
 
@@ -49,6 +49,7 @@ impl pallet_asset_metadata_extender::Config for Test {
 	type MaxUniversalLocationLength = MaxUniversalLocationLength;
 	type MaxTokenUriLength = MaxTokenUriLength;
 	type AccountIdToH160 = AccountIdToH160;
+	type GasWeightMapping = MockGasWeightMapping;
 }
 
 pub struct AccountIdToH160;
@@ -56,6 +57,16 @@ pub struct AccountIdToH160;
 impl sp_runtime::traits::Convert<AccountId, H160> for AccountIdToH160 {
 	fn convert(account_id: AccountId) -> H160 {
 		account_id
+	}
+}
+
+pub struct MockGasWeightMapping;
+impl pallet_evm::GasWeightMapping for MockGasWeightMapping {
+	fn gas_to_weight(gas: u64, _without_base_weight: bool) -> Weight {
+		Weight::from_parts(gas, 0)
+	}
+	fn weight_to_gas(weight: Weight) -> u64 {
+		weight.ref_time()
 	}
 }
 
