@@ -139,12 +139,12 @@ mod benchmarks {
 	}
 
 	#[benchmark]
-	fn precompile_mint() {
+	fn precompile_mint(s: Linear<0, { <T as Config>::MaxTokenUriLength::get() }>) {
 		let caller: T::AccountId = whitelisted_caller();
 		let owner = caller.clone();
 		let to = Address::from(H160::from_low_u64_be(1));
 		let slot = Slot::try_from(2).unwrap();
-		let token_uri = vec![1u8; 100].try_into().unwrap();
+		let token_uri = vec![1u8; s.try_into().unwrap()].try_into().unwrap();
 		let collection_id = LaosEvolution::<T>::create_collection(owner).unwrap();
 		let mut handle = MockHandle::new(T::AccountIdToH160::convert(caller));
 

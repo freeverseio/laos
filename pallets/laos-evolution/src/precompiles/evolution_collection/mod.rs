@@ -95,7 +95,8 @@ where
 		token_uri: UnboundedString, /* TODO use bounded vec or stringkind from solidity
 		                             * BoundedString<<R as Config>::MaxTokenUriLength> */
 	) -> EvmResult<U256> {
-		super::register_cost::<R>(handle, R::WeightInfo::precompile_mint())?;
+		let token_uri_size = token_uri.as_bytes().len().try_into().unwrap();
+		super::register_cost::<R>(handle, R::WeightInfo::precompile_mint(token_uri_size))?;
 
 		let to: H160 = to.into();
 
