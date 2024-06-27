@@ -15,7 +15,7 @@
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 use crate as pallet_asset_metadata_extender;
-use frame_support::{derive_impl, parameter_types, pallet_prelude::Weight};
+use frame_support::{derive_impl, pallet_prelude::Weight, parameter_types};
 use sp_core::H160;
 use sp_runtime::{traits::IdentityLookup, BuildStorage};
 

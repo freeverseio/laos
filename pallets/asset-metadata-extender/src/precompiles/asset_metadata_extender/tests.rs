@@ -15,8 +15,8 @@
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 use super::*;
-use mock::*;
 use fp_evm::{Context, PrecompileSet};
+use mock::*;
 use precompile_utils::{
 	prelude::log3,
 	testing::{Alice, MockHandle, Precompile1, PrecompileTesterExt},
