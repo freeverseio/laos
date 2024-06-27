@@ -17,12 +17,14 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 mod benchmarking;
+pub mod precompiles;
 pub mod traits;
 pub mod types;
 pub mod weights;
 
 use frame_support::pallet_prelude::*;
 pub use pallet::*;
+use pallet_evm::GasWeightMapping;
 use sp_core::H160;
 use sp_runtime::{
 	traits::{Convert, One},
@@ -59,6 +61,9 @@ pub mod pallet {
 
 		/// Converts `Self::AccountId` to `H160`
 		type AccountIdToH160: Convert<Self::AccountId, H160>;
+
+		/// Gas weight mapping
+		type GasWeightMapping: GasWeightMapping;
 	}
 
 	/// Extensions counter for a given location

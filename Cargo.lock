@@ -5079,7 +5079,7 @@ dependencies = [
  "pallet-collator-selection",
  "pallet-ethereum",
  "pallet-evm",
- "pallet-evm-asset-metadata-extender-legacy",
+ "pallet-evm-asset-metadata-extender",
  "pallet-evm-chain-id",
  "pallet-evm-evolution-collection",
  "pallet-evm-evolution-collection-factory",
@@ -5347,7 +5347,6 @@ dependencies = [
  "pallet-base-fee",
  "pallet-ethereum",
  "pallet-evm",
- "pallet-evm-asset-metadata-extender",
  "pallet-evm-chain-id",
  "pallet-evm-precompile-blake2",
  "pallet-evm-precompile-bn128",
@@ -6885,10 +6884,16 @@ dependencies = [
 name = "pallet-asset-metadata-extender"
 version = "0.1.0"
 dependencies = [
+ "fp-evm",
  "frame-benchmarking",
  "frame-support",
  "frame-system",
+ "hex",
+ "pallet-balances",
+ "pallet-evm",
+ "pallet-timestamp",
  "parity-scale-codec",
+ "precompile-utils",
  "scale-info",
  "sp-core",
  "sp-io",
@@ -7312,30 +7317,6 @@ dependencies = [
 
 [[package]]
 name = "pallet-evm-asset-metadata-extender"
-version = "0.1.0"
-dependencies = [
- "fp-evm",
- "frame-support",
- "frame-system",
- "hex",
- "laos-precompile-utils",
- "laos-precompile-utils-macro",
- "num_enum",
- "pallet-asset-metadata-extender",
- "pallet-balances",
- "pallet-evm",
- "pallet-timestamp",
- "parity-scale-codec",
- "precompile-utils",
- "scale-info",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "pallet-evm-asset-metadata-extender-legacy"
 version = "0.1.0"
 dependencies = [
  "fp-evm",

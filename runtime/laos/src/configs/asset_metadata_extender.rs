@@ -28,4 +28,5 @@ impl pallet_asset_metadata_extender::Config for Runtime {
 	type AccountIdToH160 = AccountIdToH160;
 	type MaxTokenUriLength = MaxTokenUriLength;
 	type MaxUniversalLocationLength = MaxUniversalLocationLength;
+	type GasWeightMapping = <Runtime as pallet_evm::Config>::GasWeightMapping;
 }
