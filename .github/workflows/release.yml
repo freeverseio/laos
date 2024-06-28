@@ -40,7 +40,6 @@ jobs:
       matrix:
         runtime:
           - { name: "laos", package: "laos-runtime", path: "runtime/laos" }
-          - { name: "klaos", package: "klaos-runtime", path: "runtime/klaos" }
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup

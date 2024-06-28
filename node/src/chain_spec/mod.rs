@@ -19,7 +19,6 @@ use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use serde::{Deserialize, Serialize};
 use sp_core::{Pair, Public};
 
-pub mod klaos;
 pub mod laos;
 mod predefined_accounts;
 
