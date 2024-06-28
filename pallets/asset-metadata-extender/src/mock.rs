@@ -50,6 +50,7 @@ impl pallet_asset_metadata_extender::Config for Test {
 	type MaxTokenUriLength = MaxTokenUriLength;
 	type AccountIdToH160 = AccountIdToH160;
 	type GasWeightMapping = MockGasWeightMapping;
+	type WeightInfo = ();
 }
 
 pub struct AccountIdToH160;
@@ -57,6 +58,12 @@ pub struct AccountIdToH160;
 impl sp_runtime::traits::Convert<AccountId, H160> for AccountIdToH160 {
 	fn convert(account_id: AccountId) -> H160 {
 		account_id
+	}
+}
+
+impl sp_runtime::traits::ConvertBack<AccountId, H160> for AccountIdToH160 {
+	fn convert_back(h160: H160) -> AccountId {
+		h160
 	}
 }
 

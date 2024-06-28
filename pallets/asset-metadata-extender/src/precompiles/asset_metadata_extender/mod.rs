@@ -16,14 +16,11 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 use crate::{
-	traits::AssetMetadataExtender as AssetMetadataExtenderT,
-	weights::{SubstrateWeight as AssetMetadataExtenderWeights, WeightInfo},
-	Config, Pallet as AssetMetadataExtender,
+	traits::AssetMetadataExtender as AssetMetadataExtenderT, weights::WeightInfo, Config,
+	Pallet as AssetMetadataExtender,
 };
 use fp_evm::PrecompileHandle;
 use frame_support::DefaultNoBound;
-use pallet_evm::GasWeightMapping;
-use parity_scale_codec::Encode;
 use precompile_utils::{
 	prelude::{keccak256, log3, Address, EvmResult, LogExt},
 	solidity::{self, codec::UnboundedString, revert::revert},
@@ -31,8 +28,11 @@ use precompile_utils::{
 use scale_info::prelude::{format, string::String};
 use sp_core::H160;
 use sp_io::hashing::keccak_256;
-use sp_runtime::{BoundedVec, DispatchError};
-use sp_std::{fmt::Debug, marker::PhantomData};
+use sp_runtime::{
+	traits::{Convert, ConvertBack},
+	BoundedVec, DispatchError,
+};
+use sp_std::marker::PhantomData;
 
 /// Solidity selector of the ExtendedULWithExternalURI log, which is the Keccak of the Log
 /// signature.
@@ -55,16 +55,23 @@ impl<Runtime> AssetMetadataExtenderPrecompile<Runtime> {
 #[precompile_utils::precompile]
 impl<Runtime> AssetMetadataExtenderPrecompile<Runtime>
 where
-	Runtime: pallet_evm::Config + crate::Config,
-	Runtime::AccountId: From<H160> + Into<H160> + Encode + Debug,
+	Runtime: crate::Config,
 	AssetMetadataExtender<Runtime>: AssetMetadataExtenderT<Runtime>,
 {
 	#[precompile::public("extendULWithExternalURI(string,string)")]
-	fn extend(
+	pub fn extend(
 		handle: &mut impl PrecompileHandle,
 		universal_location: UnboundedString,
 		token_uri: UnboundedString,
 	) -> EvmResult<()> {
+		super::register_cost::<Runtime>(
+			handle,
+			Runtime::WeightInfo::precompile_extend(
+				token_uri.as_bytes().len().try_into().unwrap(),
+				universal_location.as_bytes().len().try_into().unwrap(),
+			),
+		)?;
+
 		// TODO this might be remove when we have the bounded string as param
 		let universal_location_bounded: BoundedVec<
 			u8,
@@ -83,16 +90,11 @@ where
 			.map_err(|_| revert("invalid token uri length"))?;
 
 		AssetMetadataExtender::<Runtime>::create_token_uri_extension(
-			handle.context().caller.into(),
+			Runtime::AccountIdToH160::convert_back(handle.context().caller),
 			universal_location_bounded.clone(),
 			token_uri_bounded.clone(),
 		)
 		.map_err(|err| revert(convert_dispatch_error_to_string(err)))?;
-
-		let consumed_weight = AssetMetadataExtenderWeights::<Runtime>::create_token_uri_extension(
-			universal_location.as_bytes().to_vec().len() as u32,
-			token_uri.as_bytes().to_vec().len() as u32,
-		);
 
 		let ul_hash = keccak_256(universal_location.as_bytes());
 		log3(
@@ -104,24 +106,23 @@ where
 		)
 		.record(handle)?;
 
-		// Record EVM cost
-		handle.record_cost(<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
-			consumed_weight,
-		))?;
-
-		// Record Substrate related costs
-		// TODO: Add `ref_time` when precompiles are benchmarked
-		handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
-
 		Ok(())
 	}
 
 	#[precompile::public("updateExtendedULWithExternalURI(string,string)")]
-	fn update(
+	pub fn update(
 		handle: &mut impl PrecompileHandle,
 		universal_location: UnboundedString,
 		token_uri: UnboundedString,
 	) -> EvmResult<()> {
+		super::register_cost::<Runtime>(
+			handle,
+			Runtime::WeightInfo::precompile_update(
+				token_uri.as_bytes().len().try_into().unwrap(),
+				universal_location.as_bytes().len().try_into().unwrap(),
+			),
+		)?;
+
 		// TODO this might be remove when we have the bounded string as param
 		let universal_location_bounded: BoundedVec<
 			u8,
@@ -140,16 +141,11 @@ where
 			.map_err(|_| revert("invalid token uri length"))?;
 
 		AssetMetadataExtender::<Runtime>::update_token_uri_extension(
-			handle.context().caller.into(),
+			Runtime::AccountIdToH160::convert_back(handle.context().caller),
 			universal_location_bounded.clone(),
 			token_uri_bounded.clone(),
 		)
 		.map_err(|err| revert(convert_dispatch_error_to_string(err)))?;
-
-		let consumed_weight = AssetMetadataExtenderWeights::<Runtime>::update_token_uri_extension(
-			universal_location.as_bytes().to_vec().len() as u32,
-			token_uri.as_bytes().to_vec().len() as u32,
-		);
 
 		let ul_hash = keccak_256(universal_location.as_bytes());
 		log3(
@@ -161,19 +157,21 @@ where
 		)
 		.record(handle)?;
 
-		// Record EVM cost
-		handle.record_cost(<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
-			consumed_weight,
-		))?;
-
 		Ok(())
 	}
 
 	#[precompile::public("balanceOfUL(string)")]
-	fn balance_of(
-		_handle: &mut impl PrecompileHandle,
+	pub fn balance_of(
+		handle: &mut impl PrecompileHandle,
 		universal_location: UnboundedString,
 	) -> EvmResult<u32> {
+		super::register_cost::<Runtime>(
+			handle,
+			Runtime::WeightInfo::precompile_balance_of(
+				universal_location.as_bytes().len().try_into().unwrap(),
+			),
+		)?;
+
 		// TODO this might be remove when we have the bounded string as param
 		let universal_location_bounded: BoundedVec<
 			u8,
@@ -190,11 +188,18 @@ where
 	}
 
 	#[precompile::public("claimerOfULByIndex(string,uint32)")]
-	fn claimer_by_index(
-		_handle: &mut impl PrecompileHandle,
+	pub fn claimer_by_index(
+		handle: &mut impl PrecompileHandle,
 		universal_location: UnboundedString,
 		index: u32,
 	) -> EvmResult<Address> {
+		super::register_cost::<Runtime>(
+			handle,
+			Runtime::WeightInfo::precompile_claimer_by_index(
+				universal_location.as_bytes().len().try_into().unwrap(),
+			),
+		)?;
+
 		// TODO this might be remove when we have the bounded string as param
 		let universal_location_bounded: BoundedVec<
 			u8,
@@ -215,15 +220,22 @@ where
 		)
 		.ok_or_else(|| revert("invalid ul"))?;
 
-		Ok(Address(claimer.into()))
+		Ok(Address(Runtime::AccountIdToH160::convert(claimer)))
 	}
 
 	#[precompile::public("extensionOfULByIndex(string,uint32)")]
-	fn extension_by_index(
-		_handle: &mut impl PrecompileHandle,
+	pub fn extension_by_index(
+		handle: &mut impl PrecompileHandle,
 		universal_location: UnboundedString,
 		index: u32,
 	) -> EvmResult<UnboundedString> {
+		super::register_cost::<Runtime>(
+			handle,
+			Runtime::WeightInfo::precompile_extension_by_index(
+				universal_location.as_bytes().len().try_into().unwrap(),
+			),
+		)?;
+
 		let universal_location_bounded: BoundedVec<
 			u8,
 			<Runtime as Config>::MaxUniversalLocationLength,
@@ -247,11 +259,18 @@ where
 	}
 
 	#[precompile::public("extensionOfULByClaimer(string,address)")]
-	fn extension_by_location_and_claimer(
-		_handle: &mut impl PrecompileHandle,
+	pub fn extension_by_location_and_claimer(
+		handle: &mut impl PrecompileHandle,
 		universal_location: UnboundedString,
 		claimer: Address,
 	) -> EvmResult<UnboundedString> {
+		super::register_cost::<Runtime>(
+			handle,
+			Runtime::WeightInfo::precompile_extension_by_location_and_claimer(
+				universal_location.as_bytes().len().try_into().unwrap(),
+			),
+		)?;
+
 		let claimer: H160 = claimer.into();
 		let universal_location_bounded: BoundedVec<
 			u8,
@@ -264,7 +283,7 @@ where
 
 		let token_uri = AssetMetadataExtender::<Runtime>::extension_by_location_and_claimer(
 			universal_location_bounded.clone(),
-			claimer.into(),
+			Runtime::AccountIdToH160::convert_back(claimer),
 		)
 		.ok_or_else(|| revert("invalid ul"))?;
 
@@ -272,11 +291,18 @@ where
 	}
 
 	#[precompile::public("hasExtensionByClaimer(string,address)")]
-	fn has_extension_by_claimer(
-		_handle: &mut impl PrecompileHandle,
+	pub fn has_extension_by_claimer(
+		handle: &mut impl PrecompileHandle,
 		universal_location: UnboundedString,
 		claimer: Address,
 	) -> EvmResult<bool> {
+		super::register_cost::<Runtime>(
+			handle,
+			Runtime::WeightInfo::precompile_has_extension_by_claimer(
+				universal_location.as_bytes().len().try_into().unwrap(),
+			),
+		)?;
+
 		let claimer: H160 = claimer.into();
 		let universal_location_bounded: BoundedVec<
 			u8,
@@ -289,7 +315,7 @@ where
 
 		let has_extension = AssetMetadataExtender::<Runtime>::has_extension(
 			universal_location_bounded.clone(),
-			claimer.into(),
+			Runtime::AccountIdToH160::convert_back(claimer),
 		);
 
 		Ok(has_extension)
