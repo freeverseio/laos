@@ -202,7 +202,7 @@ fn create_token_uri_extension_records_cost() {
 					token_uri: token_uri.clone(),
 				},
 			)
-			.expect_cost(390841990) // [`WeightToGas`] set to 1:1 in mock
+			.expect_cost(389999747) // [`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	})
 }
@@ -272,7 +272,7 @@ fn update_token_uri_extension_records_cost() {
 					token_uri: new_token_uri.clone(),
 				},
 			)
-			.expect_cost(163951604) // [`WeightToGas`] set to 1:1 in mock
+			.expect_cost(163076891) // [`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	})
 }
