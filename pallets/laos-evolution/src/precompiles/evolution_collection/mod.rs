@@ -87,7 +87,7 @@ where
 	}
 
 	#[precompile::public("mintWithExternalURI(address,uint96,string)")]
-	fn mint(
+	pub fn mint(
 		collection_id: CollectionId,
 		handle: &mut impl PrecompileHandle,
 		to: Address,
@@ -95,6 +95,9 @@ where
 		token_uri: UnboundedString, /* TODO use bounded vec or stringkind from solidity
 		                             * BoundedString<<R as Config>::MaxTokenUriLength> */
 	) -> EvmResult<U256> {
+		let token_uri_size = token_uri.as_bytes().len().try_into().unwrap();
+		super::register_cost::<R>(handle, R::WeightInfo::precompile_mint(token_uri_size))?;
+
 		let to: H160 = to.into();
 
 		// TODO this might be remove when we have the bounded string as param
@@ -127,13 +130,16 @@ where
 	}
 
 	#[precompile::public("evolveWithExternalURI(uint256,string)")]
-	fn evolve(
+	pub fn evolve(
 		collection_id: CollectionId,
 		handle: &mut impl PrecompileHandle,
 		token_id: TokenId,
 		token_uri: UnboundedString, /* TODO use bounded vec or stringkind from solidity
 		                             * BoundedString<<R as Config>::MaxTokenUriLength> */
 	) -> EvmResult<()> {
+		let token_uri_size = token_uri.as_bytes().len().try_into().unwrap();
+		super::register_cost::<R>(handle, R::WeightInfo::precompile_evolve(token_uri_size))?;
+
 		// TODO this might be remove when we have the bounded string as param
 		let token_uri_bounded: BoundedVec<u8, <R as Config>::MaxTokenUriLength> = token_uri
 			.as_bytes()
@@ -166,11 +172,13 @@ where
 	}
 
 	#[precompile::public("transferOwnership(address)")]
-	fn transfer_ownership(
+	pub fn transfer_ownership(
 		collection_id: CollectionId,
 		handle: &mut impl PrecompileHandle,
 		to: Address,
 	) -> EvmResult<()> {
+		super::register_cost::<R>(handle, R::WeightInfo::precompile_transfer_ownership())?;
+
 		let to: H160 = to.into();
 		LaosEvolution::<R>::transfer_ownership(
 			R::AccountIdToH160::convert_back(handle.context().caller),
@@ -192,10 +200,12 @@ where
 	}
 
 	#[precompile::public("enablePublicMinting()")]
-	fn enable_public_minting(
+	pub fn enable_public_minting(
 		collection_id: CollectionId,
 		handle: &mut impl PrecompileHandle,
 	) -> EvmResult<()> {
+		super::register_cost::<R>(handle, R::WeightInfo::precompile_enable_public_minting())?;
+
 		match LaosEvolution::<R>::enable_public_minting(
 			R::AccountIdToH160::convert_back(handle.context().caller),
 			collection_id,
@@ -215,10 +225,12 @@ where
 	}
 
 	#[precompile::public("disablePublicMinting()")]
-	fn disable_public_minting(
+	pub fn disable_public_minting(
 		collection_id: CollectionId,
 		handle: &mut impl PrecompileHandle,
 	) -> EvmResult<()> {
+		super::register_cost::<R>(handle, R::WeightInfo::precompile_disable_public_minting())?;
+
 		match LaosEvolution::<R>::disable_public_minting(
 			R::AccountIdToH160::convert_back(handle.context().caller),
 			collection_id,
@@ -239,21 +251,25 @@ where
 
 	#[precompile::public("isPublicMintingEnabled()")]
 	#[precompile::view]
-	fn is_public_minting_enabled(
+	pub fn is_public_minting_enabled(
 		collection_id: CollectionId,
-		_handle: &mut impl PrecompileHandle,
+		handle: &mut impl PrecompileHandle,
 	) -> EvmResult<bool> {
+		super::register_cost::<R>(handle, R::WeightInfo::precompile_is_public_minting_enabled())?;
+
 		let is_enabled = LaosEvolution::<R>::is_public_minting_enabled(collection_id);
 		Ok(is_enabled)
 	}
 
 	#[precompile::public("tokenURI(uint256)")]
 	#[precompile::view]
-	fn token_uri(
+	pub fn token_uri(
 		collection_id: CollectionId,
-		_handle: &mut impl PrecompileHandle,
+		handle: &mut impl PrecompileHandle,
 		token_id: U256,
 	) -> EvmResult<UnboundedString> {
+		super::register_cost::<R>(handle, R::WeightInfo::precompile_token_uri())?;
+
 		if let Some(token_uri) = LaosEvolution::<R>::token_uri(collection_id, token_id) {
 			Ok(token_uri.to_vec().into())
 		} else {

@@ -160,7 +160,7 @@ fn expected_cost_create_collection() {
 				Precompile1,
 				PrecompileCall::create_collection { owner: Address(Alice.into()) },
 			)
-			.expect_cost(649501000) //[`WeightToGas`] set to 1:1 in mock
+			.expect_cost(657520000) //[`WeightToGas`] set to 1:1 in mock
 			.execute_some();
 	})
 }

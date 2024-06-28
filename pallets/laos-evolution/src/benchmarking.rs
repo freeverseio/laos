@@ -27,7 +27,7 @@ use crate::Pallet as LaosEvolution;
 use fp_evm::Transfer;
 use frame_benchmarking::v2::*;
 use pallet_evm::{Context, ExitError, ExitReason, Log, PrecompileHandle};
-use precompile_utils::prelude::Address;
+use precompile_utils::{prelude::Address, solidity::codec::UnboundedString};
 use sp_core::{H160, H256, U256};
 use sp_std::{vec, vec::Vec};
 
@@ -42,15 +42,11 @@ pub struct MockHandle {
 }
 
 impl MockHandle {
-	pub fn new() -> Self {
+	pub fn new(caller: H160) -> Self {
 		Self {
 			input: vec![],
 			gas_limit: None,
-			context: Context {
-				address: H160::zero(),
-				caller: H160::zero(),
-				apparent_value: U256::zero(),
-			},
+			context: Context { address: H160::zero(), caller, apparent_value: U256::zero() },
 			is_static: false,
 			gas_used: 0,
 			logs: vec![],
@@ -133,12 +129,119 @@ mod benchmarks {
 	#[benchmark]
 	fn precompile_create_collection() {
 		let owner = Address::from(H160::zero());
-		let mut handle = MockHandle::new();
+		let mut handle = MockHandle::new(owner.into());
 
 		#[block]
 		{
-			let _ =
+			let res =
 				EvolutionCollectionFactoryPrecompile::<T>::create_collection(&mut handle, owner);
+			assert!(res.is_ok());
+		}
+	}
+
+	#[benchmark]
+	fn precompile_mint(s: Linear<0, { <T as Config>::MaxTokenUriLength::get() }>) {
+		let caller: T::AccountId = whitelisted_caller();
+		let owner = caller.clone();
+		let to = Address::from(H160::from_low_u64_be(1));
+		let slot = Slot::try_from(2).unwrap();
+		let token_uri = vec![1u8; s.try_into().unwrap()].try_into().unwrap();
+		let collection_id = LaosEvolution::<T>::create_collection(owner).unwrap();
+		let mut handle = MockHandle::new(T::AccountIdToH160::convert(caller));
+
+		#[block]
+		{
+			let res = EvolutionCollectionPrecompileSet::<T>::mint(
+				collection_id,
+				&mut handle,
+				to,
+				slot,
+				token_uri,
+			);
+			assert!(res.is_ok());
+		}
+	}
+
+	#[benchmark]
+	fn precompile_evolve(s: Linear<0, { <T as Config>::MaxTokenUriLength::get() }>) {
+		let caller: T::AccountId = whitelisted_caller();
+		let owner = caller.clone();
+		let token_uri: UnboundedString = vec![1u8; s.try_into().unwrap()].try_into().unwrap();
+		let collection_id = LaosEvolution::<T>::create_collection(owner).unwrap();
+		let mut handle = MockHandle::new(T::AccountIdToH160::convert(caller));
+		let to = Address::from(H160::from_low_u64_be(1));
+		let slot = Slot::try_from(2).unwrap();
+		let token_id = EvolutionCollectionPrecompileSet::<T>::mint(
+			collection_id,
+			&mut handle,
+			to,
+			slot,
+			token_uri.clone(),
+		)
+		.unwrap();
+
+		#[block]
+		{
+			let res = EvolutionCollectionPrecompileSet::<T>::evolve(
+				collection_id,
+				&mut handle,
+				token_id,
+				token_uri,
+			);
+			assert!(res.is_ok());
+		}
+	}
+
+	#[benchmark]
+	fn precompile_transfer_ownership() {
+		let caller: T::AccountId = whitelisted_caller();
+		let owner = caller.clone();
+		let collection_id = LaosEvolution::<T>::create_collection(owner).unwrap();
+		let mut handle = MockHandle::new(T::AccountIdToH160::convert(caller));
+		let to = Address::from(H160::from_low_u64_be(1));
+
+		#[block]
+		{
+			let res = EvolutionCollectionPrecompileSet::<T>::transfer_ownership(
+				collection_id,
+				&mut handle,
+				to,
+			);
+			assert!(res.is_ok());
+		}
+	}
+
+	#[benchmark]
+	fn precompile_enable_public_minting() {
+		let caller: T::AccountId = whitelisted_caller();
+		let owner = caller.clone();
+		let collection_id = LaosEvolution::<T>::create_collection(owner).unwrap();
+		let mut handle = MockHandle::new(T::AccountIdToH160::convert(caller));
+
+		#[block]
+		{
+			let res = EvolutionCollectionPrecompileSet::<T>::enable_public_minting(
+				collection_id,
+				&mut handle,
+			);
+			assert!(res.is_ok());
+		}
+	}
+
+	#[benchmark]
+	fn precompile_disable_public_minting() {
+		let caller: T::AccountId = whitelisted_caller();
+		let owner = caller.clone();
+		let collection_id = LaosEvolution::<T>::create_collection(owner).unwrap();
+		let mut handle = MockHandle::new(T::AccountIdToH160::convert(caller));
+
+		#[block]
+		{
+			let res = EvolutionCollectionPrecompileSet::<T>::disable_public_minting(
+				collection_id,
+				&mut handle,
+			);
+			assert!(res.is_ok());
 		}
 	}
 
@@ -147,11 +250,58 @@ mod benchmarks {
 		let caller: T::AccountId = whitelisted_caller();
 		let owner = caller.clone();
 		let collection_id = LaosEvolution::<T>::create_collection(owner).unwrap();
-		let mut handle = MockHandle::new();
+		let mut handle = MockHandle::new(T::AccountIdToH160::convert(caller));
 
 		#[block]
 		{
-			let _ = EvolutionCollectionPrecompileSet::<T>::owner(collection_id, &mut handle);
+			let res = EvolutionCollectionPrecompileSet::<T>::owner(collection_id, &mut handle);
+			assert!(res.is_ok());
+		}
+	}
+
+	#[benchmark]
+	fn precompile_is_public_minting_enabled() {
+		let caller: T::AccountId = whitelisted_caller();
+		let owner = caller.clone();
+		let collection_id = LaosEvolution::<T>::create_collection(owner).unwrap();
+		let mut handle = MockHandle::new(T::AccountIdToH160::convert(caller));
+
+		#[block]
+		{
+			let res = EvolutionCollectionPrecompileSet::<T>::is_public_minting_enabled(
+				collection_id,
+				&mut handle,
+			);
+			assert!(res.is_ok());
+		}
+	}
+
+	#[benchmark]
+	fn precompile_token_uri() {
+		let caller: T::AccountId = whitelisted_caller();
+		let owner = caller.clone();
+		let token_uri: UnboundedString = vec![1u8; 100].try_into().unwrap();
+		let collection_id = LaosEvolution::<T>::create_collection(owner).unwrap();
+		let mut handle = MockHandle::new(T::AccountIdToH160::convert(caller));
+		let to = Address::from(H160::from_low_u64_be(1));
+		let slot = Slot::try_from(2).unwrap();
+		let token_id = EvolutionCollectionPrecompileSet::<T>::mint(
+			collection_id,
+			&mut handle,
+			to,
+			slot,
+			token_uri.clone(),
+		)
+		.unwrap();
+
+		#[block]
+		{
+			let res = EvolutionCollectionPrecompileSet::<T>::token_uri(
+				collection_id,
+				&mut handle,
+				token_id,
+			);
+			assert!(res.is_ok());
 		}
 	}
 
