@@ -5174,39 +5174,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "laos-precompile-utils"
-version = "0.4.3"
-dependencies = [
- "evm",
- "fp-evm",
- "frame-support",
- "frame-system",
- "hex-literal",
- "impl-trait-for-tuples",
- "laos-precompile-utils-macro",
- "num_enum",
- "pallet-evm",
- "parity-scale-codec",
- "precompile-utils",
- "sha3",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "laos-precompile-utils-macro"
-version = "0.1.0"
-dependencies = [
- "num_enum",
- "proc-macro2",
- "quote",
- "sha3",
- "syn 1.0.109",
-]
-
-[[package]]
 name = "laos-primitives"
 version = "0.1.0"
 dependencies = [
@@ -7228,30 +7195,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-evm-asset-metadata-extender"
-version = "0.1.0"
-dependencies = [
- "fp-evm",
- "frame-support",
- "frame-system",
- "hex",
- "laos-precompile-utils",
- "laos-precompile-utils-macro",
- "num_enum",
- "pallet-asset-metadata-extender",
- "pallet-balances",
- "pallet-evm",
- "pallet-timestamp",
- "parity-scale-codec",
- "precompile-utils",
- "scale-info",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
 name = "pallet-evm-chain-id"
 version = "1.0.0-dev"
 source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#7544791796a93e85716241b72ba68b7c7231376f"
@@ -7261,59 +7204,6 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "sp-runtime",
-]
-
-[[package]]
-name = "pallet-evm-evolution-collection"
-version = "2.0.0-dev"
-dependencies = [
- "evm",
- "fp-evm",
- "frame-support",
- "frame-system",
- "hex",
- "laos-precompile-utils",
- "laos-precompile-utils-macro",
- "num_enum",
- "pallet-balances",
- "pallet-evm",
- "pallet-evm-evolution-collection-factory",
- "pallet-laos-evolution",
- "pallet-timestamp",
- "parity-scale-codec",
- "precompile-utils",
- "scale-info",
- "sp-arithmetic",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "pallet-evm-evolution-collection-factory"
-version = "2.0.0-dev"
-dependencies = [
- "evm",
- "fp-evm",
- "frame-support",
- "frame-system",
- "hex",
- "laos-precompile-utils",
- "laos-precompile-utils-macro",
- "num_enum",
- "pallet-balances",
- "pallet-evm",
- "pallet-laos-evolution",
- "pallet-timestamp",
- "parity-scale-codec",
- "precompile-utils",
- "scale-info",
- "sp-arithmetic",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
 ]
 
 [[package]]
@@ -7458,7 +7348,6 @@ dependencies = [
  "frame-support",
  "frame-system",
  "hex",
- "laos-precompile-utils",
  "pallet-balances",
  "pallet-evm",
  "pallet-timestamp",

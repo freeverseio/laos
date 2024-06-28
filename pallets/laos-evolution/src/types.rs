@@ -15,7 +15,6 @@
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 //! Types used in the pallet
-use laos_precompile_utils::{EvmData, EvmDataReader, EvmDataWriter, EvmResult};
 use parity_scale_codec::{Decode, Encode, MaxEncodedLen};
 use precompile_utils::solidity::{
 	codec::{Reader, Writer},
@@ -117,29 +116,6 @@ impl Codec for Slot {
 
 	fn signature() -> String {
 		String::from("uint96")
-	}
-}
-
-/// This is a legacy type that is used for compatibility with the legacy Laos EVM Pallets
-/// used in Klaos runtime.
-///
-/// NOTE: remove once the legacy pallets are removed
-pub struct LegacySlot(pub Slot);
-
-impl EvmData for LegacySlot {
-	fn write(writer: &mut EvmDataWriter, value: Self) {
-		<u128 as EvmData>::write(writer, value.0.into())
-	}
-
-	fn read(reader: &mut EvmDataReader) -> EvmResult<Self> {
-		let value128 = <u128 as EvmData>::read(reader)?;
-		let slot =
-			Slot::try_from(value128).map_err(|_| RevertReason::read_out_of_bounds("uint96"))?;
-		Ok(LegacySlot(slot))
-	}
-
-	fn has_static_size() -> bool {
-		<u128 as EvmData>::has_static_size()
 	}
 }
 

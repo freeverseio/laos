@@ -22,7 +22,6 @@ precompile-utils = { workspace = true, default-features = false }
 fp-evm = { workspace = true }
 pallet-evm = { workspace = true }
 serde = { workspace = true }
-laos-precompile-utils = { workspace = true, default-features = false }
 
 [dev-dependencies]
 sp-io = { workspace = true }
@@ -47,7 +46,6 @@ std = [
 	"precompile-utils/std",
 	"fp-evm/std",
 	"pallet-evm/std",
-	"laos-precompile-utils/std", # TODO remove?
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
