@@ -15,7 +15,7 @@
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 use super::MaxTokenUriLength;
-use crate::{types::AccountIdToH160, Runtime, RuntimeEvent};
+use crate::{types::AccountIdToH160, weights, Runtime, RuntimeEvent};
 use frame_support::parameter_types;
 
 parameter_types! {
@@ -29,5 +29,5 @@ impl pallet_asset_metadata_extender::Config for Runtime {
 	type MaxTokenUriLength = MaxTokenUriLength;
 	type MaxUniversalLocationLength = MaxUniversalLocationLength;
 	type GasWeightMapping = <Runtime as pallet_evm::Config>::GasWeightMapping;
-	type WeightInfo = (); // TODO
+	type WeightInfo = weights::pallet_asset_metadata_extender::WeightInfo<Runtime>;
 }
