@@ -52,34 +52,16 @@ fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 		"laos-omega" => Box::new(chain_spec::laos::ChainSpec::from_json_bytes(
 			&include_bytes!("../../specs/laos-omega.raw.json")[..],
 		)?),
-		"klaos" => Box::new(chain_spec::klaos::ChainSpec::from_json_bytes(
-			&include_bytes!("../../specs/klaos.raw.json")[..],
-		)?),
-		"klaos-nova" => Box::new(chain_spec::klaos::ChainSpec::from_json_bytes(
-			&include_bytes!("../../specs/klaos-nova.raw.json")[..],
-		)?),
-		"giedi" => Box::new(chain_spec::klaos::ChainSpec::from_json_bytes(
-			&include_bytes!("../../specs/giedi.raw.json")[..],
-		)?),
 		"laos-sun" => Box::new(chain_spec::laos::ChainSpec::from_json_bytes(
 			&include_bytes!("../../specs/laos-sun.raw.json")[..],
 		)?),
-		"klaos-dev" => Box::new(chain_spec::klaos::development_config()),
-		"klaos-local" | "klaos-local-v" => Box::new(chain_spec::klaos::local_testnet_config()),
 		"dev" => Box::new(chain_spec::laos::development_config()),
 		"local" => Box::new(chain_spec::laos::local_testnet_config()),
 		"local-v" => Box::new(chain_spec::laos::local_testnet_config()),
 		path => {
 			let chain_spec =
 				chain_spec::laos::ChainSpec::from_json_file(std::path::PathBuf::from(path))?;
-			if chain_spec.id().starts_with("klaos") ||
-				chain_spec.id().starts_with("giedi") ||
-				chain_spec.id().starts_with("caladan")
-			{
-				Box::new(chain_spec::klaos::ChainSpec::from_json_file(std::path::PathBuf::from(
-					path,
-				))?)
-			} else if chain_spec.id().starts_with("laos") {
+			if chain_spec.id().starts_with("laos") {
 				Box::new(chain_spec)
 			} else {
 				Err(format!(
