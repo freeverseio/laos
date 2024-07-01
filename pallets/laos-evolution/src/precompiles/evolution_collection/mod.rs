@@ -31,10 +31,10 @@ pub const SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
 pub const SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
 	keccak256!("EvolvedWithExternalURI(uint256,string)");
 
-/// Solidity selector of the EnabledPublicMinting log, which is the Keccak of the Log signature.
-pub const SELECTOR_LOG_ENABLED_PUBLIC_MINTING: [u8; 32] = keccak256!("EnabledPublicMinting()");
-/// Solidity selector of the DisabledPublicMinting log, which is the Keccak of the Log signature.
-pub const SELECTOR_LOG_DISABLED_PUBLIC_MINTING: [u8; 32] = keccak256!("DisabledPublicMinting()");
+/// Solidity selector of the PublicMintingEnabled log, which is the Keccak of the Log signature.
+pub const SELECTOR_LOG_PUBLIC_MINTING_ENABLED: [u8; 32] = keccak256!("PublicMintingEnabled()");
+/// Solidity selector of the PublicMintingDisabled log, which is the Keccak of the Log signature.
+pub const SELECTOR_LOG_PUBLIC_MINTING_DISABLED: [u8; 32] = keccak256!("PublicMintingDisabled()");
 
 /// Solidity selector of the `OwnershipTransferred` log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_OWNERSHIP_TRANSFERRED: [u8; 32] =
@@ -213,7 +213,7 @@ where
 			Ok(()) => {
 				log1(
 					handle.context().address,
-					SELECTOR_LOG_ENABLED_PUBLIC_MINTING,
+					SELECTOR_LOG_PUBLIC_MINTING_ENABLED,
 					solidity::encode_event_data(()),
 				)
 				.record(handle)?;
@@ -238,7 +238,7 @@ where
 			Ok(()) => {
 				log1(
 					handle.context().address,
-					SELECTOR_LOG_DISABLED_PUBLIC_MINTING,
+					SELECTOR_LOG_PUBLIC_MINTING_DISABLED,
 					solidity::encode_event_data(()),
 				)
 				.record(handle)?;
