@@ -34,6 +34,8 @@ describeWithExistingNode("Frontier RPC (Update Extended Token URI)", (context) =
 		let tokenURI = "https://example.com";
 		let newTokenURI = "https://new.example.com";
 
+		expect(await contract.methods.balanceOfUL(uloc).call()).to.be.eq(0);
+		expect(await contract.methods.hasExtensionByClaimer(uloc, GENESIS_ACCOUNT).call()).to.be.eq(false);
 		const createResult = await contract.methods.extendULWithExternalURI(uloc, tokenURI).send({
 			from: GENESIS_ACCOUNT,
 			gas: GAS_LIMIT,
@@ -41,6 +43,11 @@ describeWithExistingNode("Frontier RPC (Update Extended Token URI)", (context) =
 			nonce: nonce++,
 		});
 		expect(createResult.status).to.be.eq(true);
+		expect(await contract.methods.extensionOfULByIndex(uloc, 0).call()).to.be.eq(tokenURI);
+		expect(await contract.methods.extensionOfULByClaimer(uloc, GENESIS_ACCOUNT).call()).to.be.eq(tokenURI);
+		expect(await contract.methods.claimerOfULByIndex(uloc, 0).call()).to.be.eq(GENESIS_ACCOUNT);
+		expect(await contract.methods.balanceOfUL(uloc).call()).to.be.eq(1);
+		expect(await contract.methods.hasExtensionByClaimer(uloc, GENESIS_ACCOUNT).call()).to.be.eq(true);
 		
 		const udpateResult = await contract.methods.updateExtendedULWithExternalURI(uloc, newTokenURI).send({
 			from: GENESIS_ACCOUNT,
@@ -50,10 +57,15 @@ describeWithExistingNode("Frontier RPC (Update Extended Token URI)", (context) =
 		});
 		expect(udpateResult.status).to.be.eq(true);
 
-		const got = await contract.methods.extensionOfULByIndex(uloc, 0).call();
-		expect(got).to.be.eq(newTokenURI);
 		expect(udpateResult.status).to.be.eq(true);
 		expect(Object.keys(udpateResult.events).length).to.be.eq(1);
+
+		// after update everything remains but new token uri
+		expect(await contract.methods.extensionOfULByIndex(uloc, 0).call()).to.be.eq(newTokenURI);
+		expect(await contract.methods.extensionOfULByClaimer(uloc, GENESIS_ACCOUNT).call()).to.be.eq(tokenURI);
+		expect(await contract.methods.claimerOfULByIndex(uloc, 0).call()).to.be.eq(GENESIS_ACCOUNT);
+		expect(await contract.methods.balanceOfUL(uloc).call()).to.be.eq(1);
+		expect(await contract.methods.hasExtensionByClaimer(uloc, GENESIS_ACCOUNT).call()).to.be.eq(true);
 
 		// data returned within the event
 		expect(udpateResult.events.UpdatedExtendedULWithExternalURI.returnValues._claimer).to.be.eq(GENESIS_ACCOUNT);
