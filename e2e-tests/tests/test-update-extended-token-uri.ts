@@ -9,6 +9,7 @@ import {
 	GENESIS_ACCOUNT,
 	GENESIS_ACCOUNT_PRIVATE_KEY,
 	SELECTOR_LOG_UPDATED_EXTENDED_UL_WITH_EXTERNAL_URI,
+	SELECTOR_LOG_EXTENDED_UL_WITH_EXTERNAL_URI,
 } from "./config";
 import { describeWithExistingNode } from "./util";
 
@@ -34,8 +35,9 @@ describeWithExistingNode("Frontier RPC (Update Extended Token URI)", (context) =
 		let tokenURI = "https://example.com";
 		let newTokenURI = "https://new.example.com";
 
-		expect(await contract.methods.balanceOfUL(uloc).call()).to.be.eq(0);
+		expect(await contract.methods.balanceOfUL(uloc).call()).to.be.eq("0");
 		expect(await contract.methods.hasExtensionByClaimer(uloc, GENESIS_ACCOUNT).call()).to.be.eq(false);
+		
 		const createResult = await contract.methods.extendULWithExternalURI(uloc, tokenURI).send({
 			from: GENESIS_ACCOUNT,
 			gas: GAS_LIMIT,
@@ -43,11 +45,37 @@ describeWithExistingNode("Frontier RPC (Update Extended Token URI)", (context) =
 			nonce: nonce++,
 		});
 		expect(createResult.status).to.be.eq(true);
+
 		expect(await contract.methods.extensionOfULByIndex(uloc, 0).call()).to.be.eq(tokenURI);
 		expect(await contract.methods.extensionOfULByClaimer(uloc, GENESIS_ACCOUNT).call()).to.be.eq(tokenURI);
 		expect(await contract.methods.claimerOfULByIndex(uloc, 0).call()).to.be.eq(GENESIS_ACCOUNT);
-		expect(await contract.methods.balanceOfUL(uloc).call()).to.be.eq(1);
+		expect(await contract.methods.balanceOfUL(uloc).call()).to.be.eq("1");
 		expect(await contract.methods.hasExtensionByClaimer(uloc, GENESIS_ACCOUNT).call()).to.be.eq(true);
+
+		// data returned within the event
+		expect(Object.keys(createResult.events).length).to.be.eq(1);
+		expect(createResult.events.ExtendedULWithExternalURI.returnValues._claimer).to.be.eq(GENESIS_ACCOUNT);
+		expect(createResult.events.ExtendedULWithExternalURI.returnValues._universalLocationHash).to.be.eq(context.web3.utils.soliditySha3(uloc));
+		expect(createResult.events.ExtendedULWithExternalURI.returnValues._universalLocation).to.be.eq(uloc);
+		expect(createResult.events.ExtendedULWithExternalURI.returnValues._tokenURI).to.be.eq(tokenURI);
+
+		// event topics
+		expect(createResult.events.ExtendedULWithExternalURI.raw.topics.length).to.be.eq(3);
+		expect(createResult.events.ExtendedULWithExternalURI.raw.topics[0]).to.be.eq(SELECTOR_LOG_EXTENDED_UL_WITH_EXTERNAL_URI);
+		expect(createResult.events.ExtendedULWithExternalURI.raw.topics[1]).to.be.eq(
+			context.web3.utils.padLeft(GENESIS_ACCOUNT.toLowerCase(), 64)
+		);
+		expect(createResult.events.ExtendedULWithExternalURI.raw.topics[2]).to.be.eq(
+			context.web3.utils.padLeft(context.web3.utils.soliditySha3(uloc), 64)
+		);
+
+		// event data
+		expect(createResult.events.ExtendedULWithExternalURI.raw.data).to.be.eq(
+			context.web3.eth.abi.encodeParameters(
+				["string", "string"],
+				[uloc, tokenURI]
+			)
+		);
 		
 		const udpateResult = await contract.methods.updateExtendedULWithExternalURI(uloc, newTokenURI).send({
 			from: GENESIS_ACCOUNT,
@@ -56,18 +84,16 @@ describeWithExistingNode("Frontier RPC (Update Extended Token URI)", (context) =
 			nonce: nonce++,
 		});
 		expect(udpateResult.status).to.be.eq(true);
-
-		expect(udpateResult.status).to.be.eq(true);
-		expect(Object.keys(udpateResult.events).length).to.be.eq(1);
-
+		
 		// after update everything remains but new token uri
 		expect(await contract.methods.extensionOfULByIndex(uloc, 0).call()).to.be.eq(newTokenURI);
-		expect(await contract.methods.extensionOfULByClaimer(uloc, GENESIS_ACCOUNT).call()).to.be.eq(tokenURI);
+		expect(await contract.methods.extensionOfULByClaimer(uloc, GENESIS_ACCOUNT).call()).to.be.eq(newTokenURI);
 		expect(await contract.methods.claimerOfULByIndex(uloc, 0).call()).to.be.eq(GENESIS_ACCOUNT);
-		expect(await contract.methods.balanceOfUL(uloc).call()).to.be.eq(1);
+		expect(await contract.methods.balanceOfUL(uloc).call()).to.be.eq("1");
 		expect(await contract.methods.hasExtensionByClaimer(uloc, GENESIS_ACCOUNT).call()).to.be.eq(true);
-
+		
 		// data returned within the event
+		expect(Object.keys(udpateResult.events).length).to.be.eq(1);
 		expect(udpateResult.events.UpdatedExtendedULWithExternalURI.returnValues._claimer).to.be.eq(GENESIS_ACCOUNT);
 		expect(udpateResult.events.UpdatedExtendedULWithExternalURI.returnValues._universalLocationHash).to.be.eq(context.web3.utils.soliditySha3(uloc));
 		expect(udpateResult.events.UpdatedExtendedULWithExternalURI.returnValues._universalLocation).to.be.eq(uloc);
