@@ -1,12 +1,12 @@
 {
-  "name": "Laos Sun v4 Testnet",
-  "id": "laos_sun_v4_testnet",
+  "name": "Laos Sun v5 Testnet",
+  "id": "laos_sun_v5_testnet",
   "chainType": "Live",
   "bootNodes": [
     "/dns4/laossun-boot-1.gorengine.com/tcp/30334/p2p/12D3KooWKXd2uAnD9r1LuFoEsxpVxccDw8oW1zwSV5ZXm69UnBw9"
   ],
   "telemetryEndpoints": null,
-  "protocolId": "laos_sun_v4_testnet",
+  "protocolId": "laos_sun_v5_testnet",
   "properties": {
     "ss58Format": 42,
     "tokenDecimals": 18,
@@ -251,7 +251,7 @@
         }
       },
       "evmChainId": {
-        "chainId": 6000
+        "chainId": 62832
       },
       "baseFee": {
         "baseFeePerGas": "0x3b9aca00",
