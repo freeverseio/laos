@@ -38,13 +38,14 @@ export function describeWithExistingNode(title: string, cb: (context: { web3: We
 			ethersjs: ethers.JsonRpcProvider;
 		} = { web3: null, ethersjs: null };
 
-		if (!provider || provider == "http") {
-			context.web3 = new Web3(`http://127.0.0.1:${RPC_PORT}`);
-		}
+		// if (!provider || provider == "http") {
+		// 	context.web3 = new Web3(`http://127.0.0.1:${RPC_PORT}`);
+		// }
 
-		if (provider == "ws") {
-			context.web3 = new Web3(`ws://127.0.0.1:${RPC_PORT}`);
-		}
+		// if (provider == "ws") {
+		// 	context.web3 = new Web3(`ws://127.0.0.1:${RPC_PORT}`);
+		// }
+		context.web3 = new Web3("wss://rpc.laossun.gorengine.com");
 
 		cb(context);
 	});

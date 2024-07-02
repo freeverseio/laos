@@ -52,9 +52,9 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
         const to = GENESIS_ACCOUNT;
 
         const tokenId = slotAndOwnerToTokenId(slot, to);
-        expect(tokenId).to.be.eq("000000000000000000000001c0f0f4ab324c46e55d02d0033343b4be8a55532d");
+        expect(tokenId).to.be.eq("000000000000000000000001fe66e3510221d4a0cad203cdd56bc82e4954b4dd");
         const tokenIdDecimal = new BN(tokenId, 16, "be").toString(10);
-        expect(tokenIdDecimal).to.be.eq("2563001357829637001682277476112176020532353127213");
+        expect(tokenIdDecimal).to.be.eq("2913879771185020625489357666963374865447870837981");
     });
 
     step("when asset is minted it should emit an event", async function () {

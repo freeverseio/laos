@@ -6,16 +6,16 @@ import EvolutionCollectionFactory from "../build/contracts/EvolutionCollectionFa
 
 // Node config
 export const RUNTIME_SPEC_NAME = "laos";
-export const RUNTIME_SPEC_VERSION = 1700;
+export const RUNTIME_SPEC_VERSION = 1701;
 export const RUNTIME_IMPL_VERSION = 0;
 export const RPC_PORT = 9999;
 
 // Chain config
-export const CHAIN_ID = 667;
-export const OWNCHAIN_SUDO = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
-export const OWNCHAIN_SUDO_PRIVATE_KEY = "0x5fb92d6e98884f76de468fa3f6278f8807c48bebc13595d45af5bdc4da702133";
-export const GENESIS_ACCOUNT = "0xC0F0f4ab324C46e55D02D0033343B4Be8A55532d";
-export const GENESIS_ACCOUNT_PRIVATE_KEY = "0xb9d2ea9a615f3165812e8d44de0d24da9bbd164b65c4f0573e1ce2c8dbd9c8df";
+export const CHAIN_ID = 62832;
+export const OWNCHAIN_SUDO = "0xFe66e3510221D4A0caD203cdd56Bc82E4954B4dd";
+export const OWNCHAIN_SUDO_PRIVATE_KEY = "";
+export const GENESIS_ACCOUNT = "0xFe66e3510221D4A0caD203cdd56Bc82E4954B4dd";
+export const GENESIS_ACCOUNT_PRIVATE_KEY = "";
 export const GAS_PRICE = "0x3B9ACA00";
 export const ETH_BLOCK_GAS_LIMIT = 15000000; // The same configuration as runtime
 export const GAS_LIMIT = ETH_BLOCK_GAS_LIMIT - 10000000;
