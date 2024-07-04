@@ -112,7 +112,7 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
         expect(got).to.be.eq(newTokenURI);
     });
 
-    step("when asset is evolved it should emit an event", async function () {
+    step("@qa when asset is evolved it should emit an event", async function () {
         this.timeout(70000);
 
         const slot = "22";
