@@ -8,14 +8,13 @@ import EvolutionCollectionFactory from "../build/contracts/EvolutionCollectionFa
 export const RUNTIME_SPEC_NAME = "laos";
 export const RUNTIME_SPEC_VERSION = 1701;
 export const RUNTIME_IMPL_VERSION = 0;
-export const RPC_PORT = 9999;
+export const LOCAL_NODE_URL = "http://127.0.0.1:9999";
+export const NODE_URL = "wss://rpc.laossun.gorengine.com";
 
 // Chain config
-export const CHAIN_ID = 62832;
-export const OWNCHAIN_SUDO = "0xFe66e3510221D4A0caD203cdd56Bc82E4954B4dd";
-export const OWNCHAIN_SUDO_PRIVATE_KEY = "";
-export const GENESIS_ACCOUNT = "0xFe66e3510221D4A0caD203cdd56Bc82E4954B4dd";
-export const GENESIS_ACCOUNT_PRIVATE_KEY = "";
+export const CHAIN_ID = 6000;
+export const TEST_ACCOUNT = "0xC0F0f4ab324C46e55D02D0033343B4Be8A55532d";
+export const TEST_ACCOUNT_PRIVATE_KEY = "0xb9d2ea9a615f3165812e8d44de0d24da9bbd164b65c4f0573e1ce2c8dbd9c8df";
 export const GAS_PRICE = "0x3B9ACA00";
 export const ETH_BLOCK_GAS_LIMIT = 15000000; // The same configuration as runtime
 export const GAS_LIMIT = ETH_BLOCK_GAS_LIMIT - 10000000;

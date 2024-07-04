@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { step } from "mocha-steps";
 
-import { OWNCHAIN_SUDO, OWNCHAIN_SUDO_PRIVATE_KEY } from "./config";
+import { TEST_ACCOUNT, TEST_ACCOUNT_PRIVATE_KEY } from "./config";
 import { customRequest, describeWithExistingNode } from "./util";
 
 describeWithExistingNode("Frontier RPC (TxPoolApi)", (context) => {
@@ -13,21 +13,21 @@ describeWithExistingNode("Frontier RPC (TxPoolApi)", (context) => {
 	async function sendTransaction(context, nonce) {
 		const tx = await context.web3.eth.accounts.signTransaction(
 			{
-				from: OWNCHAIN_SUDO,
+				from: TEST_ACCOUNT,
 				data: TEST_CONTRACT_BYTECODE,
 				value: "0x00",
 				gasPrice: "0x3B9ACA00",
 				gas: "0x100000",
 				nonce: nonce,
 			},
-			OWNCHAIN_SUDO_PRIVATE_KEY
+			TEST_ACCOUNT_PRIVATE_KEY
 		);
 		await customRequest(context.web3, "eth_sendRawTransaction", [tx.rawTransaction]);
 		return tx;
 	}
 
 	before(async function () {
-		nonce = await context.web3.eth.getTransactionCount(OWNCHAIN_SUDO);
+		nonce = await context.web3.eth.getTransactionCount(TEST_ACCOUNT);
 	});
 
 	step("txpool_status should return correct result", async function () {
@@ -48,7 +48,7 @@ describeWithExistingNode("Frontier RPC (TxPoolApi)", (context) => {
 	step("txpool_content should return correct result", async function () {
 		let txpoolContent = await customRequest(context.web3, "txpool_content", []);
 
-		let genesisAccount = OWNCHAIN_SUDO.toLowerCase();
+		let genesisAccount = TEST_ACCOUNT.toLowerCase();
 		let futureNonce = `0x${(nonce + 1000).toString(16)}`;
 
 		expect(txpoolContent.result.queued[genesisAccount][futureNonce].nonce).to.be.equal(futureNonce);
@@ -57,7 +57,7 @@ describeWithExistingNode("Frontier RPC (TxPoolApi)", (context) => {
 
 	step("txpool_inspect should return correct result", async function () {
 		let txpoolInspect = await customRequest(context.web3, "txpool_inspect", []);
-		let genesisAccount = OWNCHAIN_SUDO.toLowerCase();
+		let genesisAccount = TEST_ACCOUNT.toLowerCase();
 
 		let currentNonce = `0x${nonce.toString(16)}`;
 		let futureNonce = `0x${(nonce + 1000).toString(16)}`;
