@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 import Contract from "web3-eth-contract";
 import Web3 from "web3";
 import { JsonRpcResponse } from "web3-core-helpers";
-import { CONTRACT_ADDRESS, GAS_LIMIT, GAS_PRICE, GENESIS_ACCOUNT, GENESIS_ACCOUNT_PRIVATE_KEY, EVOLUTION_COLLETION_FACTORY_ABI, EVOLUTION_COLLECTION_ABI, MAX_U96, RPC_PORT } from "./config";
+import { CONTRACT_ADDRESS, GAS_LIMIT, GAS_PRICE, TESTING_ACCOUNT, TESTING_ACCOUNT_PRIVATE_KEY, EVOLUTION_COLLETION_FACTORY_ABI, EVOLUTION_COLLECTION_ABI, MAX_U96, LOCAL_NODE_URL } from "./config";
 import BN from "bn.js";
 import { expect } from "chai";
 
@@ -38,12 +38,8 @@ export function describeWithExistingNode(title: string, cb: (context: { web3: We
 			ethersjs: ethers.JsonRpcProvider;
 		} = { web3: null, ethersjs: null };
 
-		if (!provider || provider == "http") {
-			context.web3 = new Web3(`http://127.0.0.1:${RPC_PORT}`);
-		}
-
-		if (provider == "ws") {
-			context.web3 = new Web3(`ws://127.0.0.1:${RPC_PORT}`);
+		if (!provider) {
+			context.web3 = new Web3(LOCAL_NODE_URL);
 		}
 
 		cb(context);
@@ -52,14 +48,14 @@ export function describeWithExistingNode(title: string, cb: (context: { web3: We
 
 export async function createCollection(context: { web3: Web3 }): Promise<Contract> {
 	const contract = new context.web3.eth.Contract(EVOLUTION_COLLETION_FACTORY_ABI, CONTRACT_ADDRESS, {
-		from: GENESIS_ACCOUNT,
+		from: TESTING_ACCOUNT,
 		gasPrice: GAS_PRICE,
 	});
 	
-	let nonce = await context.web3.eth.getTransactionCount(GENESIS_ACCOUNT);
-	context.web3.eth.accounts.wallet.add(GENESIS_ACCOUNT_PRIVATE_KEY);
-	const result = await contract.methods.createCollection(GENESIS_ACCOUNT).send({
-		from: GENESIS_ACCOUNT,
+	let nonce = await context.web3.eth.getTransactionCount(TESTING_ACCOUNT);
+	context.web3.eth.accounts.wallet.add(TESTING_ACCOUNT_PRIVATE_KEY);
+	const result = await contract.methods.createCollection(TESTING_ACCOUNT).send({
+		from: TESTING_ACCOUNT,
 		gas: GAS_LIMIT,
 		gasPrice: GAS_PRICE,
 		nonce: nonce++,
@@ -68,7 +64,7 @@ export async function createCollection(context: { web3: Web3 }): Promise<Contrac
 	expect(context.web3.utils.isAddress(result.events.NewCollection.returnValues._collectionAddress)).to.be.eq(true);
 	
 	const collectionContract = new context.web3.eth.Contract(EVOLUTION_COLLECTION_ABI, result.events.NewCollection.returnValues._collectionAddress, {
-		from: GENESIS_ACCOUNT,
+		from: TESTING_ACCOUNT,
 		gas: GAS_LIMIT,
 		gasPrice: GAS_PRICE,
 	});
