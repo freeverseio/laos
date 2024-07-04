@@ -36,7 +36,7 @@ describeWithExistingNode("Frontier RPC (Update Extended Token URI)", (context) =
 		let newTokenURI = "https://new.example.com";
 
 		expect(await contract.methods.balanceOfUL(uloc).call()).to.be.eq("0");
-		expect(await contract.methods.hasExtensionByClaimer(uloc, TEST_ACCOUNT).call()).to.be.eq(false);
+		expect(await contract.methods.hasExtensionByClaimer(uloc, TESTING_ACCOUNT).call()).to.be.eq(false);
 		
 		const createResult = await contract.methods.extendULWithExternalURI(uloc, tokenURI).send({
 			from: TESTING_ACCOUNT,
@@ -47,14 +47,14 @@ describeWithExistingNode("Frontier RPC (Update Extended Token URI)", (context) =
 		expect(createResult.status).to.be.eq(true);
 
 		expect(await contract.methods.extensionOfULByIndex(uloc, 0).call()).to.be.eq(tokenURI);
-		expect(await contract.methods.extensionOfULByClaimer(uloc, TEST_ACCOUNT).call()).to.be.eq(tokenURI);
-		expect(await contract.methods.claimerOfULByIndex(uloc, 0).call()).to.be.eq(TEST_ACCOUNT);
+		expect(await contract.methods.extensionOfULByClaimer(uloc, TESTING_ACCOUNT).call()).to.be.eq(tokenURI);
+		expect(await contract.methods.claimerOfULByIndex(uloc, 0).call()).to.be.eq(TESTING_ACCOUNT);
 		expect(await contract.methods.balanceOfUL(uloc).call()).to.be.eq("1");
-		expect(await contract.methods.hasExtensionByClaimer(uloc, TEST_ACCOUNT).call()).to.be.eq(true);
+		expect(await contract.methods.hasExtensionByClaimer(uloc, TESTING_ACCOUNT).call()).to.be.eq(true);
 
 		// data returned within the event
 		expect(Object.keys(createResult.events).length).to.be.eq(1);
-		expect(createResult.events.ExtendedULWithExternalURI.returnValues._claimer).to.be.eq(TEST_ACCOUNT);
+		expect(createResult.events.ExtendedULWithExternalURI.returnValues._claimer).to.be.eq(TESTING_ACCOUNT);
 		expect(createResult.events.ExtendedULWithExternalURI.returnValues._universalLocationHash).to.be.eq(context.web3.utils.soliditySha3(uloc));
 		expect(createResult.events.ExtendedULWithExternalURI.returnValues._universalLocation).to.be.eq(uloc);
 		expect(createResult.events.ExtendedULWithExternalURI.returnValues._tokenURI).to.be.eq(tokenURI);
@@ -63,7 +63,7 @@ describeWithExistingNode("Frontier RPC (Update Extended Token URI)", (context) =
 		expect(createResult.events.ExtendedULWithExternalURI.raw.topics.length).to.be.eq(3);
 		expect(createResult.events.ExtendedULWithExternalURI.raw.topics[0]).to.be.eq(SELECTOR_LOG_EXTENDED_UL_WITH_EXTERNAL_URI);
 		expect(createResult.events.ExtendedULWithExternalURI.raw.topics[1]).to.be.eq(
-			context.web3.utils.padLeft(TEST_ACCOUNT.toLowerCase(), 64)
+			context.web3.utils.padLeft(TESTING_ACCOUNT.toLowerCase(), 64)
 		);
 		expect(createResult.events.ExtendedULWithExternalURI.raw.topics[2]).to.be.eq(
 			context.web3.utils.padLeft(context.web3.utils.soliditySha3(uloc), 64)
@@ -87,10 +87,10 @@ describeWithExistingNode("Frontier RPC (Update Extended Token URI)", (context) =
 		
 		// after update everything remains but new token uri
 		expect(await contract.methods.extensionOfULByIndex(uloc, 0).call()).to.be.eq(newTokenURI);
-		expect(await contract.methods.extensionOfULByClaimer(uloc, TEST_ACCOUNT).call()).to.be.eq(newTokenURI);
-		expect(await contract.methods.claimerOfULByIndex(uloc, 0).call()).to.be.eq(TEST_ACCOUNT);
+		expect(await contract.methods.extensionOfULByClaimer(uloc, TESTING_ACCOUNT).call()).to.be.eq(newTokenURI);
+		expect(await contract.methods.claimerOfULByIndex(uloc, 0).call()).to.be.eq(TESTING_ACCOUNT);
 		expect(await contract.methods.balanceOfUL(uloc).call()).to.be.eq("1");
-		expect(await contract.methods.hasExtensionByClaimer(uloc, TEST_ACCOUNT).call()).to.be.eq(true);
+		expect(await contract.methods.hasExtensionByClaimer(uloc, TESTING_ACCOUNT).call()).to.be.eq(true);
 		
 		// data returned within the event
 		expect(udpateResult.events.UpdatedExtendedULWithExternalURI.returnValues._claimer).to.be.eq(TESTING_ACCOUNT);
