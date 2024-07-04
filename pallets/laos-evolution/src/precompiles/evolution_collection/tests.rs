@@ -312,7 +312,7 @@ fn enable_public_minting_generates_log() {
 		let collection_address = create_collection(alice);
 		precompiles()
 			.prepare_test(alice, collection_address, PrecompileCall::enable_public_minting {})
-			.expect_log(log1(collection_address, SELECTOR_LOG_ENABLED_PUBLIC_MINTING, vec![]))
+			.expect_log(log1(collection_address, SELECTOR_LOG_PUBLIC_MINTING_ENABLED, vec![]))
 			.execute_some();
 
 		precompiles()
@@ -340,7 +340,7 @@ fn disable_public_minting_generates_log() {
 		let collection_address = create_collection(alice);
 		precompiles()
 			.prepare_test(alice, collection_address, PrecompileCall::disable_public_minting {})
-			.expect_log(log1(collection_address, SELECTOR_LOG_DISABLED_PUBLIC_MINTING, vec![]))
+			.expect_log(log1(collection_address, SELECTOR_LOG_PUBLIC_MINTING_DISABLED, vec![]))
 			.execute_some();
 
 		precompiles()
