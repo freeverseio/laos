@@ -34,7 +34,7 @@ chain = "local-v"
   command = "{{ZOMBIENET_LAOS_COMMAND}}"
   validator = true
 
-# TODO reactivate when XCM needs to be tested again
+# TODO uncomment when XCM needs to be tested again
 # [[parachains]]
 # id = 2008
 # cumulus_based = true

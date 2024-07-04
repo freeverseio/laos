@@ -13,7 +13,7 @@ Download the Zombienet binary from the [releases page](https://github.com/parity
 For example:
 
 ```sh
-$ wget -O zombienet https://github.com/paritytech/zombienet/releases/download/v1.3.55/zombienet-linux-x64 && chmod +x zombienet
+$ wget -O zombienet https://github.com/paritytech/zombienet/releases/download/v1.3.106/zombienet-linux-x64 && chmod +x zombienet
 ```
 
 **Start Zombienet**

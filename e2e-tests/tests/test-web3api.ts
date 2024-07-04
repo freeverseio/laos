@@ -2,7 +2,7 @@ import BN from "bn.js";
 import { assert, expect } from "chai";
 import { step } from "mocha-steps";
 
-import { CHAIN_ID, TEST_ACCOUNT, RUNTIME_IMPL_VERSION, RUNTIME_SPEC_NAME, RUNTIME_SPEC_VERSION } from "./config";
+import { CHAIN_ID, TESTING_ACCOUNT, RUNTIME_IMPL_VERSION, RUNTIME_SPEC_NAME, RUNTIME_SPEC_VERSION } from "./config";
 import { customRequest, describeWithExistingNode } from "./util";
 
 describeWithExistingNode("Frontier RPC (Web3Api)", (context) => {
@@ -26,7 +26,7 @@ describeWithExistingNode("Frontier RPC (Web3Api)", (context) => {
 	});
 
 	step("genesis balance is setup correctly", async function () {
-		const balance = new BN(await context.web3.eth.getBalance(TEST_ACCOUNT));
+		const balance = new BN(await context.web3.eth.getBalance(TESTING_ACCOUNT));
 		expect(balance.gt(new BN(0))).to.be.eq(true);
 	});
 });
