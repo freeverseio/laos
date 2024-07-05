@@ -119,7 +119,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: laos-binary
-          path: target/release/laos
+          path: target/release/
       - name: Copy polkadot relay chain binary
         run: |
           wget https://github.com/paritytech/polkadot/releases/download/v0.9.42/polkadot
