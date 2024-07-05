@@ -109,9 +109,9 @@ jobs:
 
   e2e-tests:
     runs-on:
+      needs: [build_and_push]
       group: laos
       labels: ubuntu-16-cores
-      needs: [build_and_push]
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup
