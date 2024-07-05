@@ -1,5 +1,5 @@
 import { addressToCollectionId, createCollection, describeWithExistingNode, slotAndOwnerToTokenId } from "./util";
-import { GAS_LIMIT, TESTING_ACCOUNT, SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI, SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI, SELECTOR_LOG_OWNERSHIP_TRANSFERRED, SELECTOR_LOG_PUBLIC_MINTING_ENABLED, SELECTOR_LOG_PUBLIC_MINTING_DISABLED } from "./config";
+import { GAS_LIMIT, FAITH, SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI, SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI, SELECTOR_LOG_OWNERSHIP_TRANSFERRED, SELECTOR_LOG_PUBLIC_MINTING_ENABLED, SELECTOR_LOG_PUBLIC_MINTING_DISABLED } from "./config";
 import { expect } from "chai";
 import Contract from "web3-eth-contract";
 import BN from "bn.js";
@@ -33,11 +33,11 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
         this.timeout(70000);
 
         const slot = "0";
-        const to = TESTING_ACCOUNT;
+        const to = FAITH;
         const tokenURI = "https://example.com";
 
-        let nonce = await context.web3.eth.getTransactionCount(TESTING_ACCOUNT);
-        const result = await collectionContract.methods.mintWithExternalURI(to, slot, tokenURI).send({ from: TESTING_ACCOUNT, gas: GAS_LIMIT, nonce: nonce++ });
+        let nonce = await context.web3.eth.getTransactionCount(FAITH);
+        const result = await collectionContract.methods.mintWithExternalURI(to, slot, tokenURI).send({ from: FAITH, gas: GAS_LIMIT, nonce: nonce++ });
         expect(result.status).to.be.eq(true);
 
         const tokenId = result.events.MintedWithExternalURI.returnValues._tokenId;
@@ -49,7 +49,7 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
         this.timeout(70000);
 
         const slot = "1";
-        const to = TESTING_ACCOUNT;
+        const to = FAITH;
 
         const tokenId = slotAndOwnerToTokenId(slot, to);
         expect(tokenId).to.be.eq("000000000000000000000001fe66e3510221d4a0cad203cdd56bc82e4954b4dd");
@@ -61,11 +61,11 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
         this.timeout(70000);
 
         const slot = "22";
-        const to = TESTING_ACCOUNT;
+        const to = FAITH;
         const tokenURI = "https://example.com";
 
         const result = await collectionContract.methods.mintWithExternalURI(to, slot, tokenURI)
-            .send({ from: TESTING_ACCOUNT, gas: GAS_LIMIT });
+            .send({ from: FAITH, gas: GAS_LIMIT });
         expect(result.status).to.be.eq(true);
 
         expect(Object.keys(result.events).length).to.be.eq(1);
@@ -81,7 +81,7 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
         // event topics
         expect(result.events.MintedWithExternalURI.raw.topics.length).to.be.eq(2);
         expect(result.events.MintedWithExternalURI.raw.topics[0]).to.be.eq(SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI);
-        expect(result.events.MintedWithExternalURI.raw.topics[1]).to.be.eq(context.web3.utils.padLeft(TESTING_ACCOUNT.toLowerCase(), 64));
+        expect(result.events.MintedWithExternalURI.raw.topics[1]).to.be.eq(context.web3.utils.padLeft(FAITH.toLowerCase(), 64));
 
         // event data
         expect(result.events.MintedWithExternalURI.raw.data).to.be.eq(
@@ -96,16 +96,16 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
         this.timeout(70000);
 
         const slot = "22";
-        const to = TESTING_ACCOUNT;
+        const to = FAITH;
         const tokenURI = "https://example.com";
         const newTokenURI = "https://new_example.com";
         const tokenId = slotAndOwnerToTokenId(slot, to);
         const tokenIdDecimal = new BN(tokenId, 16, "be").toString(10);
 
-        const mintingResult = await collectionContract.methods.mintWithExternalURI(to, slot, tokenURI).send({ from: TESTING_ACCOUNT, gas: GAS_LIMIT });
+        const mintingResult = await collectionContract.methods.mintWithExternalURI(to, slot, tokenURI).send({ from: FAITH, gas: GAS_LIMIT });
         expect(mintingResult.status).to.be.eq(true);
 
-        const evolvingResult = await collectionContract.methods.evolveWithExternalURI(tokenIdDecimal, newTokenURI).send({ from: TESTING_ACCOUNT, gas: GAS_LIMIT });
+        const evolvingResult = await collectionContract.methods.evolveWithExternalURI(tokenIdDecimal, newTokenURI).send({ from: FAITH, gas: GAS_LIMIT });
         expect(evolvingResult.status).to.be.eq(true);
 
         const got = await collectionContract.methods.tokenURI(tokenIdDecimal).call();
@@ -116,16 +116,16 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
         this.timeout(70000);
 
         const slot = "22";
-        const to = TESTING_ACCOUNT;
+        const to = FAITH;
         const tokenURI = "https://example.com";
         const newTokenURI = "https://new_example.com";
         const tokenId = slotAndOwnerToTokenId(slot, to);
         const tokenIdDecimal = new BN(tokenId, 16, "be").toString(10);
 
-        const mintingResult = await collectionContract.methods.mintWithExternalURI(to, slot, tokenURI).send({ from: TESTING_ACCOUNT, gas: GAS_LIMIT });
+        const mintingResult = await collectionContract.methods.mintWithExternalURI(to, slot, tokenURI).send({ from: FAITH, gas: GAS_LIMIT });
         expect(mintingResult.status).to.be.eq(true);
 
-        const evolvingResult = await collectionContract.methods.evolveWithExternalURI(tokenIdDecimal, newTokenURI).send({ from: TESTING_ACCOUNT, gas: GAS_LIMIT });
+        const evolvingResult = await collectionContract.methods.evolveWithExternalURI(tokenIdDecimal, newTokenURI).send({ from: FAITH, gas: GAS_LIMIT });
         expect(evolvingResult.status).to.be.eq(true);
 
         expect(Object.keys(evolvingResult.events).length).to.be.eq(1);
