@@ -121,7 +121,7 @@ jobs:
           name: laos
           path: target/release
       - run: |
-          run: ls -R
+          ls -R
           chmod +x ./target/release/laos
       - name: Copy polkadot relay chain binary
         run: |
