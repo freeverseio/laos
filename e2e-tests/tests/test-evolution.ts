@@ -153,27 +153,27 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
 
         const newOwner = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
 
-        expect(await collectionContract.methods.owner().call()).to.be.eq(TESTING_ACCOUNT);
-        const tranferringResult = await collectionContract.methods.transferOwnership(newOwner).send({ from: TESTING_ACCOUNT, gas: GAS_LIMIT });
+        expect(await collectionContract.methods.owner().call()).to.be.eq(FAITH);
+        const tranferringResult = await collectionContract.methods.transferOwnership(newOwner).send({ from: FAITH, gas: GAS_LIMIT });
         expect(tranferringResult.status).to.be.eq(true);
         expect(await collectionContract.methods.owner().call()).to.be.eq(newOwner);
 
         expect(Object.keys(tranferringResult.events).length).to.be.eq(1);
 
         // data returned within the event
-        expect(tranferringResult.events.OwnershipTransferred.returnValues._previousOwner).to.be.eq(TESTING_ACCOUNT);
+        expect(tranferringResult.events.OwnershipTransferred.returnValues._previousOwner).to.be.eq(FAITH);
         expect(tranferringResult.events.OwnershipTransferred.returnValues._newOwner).to.be.eq(newOwner);
 
         // event topics
         expect(tranferringResult.events.OwnershipTransferred.raw.topics.length).to.be.eq(3);
         expect(tranferringResult.events.OwnershipTransferred.raw.topics[0]).to.be.eq(SELECTOR_LOG_OWNERSHIP_TRANSFERRED);
-        expect(tranferringResult.events.OwnershipTransferred.raw.topics[1]).to.be.eq(context.web3.utils.padLeft(TESTING_ACCOUNT.toLowerCase(), 64));
+        expect(tranferringResult.events.OwnershipTransferred.raw.topics[1]).to.be.eq(context.web3.utils.padLeft(FAITH.toLowerCase(), 64));
         expect(tranferringResult.events.OwnershipTransferred.raw.topics[2]).to.be.eq(context.web3.utils.padLeft(newOwner.toLowerCase(), 64));
         // event data
         expect(tranferringResult.events.OwnershipTransferred.raw.data).to.be.eq('0x');
 
         try { // TODO here check this error
-            await collectionContract.methods.transferOwnership(TESTING_ACCOUNT).send({ from: TESTING_ACCOUNT, gas: GAS_LIMIT });
+            await collectionContract.methods.transferOwnership(FAITH).send({ from: FAITH, gas: GAS_LIMIT });
             expect.fail("Expected error was not thrown"); // Ensure an error is thrown
         } catch (error) {
             console.log(error.message);
@@ -187,11 +187,11 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
         // is disable
         expect(await collectionContract.methods.isPublicMintingEnabled().call()).to.be.eq(false);
         // disable twice has no effect
-        await collectionContract.methods.disablePublicMinting().send({ from: TESTING_ACCOUNT, gas: GAS_LIMIT });
+        await collectionContract.methods.disablePublicMinting().send({ from: FAITH, gas: GAS_LIMIT });
         expect(await collectionContract.methods.isPublicMintingEnabled().call()).to.be.eq(false);
 
         // enable
-        const enablingPublicMintingResult = await collectionContract.methods.enablePublicMinting().send({ from: TESTING_ACCOUNT, gas: GAS_LIMIT });
+        const enablingPublicMintingResult = await collectionContract.methods.enablePublicMinting().send({ from: FAITH, gas: GAS_LIMIT });
         expect(enablingPublicMintingResult.status).to.be.eq(true);
         expect(await collectionContract.methods.isPublicMintingEnabled().call()).to.be.eq(true);
 
@@ -202,11 +202,11 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
         expect(enablingPublicMintingResult.events.PublicMintingEnabled.raw.data).to.be.eq('0x');
 
         // enable twice has no effect
-        await collectionContract.methods.enablePublicMinting().send({ from: TESTING_ACCOUNT, gas: GAS_LIMIT });
+        await collectionContract.methods.enablePublicMinting().send({ from: FAITH, gas: GAS_LIMIT });
         expect(await collectionContract.methods.isPublicMintingEnabled().call()).to.be.eq(true);
 
         // disable
-        const disablingPublicMintingResult = await collectionContract.methods.disablePublicMinting().send({ from: TESTING_ACCOUNT, gas: GAS_LIMIT });
+        const disablingPublicMintingResult = await collectionContract.methods.disablePublicMinting().send({ from: FAITH, gas: GAS_LIMIT });
         expect(disablingPublicMintingResult.status).to.be.eq(true);
         expect(await collectionContract.methods.isPublicMintingEnabled().call()).to.be.eq(false);
         expect(Object.keys(disablingPublicMintingResult.events).length).to.be.eq(1);
@@ -215,9 +215,9 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
         expect(disablingPublicMintingResult.events.PublicMintingDisabled.raw.data).to.be.eq('0x');
 
         // after changing owner I can't disable
-        await collectionContract.methods.transferOwnership("0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").send({ from: TESTING_ACCOUNT, gas: GAS_LIMIT });
+        await collectionContract.methods.transferOwnership("0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").send({ from: FAITH, gas: GAS_LIMIT });
         try {
-            await collectionContract.methods.disablePublicMinting().send({ from: TESTING_ACCOUNT, gas: GAS_LIMIT });
+            await collectionContract.methods.disablePublicMinting().send({ from: FAITH, gas: GAS_LIMIT });
             expect.fail("Expected error was not thrown"); // Ensure an error is thrown
         } catch (error) {
             console.log(error.message);
