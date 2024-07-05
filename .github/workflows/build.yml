@@ -108,8 +108,8 @@ jobs:
           RUST_LOG=try-runtime ./target/release/laos try-runtime --runtime ./target/release/wbuild/laos-runtime/laos_runtime.wasm on-runtime-upgrade --checks=pre-and-post live --uri ws://174.138.104.13:9944
 
   e2e-tests:
+    needs: build_and_push
     runs-on:
-      needs: [build_and_push]
       group: laos
       labels: ubuntu-16-cores
     steps:
