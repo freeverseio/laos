@@ -36,9 +36,8 @@ jobs:
       - name: Archive binary
         uses: actions/upload-artifact@v4
         with:
-          name: laos-binary
-          path: |
-            target/release/laos
+          name: laos
+          path: target/release/laos
       - name: Log in to Docker Hub
         uses: docker/login-action@v2.1.0
         with:
@@ -114,12 +113,13 @@ jobs:
       labels: ubuntu-16-cores
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/setup
+      - run: |
+          mkdir -p target/release
       - name: Get binary
         uses: actions/download-artifact@v4
         with:
-          name: laos-binary
-          path: target/release/
+          name: laos
+          path: target/release
       - name: Copy polkadot relay chain binary
         run: |
           wget https://github.com/paritytech/polkadot/releases/download/v0.9.42/polkadot
