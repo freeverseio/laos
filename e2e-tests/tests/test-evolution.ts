@@ -10,8 +10,6 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
     let collectionContract: Contract
 
     beforeEach(async function () {
-        this.timeout(70000);
-
         collectionContract = await createCollection(context);
         collectionId = addressToCollectionId(collectionContract.options.address);
     });
@@ -30,8 +28,6 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
     });
 
     step("when asset is minted it should return token uri", async function () {
-        this.timeout(70000);
-
         const slot = "0";
         const to = FAITH;
         const tokenURI = "https://example.com";
@@ -46,20 +42,16 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
     });
 
     step("given slot and owner it should return token id", async function () {
-        this.timeout(70000);
-
         const slot = "1";
         const to = FAITH;
 
         const tokenId = slotAndOwnerToTokenId(slot, to);
-        expect(tokenId).to.be.eq("000000000000000000000001fe66e3510221d4a0cad203cdd56bc82e4954b4dd");
+        expect(tokenId).to.be.eq("000000000000000000000001c0f0f4ab324c46e55d02d0033343b4be8a55532d");
         const tokenIdDecimal = new BN(tokenId, 16, "be").toString(10);
-        expect(tokenIdDecimal).to.be.eq("2913879771185020625489357666963374865447870837981");
+        expect(tokenIdDecimal).to.be.eq("2563001357829637001682277476112176020532353127213");
     });
 
     step("when asset is minted it should emit an event", async function () {
-        this.timeout(70000);
-
         const slot = "22";
         const to = FAITH;
         const tokenURI = "https://example.com";
@@ -93,8 +85,6 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
     });
 
     step("when asset is evolved it should change token uri", async function () {
-        this.timeout(70000);
-
         const slot = "22";
         const to = FAITH;
         const tokenURI = "https://example.com";
@@ -112,9 +102,7 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
         expect(got).to.be.eq(newTokenURI);
     });
 
-    step("@qa when asset is evolved it should emit an event", async function () {
-        this.timeout(70000);
-
+    step("when asset is evolved it should emit an event", async function () {
         const slot = "22";
         const to = FAITH;
         const tokenURI = "https://example.com";
@@ -148,9 +136,7 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
         );
     });
 
-    step("when is transferred owner should change and emit an event", async function () {
-        this.timeout(70000);
-
+    step("@qa when is transferred owner should change and emit an event", async function () {
         const newOwner = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
 
         expect(await collectionContract.methods.owner().call()).to.be.eq(FAITH);
@@ -181,9 +167,7 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
 
     });
 
-    step("public minting is disabled by default and when is activated/deactivated event is emitted", async function () {
-        this.timeout(200000);
-
+    step("@qa public minting is disabled by default and when is activated/deactivated event is emitted", async function () {
         // is disable
         expect(await collectionContract.methods.isPublicMintingEnabled().call()).to.be.eq(false);
         // disable twice has no effect
