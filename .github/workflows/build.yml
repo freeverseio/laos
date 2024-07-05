@@ -120,6 +120,9 @@ jobs:
         with:
           name: laos
           path: target/release
+      - run: |
+          run: ls -R
+          chmod +x ./target/release/laos
       - name: Copy polkadot relay chain binary
         run: |
           wget https://github.com/paritytech/polkadot/releases/download/v0.9.42/polkadot
