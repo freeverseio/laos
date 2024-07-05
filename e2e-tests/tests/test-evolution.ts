@@ -162,7 +162,7 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
             await collectionContract.methods.transferOwnership(FAITH).send({ from: FAITH, gas: GAS_LIMIT });
             expect.fail("Expected error was not thrown"); // Ensure an error is thrown
         } catch (error) {
-            console.log(error.message);
+            // console.log(error.message);
         }
 
     });
@@ -204,7 +204,7 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
             await collectionContract.methods.disablePublicMinting().send({ from: FAITH, gas: GAS_LIMIT });
             expect.fail("Expected error was not thrown"); // Ensure an error is thrown
         } catch (error) {
-            console.log(error.message);
+            // console.log(error.message);
         }
 
     });
