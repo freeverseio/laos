@@ -7,7 +7,6 @@ on:
 
 jobs:
   check:
-    needs: build
     runs-on:
       group: laos
       labels: ubuntu-16-cores
@@ -72,7 +71,6 @@ jobs:
           tags: freeverseio/laos-node:${{ github.sha }}
 
   lint:
-    needs: build
     runs-on:
       group: laos
       labels: ubuntu-16-cores
@@ -96,7 +94,6 @@ jobs:
         run: |
           SKIP_WASM_BUILD=1 cargo clippy --all-targets --workspace --features runtime-benchmarks --features try-runtime -- -D warnings
   test:
-    needs: build
     runs-on:
       group: laos
       labels: ubuntu-16-cores
@@ -112,7 +109,6 @@ jobs:
           SKIP_WASM_BUILD=1 cargo test
 
   try-runtime:
-    needs: build
     runs-on:
       group: laos
       labels: ubuntu-16-cores
