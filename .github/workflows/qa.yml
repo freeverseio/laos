@@ -2,7 +2,6 @@ name: QA
 
 # Controls when the action will run.
 on:
-  push:
   workflow_dispatch:
 
 jobs:
