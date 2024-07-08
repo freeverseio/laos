@@ -144,35 +144,6 @@ describeWithExistingNode("@qa Frontier RPC (Public Minting)", (context) => {
         collectionContract = await createCollection(context);
     });
 
-    step("when is transferred owner should change and emit an event", async function () {
-        const newOwner = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
-
-        expect(await collectionContract.methods.owner().call()).to.be.eq(FAITH);
-        const tranferringResult = await collectionContract.methods.transferOwnership(newOwner).send({ from: FAITH, gas: GAS_LIMIT });
-        expect(tranferringResult.status).to.be.eq(true);
-        expect(await collectionContract.methods.owner().call()).to.be.eq(newOwner);
-
-        expect(Object.keys(tranferringResult.events).length).to.be.eq(1);
-
-        // data returned within the event
-        expect(tranferringResult.events.OwnershipTransferred.returnValues._previousOwner).to.be.eq(FAITH);
-        expect(tranferringResult.events.OwnershipTransferred.returnValues._newOwner).to.be.eq(newOwner);
-
-        // event topics
-        expect(tranferringResult.events.OwnershipTransferred.raw.topics.length).to.be.eq(3);
-        expect(tranferringResult.events.OwnershipTransferred.raw.topics[0]).to.be.eq(SELECTOR_LOG_OWNERSHIP_TRANSFERRED);
-        expect(tranferringResult.events.OwnershipTransferred.raw.topics[1]).to.be.eq(context.web3.utils.padLeft(FAITH.toLowerCase(), 64));
-        expect(tranferringResult.events.OwnershipTransferred.raw.topics[2]).to.be.eq(context.web3.utils.padLeft(newOwner.toLowerCase(), 64));
-        // event data
-        expect(tranferringResult.events.OwnershipTransferred.raw.data).to.be.eq('0x');
-
-        try {
-            await collectionContract.methods.transferOwnership(FAITH).send({ from: FAITH, gas: GAS_LIMIT });
-            expect.fail("Expected error was not thrown"); // Ensure an error is thrown
-        } catch (error) { }
-
-    });
-
     step("public minting is disabled by default and when is deactivated event is emitted", async function () {
         // is disable
         expect(await collectionContract.methods.isPublicMintingEnabled().call()).to.be.eq(false);
@@ -204,8 +175,12 @@ describeWithExistingNode("@qa Frontier RPC (Public Minting)", (context) => {
     });
 
     step("I can mint even I'm not the owner", async function () {
+        const enablingPublicMintingResult = await collectionContract.methods.enablePublicMinting().send({ from: FAITH, gas: GAS_LIMIT });
+        expect(enablingPublicMintingResult.status).to.be.eq(true);
+        expect(await collectionContract.methods.isPublicMintingEnabled().call()).to.be.eq(true);
+
         const owner = await collectionContract.methods.owner().call();
-        expect(owner).to.be.not.eq(ALITH);
+        expect(owner).to.be.eq(FAITH);
         
         let nonce = await context.web3.eth.getTransactionCount(ALITH);
         context.web3.eth.accounts.wallet.add(ALITH_PRIVATE_KEY);
@@ -232,5 +207,42 @@ describeWithExistingNode("@qa Frontier RPC (Public Minting)", (context) => {
         } catch (error) {
             // console.log(error.message);
         }
+    });
+});
+
+describeWithExistingNode("@qa Frontier RPC (Transfer Ownership)", (context) => {
+    let collectionContract: Contract
+
+    before(async function () {
+        collectionContract = await createCollection(context);
+    });
+
+    step("when is transferred owner should change and emit an event", async function () {
+        const newOwner = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
+
+        expect(await collectionContract.methods.owner().call()).to.be.eq(FAITH);
+        const tranferringResult = await collectionContract.methods.transferOwnership(newOwner).send({ from: FAITH, gas: GAS_LIMIT });
+        expect(tranferringResult.status).to.be.eq(true);
+        expect(await collectionContract.methods.owner().call()).to.be.eq(newOwner);
+
+        expect(Object.keys(tranferringResult.events).length).to.be.eq(1);
+
+        // data returned within the event
+        expect(tranferringResult.events.OwnershipTransferred.returnValues._previousOwner).to.be.eq(FAITH);
+        expect(tranferringResult.events.OwnershipTransferred.returnValues._newOwner).to.be.eq(newOwner);
+
+        // event topics
+        expect(tranferringResult.events.OwnershipTransferred.raw.topics.length).to.be.eq(3);
+        expect(tranferringResult.events.OwnershipTransferred.raw.topics[0]).to.be.eq(SELECTOR_LOG_OWNERSHIP_TRANSFERRED);
+        expect(tranferringResult.events.OwnershipTransferred.raw.topics[1]).to.be.eq(context.web3.utils.padLeft(FAITH.toLowerCase(), 64));
+        expect(tranferringResult.events.OwnershipTransferred.raw.topics[2]).to.be.eq(context.web3.utils.padLeft(newOwner.toLowerCase(), 64));
+        // event data
+        expect(tranferringResult.events.OwnershipTransferred.raw.data).to.be.eq('0x');
+
+        try {
+            await collectionContract.methods.transferOwnership(FAITH).send({ from: FAITH, gas: GAS_LIMIT });
+            expect.fail("Expected error was not thrown"); // Ensure an error is thrown
+        } catch (error) { }
+
     });
 });
