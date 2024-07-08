@@ -73,6 +73,6 @@ jobs:
 
       - name: Run QA tests
         run: |
-          npm run qa
+          npm run build && npm run qa
         working-directory: ./e2e-tests
 
