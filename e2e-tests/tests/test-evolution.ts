@@ -166,12 +166,10 @@ describeWithExistingNode("@qa Frontier RPC (Public Minting)", (context) => {
         // event data
         expect(tranferringResult.events.OwnershipTransferred.raw.data).to.be.eq('0x');
 
-        try { // TODO here check this error
+        try {
             await collectionContract.methods.transferOwnership(FAITH).send({ from: FAITH, gas: GAS_LIMIT });
             expect.fail("Expected error was not thrown"); // Ensure an error is thrown
-        } catch (error) {
-            // console.log(error.message);
-        }
+        } catch (error) {}
 
     });
 
