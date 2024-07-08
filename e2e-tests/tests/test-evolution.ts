@@ -1,5 +1,5 @@
 import { addressToCollectionId, createCollection, describeWithExistingNode, slotAndOwnerToTokenId } from "./util";
-import { GAS_LIMIT, FAITH, SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI, SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI, SELECTOR_LOG_OWNERSHIP_TRANSFERRED, SELECTOR_LOG_PUBLIC_MINTING_ENABLED, SELECTOR_LOG_PUBLIC_MINTING_DISABLED, ALITH } from "./config";
+import { GAS_LIMIT, FAITH, SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI, SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI, SELECTOR_LOG_OWNERSHIP_TRANSFERRED, SELECTOR_LOG_PUBLIC_MINTING_ENABLED, SELECTOR_LOG_PUBLIC_MINTING_DISABLED, ALITH, ALITH_PRIVATE_KEY } from "./config";
 import { expect } from "chai";
 import Contract from "web3-eth-contract";
 import BN from "bn.js";
@@ -218,6 +218,7 @@ describeWithExistingNode("@qa Frontier RPC (Public Minting)", (context) => {
         expect(owner).to.be.not.eq(ALITH);
 
         let nonce = await context.web3.eth.getTransactionCount(ALITH);
+        context.web3.eth.accounts.wallet.add(ALITH_PRIVATE_KEY);
         const mintingResult = await collectionContract.methods.mintWithExternalURI(ALITH, "123", "some/random/token/uri").send({ from: ALITH, gas: GAS_LIMIT, nonce: nonce++ });
         expect(mintingResult.status).to.be.eq(true);
     });
