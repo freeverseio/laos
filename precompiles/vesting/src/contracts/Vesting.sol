@@ -4,15 +4,16 @@ pragma solidity >=0.8.3;
 /// @title Pallet Vesting Interface (pallet code here: https://github.com/paritytech/polkadot-sdk/tree/master/substrate/frame/vesting)
 /// @author LAOS Team
 /// @notice This interface allows Solidity contracts to interact with pallet-vesting
+/// @custom:address 0x0000000000000000000000000000000000000406
 interface Vesting {
 
     /// @dev Defines the vesting info
+    /// @dev `locked` is the amount of locked tokens
+    /// @dev `perBlock` is the amount of unlocking tokens per block
+    /// @dev `startingBlock` is the block number at which the tokens start unlocking
     struct VestingInfo {
-        /// The amount of locked tokens
         uint256 locked;
-        /// The amount of unlocking tokens per block
         uint256 perBlock;
-        /// The block number at which the tokens start unlocking
         uint256 startingBlock;
     }
 
