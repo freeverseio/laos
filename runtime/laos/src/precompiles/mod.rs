@@ -30,6 +30,7 @@ use pallet_laos_evolution::{
 	},
 	ASSET_PRECOMPILE_ADDRESS_PREFIX,
 };
+use pallet_vesting_precompile::VestingPrecompile;
 use precompile_utils::precompile_set::{
 	AcceptDelegateCall, AddressU64, CallableByContract, CallableByPrecompile, PrecompileAt,
 	PrecompileSetBuilder, PrecompileSetStartingWith, PrecompilesInRangeInclusive,
@@ -65,6 +66,11 @@ pub type LaosPrecompilesSetAt = (
 		AssetMetadataExtenderPrecompile<Runtime>,
 		(CallableByContract, CallableByPrecompile),
 	>,
+	PrecompileAt<
+		AddressU64<1030>,
+		VestingPrecompile<Runtime>,
+		(CallableByContract, CallableByPrecompile),
+	>
 );
 
 parameter_types! {

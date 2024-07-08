@@ -5122,6 +5122,7 @@ dependencies = [
  "pallet-transaction-payment-rpc-runtime-api",
  "pallet-utility",
  "pallet-vesting",
+ "pallet-vesting-precompile",
  "pallet-xcm",
  "parachain-info",
  "parachains-common",
@@ -7802,6 +7803,26 @@ dependencies = [
  "log",
  "parity-scale-codec",
  "scale-info",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-vesting-precompile"
+version = "0.1.0"
+dependencies = [
+ "fp-evm",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "hex",
+ "pallet-balances",
+ "pallet-evm",
+ "pallet-timestamp",
+ "pallet-vesting",
+ "precompile-utils",
+ "scale-info",
+ "sp-core",
  "sp-runtime",
  "sp-std",
 ]
