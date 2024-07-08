@@ -67,7 +67,7 @@ pub type LaosPrecompilesSetAt = (
 		(CallableByContract, CallableByPrecompile),
 	>,
 	PrecompileAt<
-		AddressU64<1030>,
+		AddressU64<1031>,
 		VestingPrecompile<Runtime>,
 		(CallableByContract, CallableByPrecompile),
 	>
