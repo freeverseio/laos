@@ -20,7 +20,7 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
 	// This is the address of another contract that is created in the test
 	let testCollectionAddress: string;
 
-	beforeEach(async function () {
+	before(async function () {
 		contract = new context.web3.eth.Contract(EVOLUTION_COLLETION_FACTORY_ABI, CONTRACT_ADDRESS, {
 			from: FAITH,
 			gasPrice: GAS_PRICE,
@@ -30,8 +30,6 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
 	});
 
 	step("when collection is created, it should return owner", async function () {
-		this.timeout(70000);
-
 		const collectionContract = await createCollection(context);
 		testCollectionContract = collectionContract;
 		
@@ -40,8 +38,6 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
 	});
 
 	step("when collection is created event is emitted", async function () {
-		this.timeout(70000);
-
 		const result = await contract.methods.createCollection(FAITH).send({
 			from: FAITH,
 			gas: GAS_LIMIT,
