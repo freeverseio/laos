@@ -167,28 +167,36 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
 
     });
 
-    step("@qa public minting is disabled by default and when is activated/deactivated event is emitted", async function () {
+    step("@qa public minting is disabled by default and when is deactivated event is emitted", async function () {
         // is disable
         expect(await collectionContract.methods.isPublicMintingEnabled().call()).to.be.eq(false);
         // disable twice has no effect
-        await collectionContract.methods.disablePublicMinting().send({ from: FAITH, gas: GAS_LIMIT });
+        const disablingPublicMintingResult = await collectionContract.methods.disablePublicMinting().send({ from: FAITH, gas: GAS_LIMIT });
         expect(await collectionContract.methods.isPublicMintingEnabled().call()).to.be.eq(false);
+        // event is emitted anyway
+        expect(disablingPublicMintingResult.status).to.be.eq(true);
+        expect(await collectionContract.methods.isPublicMintingEnabled().call()).to.be.eq(false);
+        expect(Object.keys(disablingPublicMintingResult.events).length).to.be.eq(1);
+        expect(disablingPublicMintingResult.events.PublicMintingDisabled.raw.topics.length).to.be.eq(1);
+        expect(disablingPublicMintingResult.events.PublicMintingDisabled.raw.topics[0]).to.be.eq(SELECTOR_LOG_PUBLIC_MINTING_DISABLED);
+        expect(disablingPublicMintingResult.events.PublicMintingDisabled.raw.data).to.be.eq('0x');
+    });
 
+    step("@qa after enable it I can disable", async function () {
         // enable
         const enablingPublicMintingResult = await collectionContract.methods.enablePublicMinting().send({ from: FAITH, gas: GAS_LIMIT });
         expect(enablingPublicMintingResult.status).to.be.eq(true);
         expect(await collectionContract.methods.isPublicMintingEnabled().call()).to.be.eq(true);
-
-        // event
+        
         expect(Object.keys(enablingPublicMintingResult.events).length).to.be.eq(1);
         expect(enablingPublicMintingResult.events.PublicMintingEnabled.raw.topics.length).to.be.eq(1);
         expect(enablingPublicMintingResult.events.PublicMintingEnabled.raw.topics[0]).to.be.eq(SELECTOR_LOG_PUBLIC_MINTING_ENABLED);
         expect(enablingPublicMintingResult.events.PublicMintingEnabled.raw.data).to.be.eq('0x');
-
+        
         // enable twice has no effect
         await collectionContract.methods.enablePublicMinting().send({ from: FAITH, gas: GAS_LIMIT });
         expect(await collectionContract.methods.isPublicMintingEnabled().call()).to.be.eq(true);
-
+        
         // disable
         const disablingPublicMintingResult = await collectionContract.methods.disablePublicMinting().send({ from: FAITH, gas: GAS_LIMIT });
         expect(disablingPublicMintingResult.status).to.be.eq(true);
@@ -197,8 +205,9 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
         expect(disablingPublicMintingResult.events.PublicMintingDisabled.raw.topics.length).to.be.eq(1);
         expect(disablingPublicMintingResult.events.PublicMintingDisabled.raw.topics[0]).to.be.eq(SELECTOR_LOG_PUBLIC_MINTING_DISABLED);
         expect(disablingPublicMintingResult.events.PublicMintingDisabled.raw.data).to.be.eq('0x');
-
-        // after changing owner I can't disable
+    });
+    
+    step("@qa after changing owner I can't disable", async function () {
         await collectionContract.methods.transferOwnership("0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").send({ from: FAITH, gas: GAS_LIMIT });
         try {
             await collectionContract.methods.disablePublicMinting().send({ from: FAITH, gas: GAS_LIMIT });
@@ -206,6 +215,5 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
         } catch (error) {
             // console.log(error.message);
         }
-
     });
 });

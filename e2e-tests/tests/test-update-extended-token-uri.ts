@@ -34,7 +34,7 @@ describeWithExistingNode("@qa Frontier RPC (Extend Token URI)", (context) => {
 		expect(await contract.methods.hasExtensionByClaimer(uloc, FAITH).call()).to.be.eq(false);
 	});
 	
-	step("it returns ok", async function () {
+	step("extend should return ok", async function () {
 		let nonce = await context.web3.eth.getTransactionCount(FAITH);
 		extendResult = await contract.methods.extendULWithExternalURI(uloc, tokenURI).send({
 			from: FAITH,
@@ -107,6 +107,9 @@ describeWithExistingNode("Frontier RPC (Update Extended Token URI)", async (cont
 			nonce: nonce++,
 		});
 		expect(createResult.status).to.be.eq(true);
+	});
+	
+	step("check existing extension", async function () {
 		expect(await contract.methods.extensionOfULByIndex(uloc, 0).call()).to.be.eq(tokenURI);
 		expect(await contract.methods.extensionOfULByClaimer(uloc, FAITH).call()).to.be.eq(tokenURI);
 		expect(await contract.methods.claimerOfULByIndex(uloc, 0).call()).to.be.eq(FAITH);
@@ -114,7 +117,7 @@ describeWithExistingNode("Frontier RPC (Update Extended Token URI)", async (cont
 		expect(await contract.methods.hasExtensionByClaimer(uloc, FAITH).call()).to.be.eq(true);
 	});
 
-	step("it returns ok", async function () {
+	step("update extension should return ok", async function () {
 		let nonce = await context.web3.eth.getTransactionCount(FAITH);
 		updateExtensionResult = await contract.methods.updateExtendedULWithExternalURI(uloc, newTokenURI).send({
 			from: FAITH,
@@ -125,10 +128,10 @@ describeWithExistingNode("Frontier RPC (Update Extended Token URI)", async (cont
 		expect(updateExtensionResult.status).to.be.eq(true);
 	});
 
-	step("it updates just the extension", async function () {
+	step("it updates just the extension data", async function () {
 		expect(await contract.methods.extensionOfULByIndex(uloc, 0).call()).to.be.eq(newTokenURI);
 		expect(await contract.methods.extensionOfULByClaimer(uloc, FAITH).call()).to.be.eq(newTokenURI);
-		// same as before
+		// the following might be the same as before updating
 		expect(await contract.methods.claimerOfULByIndex(uloc, 0).call()).to.be.eq(FAITH);
 		expect(await contract.methods.balanceOfUL(uloc).call()).to.be.eq("1");
 		expect(await contract.methods.hasExtensionByClaimer(uloc, FAITH).call()).to.be.eq(true);
