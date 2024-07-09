@@ -183,13 +183,3 @@ jobs:
         run: |
           npm run build && npm run test
         working-directory: ./e2e-tests
-<<<<<<< HEAD
-
-      - name: Run QA tests
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          npm run qa
-        working-directory: ./e2e-tests
-
-=======
->>>>>>> origin/fix/qa-test-missing-add-pvk
