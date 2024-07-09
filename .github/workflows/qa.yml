@@ -27,14 +27,16 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup
-      - uses: ./.github/actions/cache
+      - run: |
+          mkdir -p target/release
+      - name: Get binary
+        uses: actions/download-artifact@v4
         with:
-          cache-key: build_and_push
-
-      - name: Build # TODO reuse from another workflow
-        run: |
-          cargo build --release --locked
-
+          name: laos
+          path: target/release
+      - run: |
+          ls -R
+          chmod +x ./target/release/laos
       - name: Copy polkadot relay chain binary
         run: |
           wget https://github.com/paritytech/polkadot/releases/download/v0.9.42/polkadot
