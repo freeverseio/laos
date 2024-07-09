@@ -19,14 +19,15 @@ interface Vesting {
 
     /// @notice Returns the vesting info of an account
     /// @param _target The address of the account the vesting data should be returned for
+    /// @return The vesting info of the account
     function vesting(address _target) external view returns (VestingInfo[] memory);
 
     /// @notice Unlock the vested funds of the caller
     /// @dev Reverts if the caller doesn't have any vested funds
     function vest() external;
 
-    /// @notice Unlock vested funds for another account
+    /// @notice Unlock vested funds for the target account
     /// @dev Reverts if the target account doesn't have any vested funds
-    /// @param _target The address the call should be made on behalf of
+    /// @param _target The address for which funds will be unlocked
     function vestOther(address _target) external;
 }

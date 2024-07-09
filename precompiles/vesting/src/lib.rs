@@ -28,7 +28,7 @@ use precompile_utils::{precompile, prelude::{
 use scale_info::prelude::{format, string::String};
 use sp_core::{H160, U256};
 use sp_runtime::{
-	traits::{ConvertBack, PhantomData},
+	traits::{ConvertBack, PhantomData, StaticLookup},
 	DispatchError,
 };
 
@@ -70,6 +70,17 @@ where
 	#[precompile::public("vest()")]
 	pub fn vest(handle: &mut impl PrecompileHandle) -> EvmResult<()> {
 		match Pallet::<Runtime>::vest(<Runtime as frame_system::Config>::RuntimeOrigin::from(RawOrigin::from(Some(Runtime::convert_back(handle.context().caller))))) {
+			Ok(_) => Ok(()),
+			Err(err) => Err(revert(convert_dispatch_error_to_string(err)))
+		}
+	}
+
+	#[precompile::public("vestOther(address)")]
+	pub fn vest_other(handle: &mut impl PrecompileHandle, account: Address) -> EvmResult<()> {
+		let origin = <Runtime as frame_system::Config>::RuntimeOrigin::from(RawOrigin::from(Some(Runtime::convert_back(handle.context().caller))));
+		let account_id = Runtime::convert_back(account.into());
+		let target = <<Runtime as frame_system::Config>::Lookup as StaticLookup>::unlookup(account_id);
+		match Pallet::<Runtime>::vest_other(origin, target) {
 			Ok(_) => Ok(()),
 			Err(err) => Err(revert(convert_dispatch_error_to_string(err)))
 		}
