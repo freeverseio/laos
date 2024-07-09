@@ -19,7 +19,7 @@ interface Vesting {
 
     /// @notice Returns the vesting info of an account
     /// @param _target The address of the account the vesting data should be returned for
-    /// @return The vesting info of the account
+    /// @return The vesting info of the target account, as an array of `VestingInfo` structs
     function vesting(address _target) external view returns (VestingInfo[] memory);
 
     /// @notice Unlock the vested funds of the caller
