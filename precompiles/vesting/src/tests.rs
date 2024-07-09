@@ -26,6 +26,13 @@ fn precompiles() -> LaosPrecompiles<Test> {
 }
 
 #[test]
+fn selectors() {
+	assert!(PrecompileCall::vest_selectors().contains(&0x458EFDE3));
+	assert!(PrecompileCall::vest_other_selectors().contains(&0x55E60C8));
+	assert!(PrecompileCall::vesting_selectors().contains(&0xE388C423));
+}
+
+#[test]
 fn vest_reverts_no_vested_funds() {
 	new_test_ext().execute_with(|| {
 		precompiles()
