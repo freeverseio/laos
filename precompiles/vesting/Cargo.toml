@@ -11,6 +11,7 @@ publish = false
 targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
+parity-scale-codec = { workspace = true, features = ["derive"] }
 scale-info = { workspace = true, features = ["derive"] }
 frame-support = { workspace = true }
 frame-system = { workspace = true }
@@ -24,6 +25,7 @@ pallet-evm = { workspace = true }
 pallet-vesting ={ workspace = true }
 
 [dev-dependencies]
+sp-io = { workspace = true }
 sp-runtime = { workspace = true }
 precompile-utils = { workspace = true, features = ["testing"] }
 pallet-balances = { workspace = true, features = ["std", "insecure_zero_ed"] }
@@ -33,6 +35,7 @@ hex = { workspace = true }
 [features]
 default = ["std"]
 std = [
+	"parity-scale-codec/std",
 	"scale-info/std",
 	"frame-support/std",
 	"frame-system/std",
@@ -43,6 +46,7 @@ std = [
 	"fp-evm/std",
 	"precompile-utils/std",
 	"pallet-evm/std",
+	"pallet-vesting/std"
 ]
 
 runtime-benchmarks = [

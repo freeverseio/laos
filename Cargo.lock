@@ -7820,9 +7820,11 @@ dependencies = [
  "pallet-evm",
  "pallet-timestamp",
  "pallet-vesting",
+ "parity-scale-codec",
  "precompile-utils",
  "scale-info",
  "sp-core",
+ "sp-io",
  "sp-runtime",
  "sp-std",
 ]
