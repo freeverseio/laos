@@ -1,24 +1,20 @@
 import { addressToCollectionId, createCollection, describeWithExistingNode, slotAndOwnerToTokenId } from "./util";
-import { GAS_LIMIT, GENESIS_ACCOUNT, SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI, SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI } from "./config";
+import { GAS_LIMIT, FAITH, SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI, SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI, SELECTOR_LOG_OWNERSHIP_TRANSFERRED, SELECTOR_LOG_PUBLIC_MINTING_ENABLED, SELECTOR_LOG_PUBLIC_MINTING_DISABLED, ALITH, ALITH_PRIVATE_KEY, EVOLUTION_COLLECTION_ABI } from "./config";
 import { expect } from "chai";
 import Contract from "web3-eth-contract";
 import BN from "bn.js";
 import { step } from "mocha-steps";
 
 describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
-    let collectionId: BN;
     let collectionContract: Contract
 
     beforeEach(async function () {
-        this.timeout(70000);
-
         collectionContract = await createCollection(context);
-        collectionId = addressToCollectionId(collectionContract.options.address);
     });
-    
+
     step("when collection does not exist token uri should fail", async function () {
         const tokenId = "0";
-        
+
         try {
             await collectionContract.methods.tokenURI(tokenId).call();
             expect.fail("Expected error was not thrown"); // Ensure an error is thrown
@@ -30,14 +26,12 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
     });
 
     step("when asset is minted it should return token uri", async function () {
-        this.timeout(70000);
-
         const slot = "0";
-        const to = GENESIS_ACCOUNT;
+        const to = FAITH;
         const tokenURI = "https://example.com";
 
-        let nonce = await context.web3.eth.getTransactionCount(GENESIS_ACCOUNT);
-        const result = await collectionContract.methods.mintWithExternalURI(to, slot, tokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS_LIMIT, nonce: nonce++ });
+        let nonce = await context.web3.eth.getTransactionCount(FAITH);
+        const result = await collectionContract.methods.mintWithExternalURI(to, slot, tokenURI).send({ from: FAITH, gas: GAS_LIMIT, nonce: nonce++ });
         expect(result.status).to.be.eq(true);
 
         const tokenId = result.events.MintedWithExternalURI.returnValues._tokenId;
@@ -46,10 +40,8 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
     });
 
     step("given slot and owner it should return token id", async function () {
-        this.timeout(70000);
-
         const slot = "1";
-        const to = GENESIS_ACCOUNT;
+        const to = FAITH;
 
         const tokenId = slotAndOwnerToTokenId(slot, to);
         expect(tokenId).to.be.eq("000000000000000000000001c0f0f4ab324c46e55d02d0033343b4be8a55532d");
@@ -58,14 +50,12 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
     });
 
     step("when asset is minted it should emit an event", async function () {
-        this.timeout(70000);
-
         const slot = "22";
-        const to = GENESIS_ACCOUNT;
+        const to = FAITH;
         const tokenURI = "https://example.com";
 
         const result = await collectionContract.methods.mintWithExternalURI(to, slot, tokenURI)
-            .send({ from: GENESIS_ACCOUNT, gas: GAS_LIMIT });
+            .send({ from: FAITH, gas: GAS_LIMIT });
         expect(result.status).to.be.eq(true);
 
         expect(Object.keys(result.events).length).to.be.eq(1);
@@ -81,7 +71,7 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
         // event topics
         expect(result.events.MintedWithExternalURI.raw.topics.length).to.be.eq(2);
         expect(result.events.MintedWithExternalURI.raw.topics[0]).to.be.eq(SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI);
-        expect(result.events.MintedWithExternalURI.raw.topics[1]).to.be.eq(context.web3.utils.padLeft(GENESIS_ACCOUNT.toLowerCase(), 64));
+        expect(result.events.MintedWithExternalURI.raw.topics[1]).to.be.eq(context.web3.utils.padLeft(FAITH.toLowerCase(), 64));
 
         // event data
         expect(result.events.MintedWithExternalURI.raw.data).to.be.eq(
@@ -93,19 +83,17 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
     });
 
     step("when asset is evolved it should change token uri", async function () {
-        this.timeout(70000);
-
         const slot = "22";
-        const to = GENESIS_ACCOUNT;
+        const to = FAITH;
         const tokenURI = "https://example.com";
         const newTokenURI = "https://new_example.com";
         const tokenId = slotAndOwnerToTokenId(slot, to);
         const tokenIdDecimal = new BN(tokenId, 16, "be").toString(10);
 
-        const mintingResult = await collectionContract.methods.mintWithExternalURI(to, slot, tokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS_LIMIT });
+        const mintingResult = await collectionContract.methods.mintWithExternalURI(to, slot, tokenURI).send({ from: FAITH, gas: GAS_LIMIT });
         expect(mintingResult.status).to.be.eq(true);
 
-        const evolvingResult = await collectionContract.methods.evolveWithExternalURI(tokenIdDecimal, newTokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS_LIMIT });
+        const evolvingResult = await collectionContract.methods.evolveWithExternalURI(tokenIdDecimal, newTokenURI).send({ from: FAITH, gas: GAS_LIMIT });
         expect(evolvingResult.status).to.be.eq(true);
 
         const got = await collectionContract.methods.tokenURI(tokenIdDecimal).call();
@@ -113,19 +101,17 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
     });
 
     step("when asset is evolved it should emit an event", async function () {
-        this.timeout(70000);
-
         const slot = "22";
-        const to = GENESIS_ACCOUNT;
+        const to = FAITH;
         const tokenURI = "https://example.com";
         const newTokenURI = "https://new_example.com";
         const tokenId = slotAndOwnerToTokenId(slot, to);
         const tokenIdDecimal = new BN(tokenId, 16, "be").toString(10);
 
-        const mintingResult = await collectionContract.methods.mintWithExternalURI(to, slot, tokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS_LIMIT });
+        const mintingResult = await collectionContract.methods.mintWithExternalURI(to, slot, tokenURI).send({ from: FAITH, gas: GAS_LIMIT });
         expect(mintingResult.status).to.be.eq(true);
 
-        const evolvingResult = await collectionContract.methods.evolveWithExternalURI(tokenIdDecimal, newTokenURI).send({ from: GENESIS_ACCOUNT, gas: GAS_LIMIT });
+        const evolvingResult = await collectionContract.methods.evolveWithExternalURI(tokenIdDecimal, newTokenURI).send({ from: FAITH, gas: GAS_LIMIT });
         expect(evolvingResult.status).to.be.eq(true);
 
         expect(Object.keys(evolvingResult.events).length).to.be.eq(1);
@@ -146,5 +132,117 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
                 [newTokenURI]
             )
         );
+    });
+
+
+});
+
+describeWithExistingNode("@qa Frontier RPC (Public Minting)", (context) => {
+    let collectionContract: Contract
+
+    beforeEach(async function () {
+        collectionContract = await createCollection(context);
+    });
+
+    step("public minting is disabled by default and when is deactivated event is emitted", async function () {
+        // is disable
+        expect(await collectionContract.methods.isPublicMintingEnabled().call()).to.be.eq(false);
+        // disable twice has no effect
+        const disablingPublicMintingResult = await collectionContract.methods.disablePublicMinting().send({ from: FAITH, gas: GAS_LIMIT });
+        expect(await collectionContract.methods.isPublicMintingEnabled().call()).to.be.eq(false);
+        // event is emitted anyway
+        expect(disablingPublicMintingResult.status).to.be.eq(true);
+        expect(await collectionContract.methods.isPublicMintingEnabled().call()).to.be.eq(false);
+        expect(Object.keys(disablingPublicMintingResult.events).length).to.be.eq(1);
+        expect(disablingPublicMintingResult.events.PublicMintingDisabled.raw.topics.length).to.be.eq(1);
+        expect(disablingPublicMintingResult.events.PublicMintingDisabled.raw.topics[0]).to.be.eq(SELECTOR_LOG_PUBLIC_MINTING_DISABLED);
+        expect(disablingPublicMintingResult.events.PublicMintingDisabled.raw.data).to.be.eq('0x');
+    });
+
+    step("enable public minting emits an event", async function () {
+        const enablingPublicMintingResult = await collectionContract.methods.enablePublicMinting().send({ from: FAITH, gas: GAS_LIMIT });
+        expect(enablingPublicMintingResult.status).to.be.eq(true);
+        expect(await collectionContract.methods.isPublicMintingEnabled().call()).to.be.eq(true);
+
+        expect(Object.keys(enablingPublicMintingResult.events).length).to.be.eq(1);
+        expect(enablingPublicMintingResult.events.PublicMintingEnabled.raw.topics.length).to.be.eq(1);
+        expect(enablingPublicMintingResult.events.PublicMintingEnabled.raw.topics[0]).to.be.eq(SELECTOR_LOG_PUBLIC_MINTING_ENABLED);
+        expect(enablingPublicMintingResult.events.PublicMintingEnabled.raw.data).to.be.eq('0x');
+
+        // enable twice has no effect
+        await collectionContract.methods.enablePublicMinting().send({ from: FAITH, gas: GAS_LIMIT });
+        expect(await collectionContract.methods.isPublicMintingEnabled().call()).to.be.eq(true);
+    });
+
+    step("I can mint even I'm not the owner", async function () {
+        const enablingPublicMintingResult = await collectionContract.methods.enablePublicMinting().send({ from: FAITH, gas: GAS_LIMIT });
+        expect(enablingPublicMintingResult.status).to.be.eq(true);
+        expect(await collectionContract.methods.isPublicMintingEnabled().call()).to.be.eq(true);
+
+        const owner = await collectionContract.methods.owner().call();
+        expect(owner).to.be.eq(FAITH);
+        
+        let nonce = await context.web3.eth.getTransactionCount(ALITH);
+        context.web3.eth.accounts.wallet.add(ALITH_PRIVATE_KEY);
+        collectionContract.options.from = ALITH
+        const mintingResult = await collectionContract.methods.mintWithExternalURI(ALITH, "123", "some/random/token/uri").send({ from: ALITH, gas: GAS_LIMIT, nonce: nonce++ });
+        expect(mintingResult.status).to.be.eq(true);
+    });
+
+    step("after enabling I can disable", async function () {
+        const disablingPublicMintingResult = await collectionContract.methods.disablePublicMinting().send({ from: FAITH, gas: GAS_LIMIT });
+        expect(disablingPublicMintingResult.status).to.be.eq(true);
+        expect(await collectionContract.methods.isPublicMintingEnabled().call()).to.be.eq(false);
+        expect(Object.keys(disablingPublicMintingResult.events).length).to.be.eq(1);
+        expect(disablingPublicMintingResult.events.PublicMintingDisabled.raw.topics.length).to.be.eq(1);
+        expect(disablingPublicMintingResult.events.PublicMintingDisabled.raw.topics[0]).to.be.eq(SELECTOR_LOG_PUBLIC_MINTING_DISABLED);
+        expect(disablingPublicMintingResult.events.PublicMintingDisabled.raw.data).to.be.eq('0x');
+    });
+
+    step("after changing owner I can't disable", async function () {
+        await collectionContract.methods.transferOwnership("0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").send({ from: FAITH, gas: GAS_LIMIT });
+        try {
+            await collectionContract.methods.disablePublicMinting().send({ from: FAITH, gas: GAS_LIMIT });
+            expect.fail("Expected error was not thrown"); // Ensure an error is thrown
+        } catch (error) {
+            // console.log(error.message);
+        }
+    });
+});
+
+describeWithExistingNode("@qa Frontier RPC (Transfer Ownership)", (context) => {
+    let collectionContract: Contract
+
+    before(async function () {
+        collectionContract = await createCollection(context);
+    });
+
+    step("when is transferred owner should change and emit an event", async function () {
+        const newOwner = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
+
+        expect(await collectionContract.methods.owner().call()).to.be.eq(FAITH);
+        const tranferringResult = await collectionContract.methods.transferOwnership(newOwner).send({ from: FAITH, gas: GAS_LIMIT });
+        expect(tranferringResult.status).to.be.eq(true);
+        expect(await collectionContract.methods.owner().call()).to.be.eq(newOwner);
+
+        expect(Object.keys(tranferringResult.events).length).to.be.eq(1);
+
+        // data returned within the event
+        expect(tranferringResult.events.OwnershipTransferred.returnValues._previousOwner).to.be.eq(FAITH);
+        expect(tranferringResult.events.OwnershipTransferred.returnValues._newOwner).to.be.eq(newOwner);
+
+        // event topics
+        expect(tranferringResult.events.OwnershipTransferred.raw.topics.length).to.be.eq(3);
+        expect(tranferringResult.events.OwnershipTransferred.raw.topics[0]).to.be.eq(SELECTOR_LOG_OWNERSHIP_TRANSFERRED);
+        expect(tranferringResult.events.OwnershipTransferred.raw.topics[1]).to.be.eq(context.web3.utils.padLeft(FAITH.toLowerCase(), 64));
+        expect(tranferringResult.events.OwnershipTransferred.raw.topics[2]).to.be.eq(context.web3.utils.padLeft(newOwner.toLowerCase(), 64));
+        // event data
+        expect(tranferringResult.events.OwnershipTransferred.raw.data).to.be.eq('0x');
+
+        try {
+            await collectionContract.methods.transferOwnership(FAITH).send({ from: FAITH, gas: GAS_LIMIT });
+            expect.fail("Expected error was not thrown"); // Ensure an error is thrown
+        } catch (error) { }
+
     });
 });

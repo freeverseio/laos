@@ -6,8 +6,8 @@ import {
 	EVOLUTION_COLLETION_FACTORY_ABI,
 	GAS_LIMIT,
 	GAS_PRICE,
-	GENESIS_ACCOUNT,
-	GENESIS_ACCOUNT_PRIVATE_KEY,
+	FAITH,
+	FAITH_PRIVATE_KEY,
 	REVERT_BYTECODE,
 	SELECTOR_LOG_NEW_COLLECTION,
 } from "./config";
@@ -20,30 +20,26 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
 	// This is the address of another contract that is created in the test
 	let testCollectionAddress: string;
 
-	beforeEach(async function () {
+	before(async function () {
 		contract = new context.web3.eth.Contract(EVOLUTION_COLLETION_FACTORY_ABI, CONTRACT_ADDRESS, {
-			from: GENESIS_ACCOUNT,
+			from: FAITH,
 			gasPrice: GAS_PRICE,
 			gas: GAS_LIMIT,
 		});
-		context.web3.eth.accounts.wallet.add(GENESIS_ACCOUNT_PRIVATE_KEY);
+		context.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
 	});
 
 	step("when collection is created, it should return owner", async function () {
-		this.timeout(70000);
-
 		const collectionContract = await createCollection(context);
 		testCollectionContract = collectionContract;
 		
 		const owner = await collectionContract.methods.owner().call();
-		expect(owner).to.be.eq(GENESIS_ACCOUNT);
+		expect(owner).to.be.eq(FAITH);
 	});
 
 	step("when collection is created event is emitted", async function () {
-		this.timeout(70000);
-
-		const result = await contract.methods.createCollection(GENESIS_ACCOUNT).send({
-			from: GENESIS_ACCOUNT,
+		const result = await contract.methods.createCollection(FAITH).send({
+			from: FAITH,
 			gas: GAS_LIMIT,
 			gasPrice: GAS_PRICE,
 		});
@@ -54,13 +50,13 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
 			true
 		);
 		testCollectionAddress = result.events.NewCollection.returnValues._collectionAddress;
-		expect(result.events.NewCollection.returnValues._owner).to.be.eq(GENESIS_ACCOUNT);
+		expect(result.events.NewCollection.returnValues._owner).to.be.eq(FAITH);
 
 		// event topics
 		expect(result.events.NewCollection.raw.topics.length).to.be.eq(2);
 		expect(result.events.NewCollection.raw.topics[0]).to.be.eq(SELECTOR_LOG_NEW_COLLECTION);
 		expect(result.events.NewCollection.raw.topics[1]).to.be.eq(
-			context.web3.utils.padLeft(GENESIS_ACCOUNT.toLowerCase(), 64)
+			context.web3.utils.padLeft(FAITH.toLowerCase(), 64)
 		);
 
 		// event data
@@ -74,7 +70,7 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
 		expect(await context.web3.eth.getCode(testCollectionAddress)).to.be.eq(REVERT_BYTECODE);
 
 		// non-contract address doesn't have any code
-		expect(await context.web3.eth.getCode(GENESIS_ACCOUNT)).to.be.eq("0x");
+		expect(await context.web3.eth.getCode(FAITH)).to.be.eq("0x");
 	});
 
 	step("owner call can estimate gas", async function () {
@@ -84,15 +80,15 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
 
 	step("create collection call can estimate gas", async function () {
 		const contract = new context.web3.eth.Contract(EVOLUTION_COLLETION_FACTORY_ABI, CONTRACT_ADDRESS, {
-			from: GENESIS_ACCOUNT,
+			from: FAITH,
 			gasPrice: GAS_PRICE,
 		});
 		
-		let nonce = await context.web3.eth.getTransactionCount(GENESIS_ACCOUNT);
-		context.web3.eth.accounts.wallet.add(GENESIS_ACCOUNT_PRIVATE_KEY);
+		let nonce = await context.web3.eth.getTransactionCount(FAITH);
+		context.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
 		
-		const estimatedGas = await contract.methods.createCollection(GENESIS_ACCOUNT).estimateGas({
-			from: GENESIS_ACCOUNT,
+		const estimatedGas = await contract.methods.createCollection(FAITH).estimateGas({
+			from: FAITH,
 			gas: GAS_LIMIT,
 			gasPrice: GAS_PRICE,
 			nonce: nonce++,

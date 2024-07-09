@@ -128,7 +128,7 @@ jobs:
 
       - name: Copy zombienet binary
         run: |
-          wget https://github.com/paritytech/zombienet/releases/download/v1.3.55/zombienet-linux-x64
+          wget https://github.com/paritytech/zombienet/releases/download/v1.3.106/zombienet-linux-x64
           chmod +x ./zombienet-linux-x64
 
       - name: Run zombienet
@@ -157,4 +157,3 @@ jobs:
         run: |
           npm run build && npm run test
         working-directory: ./e2e-tests
-

@@ -6,73 +6,157 @@ import {
 	ASSET_METADATA_EXTENDER_ABI,
 	GAS_LIMIT,
 	GAS_PRICE,
-	GENESIS_ACCOUNT,
-	GENESIS_ACCOUNT_PRIVATE_KEY,
+	FAITH,
+	FAITH_PRIVATE_KEY,
 	SELECTOR_LOG_UPDATED_EXTENDED_UL_WITH_EXTERNAL_URI,
+	SELECTOR_LOG_EXTENDED_UL_WITH_EXTERNAL_URI,
 } from "./config";
 import { describeWithExistingNode } from "./util";
 
-describeWithExistingNode("Frontier RPC (Update Extended Token URI)", (context) => {
+describeWithExistingNode("@qa Frontier RPC (Extend Token URI)", (context) => {
 	let contract: Contract;
-
-	beforeEach(async function () {
+	
+	before(async function () {
 		contract = new context.web3.eth.Contract(ASSET_METADATA_EXTENDER_ABI, ASSET_METADATA_EXTENDER_ADDRESS, {
-			from: GENESIS_ACCOUNT,
+			from: FAITH,
 			gasPrice: GAS_PRICE,
 			gas: GAS_LIMIT,
 		});
-		context.web3.eth.accounts.wallet.add(GENESIS_ACCOUNT_PRIVATE_KEY);
+		context.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
+	});
+	
+	let uloc = `universal/location_${Date.now()}`;
+	let extendResult: any;
+	let tokenURI = "https://example.com";
+	
+	step("by default token uri is empty", async function () {
+		expect(await contract.methods.balanceOfUL(uloc).call()).to.be.eq("0");
+		expect(await contract.methods.hasExtensionByClaimer(uloc, FAITH).call()).to.be.eq(false);
+	});
+	
+	step("extend should return ok", async function () {
+		let nonce = await context.web3.eth.getTransactionCount(FAITH);
+		extendResult = await contract.methods.extendULWithExternalURI(uloc, tokenURI).send({
+			from: FAITH,
+			gas: GAS_LIMIT,
+			gasPrice: GAS_PRICE,
+			nonce: nonce++,
+		});
+		expect(extendResult.status).to.be.eq(true);
 	});
 
-	step("when token uri extended is updated it should change", async function () {
-		this.timeout(700000);
+	step("it creates an extension that I can query", async function () {
+		expect(await contract.methods.extensionOfULByIndex(uloc, 0).call()).to.be.eq(tokenURI);
+		expect(await contract.methods.extensionOfULByClaimer(uloc, FAITH).call()).to.be.eq(tokenURI);
+		expect(await contract.methods.claimerOfULByIndex(uloc, 0).call()).to.be.eq(FAITH);
+		expect(await contract.methods.balanceOfUL(uloc).call()).to.be.eq("1");
+		expect(await contract.methods.hasExtensionByClaimer(uloc, FAITH).call()).to.be.eq(true);
+	});
 
-		let nonce = await context.web3.eth.getTransactionCount(GENESIS_ACCOUNT);
-		context.web3.eth.accounts.wallet.add(GENESIS_ACCOUNT_PRIVATE_KEY);
+	step("it emits an event", async function () {
+		// data returned within the event
+		expect(Object.keys(extendResult.events).length).to.be.eq(1);
+		expect(extendResult.events.ExtendedULWithExternalURI.returnValues._claimer).to.be.eq(FAITH);
+		expect(extendResult.events.ExtendedULWithExternalURI.returnValues._universalLocationHash).to.be.eq(context.web3.utils.soliditySha3(uloc));
+		expect(extendResult.events.ExtendedULWithExternalURI.returnValues._universalLocation).to.be.eq(uloc);
+		expect(extendResult.events.ExtendedULWithExternalURI.returnValues._tokenURI).to.be.eq(tokenURI);
 
-		let uloc = "universal/location";
-		let tokenURI = "https://example.com";
-		let newTokenURI = "https://new.example.com";
+		// event topics
+		expect(extendResult.events.ExtendedULWithExternalURI.raw.topics.length).to.be.eq(3);
+		expect(extendResult.events.ExtendedULWithExternalURI.raw.topics[0]).to.be.eq(SELECTOR_LOG_EXTENDED_UL_WITH_EXTERNAL_URI);
+		expect(extendResult.events.ExtendedULWithExternalURI.raw.topics[1]).to.be.eq(
+			context.web3.utils.padLeft(FAITH.toLowerCase(), 64)
+		);
+		expect(extendResult.events.ExtendedULWithExternalURI.raw.topics[2]).to.be.eq(
+			context.web3.utils.padLeft(context.web3.utils.soliditySha3(uloc), 64)
+		);
 
+		// event data
+		expect(extendResult.events.ExtendedULWithExternalURI.raw.data).to.be.eq(
+			context.web3.eth.abi.encodeParameters(
+				["string", "string"],
+				[uloc, tokenURI]
+			)
+		);
+	});
+
+});
+
+describeWithExistingNode("Frontier RPC (Update Extended Token URI)", async (context) => {
+	let contract: Contract;
+
+	let uloc = `universal/location_${Date.now()}`;
+	let tokenURI = "https://example.com";
+	let newTokenURI = "https://new.example.com";
+	let updateExtensionResult: any;
+
+	before(async function () {
+		contract = new context.web3.eth.Contract(ASSET_METADATA_EXTENDER_ABI, ASSET_METADATA_EXTENDER_ADDRESS, {
+			from: FAITH,
+			gasPrice: GAS_PRICE,
+			gas: GAS_LIMIT,
+		});
+		context.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
+
+		// we first create an extension to be updated later
+		let nonce = await context.web3.eth.getTransactionCount(FAITH);
 		const createResult = await contract.methods.extendULWithExternalURI(uloc, tokenURI).send({
-			from: GENESIS_ACCOUNT,
+			from: FAITH,
 			gas: GAS_LIMIT,
 			gasPrice: GAS_PRICE,
 			nonce: nonce++,
 		});
 		expect(createResult.status).to.be.eq(true);
-		
-		const udpateResult = await contract.methods.updateExtendedULWithExternalURI(uloc, newTokenURI).send({
-			from: GENESIS_ACCOUNT,
+	});
+	
+	step("check existing extension", async function () {
+		expect(await contract.methods.extensionOfULByIndex(uloc, 0).call()).to.be.eq(tokenURI);
+		expect(await contract.methods.extensionOfULByClaimer(uloc, FAITH).call()).to.be.eq(tokenURI);
+		expect(await contract.methods.claimerOfULByIndex(uloc, 0).call()).to.be.eq(FAITH);
+		expect(await contract.methods.balanceOfUL(uloc).call()).to.be.eq("1");
+		expect(await contract.methods.hasExtensionByClaimer(uloc, FAITH).call()).to.be.eq(true);
+	});
+
+	step("update extension should return ok", async function () {
+		let nonce = await context.web3.eth.getTransactionCount(FAITH);
+		updateExtensionResult = await contract.methods.updateExtendedULWithExternalURI(uloc, newTokenURI).send({
+			from: FAITH,
 			gas: GAS_LIMIT,
 			gasPrice: GAS_PRICE,
 			nonce: nonce++,
 		});
-		expect(udpateResult.status).to.be.eq(true);
+		expect(updateExtensionResult.status).to.be.eq(true);
+	});
 
-		const got = await contract.methods.extensionOfULByIndex(uloc, 0).call();
-		expect(got).to.be.eq(newTokenURI);
-		expect(udpateResult.status).to.be.eq(true);
-		expect(Object.keys(udpateResult.events).length).to.be.eq(1);
+	step("it updates just the extension data", async function () {
+		expect(await contract.methods.extensionOfULByIndex(uloc, 0).call()).to.be.eq(newTokenURI);
+		expect(await contract.methods.extensionOfULByClaimer(uloc, FAITH).call()).to.be.eq(newTokenURI);
+		// the following might be the same as before updating
+		expect(await contract.methods.claimerOfULByIndex(uloc, 0).call()).to.be.eq(FAITH);
+		expect(await contract.methods.balanceOfUL(uloc).call()).to.be.eq("1");
+		expect(await contract.methods.hasExtensionByClaimer(uloc, FAITH).call()).to.be.eq(true);
+	});
 
+	step("it emits an event", async function () {
 		// data returned within the event
-		expect(udpateResult.events.UpdatedExtendedULWithExternalURI.returnValues._claimer).to.be.eq(GENESIS_ACCOUNT);
-		expect(udpateResult.events.UpdatedExtendedULWithExternalURI.returnValues._universalLocationHash).to.be.eq(context.web3.utils.soliditySha3(uloc));
-		expect(udpateResult.events.UpdatedExtendedULWithExternalURI.returnValues._universalLocation).to.be.eq(uloc);
-		expect(udpateResult.events.UpdatedExtendedULWithExternalURI.returnValues._tokenURI).to.be.eq(newTokenURI);
+		expect(Object.keys(updateExtensionResult.events).length).to.be.eq(1);
+		expect(updateExtensionResult.events.UpdatedExtendedULWithExternalURI.returnValues._claimer).to.be.eq(FAITH);
+		expect(updateExtensionResult.events.UpdatedExtendedULWithExternalURI.returnValues._universalLocationHash).to.be.eq(context.web3.utils.soliditySha3(uloc));
+		expect(updateExtensionResult.events.UpdatedExtendedULWithExternalURI.returnValues._universalLocation).to.be.eq(uloc);
+		expect(updateExtensionResult.events.UpdatedExtendedULWithExternalURI.returnValues._tokenURI).to.be.eq(newTokenURI);
 
 		// event topics
-		expect(udpateResult.events.UpdatedExtendedULWithExternalURI.raw.topics.length).to.be.eq(3);
-		expect(udpateResult.events.UpdatedExtendedULWithExternalURI.raw.topics[0]).to.be.eq(SELECTOR_LOG_UPDATED_EXTENDED_UL_WITH_EXTERNAL_URI);
-		expect(udpateResult.events.UpdatedExtendedULWithExternalURI.raw.topics[1]).to.be.eq(
-			context.web3.utils.padLeft(GENESIS_ACCOUNT.toLowerCase(), 64)
+		expect(updateExtensionResult.events.UpdatedExtendedULWithExternalURI.raw.topics.length).to.be.eq(3);
+		expect(updateExtensionResult.events.UpdatedExtendedULWithExternalURI.raw.topics[0]).to.be.eq(SELECTOR_LOG_UPDATED_EXTENDED_UL_WITH_EXTERNAL_URI);
+		expect(updateExtensionResult.events.UpdatedExtendedULWithExternalURI.raw.topics[1]).to.be.eq(
+			context.web3.utils.padLeft(FAITH.toLowerCase(), 64)
 		);
-		expect(udpateResult.events.UpdatedExtendedULWithExternalURI.raw.topics[2]).to.be.eq(
+		expect(updateExtensionResult.events.UpdatedExtendedULWithExternalURI.raw.topics[2]).to.be.eq(
 			context.web3.utils.padLeft(context.web3.utils.soliditySha3(uloc), 64)
 		);
 
 		// event data
-		expect(udpateResult.events.UpdatedExtendedULWithExternalURI.raw.data).to.be.eq(
+		expect(updateExtensionResult.events.UpdatedExtendedULWithExternalURI.raw.data).to.be.eq(
 			context.web3.eth.abi.encodeParameters(
 				["string", "string"],
 				[uloc, newTokenURI]
