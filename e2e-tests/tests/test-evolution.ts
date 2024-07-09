@@ -1,5 +1,5 @@
 import { addressToCollectionId, createCollection, describeWithExistingNode, slotAndOwnerToTokenId } from "./util";
-import { GAS_LIMIT, FAITH, SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI, SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI, SELECTOR_LOG_OWNERSHIP_TRANSFERRED, SELECTOR_LOG_PUBLIC_MINTING_ENABLED, SELECTOR_LOG_PUBLIC_MINTING_DISABLED, ALITH } from "./config";
+import { GAS_LIMIT, FAITH, SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI, SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI, SELECTOR_LOG_OWNERSHIP_TRANSFERRED, SELECTOR_LOG_PUBLIC_MINTING_ENABLED, SELECTOR_LOG_PUBLIC_MINTING_DISABLED, ALITH, ALITH_PRIVATE_KEY, EVOLUTION_COLLECTION_ABI } from "./config";
 import { expect } from "chai";
 import Contract from "web3-eth-contract";
 import BN from "bn.js";
@@ -134,13 +134,86 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
         );
     });
 
-    
+
 });
 
 describeWithExistingNode("@qa Frontier RPC (Public Minting)", (context) => {
     let collectionContract: Contract
 
     beforeEach(async function () {
+        collectionContract = await createCollection(context);
+    });
+
+    step("public minting is disabled by default and when is deactivated event is emitted", async function () {
+        // is disable
+        expect(await collectionContract.methods.isPublicMintingEnabled().call()).to.be.eq(false);
+        // disable twice has no effect
+        const disablingPublicMintingResult = await collectionContract.methods.disablePublicMinting().send({ from: FAITH, gas: GAS_LIMIT });
+        expect(await collectionContract.methods.isPublicMintingEnabled().call()).to.be.eq(false);
+        // event is emitted anyway
+        expect(disablingPublicMintingResult.status).to.be.eq(true);
+        expect(await collectionContract.methods.isPublicMintingEnabled().call()).to.be.eq(false);
+        expect(Object.keys(disablingPublicMintingResult.events).length).to.be.eq(1);
+        expect(disablingPublicMintingResult.events.PublicMintingDisabled.raw.topics.length).to.be.eq(1);
+        expect(disablingPublicMintingResult.events.PublicMintingDisabled.raw.topics[0]).to.be.eq(SELECTOR_LOG_PUBLIC_MINTING_DISABLED);
+        expect(disablingPublicMintingResult.events.PublicMintingDisabled.raw.data).to.be.eq('0x');
+    });
+
+    step("enable public minting emits an event", async function () {
+        const enablingPublicMintingResult = await collectionContract.methods.enablePublicMinting().send({ from: FAITH, gas: GAS_LIMIT });
+        expect(enablingPublicMintingResult.status).to.be.eq(true);
+        expect(await collectionContract.methods.isPublicMintingEnabled().call()).to.be.eq(true);
+
+        expect(Object.keys(enablingPublicMintingResult.events).length).to.be.eq(1);
+        expect(enablingPublicMintingResult.events.PublicMintingEnabled.raw.topics.length).to.be.eq(1);
+        expect(enablingPublicMintingResult.events.PublicMintingEnabled.raw.topics[0]).to.be.eq(SELECTOR_LOG_PUBLIC_MINTING_ENABLED);
+        expect(enablingPublicMintingResult.events.PublicMintingEnabled.raw.data).to.be.eq('0x');
+
+        // enable twice has no effect
+        await collectionContract.methods.enablePublicMinting().send({ from: FAITH, gas: GAS_LIMIT });
+        expect(await collectionContract.methods.isPublicMintingEnabled().call()).to.be.eq(true);
+    });
+
+    step("I can mint even I'm not the owner", async function () {
+        const enablingPublicMintingResult = await collectionContract.methods.enablePublicMinting().send({ from: FAITH, gas: GAS_LIMIT });
+        expect(enablingPublicMintingResult.status).to.be.eq(true);
+        expect(await collectionContract.methods.isPublicMintingEnabled().call()).to.be.eq(true);
+
+        const owner = await collectionContract.methods.owner().call();
+        expect(owner).to.be.eq(FAITH);
+        
+        let nonce = await context.web3.eth.getTransactionCount(ALITH);
+        context.web3.eth.accounts.wallet.add(ALITH_PRIVATE_KEY);
+        collectionContract.options.from = ALITH
+        const mintingResult = await collectionContract.methods.mintWithExternalURI(ALITH, "123", "some/random/token/uri").send({ from: ALITH, gas: GAS_LIMIT, nonce: nonce++ });
+        expect(mintingResult.status).to.be.eq(true);
+    });
+
+    step("after enabling I can disable", async function () {
+        const disablingPublicMintingResult = await collectionContract.methods.disablePublicMinting().send({ from: FAITH, gas: GAS_LIMIT });
+        expect(disablingPublicMintingResult.status).to.be.eq(true);
+        expect(await collectionContract.methods.isPublicMintingEnabled().call()).to.be.eq(false);
+        expect(Object.keys(disablingPublicMintingResult.events).length).to.be.eq(1);
+        expect(disablingPublicMintingResult.events.PublicMintingDisabled.raw.topics.length).to.be.eq(1);
+        expect(disablingPublicMintingResult.events.PublicMintingDisabled.raw.topics[0]).to.be.eq(SELECTOR_LOG_PUBLIC_MINTING_DISABLED);
+        expect(disablingPublicMintingResult.events.PublicMintingDisabled.raw.data).to.be.eq('0x');
+    });
+
+    step("after changing owner I can't disable", async function () {
+        await collectionContract.methods.transferOwnership("0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").send({ from: FAITH, gas: GAS_LIMIT });
+        try {
+            await collectionContract.methods.disablePublicMinting().send({ from: FAITH, gas: GAS_LIMIT });
+            expect.fail("Expected error was not thrown"); // Ensure an error is thrown
+        } catch (error) {
+            // console.log(error.message);
+        }
+    });
+});
+
+describeWithExistingNode("@qa Frontier RPC (Transfer Ownership)", (context) => {
+    let collectionContract: Contract
+
+    before(async function () {
         collectionContract = await createCollection(context);
     });
 
@@ -169,66 +242,7 @@ describeWithExistingNode("@qa Frontier RPC (Public Minting)", (context) => {
         try {
             await collectionContract.methods.transferOwnership(FAITH).send({ from: FAITH, gas: GAS_LIMIT });
             expect.fail("Expected error was not thrown"); // Ensure an error is thrown
-        } catch (error) {}
+        } catch (error) { }
 
-    });
-
-    step("public minting is disabled by default and when is deactivated event is emitted", async function () {
-        // is disable
-        expect(await collectionContract.methods.isPublicMintingEnabled().call()).to.be.eq(false);
-        // disable twice has no effect
-        const disablingPublicMintingResult = await collectionContract.methods.disablePublicMinting().send({ from: FAITH, gas: GAS_LIMIT });
-        expect(await collectionContract.methods.isPublicMintingEnabled().call()).to.be.eq(false);
-        // event is emitted anyway
-        expect(disablingPublicMintingResult.status).to.be.eq(true);
-        expect(await collectionContract.methods.isPublicMintingEnabled().call()).to.be.eq(false);
-        expect(Object.keys(disablingPublicMintingResult.events).length).to.be.eq(1);
-        expect(disablingPublicMintingResult.events.PublicMintingDisabled.raw.topics.length).to.be.eq(1);
-        expect(disablingPublicMintingResult.events.PublicMintingDisabled.raw.topics[0]).to.be.eq(SELECTOR_LOG_PUBLIC_MINTING_DISABLED);
-        expect(disablingPublicMintingResult.events.PublicMintingDisabled.raw.data).to.be.eq('0x');
-    });
-
-    step("after enable it I can disable", async function () {
-        // enable
-        const enablingPublicMintingResult = await collectionContract.methods.enablePublicMinting().send({ from: FAITH, gas: GAS_LIMIT });
-        expect(enablingPublicMintingResult.status).to.be.eq(true);
-        expect(await collectionContract.methods.isPublicMintingEnabled().call()).to.be.eq(true);
-
-        expect(Object.keys(enablingPublicMintingResult.events).length).to.be.eq(1);
-        expect(enablingPublicMintingResult.events.PublicMintingEnabled.raw.topics.length).to.be.eq(1);
-        expect(enablingPublicMintingResult.events.PublicMintingEnabled.raw.topics[0]).to.be.eq(SELECTOR_LOG_PUBLIC_MINTING_ENABLED);
-        expect(enablingPublicMintingResult.events.PublicMintingEnabled.raw.data).to.be.eq('0x');
-
-        // enable twice has no effect
-        await collectionContract.methods.enablePublicMinting().send({ from: FAITH, gas: GAS_LIMIT });
-        expect(await collectionContract.methods.isPublicMintingEnabled().call()).to.be.eq(true);
-
-        // disable
-        const disablingPublicMintingResult = await collectionContract.methods.disablePublicMinting().send({ from: FAITH, gas: GAS_LIMIT });
-        expect(disablingPublicMintingResult.status).to.be.eq(true);
-        expect(await collectionContract.methods.isPublicMintingEnabled().call()).to.be.eq(false);
-        expect(Object.keys(disablingPublicMintingResult.events).length).to.be.eq(1);
-        expect(disablingPublicMintingResult.events.PublicMintingDisabled.raw.topics.length).to.be.eq(1);
-        expect(disablingPublicMintingResult.events.PublicMintingDisabled.raw.topics[0]).to.be.eq(SELECTOR_LOG_PUBLIC_MINTING_DISABLED);
-        expect(disablingPublicMintingResult.events.PublicMintingDisabled.raw.data).to.be.eq('0x');
-    });
-
-    step("I can mint even I'm not the owner", async function () {
-        const owner = await collectionContract.methods.owner().call();
-        expect(owner).to.be.not.eq(ALITH);
-
-        let nonce = await context.web3.eth.getTransactionCount(ALITH);
-        const mintingResult = await collectionContract.methods.mintWithExternalURI(ALITH, "123", "some/random/token/uri").send({ from: ALITH, gas: GAS_LIMIT, nonce: nonce++ });
-        expect(mintingResult.status).to.be.eq(true);
-    });
-
-    step("after changing owner I can't disable", async function () {
-        await collectionContract.methods.transferOwnership("0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac").send({ from: FAITH, gas: GAS_LIMIT });
-        try {
-            await collectionContract.methods.disablePublicMinting().send({ from: FAITH, gas: GAS_LIMIT });
-            expect.fail("Expected error was not thrown"); // Ensure an error is thrown
-        } catch (error) {
-            // console.log(error.message);
-        }
     });
 });
