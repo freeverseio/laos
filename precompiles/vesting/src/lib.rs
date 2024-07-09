@@ -18,8 +18,8 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 use fp_evm::ExitError;
-use frame_support::{pallet_prelude::Weight, DefaultNoBound};
-use frame_system::RawOrigin;
+use frame_support::{pallet_prelude::Weight, DefaultNoBound, traits::tokens::currency::Currency};
+use frame_system::{pallet_prelude::BlockNumberFor, RawOrigin};
 use pallet_evm::GasWeightMapping;
 use pallet_vesting::{Config, Pallet};
 use precompile_utils::{precompile, prelude::{
@@ -31,9 +31,12 @@ use sp_runtime::{
 	traits::{ConvertBack, PhantomData, StaticLookup},
 	DispatchError,
 };
+use sp_std::vec::Vec;
+
+type BalanceOf<Runtime> = <<Runtime as Config>::Currency as Currency<<Runtime as frame_system::Config>::AccountId>>::Balance;
 
 #[derive(Default, solidity::Codec)]
-struct VestingInfo {
+pub struct VestingInfo {
 	locked: U256,
 	per_block: U256,
 	starting_block: U256,
@@ -51,24 +54,37 @@ impl<Runtime> VestingPrecompile<Runtime> {
 #[precompile_utils::precompile]
 impl<Runtime> VestingPrecompile<Runtime>
 where
-	Runtime: Config + ConvertBack<Runtime::AccountId, H160>
+	Runtime: Config + ConvertBack<Runtime::AccountId, H160>,
+	BalanceOf<Runtime>: Into<U256>,
+	BlockNumberFor<Runtime>: Into<U256>,
 {
-	// #[precompile::public("vesting(address)")]
-	// #[precompile::view]
-	// pub fn vesting(handle: &mut impl PrecompileHandle, account: H160) -> EvmResult<Vec<VestingInfo>> {
-	// 	// super::register_cost::<Runtime>(handle, Runtime::WeightInfo::precompile_owner())?;
+	#[precompile::public("vesting(address)")]
+	#[precompile::view]
+	pub fn vesting(handle: &mut impl PrecompileHandle, account: Address) -> EvmResult<Vec<VestingInfo>> {
+		// TODO super::register_cost::<Runtime>(handle, Runtime::WeightInfo::precompile_vesting())?;
 
-	// 	let res = Pallet::vesting(account).unwrap();
-	// 	// Ok(Pallet::vesting(account))
-	// 	// if let Some(owner) = LaosEvolution::<Runtime>::collection_owner(collection_id) {
-	// 	// 	Ok(Address(R::AccountIdToH160::convert(owner)))
-	// 	// } else {
-	// 	// 	Err(revert("collection does not exist"))
-	// 	// }
-	// }
+		match Pallet::<Runtime>::vesting(Runtime::convert_back(account.into())) {
+			Some(v) => {
+				let mut output: Vec<VestingInfo> = Vec::with_capacity(v.len());
+
+				for i in v {
+					output.push(VestingInfo{
+						locked: i.locked().into(),
+						per_block: i.per_block().into(),
+						starting_block: i.starting_block().into(),
+					})
+				}
+
+				Ok(output)
+			},
+			None => Err(revert("no vesting info found for the targeted account")),
+		}
+	}
 
 	#[precompile::public("vest()")]
 	pub fn vest(handle: &mut impl PrecompileHandle) -> EvmResult<()> {
+		// TODO super::register_cost::<Runtime>(handle, Runtime::WeightInfo::precompile_vest())?;
+
 		match Pallet::<Runtime>::vest(<Runtime as frame_system::Config>::RuntimeOrigin::from(RawOrigin::from(Some(Runtime::convert_back(handle.context().caller))))) {
 			Ok(_) => Ok(()),
 			Err(err) => Err(revert(convert_dispatch_error_to_string(err)))
@@ -77,6 +93,8 @@ where
 
 	#[precompile::public("vestOther(address)")]
 	pub fn vest_other(handle: &mut impl PrecompileHandle, account: Address) -> EvmResult<()> {
+		// TODO super::register_cost::<Runtime>(handle, Runtime::WeightInfo::precompile_vest_other())?;
+
 		let origin = <Runtime as frame_system::Config>::RuntimeOrigin::from(RawOrigin::from(Some(Runtime::convert_back(handle.context().caller))));
 		let account_id = Runtime::convert_back(account.into());
 		let target = <<Runtime as frame_system::Config>::Lookup as StaticLookup>::unlookup(account_id);
