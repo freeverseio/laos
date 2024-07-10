@@ -17,7 +17,9 @@
 //! Living assets precompile tests.
 
 use super::*;
+use frame_support::assert_ok;
 use mock::*;
+use pallet_vesting::{Pallet, VestingInfo as VestingInfoPallet};
 use precompile_utils::testing::{Alice, Precompile1, PrecompileTesterExt};
 
 /// Get precompiles from the mock.
@@ -30,6 +32,83 @@ fn selectors() {
 	assert!(PrecompileCall::vest_selectors().contains(&0x458EFDE3));
 	assert!(PrecompileCall::vest_other_selectors().contains(&0x55E60C8));
 	assert!(PrecompileCall::vesting_selectors().contains(&0xE388C423));
+}
+
+#[test]
+fn vesting_for_account_with_no_vesting_returns_empty_vec() {
+	new_test_ext().execute_with(|| {
+		precompiles()
+			.prepare_test(
+				Alice,
+				Precompile1,
+				PrecompileCall::vesting { account: Address(Alice.into()) },
+			)
+			.execute_returns(Vec::<VestingInfo>::new())
+	});
+}
+
+#[test]
+fn vesting_for_account_with_one_vesting_returns_vesting_info_vec() {
+	new_test_ext().execute_with(|| {
+		let locked = 100;
+		let per_block = 10;
+		let starting_block = 0;
+
+		assert_ok!(Pallet::<Test>::vested_transfer(
+			RuntimeOrigin::signed(Alice.into()),
+			Alice.into(),
+			VestingInfoPallet::new(locked, per_block, starting_block),
+		));
+		precompiles()
+			.prepare_test(
+				Alice,
+				Precompile1,
+				PrecompileCall::vesting { account: Address(Alice.into()) },
+			)
+			.execute_returns(vec![VestingInfo {
+				locked: locked.into(),
+				per_block: per_block.into(),
+				starting_block: starting_block.into(),
+			}])
+	});
+}
+
+#[test]
+fn vesting_for_account_with_two_vestings_returns_vesting_info_vec() {
+	new_test_ext().execute_with(|| {
+		let locked = 100;
+		let per_block = 10;
+		let starting_block = 0;
+
+		assert_ok!(Pallet::<Test>::vested_transfer(
+			RuntimeOrigin::signed(Alice.into()),
+			Alice.into(),
+			VestingInfoPallet::new(locked, per_block, starting_block),
+		));
+		assert_ok!(Pallet::<Test>::vested_transfer(
+			RuntimeOrigin::signed(Alice.into()),
+			Alice.into(),
+			VestingInfoPallet::new(locked, per_block, starting_block),
+		));
+		precompiles()
+			.prepare_test(
+				Alice,
+				Precompile1,
+				PrecompileCall::vesting { account: Address(Alice.into()) },
+			)
+			.execute_returns(vec![
+				VestingInfo {
+					locked: locked.into(),
+					per_block: per_block.into(),
+					starting_block: starting_block.into(),
+				},
+				VestingInfo {
+					locked: locked.into(),
+					per_block: per_block.into(),
+					starting_block: starting_block.into(),
+				},
+			])
+	});
 }
 
 #[test]

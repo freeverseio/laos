@@ -70,7 +70,7 @@ pub type LaosPrecompilesSetAt = (
 		AddressU64<1030>,
 		VestingPrecompile<Runtime>,
 		(CallableByContract, CallableByPrecompile),
-	>
+	>,
 );
 
 parameter_types! {
