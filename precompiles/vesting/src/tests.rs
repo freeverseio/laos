@@ -20,7 +20,7 @@ use super::*;
 use frame_support::assert_ok;
 use mock::*;
 use pallet_vesting::{Pallet, VestingInfo as VestingInfoPallet};
-use precompile_utils::testing::{Alice, Precompile1, PrecompileTesterExt};
+use precompile_utils::testing::{Alice, Bob, Precompile1, PrecompileTesterExt};
 
 /// Get precompiles from the mock.
 fn precompiles() -> LaosPrecompiles<Test> {
@@ -36,7 +36,7 @@ fn selectors() {
 
 #[test]
 fn vesting_for_account_with_no_vesting_returns_empty_vec() {
-	new_test_ext().execute_with(|| {
+	ExtBuilder::default().build().execute_with(|| {
 		precompiles()
 			.prepare_test(
 				Alice,
@@ -49,73 +49,108 @@ fn vesting_for_account_with_no_vesting_returns_empty_vec() {
 
 #[test]
 fn vesting_for_account_with_one_vesting_returns_vesting_info_vec() {
-	new_test_ext().execute_with(|| {
-		let locked = 100;
-		let per_block = 10;
-		let starting_block = 0;
-
-		assert_ok!(Pallet::<Test>::vested_transfer(
-			RuntimeOrigin::signed(Alice.into()),
-			Alice.into(),
-			VestingInfoPallet::new(locked, per_block, starting_block),
-		));
-		precompiles()
-			.prepare_test(
-				Alice,
-				Precompile1,
-				PrecompileCall::vesting { account: Address(Alice.into()) },
-			)
-			.execute_returns(vec![VestingInfo {
-				locked: locked.into(),
-				per_block: per_block.into(),
-				starting_block: starting_block.into(),
-			}])
-	});
+	ExtBuilder::default()
+		.with_balances(vec![(Bob.into(), 100u64)])
+		.build()
+		.execute_with(|| {
+			let locked = 100;
+			let per_block = 10;
+			let starting_block = 0;
+			assert_ok!(Pallet::<Test>::vested_transfer(
+				RuntimeOrigin::signed(Bob.into()),
+				Alice.into(),
+				VestingInfoPallet::new(locked, per_block, starting_block),
+			));
+			precompiles()
+				.prepare_test(
+					Alice,
+					Precompile1,
+					PrecompileCall::vesting { account: Address(Alice.into()) },
+				)
+				.execute_returns(vec![VestingInfo {
+					locked: locked.into(),
+					per_block: per_block.into(),
+					starting_block: starting_block.into(),
+				}])
+		});
 }
 
 #[test]
 fn vesting_for_account_with_two_vestings_returns_vesting_info_vec() {
-	new_test_ext().execute_with(|| {
-		let locked = 100;
-		let per_block = 10;
-		let starting_block = 0;
+	ExtBuilder::default()
+		.with_balances(vec![(Bob.into(), 1000u64)])
+		.build()
+		.execute_with(|| {
+			let locked = 100;
+			let per_block = 10;
+			let starting_block = 0;
 
-		assert_ok!(Pallet::<Test>::vested_transfer(
-			RuntimeOrigin::signed(Alice.into()),
-			Alice.into(),
-			VestingInfoPallet::new(locked, per_block, starting_block),
-		));
-		assert_ok!(Pallet::<Test>::vested_transfer(
-			RuntimeOrigin::signed(Alice.into()),
-			Alice.into(),
-			VestingInfoPallet::new(locked, per_block, starting_block),
-		));
-		precompiles()
-			.prepare_test(
-				Alice,
-				Precompile1,
-				PrecompileCall::vesting { account: Address(Alice.into()) },
-			)
-			.execute_returns(vec![
-				VestingInfo {
-					locked: locked.into(),
-					per_block: per_block.into(),
-					starting_block: starting_block.into(),
-				},
-				VestingInfo {
-					locked: locked.into(),
-					per_block: per_block.into(),
-					starting_block: starting_block.into(),
-				},
-			])
-	});
+			assert_ok!(Pallet::<Test>::vested_transfer(
+				RuntimeOrigin::signed(Bob.into()),
+				Alice.into(),
+				VestingInfoPallet::new(locked, per_block, starting_block),
+			));
+			assert_ok!(Pallet::<Test>::vested_transfer(
+				RuntimeOrigin::signed(Bob.into()),
+				Alice.into(),
+				VestingInfoPallet::new(locked, per_block, starting_block),
+			));
+			precompiles()
+				.prepare_test(
+					Alice,
+					Precompile1,
+					PrecompileCall::vesting { account: Address(Alice.into()) },
+				)
+				.execute_returns(vec![
+					VestingInfo {
+						locked: locked.into(),
+						per_block: per_block.into(),
+						starting_block: starting_block.into(),
+					},
+					VestingInfo {
+						locked: locked.into(),
+						per_block: per_block.into(),
+						starting_block: starting_block.into(),
+					},
+				])
+		});
 }
 
 #[test]
 fn vest_reverts_no_vested_funds() {
-	new_test_ext().execute_with(|| {
+	ExtBuilder::default().build().execute_with(|| {
 		precompiles()
 			.prepare_test(Alice, Precompile1, PrecompileCall::vest {})
 			.execute_reverts(|r| r == b"NotVesting");
 	});
+}
+
+#[test]
+fn vest_increases_usable_balance() {
+	ExtBuilder::default()
+		.with_balances(vec![(Bob.into(), 100u64)])
+		.build()
+		.execute_with(|| {
+			let locked = 10;
+			let per_block = 1;
+			let starting_block = 0;
+			let end_block = 5u32;
+
+			assert_ok!(Pallet::<Test>::vested_transfer(
+				RuntimeOrigin::signed(Bob.into()),
+				Alice.into(),
+				VestingInfoPallet::new(locked, per_block, starting_block),
+			));
+			assert_eq!(
+				Balances::usable_balance(&Alice.into()),
+				1,
+				"1 free balance because 1 block has passed"
+			);
+			roll_to(end_block.into());
+			precompiles()
+				.prepare_test(Alice, Precompile1, PrecompileCall::vest {})
+				.execute_some();
+
+			assert_eq!(Balances::usable_balance(&Alice.into()), end_block as u64);
+		});
 }

@@ -22,7 +22,7 @@ use precompile_utils::precompile_set::{AddressU64, PrecompileAt, PrecompileSetBu
 use super::{VestingPrecompile, VestingPrecompileCall};
 use frame_support::{
 	derive_impl, parameter_types,
-	traits::{FindAuthor, WithdrawReasons},
+	traits::{FindAuthor, OnFinalize, OnInitialize, WithdrawReasons},
 	weights::constants::RocksDbWeight,
 };
 use sp_core::{H160, U256};
@@ -30,6 +30,7 @@ use sp_runtime::{
 	traits::{Identity, IdentityLookup},
 	ConsensusEngineId,
 };
+pub use test_utils::*;
 
 type Block = frame_system::mocking::MockBlock<Test>;
 
@@ -161,8 +162,52 @@ impl pallet_evm::Config for Test {
 	type WeightInfo = ();
 }
 
-/// New Test Ext
-// Build genesis storage according to the mock runtime.
-pub(crate) fn new_test_ext() -> sp_io::TestExternalities {
-	frame_system::GenesisConfig::<Test>::default().build_storage().unwrap().into()
+pub(crate) struct ExtBuilder {
+	/// Endowed accounts with balances
+	balances: Vec<(AccountId, Balance)>,
+}
+
+impl Default for ExtBuilder {
+	fn default() -> ExtBuilder {
+		ExtBuilder { balances: vec![] }
+	}
+}
+
+impl ExtBuilder {
+	/// Fund some accounts before starting the test
+	pub(crate) fn with_balances(mut self, balances: Vec<(AccountId, Balance)>) -> Self {
+		self.balances = balances;
+		self
+	}
+
+	/// Build the test externalities for use in tests
+	pub(crate) fn build(self) -> sp_io::TestExternalities {
+		let mut t = frame_system::GenesisConfig::<Test>::default()
+			.build_storage()
+			.expect("Frame system builds valid default genesis config");
+
+		pallet_balances::GenesisConfig::<Test> { balances: self.balances.clone() }
+			.assimilate_storage(&mut t)
+			.expect("Pallet balances storage can be assimilated");
+
+		let mut ext = sp_io::TestExternalities::new(t);
+		ext.execute_with(|| {
+			System::set_block_number(1);
+		});
+		ext
+	}
+}
+use frame_system::pallet_prelude::BlockNumberFor;
+pub type BlockNumber = BlockNumberFor<Test>;
+
+/// Rolls to the desired block. Returns the number of blocks played.
+pub(crate) fn roll_to(n: BlockNumber) -> BlockNumber {
+	let mut num_blocks = 0;
+	let mut block = System::block_number();
+	while block < n {
+		roll_one_block!(false);
+		block = System::block_number();
+		num_blocks += 1;
+	}
+	num_blocks
 }
