@@ -142,7 +142,7 @@ fn vest_increases_usable_balance() {
 				VestingInfoPallet::new(locked, per_block, starting_block),
 			));
 			assert_eq!(
-				Balances::usable_balance(&Alice.into()),
+				Balances::usable_balance(H160::from(Alice)),
 				1,
 				"1 free balance because 1 block has passed"
 			);
@@ -151,7 +151,7 @@ fn vest_increases_usable_balance() {
 				.prepare_test(Alice, Precompile1, PrecompileCall::vest {})
 				.execute_some();
 
-			assert_eq!(Balances::usable_balance(&Alice.into()), end_block as u64);
+			assert_eq!(Balances::usable_balance(H160::from(Alice)), end_block as u64);
 		});
 }
 
@@ -181,7 +181,7 @@ fn vest_other_increases_other_usable_balance() {
 				VestingInfoPallet::new(locked, per_block, starting_block),
 			));
 			assert_eq!(
-				Balances::usable_balance(&Alice.into()),
+				Balances::usable_balance(H160::from(Alice)),
 				1,
 				"1 free balance because 1 block has passed"
 			);
@@ -190,6 +190,9 @@ fn vest_other_increases_other_usable_balance() {
 				.prepare_test(Bob, Precompile1, PrecompileCall::vest_other { account: Address(Alice.into())})
 				.execute_some();
 
-			assert_eq!(Balances::usable_balance(&Alice.into()), end_block as u64);
+			assert_eq!(Balances::usable_balance(H160::from(Alice)), end_block as u64);
 		});
 }
+
+// TODO has a cost
+// TODO runtime evm tests

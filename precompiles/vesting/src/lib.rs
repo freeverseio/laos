@@ -64,7 +64,7 @@ where
 	#[precompile::public("vesting(address)")]
 	#[precompile::view]
 	pub fn vesting(
-		handle: &mut impl PrecompileHandle,
+		_handle: &mut impl PrecompileHandle,
 		account: Address,
 	) -> EvmResult<Vec<VestingInfo>> {
 		// TODO super::register_cost::<Runtime>(handle, Runtime::WeightInfo::precompile_vesting())?;
@@ -101,8 +101,7 @@ where
 
 	#[precompile::public("vestOther(address)")]
 	pub fn vest_other(handle: &mut impl PrecompileHandle, account: Address) -> EvmResult<()> {
-		// TODO super::register_cost::<Runtime>(handle,
-		// Runtime::WeightInfo::precompile_vest_other())?;
+		// TODO super::register_cost::<Runtime>(handle, Runtime::WeightInfo::precompile_vest_other())?;
 
 		let origin = <Runtime as frame_system::Config>::RuntimeOrigin::from(RawOrigin::from(Some(
 			Runtime::convert_back(handle.context().caller),
