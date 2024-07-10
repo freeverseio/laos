@@ -154,3 +154,42 @@ fn vest_increases_usable_balance() {
 			assert_eq!(Balances::usable_balance(&Alice.into()), end_block as u64);
 		});
 }
+
+#[test]
+fn vest_other_reverts_no_vested_funds() {
+	ExtBuilder::default().build().execute_with(|| {
+		precompiles()
+			.prepare_test(Alice, Precompile1, PrecompileCall::vest_other { account: Address(Bob.into()) })
+			.execute_reverts(|r| r == b"NotVesting");
+	});
+}
+
+#[test]
+fn vest_other_increases_other_usable_balance() {
+	ExtBuilder::default()
+		.with_balances(vec![(Bob.into(), 100u64)])
+		.build()
+		.execute_with(|| {
+			let locked = 10;
+			let per_block = 1;
+			let starting_block = 0;
+			let end_block = 5u32;
+
+			assert_ok!(Pallet::<Test>::vested_transfer(
+				RuntimeOrigin::signed(Bob.into()),
+				Alice.into(),
+				VestingInfoPallet::new(locked, per_block, starting_block),
+			));
+			assert_eq!(
+				Balances::usable_balance(&Alice.into()),
+				1,
+				"1 free balance because 1 block has passed"
+			);
+			roll_to(end_block.into());
+			precompiles()
+				.prepare_test(Bob, Precompile1, PrecompileCall::vest_other { account: Address(Alice.into())})
+				.execute_some();
+
+			assert_eq!(Balances::usable_balance(&Alice.into()), end_block as u64);
+		});
+}
