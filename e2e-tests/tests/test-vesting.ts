@@ -1,7 +1,16 @@
 import { expect } from "chai";
 import { step } from "mocha-steps";
 import Contract from "web3-eth-contract";
-import { VESTING_CONTRACT_ADDRESS, VESTING_ABI, GAS_LIMIT, GAS_PRICE, FAITH, FAITH_PRIVATE_KEY, ALITH, ALITH_PRIVATE_KEY } from "./config";
+import {
+	VESTING_CONTRACT_ADDRESS,
+	VESTING_ABI,
+	GAS_LIMIT,
+	GAS_PRICE,
+	FAITH,
+	FAITH_PRIVATE_KEY,
+	ALITH,
+	ALITH_PRIVATE_KEY,
+} from "./config";
 import { describeWithExistingNode, extractRevertReason } from "./util";
 import Web3 from "web3";
 

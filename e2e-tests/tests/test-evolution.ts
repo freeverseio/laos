@@ -1,4 +1,10 @@
-import { addressToCollectionId, createCollection, describeWithExistingNode, slotAndOwnerToTokenId } from "./util";
+import {
+	addressToCollectionId,
+	createCollection,
+	describeWithExistingNode,
+	extractRevertReason,
+	slotAndOwnerToTokenId,
+} from "./util";
 import {
 	GAS_LIMIT,
 	FAITH,
@@ -9,7 +15,6 @@ import {
 	SELECTOR_LOG_PUBLIC_MINTING_DISABLED,
 	ALITH,
 	ALITH_PRIVATE_KEY,
-	EVOLUTION_COLLECTION_ABI,
 } from "./config";
 import { expect } from "chai";
 import Contract from "web3-eth-contract";
@@ -241,7 +246,7 @@ describeWithExistingNode("@qa Frontier RPC (Public Minting)", (context) => {
 			await collectionContract.methods.disablePublicMinting().send({ from: FAITH, gas: GAS_LIMIT });
 			expect.fail("Expected error was not thrown"); // Ensure an error is thrown
 		} catch (error) {
-			// console.log(error.message);
+			expect(await extractRevertReason(context, error.receipt.transactionHash)).to.eq("NotVesting");
 		}
 	});
 });
@@ -286,6 +291,8 @@ describeWithExistingNode("@qa Frontier RPC (Transfer Ownership)", (context) => {
 		try {
 			await collectionContract.methods.transferOwnership(FAITH).send({ from: FAITH, gas: GAS_LIMIT });
 			expect.fail("Expected error was not thrown"); // Ensure an error is thrown
-		} catch (error) {}
+		} catch (error) {
+			expect(await extractRevertReason(context, error.receipt.transactionHash)).to.eq("NotVesting");
+		}
 	});
 });
