@@ -43,8 +43,8 @@ describeWithExistingNode("Frontier RPC (Vesting)", (context) => {
 	it("when vesting exists it returns the list", async function () {
 		const vesting = await contract.methods.vesting(ALITH).call();
 		expect(vesting).to.deep.eq([
-			["799999990000000000000000000", "7999999900000000000000000", "0"],
-			["799999990000000000000000000", "3999999950000000000000000", "0"],
+			["799999000000000000000000000", "7999990000000000000000000", "0"],
+			["799999500000000000000000000", "3999997500000000000000000", "0"],
 		]);
 	});
 	step("when vesting exists do vest returns ok", async function () {
