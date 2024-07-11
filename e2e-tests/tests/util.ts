@@ -3,12 +3,12 @@ import Contract from "web3-eth-contract";
 import Web3 from "web3";
 import { JsonRpcResponse } from "web3-core-helpers";
 import {
-	CONTRACT_ADDRESS,
+	EVOLUTION_COLLECTION_FACTORY_CONTRACT_ADDRESS,
 	GAS_LIMIT,
 	GAS_PRICE,
 	FAITH,
 	FAITH_PRIVATE_KEY,
-	EVOLUTION_COLLETION_FACTORY_ABI,
+	EVOLUTION_COLLECTION_FACTORY_ABI,
 	EVOLUTION_COLLECTION_ABI,
 	MAX_U96,
 	LOCAL_NODE_URL,
@@ -57,10 +57,14 @@ export function describeWithExistingNode(title: string, cb: (context: { web3: We
 }
 
 export async function createCollection(context: { web3: Web3 }): Promise<Contract> {
-	const contract = new context.web3.eth.Contract(EVOLUTION_COLLETION_FACTORY_ABI, CONTRACT_ADDRESS, {
-		from: FAITH,
-		gasPrice: GAS_PRICE,
-	});
+	const contract = new context.web3.eth.Contract(
+		EVOLUTION_COLLECTION_FACTORY_ABI,
+		EVOLUTION_COLLECTION_FACTORY_CONTRACT_ADDRESS,
+		{
+			from: FAITH,
+			gasPrice: GAS_PRICE,
+		}
+	);
 
 	let nonce = await context.web3.eth.getTransactionCount(FAITH);
 	context.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
@@ -153,4 +157,14 @@ export function addressToCollectionId(address: string): BN | null {
 	}
 
 	return collectionId;
+}
+
+export async function extractRevertReason(context: { web3: Web3 }, transactionHash: string) {
+	try {
+		let tx = await context.web3.eth.getTransaction(transactionHash);
+		await context.web3.eth.call({ to: tx.to, data: tx.input, gas: tx.gas });
+	} catch (error) {
+		const reasonHex = error.data.slice(2 + 8); // remove the 0x prefix and the first 8 bytes (function selector for Error(string))
+		return context.web3.utils.hexToUtf8("0x" + reasonHex.slice(64)).trim(); // skip the padding and remove return carriage
+	}
 }

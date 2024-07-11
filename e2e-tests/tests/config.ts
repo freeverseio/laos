@@ -22,10 +22,9 @@ export const ETH_BLOCK_GAS_LIMIT = 15000000; // The same configuration as runtim
 export const GAS_LIMIT = ETH_BLOCK_GAS_LIMIT - 10000000;
 
 // LAOS Evolution Contract
-export const EVOLUTION_COLLETION_FACTORY_ABI = EvolutionCollectionFactory.abi as AbiItem[];
+export const EVOLUTION_COLLECTION_FACTORY_ABI = EvolutionCollectionFactory.abi as AbiItem[];
 export const EVOLUTION_COLLECTION_ABI = EvolutionCollection.abi as AbiItem[];
-export const VESTING_ABI = Vesting.abi as AbiItem[];
-export const CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000403";
+export const EVOLUTION_COLLECTION_FACTORY_CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000403";
 export const SELECTOR_LOG_NEW_COLLECTION = "0x5b84d9550adb7000df7bee717735ecd3af48ea3f66c6886d52e8227548fb228c";
 export const SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI =
 	"0xa7135052b348b0b4e9943bae82d8ef1c5ac225e594ef4271d12f0744cfc98348";
@@ -43,6 +42,10 @@ export const SELECTOR_LOG_EXTENDED_UL_WITH_EXTERNAL_URI =
 	"0xf744da499cb735a8fc987aa2a331a1cbeca79e449e4c04eeccfe57c538e79070";
 export const SELECTOR_LOG_UPDATED_EXTENDED_UL_WITH_EXTERNAL_URI =
 	"0xe7ebe38355126fe0c3eab0ec03eb1b94ff501458a80713c9eb8b737334a651ff";
+
+// Vesting contract
+export const VESTING_CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000406";
+export const VESTING_ABI = Vesting.abi as AbiItem[];
 
 // Constants
 export const MAX_U96 = new BN("79228162514264337593543950336"); // 2^96 - 1
