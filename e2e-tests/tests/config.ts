@@ -3,6 +3,7 @@ import { AbiItem } from "web3-utils";
 import AssetMetadataExtender from "../build/contracts/AssetMetadataExtender.json";
 import EvolutionCollection from "../build/contracts/EvolutionCollection.json";
 import EvolutionCollectionFactory from "../build/contracts/EvolutionCollectionFactory.json";
+import Vesting from "../build/contracts/Vesting.json";
 
 // Node config
 export const RUNTIME_SPEC_NAME = "laos";
@@ -23,16 +24,15 @@ export const GAS_LIMIT = ETH_BLOCK_GAS_LIMIT - 10000000;
 // LAOS Evolution Contract
 export const EVOLUTION_COLLETION_FACTORY_ABI = EvolutionCollectionFactory.abi as AbiItem[];
 export const EVOLUTION_COLLECTION_ABI = EvolutionCollection.abi as AbiItem[];
+export const VESTING_ABI = Vesting.abi as AbiItem[];
 export const CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000403";
 export const SELECTOR_LOG_NEW_COLLECTION = "0x5b84d9550adb7000df7bee717735ecd3af48ea3f66c6886d52e8227548fb228c";
 export const SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI =
 	"0xa7135052b348b0b4e9943bae82d8ef1c5ac225e594ef4271d12f0744cfc98348";
 export const SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI =
 	"0xdde18ad2fe10c12a694de65b920c02b851c382cf63115967ea6f7098902fa1c8";
-export const SELECTOR_LOG_OWNERSHIP_TRANSFERRED =
-	"0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0";
-export const SELECTOR_LOG_PUBLIC_MINTING_ENABLED =
-	"0x8ff3deee4c40ab085dd8d7d0c848cb5295e4ab5faa32e5b60e3936cf1bdc77bf";
+export const SELECTOR_LOG_OWNERSHIP_TRANSFERRED = "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0";
+export const SELECTOR_LOG_PUBLIC_MINTING_ENABLED = "0x8ff3deee4c40ab085dd8d7d0c848cb5295e4ab5faa32e5b60e3936cf1bdc77bf";
 export const SELECTOR_LOG_PUBLIC_MINTING_DISABLED =
 	"0xebe230014056e5cb4ca6d8e534189bf5bfb0759489f16170654dce7c014b6699";
 

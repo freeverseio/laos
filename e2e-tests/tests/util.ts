@@ -2,7 +2,17 @@ import { ethers } from "ethers";
 import Contract from "web3-eth-contract";
 import Web3 from "web3";
 import { JsonRpcResponse } from "web3-core-helpers";
-import { CONTRACT_ADDRESS, GAS_LIMIT, GAS_PRICE, FAITH, FAITH_PRIVATE_KEY, EVOLUTION_COLLETION_FACTORY_ABI, EVOLUTION_COLLECTION_ABI, MAX_U96, LOCAL_NODE_URL } from "./config";
+import {
+	CONTRACT_ADDRESS,
+	GAS_LIMIT,
+	GAS_PRICE,
+	FAITH,
+	FAITH_PRIVATE_KEY,
+	EVOLUTION_COLLETION_FACTORY_ABI,
+	EVOLUTION_COLLECTION_ABI,
+	MAX_U96,
+	LOCAL_NODE_URL,
+} from "./config";
 import BN from "bn.js";
 import { expect } from "chai";
 
@@ -51,7 +61,7 @@ export async function createCollection(context: { web3: Web3 }): Promise<Contrac
 		from: FAITH,
 		gasPrice: GAS_PRICE,
 	});
-	
+
 	let nonce = await context.web3.eth.getTransactionCount(FAITH);
 	context.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
 	const result = await contract.methods.createCollection(FAITH).send({
@@ -62,13 +72,17 @@ export async function createCollection(context: { web3: Web3 }): Promise<Contrac
 	});
 	expect(result.status).to.be.eq(true);
 	expect(context.web3.utils.isAddress(result.events.NewCollection.returnValues._collectionAddress)).to.be.eq(true);
-	
-	const collectionContract = new context.web3.eth.Contract(EVOLUTION_COLLECTION_ABI, result.events.NewCollection.returnValues._collectionAddress, {
-		from: FAITH,
-		gas: GAS_LIMIT,
-		gasPrice: GAS_PRICE,
-	});
-	
+
+	const collectionContract = new context.web3.eth.Contract(
+		EVOLUTION_COLLECTION_ABI,
+		result.events.NewCollection.returnValues._collectionAddress,
+		{
+			from: FAITH,
+			gas: GAS_LIMIT,
+			gasPrice: GAS_PRICE,
+		}
+	);
+
 	return collectionContract;
 }
 
@@ -79,24 +93,23 @@ export async function createCollection(context: { web3: Web3 }): Promise<Contrac
  * @returns The token ID, or null if the slot is larger than 96 bits or the owner address is not 20 bytes.
  */
 export function slotAndOwnerToTokenId(slot: string, owner: string): string | null {
-
 	const slotBN: BN = new BN(slot);
-	const ownerBytes: Uint8Array = Uint8Array.from(Buffer.from(owner.slice(2), 'hex'));  // Remove the '0x' prefix and convert hex to bytes
+	const ownerBytes: Uint8Array = Uint8Array.from(Buffer.from(owner.slice(2), "hex")); // Remove the '0x' prefix and convert hex to bytes
 
-	if (slotBN.gt(MAX_U96) || ownerBytes.length != 20){
+	if (slotBN.gt(MAX_U96) || ownerBytes.length != 20) {
 		return null;
 	}
 
 	// Convert slot to big-endian byte array
-	const slotBytes = slotBN.toArray('be', 16);  // 16 bytes (128 bits)
-	
+	const slotBytes = slotBN.toArray("be", 16); // 16 bytes (128 bits)
+
 	// We also use the last 12 bytes of the slot, since the first 4 bytes are always 0
 	let bytes = new Uint8Array(32);
-	bytes.set(slotBytes.slice(-12), 0);  // slice from the right to ensure we get the least significant bytes
+	bytes.set(slotBytes.slice(-12), 0); // slice from the right to ensure we get the least significant bytes
 	bytes.set(ownerBytes, 12);
 
-	return Buffer.from(bytes).toString('hex'); // Convert Uint8Array to hexadecimal string
-} 
+	return Buffer.from(bytes).toString("hex"); // Convert Uint8Array to hexadecimal string
+}
 
 /**
  * Converts an Ethereum-like address into a `CollectionId` represented as a `BN` (big number).
@@ -113,7 +126,7 @@ export function slotAndOwnerToTokenId(slot: string, owner: string): string | nul
  * @returns The `CollectionId` as a `BN` if the address is valid, or `null` otherwise.
  */
 export function addressToCollectionId(address: string): BN | null {
-	const addressBytes: Uint8Array = Uint8Array.from(Buffer.from(address.slice(2), 'hex'));  // Remove the '0x' prefix and convert hex to bytes
+	const addressBytes: Uint8Array = Uint8Array.from(Buffer.from(address.slice(2), "hex")); // Remove the '0x' prefix and convert hex to bytes
 
 	// Check if the address length is 20 bytes
 	if (addressBytes.length !== 20) {

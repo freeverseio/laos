@@ -32,7 +32,7 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
 	step("when collection is created, it should return owner", async function () {
 		const collectionContract = await createCollection(context);
 		testCollectionContract = collectionContract;
-		
+
 		const owner = await collectionContract.methods.owner().call();
 		expect(owner).to.be.eq(FAITH);
 	});
@@ -55,9 +55,7 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
 		// event topics
 		expect(result.events.NewCollection.raw.topics.length).to.be.eq(2);
 		expect(result.events.NewCollection.raw.topics[0]).to.be.eq(SELECTOR_LOG_NEW_COLLECTION);
-		expect(result.events.NewCollection.raw.topics[1]).to.be.eq(
-			context.web3.utils.padLeft(FAITH.toLowerCase(), 64)
-		);
+		expect(result.events.NewCollection.raw.topics[1]).to.be.eq(context.web3.utils.padLeft(FAITH.toLowerCase(), 64));
 
 		// event data
 		expect(result.events.NewCollection.raw.data.toLowerCase()).to.be.eq(
@@ -83,10 +81,10 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
 			from: FAITH,
 			gasPrice: GAS_PRICE,
 		});
-		
+
 		let nonce = await context.web3.eth.getTransactionCount(FAITH);
 		context.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
-		
+
 		const estimatedGas = await contract.methods.createCollection(FAITH).estimateGas({
 			from: FAITH,
 			gas: GAS_LIMIT,
