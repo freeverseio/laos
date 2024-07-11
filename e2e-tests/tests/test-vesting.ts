@@ -5,7 +5,7 @@ import { VESTING_CONTRACT_ADDRESS, VESTING_ABI, GAS_LIMIT, GAS_PRICE, FAITH, FAI
 import { describeWithExistingNode, extractRevertReason } from "./util";
 import Web3 from "web3";
 
-describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
+describeWithExistingNode("Frontier RPC (Vesting)", (context) => {
 	let contract: Contract;
 
 	before(async function () {
