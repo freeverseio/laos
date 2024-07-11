@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { step } from "mocha-steps";
 import Contract from "web3-eth-contract";
-import { VESTING_CONTRACT_ADDRESS, VESTING_ABI, GAS_LIMIT, GAS_PRICE, FAITH, FAITH_PRIVATE_KEY } from "./config";
+import { VESTING_CONTRACT_ADDRESS, VESTING_ABI, GAS_LIMIT, GAS_PRICE, FAITH, FAITH_PRIVATE_KEY, ALITH } from "./config";
 import { describeWithExistingNode, extractRevertReason } from "./util";
 import Web3 from "web3";
 
@@ -30,6 +30,13 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
 			expect(await extractRevertReason(context, error.receipt.transactionHash)).to.eq("NotVesting");
 		}
 	});
-	it("when vesting exists it returns the list", async function () {});
-	it("when vesting exists do vest returns ok", async function () {});
+	it("when vesting exists it returns the list", async function () {
+		const vesting = await contract.methods.vesting(ALITH).call();
+		expect(vesting).to.deep.eq([
+			["799999990000000000000000000", "7999999900000000000000000", "0"],
+			["799999990000000000000000000", "3999999950000000000000000", "0"],
+		]);
+	});
+	step("when vesting exists do vest returns ok", async function () {});
+	step("when vesting exists do vestOther returns ok", async function () {});
 });
