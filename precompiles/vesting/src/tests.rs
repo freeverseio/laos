@@ -21,6 +21,7 @@ use frame_support::assert_ok;
 use mock::*;
 use pallet_vesting::{Pallet, VestingInfo as VestingInfoPallet};
 use precompile_utils::testing::{Alice, Bob, Precompile1, PrecompileTesterExt};
+use sp_core::H160;
 
 /// Get precompiles from the mock.
 fn precompiles() -> LaosPrecompiles<Test> {

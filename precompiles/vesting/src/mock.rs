@@ -19,7 +19,7 @@ use sp_runtime::BuildStorage;
 
 use precompile_utils::precompile_set::{AddressU64, PrecompileAt, PrecompileSetBuilder};
 
-use super::{VestingPrecompile, VestingPrecompileCall, wrapper::pallet};
+use super::{wrapper::pallet, VestingPrecompile, VestingPrecompileCall};
 use frame_support::{
 	derive_impl, parameter_types,
 	traits::{FindAuthor, OnFinalize, OnInitialize, WithdrawReasons},
@@ -27,10 +27,11 @@ use frame_support::{
 };
 use sp_core::{H160, U256};
 use sp_runtime::{
-	traits::{ConvertInto, IdentityLookup, Convert},
+	traits::{Convert, ConvertInto, IdentityLookup},
 	ConsensusEngineId,
 };
 pub use test_utils::*;
+use frame_system::pallet_prelude::BlockNumberFor;
 
 type Block = frame_system::mocking::MockBlock<Test>;
 
@@ -40,7 +41,7 @@ frame_support::construct_runtime!(
 		System: frame_system::{Pallet, Call, Config<T>, Storage, Event<T>},
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		Vesting: pallet_vesting,
-		LaosVesting: pallet,
+		VestingWrapper: pallet,
 		Timestamp: pallet_timestamp::{Pallet, Call, Storage},
 		EVM: pallet_evm::{Pallet, Call, Storage, Config<T>, Event<T>},
 	}
@@ -64,8 +65,8 @@ parameter_types! {
 
 pub struct BlockNumberForToU256;
 
-impl Convert<crate::BlockNumberFor<Test>, U256> for BlockNumberForToU256 {
-	fn convert(b: crate::BlockNumberFor<Test>) -> U256 {
+impl Convert<BlockNumberFor<Test>, U256> for BlockNumberForToU256 {
+	fn convert(b: BlockNumberFor<Test>) -> U256 {
 		U256::from(b)
 	}
 }
@@ -88,6 +89,7 @@ impl sp_runtime::traits::ConvertBack<AccountId, H160> for AccountIdToH160 {
 impl pallet::Config for Test {
 	type AccountIdToH160 = AccountIdToH160;
 	type BlockNumberForToU256 = BlockNumberForToU256;
+	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
 }
 
 parameter_types! {
@@ -209,7 +211,7 @@ impl ExtBuilder {
 		ext
 	}
 }
-use frame_system::pallet_prelude::BlockNumberFor;
+
 pub type BlockNumber = BlockNumberFor<Test>;
 
 /// Rolls to the desired block. Returns the number of blocks played.

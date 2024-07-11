@@ -46,6 +46,13 @@ pub mod pallet {
 		#[pallet::no_default]
 		/// Converts `BlockNumberFor<Self>` to `U256`
 		type BlockNumberForToU256: Convert<BlockNumberFor<Self>, U256>;
+
+		#[pallet::no_default]
+		/// Gas weight mapping
+		type GasWeightMapping: pallet_evm::GasWeightMapping;
+
+		/// WeightInfo of the calls
+		type WeightInfo: crate::weights::WeightInfo;
 	}
 
 	#[pallet::pallet]
@@ -66,6 +73,7 @@ pub mod pallet {
 		impl DefaultConfig for TestDefaultConfig {
 			type AccountIdToH160 = AccountIdToH160;
 			type BalanceOfToU256 = BalanceOfToU256;
+			type WeightInfo = ();
 		}
 
 		pub struct AccountIdToH160;

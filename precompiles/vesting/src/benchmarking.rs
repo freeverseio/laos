@@ -28,7 +28,7 @@ use pallet_evm::{Context, ExitError, ExitReason, Log, PrecompileHandle};
 use pallet_vesting::Pallet as PalletVesting;
 use precompile_utils::prelude::Address;
 use sp_core::{Get, H160, H256, U256};
-use sp_runtime::traits::{CheckedMul, Convert};
+use sp_runtime::traits::Convert;
 use sp_std::{vec, vec::Vec};
 
 pub struct MockHandle {
@@ -115,6 +115,7 @@ impl PrecompileHandle for MockHandle {
 #[benchmarks]
 mod benchmarks {
 	use super::*;
+	use frame_support::traits::tokens::currency::Currency;
 
 	#[benchmark]
 	fn precompile_vest() {
@@ -140,6 +141,33 @@ mod benchmarks {
 		#[block]
 		{
 			VestingPrecompile::<T>::vest(&mut handle).unwrap();
+		}
+	}
+
+	#[benchmark]
+	fn precompile_vest_other() {
+		let caller: T::AccountId = whitelisted_caller();
+		let caller_origin = T::RuntimeOrigin::from(RawOrigin::from(Some(caller.clone())));
+		let mut handle = MockHandle::new(T::AccountIdToH160::convert(caller.clone()));
+		let min_transfer = T::MinVestedTransfer::get();
+		let _ = T::Currency::issue(min_transfer);
+		T::Currency::make_free_balance_be(&caller, min_transfer);
+		
+		let target: T::AccountId = account("target", 0, 1);
+		let target_lookup = T::Lookup::unlookup(target.clone());
+		let starting_block = 0u32;
+		let per_block = min_transfer;
+
+		PalletVesting::<T>::vested_transfer(
+			caller_origin,
+			target_lookup,
+			pallet_vesting::VestingInfo::new(min_transfer, per_block, starting_block.into()),
+		)
+		.unwrap();
+
+		#[block]
+		{
+			VestingPrecompile::<T>::vest_other(&mut handle, Address::from(T::AccountIdToH160::convert(target))).unwrap();
 		}
 	}
 }

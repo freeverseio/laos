@@ -18,17 +18,13 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 use fp_evm::ExitError;
-use frame_support::{pallet_prelude::Weight, traits::tokens::currency::Currency, DefaultNoBound};
-use frame_system::{pallet_prelude::BlockNumberFor, RawOrigin};
+use frame_support::{pallet_prelude::Weight, DefaultNoBound};
+use frame_system::RawOrigin;
 use pallet_evm::GasWeightMapping;
 use pallet_vesting::Pallet as PalletVesting;
-use crate::wrapper::pallet::Config;
-use precompile_utils::{
-	precompile,
-	prelude::{revert, solidity, Address, EvmResult, PrecompileHandle},
-};
+use precompile_utils::prelude::{revert, solidity, Address, EvmResult, PrecompileHandle};
 use scale_info::prelude::{format, string::String};
-use sp_core::{H160, U256};
+use sp_core::U256;
 use sp_runtime::{
 	traits::{Convert, ConvertBack, PhantomData, StaticLookup},
 	DispatchError,
@@ -54,7 +50,7 @@ impl<Runtime> VestingPrecompile<Runtime> {
 #[precompile_utils::precompile]
 impl<Runtime> VestingPrecompile<Runtime>
 where
-	Runtime: Config
+	Runtime: Config,
 {
 	#[precompile::public("vesting(address)")]
 	#[precompile::view]
@@ -64,7 +60,9 @@ where
 	) -> EvmResult<Vec<VestingInfo>> {
 		// TODO super::register_cost::<Runtime>(handle, Runtime::WeightInfo::precompile_vesting())?;
 
-		match PalletVesting::<Runtime>::vesting(Runtime::AccountIdToH160::convert_back(account.into())) {
+		match PalletVesting::<Runtime>::vesting(Runtime::AccountIdToH160::convert_back(
+			account.into(),
+		)) {
 			Some(v) => {
 				let mut output: Vec<VestingInfo> = Vec::with_capacity(v.len());
 
@@ -84,11 +82,13 @@ where
 
 	#[precompile::public("vest()")]
 	pub fn vest(handle: &mut impl PrecompileHandle) -> EvmResult<()> {
-		// TODO super::register_cost::<Runtime>(handle, Runtime::WeightInfo::precompile_vest())?;
+		register_cost::<Runtime>(handle, <Runtime as wrapper::pallet::Config>::WeightInfo::precompile_vest())?;
 
-		match PalletVesting::<Runtime>::vest(<Runtime as frame_system::Config>::RuntimeOrigin::from(
-			RawOrigin::from(Some(Runtime::AccountIdToH160::convert_back(handle.context().caller))),
-		)) {
+		match PalletVesting::<Runtime>::vest(
+			<Runtime as frame_system::Config>::RuntimeOrigin::from(RawOrigin::from(Some(
+				Runtime::AccountIdToH160::convert_back(handle.context().caller),
+			))),
+		) {
 			Ok(_) => Ok(()),
 			Err(err) => Err(revert(convert_dispatch_error_to_string(err))),
 		}
@@ -96,7 +96,7 @@ where
 
 	#[precompile::public("vestOther(address)")]
 	pub fn vest_other(handle: &mut impl PrecompileHandle, account: Address) -> EvmResult<()> {
-		// TODO super::register_cost::<Runtime>(handle, Runtime::WeightInfo::precompile_vest_other())?;
+		register_cost::<Runtime>(handle, <Runtime as wrapper::pallet::Config>::WeightInfo::precompile_vest_other())?;
 
 		let origin = <Runtime as frame_system::Config>::RuntimeOrigin::from(RawOrigin::from(Some(
 			Runtime::AccountIdToH160::convert_back(handle.context().caller),
@@ -118,24 +118,26 @@ fn convert_dispatch_error_to_string(err: DispatchError) -> String {
 	}
 }
 
-// pub fn register_cost<Runtime: Config>(
-// 	handle: &mut impl PrecompileHandle,
-// 	weight: Weight,
-// ) -> Result<(), ExitError> {
-// 	let required_gas = Runtime::GasWeightMapping::weight_to_gas(weight);
-// 	let remaining_gas = handle.remaining_gas();
-// 	if required_gas > remaining_gas {
-// 		return Err(ExitError::OutOfGas);
-// 	}
-// 	handle.record_cost(required_gas)?;
-// 	handle.record_external_cost(Some(weight.ref_time()), Some(weight.proof_size()))?;
-// 	Ok(())
-// }
+fn register_cost<Runtime: Config>(
+	handle: &mut impl PrecompileHandle,
+	weight: Weight,
+) -> Result<(), ExitError> {
+	let required_gas = Runtime::GasWeightMapping::weight_to_gas(weight);
+	let remaining_gas = handle.remaining_gas();
+	if required_gas > remaining_gas {
+		return Err(ExitError::OutOfGas);
+	}
+	handle.record_cost(required_gas)?;
+	handle.record_external_cost(Some(weight.ref_time()), Some(weight.proof_size()))?;
+	Ok(())
+}
 
+mod benchmarking;
 #[cfg(test)]
 mod mock;
 #[cfg(test)]
 mod tests;
-mod benchmarking;
+pub mod weights;
+pub use weights::*;
 mod wrapper;
 pub use wrapper::*;
