@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { step } from "mocha-steps";
 import Contract from "web3-eth-contract";
-import { VESTING_CONTRACT_ADDRESS, VESTING_ABI, GAS_LIMIT, GAS_PRICE, FAITH, FAITH_PRIVATE_KEY, ALITH } from "./config";
+import { VESTING_CONTRACT_ADDRESS, VESTING_ABI, GAS_LIMIT, GAS_PRICE, FAITH, FAITH_PRIVATE_KEY, ALITH, ALITH_PRIVATE_KEY } from "./config";
 import { describeWithExistingNode, extractRevertReason } from "./util";
 import Web3 from "web3";
 
@@ -15,6 +15,7 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
 			gas: GAS_LIMIT,
 		});
 		context.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
+		context.web3.eth.accounts.wallet.add(ALITH_PRIVATE_KEY);
 	});
 
 	it("when there is no vesting it returns empty list", async function () {
@@ -37,6 +38,15 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
 			["799999990000000000000000000", "3999999950000000000000000", "0"],
 		]);
 	});
-	step("when vesting exists do vest returns ok", async function () {});
-	step("when vesting exists do vestOther returns ok", async function () {});
+	step("when vesting exists do vest returns ok", async function () {
+		let nonce = await context.web3.eth.getTransactionCount(ALITH);
+		contract.options.from = ALITH;
+		let result = await contract.methods.vest().send({ from: ALITH, gas: GAS_LIMIT, nonce: nonce++ });
+		expect(result.status).to.be.eq(true);
+	});
+	step("when vesting exists do vestOther returns ok", async function () {
+		let nonce = await context.web3.eth.getTransactionCount(FAITH);
+		let result = await contract.methods.vestOther(ALITH).send({ from: FAITH, gas: GAS_LIMIT, nonce: nonce++ });
+		expect(result.status).to.be.eq(true);
+	});
 });
