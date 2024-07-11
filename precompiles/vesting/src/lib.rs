@@ -83,7 +83,7 @@ where
 
 				Ok(output)
 			},
-			None => Ok(vec![]),
+			None => Ok(Vec::new()),
 		}
 	}
 
