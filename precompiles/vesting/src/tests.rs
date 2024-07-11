@@ -50,7 +50,7 @@ fn vesting_for_account_with_no_vesting_returns_empty_vec() {
 #[test]
 fn vesting_for_account_with_one_vesting_returns_vesting_info_vec() {
 	ExtBuilder::default()
-		.with_balances(vec![(Bob.into(), 100u64)])
+		.with_balances(vec![(Bob.into(), 100u128)])
 		.build()
 		.execute_with(|| {
 			let locked = 100;
@@ -78,7 +78,7 @@ fn vesting_for_account_with_one_vesting_returns_vesting_info_vec() {
 #[test]
 fn vesting_for_account_with_two_vestings_returns_vesting_info_vec() {
 	ExtBuilder::default()
-		.with_balances(vec![(Bob.into(), 1000u64)])
+		.with_balances(vec![(Bob.into(), 1000u128)])
 		.build()
 		.execute_with(|| {
 			let locked = 100;
@@ -128,7 +128,7 @@ fn vest_reverts_no_vested_funds() {
 #[test]
 fn vest_increases_usable_balance() {
 	ExtBuilder::default()
-		.with_balances(vec![(Bob.into(), 100u64)])
+		.with_balances(vec![(Bob.into(), 100u128)])
 		.build()
 		.execute_with(|| {
 			let locked = 10;
@@ -151,7 +151,7 @@ fn vest_increases_usable_balance() {
 				.prepare_test(Alice, Precompile1, PrecompileCall::vest {})
 				.execute_some();
 
-			assert_eq!(Balances::usable_balance(H160::from(Alice)), end_block as u64);
+			assert_eq!(Balances::usable_balance(H160::from(Alice)), end_block as u128);
 		});
 }
 
@@ -167,7 +167,7 @@ fn vest_other_reverts_no_vested_funds() {
 #[test]
 fn vest_other_increases_other_usable_balance() {
 	ExtBuilder::default()
-		.with_balances(vec![(Bob.into(), 100u64)])
+		.with_balances(vec![(Bob.into(), 100u128)])
 		.build()
 		.execute_with(|| {
 			let locked = 10;
@@ -190,7 +190,7 @@ fn vest_other_increases_other_usable_balance() {
 				.prepare_test(Bob, Precompile1, PrecompileCall::vest_other { account: Address(Alice.into())})
 				.execute_some();
 
-			assert_eq!(Balances::usable_balance(H160::from(Alice)), end_block as u64);
+			assert_eq!(Balances::usable_balance(H160::from(Alice)), end_block as u128);
 		});
 }
 

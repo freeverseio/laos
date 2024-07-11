@@ -24,8 +24,7 @@ use frame_support::{
 	weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight},
 };
 use laos_primitives::{MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO};
-use sp_core::{H160, U256};
-use sp_runtime::traits::{Convert, ConvertBack};
+use sp_core::U256;
 
 /// Current approximation of the gas/s consumption considering
 /// EVM execution over compiled WASM (on 4.4Ghz CPU).
@@ -71,18 +70,6 @@ impl pallet_evm::Config for Runtime {
 	type WeightPerGas = WeightPerGas;
 	type WithdrawOrigin = pallet_evm::EnsureAddressNever<AccountId>;
 	type WeightInfo = weights::pallet_evm::WeightInfo<Runtime>;
-}
-
-impl Convert<AccountId, H160> for Runtime {
-	fn convert(account_id: AccountId) -> H160 {
-		H160(account_id.0)
-	}
-}
-
-impl ConvertBack<AccountId, H160> for Runtime {
-	fn convert_back(account_id: H160) -> AccountId {
-		AccountId::from(account_id)
-	}
 }
 
 pub struct CustomFindAuthor<Inner>(sp_std::marker::PhantomData<Inner>);

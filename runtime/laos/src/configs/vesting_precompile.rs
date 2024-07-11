@@ -14,18 +14,20 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
-frame_benchmarking::define_benchmarks!(
-	[pallet_timestamp, Timestamp]
-	[pallet_sudo, Sudo]
-	[pallet_utility, Utility]
-	[pallet_multisig, Multisig]
-	[pallet_proxy, Proxy]
-	[pallet_session, SessionBench::<Runtime>] // TODO check why SessionBench::<Runtime>
-	[pallet_parachain_staking, ParachainStaking]
-	[cumulus_pallet_xcmp_queue, XcmpQueue]
-	[pallet_evm, EVM]
-	[pallet_laos_evolution, LaosEvolution]
-	[pallet_asset_metadata_extender, AssetMetadataExtender]
-	[pallet_vesting_precompile, VestingWrapper]
-	// TODO pallet_xcm?
-);
+use crate::Runtime;
+use pallet_vesting_precompile::{pallet, pallet::Config, config_preludes};
+use frame_support::derive_impl;
+use sp_core::U256;
+
+pub struct BlockNumberForToU256;
+
+impl sp_runtime::traits::Convert<frame_system::pallet_prelude::BlockNumberFor<Runtime>, U256> for BlockNumberForToU256 {
+	fn convert(b: frame_system::pallet_prelude::BlockNumberFor<Runtime>) -> U256 {
+		U256::from(b)
+	}
+}
+
+#[derive_impl(config_preludes::TestDefaultConfig as pallet::DefaultConfig)]
+impl Config for Runtime {
+    type BlockNumberForToU256 = BlockNumberForToU256;
+}

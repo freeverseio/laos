@@ -7816,6 +7816,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "hex",
+ "laos-primitives",
  "pallet-balances",
  "pallet-evm",
  "pallet-timestamp",

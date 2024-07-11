@@ -23,6 +23,8 @@ fp-evm = { workspace = true }
 precompile-utils = { workspace = true, default-features = false }
 pallet-evm = { workspace = true }
 pallet-vesting ={ workspace = true }
+# Runtime primitives
+laos-primitives = { workspace = true }
 
 [dev-dependencies]
 sp-io = { workspace = true }
@@ -47,7 +49,8 @@ std = [
 	"fp-evm/std",
 	"precompile-utils/std",
 	"pallet-evm/std",
-	"pallet-vesting/std"
+	"pallet-vesting/std",
+	"laos-primitives/std"
 ]
 
 runtime-benchmarks = [

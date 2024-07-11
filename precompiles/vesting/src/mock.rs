@@ -19,7 +19,7 @@ use sp_runtime::BuildStorage;
 
 use precompile_utils::precompile_set::{AddressU64, PrecompileAt, PrecompileSetBuilder};
 
-use super::{VestingPrecompile, VestingPrecompileCall};
+use super::{VestingPrecompile, VestingPrecompileCall, wrapper::pallet};
 use frame_support::{
 	derive_impl, parameter_types,
 	traits::{FindAuthor, OnFinalize, OnInitialize, WithdrawReasons},
@@ -27,7 +27,7 @@ use frame_support::{
 };
 use sp_core::{H160, U256};
 use sp_runtime::{
-	traits::{Identity, IdentityLookup},
+	traits::{ConvertInto, IdentityLookup, Convert},
 	ConsensusEngineId,
 };
 pub use test_utils::*;
@@ -40,13 +40,14 @@ frame_support::construct_runtime!(
 		System: frame_system::{Pallet, Call, Config<T>, Storage, Event<T>},
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		Vesting: pallet_vesting,
+		LaosVesting: pallet,
 		Timestamp: pallet_timestamp::{Pallet, Call, Storage},
 		EVM: pallet_evm::{Pallet, Call, Storage, Config<T>, Event<T>},
 	}
 );
 
 pub type AccountId = H160;
-type Balance = u64;
+type Balance = u128;
 
 #[derive_impl(frame_system::config_preludes::TestDefaultConfig as frame_system::DefaultConfig)]
 impl frame_system::Config for Test {
@@ -61,16 +62,32 @@ parameter_types! {
 	pub const MaxTokenUriLength: u32 = 512;
 }
 
-impl sp_runtime::traits::Convert<AccountId, H160> for Test {
+pub struct BlockNumberForToU256;
+
+impl Convert<crate::BlockNumberFor<Test>, U256> for BlockNumberForToU256 {
+	fn convert(b: crate::BlockNumberFor<Test>) -> U256 {
+		U256::from(b)
+	}
+}
+
+pub struct AccountIdToH160;
+
+impl sp_runtime::traits::Convert<AccountId, H160> for AccountIdToH160 {
 	fn convert(account_id: AccountId) -> H160 {
 		account_id
 	}
 }
 
-impl sp_runtime::traits::ConvertBack<AccountId, H160> for Test {
+impl sp_runtime::traits::ConvertBack<AccountId, H160> for AccountIdToH160 {
 	fn convert_back(h160: H160) -> AccountId {
 		h160
 	}
+}
+
+#[derive_impl(pallet::config_preludes::TestDefaultConfig as pallet::DefaultConfig)]
+impl pallet::Config for Test {
+	type AccountIdToH160 = AccountIdToH160;
+	type BlockNumberForToU256 = BlockNumberForToU256;
 }
 
 parameter_types! {
@@ -93,7 +110,7 @@ parameter_types! {
 }
 
 impl pallet_vesting::Config for Test {
-	type BlockNumberToBalance = Identity;
+	type BlockNumberToBalance = ConvertInto;
 	type Currency = Balances;
 	type MinVestedTransfer = MinVestedTransfer;
 	type RuntimeEvent = RuntimeEvent;

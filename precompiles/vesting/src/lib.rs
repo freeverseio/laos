@@ -21,7 +21,8 @@ use fp_evm::ExitError;
 use frame_support::{pallet_prelude::Weight, traits::tokens::currency::Currency, DefaultNoBound};
 use frame_system::{pallet_prelude::BlockNumberFor, RawOrigin};
 use pallet_evm::GasWeightMapping;
-use pallet_vesting::{Config, Pallet};
+use pallet_vesting::Pallet as PalletVesting;
+use crate::wrapper::pallet::Config;
 use precompile_utils::{
 	precompile,
 	prelude::{revert, solidity, Address, EvmResult, PrecompileHandle},
@@ -29,14 +30,10 @@ use precompile_utils::{
 use scale_info::prelude::{format, string::String};
 use sp_core::{H160, U256};
 use sp_runtime::{
-	traits::{ConvertBack, PhantomData, StaticLookup},
+	traits::{Convert, ConvertBack, PhantomData, StaticLookup},
 	DispatchError,
 };
 use sp_std::vec::Vec;
-
-type BalanceOf<Runtime> = <<Runtime as Config>::Currency as Currency<
-	<Runtime as frame_system::Config>::AccountId,
->>::Balance;
 
 #[derive(Default, solidity::Codec)]
 pub struct VestingInfo {
@@ -57,9 +54,7 @@ impl<Runtime> VestingPrecompile<Runtime> {
 #[precompile_utils::precompile]
 impl<Runtime> VestingPrecompile<Runtime>
 where
-	Runtime: Config + ConvertBack<Runtime::AccountId, H160>,
-	BalanceOf<Runtime>: Into<U256>,
-	BlockNumberFor<Runtime>: Into<U256>,
+	Runtime: Config
 {
 	#[precompile::public("vesting(address)")]
 	#[precompile::view]
@@ -69,15 +64,15 @@ where
 	) -> EvmResult<Vec<VestingInfo>> {
 		// TODO super::register_cost::<Runtime>(handle, Runtime::WeightInfo::precompile_vesting())?;
 
-		match Pallet::<Runtime>::vesting(Runtime::convert_back(account.into())) {
+		match PalletVesting::<Runtime>::vesting(Runtime::AccountIdToH160::convert_back(account.into())) {
 			Some(v) => {
 				let mut output: Vec<VestingInfo> = Vec::with_capacity(v.len());
 
 				for i in v {
 					output.push(VestingInfo {
-						locked: i.locked().into(),
-						per_block: i.per_block().into(),
-						starting_block: i.starting_block().into(),
+						locked: Runtime::BalanceOfToU256::convert(i.locked()),
+						per_block: Runtime::BalanceOfToU256::convert(i.per_block()),
+						starting_block: Runtime::BlockNumberForToU256::convert(i.starting_block()),
 					})
 				}
 
@@ -91,8 +86,8 @@ where
 	pub fn vest(handle: &mut impl PrecompileHandle) -> EvmResult<()> {
 		// TODO super::register_cost::<Runtime>(handle, Runtime::WeightInfo::precompile_vest())?;
 
-		match Pallet::<Runtime>::vest(<Runtime as frame_system::Config>::RuntimeOrigin::from(
-			RawOrigin::from(Some(Runtime::convert_back(handle.context().caller))),
+		match PalletVesting::<Runtime>::vest(<Runtime as frame_system::Config>::RuntimeOrigin::from(
+			RawOrigin::from(Some(Runtime::AccountIdToH160::convert_back(handle.context().caller))),
 		)) {
 			Ok(_) => Ok(()),
 			Err(err) => Err(revert(convert_dispatch_error_to_string(err))),
@@ -104,12 +99,12 @@ where
 		// TODO super::register_cost::<Runtime>(handle, Runtime::WeightInfo::precompile_vest_other())?;
 
 		let origin = <Runtime as frame_system::Config>::RuntimeOrigin::from(RawOrigin::from(Some(
-			Runtime::convert_back(handle.context().caller),
+			Runtime::AccountIdToH160::convert_back(handle.context().caller),
 		)));
-		let account_id = Runtime::convert_back(account.into());
+		let account_id = Runtime::AccountIdToH160::convert_back(account.into());
 		let target =
 			<<Runtime as frame_system::Config>::Lookup as StaticLookup>::unlookup(account_id);
-		match Pallet::<Runtime>::vest_other(origin, target) {
+		match PalletVesting::<Runtime>::vest_other(origin, target) {
 			Ok(_) => Ok(()),
 			Err(err) => Err(revert(convert_dispatch_error_to_string(err))),
 		}
@@ -141,3 +136,6 @@ fn convert_dispatch_error_to_string(err: DispatchError) -> String {
 mod mock;
 #[cfg(test)]
 mod tests;
+mod benchmarking;
+mod wrapper;
+pub use wrapper::*;
