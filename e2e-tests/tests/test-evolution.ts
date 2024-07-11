@@ -246,7 +246,7 @@ describeWithExistingNode("@qa Frontier RPC (Public Minting)", (context) => {
 			await collectionContract.methods.disablePublicMinting().send({ from: FAITH, gas: GAS_LIMIT });
 			expect.fail("Expected error was not thrown"); // Ensure an error is thrown
 		} catch (error) {
-			expect(await extractRevertReason(context, error.receipt.transactionHash)).to.eq("NotVesting");
+			expect(await extractRevertReason(context, error.receipt.transactionHash)).to.eq("NoPermission");
 		}
 	});
 });
@@ -292,7 +292,7 @@ describeWithExistingNode("@qa Frontier RPC (Transfer Ownership)", (context) => {
 			await collectionContract.methods.transferOwnership(FAITH).send({ from: FAITH, gas: GAS_LIMIT });
 			expect.fail("Expected error was not thrown"); // Ensure an error is thrown
 		} catch (error) {
-			expect(await extractRevertReason(context, error.receipt.transactionHash)).to.eq("NotVesting");
+			expect(await extractRevertReason(context, error.receipt.transactionHash)).to.eq("NoPermission");
 		}
 	});
 });
