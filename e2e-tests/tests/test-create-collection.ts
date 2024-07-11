@@ -2,8 +2,8 @@ import { expect } from "chai";
 import { step } from "mocha-steps";
 import Contract from "web3-eth-contract";
 import {
-	CONTRACT_ADDRESS,
-	EVOLUTION_COLLETION_FACTORY_ABI,
+	EVOLUTION_COLLECTION_FACTORY_CONTRACT_ADDRESS,
+	EVOLUTION_COLLECTION_FACTORY_ABI,
 	GAS_LIMIT,
 	GAS_PRICE,
 	FAITH,
@@ -21,18 +21,22 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
 	let testCollectionAddress: string;
 
 	before(async function () {
-		contract = new context.web3.eth.Contract(EVOLUTION_COLLETION_FACTORY_ABI, CONTRACT_ADDRESS, {
-			from: FAITH,
-			gasPrice: GAS_PRICE,
-			gas: GAS_LIMIT,
-		});
+		contract = new context.web3.eth.Contract(
+			EVOLUTION_COLLECTION_FACTORY_ABI,
+			EVOLUTION_COLLECTION_FACTORY_CONTRACT_ADDRESS,
+			{
+				from: FAITH,
+				gasPrice: GAS_PRICE,
+				gas: GAS_LIMIT,
+			}
+		);
 		context.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
 	});
 
 	step("when collection is created, it should return owner", async function () {
 		const collectionContract = await createCollection(context);
 		testCollectionContract = collectionContract;
-		
+
 		const owner = await collectionContract.methods.owner().call();
 		expect(owner).to.be.eq(FAITH);
 	});
@@ -55,9 +59,7 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
 		// event topics
 		expect(result.events.NewCollection.raw.topics.length).to.be.eq(2);
 		expect(result.events.NewCollection.raw.topics[0]).to.be.eq(SELECTOR_LOG_NEW_COLLECTION);
-		expect(result.events.NewCollection.raw.topics[1]).to.be.eq(
-			context.web3.utils.padLeft(FAITH.toLowerCase(), 64)
-		);
+		expect(result.events.NewCollection.raw.topics[1]).to.be.eq(context.web3.utils.padLeft(FAITH.toLowerCase(), 64));
 
 		// event data
 		expect(result.events.NewCollection.raw.data.toLowerCase()).to.be.eq(
@@ -79,14 +81,18 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
 	});
 
 	step("create collection call can estimate gas", async function () {
-		const contract = new context.web3.eth.Contract(EVOLUTION_COLLETION_FACTORY_ABI, CONTRACT_ADDRESS, {
-			from: FAITH,
-			gasPrice: GAS_PRICE,
-		});
-		
+		const contract = new context.web3.eth.Contract(
+			EVOLUTION_COLLECTION_FACTORY_ABI,
+			EVOLUTION_COLLECTION_FACTORY_CONTRACT_ADDRESS,
+			{
+				from: FAITH,
+				gasPrice: GAS_PRICE,
+			}
+		);
+
 		let nonce = await context.web3.eth.getTransactionCount(FAITH);
 		context.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
-		
+
 		const estimatedGas = await contract.methods.createCollection(FAITH).estimateGas({
 			from: FAITH,
 			gas: GAS_LIMIT,
