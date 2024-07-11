@@ -138,7 +138,7 @@ construct_runtime!(
 		// LAOS pallets
 		LaosEvolution: pallet_laos_evolution = 100,
 		AssetMetadataExtender: pallet_asset_metadata_extender = 101,
-		
+
 		// Wrapper pallets to benchmark precompiles
 		VestingWrapper: pallet_vesting_precompile::pallet = 120,
 	}

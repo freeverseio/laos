@@ -82,7 +82,10 @@ where
 
 	#[precompile::public("vest()")]
 	pub fn vest(handle: &mut impl PrecompileHandle) -> EvmResult<()> {
-		register_cost::<Runtime>(handle, <Runtime as wrapper::pallet::Config>::WeightInfo::precompile_vest())?;
+		register_cost::<Runtime>(
+			handle,
+			<Runtime as wrapper::pallet::Config>::WeightInfo::precompile_vest(),
+		)?;
 
 		match PalletVesting::<Runtime>::vest(
 			<Runtime as frame_system::Config>::RuntimeOrigin::from(RawOrigin::from(Some(
@@ -96,7 +99,10 @@ where
 
 	#[precompile::public("vestOther(address)")]
 	pub fn vest_other(handle: &mut impl PrecompileHandle, account: Address) -> EvmResult<()> {
-		register_cost::<Runtime>(handle, <Runtime as wrapper::pallet::Config>::WeightInfo::precompile_vest_other())?;
+		register_cost::<Runtime>(
+			handle,
+			<Runtime as wrapper::pallet::Config>::WeightInfo::precompile_vest_other(),
+		)?;
 
 		let origin = <Runtime as frame_system::Config>::RuntimeOrigin::from(RawOrigin::from(Some(
 			Runtime::AccountIdToH160::convert_back(handle.context().caller),

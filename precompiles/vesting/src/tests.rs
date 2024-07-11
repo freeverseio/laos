@@ -160,7 +160,11 @@ fn vest_increases_usable_balance() {
 fn vest_other_reverts_no_vested_funds() {
 	ExtBuilder::default().build().execute_with(|| {
 		precompiles()
-			.prepare_test(Alice, Precompile1, PrecompileCall::vest_other { account: Address(Bob.into()) })
+			.prepare_test(
+				Alice,
+				Precompile1,
+				PrecompileCall::vest_other { account: Address(Bob.into()) },
+			)
 			.execute_reverts(|r| r == b"NotVesting");
 	});
 }
@@ -188,7 +192,11 @@ fn vest_other_increases_other_usable_balance() {
 			);
 			roll_to(end_block.into());
 			precompiles()
-				.prepare_test(Bob, Precompile1, PrecompileCall::vest_other { account: Address(Alice.into())})
+				.prepare_test(
+					Bob,
+					Precompile1,
+					PrecompileCall::vest_other { account: Address(Alice.into()) },
+				)
 				.execute_some();
 
 			assert_eq!(Balances::usable_balance(H160::from(Alice)), end_block as u128);

@@ -25,13 +25,13 @@ use frame_support::{
 	traits::{FindAuthor, OnFinalize, OnInitialize, WithdrawReasons},
 	weights::constants::RocksDbWeight,
 };
+use frame_system::pallet_prelude::BlockNumberFor;
 use sp_core::{H160, U256};
 use sp_runtime::{
 	traits::{Convert, ConvertInto, IdentityLookup},
 	ConsensusEngineId,
 };
 pub use test_utils::*;
-use frame_system::pallet_prelude::BlockNumberFor;
 
 type Block = frame_system::mocking::MockBlock<Test>;
 

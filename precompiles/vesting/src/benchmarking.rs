@@ -124,7 +124,7 @@ mod benchmarks {
 		let min_transfer = T::MinVestedTransfer::get();
 		let _ = T::Currency::issue(min_transfer);
 		T::Currency::make_free_balance_be(&caller, min_transfer);
-		
+
 		let target: T::AccountId = account("target", 0, 1);
 		let mut handle = MockHandle::new(T::AccountIdToH160::convert(target.clone()));
 		let target_lookup = T::Lookup::unlookup(target.clone());
@@ -152,7 +152,7 @@ mod benchmarks {
 		let min_transfer = T::MinVestedTransfer::get();
 		let _ = T::Currency::issue(min_transfer);
 		T::Currency::make_free_balance_be(&caller, min_transfer);
-		
+
 		let target: T::AccountId = account("target", 0, 1);
 		let target_lookup = T::Lookup::unlookup(target.clone());
 		let starting_block = 0u32;
@@ -167,7 +167,11 @@ mod benchmarks {
 
 		#[block]
 		{
-			VestingPrecompile::<T>::vest_other(&mut handle, Address::from(T::AccountIdToH160::convert(target))).unwrap();
+			VestingPrecompile::<T>::vest_other(
+				&mut handle,
+				Address::from(T::AccountIdToH160::convert(target)),
+			)
+			.unwrap();
 		}
 	}
 }
