@@ -55,15 +55,19 @@ where
 	#[precompile::public("vesting(address)")]
 	#[precompile::view]
 	pub fn vesting(
-		_handle: &mut impl PrecompileHandle,
+		handle: &mut impl PrecompileHandle,
 		account: Address,
 	) -> EvmResult<Vec<VestingInfo>> {
-		// TODO super::register_cost::<Runtime>(handle, Runtime::WeightInfo::precompile_vesting())?;
-
 		match PalletVesting::<Runtime>::vesting(Runtime::AccountIdToH160::convert_back(
 			account.into(),
 		)) {
 			Some(v) => {
+				register_cost::<Runtime>(
+					handle,
+					<Runtime as wrapper::pallet::Config>::WeightInfo::precompile_vesting(
+						v.len() as u32
+					),
+				)?;
 				let mut output: Vec<VestingInfo> = Vec::with_capacity(v.len());
 
 				for i in v {
@@ -76,7 +80,13 @@ where
 
 				Ok(output)
 			},
-			None => Ok(Vec::new()),
+			None => {
+				register_cost::<Runtime>(
+					handle,
+					<Runtime as wrapper::pallet::Config>::WeightInfo::precompile_vesting(0),
+				)?;
+				Ok(Vec::new())
+			},
 		}
 	}
 
