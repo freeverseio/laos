@@ -14,14 +14,28 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
-mod account_id_to_h160;
-mod balance_to_u256;
-mod block_number_to_u256;
-mod to_author;
-mod transaction_converter;
+use crate::Balance;
+use sp_core::U256;
+use sp_runtime::traits::Convert;
 
-pub(crate) use account_id_to_h160::AccountIdToH160;
-pub(crate) use balance_to_u256::BalanceToU256;
-pub(crate) use block_number_to_u256::BlockNumberToU256;
-pub(crate) use to_author::ToAuthor;
-pub use transaction_converter::TransactionConverter;
+/// Converts [`Balance`] to [`U256`]
+pub struct BalanceToU256;
+
+impl Convert<Balance, U256> for BalanceToU256 {
+	fn convert(b: Balance) -> U256 {
+		U256::from(b)
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use sp_core::U256;
+
+	#[test]
+	fn convert_balance_to_u256() {
+		let balance: Balance = 1;
+		let u = BalanceToU256::convert(balance);
+		assert_eq!(u, U256::from(1));
+	}
+}

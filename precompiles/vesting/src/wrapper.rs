@@ -43,7 +43,7 @@ pub mod pallet {
 		/// Converts `BalanceOf<Self>` to `U256`
 		type BalanceOfToU256: Convert<BalanceOf<Self>, U256>;
 
-		#[pallet::no_default]
+		#[pallet::no_default_bounds]
 		/// Converts `BlockNumberFor<Self>` to `U256`
 		type BlockNumberForToU256: Convert<BlockNumberFor<Self>, U256>;
 
@@ -64,6 +64,10 @@ pub mod pallet {
 			derive_impl, pallet_prelude::inject_runtime_type, register_default_impl,
 		};
 
+		type AccountId = H160;
+		type Balance = u128;
+		type BlockNumber = u64;
+
 		pub struct TestDefaultConfig;
 
 		#[derive_impl(frame_system::config_preludes::TestDefaultConfig as frame_system::pallet::DefaultConfig, no_aggregated_types)]
@@ -73,26 +77,34 @@ pub mod pallet {
 		impl DefaultConfig for TestDefaultConfig {
 			type AccountIdToH160 = AccountIdToH160;
 			type BalanceOfToU256 = BalanceOfToU256;
+			type BlockNumberForToU256 = BlockNumberForToU256;
 			type WeightInfo = ();
 		}
 
 		pub struct AccountIdToH160;
-		impl Convert<laos_primitives::AccountId, H160> for AccountIdToH160 {
-			fn convert(account_id: laos_primitives::AccountId) -> H160 {
+		impl Convert<AccountId, H160> for AccountIdToH160 {
+			fn convert(account_id: AccountId) -> H160 {
 				H160(account_id.0)
 			}
 		}
 
-		impl ConvertBack<laos_primitives::AccountId, H160> for AccountIdToH160 {
-			fn convert_back(account_id: H160) -> laos_primitives::AccountId {
-				laos_primitives::AccountId::from(account_id)
+		impl ConvertBack<AccountId, H160> for AccountIdToH160 {
+			fn convert_back(account_id: H160) -> AccountId {
+				AccountId::from(account_id)
 			}
 		}
 
 		pub struct BalanceOfToU256;
+		impl Convert<Balance, U256> for BalanceOfToU256 {
+			fn convert(b: Balance) -> U256 {
+				U256::from(b)
+			}
+		}
 
-		impl Convert<laos_primitives::Balance, U256> for BalanceOfToU256 {
-			fn convert(b: laos_primitives::Balance) -> U256 {
+		pub struct BlockNumberForToU256;
+
+		impl Convert<BlockNumber, U256> for BlockNumberForToU256 {
+			fn convert(b: BlockNumber) -> U256 {
 				U256::from(b)
 			}
 		}

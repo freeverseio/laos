@@ -28,7 +28,7 @@ use frame_support::{
 use frame_system::pallet_prelude::BlockNumberFor;
 use sp_core::{H160, U256};
 use sp_runtime::{
-	traits::{Convert, ConvertInto, IdentityLookup},
+	traits::{ConvertInto, IdentityLookup},
 	ConsensusEngineId,
 };
 pub use test_utils::*;
@@ -63,32 +63,8 @@ parameter_types! {
 	pub const MaxTokenUriLength: u32 = 512;
 }
 
-pub struct BlockNumberForToU256;
-
-impl Convert<BlockNumberFor<Test>, U256> for BlockNumberForToU256 {
-	fn convert(b: BlockNumberFor<Test>) -> U256 {
-		U256::from(b)
-	}
-}
-
-pub struct AccountIdToH160;
-
-impl sp_runtime::traits::Convert<AccountId, H160> for AccountIdToH160 {
-	fn convert(account_id: AccountId) -> H160 {
-		account_id
-	}
-}
-
-impl sp_runtime::traits::ConvertBack<AccountId, H160> for AccountIdToH160 {
-	fn convert_back(h160: H160) -> AccountId {
-		h160
-	}
-}
-
 #[derive_impl(pallet::config_preludes::TestDefaultConfig as pallet::DefaultConfig)]
 impl pallet::Config for Test {
-	type AccountIdToH160 = AccountIdToH160;
-	type BlockNumberForToU256 = BlockNumberForToU256;
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
 }
 
