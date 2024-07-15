@@ -118,7 +118,6 @@ fn vesting_for_account_with_two_vestings_returns_vesting_info_vec() {
 		});
 }
 
-
 #[test]
 fn vest_reverts_no_vested_funds() {
 	ExtBuilder::default().build().execute_with(|| {
@@ -206,4 +205,3 @@ fn vest_other_increases_other_usable_balance() {
 			assert_eq!(Balances::usable_balance(H160::from(Alice)), end_block as u128);
 		});
 }
-
