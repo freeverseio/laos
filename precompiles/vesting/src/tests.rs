@@ -89,7 +89,12 @@ fn vesting_for_account_with_two_vestings_returns_vesting_info_vec() {
 			assert_ok!(Pallet::<Test>::vested_transfer(
 				RuntimeOrigin::signed(Bob.into()),
 				Alice.into(),
-				VestingInfoPallet::new(locked, per_block, starting_block),
+				VestingInfo {
+					locked: locked.into(),
+					per_block: per_block.into(),
+					starting_block: starting_block.into(),
+				}
+				.into(),
 			));
 			assert_ok!(Pallet::<Test>::vested_transfer(
 				RuntimeOrigin::signed(Bob.into()),

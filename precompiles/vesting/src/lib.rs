@@ -19,9 +19,9 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 use fp_evm::ExitError;
 use frame_support::{pallet_prelude::Weight, DefaultNoBound};
-use frame_system::RawOrigin;
+use frame_system::{pallet_prelude::BlockNumberFor, RawOrigin};
 use pallet_evm::GasWeightMapping;
-use pallet_vesting::Pallet as PalletVesting;
+use pallet_vesting::{Pallet as PalletVesting, VestingInfo as VestingInfoP};
 use precompile_utils::prelude::{revert, solidity, Address, EvmResult, PrecompileHandle};
 use scale_info::prelude::{format, string::String};
 use sp_core::U256;
@@ -36,6 +36,48 @@ pub struct VestingInfo {
 	locked: U256,
 	per_block: U256,
 	starting_block: U256,
+}
+
+// WrapperVestingInfo is a wrapper around the VestingInfo struct, adding a marker to keep track
+// of the Runtime type. This is used to bridge the types from the pallet_vesting to the precompile context.
+struct WrapperVestingInfo<Runtime> {
+	inner: VestingInfo,
+	_marker: PhantomData<Runtime>,
+}
+
+impl<Runtime: Config> From<VestingInfoP<BalanceOf<Runtime>, BlockNumberFor<Runtime>>>
+	for WrapperVestingInfo<Runtime>
+where
+	BalanceOf<Runtime>: Into<U256>,
+	BlockNumberFor<Runtime>: Into<U256>,
+{
+	fn from(vesting_info: VestingInfoP<BalanceOf<Runtime>, BlockNumberFor<Runtime>>) -> Self {
+		Self {
+			inner: VestingInfo {
+				locked: Runtime::BalanceOfToU256::convert(vesting_info.locked()),
+				per_block: Runtime::BalanceOfToU256::convert(vesting_info.per_block()),
+				starting_block: Runtime::BlockNumberForToU256::convert(
+					vesting_info.starting_block(),
+				),
+			},
+			_marker: PhantomData,
+		}
+	}
+}
+
+impl<Runtime> From<VestingInfo> for VestingInfoP<BalanceOf<Runtime>, BlockNumberFor<Runtime>>
+where
+	Runtime: Config,
+	BalanceOf<Runtime>: Into<U256>,
+	BlockNumberFor<Runtime>: Into<U256>,
+{
+	fn from(vesting: VestingInfo) -> Self {
+		Self::new(
+			Runtime::BalanceOfToU256::convert(vesting.locked.into()),
+			Runtime::BalanceOfToU256::convert(vesting.per_block),
+			Runtime::BlockNumberForToU256::convert(vesting.starting_block),
+		)
+	}
 }
 
 #[derive(Clone, DefaultNoBound)]
@@ -68,17 +110,10 @@ where
 						v.len() as u32
 					),
 				)?;
-				let mut output: Vec<VestingInfo> = Vec::with_capacity(v.len());
+				let output: Vec<WrapperVestingInfo<Runtime>> =
+					v.into_iter().map(|i| i.into()).collect();
 
-				for i in v {
-					output.push(VestingInfo {
-						locked: Runtime::BalanceOfToU256::convert(i.locked()),
-						per_block: Runtime::BalanceOfToU256::convert(i.per_block()),
-						starting_block: Runtime::BlockNumberForToU256::convert(i.starting_block()),
-					})
-				}
-
-				Ok(output)
+				Ok(output.into_iter().map(|i| i.inner).collect())
 			},
 			None => {
 				register_cost::<Runtime>(
