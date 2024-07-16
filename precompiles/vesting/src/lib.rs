@@ -18,18 +18,22 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 use fp_evm::ExitError;
-use frame_support::{pallet_prelude::Weight, DefaultNoBound};
-use frame_system::RawOrigin;
+use frame_support::{pallet_prelude::Weight, traits::tokens::currency::Currency, DefaultNoBound};
+use frame_system::{pallet_prelude::BlockNumberFor, RawOrigin};
 use pallet_evm::GasWeightMapping;
 use pallet_vesting::Pallet as PalletVesting;
 use precompile_utils::prelude::{revert, solidity, Address, EvmResult, PrecompileHandle};
 use scale_info::prelude::{format, string::String};
-use sp_core::U256;
+use sp_core::{H160, U256};
 use sp_runtime::{
 	traits::{Convert, ConvertBack, PhantomData, StaticLookup},
 	DispatchError,
 };
 use sp_std::vec::Vec;
+
+type BalanceOf<Runtime> = <<Runtime as pallet_vesting::Config>::Currency as Currency<
+	<Runtime as frame_system::Config>::AccountId,
+>>::Balance;
 
 #[derive(Default, solidity::Codec)]
 pub struct VestingInfo {
@@ -50,7 +54,10 @@ impl<Runtime> VestingPrecompile<Runtime> {
 #[precompile_utils::precompile]
 impl<Runtime> VestingPrecompile<Runtime>
 where
-	Runtime: Config,
+	Runtime: Config + pallet_vesting::Config,
+	Runtime::AccountIdToH160: ConvertBack<Runtime::AccountId, H160>,
+	BalanceOf<Runtime>: Into<U256>,
+	BlockNumberFor<Runtime>: Into<U256>,
 {
 	#[precompile::public("vesting(address)")]
 	#[precompile::view]
@@ -72,9 +79,9 @@ where
 
 				for i in v {
 					output.push(VestingInfo {
-						locked: Runtime::BalanceOfToU256::convert(i.locked()),
-						per_block: Runtime::BalanceOfToU256::convert(i.per_block()),
-						starting_block: Runtime::BlockNumberForToU256::convert(i.starting_block()),
+						locked: i.locked().into(),
+						per_block: i.per_block().into(),
+						starting_block: i.starting_block().into(),
 					})
 				}
 

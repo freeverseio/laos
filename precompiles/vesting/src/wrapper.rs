@@ -16,36 +16,18 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use frame_support::{pallet, traits::tokens::currency::Currency};
+use frame_support::pallet;
 pub use pallet::*;
-use sp_core::{H160, U256};
-use sp_runtime::traits::{Convert, ConvertBack};
 
 #[pallet]
 pub mod pallet {
-
-	use frame_system::pallet_prelude::BlockNumberFor;
-
-	use super::*;
 	use crate::*;
 
-	pub type BalanceOf<Runtime> = <<Runtime as pallet_vesting::Config>::Currency as Currency<
-		<Runtime as frame_system::Config>::AccountId,
-	>>::Balance;
-
 	#[pallet::config(with_default)]
-	pub trait Config: frame_system::Config + pallet_vesting::Config {
+	pub trait Config: frame_system::Config {
 		#[pallet::no_default_bounds]
 		/// Converts `Self::AccountId` to `H160`
 		type AccountIdToH160: ConvertBack<Self::AccountId, H160>;
-
-		#[pallet::no_default_bounds]
-		/// Converts `BalanceOf<Self>` to `U256`
-		type BalanceOfToU256: Convert<BalanceOf<Self>, U256>;
-
-		#[pallet::no_default]
-		/// Converts `BlockNumberFor<Self>` to `U256`
-		type BlockNumberForToU256: Convert<BlockNumberFor<Self>, U256>;
 
 		#[pallet::no_default]
 		/// Gas weight mapping
@@ -65,6 +47,7 @@ pub mod pallet {
 		};
 
 		pub struct TestDefaultConfig;
+		type AccountId = H160;
 
 		#[derive_impl(frame_system::config_preludes::TestDefaultConfig as frame_system::pallet::DefaultConfig, no_aggregated_types)]
 		impl frame_system::DefaultConfig for TestDefaultConfig {}
@@ -72,28 +55,19 @@ pub mod pallet {
 		#[register_default_impl(TestDefaultConfig)]
 		impl DefaultConfig for TestDefaultConfig {
 			type AccountIdToH160 = AccountIdToH160;
-			type BalanceOfToU256 = BalanceOfToU256;
 			type WeightInfo = ();
 		}
 
 		pub struct AccountIdToH160;
-		impl Convert<laos_primitives::AccountId, H160> for AccountIdToH160 {
-			fn convert(account_id: laos_primitives::AccountId) -> H160 {
+		impl Convert<AccountId, H160> for AccountIdToH160 {
+			fn convert(account_id: AccountId) -> H160 {
 				H160(account_id.0)
 			}
 		}
 
-		impl ConvertBack<laos_primitives::AccountId, H160> for AccountIdToH160 {
-			fn convert_back(account_id: H160) -> laos_primitives::AccountId {
-				laos_primitives::AccountId::from(account_id)
-			}
-		}
-
-		pub struct BalanceOfToU256;
-
-		impl Convert<laos_primitives::Balance, U256> for BalanceOfToU256 {
-			fn convert(b: laos_primitives::Balance) -> U256 {
-				U256::from(b)
+		impl ConvertBack<AccountId, H160> for AccountIdToH160 {
+			fn convert_back(account_id: H160) -> AccountId {
+				AccountId::from(account_id)
 			}
 		}
 	}

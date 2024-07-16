@@ -18,17 +18,19 @@
 #![cfg(feature = "runtime-benchmarks")]
 use super::*;
 
-use crate::pallet::Pallet;
+use crate::pallet::{Config, Pallet};
 #[allow(unused)]
-// use pallet_vesting::Pallet as PalletVesting;
 use fp_evm::Transfer;
 use frame_benchmarking::v2::*;
-use frame_system::RawOrigin;
+use frame_system::{pallet_prelude::BlockNumberFor, RawOrigin};
 use pallet_evm::{Context, ExitError, ExitReason, Log, PrecompileHandle};
 use pallet_vesting::Pallet as PalletVesting;
 use precompile_utils::prelude::Address;
 use sp_core::{Get, H160, H256, U256};
-use sp_runtime::{traits::Convert, Saturating};
+use sp_runtime::{
+	traits::{Convert, ConvertBack},
+	Saturating,
+};
 use sp_std::{vec, vec::Vec};
 
 pub struct MockHandle {
@@ -112,7 +114,17 @@ impl PrecompileHandle for MockHandle {
 	}
 }
 
-#[benchmarks]
+type BalanceOf<Runtime> = <<Runtime as pallet_vesting::Config>::Currency as Currency<
+	<Runtime as frame_system::Config>::AccountId,
+>>::Balance;
+
+#[benchmarks(
+	where
+		T: Config + pallet_vesting::Config,
+		T::AccountIdToH160: ConvertBack<T::AccountId, H160>,
+		BalanceOf<T>: Into<U256>,
+		BlockNumberFor<T>: Into<U256>
+)]
 mod benchmarks {
 	use super::*;
 	use frame_support::traits::tokens::currency::Currency;
