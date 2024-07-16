@@ -102,6 +102,7 @@ fn vesting_for_account_with_two_vestings_returns_vesting_info_vec() {
 					Precompile1,
 					PrecompileCall::vesting { account: Address(Alice.into()) },
 				)
+				.expect_cost(56898396)
 				.execute_returns(vec![
 					VestingInfo {
 						locked: locked.into(),
@@ -150,6 +151,7 @@ fn vest_increases_usable_balance() {
 			roll_to(end_block.into());
 			precompiles()
 				.prepare_test(Alice, Precompile1, PrecompileCall::vest {})
+				.expect_cost(472000000)
 				.execute_some();
 
 			assert_eq!(Balances::usable_balance(H160::from(Alice)), end_block as u128);
@@ -197,11 +199,9 @@ fn vest_other_increases_other_usable_balance() {
 					Precompile1,
 					PrecompileCall::vest_other { account: Address(Alice.into()) },
 				)
+				.expect_cost(472000000)
 				.execute_some();
 
 			assert_eq!(Balances::usable_balance(H160::from(Alice)), end_block as u128);
 		});
 }
-
-// TODO has a cost
-// TODO runtime evm tests
