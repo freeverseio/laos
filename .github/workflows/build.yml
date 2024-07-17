@@ -69,6 +69,25 @@ jobs:
       - name: Check clippy
         run: |
           SKIP_WASM_BUILD=1 cargo clippy --all-targets --workspace --features runtime-benchmarks --features try-runtime -- -D warnings
+
+  lint-e2e:
+    runs-on:
+      group: laos
+      labels: ubuntu-16-cores
+    steps:
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Install dependencies
+        run: |
+          npm install
+        working-directory: ./e2e-tests
+      - name: Run lint
+        run: |
+          npm run fmt-check
+        working-directory: ./e2e-tests
+
   test:
     runs-on:
       group: laos
