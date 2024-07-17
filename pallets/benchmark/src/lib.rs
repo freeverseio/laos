@@ -19,8 +19,8 @@ use sp_core::H160;
 use sp_runtime::traits::{Convert, ConvertBack};
 
 pub use pallet::*;
-pub mod weights;
 pub mod precompiles;
+pub mod weights;
 
 #[frame_support::pallet]
 pub mod pallet {

@@ -19,7 +19,10 @@ use sp_runtime::BuildStorage;
 
 use precompile_utils::precompile_set::{AddressU64, PrecompileAt, PrecompileSetBuilder};
 
-use crate::{pallet, precompiles::vesting::{VestingPrecompile, VestingPrecompileCall}};
+use crate::{
+	pallet,
+	precompiles::vesting::{VestingPrecompile, VestingPrecompileCall},
+};
 use frame_support::{
 	derive_impl, parameter_types,
 	traits::{FindAuthor, OnFinalize, OnInitialize, WithdrawReasons},

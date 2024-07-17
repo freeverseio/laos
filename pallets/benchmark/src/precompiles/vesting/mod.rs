@@ -17,6 +17,7 @@
 //! LAOS precompile module.
 
 #![cfg_attr(not(feature = "std"), no_std)]
+pub use crate::{precompiles::register_cost, weights::WeightInfo};
 use frame_support::{traits::tokens::currency::Currency, DefaultNoBound};
 use frame_system::{pallet_prelude::BlockNumberFor, RawOrigin};
 use pallet_vesting::Pallet as PalletVesting;
@@ -28,7 +29,6 @@ use sp_runtime::{
 	DispatchError,
 };
 use sp_std::vec::Vec;
-pub use crate::{weights::WeightInfo, precompiles::register_cost};
 
 type BalanceOf<Runtime> = <<Runtime as pallet_vesting::Config>::Currency as Currency<
 	<Runtime as frame_system::Config>::AccountId,
@@ -70,9 +70,7 @@ where
 			Some(v) => {
 				register_cost::<Runtime>(
 					handle,
-					<Runtime as crate::Config>::WeightInfo::precompile_vesting(
-						v.len() as u32
-					),
+					<Runtime as crate::Config>::WeightInfo::precompile_vesting(v.len() as u32),
 				)?;
 				let mut output: Vec<VestingInfo> = Vec::with_capacity(v.len());
 

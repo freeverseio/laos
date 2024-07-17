@@ -19,6 +19,7 @@ mod aura;
 mod authorship;
 mod balances;
 mod base_fee;
+mod benchmark;
 mod cumulus_dmp_queue;
 mod cumulus_parachain_system;
 mod cumulus_xcmp_queue;
@@ -35,7 +36,6 @@ mod timestamp;
 mod transaction_payment;
 mod utility;
 mod vesting;
-mod benchmark;
 pub(crate) mod xcm_config;
 
 use frame_support::parameter_types;
