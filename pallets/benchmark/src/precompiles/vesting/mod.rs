@@ -17,19 +17,18 @@
 //! LAOS precompile module.
 
 #![cfg_attr(not(feature = "std"), no_std)]
-use fp_evm::ExitError;
-use frame_support::{pallet_prelude::Weight, traits::tokens::currency::Currency, DefaultNoBound};
+use frame_support::{traits::tokens::currency::Currency, DefaultNoBound};
 use frame_system::{pallet_prelude::BlockNumberFor, RawOrigin};
-use pallet_evm::GasWeightMapping;
 use pallet_vesting::Pallet as PalletVesting;
 use precompile_utils::prelude::{revert, solidity, Address, EvmResult, PrecompileHandle};
 use scale_info::prelude::{format, string::String};
 use sp_core::{H160, U256};
 use sp_runtime::{
-	traits::{Convert, ConvertBack, PhantomData, StaticLookup},
+	traits::{ConvertBack, PhantomData, StaticLookup},
 	DispatchError,
 };
 use sp_std::vec::Vec;
+pub use crate::{weights::WeightInfo, precompiles::register_cost};
 
 type BalanceOf<Runtime> = <<Runtime as pallet_vesting::Config>::Currency as Currency<
 	<Runtime as frame_system::Config>::AccountId,
@@ -54,7 +53,7 @@ impl<Runtime> VestingPrecompile<Runtime> {
 #[precompile_utils::precompile]
 impl<Runtime> VestingPrecompile<Runtime>
 where
-	Runtime: Config + pallet_vesting::Config,
+	Runtime: crate::Config + pallet_vesting::Config,
 	Runtime::AccountIdToH160: ConvertBack<Runtime::AccountId, H160>,
 	BalanceOf<Runtime>: Into<U256>,
 	BlockNumberFor<Runtime>: Into<U256>,
@@ -71,7 +70,7 @@ where
 			Some(v) => {
 				register_cost::<Runtime>(
 					handle,
-					<Runtime as wrapper::pallet::Config>::WeightInfo::precompile_vesting(
+					<Runtime as crate::Config>::WeightInfo::precompile_vesting(
 						v.len() as u32
 					),
 				)?;
@@ -90,7 +89,7 @@ where
 			None => {
 				register_cost::<Runtime>(
 					handle,
-					<Runtime as wrapper::pallet::Config>::WeightInfo::precompile_vesting(0),
+					<Runtime as crate::Config>::WeightInfo::precompile_vesting(0),
 				)?;
 				Ok(Vec::new())
 			},
@@ -101,7 +100,7 @@ where
 	pub fn vest(handle: &mut impl PrecompileHandle) -> EvmResult<()> {
 		register_cost::<Runtime>(
 			handle,
-			<Runtime as wrapper::pallet::Config>::WeightInfo::precompile_vest(),
+			<Runtime as crate::Config>::WeightInfo::precompile_vest(),
 		)?;
 
 		match PalletVesting::<Runtime>::vest(
@@ -118,7 +117,7 @@ where
 	pub fn vest_other(handle: &mut impl PrecompileHandle, account: Address) -> EvmResult<()> {
 		register_cost::<Runtime>(
 			handle,
-			<Runtime as wrapper::pallet::Config>::WeightInfo::precompile_vest_other(),
+			<Runtime as crate::Config>::WeightInfo::precompile_vest_other(),
 		)?;
 
 		let origin = <Runtime as frame_system::Config>::RuntimeOrigin::from(RawOrigin::from(Some(
@@ -141,26 +140,8 @@ fn convert_dispatch_error_to_string(err: DispatchError) -> String {
 	}
 }
 
-fn register_cost<Runtime: Config>(
-	handle: &mut impl PrecompileHandle,
-	weight: Weight,
-) -> Result<(), ExitError> {
-	let required_gas = Runtime::GasWeightMapping::weight_to_gas(weight);
-	let remaining_gas = handle.remaining_gas();
-	if required_gas > remaining_gas {
-		return Err(ExitError::OutOfGas);
-	}
-	handle.record_cost(required_gas)?;
-	handle.record_external_cost(Some(weight.ref_time()), Some(weight.proof_size()))?;
-	Ok(())
-}
-
 mod benchmarking;
 #[cfg(test)]
 mod mock;
 #[cfg(test)]
 mod tests;
-pub mod weights;
-pub use weights::*;
-mod wrapper;
-pub use wrapper::*;

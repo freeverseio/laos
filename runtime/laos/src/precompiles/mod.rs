@@ -30,7 +30,7 @@ use pallet_laos_evolution::{
 	},
 	ASSET_PRECOMPILE_ADDRESS_PREFIX,
 };
-use pallet_vesting_precompile::VestingPrecompile;
+use pallet_benchmark::precompiles::vesting::VestingPrecompile;
 use precompile_utils::precompile_set::{
 	AcceptDelegateCall, AddressU64, CallableByContract, CallableByPrecompile, PrecompileAt,
 	PrecompileSetBuilder, PrecompileSetStartingWith, PrecompilesInRangeInclusive,

@@ -15,11 +15,14 @@
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 #![cfg_attr(not(feature = "std"), no_std)]
+use sp_core::H160;
+use sp_runtime::traits::{Convert, ConvertBack};
 
-use frame_support::pallet;
 pub use pallet::*;
+pub mod weights;
+pub mod precompiles;
 
-#[pallet]
+#[frame_support::pallet]
 pub mod pallet {
 	use crate::*;
 

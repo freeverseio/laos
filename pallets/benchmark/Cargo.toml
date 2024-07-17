@@ -1,6 +1,6 @@
 [package]
-name = "pallet-vesting-precompile"
-description = "A Precompile to make pallet-vesting calls encoding accessible to pallet-evm"
+name = "pallet-benchmark"
+description = "A pallet whose purpose is to benchmark precompile calls"
 version = "0.1.0"
 homepage = "https://freeverse.io"
 edition = "2021"

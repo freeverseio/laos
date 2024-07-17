@@ -35,7 +35,7 @@ mod timestamp;
 mod transaction_payment;
 mod utility;
 mod vesting;
-mod vesting_precompile;
+mod benchmark;
 pub(crate) mod xcm_config;
 
 use frame_support::parameter_types;

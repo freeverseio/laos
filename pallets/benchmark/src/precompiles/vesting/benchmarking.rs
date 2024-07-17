@@ -119,8 +119,8 @@ type BalanceOf<Runtime> = <<Runtime as pallet_vesting::Config>::Currency as Curr
 >>::Balance;
 
 /*
- * Allow directive added because when the macro expands, `T` has where clauses in
- * multiple locations. This is the expanded code:
+ * Allow directive added because when the macro expands, `T` has constraints in
+ * multiple locations. This is what the expanded code looks like:
  * ```
  * fn _precompile_vest<T: Config>(verify: bool)
  * where
