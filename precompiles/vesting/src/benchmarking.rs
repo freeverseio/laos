@@ -118,6 +118,16 @@ type BalanceOf<Runtime> = <<Runtime as pallet_vesting::Config>::Currency as Curr
 	<Runtime as frame_system::Config>::AccountId,
 >>::Balance;
 
+/*
+ * Allow directive added because when the macro expands, `T` has where clauses in
+ * multiple locations. This is the expanded code:
+ * ```
+ * fn _precompile_vest<T: Config>(verify: bool)
+ * where
+ *   T: Config + pallet_vesting: Config,
+ * ```
+ */
+#[allow(clippy::multiple_bound_locations)]
 #[benchmarks(
 	where
 		T: Config + pallet_vesting::Config,
