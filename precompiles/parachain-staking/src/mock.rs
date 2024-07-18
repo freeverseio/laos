@@ -281,11 +281,6 @@ impl ExtBuilder {
 		self
 	}
 
-	pub(crate) fn with_rewards_account(mut self, account: AccountId, balance: Balance) -> Self {
-		self.rewards_account = Some((account, balance));
-		self
-	}
-
 	#[allow(dead_code)]
 	pub(crate) fn with_inflation(mut self, inflation: InflationInfo<Balance>) -> Self {
 		self.inflation = inflation;
