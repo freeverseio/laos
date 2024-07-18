@@ -221,11 +221,7 @@ fn awarded_points_non_zero() {
 				.prepare_test(
 					Alice,
 					Precompile1,
-<<<<<<< HEAD
 					PCall::awarded_points { round: 1u32, candidate: Address(Alice.into()) },
-=======
-					PCall::awarded_points { round: 1u32.into(), candidate: Address(Alice.into()) },
->>>>>>> origin/feature/add-moonbeam-parachain-staking-precompile
 				)
 				.expect_cost(0)
 				.expect_no_logs()
