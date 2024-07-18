@@ -22,6 +22,7 @@ use pallet_asset_metadata_extender::precompiles::asset_metadata_extender::AssetM
 use pallet_evm_precompile_blake2::Blake2F;
 use pallet_evm_precompile_bn128::{Bn128Add, Bn128Mul, Bn128Pairing};
 use pallet_evm_precompile_modexp::Modexp;
+use pallet_evm_precompile_parachain_staking::ParachainStakingPrecompile;
 use pallet_evm_precompile_simple::{ECRecover, Identity, Ripemd160, Sha256};
 use pallet_laos_evolution::{
 	precompiles::{
@@ -63,6 +64,11 @@ pub type LaosPrecompilesSetAt = (
 	PrecompileAt<
 		AddressU64<1029>,
 		AssetMetadataExtenderPrecompile<Runtime>,
+		(CallableByContract, CallableByPrecompile),
+	>,
+	PrecompileAt<
+		AddressU64<1031>,
+		ParachainStakingPrecompile<Runtime>,
 		(CallableByContract, CallableByPrecompile),
 	>,
 );
