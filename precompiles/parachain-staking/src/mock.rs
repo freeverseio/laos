@@ -222,8 +222,6 @@ pub(crate) struct ExtBuilder {
 	delegations: Vec<(AccountId, AccountId, Balance, Percent)>,
 	// inflation config
 	inflation: InflationInfo<Balance>,
-	// rewards account balance
-	rewards_account: Option<(AccountId, Balance)>,
 }
 
 impl Default for ExtBuilder {
@@ -247,7 +245,6 @@ impl Default for ExtBuilder {
 					max: Perbill::from_percent(5),
 				},
 			},
-			rewards_account: None,
 		}
 	}
 }
