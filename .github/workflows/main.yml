@@ -3,7 +3,7 @@ name: Main
 on:
   push:
     branches:
-      - 'feature/change-e2e-tests-ci'
+      - 'main'
 
 jobs:
   e2e-tests:
