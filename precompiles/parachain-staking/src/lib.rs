@@ -24,9 +24,11 @@ mod mock;
 mod tests;
 
 use fp_evm::PrecompileHandle;
-use frame_support::dispatch::{GetDispatchInfo, PostDispatchInfo};
-use frame_support::sp_runtime::Percent;
-use frame_support::traits::{Currency, Get};
+use frame_support::{
+	dispatch::{GetDispatchInfo, PostDispatchInfo},
+	sp_runtime::Percent,
+	traits::{Currency, Get},
+};
 use pallet_evm::AddressMapping;
 use precompile_utils::prelude::*;
 use sp_core::{H160, U256};
@@ -109,9 +111,8 @@ where
 		// TODO CandidatePool is unbounded, we account for a theoretical 200 pool.
 		handle.record_db_read::<Runtime>(7200)?;
 		// Fetch info.
-		let candidate_count: u32 = <pallet_parachain_staking::Pallet<Runtime>>::candidate_pool()
-			.0
-			.len() as u32;
+		let candidate_count: u32 =
+			<pallet_parachain_staking::Pallet<Runtime>>::candidate_pool().0.len() as u32;
 
 		// Build output.
 		Ok(candidate_count)
@@ -261,17 +262,8 @@ where
 			Runtime::AddressMapping::into_account_id(delegator.0),
 		);
 		let amount = pallet_parachain_staking::Pallet::<Runtime>::delegator_state(&delegator)
-			.and_then(|state| {
-				state
-					.delegations
-					.0
-					.into_iter()
-					.find(|b| b.owner == candidate)
-			})
-			.map_or(
-				U256::zero(),
-				|pallet_parachain_staking::Bond { amount, .. }| amount.into(),
-			);
+			.and_then(|state| state.delegations.0.into_iter().find(|b| b.owner == candidate))
+			.map_or(U256::zero(), |pallet_parachain_staking::Bond { amount, .. }| amount.into());
 
 		Ok(amount)
 	}
@@ -292,19 +284,15 @@ where
 		// Twox64Concat(8) + AccountId(20) + Balance(16)
 		// + (AccountId(20) + Balance(16) * MaxTopDelegationsPerCandidate)
 		handle.record_db_read::<Runtime>(
-			44 + ((36
-				* <Runtime as pallet_parachain_staking::Config>::MaxTopDelegationsPerCandidate::get(
+			44 + ((36 *
+				<Runtime as pallet_parachain_staking::Config>::MaxTopDelegationsPerCandidate::get(
 				)) as usize),
 		)?;
-		let is_in_top_delegations = pallet_parachain_staking::Pallet::<Runtime>::top_delegations(
-			&candidate,
-		)
-		.map_or(false, |delegations| {
-			delegations
-				.delegations
-				.into_iter()
-				.any(|b| b.owner == delegator)
-		});
+		let is_in_top_delegations =
+			pallet_parachain_staking::Pallet::<Runtime>::top_delegations(&candidate)
+				.map_or(false, |delegations| {
+					delegations.delegations.into_iter().any(|b| b.owner == delegator)
+				});
 
 		Ok(is_in_top_delegations)
 	}
@@ -373,7 +361,7 @@ where
 		// Blake2128(16) + AccountId(20)
 		// + Vec(
 		// 	ScheduledRequest(20 + 4 + DelegationAction(18))
-		//	* (MaxTopDelegationsPerCandidate + MaxBottomDelegationsPerCandidate)
+		// 	* (MaxTopDelegationsPerCandidate + MaxBottomDelegationsPerCandidate)
 		// )
 		handle.record_db_read::<Runtime>(
 			36 + (
@@ -695,11 +683,9 @@ where
 		delegator_delegation_count: Convert<U256, u32>,
 	) -> EvmResult {
 		if auto_compound > 100 {
-			return Err(
-				RevertReason::custom("Must be an integer between 0 and 100 included")
-					.in_field("auto_compound")
-					.into(),
-			);
+			return Err(RevertReason::custom("Must be an integer between 0 and 100 included")
+				.in_field("auto_compound")
+				.into());
 		}
 
 		let amount = Self::u256_to_amount(amount).in_field("amount")?;
@@ -843,11 +829,9 @@ where
 		delegator_delegation_count: Convert<U256, u32>,
 	) -> EvmResult {
 		if value > 100 {
-			return Err(
-				RevertReason::custom("Must be an integer between 0 and 100 included")
-					.in_field("value")
-					.into(),
-			);
+			return Err(RevertReason::custom("Must be an integer between 0 and 100 included")
+				.in_field("value")
+				.into());
 		}
 
 		let value = Percent::from_percent(value);
