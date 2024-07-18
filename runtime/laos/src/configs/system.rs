@@ -18,7 +18,7 @@ use crate::{
 	weights::RocksDbWeight, AccountId, Balance, Block, PalletInfo, Runtime, RuntimeCall,
 	RuntimeEvent, RuntimeOrigin, RuntimeVersion, VERSION,
 };
-use frame_support::parameter_types;
+use frame_support::{parameter_types, traits::Contains};
 use sp_runtime::traits::{BlakeTwo256, IdentityLookup};
 
 parameter_types! {
@@ -61,7 +61,7 @@ impl frame_system::Config for Runtime {
 	/// The weight of database operations that the runtime can invoke.
 	type DbWeight = RocksDbWeight;
 	/// The basic call filter to use in dispatchable.
-	type BaseCallFilter = ();
+	type BaseCallFilter = BaseCallFilter;
 	/// Weight information for the extrinsics of this pallet.
 	type SystemWeightInfo = ();
 	/// Block & extrinsics weights: base values and limits.
@@ -73,6 +73,13 @@ impl frame_system::Config for Runtime {
 	/// The action to take on a Runtime Upgrade
 	type OnSetCode = cumulus_pallet_parachain_system::ParachainSetCode<Self>;
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
+}
+
+pub struct BaseCallFilter;
+impl Contains<RuntimeCall> for BaseCallFilter {
+	fn contains(_: &RuntimeCall) -> bool {
+		true
+	}
 }
 
 // tests
