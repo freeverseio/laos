@@ -291,13 +291,6 @@ impl ExtBuilder {
 			.build_storage()
 			.expect("Frame system builds valid default genesis config");
 
-		let mut rewards_account = None;
-		let mut balances = self.balances.clone();
-		if let Some((account, balance)) = self.rewards_account {
-			balances.push((account.clone(), balance));
-			rewards_account = Some(account);
-		}
-
 		pallet_balances::GenesisConfig::<Runtime> { balances: self.balances }
 			.assimilate_storage(&mut t)
 			.expect("Pallet balances storage can be assimilated");
@@ -309,7 +302,7 @@ impl ExtBuilder {
 			parachain_bond_reserve_percent: GENESIS_PARACHAIN_BOND_RESERVE_PERCENT,
 			blocks_per_round: GENESIS_BLOCKS_PER_ROUND,
 			num_selected_candidates: GENESIS_NUM_SELECTED_CANDIDATES,
-			rewards_account,
+			rewards_account: None,
 		}
 		.assimilate_storage(&mut t)
 		.expect("Parachain Staking's storage can be assimilated");
