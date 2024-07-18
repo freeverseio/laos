@@ -89,7 +89,6 @@ mod tests {
 	use crate::{
 		currency::UNIT,
 		tests::{new_test_ext, ExtBuilder, ALICE, BOB},
-		Runtime,
 	};
 	use core::str::FromStr;
 	use frame_support::{assert_err, assert_ok, dispatch::PostDispatchInfo, pallet_prelude::Pays};
@@ -198,10 +197,16 @@ mod tests {
 	}
 
 	#[test]
-	fn join_candidates_should_not_be_allowed() {
+	fn join_candidates_should_be_allowed() {
 		new_test_ext().execute_with(|| {
 			let account = AccountId::from_str(ALICE).unwrap();
-			let stake = 100_000;
+			let stake = 20_000 * UNIT;
+
+			assert_ok!(pallet_balances::Pallet::<Runtime>::force_set_balance(
+				RuntimeOrigin::root(),
+				account,
+				stake
+			));
 
 			let call =
 				RuntimeCall::ParachainStaking(pallet_parachain_staking::Call::join_candidates {
@@ -209,10 +214,7 @@ mod tests {
 					candidate_count: 32,
 				});
 
-			assert_err!(
-				call.dispatch(RuntimeOrigin::signed(account)),
-				frame_system::Error::<Runtime>::CallFiltered
-			);
+			assert_ok!(call.dispatch(RuntimeOrigin::signed(account)));
 		});
 	}
 
