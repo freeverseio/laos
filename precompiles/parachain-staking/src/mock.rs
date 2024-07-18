@@ -243,11 +243,7 @@ impl Default for ExtBuilder {
 			delegations: vec![],
 			collators: vec![],
 			inflation: InflationInfo {
-				expect: Range {
-					min: 700,
-					ideal: 700,
-					max: 700,
-				},
+				expect: Range { min: 700, ideal: 700, max: 700 },
 				// not used
 				annual: Range {
 					min: Perbill::from_percent(50),
@@ -280,10 +276,8 @@ impl ExtBuilder {
 		mut self,
 		delegations: Vec<(AccountId, AccountId, Balance)>,
 	) -> Self {
-		self.delegations = delegations
-			.into_iter()
-			.map(|d| (d.0, d.1, d.2, Percent::zero()))
-			.collect();
+		self.delegations =
+			delegations.into_iter().map(|d| (d.0, d.1, d.2, Percent::zero())).collect();
 		self
 	}
 
@@ -291,10 +285,7 @@ impl ExtBuilder {
 		mut self,
 		delegations: Vec<(AccountId, AccountId, Balance, Percent)>,
 	) -> Self {
-		self.delegations = delegations
-			.into_iter()
-			.map(|d| (d.0, d.1, d.2, d.3))
-			.collect();
+		self.delegations = delegations.into_iter().map(|d| (d.0, d.1, d.2, d.3)).collect();
 		self
 	}
 
@@ -309,11 +300,9 @@ impl ExtBuilder {
 			.build_storage()
 			.expect("Frame system builds valid default genesis config");
 
-		pallet_balances::GenesisConfig::<Runtime> {
-			balances: self.balances,
-		}
-		.assimilate_storage(&mut t)
-		.expect("Pallet balances storage can be assimilated");
+		pallet_balances::GenesisConfig::<Runtime> { balances: self.balances }
+			.assimilate_storage(&mut t)
+			.expect("Pallet balances storage can be assimilated");
 		pallet_parachain_staking::GenesisConfig::<Runtime> {
 			candidates: self.collators,
 			delegations: self.delegations,
@@ -358,8 +347,5 @@ pub(crate) fn roll_to_round_begin(round: BlockNumber) {
 }
 
 pub(crate) fn events() -> Vec<RuntimeEvent> {
-	System::events()
-		.into_iter()
-		.map(|r| r.event)
-		.collect::<Vec<_>>()
+	System::events().into_iter().map(|r| r.event).collect::<Vec<_>>()
 }
