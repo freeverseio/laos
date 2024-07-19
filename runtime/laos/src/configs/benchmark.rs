@@ -14,26 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
-// This file is part of Substrate.
+use crate::{types::AccountIdToH160, weights, Runtime};
+use pallet_precompiles_benchmark::pallet::Config;
 
-//! Expose the auto generated weight files.
-
-pub mod block_weights;
-pub mod cumulus_pallet_xcmp_queue;
-pub mod extrinsic_weights;
-pub mod pallet_asset_metadata_extender;
-pub mod pallet_evm;
-pub mod pallet_laos_evolution;
-pub mod pallet_multisig;
-pub mod pallet_parachain_staking;
-pub mod pallet_precompiles_benchmark;
-pub mod pallet_proxy;
-pub mod pallet_session;
-pub mod pallet_sudo;
-pub mod pallet_timestamp;
-pub mod pallet_utility;
-pub mod pallet_vesting;
-pub mod paritydb_weights;
-pub mod rocksdb_weights;
-
-pub use rocksdb_weights::constants::RocksDbWeight;
+impl Config for Runtime {
+	type AccountIdToH160 = AccountIdToH160;
+	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
+	type WeightInfo = weights::pallet_precompiles_benchmark::WeightInfo<Runtime>;
+}

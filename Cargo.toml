@@ -252,6 +252,7 @@ substrate-fixed = { git = "https://github.com/encointer/substrate-fixed", defaul
 pallet-laos-evolution = { path = "./pallets/laos-evolution", default-features = false }
 pallet-asset-metadata-extender = { path = "./pallets/asset-metadata-extender", default-features = false }
 pallet-parachain-staking = { path = "./pallets/parachain-staking", default-features = false }
+pallet-precompiles-benchmark = { path = "./pallets/precompiles-benchmark", default-features = false}
 
 # Primitives
 laos-primitives = { path = "./primitives", default-features = false }
