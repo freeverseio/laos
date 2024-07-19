@@ -2,7 +2,7 @@
 pragma solidity >=0.8.3;
 
 /// @dev The ParachainStaking contract's address.
-address constant PARACHAIN_STAKING_ADDRESS = 0x0000000000000000000000000000000000000800;
+address constant PARACHAIN_STAKING_ADDRESS = 0x0000000000000000000000000000000000000407;
 
 /// @dev The ParachainStaking contract's instance.
 ParachainStaking constant PARACHAIN_STAKING_CONTRACT = ParachainStaking(
@@ -14,7 +14,7 @@ ParachainStaking constant PARACHAIN_STAKING_CONTRACT = ParachainStaking(
 /// @dev The interface through which solidity contracts will interact with Parachain Staking
 /// We follow this same interface including four-byte function selectors, in the precompile that
 /// wraps the pallet
-/// @custom:address 0x0000000000000000000000000000000000000800
+/// @custom:address 0x0000000000000000000000000000000000000407
 interface ParachainStaking {
     /// @dev Check whether the specified address is currently a staking delegator
     /// @custom:selector fd8ab482
