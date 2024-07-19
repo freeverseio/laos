@@ -17,7 +17,7 @@
 //! Test utilities
 use super::*;
 use frame_support::{
-	construct_runtime, derive_impl, parameter_types,
+	construct_runtime, parameter_types,
 	traits::{Everything, Get, OnFinalize, OnInitialize},
 	weights::Weight,
 };
@@ -89,13 +89,20 @@ parameter_types! {
 	pub const ExistentialDeposit: u128 = 0;
 }
 
-#[derive_impl(pallet_balances::config_preludes::TestDefaultConfig as pallet_balances::DefaultConfig)]
 impl pallet_balances::Config for Runtime {
+	type MaxReserves = ();
+	type ReserveIdentifier = [u8; 4];
+	type MaxLocks = ();
 	type Balance = Balance;
+	type RuntimeEvent = RuntimeEvent;
+	type DustRemoval = ();
 	type ExistentialDeposit = ExistentialDeposit;
 	type AccountStore = System;
+	type WeightInfo = ();
 	type RuntimeHoldReason = ();
-	type DustRemoval = ();
+	type FreezeIdentifier = ();
+	type MaxFreezes = ();
+	type MaxHolds = ();
 }
 
 const MAX_POV_SIZE: u64 = 5 * 1024 * 1024;
