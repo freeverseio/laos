@@ -1,0 +1,58 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_target",
+        "type": "address"
+      }
+    ],
+    "name": "vesting",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "locked",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "perBlock",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "startingBlock",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct Vesting.VestingInfo[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "vest",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_target",
+        "type": "address"
+      }
+    ],
+    "name": "vestOther",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

@@ -138,6 +138,7 @@ construct_runtime!(
 		// LAOS pallets
 		LaosEvolution: pallet_laos_evolution = 100,
 		AssetMetadataExtender: pallet_asset_metadata_extender = 101,
+		Benchmark: pallet_benchmark = 102,
 	}
 );
 

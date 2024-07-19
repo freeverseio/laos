@@ -19,6 +19,7 @@
 use frame_support::parameter_types;
 
 use pallet_asset_metadata_extender::precompiles::asset_metadata_extender::AssetMetadataExtenderPrecompile;
+use pallet_benchmark::precompiles::vesting::VestingPrecompile;
 use pallet_evm_precompile_blake2::Blake2F;
 use pallet_evm_precompile_bn128::{Bn128Add, Bn128Mul, Bn128Pairing};
 use pallet_evm_precompile_modexp::Modexp;
@@ -65,6 +66,11 @@ pub type LaosPrecompilesSetAt = (
 		AddressU64<1029>,
 		AssetMetadataExtenderPrecompile<Runtime>,
 		(CallableByContract, CallableByPrecompile),
+	>,
+	PrecompileAt<
+	AddressU64<1030>,
+	VestingPrecompile<Runtime>,
+	(CallableByContract, CallableByPrecompile),
 	>,
 	PrecompileAt<
 		AddressU64<1031>,

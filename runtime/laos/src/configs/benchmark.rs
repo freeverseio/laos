@@ -14,18 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
-frame_benchmarking::define_benchmarks!(
-	[pallet_timestamp, Timestamp]
-	[pallet_sudo, Sudo]
-	[pallet_utility, Utility]
-	[pallet_multisig, Multisig]
-	[pallet_proxy, Proxy]
-	[pallet_session, SessionBench::<Runtime>] // TODO check why SessionBench::<Runtime>
-	[pallet_parachain_staking, ParachainStaking]
-	[cumulus_pallet_xcmp_queue, XcmpQueue]
-	[pallet_evm, EVM]
-	[pallet_laos_evolution, LaosEvolution]
-	[pallet_asset_metadata_extender, AssetMetadataExtender]
-	[pallet_benchmark, Benchmark]
-	// TODO pallet_xcm?
-);
+use crate::{types::AccountIdToH160, weights, Runtime};
+use pallet_benchmark::pallet::Config;
+
+impl Config for Runtime {
+	type AccountIdToH160 = AccountIdToH160;
+	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
+	type WeightInfo = weights::pallet_benchmark::WeightInfo<Runtime>;
+}
