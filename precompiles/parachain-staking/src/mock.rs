@@ -23,14 +23,13 @@ use frame_support::{
 };
 use frame_system::pallet_prelude::BlockNumberFor;
 use pallet_evm::{EnsureAddressNever, EnsureAddressRoot};
-use pallet_parachain_staking::{AwardedPts, InflationInfo, Points, Range};
+use pallet_parachain_staking::{rewards, AwardedPts, InflationInfo, Points, Range};
 use precompile_utils::{
 	precompile_set::*,
 	testing::{Alice, MockAccount},
 };
 use sp_consensus_slots::Slot;
 use sp_core::{H256, U256};
-use sp_io;
 use sp_runtime::{
 	traits::{BlakeTwo256, IdentityLookup},
 	BuildStorage, Perbill, Percent,
@@ -64,7 +63,6 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = Everything;
 	type DbWeight = ();
 	type RuntimeOrigin = RuntimeOrigin;
-	type RuntimeTask = RuntimeTask;
 	type Nonce = u64;
 	type Block = Block;
 	type RuntimeCall = RuntimeCall;
@@ -90,6 +88,7 @@ impl frame_system::Config for Runtime {
 parameter_types! {
 	pub const ExistentialDeposit: u128 = 0;
 }
+
 impl pallet_balances::Config for Runtime {
 	type MaxReserves = ();
 	type ReserveIdentifier = [u8; 4];
@@ -103,7 +102,7 @@ impl pallet_balances::Config for Runtime {
 	type RuntimeHoldReason = ();
 	type FreezeIdentifier = ();
 	type MaxFreezes = ();
-	type RuntimeFreezeReason = ();
+	type MaxHolds = ();
 }
 
 const MAX_POV_SIZE: u64 = 5 * 1024 * 1024;
@@ -122,7 +121,6 @@ parameter_types! {
 		let block_gas_limit = BlockGasLimit::get().min(u64::MAX.into()).low_u64();
 		block_gas_limit.saturating_div(BLOCK_STORAGE_LIMIT)
 	};
-	pub SuicideQuickClearLimit: u32 = 0;
 }
 
 pub type Precompiles<R> =
@@ -149,8 +147,6 @@ impl pallet_evm::Config for Runtime {
 	type FindAuthor = ();
 	type OnCreate = ();
 	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
-	type SuicideQuickClearLimit = SuicideQuickClearLimit;
-	type GasLimitStorageGrowthRatio = GasLimitStorageGrowthRatio;
 	type Timestamp = Timestamp;
 	type WeightInfo = pallet_evm::weights::SubstrateWeight<Runtime>;
 }
@@ -214,15 +210,14 @@ impl pallet_parachain_staking::Config for Runtime {
 	type MinCandidateStk = MinCandidateStk;
 	type MinDelegation = MinDelegation;
 	type BlockAuthor = BlockAuthor;
-	type PayoutCollatorReward = ();
 	type OnCollatorPayout = ();
+	type PayoutReward = rewards::TransferFromRewardsAccount;
 	type OnInactiveCollator = ();
 	type OnNewRound = ();
 	type SlotProvider = StakingRoundSlotProvider;
 	type WeightInfo = ();
 	type MaxCandidates = MaxCandidates;
-	type SlotDuration = frame_support::traits::ConstU64<6_000>;
-	type BlockTime = frame_support::traits::ConstU64<6_000>;
+	type SlotsPerYear = frame_support::traits::ConstU32<{ 31_557_600 / 6 }>;
 }
 
 pub(crate) struct ExtBuilder {
@@ -311,6 +306,7 @@ impl ExtBuilder {
 			parachain_bond_reserve_percent: GENESIS_PARACHAIN_BOND_RESERVE_PERCENT,
 			blocks_per_round: GENESIS_BLOCKS_PER_ROUND,
 			num_selected_candidates: GENESIS_NUM_SELECTED_CANDIDATES,
+			rewards_account: None,
 		}
 		.assimilate_storage(&mut t)
 		.expect("Parachain Staking's storage can be assimilated");

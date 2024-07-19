@@ -199,7 +199,7 @@ fn awarded_points_zero() {
 				.prepare_test(
 					Alice,
 					Precompile1,
-					PCall::awarded_points { round: 1u32.into(), candidate: Address(Bob.into()) },
+					PCall::awarded_points { round: 1u32, candidate: Address(Bob.into()) },
 				)
 				.expect_cost(0)
 				.expect_no_logs()
@@ -221,7 +221,7 @@ fn awarded_points_non_zero() {
 				.prepare_test(
 					Alice,
 					Precompile1,
-					PCall::awarded_points { round: 1u32.into(), candidate: Address(Alice.into()) },
+					PCall::awarded_points { round: 1u32, candidate: Address(Alice.into()) },
 				)
 				.expect_cost(0)
 				.expect_no_logs()
@@ -652,7 +652,7 @@ fn delegation_request_is_pending_works() {
 					Precompile1,
 					PCall::schedule_revoke_delegation { candidate: Address(Alice.into()) },
 				)
-				.expect_cost(285706258)
+				.expect_cost(303638378)
 				.expect_no_logs()
 				.execute_returns(());
 
@@ -716,7 +716,7 @@ fn candidate_exit_is_pending_works() {
 					Precompile1,
 					PCall::schedule_leave_candidates { candidate_count: 1.into() },
 				)
-				.expect_cost(284172042)
+				.expect_cost(302793032)
 				.expect_no_logs()
 				.execute_returns(());
 
@@ -774,7 +774,7 @@ fn candidate_request_is_pending_works() {
 					Precompile1,
 					PCall::schedule_candidate_bond_less { less: 0.into() },
 				)
-				.expect_cost(146735000)
+				.expect_cost(171000000)
 				.expect_no_logs()
 				.execute_returns(());
 
@@ -1446,7 +1446,7 @@ fn delegate_with_auto_compound_returns_error_if_percent_above_hundred() {
 						},
 					)
 					.execute_reverts(|output| {
-						from_utf8(&output).unwrap().contains(
+						from_utf8(output).unwrap().contains(
 							"auto_compound: Must be an integer between 0 and 100 included",
 						)
 					});
@@ -1514,7 +1514,7 @@ fn set_auto_compound_returns_error_if_value_above_hundred_percent() {
 						},
 					)
 					.execute_reverts(|output| {
-						from_utf8(&output)
+						from_utf8(output)
 							.unwrap()
 							.contains("value: Must be an integer between 0 and 100 included")
 					});
@@ -1540,7 +1540,7 @@ fn set_auto_compound_fails_if_not_delegation() {
 						delegator_delegation_count: 0.into(),
 					},
 				)
-				.execute_reverts(|output| from_utf8(&output).unwrap().contains("DelegatorDNE"));
+				.execute_reverts(|output| from_utf8(output).unwrap().contains("DelegatorDNE"));
 		});
 }
 
