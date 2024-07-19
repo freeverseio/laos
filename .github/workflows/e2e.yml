@@ -1,24 +1,10 @@
-name: QA
+name: E2E Tests
 
-# Controls when the action will run.
 on:
+  workflow_call:
   workflow_dispatch:
 
 jobs:
-  check:
-    runs-on:
-      group: laos
-      labels: ubuntu-16-cores
-    steps:
-      - uses: actions/checkout@v3
-      - uses: ./.github/actions/setup
-      - uses: ./.github/actions/cache
-        with:
-          cache-key: build_and_push
-      - name: Check
-        run: |
-          cargo check --all-targets --release --features runtime-benchmarks --features try-runtime 
-
   e2e-tests:
     runs-on:
       group: laos
@@ -71,8 +57,7 @@ jobs:
           npm install
         working-directory: ./e2e-tests
 
-      - name: Run QA tests
+      - name: Run e2e tests
         run: |
-          npm run build && npm run qa
+          npm run build && npm run test
         working-directory: ./e2e-tests
-
