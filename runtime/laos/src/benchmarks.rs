@@ -26,6 +26,6 @@ frame_benchmarking::define_benchmarks!(
 	[pallet_evm, EVM]
 	[pallet_laos_evolution, LaosEvolution]
 	[pallet_asset_metadata_extender, AssetMetadataExtender]
-	[pallet_benchmark, Benchmark]
+	[pallet_precompiles_benchmark, PrecompilesBenchmark]
 	// TODO pallet_xcm?
 );

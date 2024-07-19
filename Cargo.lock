@@ -5103,7 +5103,6 @@ dependencies = [
  "pallet-authorship",
  "pallet-balances",
  "pallet-base-fee",
- "pallet-benchmark",
  "pallet-ethereum",
  "pallet-evm",
  "pallet-evm-chain-id",
@@ -5115,6 +5114,7 @@ dependencies = [
  "pallet-message-queue",
  "pallet-multisig",
  "pallet-parachain-staking",
+ "pallet-precompiles-benchmark",
  "pallet-proxy",
  "pallet-session",
  "pallet-sudo",
@@ -6856,30 +6856,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-benchmark"
-version = "0.1.0"
-dependencies = [
- "fp-evm",
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "hex",
- "laos-primitives",
- "pallet-balances",
- "pallet-evm",
- "pallet-timestamp",
- "pallet-vesting",
- "parity-scale-codec",
- "precompile-utils",
- "scale-info",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
- "test-utils",
-]
-
-[[package]]
 name = "pallet-bounties"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/polkadot-sdk?branch=release-polkadot-v1.1.0#39482e78cc1580c9f16a8f8d8261baf914ab5559"
@@ -7455,6 +7431,30 @@ dependencies = [
  "sp-runtime",
  "sp-std",
  "substrate-fixed",
+ "test-utils",
+]
+
+[[package]]
+name = "pallet-precompiles-benchmark"
+version = "0.1.0"
+dependencies = [
+ "fp-evm",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "hex",
+ "laos-primitives",
+ "pallet-balances",
+ "pallet-evm",
+ "pallet-timestamp",
+ "pallet-vesting",
+ "parity-scale-codec",
+ "precompile-utils",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
  "test-utils",
 ]
 

@@ -1,5 +1,5 @@
 [package]
-name = "pallet-benchmark"
+name = "pallet-precompiles-benchmark"
 description = "A pallet whose purpose is to benchmark precompile calls"
 version = "0.1.0"
 homepage = "https://freeverse.io"
