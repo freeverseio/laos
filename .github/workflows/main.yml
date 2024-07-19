@@ -1,0 +1,10 @@
+name: Main
+
+on:
+  push:
+    branches:
+      - 'main'
+
+jobs:
+  e2e-tests:
+    uses: ./.github/workflows/e2e.yml
