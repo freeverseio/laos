@@ -4,6 +4,7 @@ import AssetMetadataExtender from "../build/contracts/AssetMetadataExtender.json
 import EvolutionCollection from "../build/contracts/EvolutionCollection.json";
 import EvolutionCollectionFactory from "../build/contracts/EvolutionCollectionFactory.json";
 import Vesting from "../build/contracts/Vesting.json";
+import ParachainStaking from "../build/contracts/ParachainStaking.json";
 
 // Node config
 export const RUNTIME_SPEC_NAME = "laos";
@@ -46,6 +47,11 @@ export const SELECTOR_LOG_UPDATED_EXTENDED_UL_WITH_EXTERNAL_URI =
 // Vesting contract
 export const VESTING_CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000406";
 export const VESTING_ABI = Vesting.abi as AbiItem[];
+
+
+// Staking Contract
+export const PARACHAIN_STAKING_CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000407";
+export const PARACHAIN_STAKING_ABI = ParachainStaking.abi as AbiItem[];
 
 // Constants
 export const MAX_U96 = new BN("79228162514264337593543950336"); // 2^96 - 1
