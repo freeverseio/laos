@@ -5115,6 +5115,7 @@ dependencies = [
  "pallet-message-queue",
  "pallet-multisig",
  "pallet-parachain-staking",
+ "pallet-precompiles-benchmark",
  "pallet-proxy",
  "pallet-session",
  "pallet-sudo",
@@ -7458,6 +7459,30 @@ dependencies = [
  "sp-runtime",
  "sp-std",
  "substrate-fixed",
+ "test-utils",
+]
+
+[[package]]
+name = "pallet-precompiles-benchmark"
+version = "0.1.0"
+dependencies = [
+ "fp-evm",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "hex",
+ "laos-primitives",
+ "pallet-balances",
+ "pallet-evm",
+ "pallet-timestamp",
+ "pallet-vesting",
+ "parity-scale-codec",
+ "precompile-utils",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
  "test-utils",
 ]
 

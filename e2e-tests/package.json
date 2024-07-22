@@ -6,9 +6,8 @@
 	"scripts": {
 		"fmt-check": "prettier ./tests --check",
 		"fmt": "prettier ./tests --write",
-		"build": "cp -r ../pallets/laos-evolution/src/precompiles/evolution_collection_factory/contracts contracts && cp -r ../pallets/laos-evolution/src/precompiles/evolution_collection/contracts contracts && cp -r ../pallets/asset-metadata-extender/src/precompiles/asset_metadata_extender/contracts contracts && truffle compile && rm -rf contracts",
-		"test": "mocha -r ts-node/register -t 70000 --grep '@qa' --invert 'tests/**/*.ts'",
-		"qa": "mocha -r ts-node/register -t 200000 --grep '@qa' 'tests/**/*.ts'",
+		"build": "./compile_contracts.sh",
+		"test": "mocha -r ts-node/register -t 270000 'tests/**/*.ts'",
 		"test-sql": "FRONTIER_BACKEND_TYPE='sql' mocha -r ts-node/register 'tests/**/*.ts'"
 	},
 	"author": "",
