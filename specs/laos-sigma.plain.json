@@ -2,7 +2,7 @@
   "name": "Laos Sigma Testnet",
   "id": "laos_sigma_testnet",
   "chainType": "Live",
-  "bootNodes": [],
+  "bootNodes": ["/dns4/laossigma-boot-0.gorengine.com/tcp/30334/p2p/12D3KooWBMM8gJxomycSLjnNnNAVUMEFhBPfBECvT9NvAhPBreRq"],
   "telemetryEndpoints": null,
   "protocolId": "laos_sigma_testnet",
   "properties": {
