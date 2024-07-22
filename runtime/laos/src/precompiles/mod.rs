@@ -73,10 +73,10 @@ pub type LaosPrecompilesSetAt = (
 		(CallableByContract, CallableByPrecompile),
 	>,
 	PrecompileAt<
-	AddressU64<1031>,
-	ParachainStakingPrecompile<Runtime>,
-	(CallableByContract, CallableByPrecompile),
->,
+		AddressU64<1031>,
+		ParachainStakingPrecompile<Runtime>,
+		(CallableByContract, CallableByPrecompile),
+	>,
 );
 
 parameter_types! {
