@@ -9,6 +9,8 @@ import {
     STAKING_CONTRACT_ADDRESS,
     GAS_PRICE,
     UNIT,
+    FAITH_PRIVATE_KEY,
+    FAITH,
 } from "./config";
 import { expect } from "chai";
 import Contract from "web3-eth-contract";
@@ -25,19 +27,32 @@ describeWithExistingNode("Frontier RPC (Staking)", (context) => {
             gas: GAS_LIMIT,
         });
         context.web3.eth.accounts.wallet.add(ALITH_PRIVATE_KEY);
+        context.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
     });
-    step("Alith can join as candidate", async function () {
-        const alith = new Keyring({ type: "ethereum" }).addFromUri(ALITH_PRIVATE_KEY);
+
+    step("Faith can join as candidate", async function () {
+        // insert session key into the node and link to Faith
+        const faith = new Keyring({ type: "ethereum" }).addFromUri(FAITH_PRIVATE_KEY);
         const key = (await context.polkadot.rpc.author.rotateKeys()).toHex();
-        context.polkadot.tx.session.setKeys(key, "").signAndSend(alith, (result) => {
-            console.log(`transaction result: ${result}`);
+        context.polkadot.tx.session.setKeys(key, "").signAndSend(faith, (result) => {
         }).catch((error: any) => {
             console.log('transaction failed', error);
         });
 
-        let nonce = await context.web3.eth.getTransactionCount(ALITH);
-        const result = await contract.methods.joinCandidates(BigInt(20000) * UNIT, 0).send({ from: ALITH, gas: GAS_LIMIT, nonce: nonce++ });
+        expect(await contract.methods.isCandidate(FAITH).call()).to.be.eq(false);
+        let nonce = await context.web3.eth.getTransactionCount(FAITH);
+        const candidateCount = await contract.methods.candidateCount().call();
+        const result = await contract.methods.joinCandidates(BigInt(20000) * UNIT, candidateCount).send({ from: FAITH, gas: GAS_LIMIT, nonce: nonce++ });
         expect(result.status).to.be.eq(true);
+        expect(await contract.methods.isCandidate(FAITH).call()).to.be.eq(true);
+    });
+    
+    step("Alith can delegate to Faith", async function () {
+        expect(await contract.methods.isDelegator(ALITH).call()).to.be.eq(false);
+        let nonce = await context.web3.eth.getTransactionCount(ALITH);
+        const result = await contract.methods.delegate(FAITH, BigInt(1000) * UNIT, 0, 0).send({ from: ALITH, gas: GAS_LIMIT, nonce: nonce++ });
+        expect(result.status).to.be.eq(true);
+        expect(await contract.methods.isDelegator(ALITH).call()).to.be.eq(true);
     });
 });
 
