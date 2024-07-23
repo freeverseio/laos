@@ -128,7 +128,7 @@ fn create_test_genesis_config() -> laos_runtime::RuntimeGenesisConfig {
 					max: Perbill::zero(),
 				},
 			},
-			candidates: vec![(predefined_accounts::ALITH.into(), 1000000)],
+			candidates: vec![(predefined_accounts::ALITH.into(), UNIT * 20_000)],
 			..Default::default()
 		},
 		evm_chain_id: laos_runtime::EVMChainIdConfig {
