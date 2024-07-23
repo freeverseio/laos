@@ -1,6 +1,5 @@
 name: Build
 
-# Controls when the action will run.
 on:
   push:
   workflow_dispatch:
@@ -69,6 +68,26 @@ jobs:
       - name: Check clippy
         run: |
           SKIP_WASM_BUILD=1 cargo clippy --all-targets --workspace --features runtime-benchmarks --features try-runtime -- -D warnings
+
+  lint-e2e:
+    runs-on:
+      group: laos
+      labels: ubuntu-16-cores
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Install dependencies
+        run: |
+          npm install
+        working-directory: ./e2e-tests
+      - name: Run lint
+        run: |
+          npm run fmt-check
+        working-directory: ./e2e-tests
+
   test:
     runs-on:
       group: laos
@@ -100,61 +119,3 @@ jobs:
       - name: Try Runtime for Laos Sigma
         run: |
           RUST_LOG=try-runtime ./target/release/laos try-runtime --runtime ./target/release/wbuild/laos-runtime/laos_runtime.wasm on-runtime-upgrade --checks=pre-and-post live --uri ws://174.138.104.13:9944
-
-  e2e-tests:
-    runs-on:
-      group: laos
-      labels: ubuntu-16-cores
-    steps:
-      - uses: actions/checkout@v3
-      - uses: ./.github/actions/setup
-      - uses: ./.github/actions/cache
-        with:
-          cache-key: build_and_push
-
-      - name: Build
-        run: |
-          cargo build --release --locked
-
-      - name: Copy polkadot relay chain binary
-        run: |
-          wget https://github.com/paritytech/polkadot/releases/download/v0.9.42/polkadot
-          chmod +x ./polkadot
-      - name: Copy Astar parachain binary
-        run: |
-          wget https://github.com/AstarNetwork/Astar/releases/download/v5.23.0/astar-collator-v5.23.0-ubuntu-x86_64.tar.gz
-          tar xf astar-collator-v5.23.0-ubuntu-x86_64.tar.gz
-          chmod +x ./astar-collator
-
-      - name: Copy zombienet binary
-        run: |
-          wget https://github.com/paritytech/zombienet/releases/download/v1.3.55/zombienet-linux-x64
-          chmod +x ./zombienet-linux-x64
-
-      - name: Run zombienet
-        run: |
-          export ZOMBIENET_RELAYCHAIN_COMMAND=./polkadot
-          export ZOMBIENET_LAOS_COMMAND=./target/release/laos
-          export ZOMBIENET_ASTAR_COMMAND=./astar-collator
-          ./zombienet-linux-x64 spawn ./zombienet/native.toml -p native &
-          echo "Zombienet started"
-
-      - name: Wait for zombienet
-        run: |
-          timeout 36 sh -c 'until nc -z $0 $1; do echo -n .; sleep 1; done' localhost 9999
-
-      - name: Use Node.js 18
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-
-      - name: Install dependencies
-        run: |
-          npm install
-        working-directory: ./e2e-tests
-
-      - name: Run tests
-        run: |
-          npm run build && npm run test
-        working-directory: ./e2e-tests
-

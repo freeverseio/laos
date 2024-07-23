@@ -46,7 +46,9 @@ LAOS Sigma is the testnet where all development undergoes final testing before b
 
 
 ### LAOS Parachain: 
+* Substrate RPC endpoint: [wss://rpc.laos.laosfoundation.io](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Frpc.laos.laosfoundation.io#/rpc)   
 * ParaId: 3370
+* EVM Chain ID: 6283
 
 ## Running your own node
 

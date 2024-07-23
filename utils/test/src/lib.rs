@@ -21,21 +21,28 @@
 /// Rolls to a block number by simulating the block production
 ///
 /// ```rs
-/// roll_one_block!(true);
+/// roll_one_block!(true); // staking enabled
+/// roll_one_block!(false); // staking disabled
 /// ```
 #[macro_export]
 macro_rules! roll_one_block {
-	($staking_enabled: expr) => {
+	(true) => {{
 		Balances::on_finalize(System::block_number());
 		System::on_finalize(System::block_number());
 		System::set_block_number(System::block_number() + 1);
 		System::reset_events();
 		System::on_initialize(System::block_number());
 		Balances::on_initialize(System::block_number());
-		if $staking_enabled {
-			ParachainStaking::on_initialize(System::block_number());
-		}
-	};
+		ParachainStaking::on_initialize(System::block_number());
+	}};
+	(false) => {{
+		Balances::on_finalize(System::block_number());
+		System::on_finalize(System::block_number());
+		System::set_block_number(System::block_number() + 1);
+		System::reset_events();
+		System::on_initialize(System::block_number());
+		Balances::on_initialize(System::block_number());
+	}};
 }
 
 /// Asserts that some events were never emitted.
