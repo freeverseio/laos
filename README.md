@@ -22,9 +22,9 @@ and it is targeting July 11th to start producing blocks.
 
 ### LAOS Testnets
 
-LAOS currently has two testnets, named *KLAOS Nova* and *LAOS Omega*. 
+LAOS currently has two testnets, named *KLAOS Nova* and *LAOS Sigma*. 
 After launching to mainnet, KLAOS Nova will eventually be deprecated,
-leaving *LAOS Omega* as the only officially supported testnet.
+leaving *LAOS Sigma* as the only officially supported testnet.
 
 KLAOS Nova is the testnet aimed at building your DApp, leveraging bridgeless minting, and all other EVM functionalities.
 
@@ -37,12 +37,12 @@ KLAOS Nova is the testnet aimed at building your DApp, leveraging bridgeless min
 * ParaId: 2001
 * EVM PalletInstance: 51
 
-LAOS Omega is the testnet where all development undergoes final testing before being integrated in LAOS mainnet. Currently, LAOS Omega can be used to test staking functionality. Token transfers and EVM functionalities will be soon integrated.
+LAOS Sigma is the testnet where all development undergoes final testing before being integrated in LAOS mainnet. Currently, LAOS Sigma can be used to test staking functionality. Token transfers and EVM functionalities will be soon integrated.
 
-* Testnet: **LAOS Omega**
-* Substrate RPC endpoint: [wss://rpc.laosomega.laosfoundation.io](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Frpc.laosomega.laosfoundation.io#/rpc)   
+* Testnet: **LAOS Sigma**
+* Substrate RPC endpoint: [wss://rpc.laossigma.laosfoundation.io](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Frpc.laossigma.laosfoundation.io#/rpc)   
 * ParaId: 4006
-* EVM Chain ID: 62831
+* EVM Chain ID: 62850
 
 
 ### LAOS Parachain: 
@@ -57,7 +57,7 @@ The quickest entry point to run your own LAOS Parachain node:
 $ docker run freeverseio/laos-node:<release> --chain=<chain_name>
 ```
 where:
-* `<chain_name>` shall be set to `klaosnova` or `laosomega` to operate on the testnets, and
+* `<chain_name>` shall be set to `klaosnova` or `laossigma` to operate on the testnets, and
 * `<release>` shall be chosen among the available releases published [here](https://github.com/freeverseio/laos/releases).
 
 # Contributing
