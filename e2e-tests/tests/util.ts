@@ -17,7 +17,7 @@ import BN from "bn.js";
 import { expect } from "chai";
 import "@polkadot/api-augment";
 
-import { ApiPromise, HttpProvider } from '@polkadot/api';
+import { ApiPromise, HttpProvider } from "@polkadot/api";
 
 require("events").EventEmitter.prototype._maxListeners = 100;
 
@@ -44,15 +44,20 @@ export async function customRequest(web3: Web3, method: string, params: any[]) {
 	});
 }
 
-export function describeWithExistingNode(title: string, cb: (context: { web3: Web3, polkadot: ApiPromise }) => void, provider?: string) {
+export function describeWithExistingNode(
+	title: string,
+	cb: (context: { web3: Web3; polkadot: ApiPromise }) => void,
+	provider?: string
+) {
 	describe(title, () => {
 		let context: {
 			web3: Web3;
 			ethersjs: ethers.JsonRpcProvider;
-			polkadot: ApiPromise; 
+			polkadot: ApiPromise;
 		} = {
-			web3: null, ethersjs: null,
-			polkadot: undefined
+			web3: null,
+			ethersjs: null,
+			polkadot: undefined,
 		};
 
 		before(async () => {
