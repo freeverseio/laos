@@ -118,4 +118,4 @@ jobs:
           cargo build --release --locked --package laos --features=try-runtime
       - name: Try Runtime for Laos Sigma
         run: |
-          RUST_LOG=try-runtime ./target/release/laos try-runtime --runtime ./target/release/wbuild/laos-runtime/laos_runtime.wasm on-runtime-upgrade --checks=pre-and-post live --uri ws://174.138.104.13:9944
+          RUST_LOG=try-runtime ./target/release/laos try-runtime --runtime ./target/release/wbuild/laos-runtime/laos_runtime.wasm on-runtime-upgrade --checks=pre-and-post live --uri ws://159.223.241.51:9944
