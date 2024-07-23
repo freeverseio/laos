@@ -33,5 +33,5 @@ export ZOMBIENET_ASTAR_COMMAND=<path-to-astar-executable>
 ```
 
 ```sh
-$ ./zombienet spawn native.toml -p native
+$ ./zombienet spawn native.toml
 ```

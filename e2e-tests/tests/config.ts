@@ -4,6 +4,7 @@ import AssetMetadataExtender from "../build/contracts/AssetMetadataExtender.json
 import EvolutionCollection from "../build/contracts/EvolutionCollection.json";
 import EvolutionCollectionFactory from "../build/contracts/EvolutionCollectionFactory.json";
 import Vesting from "../build/contracts/Vesting.json";
+import ParachainStaking from "../build/contracts/ParachainStaking.json";
 
 // Node config
 export const RUNTIME_SPEC_NAME = "laos";
@@ -13,13 +14,15 @@ export const LOCAL_NODE_URL = "http://127.0.0.1:9999";
 
 // Chain config
 export const CHAIN_ID = 667;
+export const GAS_PRICE = "0x3B9ACA00";
+export const ETH_BLOCK_GAS_LIMIT = 15000000; // The same configuration as runtime
+export const GAS_LIMIT = ETH_BLOCK_GAS_LIMIT - 10000000;
+
+// Accounts
 export const FAITH = "0xC0F0f4ab324C46e55D02D0033343B4Be8A55532d";
 export const FAITH_PRIVATE_KEY = "0xb9d2ea9a615f3165812e8d44de0d24da9bbd164b65c4f0573e1ce2c8dbd9c8df";
 export const ALITH = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
 export const ALITH_PRIVATE_KEY = "0x5fb92d6e98884f76de468fa3f6278f8807c48bebc13595d45af5bdc4da702133";
-export const GAS_PRICE = "0x3B9ACA00";
-export const ETH_BLOCK_GAS_LIMIT = 15000000; // The same configuration as runtime
-export const GAS_LIMIT = ETH_BLOCK_GAS_LIMIT - 10000000;
 
 // LAOS Evolution Contract
 export const EVOLUTION_COLLECTION_FACTORY_ABI = EvolutionCollectionFactory.abi as AbiItem[];
@@ -47,6 +50,11 @@ export const SELECTOR_LOG_UPDATED_EXTENDED_UL_WITH_EXTERNAL_URI =
 export const VESTING_CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000406";
 export const VESTING_ABI = Vesting.abi as AbiItem[];
 
+// Staking contract
+export const STAKING_CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000800";
+export const STAKING_ABI = ParachainStaking.abi as AbiItem[];
+
 // Constants
 export const MAX_U96 = new BN("79228162514264337593543950336"); // 2^96 - 1
 export const REVERT_BYTECODE = "0x60006000fd";
+export const UNIT = BigInt(Math.pow(10, 18));

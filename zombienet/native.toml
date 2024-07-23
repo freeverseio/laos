@@ -1,3 +1,6 @@
+[settings]
+provider = "native"
+
 [relaychain]
 default_command = "{{ZOMBIENET_RELAYCHAIN_COMMAND}}"
 chain = "rococo-local"
@@ -14,7 +17,8 @@ chain = "rococo-local"
 [[parachains]]
 id = 2900
 cumulus_based = true
-chain = "local-v"
+chain = "local"
+force_decorator = "generic-evm"
 
   [[parachains.collators]]
   name = "laos"

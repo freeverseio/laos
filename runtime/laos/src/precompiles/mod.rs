@@ -73,7 +73,7 @@ pub type LaosPrecompilesSetAt = (
 		(CallableByContract, CallableByPrecompile),
 	>,
 	PrecompileAt<
-		AddressU64<1031>,
+		AddressU64<2048>,
 		ParachainStakingPrecompile<Runtime>,
 		(CallableByContract, CallableByPrecompile),
 	>,
