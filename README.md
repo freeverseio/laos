@@ -57,7 +57,7 @@ The quickest entry point to run your own LAOS Parachain node:
 $ docker run freeverseio/laos-node:<release> --chain=<chain_name>
 ```
 where:
-* `<chain_name>` shall be set to `klaosnova` or `laossigma` to operate on the testnets, and
+* `<chain_name>` shall be set to `klaos-nova` or `laos-sigma` to operate on the testnets, and
 * `<release>` shall be chosen among the available releases published [here](https://github.com/freeverseio/laos/releases).
 
 # Contributing
