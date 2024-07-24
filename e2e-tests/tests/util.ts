@@ -47,7 +47,7 @@ export async function customRequest(web3: Web3, method: string, params: any[]) {
 export function describeWithExistingNode(
 	title: string,
 	cb: (context: { web3: Web3; polkadot: ApiPromise }) => void,
-	provider?: string
+	providerNodeUrl?: string
 ) {
 	describe(title, () => {
 		let context: {
@@ -61,7 +61,11 @@ export function describeWithExistingNode(
 		};
 
 		before(async () => {
-			if (!provider) {
+			if (providerNodeUrl) {
+				context.web3 = new Web3(providerNodeUrl);
+				const wsProvider = new HttpProvider(providerNodeUrl);
+				context.polkadot = await new ApiPromise({ provider: wsProvider }).isReady;
+			} else {
 				context.web3 = new Web3(LOCAL_NODE_URL);
 				const wsProvider = new HttpProvider(LOCAL_NODE_URL);
 				context.polkadot = await new ApiPromise({ provider: wsProvider }).isReady;
