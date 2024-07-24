@@ -1606,7 +1606,7 @@ fn get_candidate_total_counted_getter() {
 #[test]
 fn test_solidity_interface_has_all_function_selectors_documented_and_implemented() {
 	check_precompile_implements_solidity_interfaces(
-		&["StakingInterface.sol"],
+		&["ParachainStaking.sol"],
 		PCall::supports_selector,
 	)
 }
