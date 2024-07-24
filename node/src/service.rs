@@ -20,6 +20,7 @@
 use std::{path::Path, sync::Arc, time::Duration};
 
 use cumulus_client_cli::CollatorOptions;
+use jsonrpsee::core::client;
 // Local Runtime Types
 use laos_runtime::{apis::RuntimeApi, opaque::Block, types::TransactionConverter, Hash};
 
@@ -474,6 +475,285 @@ async fn start_node_impl(
 	Ok((task_manager, client))
 }
 
+#[sc_tracing::logging::prefix_logs_with("Parachain")]
+fn start_dev_node_impl(
+	mut parachain_config: Configuration,
+	eth_config: EthConfiguration,
+) -> Result<TaskManager, sc_service::error::Error> {
+	let mut parachain_config = prepare_node_config(parachain_config);
+
+	let PartialComponents {
+		client,
+		backend,
+		mut task_manager,
+		import_queue,
+		keystore_container,
+		transaction_pool,
+		select_chain: (),
+		other: (block_import, mut telemetry, telemetry_worker_handle, frontier_backend, overrides),
+	} = new_partial(&parachain_config, &eth_config)?;
+
+	let FrontierPartialComponents { filter_pool, fee_history_cache, fee_history_cache_limit } =
+		new_frontier_partial(&eth_config)?;
+
+	// let (relay_chain_interface, collator_key) = build_relay_chain_interface(
+	// 	polkadot_config,
+	// 	&parachain_config,
+	// 	telemetry_worker_handle,
+	// 	&mut task_manager,
+	// 	collator_options.clone(),
+	// 	hwbench.clone(),
+	// )
+	// .await
+	// .map_err(|e| sc_service::Error::Application(Box::new(e) as Box<_>))?;
+
+	let validator = parachain_config.role.is_authority();
+	let prometheus_registry = parachain_config.prometheus_registry().cloned();
+	let import_queue_service = import_queue.service();
+	let net_config = sc_network::config::FullNetworkConfiguration::new(&parachain_config.network);
+
+	// let (network, system_rpc_tx, tx_handler_controller, start_network, sync_service) =
+	// 	build_network(BuildNetworkParams {
+	// 		parachain_config: &parachain_config,
+	// 		client: client.clone(),
+	// 		transaction_pool: transaction_pool.clone(),
+	// 		para_id,
+	// 		net_config,
+	// 		spawn_handle: task_manager.spawn_handle(),
+	// 		relay_chain_interface: relay_chain_interface.clone(),
+	// 		import_queue,
+	// 		sybil_resistance_level: CollatorSybilResistance::Resistant, // because of Aura
+	// 	})
+	// 	.await?;
+
+	let (network, system_rpc_tx, tx_handler_controller, start_network, sync_service) =
+		sc_service::build_network(sc_service::BuildNetworkParams {
+			config: &parachain_config,
+			net_config,
+			client: client.clone(),
+			transaction_pool: transaction_pool.clone(),
+			spawn_handle: task_manager.spawn_handle(),
+			import_queue,
+			block_announce_validator_builder: None,
+			warp_sync_params: None,
+		})?;
+
+	if parachain_config.offchain_worker.enabled {
+		task_manager.spawn_handle().spawn(
+			"offchain-workers-runner",
+			"offchain-worker",
+			sc_offchain::OffchainWorkers::new(sc_offchain::OffchainWorkerOptions {
+				runtime_api_provider: client.clone(),
+				is_validator: parachain_config.role.is_authority(),
+				keystore: Some(keystore_container.keystore()),
+				offchain_db: backend.offchain_storage(),
+				transaction_pool: Some(OffchainTransactionPoolFactory::new(
+					transaction_pool.clone(),
+				)),
+				network_provider: network.clone(),
+				enable_http_requests: true,
+				custom_extensions: |_| vec![],
+			})
+			.run(client.clone(), task_manager.spawn_handle())
+			.boxed(),
+		);
+	}
+
+	// Sinks for pubsub notifications.
+	// Everytime a new subscription is created, a new mpsc channel is added to the sink pool.
+	// The MappingSyncWorker sends through the channel on block import and the subscription emits a
+	// notification to the subscriber on receiving a message through this channel. This way we avoid
+	// race conditions when using native substrate block import notification stream.
+	let pubsub_notification_sinks: fc_mapping_sync::EthereumBlockNotificationSinks<
+		fc_mapping_sync::EthereumBlockNotification<Block>,
+	> = Default::default();
+	let pubsub_notification_sinks = Arc::new(pubsub_notification_sinks);
+	let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
+	let target_gas_price = eth_config.target_gas_price;
+
+	// for ethereum-compatibility rpc.
+	parachain_config.rpc_id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
+
+	let eth_rpc_params = crate::rpc::EthDeps {
+		client: client.clone(),
+		pool: transaction_pool.clone(),
+		graph: transaction_pool.pool().clone(),
+		converter: Some(TransactionConverter),
+		is_authority: parachain_config.role.is_authority(),
+		enable_dev_signer: eth_config.enable_dev_signer,
+		network: network.clone(),
+		sync: sync_service.clone(),
+		frontier_backend: match frontier_backend.clone() {
+			fc_db::Backend::KeyValue(b) => Arc::new(b),
+			fc_db::Backend::Sql(b) => Arc::new(b),
+		},
+		overrides: overrides.clone(),
+		block_data_cache: Arc::new(fc_rpc::EthBlockDataCacheTask::new(
+			task_manager.spawn_handle(),
+			overrides.clone(),
+			eth_config.eth_log_block_cache,
+			eth_config.eth_statuses_cache,
+			prometheus_registry.clone(),
+		)),
+		filter_pool: filter_pool.clone(),
+		max_past_logs: eth_config.max_past_logs,
+		fee_history_cache: fee_history_cache.clone(),
+		fee_history_cache_limit,
+		execute_gas_limit_multiplier: eth_config.execute_gas_limit_multiplier,
+		forced_parent_hashes: None,
+		pending_create_inherent_data_providers: move |_, ()| async move {
+			let current = sp_timestamp::InherentDataProvider::from_system_time();
+			let next_slot = current.timestamp().as_millis() + slot_duration.as_millis();
+			let timestamp = sp_timestamp::InherentDataProvider::new(next_slot.into());
+			let slot = sp_consensus_aura::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
+				*timestamp,
+				slot_duration,
+			);
+			let dynamic_fee = fp_dynamic_fee::InherentDataProvider(U256::from(target_gas_price));
+			Ok((slot, timestamp, dynamic_fee))
+		},
+	};
+
+	let rpc_builder = {
+		let client = client.clone();
+		let transaction_pool = transaction_pool.clone();
+		let pubsub_notification_sinks = pubsub_notification_sinks.clone();
+
+		Box::new(move |deny_unsafe, subscription_task_executor| {
+			let deps = crate::rpc::FullDeps {
+				client: client.clone(),
+				pool: transaction_pool.clone(),
+				deny_unsafe,
+				eth: eth_rpc_params.clone(),
+			};
+
+			crate::rpc::create_full(
+				deps,
+				subscription_task_executor,
+				pubsub_notification_sinks.clone(),
+			)
+			.map_err(Into::into)
+		})
+	};
+
+	// spawn_frontier_tasks(
+	// 	&task_manager,
+	// 	client.clone(),
+	// 	backend.clone(),
+	// 	frontier_backend,
+	// 	filter_pool,
+	// 	overrides,
+	// 	fee_history_cache,
+	// 	fee_history_cache_limit,
+	// 	sync_service.clone(),
+	// 	pubsub_notification_sinks,
+	// )
+	// .await;
+
+	// if let Some(hwbench) = hwbench {
+	// 	sc_sysinfo::print_hwbench(&hwbench);
+	// 	// Here you can check whether the hardware meets your chains' requirements. Putting a link
+	// 	// in there and swapping out the requirements for your own are probably a good idea. The
+	// 	// requirements for a para-chain are dictated by its relay-chain.
+	// 	if !SUBSTRATE_REFERENCE_HARDWARE.check_hardware(&hwbench) && validator {
+	// 		log::warn!(
+	// 			"⚠️  The hardware does not meet the minimal requirements for role 'Authority'."
+	// 		);
+	// 	}
+
+	// 	if let Some(ref mut telemetry) = telemetry {
+	// 		let telemetry_handle = telemetry.handle();
+	// 		task_manager.spawn_handle().spawn(
+	// 			"telemetry_hwbench",
+	// 			None,
+	// 			sc_sysinfo::initialize_hwbench_telemetry(telemetry_handle, hwbench),
+	// 		);
+	// 	}
+	// }
+
+	let announce_block = {
+		let sync_service = sync_service.clone();
+		Arc::new(move |hash, data| sync_service.announce_block(hash, data))
+	};
+
+	if parachain_config.role.is_authority() {
+		let proposer_factory = sc_basic_authorship::ProposerFactory::new(
+			task_manager.spawn_handle(),
+			client.clone(),
+			transaction_pool.clone(),
+			prometheus_registry.as_ref(),
+			telemetry.as_ref().map(|x| x.handle()),
+		);
+
+		let backoff_authoring_blocks: Option<()> = None;
+
+		let aura = sc_consensus_aura::start_aura::<
+			sp_consensus_aura::sr25519::AuthorityPair,
+			_,
+			_,
+			_,
+			_,
+			_,
+			_,
+			_,
+			_,
+			_,
+			_,
+		>(sc_consensus_aura::StartAuraParams {
+			slot_duration: sc_consensus_aura::slot_duration(&*client)?,
+			client: client.clone(),
+			select_chain: sc_consensus::LongestChain::new(backend.clone()),
+			block_import,
+			proposer_factory,
+			create_inherent_data_providers: move |_, ()| async move {
+				let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
+				let slot =
+                        sp_consensus_aura::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
+                            *timestamp,
+                            slot_duration.clone(),
+                        );
+				Ok((slot, timestamp))
+			},
+			force_authoring: parachain_config.force_authoring,
+			backoff_authoring_blocks,
+			keystore: keystore_container.keystore(),
+			sync_oracle: sync_service.clone(),
+			justification_sync_link: sync_service.clone(),
+			block_proposal_slot_portion: sc_consensus_aura::SlotProportion::new(2f32 / 3f32),
+			max_block_proposal_slot_portion: None,
+			telemetry: telemetry.as_ref().map(|x| x.handle()),
+			compatibility_mode: Default::default(),
+		})?;
+
+		// the AURA authoring task is considered essential, i.e. if it
+		// fails we take down the service with it.
+		task_manager
+			.spawn_essential_handle()
+			.spawn_blocking("aura", Some("block-authoring"), aura);
+	} else {
+		log::warn!("You could add --alice or --bob to make dev chain seal instantly.");
+	}
+
+	sc_service::spawn_tasks(sc_service::SpawnTasksParams {
+		config: parachain_config,
+		client: client.clone(),
+		backend: backend.clone(),
+		task_manager: &mut task_manager,
+		keystore: keystore_container.keystore(),
+		transaction_pool: transaction_pool.clone(),
+		rpc_builder,
+		network: network.clone(),
+		system_rpc_tx,
+		tx_handler_controller,
+		sync_service: sync_service.clone(),
+		telemetry: telemetry.as_mut(),
+	})?;
+
+	start_network.start_network();
+
+	Ok(task_manager)
+}
+
 /// Build the import queue for the parachain runtime.
 fn build_import_queue(
 	client: Arc<ParachainClient>,
@@ -600,4 +880,12 @@ pub async fn start_parachain_node(
 		hwbench,
 	)
 	.await
+}
+
+/// Start a dev node.
+pub fn start_dev_node(
+	parachain_config: Configuration,
+	eth_config: EthConfiguration,
+) -> Result<TaskManager, sc_service::error::Error> {
+	start_dev_node_impl(parachain_config, eth_config)
 }

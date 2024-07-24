@@ -4971,6 +4971,7 @@ dependencies = [
 name = "laos"
 version = "0.17.3"
 dependencies = [
+ "async-trait",
  "clap",
  "cumulus-client-cli",
  "cumulus-client-collator",
