@@ -35,7 +35,7 @@ describeWithExistingNode("Frontier RPC (Staking)", (context) => {
 		const key = (await context.polkadot.rpc.author.rotateKeys()).toHex();
 		context.polkadot.tx.session
 			.setKeys(key, "")
-			.signAndSend(faith, (result) => {})
+			.signAndSend(faith, () => {})
 			.catch((error: any) => {
 				console.log("transaction failed", error);
 			});
@@ -43,9 +43,11 @@ describeWithExistingNode("Frontier RPC (Staking)", (context) => {
 		expect(await contract.methods.isCandidate(FAITH).call()).to.be.eq(false);
 		let nonce = await context.web3.eth.getTransactionCount(FAITH);
 		const candidateCount = await contract.methods.candidateCount().call();
+		const estimatedGas = await contract.methods.joinCandidates(BigInt(20000) * UNIT, candidateCount).estimateGas();
+		expect(estimatedGas).to.be.eq(59208);
 		const result = await contract.methods
 			.joinCandidates(BigInt(20000) * UNIT, candidateCount)
-			.send({ from: FAITH, gas: GAS_LIMIT, nonce: nonce++ });
+			.send({ from: FAITH, gas: estimatedGas, nonce: nonce++ });
 		expect(result.status).to.be.eq(true);
 		expect(await contract.methods.isCandidate(FAITH).call()).to.be.eq(true);
 	});
@@ -53,9 +55,11 @@ describeWithExistingNode("Frontier RPC (Staking)", (context) => {
 	step("Baltathar can delegate to Faith", async function () {
 		expect(await contract.methods.isDelegator(BALTATHAR).call()).to.be.eq(false);
 		let nonce = await context.web3.eth.getTransactionCount(BALTATHAR);
+		const estimatedGas = await contract.methods.delegate(FAITH, BigInt(1000) * UNIT, 0, 0).estimateGas();
+		expect(estimatedGas).to.be.eq(59208);
 		const result = await contract.methods
 			.delegate(FAITH, BigInt(1000) * UNIT, 0, 0)
-			.send({ from: BALTATHAR, gas: GAS_LIMIT, nonce: nonce++ });
+			.send({ from: BALTATHAR, gas: estimatedGas, nonce: nonce++ });
 		expect(result.status).to.be.eq(true);
 		expect(await contract.methods.isDelegator(BALTATHAR).call()).to.be.eq(true);
 	});
