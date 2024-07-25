@@ -22,8 +22,6 @@ describeWithExistingNode("Frontier RPC (Staking)", (context) => {
 	before(async function () {
 		contract = new context.web3.eth.Contract(STAKING_ABI, STAKING_CONTRACT_ADDRESS, {
 			from: ALITH,
-			gasPrice: GAS_PRICE,
-			gas: GAS_LIMIT,
 		});
 		context.web3.eth.accounts.wallet.add(BALTATHAR_PRIVATE_KEY);
 		context.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
@@ -41,13 +39,17 @@ describeWithExistingNode("Frontier RPC (Staking)", (context) => {
 			});
 
 		expect(await contract.methods.isCandidate(FAITH).call()).to.be.eq(false);
-		let nonce = await context.web3.eth.getTransactionCount(FAITH);
 		const candidateCount = await contract.methods.candidateCount().call();
+		expect((await context.web3.eth.getBlock("latest")).baseFeePerGas.toString()).to.be.eq(
+			await context.web3.eth.getGasPrice()
+		); // it starts with 1 Gwei and decreases until 0.5 Gwei
 		const estimatedGas = await contract.methods.joinCandidates(BigInt(20000) * UNIT, candidateCount).estimateGas();
 		expect(estimatedGas).to.be.eq(59208);
+		const gasPrice = (await context.web3.eth.getGasPrice()) + 1; // if we don't add +1 tx never gets included in the block
+		let nonce = await context.web3.eth.getTransactionCount(FAITH);
 		const result = await contract.methods
 			.joinCandidates(BigInt(20000) * UNIT, candidateCount)
-			.send({ from: FAITH, gas: estimatedGas, nonce: nonce++ });
+			.send({ from: FAITH, gas: estimatedGas, gasPrice, nonce: nonce++ });
 		expect(result.status).to.be.eq(true);
 		expect(await contract.methods.isCandidate(FAITH).call()).to.be.eq(true);
 	});
@@ -56,10 +58,11 @@ describeWithExistingNode("Frontier RPC (Staking)", (context) => {
 		expect(await contract.methods.isDelegator(BALTATHAR).call()).to.be.eq(false);
 		let nonce = await context.web3.eth.getTransactionCount(BALTATHAR);
 		const estimatedGas = await contract.methods.delegate(FAITH, BigInt(1000) * UNIT, 0, 0).estimateGas();
-		expect(estimatedGas).to.be.eq(59208);
+		expect(estimatedGas).to.be.eq(101433);
+		const gasPrice = (await context.web3.eth.getGasPrice()) + 1; // if we don't add +1 tx never gets included in the block
 		const result = await contract.methods
 			.delegate(FAITH, BigInt(1000) * UNIT, 0, 0)
-			.send({ from: BALTATHAR, gas: estimatedGas, nonce: nonce++ });
+			.send({ from: BALTATHAR, gas: estimatedGas, gasPrice, nonce: nonce++ });
 		expect(result.status).to.be.eq(true);
 		expect(await contract.methods.isDelegator(BALTATHAR).call()).to.be.eq(true);
 	});
