@@ -21,6 +21,7 @@ use sp_runtime::traits::{Convert, ConvertBack};
 pub use pallet::*;
 pub mod precompiles;
 pub mod weights;
+pub use weights::WeightInfo;
 
 #[frame_support::pallet]
 pub mod pallet {
