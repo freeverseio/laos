@@ -25,7 +25,7 @@ describeWithExistingNode("Frontier RPC (Extend Token URI)", (context) => {
 		context.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
 	});
 
-	let uloc = `universal/location_${Date.now()}`;
+	let uloc = `universal/location/1/${Date.now()}`;
 	let extendResult: any;
 	let tokenURI = "https://example.com";
 
@@ -85,7 +85,7 @@ describeWithExistingNode("Frontier RPC (Extend Token URI)", (context) => {
 describeWithExistingNode("Frontier RPC (Update Extended Token URI)", async (context) => {
 	let contract: Contract;
 
-	let uloc = `universal/location_${Date.now()}`;
+	let uloc = `universal/location/2/${Date.now()}`;
 	let tokenURI = "https://example2.com";
 	let newTokenURI = "https://new.example.com";
 	let updateExtensionResult: any;
