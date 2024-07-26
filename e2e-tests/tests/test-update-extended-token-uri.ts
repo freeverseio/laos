@@ -13,7 +13,7 @@ import {
 } from "./config";
 import { describeWithExistingNode } from "./util";
 
-describeWithExistingNode("@qa Frontier RPC (Extend Token URI)", (context) => {
+describeWithExistingNode("Frontier RPC (Extend Token URI)", (context) => {
 	let contract: Contract;
 
 	before(async function () {
@@ -86,7 +86,7 @@ describeWithExistingNode("Frontier RPC (Update Extended Token URI)", async (cont
 	let contract: Contract;
 
 	let uloc = `universal/location_${Date.now()}`;
-	let tokenURI = "https://example.com";
+	let tokenURI = "https://example2.com";
 	let newTokenURI = "https://new.example.com";
 	let updateExtensionResult: any;
 
