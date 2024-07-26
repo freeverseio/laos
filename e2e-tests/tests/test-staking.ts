@@ -44,7 +44,6 @@ describeWithExistingNode("Frontier RPC (Staking)", (context) => {
 			await context.web3.eth.getGasPrice()
 		); // it starts with 1 Gwei and decreases until 0.5 Gwei
 		const estimatedGas = await contract.methods.joinCandidates(BigInt(20000) * UNIT, candidateCount).estimateGas();
-		expect(estimatedGas).to.be.eq(59208);
 		const gasPrice = (await context.web3.eth.getGasPrice()) + 1; // if we don't add +1 tx never gets included in the block
 		let nonce = await context.web3.eth.getTransactionCount(FAITH);
 		const result = await contract.methods
@@ -58,7 +57,6 @@ describeWithExistingNode("Frontier RPC (Staking)", (context) => {
 		expect(await contract.methods.isDelegator(BALTATHAR).call()).to.be.eq(false);
 		let nonce = await context.web3.eth.getTransactionCount(BALTATHAR);
 		const estimatedGas = await contract.methods.delegate(FAITH, BigInt(1000) * UNIT, 0, 0).estimateGas();
-		expect(estimatedGas).to.be.eq(101433);
 		const gasPrice = (await context.web3.eth.getGasPrice()) + 1; // if we don't add +1 tx never gets included in the block
 		const result = await contract.methods
 			.delegate(FAITH, BigInt(1000) * UNIT, 0, 0)

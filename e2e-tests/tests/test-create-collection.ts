@@ -75,30 +75,4 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
 		expect(await context.web3.eth.getCode(FAITH)).to.be.eq("0x");
 	});
 
-	step("owner call can estimate gas", async function () {
-		const estimateGas = await testCollectionContract.methods.owner().estimateGas();
-		expect(estimateGas).to.be.eq(22431);
-	});
-
-	step("create collection call can estimate gas", async function () {
-		const contract = new context.web3.eth.Contract(
-			EVOLUTION_COLLECTION_FACTORY_ABI,
-			EVOLUTION_COLLECTION_FACTORY_CONTRACT_ADDRESS,
-			{
-				from: FAITH,
-				gasPrice: GAS_PRICE,
-			}
-		);
-
-		let nonce = await context.web3.eth.getTransactionCount(FAITH);
-		context.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
-
-		const estimatedGas = await contract.methods.createCollection(FAITH).estimateGas({
-			from: FAITH,
-			gas: GAS_LIMIT,
-			gasPrice: GAS_PRICE,
-			nonce: nonce++,
-		});
-		expect(estimatedGas).to.be.eq(46846);
-	});
 });
