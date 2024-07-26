@@ -74,5 +74,4 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
 		// non-contract address doesn't have any code
 		expect(await context.web3.eth.getCode(FAITH)).to.be.eq("0x");
 	});
-
 });
