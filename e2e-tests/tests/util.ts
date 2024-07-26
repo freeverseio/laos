@@ -15,6 +15,9 @@ import {
 } from "./config";
 import BN from "bn.js";
 import { expect } from "chai";
+import "@polkadot/api-augment";
+
+import { ApiPromise, HttpProvider } from "@polkadot/api";
 
 require("events").EventEmitter.prototype._maxListeners = 100;
 
@@ -41,17 +44,33 @@ export async function customRequest(web3: Web3, method: string, params: any[]) {
 	});
 }
 
-export function describeWithExistingNode(title: string, cb: (context: { web3: Web3 }) => void, provider?: string) {
+export function describeWithExistingNode(
+	title: string,
+	cb: (context: { web3: Web3; polkadot: ApiPromise }) => void,
+	providerNodeUrl?: string
+) {
 	describe(title, () => {
 		let context: {
 			web3: Web3;
 			ethersjs: ethers.JsonRpcProvider;
-		} = { web3: null, ethersjs: null };
+			polkadot: ApiPromise;
+		} = {
+			web3: null,
+			ethersjs: null,
+			polkadot: undefined,
+		};
 
-		if (!provider) {
-			context.web3 = new Web3(LOCAL_NODE_URL);
-		}
-
+		before(async () => {
+			if (providerNodeUrl) {
+				context.web3 = new Web3(providerNodeUrl);
+				const wsProvider = new HttpProvider(providerNodeUrl);
+				context.polkadot = await new ApiPromise({ provider: wsProvider }).isReady;
+			} else {
+				context.web3 = new Web3(LOCAL_NODE_URL);
+				const wsProvider = new HttpProvider(LOCAL_NODE_URL);
+				context.polkadot = await new ApiPromise({ provider: wsProvider }).isReady;
+			}
+		});
 		cb(context);
 	});
 }

@@ -5,6 +5,7 @@ cp -r ../pallets/laos-evolution/src/precompiles/evolution_collection_factory/con
 cp -r ../pallets/laos-evolution/src/precompiles/evolution_collection/contracts contracts
 cp -r ../pallets/asset-metadata-extender/src/precompiles/asset_metadata_extender/contracts contracts
 cp -r ../pallets/precompiles-benchmark/src/precompiles/vesting/contracts contracts
+cp -r ../precompiles/parachain-staking contracts
 
 truffle compile
 rm -rf contracts

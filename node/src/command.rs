@@ -57,7 +57,6 @@ fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 		)?),
 		"dev" => Box::new(chain_spec::laos::development_config()),
 		"local" => Box::new(chain_spec::laos::local_testnet_config()),
-		"local-v" => Box::new(chain_spec::laos::local_testnet_config()),
 		path => {
 			let chain_spec =
 				chain_spec::laos::ChainSpec::from_json_file(std::path::PathBuf::from(path))?;

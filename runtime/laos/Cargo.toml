@@ -58,6 +58,7 @@ sp-staking = { workspace = true }
 
 pallet-asset-metadata-extender = { workspace = true }
 pallet-laos-evolution = { workspace = true }
+pallet-parachain-staking = { workspace = true }
 pallet-precompiles-benchmark = { workspace = true }
 
 
@@ -96,8 +97,7 @@ pallet-evm-precompile-modexp = { workspace = true }
 pallet-evm-precompile-simple = { workspace = true }
 pallet-evm-precompile-bn128 = { workspace = true }
 pallet-evm-precompile-blake2 = { workspace = true }
-
-pallet-parachain-staking = { workspace = true }
+pallet-evm-precompile-parachain-staking = { workspace = true }
 
 precompile-utils = { workspace = true }
 
@@ -181,6 +181,7 @@ std = [
 	"pallet-evm-precompile-simple/std",
 	"pallet-evm-precompile-bn128/std",
 	"pallet-evm-precompile-blake2/std",	
+	"pallet-evm-precompile-parachain-staking/std",	
 	"cumulus-pallet-session-benchmarking/std",
 	"frame-benchmarking?/std",
 	"frame-system-benchmarking?/std",

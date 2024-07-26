@@ -160,7 +160,7 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
 	});
 });
 
-describeWithExistingNode("@qa Frontier RPC (Public Minting)", (context) => {
+describeWithExistingNode("Frontier RPC (Public Minting)", (context) => {
 	let collectionContract: Contract;
 
 	beforeEach(async function () {
@@ -251,7 +251,7 @@ describeWithExistingNode("@qa Frontier RPC (Public Minting)", (context) => {
 	});
 });
 
-describeWithExistingNode("@qa Frontier RPC (Transfer Ownership)", (context) => {
+describeWithExistingNode("Frontier RPC (Transfer Ownership)", (context) => {
 	let collectionContract: Contract;
 
 	before(async function () {
