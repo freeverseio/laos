@@ -11,7 +11,7 @@ jobs:
     runs-on:
       group: laos
       labels: ubuntu-16-cores
-    if: ${{ github.event.review.state == 'approved' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.event_name != 'pull_request_review' || github.event.review.state == 'approved' }}
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup
