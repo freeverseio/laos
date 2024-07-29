@@ -33,12 +33,8 @@ jobs:
     outputs:
       is_release_version: ${{ steps.check_version.outputs.is_release_version }}
 
-  e2e-tests:
-    needs: check-version
-    uses: ./.github/workflows/e2e.yml
-
   prepare-release:
-    needs: e2e-tests
+    needs: check-version
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -85,36 +81,26 @@ jobs:
      
       - name: Update Release Description with subwasm info
         run: |
-          if [ "${{ needs.check-version.outputs.is_release_version }}" == "true" ]; then
-            echo "This runs because it is a release version"
-            gh release view ${{ github.ref_name }} --json body -q .body > description.txt
-                
-            RUSTC_VERSION=$(echo ${{ steps.summary.outputs.rustc_version }} | tr -d '"')
-            SRTOOL_VERSION=${{ steps.summary.outputs.srtool_version }}
-            
-            printf "\n\n## ${{ matrix.runtime.name }} runtime\nThis runtime was built using %s with srtool %s\n" "$RUSTC_VERSION" "$SRTOOL_VERSION" >> description.txt
-            echo '```' >> description.txt
-            
-            cat ${{ matrix.runtime.name }}-subwam-info.txt >> description.txt
-            
-            echo '```' >> description.txt
+          gh release view ${{ github.ref_name }} --json body -q .body > description.txt
+              
+          RUSTC_VERSION=$(echo ${{ steps.summary.outputs.rustc_version }} | tr -d '"')
+          SRTOOL_VERSION=${{ steps.summary.outputs.srtool_version }}
           
+          printf "\n\n## ${{ matrix.runtime.name }} runtime\nThis runtime was built using %s with srtool %s\n" "$RUSTC_VERSION" "$SRTOOL_VERSION" >> description.txt
+          echo '```' >> description.txt
           
-            gh release edit ${{ github.ref_name }} --notes-file description.txt
-          else
-            echo "Skipping because it is not a release version"
-          fi
+          cat ${{ matrix.runtime.name }}-subwam-info.txt >> description.txt
+          
+          echo '```' >> description.txt
+        
+        
+          gh release edit ${{ github.ref_name }} --notes-file description.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload Ownership Wasm Binaries
         run: |
-            if [ "${{ needs.check-version.outputs.is_release_version }}" == "true" ]; then
-              echo "Uploading ownership wasm binary for release ${{ github.ref_name }}"
-              echo "This runs because it is a release version"
-              gh release upload ${{ github.ref_name }} ${{ steps.srtool_build.outputs.wasm_compressed }}
-            else
-              echo "Skipping because it is not a release version"
-            fi
+          echo "Uploading ownership wasm binary for tag ${{ github.ref_name }}"
+          gh release upload ${{ github.ref_name }} ${{ steps.srtool_build.outputs.wasm_compressed }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
