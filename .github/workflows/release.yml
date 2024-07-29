@@ -81,7 +81,6 @@ jobs:
      
       - name: Update Release Description with subwasm info
         run: |
-          echo "This runs because it is a release version"
           gh release view ${{ github.ref_name }} --json body -q .body > description.txt
               
           RUSTC_VERSION=$(echo ${{ steps.summary.outputs.rustc_version }} | tr -d '"')
@@ -100,8 +99,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload Ownership Wasm Binaries
         run: |
-          echo "Uploading ownership wasm binary for release ${{ github.ref_name }}"
-          echo "This runs because it is a release version"
+          echo "Uploading ownership wasm binary for tag ${{ github.ref_name }}"
           gh release upload ${{ github.ref_name }} ${{ steps.srtool_build.outputs.wasm_compressed }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
