@@ -67,7 +67,12 @@
       },
       "auraExt": {},
       "parachainStaking": {
-        "candidates": [],
+        "candidates": [
+          [
+            "0xf02fffffffffffffffffffffffffffffffffffff",
+            40000000000000000000000
+          ]
+        ],
         "delegations": [],
         "inflationConfig": {
           "expect": {
