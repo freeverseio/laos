@@ -105,9 +105,12 @@ precompile-utils = { workspace = true }
 static_assertions = { workspace = true }
 precompile-utils = { workspace = true, features = ["testing"] }
 evm = { workspace = true }
-orml-traits = { workspace = true }
-orml-xtokens = { workspace = true, features = ["std"] }
-orml-xcm-support = { workspace = true, features = ["std"] }
+# TODO This code has been commented out when upgrading polkadot-sdk from v1.1.0 to 1.6.0
+# because conflicts with orml-trait crate and currently XCM is not used. It should be
+# uncommented and fixed when XCM is used in the runtime.
+# orml-traits = { workspace = true }
+# orml-xtokens = { workspace = true, features = ["std"] }
+# orml-xcm-support = { workspace = true, features = ["std"] }
 xcm-simulator = { workspace = true }
 polkadot-runtime-parachains = { workspace = true }
 pallet-assets = { workspace = true }

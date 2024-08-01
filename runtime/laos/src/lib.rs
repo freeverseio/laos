@@ -99,7 +99,7 @@ pub fn native_version() -> NativeVersion {
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
-	pub struct Runtime
+	pub enum Runtime
 	{
 		// System support stuff.
 		System: frame_system = 0,

@@ -77,7 +77,10 @@ decl_test_network! {
 	}
 }
 
-pub type ParachainXtokens = orml_xtokens::Pallet<MockParachainRuntime>;
+/// TODO This code has been commented out when upgrading polkadot-sdk from v1.1.0 to 1.6.0
+/// because conflicts with orml-trait crate and currently XCM is not used. It should be
+/// uncommented and fixed when XCM is used in the runtime.
+// pub type ParachainXtokens = orml_xtokens::Pallet<MockParachainRuntime>;
 pub type LaosParachainXcm = pallet_xcm::Pallet<RealParachainRuntime>;
 pub type LaosParachainBalances = pallet_balances::Pallet<RealParachainRuntime>;
 
