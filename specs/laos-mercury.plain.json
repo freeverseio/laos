@@ -24,13 +24,13 @@
         "parachainId": 4023
       },
       "sudo": {
-        "key": "0xC9F0Ce158F3E95Dc87d055Dd0ef4cbf714BF243b"
+        "key": "0xedCc5CbA017f79C4E1986F1a109739d1C55eE56B"
       },
       "balances": {
         "balances": [
           [
-            "0xC9F0Ce158F3E95Dc87d055Dd0ef4cbf714BF243b",
-            800000000000000000000000000
+            "0xedCc5CbA017f79C4E1986F1a109739d1C55eE56B",
+            750000000000000000000000000
           ],
           [
             "0xf01fffffffffffffffffffffffffffffffffffff",
@@ -38,6 +38,10 @@
           ],
           [
             "0xf02fffffffffffffffffffffffffffffffffffff",
+            50000000000000000000000000
+          ],
+          [
+            "0x506543b5d64A0083Dd0faA386FfE41b75141A31C",
             50000000000000000000000000
           ]
         ]
