@@ -45,6 +45,9 @@
       "transactionPayment": {
         "multiplier": "1000000000000000000"
       },
+      "vesting": {
+        "vesting": []
+      },
       "session": {
         "keys": [
           [
