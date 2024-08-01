@@ -2,9 +2,7 @@
   "name": "Laos Mercury Testnet",
   "id": "laos_mercury_testnet",
   "chainType": "Live",
-  "bootNodes": [
-    "/ip4/127.0.0.1/tcp/30333/p2p/12D3KooWAKHAKo1KXma284BbBRcPkvYcPjZAwHqapM5Jw5VxDDS5"
-  ],
+  "bootNodes": ["/dns4/laosmercury-boot-0.gorengine.com/tcp/30334/p2p/12D3KooWMfJKXB9JPKctMfZBe7u6HtTcwLPy1J1D4saT1HKisr5S"],
   "telemetryEndpoints": null,
   "protocolId": "laos_mercury_testnet",
   "properties": {
