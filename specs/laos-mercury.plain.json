@@ -24,20 +24,20 @@
         "parachainId": 4023
       },
       "sudo": {
-        "key": "0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac"
+        "key": "0xC9F0Ce158F3E95Dc87d055Dd0ef4cbf714BF243b"
       },
       "balances": {
         "balances": [
           [
-            "0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac",
+            "0xC9F0Ce158F3E95Dc87d055Dd0ef4cbf714BF243b",
             800000000000000000000000000
           ],
           [
-            "0x3cd0a705a2dc65e5b1e1205896baa2be8a07c6e0",
+            "0xf01fffffffffffffffffffffffffffffffffffff",
             150000000000000000000000000
           ],
           [
-            "0xc0f0f4ab324c46e55d02d0033343b4be8a55532d",
+            "0xf02fffffffffffffffffffffffffffffffffffff",
             50000000000000000000000000
           ]
         ]
@@ -48,8 +48,8 @@
       "session": {
         "keys": [
           [
-            "0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac",
-            "0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac",
+            "0xf02fffffffffffffffffffffffffffffffffffff",
+            "0xf02fffffffffffffffffffffffffffffffffffff",
             {
               "aura": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
             }
@@ -84,7 +84,7 @@
         "parachainBondReservePercent": 0,
         "blocksPerRound": 5,
         "numSelectedCandidates": 5,
-        "rewardsAccount": "0x3cd0a705a2dc65e5b1e1205896baa2be8a07c6e0"
+        "rewardsAccount": "0xf01fffffffffffffffffffffffffffffffffffff"
       },
       "polkadotXcm": {
         "safeXcmVersion": 3
