@@ -51,7 +51,7 @@
             "0xf02fffffffffffffffffffffffffffffffffffff",
             "0xf02fffffffffffffffffffffffffffffffffffff",
             {
-              "aura": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+              "aura": "5D7TF21C8jKHSKpeUFf37QWRqYnjR5LsoQWY9yY5Q4k42zEQ"
             }
           ]
         ]
@@ -251,7 +251,7 @@
         }
       },
       "evmChainId": {
-        "chainId": 667
+        "chainId": 6679
       },
       "baseFee": {
         "baseFeePerGas": "0x3b9aca00",
