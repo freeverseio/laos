@@ -99,13 +99,13 @@ pub fn native_version() -> NativeVersion {
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
-	pub enum Runtime
+	pub struct Runtime
 	{
 		// System support stuff.
 		System: frame_system = 0,
 		ParachainSystem: cumulus_pallet_parachain_system = 1,
 		Timestamp: pallet_timestamp = 2,
-		ParachainInfo: parachain_info = 3,
+		ParachainInfo: staging_parachain_info = 3,
 		Sudo: pallet_sudo = 4,
 		Utility: pallet_utility = 5,
 		Multisig: pallet_multisig = 6,
@@ -124,10 +124,10 @@ construct_runtime!(
 		ParachainStaking: pallet_parachain_staking = 24,
 
 		// XCM helpers.
-		XcmpQueue: cumulus_pallet_xcmp_queue = 30,
-		PolkadotXcm: pallet_xcm = 31,
-		CumulusXcm: cumulus_pallet_xcm = 32,
-		DmpQueue: cumulus_pallet_dmp_queue = 33,
+		// XcmpQueue: cumulus_pallet_xcmp_queue = 30,
+		// PolkadotXcm: pallet_xcm = 31,
+		// CumulusXcm: cumulus_pallet_xcm = 32,
+		// DmpQueue: cumulus_pallet_dmp_queue = 33,
 
 		// Frontier
 		Ethereum: pallet_ethereum = 50,

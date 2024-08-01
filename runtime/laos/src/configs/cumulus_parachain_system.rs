@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
-use crate::{Block, DmpQueue, InherentDataExt, ParachainInfo, Runtime, RuntimeEvent, XcmpQueue};
+use crate::{Block, InherentDataExt, ParachainInfo, Runtime, RuntimeEvent};
 
 use frame_support::{parameter_types, weights::Weight};
 
@@ -29,12 +29,13 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type OnSystemEvent = ();
 	type SelfParaId = ParachainInfo;
-	type OutboundXcmpMessageSource = XcmpQueue;
-	type DmpMessageHandler = DmpQueue;
+	type OutboundXcmpMessageSource = ();
 	type ReservedDmpWeight = ReservedDmpWeight;
-	type XcmpMessageHandler = XcmpQueue;
+	type XcmpMessageHandler = ();
 	type ReservedXcmpWeight = ReservedXcmpWeight;
 	type CheckAssociatedRelayNumber = cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
+	type ConsensusHook = cumulus_pallet_parachain_system::ExpectParentIncluded;
+	type DmpQueue = ();
 }
 
 // This struct is never instantiated, it is only used for the `CheckInherents` implementation.
