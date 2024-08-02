@@ -76,15 +76,17 @@ fn generic_chain_config(
 		None,
 		Some(properties()),
 		Extensions { relay_chain: "rococo-local".into(), para_id: PARA_ID },
+		&[] // TODO check me when creating a spec
 	)
 }
 
 fn create_test_genesis_config() -> laos_runtime::RuntimeGenesisConfig {
 	laos_runtime::RuntimeGenesisConfig {
 		system: laos_runtime::SystemConfig {
-			code: laos_runtime::WASM_BINARY
-				.expect("WASM binary was not build, please build it!")
-				.to_vec(),
+			// TODO IMPORTANT check where is the code supposed to be specified
+			// code: laos_runtime::WASM_BINARY
+			// 	.expect("WASM binary was not build, please build it!")
+			// 	.to_vec(),
 			..Default::default()
 		},
 		balances: laos_runtime::BalancesConfig {

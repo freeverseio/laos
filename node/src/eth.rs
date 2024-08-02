@@ -175,7 +175,7 @@ pub async fn spawn_frontier_tasks<RuntimeApi, Executor>(
 					client.clone(),
 					backend,
 					overrides.clone(),
-					Arc::new(b),
+					b,
 					3,
 					0,
 					SyncStrategy::Parachain,
@@ -192,7 +192,7 @@ pub async fn spawn_frontier_tasks<RuntimeApi, Executor>(
 				fc_mapping_sync::sql::SyncWorker::run(
 					client.clone(),
 					backend,
-					Arc::new(b),
+					b,
 					client.import_notification_stream(),
 					fc_mapping_sync::sql::SyncWorkerConfig {
 						read_notification_timeout: Duration::from_secs(10),
