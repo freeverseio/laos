@@ -320,9 +320,9 @@ async fn start_node_impl(
 		enable_dev_signer: eth_config.enable_dev_signer,
 		network: network.clone(),
 		sync: sync_service.clone(),
-		frontier_backend: match frontier_backend.clone() {
-			fc_db::Backend::KeyValue(b) => Arc::new(b),
-			fc_db::Backend::Sql(b) => Arc::new(b),
+		frontier_backend: match frontier_backend {
+			fc_db::Backend::KeyValue(b) => b.clone(),
+			fc_db::Backend::Sql(b) => b.clone(),
 		},
 		overrides: overrides.clone(),
 		block_data_cache: Arc::new(fc_rpc::EthBlockDataCacheTask::new(
