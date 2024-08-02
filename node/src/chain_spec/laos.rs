@@ -105,10 +105,11 @@ fn create_test_genesis_config() -> laos_runtime::RuntimeGenesisConfig {
 				template_session_keys(get_collator_keys_from_seed("Alice")),
 			)],
 		},
-		polkadot_xcm: laos_runtime::PolkadotXcmConfig {
-			safe_xcm_version: Some(SAFE_XCM_VERSION),
-			..Default::default()
-		},
+		// TODO uncomment when enabling XCM
+		// polkadot_xcm: laos_runtime::PolkadotXcmConfig {
+		// 	safe_xcm_version: Some(SAFE_XCM_VERSION),
+		// 	..Default::default()
+		// },
 		sudo: laos_runtime::SudoConfig { key: Some(predefined_accounts::ALITH.into()) },
 		parachain_staking: laos_runtime::ParachainStakingConfig {
 			blocks_per_round: 5,

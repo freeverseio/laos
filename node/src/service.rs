@@ -50,6 +50,7 @@ use sc_transaction_pool_api::OffchainTransactionPoolFactory;
 use sp_core::U256;
 use sp_keystore::KeystorePtr;
 use substrate_prometheus_endpoint::Registry;
+use fc_rpc::{StorageOverride, StorageOverrideHandler};
 
 // Frontier
 use crate::eth::{
@@ -102,7 +103,7 @@ pub fn new_partial(
 			Option<Telemetry>,
 			Option<TelemetryWorkerHandle>,
 			FrontierBackend,
-			Arc<fc_rpc::OverrideHandle<Block>>,
+			Arc<dyn StorageOverride<Block>>,
 		),
 	>,
 	sc_service::Error,
@@ -155,7 +156,7 @@ pub fn new_partial(
 		client.clone(),
 	);
 
-	let overrides = crate::rpc::overrides_handle(client.clone());
+	let overrides = Arc::new(StorageOverrideHandler::new(client.clone()));
 	let frontier_backend = match eth_config.frontier_backend_type {
 		BackendType::KeyValue => FrontierBackend::KeyValue(fc_db::kv::Backend::open(
 			Arc::clone(&client),
