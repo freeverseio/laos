@@ -55,7 +55,7 @@ use fc_rpc::{StorageOverride, StorageOverrideHandler};
 // Frontier
 use crate::eth::{
 	db_config_dir, new_frontier_partial, spawn_frontier_tasks, BackendType, EthConfiguration,
-	FrontierBackend, FrontierBlockImport as TFrontierBlockImport, FrontierPartialComponents,
+	FrontierBlockImport as TFrontierBlockImport, FrontierPartialComponents,
 };
 
 /// Native executor type.
@@ -102,7 +102,7 @@ pub fn new_partial(
 			ParachainBlockImport,
 			Option<Telemetry>,
 			Option<TelemetryWorkerHandle>,
-			FrontierBackend,
+			fc_db::Backend<Block, ParachainClient>,
 			Arc<dyn StorageOverride<Block>>,
 		),
 	>,
@@ -287,7 +287,7 @@ async fn start_node_impl(
 				transaction_pool: Some(OffchainTransactionPoolFactory::new(
 					transaction_pool.clone(),
 				)),
-				network_provider: network.clone(),
+				network_provider: Arc::new(network.clone()),
 				enable_http_requests: true,
 				custom_extensions: |_| vec![],
 			})

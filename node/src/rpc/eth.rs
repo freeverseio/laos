@@ -25,7 +25,7 @@ use sc_client_api::{
 	client::BlockchainEvents,
 	AuxStore, UsageProvider,
 };
-use sc_network::NetworkService;
+use sc_network::service::traits::NetworkService;
 use sc_network_sync::SyncingService;
 use sc_rpc::SubscriptionTaskExecutor;
 use sc_transaction_pool::{ChainApi, Pool};
@@ -58,7 +58,7 @@ pub struct EthDeps<C, P, A: ChainApi, CT, B: BlockT, CIDP> {
 	/// Whether to enable dev signer
 	pub enable_dev_signer: bool,
 	/// Network service
-	pub network: Arc<NetworkService<B, B::Hash>>,
+	pub network: Arc<dyn NetworkService>,
 	/// Chain syncing service
 	pub sync: Arc<SyncingService<B>>,
 	/// Frontier Backend.
