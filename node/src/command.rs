@@ -16,7 +16,6 @@
 
 use std::{net::SocketAddr, sync::Arc};
 
-use cumulus_client_cli::generate_genesis_block;
 use cumulus_primitives_core::ParaId;
 use fc_db::kv::frontier_database_dir;
 use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
@@ -384,10 +383,11 @@ pub fn run() -> Result<()> {
 						&id,
 					);
 
-				let block: laos_runtime::opaque::Block =
-					generate_genesis_block(&*config.chain_spec, sp_runtime::StateVersion::V1)
-						.map_err(|e| format!("{:?}", e))?;
-				let genesis_state = format!("0x{:?}", HexDisplay::from(&block.header().encode()));
+				// TODO commented out as `generate_genesis_block` has been changed after polkadot v1.1.0
+				// let block: laos_runtime::opaque::Block =
+				// 	generate_genesis_block(&*config.chain_spec, sp_runtime::StateVersion::V1)
+				// 		.map_err(|e| format!("{:?}", e))?;
+				// let genesis_state = format!("0x{:?}", HexDisplay::from(&block.header().encode()));
 
 				let tokio_handle = config.tokio_handle.clone();
 				let polkadot_config =
@@ -396,7 +396,7 @@ pub fn run() -> Result<()> {
 
 				info!("Parachain id: {:?}", id);
 				info!("Parachain Account: {}", parachain_account);
-				info!("Parachain genesis state: {}", genesis_state);
+				// info!("Parachain genesis state: {}", genesis_state);
 				info!("Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
 
 				crate::service::start_parachain_node(

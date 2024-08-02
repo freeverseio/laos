@@ -99,7 +99,7 @@ pub fn native_version() -> NativeVersion {
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
-	pub struct Runtime
+	pub enum Runtime
 	{
 		// System support stuff.
 		System: frame_system = 0,
@@ -128,6 +128,7 @@ construct_runtime!(
 		// PolkadotXcm: pallet_xcm = 31,
 		// CumulusXcm: cumulus_pallet_xcm = 32,
 		// DmpQueue: cumulus_pallet_dmp_queue = 33,
+		MessageQueue: pallet_message_queue::{Pallet, Call, Storage, Event<T>} = 34,
 
 		// Frontier
 		Ethereum: pallet_ethereum = 50,

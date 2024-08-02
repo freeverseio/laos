@@ -96,6 +96,7 @@ impl pallet_vesting::Config for Test {
 	type MinVestedTransfer = MinVestedTransfer;
 	type RuntimeEvent = RuntimeEvent;
 	type UnvestedFundsAllowedWithdrawReasons = UnvestedFundsAllowedWithdrawReasons;
+	type BlockNumberProvider = System;
 	type WeightInfo = ();
 	const MAX_VESTING_SCHEDULES: u32 = 100;
 }
@@ -158,6 +159,7 @@ impl pallet_evm::Config for Test {
 	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
 	type Timestamp = Timestamp;
 	type WeightInfo = ();
+	type SuicideQuickClearLimit = ();
 }
 
 #[derive(Default)]

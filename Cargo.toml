@@ -77,6 +77,7 @@ sp-consensus-grandpa = { git = "https://github.com/paritytech/polkadot-sdk", bra
 sp-keyring = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.11.0", default-features = false }
 sp-state-machine = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.11.0", default-features = false }
 sp-consensus-slots = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.11.0", default-features = false }
+sp-weights ={ git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.11.0" }
 
 # (native)
 sp-blockchain = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.11.0" }
