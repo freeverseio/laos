@@ -511,7 +511,6 @@ fn build_import_queue(
 		client,
 		block_import,
 		create_inherent_data_providers,
-		slot_duration,
 		&task_manager.spawn_essential_handle(),
 		config.prometheus_registry(),
 		telemetry,
