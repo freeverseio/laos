@@ -259,7 +259,7 @@ async fn start_node_impl(
 	let validator = parachain_config.role.is_authority();
 	let prometheus_registry = parachain_config.prometheus_registry().cloned();
 	let import_queue_service = import_queue.service();
-	let net_config = sc_network::config::FullNetworkConfiguration::new(&parachain_config.network);
+	let net_config = sc_network::config::FullNetworkConfiguration::<_, _, sc_network::NetworkWorker<_, _>>::new(&parachain_config.network);
 
 	let (network, system_rpc_tx, tx_handler_controller, start_network, sync_service) =
 		build_network(BuildNetworkParams {
@@ -321,8 +321,8 @@ async fn start_node_impl(
 		network: network.clone(),
 		sync: sync_service.clone(),
 		frontier_backend: match frontier_backend {
-			fc_db::Backend::KeyValue(b) => b.clone(),
-			fc_db::Backend::Sql(b) => b.clone(),
+			fc_db::Backend::KeyValue(ref b) => b.clone(),
+			fc_db::Backend::Sql(ref b) => b.clone(),
 		},
 		overrides: overrides.clone(),
 		block_data_cache: Arc::new(fc_rpc::EthBlockDataCacheTask::new(
@@ -407,10 +407,14 @@ async fn start_node_impl(
 		// Here you can check whether the hardware meets your chains' requirements. Putting a link
 		// in there and swapping out the requirements for your own are probably a good idea. The
 		// requirements for a para-chain are dictated by its relay-chain.
-		if !SUBSTRATE_REFERENCE_HARDWARE.check_hardware(&hwbench) && validator {
-			log::warn!(
-				"⚠️  The hardware does not meet the minimal requirements for role 'Authority'."
+		match SUBSTRATE_REFERENCE_HARDWARE.check_hardware(&hwbench) {
+			Err(err) if validator => {
+				log::warn!(
+				"⚠️  The hardware does not meet the minimal requirements {} for role 'Authority'.",
+				err
 			);
+			},
+			_ => {},
 		}
 
 		if let Some(ref mut telemetry) = telemetry {
