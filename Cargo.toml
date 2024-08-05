@@ -164,7 +164,7 @@ pallet-ethereum = { git = "https://github.com/paritytech/frontier", branch = "po
 # pallet-hotfix-sufficients = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.11.0", default-features = false }
 # pallet-evm-precompile-sha3fips = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.11.0", default-features = false }
 # pallet-dynamic-fee = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.11.0", default-features = false }
-# fp-self-contained = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.11.0", default-features = false, features = ["serde"] }
+fp-self-contained = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.11.0", default-features = false, features = ["serde"] }
 fp-rpc = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.11.0", default-features = false }
 fp-evm = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.11.0", default-features = false }
 fp-account = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.11.0", default-features = false, features = ["serde"] }
