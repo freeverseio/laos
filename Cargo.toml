@@ -253,7 +253,7 @@ polkadot-service = { git = "https://github.com/paritytech/polkadot-sdk", rev = "
 
 # Other pallets
 # (wasm)
-# substrate-fixed = { git = "https://github.com/encointer/substrate-fixed", default-features = false }
+substrate-fixed = { git = "https://github.com/encointer/substrate-fixed", default-features = false }
 derive_more = "0.99"
 
 # LAOS pallets
