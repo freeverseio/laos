@@ -238,15 +238,6 @@ xcm-simulator = { git = "https://github.com/paritytech/polkadot-sdk", rev = "0bb
 polkadot-cli = { git = "https://github.com/paritytech/polkadot-sdk", rev = "0bb6249268c0b77d2834640b84cb52fdd3d7e860" }
 polkadot-service = { git = "https://github.com/paritytech/polkadot-sdk", rev = "0bb6249268c0b77d2834640b84cb52fdd3d7e860" }
 
-# Orml
-# (wasm)
-# TODO This code has been commented out when upgrading polkadot-sdk from v1.1.0 to 1.6.0
-# because conflicts with orml-trait crate and currently XCM is not used. It should be
-# uncommented and fixed when XCM is used in the runtime.
-# orml-traits = { version = "0.7.0", default-features = false }
-# orml-xcm-support = { version = "0.7.0", default-features = false }
-# orml-xtokens = { version = "0.7.0", default-features = false }
-
 # Other pallets
 # (wasm)
 substrate-fixed = { git = "https://github.com/encointer/substrate-fixed", default-features = false }
