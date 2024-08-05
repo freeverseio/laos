@@ -18,7 +18,7 @@ scale-info = { workspace = true, features = [ "derive" ] }
 sp-consensus-slots = { workspace = true }
 sp-runtime = { workspace = true }
 sp-std = { workspace = true }
-substrate-fixed = { workspace = true }
+# substrate-fixed = { workspace = true }
 
 [dev-dependencies]
 pallet-balances = { workspace = true, features = [ "insecure_zero_ed", "std" ] }
@@ -26,7 +26,7 @@ similar-asserts = { workspace = true }
 sp-core = { workspace = true, features = [ "std" ] }
 sp-io = { workspace = true, features = [ "std" ] }
 sp-runtime = { workspace = true }
-test-utils = { workspace = true }
+# test-utils = { workspace = true }
 
 [features]
 default = [ "std" ]
