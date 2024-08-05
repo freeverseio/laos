@@ -3166,22 +3166,6 @@ dependencies = [
 
 [[package]]
 name = "evm"
-version = "0.39.1"
-source = "git+https://github.com/rust-blockchain/evm?rev=b7b82c7e1fc57b7449d6dfa6826600de37cc1e65#b7b82c7e1fc57b7449d6dfa6826600de37cc1e65"
-dependencies = [
- "auto_impl",
- "ethereum 0.14.0",
- "evm-core 0.39.0",
- "evm-gasometer 0.39.0",
- "evm-runtime 0.39.0",
- "log",
- "primitive-types",
- "rlp",
- "sha3",
-]
-
-[[package]]
-name = "evm"
 version = "0.41.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "767f43e9630cc36cf8ff2777cbb0121b055f0d1fd6eaaa13b46a1808f0d0e7e9"
@@ -3189,9 +3173,9 @@ dependencies = [
  "auto_impl",
  "environmental",
  "ethereum 0.15.0",
- "evm-core 0.41.0",
- "evm-gasometer 0.41.0",
- "evm-runtime 0.41.0",
+ "evm-core",
+ "evm-gasometer",
+ "evm-runtime",
  "log",
  "parity-scale-codec",
  "primitive-types",
@@ -3199,14 +3183,6 @@ dependencies = [
  "scale-info",
  "serde",
  "sha3",
-]
-
-[[package]]
-name = "evm-core"
-version = "0.39.0"
-source = "git+https://github.com/rust-blockchain/evm?rev=b7b82c7e1fc57b7449d6dfa6826600de37cc1e65#b7b82c7e1fc57b7449d6dfa6826600de37cc1e65"
-dependencies = [
- "primitive-types",
 ]
 
 [[package]]
@@ -3223,35 +3199,14 @@ dependencies = [
 
 [[package]]
 name = "evm-gasometer"
-version = "0.39.0"
-source = "git+https://github.com/rust-blockchain/evm?rev=b7b82c7e1fc57b7449d6dfa6826600de37cc1e65#b7b82c7e1fc57b7449d6dfa6826600de37cc1e65"
-dependencies = [
- "evm-core 0.39.0",
- "evm-runtime 0.39.0",
- "primitive-types",
-]
-
-[[package]]
-name = "evm-gasometer"
 version = "0.41.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1dc0eb591abc5cd7b05bef6a036c2bb6c66ab6c5e0c5ce94bfe377ab670b1fd7"
 dependencies = [
  "environmental",
- "evm-core 0.41.0",
- "evm-runtime 0.41.0",
+ "evm-core",
+ "evm-runtime",
  "primitive-types",
-]
-
-[[package]]
-name = "evm-runtime"
-version = "0.39.0"
-source = "git+https://github.com/rust-blockchain/evm?rev=b7b82c7e1fc57b7449d6dfa6826600de37cc1e65#b7b82c7e1fc57b7449d6dfa6826600de37cc1e65"
-dependencies = [
- "auto_impl",
- "evm-core 0.39.0",
- "primitive-types",
- "sha3",
 ]
 
 [[package]]
@@ -3262,7 +3217,7 @@ checksum = "84bbe09b64ae13a29514048c1bb6fda6374ac0b4f6a1f15a443348ab88ef42cd"
 dependencies = [
  "auto_impl",
  "environmental",
- "evm-core 0.41.0",
+ "evm-core",
  "primitive-types",
  "sha3",
 ]
@@ -3461,7 +3416,7 @@ source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.11.0#577
 dependencies = [
  "ethereum 0.15.0",
  "ethereum-types",
- "evm 0.41.1",
+ "evm",
  "fc-api",
  "fc-mapping-sync",
  "fc-rpc-core",
@@ -3770,7 +3725,7 @@ name = "fp-evm"
 version = "3.0.0-dev"
 source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.11.0#5779b59043ae018d07d84f4e8e0c49087f804d3a"
 dependencies = [
- "evm 0.41.1",
+ "evm",
  "frame-support",
  "num_enum",
  "parity-scale-codec",
@@ -5327,7 +5282,7 @@ dependencies = [
  "cumulus-primitives-timestamp",
  "cumulus-primitives-utility",
  "ethereum 0.14.0",
- "evm 0.39.1",
+ "evm",
  "fp-evm",
  "fp-rpc",
  "fp-self-contained",
@@ -7512,7 +7467,7 @@ source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.11.0#577
 dependencies = [
  "ethereum 0.15.0",
  "ethereum-types",
- "evm 0.41.1",
+ "evm",
  "fp-consensus",
  "fp-ethereum",
  "fp-evm",
@@ -7533,7 +7488,7 @@ version = "6.0.0-dev"
 source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.11.0#5779b59043ae018d07d84f4e8e0c49087f804d3a"
 dependencies = [
  "environmental",
- "evm 0.41.1",
+ "evm",
  "fp-account",
  "fp-evm",
  "frame-benchmarking",
@@ -7727,7 +7682,7 @@ dependencies = [
 name = "pallet-laos-evolution"
 version = "4.0.0-dev"
 dependencies = [
- "evm 0.39.1",
+ "evm",
  "fp-evm",
  "frame-benchmarking",
  "frame-support",
@@ -10010,7 +9965,7 @@ source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.11.0#577
 dependencies = [
  "derive_more",
  "environmental",
- "evm 0.41.1",
+ "evm",
  "fp-evm",
  "frame-support",
  "frame-system",
@@ -13335,7 +13290,7 @@ dependencies = [
 [[package]]
 name = "sp-crypto-ec-utils"
 version = "0.10.0"
-source = "git+https://github.com/paritytech/polkadot-sdk#2abd03ef330c8b55e73755a7ef4b43baf1451657"
+source = "git+https://github.com/paritytech/polkadot-sdk#f170af615c0dc413482100892758b236d1fda93b"
 dependencies = [
  "ark-bls12-377",
  "ark-bls12-377-ext",
@@ -13397,7 +13352,7 @@ dependencies = [
 [[package]]
 name = "sp-debug-derive"
 version = "14.0.0"
-source = "git+https://github.com/paritytech/polkadot-sdk#2abd03ef330c8b55e73755a7ef4b43baf1451657"
+source = "git+https://github.com/paritytech/polkadot-sdk#f170af615c0dc413482100892758b236d1fda93b"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -13417,7 +13372,7 @@ dependencies = [
 [[package]]
 name = "sp-externalities"
 version = "0.25.0"
-source = "git+https://github.com/paritytech/polkadot-sdk#2abd03ef330c8b55e73755a7ef4b43baf1451657"
+source = "git+https://github.com/paritytech/polkadot-sdk#f170af615c0dc413482100892758b236d1fda93b"
 dependencies = [
  "environmental",
  "parity-scale-codec",
@@ -13632,7 +13587,7 @@ dependencies = [
 [[package]]
 name = "sp-runtime-interface"
 version = "24.0.0"
-source = "git+https://github.com/paritytech/polkadot-sdk#2abd03ef330c8b55e73755a7ef4b43baf1451657"
+source = "git+https://github.com/paritytech/polkadot-sdk#f170af615c0dc413482100892758b236d1fda93b"
 dependencies = [
  "bytes",
  "impl-trait-for-tuples",
@@ -13664,7 +13619,7 @@ dependencies = [
 [[package]]
 name = "sp-runtime-interface-proc-macro"
 version = "17.0.0"
-source = "git+https://github.com/paritytech/polkadot-sdk#2abd03ef330c8b55e73755a7ef4b43baf1451657"
+source = "git+https://github.com/paritytech/polkadot-sdk#f170af615c0dc413482100892758b236d1fda93b"
 dependencies = [
  "Inflector",
  "expander 2.2.1",
@@ -13753,7 +13708,7 @@ source = "git+https://github.com/paritytech/polkadot-sdk?branch=release-polkadot
 [[package]]
 name = "sp-std"
 version = "14.0.0"
-source = "git+https://github.com/paritytech/polkadot-sdk#2abd03ef330c8b55e73755a7ef4b43baf1451657"
+source = "git+https://github.com/paritytech/polkadot-sdk#f170af615c0dc413482100892758b236d1fda93b"
 
 [[package]]
 name = "sp-storage"
@@ -13770,7 +13725,7 @@ dependencies = [
 [[package]]
 name = "sp-storage"
 version = "19.0.0"
-source = "git+https://github.com/paritytech/polkadot-sdk#2abd03ef330c8b55e73755a7ef4b43baf1451657"
+source = "git+https://github.com/paritytech/polkadot-sdk#f170af615c0dc413482100892758b236d1fda93b"
 dependencies = [
  "impl-serde",
  "parity-scale-codec",
@@ -13805,7 +13760,7 @@ dependencies = [
 [[package]]
 name = "sp-tracing"
 version = "16.0.0"
-source = "git+https://github.com/paritytech/polkadot-sdk#2abd03ef330c8b55e73755a7ef4b43baf1451657"
+source = "git+https://github.com/paritytech/polkadot-sdk#f170af615c0dc413482100892758b236d1fda93b"
 dependencies = [
  "parity-scale-codec",
  "tracing",
@@ -13902,7 +13857,7 @@ dependencies = [
 [[package]]
 name = "sp-wasm-interface"
 version = "20.0.0"
-source = "git+https://github.com/paritytech/polkadot-sdk#2abd03ef330c8b55e73755a7ef4b43baf1451657"
+source = "git+https://github.com/paritytech/polkadot-sdk#f170af615c0dc413482100892758b236d1fda93b"
 dependencies = [
  "impl-trait-for-tuples",
  "log",
