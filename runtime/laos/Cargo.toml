@@ -87,7 +87,7 @@ staging-parachain-info = { workspace = true }
 parachains-common = { workspace = true }
 
 # Frontier
-fp-evm = { workspace = true }
+fp-evm = { workspace = true, features = ["serde"] }
 fp-rpc = { workspace = true }
 fp-self-contained = { workspace = true, features = ["serde"] }
 
