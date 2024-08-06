@@ -85,6 +85,7 @@ parachain-info = { workspace = true }
 parachains-common = { workspace = true }
 
 # Frontier
+fp-evm = { workspace = true }
 fp-rpc = { workspace = true }
 fp-self-contained = { workspace = true, features = ["serde"] }
 
@@ -173,6 +174,7 @@ std = [
 	"staging-xcm/std",
 	"substrate-wasm-builder",
 	# Frontier
+	"fp-evm/std",
 	"fp-rpc/std",
 	"fp-self-contained/std",
 	# Frontier FRAME
