@@ -16,13 +16,12 @@
 
 use std::{net::SocketAddr, sync::Arc};
 
-use cumulus_client_cli::generate_genesis_block;
+use cumulus_client_service::storage_proof_size::HostFunctions as ReclaimHostFunctions;
 use cumulus_primitives_core::ParaId;
 use fc_db::kv::frontier_database_dir;
 use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
 use laos_runtime::Block;
 use log::info;
-use parity_scale_codec::Encode;
 use polkadot_service::RococoChainSpec;
 use sc_cli::{
 	ChainSpec, CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams,
@@ -32,7 +31,6 @@ use sc_service::{
 	config::{BasePath, PrometheusConfig},
 	DatabaseSource, PartialComponents,
 };
-use sp_core::hexdisplay::HexDisplay;
 use sp_runtime::traits::{AccountIdConversion, Block as BlockT};
 
 #[cfg(feature = "try-runtime")]
@@ -214,10 +212,13 @@ pub fn run() -> Result<()> {
 							DatabaseSource::ParityDb { .. } => DatabaseSource::ParityDb {
 								path: frontier_database_dir(&db_config_dir, "paritydb"),
 							},
-							_ =>
-								return Err(
-									format!("Cannot purge `{:?}` database", config.database).into()
-								),
+							_ => {
+								return Err(format!(
+									"Cannot purge `{:?}` database",
+									config.database
+								)
+								.into())
+							},
 						};
 						cmd.base.run(frontier_database_config)?;
 					},
@@ -230,12 +231,13 @@ pub fn run() -> Result<()> {
 							Err(ref err) if err.kind() == std::io::ErrorKind::NotFound => {
 								eprintln!("{:?} did not exist.", &db_path);
 							},
-							Err(err) =>
+							Err(err) => {
 								return Err(format!(
 									"Cannot purge `{:?}` database: {:?}",
 									db_path, err,
 								)
-								.into()),
+								.into())
+							},
 						};
 					},
 				};
@@ -255,12 +257,12 @@ pub fn run() -> Result<()> {
 				cmd.run(config, polkadot_config)
 			})
 		},
-		Some(Subcommand::ExportGenesisState(cmd)) => {
+		Some(Subcommand::ExportGenesisHeadCommand(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			runner.sync_run(|config| {
 				let partials = new_partial(&config, &eth_cfg)?;
 				let spec = cli.load_spec(&cmd.shared_params.chain.clone().unwrap_or_default())?;
-				cmd.run::<laos_runtime::opaque::Block>(&*spec, &*partials.client)
+				cmd.run(partials.client)
 			})
 		},
 		Some(Subcommand::ExportGenesisWasm(cmd)) => {
@@ -274,26 +276,28 @@ pub fn run() -> Result<()> {
 			let runner = cli.create_runner(cmd)?;
 			// Switch on the concrete benchmark sub-command-
 			match cmd {
-				BenchmarkCmd::Pallet(cmd) =>
+				BenchmarkCmd::Pallet(cmd) => {
 					if cfg!(feature = "runtime-benchmarks") {
-						runner.sync_run(|config| cmd.run::<Block, ()>(config))
+						runner.sync_run(|config| cmd.run_with_spec::<sp_runtime::traits::HashingFor<Block>, ReclaimHostFunctions>(Some(config.chain_spec)))
 					} else {
 						Err("Benchmarking wasn't enabled when building the node. \
 					You can enable it with `--features runtime-benchmarks`."
 							.into())
-					},
+					}
+				},
 				BenchmarkCmd::Block(cmd) => runner.sync_run(|config| {
 					let partials = new_partial(&config, &eth_cfg)?;
 					cmd.run(partials.client)
 				}),
 				#[cfg(not(feature = "runtime-benchmarks"))]
-				BenchmarkCmd::Storage(_) =>
+				BenchmarkCmd::Storage(_) => {
 					return Err(sc_cli::Error::Input(
 						"Compile with --features=runtime-benchmarks \
 						to enable storage benchmarks."
 							.into(),
 					)
-					.into()),
+					.into())
+				},
 				#[cfg(feature = "runtime-benchmarks")]
 				BenchmarkCmd::Storage(cmd) => runner.sync_run(|config| {
 					let partials = new_partial(&config, &eth_cfg)?;
@@ -301,8 +305,9 @@ pub fn run() -> Result<()> {
 					let storage = partials.backend.expose_storage();
 					cmd.run(config, partials.client.clone(), db, storage)
 				}),
-				BenchmarkCmd::Machine(cmd) =>
-					runner.sync_run(|config| cmd.run(&config, SUBSTRATE_REFERENCE_HARDWARE.clone())),
+				BenchmarkCmd::Machine(cmd) => {
+					runner.sync_run(|config| cmd.run(&config, SUBSTRATE_REFERENCE_HARDWARE.clone()))
+				},
 				// NOTE: this allows the Client to leniently implement
 				// new benchmark commands without requiring a companion MR.
 				#[allow(unreachable_patterns)]
@@ -350,7 +355,7 @@ pub fn run() -> Result<()> {
 					crate::service::new_partial(&config, &cli.eth)?;
 				let (_, _, _, frontier_backend, _) = other;
 				let frontier_backend = match frontier_backend {
-					fc_db::Backend::KeyValue(kv) => Arc::new(kv),
+					fc_db::Backend::KeyValue(kv) => kv,
 					_ => panic!("Only fc_db::Backend::KeyValue supported"),
 				};
 				cmd.run(client, frontier_backend)
@@ -384,10 +389,11 @@ pub fn run() -> Result<()> {
 						&id,
 					);
 
-				let block: laos_runtime::opaque::Block =
-					generate_genesis_block(&*config.chain_spec, sp_runtime::StateVersion::V1)
-						.map_err(|e| format!("{:?}", e))?;
-				let genesis_state = format!("0x{:?}", HexDisplay::from(&block.header().encode()));
+				// TODO commented out as `generate_genesis_block` has been changed after polkadot v1.1.0
+				// let block: laos_runtime::opaque::Block =
+				// 	generate_genesis_block(&*config.chain_spec, sp_runtime::StateVersion::V1)
+				// 		.map_err(|e| format!("{:?}", e))?;
+				// let genesis_state = format!("0x{:?}", HexDisplay::from(&block.header().encode()));
 
 				let tokio_handle = config.tokio_handle.clone();
 				let polkadot_config =
@@ -396,7 +402,7 @@ pub fn run() -> Result<()> {
 
 				info!("Parachain id: {:?}", id);
 				info!("Parachain Account: {}", parachain_account);
-				info!("Parachain genesis state: {}", genesis_state);
+				// info!("Parachain genesis state: {}", genesis_state);
 				info!("Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
 
 				crate::service::start_parachain_node(

@@ -76,15 +76,17 @@ fn generic_chain_config(
 		None,
 		Some(properties()),
 		Extensions { relay_chain: "rococo-local".into(), para_id: PARA_ID },
+		&[] // TODO check me when creating a spec
 	)
 }
 
 fn create_test_genesis_config() -> laos_runtime::RuntimeGenesisConfig {
 	laos_runtime::RuntimeGenesisConfig {
 		system: laos_runtime::SystemConfig {
-			code: laos_runtime::WASM_BINARY
-				.expect("WASM binary was not build, please build it!")
-				.to_vec(),
+			// TODO IMPORTANT check where is the code supposed to be specified
+			// code: laos_runtime::WASM_BINARY
+			// 	.expect("WASM binary was not build, please build it!")
+			// 	.to_vec(),
 			..Default::default()
 		},
 		balances: laos_runtime::BalancesConfig {
@@ -105,10 +107,11 @@ fn create_test_genesis_config() -> laos_runtime::RuntimeGenesisConfig {
 				template_session_keys(get_collator_keys_from_seed("Alice")),
 			)],
 		},
-		polkadot_xcm: laos_runtime::PolkadotXcmConfig {
-			safe_xcm_version: Some(SAFE_XCM_VERSION),
-			..Default::default()
-		},
+		// TODO uncomment when enabling XCM
+		// polkadot_xcm: laos_runtime::PolkadotXcmConfig {
+		// 	safe_xcm_version: Some(SAFE_XCM_VERSION),
+		// 	..Default::default()
+		// },
 		sudo: laos_runtime::SudoConfig { key: Some(predefined_accounts::ALITH.into()) },
 		parachain_staking: laos_runtime::ParachainStakingConfig {
 			blocks_per_round: 5,
