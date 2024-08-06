@@ -28,6 +28,7 @@ pub(crate) mod evm;
 pub(crate) mod laos_evolution;
 mod multisig;
 pub(crate) mod parachain_staking;
+mod preimage;
 mod proxy;
 mod session;
 mod sudo;
