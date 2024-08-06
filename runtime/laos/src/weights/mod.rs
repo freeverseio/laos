@@ -27,6 +27,7 @@ pub mod pallet_laos_evolution;
 pub mod pallet_multisig;
 pub mod pallet_parachain_staking;
 pub mod pallet_precompiles_benchmark;
+pub mod pallet_preimage;
 pub mod pallet_proxy;
 pub mod pallet_session;
 pub mod pallet_sudo;
