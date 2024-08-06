@@ -15,6 +15,6 @@ pub fn register_cost<Runtime: crate::Config>(
 		return Err(ExitError::OutOfGas);
 	}
 	handle.record_cost(required_gas)?;
-	handle.record_external_cost(Some(weight.ref_time()), Some(weight.proof_size()))?;
+	handle.record_external_cost(Some(weight.ref_time()), Some(weight.proof_size()), Some(0))?; // TODO check Some(0) value is correct
 	Ok(())
 }

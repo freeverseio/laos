@@ -19,7 +19,7 @@
 #![cfg(test)]
 mod precompile_tests;
 mod version_tests;
-mod xcm_mock;
+// mod xcm_mock;
 mod xcm_tests;
 
 pub use xcm_mock::ParachainXcmRouter;

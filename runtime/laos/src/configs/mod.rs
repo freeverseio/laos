@@ -20,9 +20,9 @@ mod authorship;
 mod balances;
 mod base_fee;
 mod benchmark;
-mod cumulus_dmp_queue;
+// mod cumulus_dmp_queue;
 mod cumulus_parachain_system;
-mod cumulus_xcmp_queue;
+// mod cumulus_xcmp_queue;
 mod ethereum;
 pub(crate) mod evm;
 pub(crate) mod laos_evolution;
@@ -36,7 +36,7 @@ mod timestamp;
 mod transaction_payment;
 mod utility;
 mod vesting;
-pub(crate) mod xcm_config;
+// pub(crate) mod xcm_config;
 
 use frame_support::parameter_types;
 

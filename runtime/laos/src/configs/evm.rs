@@ -24,7 +24,7 @@ use frame_support::{
 	weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight},
 };
 use laos_primitives::{MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO};
-use sp_core::U256;
+use sp_core::{U256, ConstU32};
 
 /// Current approximation of the gas/s consumption considering
 /// EVM execution over compiled WASM (on 4.4Ghz CPU).
@@ -66,6 +66,7 @@ impl pallet_evm::Config for Runtime {
 	type PrecompilesValue = PrecompilesInstance;
 	type Runner = pallet_evm::runner::stack::Runner<Self>;
 	type RuntimeEvent = RuntimeEvent;
+	type SuicideQuickClearLimit = ConstU32<0>;
 	type Timestamp = Timestamp;
 	type WeightPerGas = WeightPerGas;
 	type WithdrawOrigin = pallet_evm::EnsureAddressNever<AccountId>;
