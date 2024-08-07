@@ -5106,7 +5106,7 @@ dependencies = [
  "cumulus-primitives-core",
  "cumulus-primitives-timestamp",
  "cumulus-primitives-utility",
- "ethereum 0.14.0",
+ "ethereum 0.15.0",
  "evm 0.39.1",
  "fp-evm",
  "fp-rpc",

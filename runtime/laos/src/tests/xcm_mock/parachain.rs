@@ -179,6 +179,7 @@ impl pallet_evm::Config for Runtime {
 	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
 	type Timestamp = Timestamp;
 	type WeightInfo = ();
+	type SuicideQuickClearLimit = ();
 }
 
 pub type AssetId = u32;
@@ -614,14 +615,15 @@ where
 	}
 }
 
-parameter_type_with_key! {
-	pub ParachainMinFee: |location: MultiLocation| -> Option<u128> {
-		match (location.parents, location.first_interior()) {
-			(1, Some(Parachain(4u32))) => Some(50u128),
-			_ => None,
-		}
-	};
-}
+// TODO fix when XCM is enabled
+// parameter_type_with_key! {
+// 	pub ParachainMinFee: |location: MultiLocation| -> Option<u128> {
+// 		match (location.parents, location.first_interior()) {
+// 			(1, Some(Parachain(4u32))) => Some(50u128),
+// 			_ => None,
+// 		}
+// 	};
+// }
 
 /// Convert `AccountId` to `MultiLocation`.
 pub struct AccountIdToMultiLocation;
@@ -641,19 +643,20 @@ parameter_types! {
 /// `MultiAsset` reserve location provider. It's based on `RelativeReserveProvider` and in
 /// addition will convert self absolute location to relative location.
 pub struct AbsoluteAndRelativeReserveProvider<AbsoluteLocation>(PhantomData<AbsoluteLocation>);
-impl<AbsoluteLocation: sp_core::Get<MultiLocation>> Reserve
-	for AbsoluteAndRelativeReserveProvider<AbsoluteLocation>
-{
-	fn reserve(asset: &MultiAsset) -> Option<MultiLocation> {
-		RelativeReserveProvider::reserve(asset).map(|reserve_location| {
-			if reserve_location == AbsoluteLocation::get() {
-				MultiLocation::here()
-			} else {
-				reserve_location
-			}
-		})
-	}
-}
+// TODO fix when XCM is enabled
+// impl<AbsoluteLocation: sp_core::Get<MultiLocation>> Reserve
+// 	for AbsoluteAndRelativeReserveProvider<AbsoluteLocation>
+// {
+// 	fn reserve(asset: &MultiAsset) -> Option<MultiLocation> {
+// 		RelativeReserveProvider::reserve(asset).map(|reserve_location| {
+// 			if reserve_location == AbsoluteLocation::get() {
+// 				MultiLocation::here()
+// 			} else {
+// 				reserve_location
+// 			}
+// 		})
+// 	}
+// }
 
 /// Our asset ID converter
 pub struct AssetIdConvert;
@@ -667,7 +670,7 @@ impl Convert<AssetId, Option<MultiLocation>> for AssetIdConvert {
 	}
 }
 
-/// TODO This code has been commented out when upgrading polkadot-sdk from v1.1.0 to 1.6.0
+/// TODO This code has been commented out when upgrading polkadot-sdk from v1.1.0 to 1.2.0
 /// because conflicts with orml-trait crate and currently XCM is not used. It should be
 /// uncommented and fixed when XCM is used in the runtime.
 // The XCM message wrapper wrapper

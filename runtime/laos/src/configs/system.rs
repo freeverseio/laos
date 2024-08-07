@@ -102,7 +102,7 @@ mod tests {
 			.execute_with(|| {
 				let to_account = AccountId::from_str(BOB).unwrap();
 				let transfer_amount = 100;
-				let call = RuntimeCall::Balances(pallet_balances::Call::transfer {
+				let call = RuntimeCall::Balances(pallet_balances::Call::transfer_allow_death {
 					dest: to_account,
 					value: transfer_amount,
 				});

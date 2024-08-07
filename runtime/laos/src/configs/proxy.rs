@@ -180,7 +180,7 @@ mod tests {
 				);
 
 				// Send some money to pure proxy
-				let call = RuntimeCall::Balances(pallet_balances::Call::transfer {
+				let call = RuntimeCall::Balances(pallet_balances::Call::transfer_allow_death {
 					dest: pure_proxy,
 					value: 100 * UNIT,
 				});
@@ -243,7 +243,7 @@ mod tests {
 				);
 
 				// Send some money to pure proxy
-				let call = RuntimeCall::Balances(pallet_balances::Call::transfer {
+				let call = RuntimeCall::Balances(pallet_balances::Call::transfer_allow_death {
 					dest: pure_proxy,
 					value: 100 * UNIT,
 				});
@@ -306,7 +306,7 @@ mod tests {
 				);
 
 				// Send some money to pure proxy
-				let call = RuntimeCall::Balances(pallet_balances::Call::transfer {
+				let call = RuntimeCall::Balances(pallet_balances::Call::transfer_allow_death {
 					dest: pure_proxy,
 					value: 100 * UNIT,
 				});
@@ -318,7 +318,7 @@ mod tests {
 				// proxy can not make a transfer
 				let transfer_amount = 10;
 
-				let call = Box::new(RuntimeCall::Balances(BalancesCall::transfer {
+				let call = Box::new(RuntimeCall::Balances(BalancesCall::transfer_allow_death {
 					dest: bob,
 					value: transfer_amount,
 				}));
