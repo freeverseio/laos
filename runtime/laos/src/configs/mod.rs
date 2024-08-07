@@ -36,6 +36,7 @@ mod sudo;
 pub mod system;
 mod timestamp;
 mod transaction_payment;
+mod treasury;
 mod utility;
 mod vesting;
 pub(crate) mod xcm_config;
