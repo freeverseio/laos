@@ -23,6 +23,7 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 pub mod apis;
 pub mod configs;
 pub mod currency;
+mod migrations;
 mod precompiles;
 mod self_contained_call;
 pub mod types;
@@ -168,6 +169,7 @@ type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPalletsWithSystem,
+	migrations::Migrations,
 >;
 
 #[cfg(test)]
