@@ -31,7 +31,7 @@ test-utils = { workspace = true }
 [features]
 default = [ "std" ]
 std = [
-	"frame-benchmarking/std",
+	"frame-benchmarking?/std",
 	"frame-support/std",
 	"frame-system/std",
 	"parity-scale-codec/std",
@@ -39,6 +39,7 @@ std = [
 	"sp-consensus-slots/std",
 	"sp-runtime/std",
 	"sp-std/std",
+	# "serde/std",
 ]
 runtime-benchmarks = [ "frame-benchmarking" ]
 try-runtime = [ "frame-support/try-runtime" ]

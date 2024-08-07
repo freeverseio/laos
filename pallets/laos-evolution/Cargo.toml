@@ -46,6 +46,7 @@ std = [
 	"precompile-utils/std",
 	"fp-evm/std",
 	"pallet-evm/std",
+	# "serde/std",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",

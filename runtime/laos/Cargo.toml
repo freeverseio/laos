@@ -75,7 +75,7 @@ polkadot-primitives = { workspace = true }
 cumulus-pallet-aura-ext = { workspace = true }
 cumulus-pallet-dmp-queue = { workspace = true }
 cumulus-pallet-parachain-system = { workspace = true }
-cumulus-pallet-session-benchmarking = { workspace = true }
+cumulus-pallet-session-benchmarking = { workspace = true, optional = true }
 cumulus-pallet-xcm = { workspace = true }
 cumulus-pallet-xcmp-queue = { workspace = true }
 cumulus-primitives-core = { workspace = true }
@@ -102,7 +102,7 @@ pallet-evm-precompile-parachain-staking = { workspace = true }
 precompile-utils = { workspace = true }
 
 [dev-dependencies]
-static_assertions = { workspace = true }
+# static_assertions = { workspace = true }
 precompile-utils = { workspace = true, features = ["testing"] }
 evm = { workspace = true }
 # orml-traits = { workspace = true }
@@ -182,10 +182,10 @@ std = [
 	"pallet-evm-precompile-bn128/std",
 	"pallet-evm-precompile-blake2/std",	
 	"pallet-evm-precompile-parachain-staking/std",	
-	"cumulus-pallet-session-benchmarking/std",
+	"cumulus-pallet-session-benchmarking?/std",
 	"frame-benchmarking?/std",
 	"frame-system-benchmarking?/std",
-	"frame-try-runtime",
+	"frame-try-runtime?/std",
 	# Bridge deps,
 	"laos-primitives/std",
 	"hex/std",
