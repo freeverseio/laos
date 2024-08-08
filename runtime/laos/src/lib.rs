@@ -31,7 +31,6 @@ mod weights;
 pub use configs::laos_evolution::REVERT_BYTECODE;
 use core::marker::PhantomData;
 use frame_support::construct_runtime;
-use frame_system::EnsureRoot;
 pub use laos_primitives::{
 	AccountId, AuraId, Balance, BlockNumber, Hash, Header, Nonce, Signature,
 };
@@ -42,7 +41,6 @@ use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
-use staging_xcm_executor::XcmExecutor;
 
 /// Block type as expected by this runtime.
 pub type Block = generic::Block<Header, UncheckedExtrinsic>;

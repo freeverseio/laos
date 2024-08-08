@@ -48,6 +48,10 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
 #[allow(dead_code)]
 struct CheckInherents;
 
+// Parity has decided to depreciate this trait, but does not offer a satisfactory replacement,
+// see issue: https://github.com/paritytech/polkadot-sdk/issues/2841
+#[allow(deprecated)]
+
 impl cumulus_pallet_parachain_system::CheckInherents<Block> for CheckInherents {
 	fn check_inherents(
 		block: &Block,
