@@ -106,8 +106,6 @@ mod tests {
 	};
 	use core::str::FromStr;
 	use frame_support::assert_ok;
-	use pallet_balances::Call as BalancesCall;
-	use pallet_ethereum::Transaction;
 	use pallet_proxy::Event as ProxyEvent;
 	use sp_core::{H160, H256, U256};
 	use sp_runtime::traits::Dispatchable;
@@ -180,7 +178,7 @@ mod tests {
 				);
 
 				// Send some money to pure proxy
-				let call = RuntimeCall::Balances(pallet_balances::Call::transfer {
+				let call = RuntimeCall::Balances(pallet_balances::Call::transfer_keep_alive {
 					dest: pure_proxy,
 					value: 100 * UNIT,
 				});
@@ -243,7 +241,7 @@ mod tests {
 				);
 
 				// Send some money to pure proxy
-				let call = RuntimeCall::Balances(pallet_balances::Call::transfer {
+				let call = RuntimeCall::Balances(pallet_balances::Call::transfer_keep_alive {
 					dest: pure_proxy,
 					value: 100 * UNIT,
 				});
@@ -306,7 +304,7 @@ mod tests {
 				);
 
 				// Send some money to pure proxy
-				let call = RuntimeCall::Balances(pallet_balances::Call::transfer {
+				let call = RuntimeCall::Balances(pallet_balances::Call::transfer_keep_alive {
 					dest: pure_proxy,
 					value: 100 * UNIT,
 				});
@@ -318,7 +316,7 @@ mod tests {
 				// proxy can not make a transfer
 				let transfer_amount = 10;
 
-				let call = Box::new(RuntimeCall::Balances(BalancesCall::transfer {
+				let call = Box::new(RuntimeCall::Balances(pallet_balances::Call::transfer_keep_alive {
 					dest: bob,
 					value: transfer_amount,
 				}));
@@ -563,7 +561,7 @@ mod tests {
 
 				// proxy can not call ethereum transact
 				let call = Box::new(RuntimeCall::Ethereum(pallet_ethereum::Call::transact {
-					transaction: Transaction::Legacy(ethereum::LegacyTransaction {
+					transaction: pallet_ethereum::Transaction::Legacy(ethereum::LegacyTransaction {
 						nonce: U256::zero(),
 						gas_price: U256::zero(),
 						gas_limit: U256::from(100_000),

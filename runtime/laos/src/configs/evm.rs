@@ -177,11 +177,11 @@ mod tests {
 				// check weights
 				assert_eq!(
 					wrong_address_call_result.actual_weight.unwrap(),
-					Weight::from_parts(411_386_000, 5_358)
+					Weight::from_parts(428_726_000, 5_358)
 				);
 				assert_eq!(
 					call_result.actual_weight.unwrap(),
-					Weight::from_parts(1035286000, 11597)
+					Weight::from_parts(1_052_626_000, 11_597)
 				);
 
 				// check gas
@@ -189,24 +189,24 @@ mod tests {
 					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
 						wrong_address_call_result.actual_weight.unwrap()
 					),
-					16_455
+					17_149
 				);
 				assert_eq!(
 					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
 						call_result.actual_weight.unwrap()
 					),
-					41411
+					42_105
 				);
 
 				// check weights from benchmarking
 				let weights_from_benchmarking =
 					weights::pallet_laos_evolution::WeightInfo::<Runtime>::precompile_create_collection();
-				assert_eq!(weights_from_benchmarking, Weight::from_parts(623907000, 3_873));
+				assert_eq!(weights_from_benchmarking, Weight::from_parts(623_907_000, 3_873));
 				assert_eq!(
 					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
 						weights_from_benchmarking
 					),
-					24956
+					24_956
 				);
 			});
 	}
@@ -255,22 +255,22 @@ mod tests {
 				// check weights
 				assert_eq!(
 					wrong_address_call_result.actual_weight.unwrap(),
-					Weight::from_parts(402_186_000, 5_266)
+					Weight::from_parts(419_526_000, 5_266)
 				);
-				assert_eq!(call_result.actual_weight.unwrap(), Weight::from_parts(432311000, 5567));
+				assert_eq!(call_result.actual_weight.unwrap(), Weight::from_parts(449_651_000, 5_567));
 
 				// check gas
 				assert_eq!(
 					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
 						wrong_address_call_result.actual_weight.unwrap()
 					),
-					16_087
+					16_781
 				);
 				assert_eq!(
 					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
 						call_result.actual_weight.unwrap()
 					),
-					17292
+					17_986
 				);
 
 				// check weights from benchmarking
