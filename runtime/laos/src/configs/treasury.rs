@@ -1,6 +1,6 @@
 use crate::{
-	configs::collective_council::CouncilCollective, currency::UNIT, AccountId, Balance, Balances,
-	BlockNumber, EnsureRoot, Permill, Runtime, RuntimeEvent, Treasury,
+	configs::collective_council::CouncilCollective, currency::UNIT, weights, AccountId, Balance,
+	Balances, BlockNumber, EnsureRoot, Permill, Runtime, RuntimeEvent, Treasury,
 };
 use frame_support::{parameter_types, traits::EitherOfDiverse, PalletId};
 use parachains_common::DAYS;
@@ -39,5 +39,5 @@ impl pallet_treasury::Config for Runtime {
 	type SpendFunds = ();
 	type SpendOrigin = SpendOrigin;
 	type SpendPeriod = SpendPeriod;
-	type WeightInfo = (); //weights::pallet_treasury::WeightInfo<Runtime>;
+	type WeightInfo = weights::pallet_treasury::WeightInfo<Runtime>;
 }
