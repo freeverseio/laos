@@ -5,8 +5,6 @@ use crate::{
 use frame_support::{parameter_types, traits::EitherOfDiverse, PalletId};
 use parachains_common::DAYS;
 
-pub type SpendOrigin = frame_support::traits::NeverEnsureOrigin<Balance>;
-
 parameter_types! {
 	pub const ProposalBond: Permill = Permill::from_percent(5);
 	pub const ProposalBondMinimum: Balance = 100 * UNIT;
@@ -35,7 +33,7 @@ impl pallet_treasury::Config for Runtime {
 	>;
 	type RuntimeEvent = RuntimeEvent;
 	type SpendFunds = ();
-	type SpendOrigin = SpendOrigin;
+	type SpendOrigin = frame_support::traits::NeverEnsureOrigin<Balance>;
 	type SpendPeriod = SpendPeriod;
 	type WeightInfo = weights::pallet_treasury::WeightInfo<Runtime>;
 }
