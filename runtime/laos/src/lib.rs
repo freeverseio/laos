@@ -23,6 +23,7 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 pub mod apis;
 pub mod configs;
 pub mod currency;
+mod migrations;
 mod precompiles;
 mod self_contained_call;
 pub mod types;
@@ -129,6 +130,9 @@ construct_runtime!(
 		CumulusXcm: cumulus_pallet_xcm = 32,
 		DmpQueue: cumulus_pallet_dmp_queue = 33,
 
+		// Governance
+		Preimage: pallet_preimage = 45,
+
 		// Frontier
 		Ethereum: pallet_ethereum = 50,
 		EVM: pallet_evm = 51,
@@ -165,6 +169,7 @@ type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPalletsWithSystem,
+	migrations::Migrations,
 >;
 
 #[cfg(test)]

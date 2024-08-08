@@ -22,7 +22,9 @@
 # Should be run on a reference machine to gain accurate benchmarks
 # current reference machine: https://github.com/paritytech/substrate/pull/5848
 
-while getopts 'bfp:v' flag; do
+dev_mode=false
+
+while getopts 'bfp:vd' flag; do
   case "${flag}" in
     b)
       # Skip build.
@@ -45,6 +47,10 @@ while getopts 'bfp:v' flag; do
     v)
       # Echo all executed commands.
       set -x
+      ;;
+    d)
+      # Development mode
+      dev_mode=true
       ;;
     *)
       # Exit early.
@@ -79,6 +85,16 @@ ERR_FILE="benchmarking_errors.txt"
 # Delete the error file before each run.
 rm -f $ERR_FILE
 
+# Set default steps and repeat values
+steps=50
+repeat=20
+
+# Override steps and repeat if dev mode is enabled
+if [ "$dev_mode" = true ]; then
+  steps=2
+  repeat=1
+fi
+
 # Benchmark each pallet.
 for PALLET in "${PALLETS[@]}"; do
   # If `-p` is used, skip benchmarks until the start pallet.
@@ -105,8 +121,8 @@ for PALLET in "${PALLETS[@]}"; do
   OUTPUT=$(
     $SUBSTRATE benchmark pallet \
     --chain=dev \
-    --steps=50 \
-    --repeat=20 \
+    --steps=$steps \
+    --repeat=$repeat \
     --pallet="$PALLET" \
     --extrinsic="$EXTRINSIC" \
     --wasm-execution=compiled \

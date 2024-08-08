@@ -14,40 +14,22 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
-mod asset_metadata_extender;
-mod aura;
-mod authorship;
-mod balances;
-mod base_fee;
-mod benchmark;
-mod cumulus_dmp_queue;
-mod cumulus_parachain_system;
-mod cumulus_xcmp_queue;
-mod ethereum;
-pub(crate) mod evm;
-pub(crate) mod laos_evolution;
-mod multisig;
-pub(crate) mod parachain_staking;
-mod preimage;
-mod proxy;
-mod session;
-mod sudo;
-pub mod system;
-mod timestamp;
-mod transaction_payment;
-mod utility;
-mod vesting;
-pub(crate) mod xcm_config;
-
+use crate::{
+	currency::calculate_deposit, weights, AccountId, Balance, Balances, EnsureRoot, Runtime,
+	RuntimeEvent,
+};
 use frame_support::parameter_types;
 
-use crate::Runtime;
-
 parameter_types! {
-	/// Max length of the `TokenUri`
-	pub const MaxTokenUriLength: u32 = 512;
+	pub const PreimageBaseDeposit: Balance = calculate_deposit(2, 64);
+	pub const PreimageByteDeposit: Balance = calculate_deposit(0, 1);
 }
 
-impl cumulus_pallet_aura_ext::Config for Runtime {}
-impl pallet_evm_chain_id::Config for Runtime {}
-impl parachain_info::Config for Runtime {}
+impl pallet_preimage::Config for Runtime {
+	type BaseDeposit = PreimageBaseDeposit;
+	type ByteDeposit = PreimageByteDeposit;
+	type Currency = Balances;
+	type ManagerOrigin = EnsureRoot<AccountId>;
+	type RuntimeEvent = RuntimeEvent;
+	type WeightInfo = weights::pallet_preimage::WeightInfo<Runtime>;
+}
