@@ -32,7 +32,11 @@ impl pallet_message_queue::Config for Runtime {
 		cumulus_primitives_core::AggregateMessageOrigin,
 	>;
 	#[cfg(not(feature = "runtime-benchmarks"))]
-	type MessageProcessor = staging_xcm_builder::ProcessXcmMessage<cumulus_primitives_core::AggregateMessageOrigin, (), ()>; // TODO look at moonbeam's code when enabling XCM
+	type MessageProcessor = staging_xcm_builder::ProcessXcmMessage<
+		cumulus_primitives_core::AggregateMessageOrigin,
+		(),
+		(),
+	>; // TODO look at moonbeam's code when enabling XCM
 	type Size = u32;
 	type HeapSize = MessageQueueHeapSize;
 	type MaxStale = MessageQueueMaxStale;
