@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
-use super::{get_collator_keys_from_seed, predefined_accounts, Extensions, SAFE_XCM_VERSION};
+use super::{get_collator_keys_from_seed, predefined_accounts, Extensions};
 use fp_evm::GenesisAccount;
 use laos_runtime::{
 	configs::system::SS58Prefix,
@@ -76,7 +76,7 @@ fn generic_chain_config(
 		None,
 		Some(properties()),
 		Extensions { relay_chain: "rococo-local".into(), para_id: PARA_ID },
-		&[] // TODO check me when creating a spec
+		&[], // TODO check me when creating a spec
 	)
 }
 

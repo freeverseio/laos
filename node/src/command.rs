@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
-use std::{net::SocketAddr, sync::Arc};
+use std::net::SocketAddr;
 
 use cumulus_client_service::storage_proof_size::HostFunctions as ReclaimHostFunctions;
 use cumulus_primitives_core::ParaId;
@@ -31,7 +31,7 @@ use sc_service::{
 	config::{BasePath, PrometheusConfig},
 	DatabaseSource, PartialComponents,
 };
-use sp_runtime::traits::{AccountIdConversion, Block as BlockT};
+use sp_runtime::traits::AccountIdConversion;
 
 #[cfg(feature = "try-runtime")]
 use crate::service::ParachainNativeExecutor;
@@ -212,13 +212,10 @@ pub fn run() -> Result<()> {
 							DatabaseSource::ParityDb { .. } => DatabaseSource::ParityDb {
 								path: frontier_database_dir(&db_config_dir, "paritydb"),
 							},
-							_ => {
-								return Err(format!(
-									"Cannot purge `{:?}` database",
-									config.database
-								)
-								.into())
-							},
+							_ =>
+								return Err(
+									format!("Cannot purge `{:?}` database", config.database).into()
+								),
 						};
 						cmd.base.run(frontier_database_config)?;
 					},
@@ -231,13 +228,12 @@ pub fn run() -> Result<()> {
 							Err(ref err) if err.kind() == std::io::ErrorKind::NotFound => {
 								eprintln!("{:?} did not exist.", &db_path);
 							},
-							Err(err) => {
+							Err(err) =>
 								return Err(format!(
 									"Cannot purge `{:?}` database: {:?}",
 									db_path, err,
 								)
-								.into())
-							},
+								.into()),
 						};
 					},
 				};
@@ -276,28 +272,26 @@ pub fn run() -> Result<()> {
 			let runner = cli.create_runner(cmd)?;
 			// Switch on the concrete benchmark sub-command-
 			match cmd {
-				BenchmarkCmd::Pallet(cmd) => {
+				BenchmarkCmd::Pallet(cmd) =>
 					if cfg!(feature = "runtime-benchmarks") {
 						runner.sync_run(|config| cmd.run_with_spec::<sp_runtime::traits::HashingFor<Block>, ReclaimHostFunctions>(Some(config.chain_spec)))
 					} else {
 						Err("Benchmarking wasn't enabled when building the node. \
 					You can enable it with `--features runtime-benchmarks`."
 							.into())
-					}
-				},
+					},
 				BenchmarkCmd::Block(cmd) => runner.sync_run(|config| {
 					let partials = new_partial(&config, &eth_cfg)?;
 					cmd.run(partials.client)
 				}),
 				#[cfg(not(feature = "runtime-benchmarks"))]
-				BenchmarkCmd::Storage(_) => {
+				BenchmarkCmd::Storage(_) =>
 					return Err(sc_cli::Error::Input(
 						"Compile with --features=runtime-benchmarks \
 						to enable storage benchmarks."
 							.into(),
 					)
-					.into())
-				},
+					.into()),
 				#[cfg(feature = "runtime-benchmarks")]
 				BenchmarkCmd::Storage(cmd) => runner.sync_run(|config| {
 					let partials = new_partial(&config, &eth_cfg)?;
@@ -305,9 +299,8 @@ pub fn run() -> Result<()> {
 					let storage = partials.backend.expose_storage();
 					cmd.run(config, partials.client.clone(), db, storage)
 				}),
-				BenchmarkCmd::Machine(cmd) => {
-					runner.sync_run(|config| cmd.run(&config, SUBSTRATE_REFERENCE_HARDWARE.clone()))
-				},
+				BenchmarkCmd::Machine(cmd) =>
+					runner.sync_run(|config| cmd.run(&config, SUBSTRATE_REFERENCE_HARDWARE.clone())),
 				// NOTE: this allows the Client to leniently implement
 				// new benchmark commands without requiring a companion MR.
 				#[allow(unreachable_patterns)]
@@ -389,11 +382,12 @@ pub fn run() -> Result<()> {
 						&id,
 					);
 
-				// TODO commented out as `generate_genesis_block` has been changed after polkadot v1.1.0
-				// let block: laos_runtime::opaque::Block =
+				// TODO commented out as `generate_genesis_block` has been changed after polkadot
+				// v1.1.0 let block: laos_runtime::opaque::Block =
 				// 	generate_genesis_block(&*config.chain_spec, sp_runtime::StateVersion::V1)
 				// 		.map_err(|e| format!("{:?}", e))?;
-				// let genesis_state = format!("0x{:?}", HexDisplay::from(&block.header().encode()));
+				// let genesis_state = format!("0x{:?}",
+				// HexDisplay::from(&block.header().encode()));
 
 				let tokio_handle = config.tokio_handle.clone();
 				let polkadot_config =

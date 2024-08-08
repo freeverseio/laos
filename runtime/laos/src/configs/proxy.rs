@@ -316,10 +316,11 @@ mod tests {
 				// proxy can not make a transfer
 				let transfer_amount = 10;
 
-				let call = Box::new(RuntimeCall::Balances(pallet_balances::Call::transfer_keep_alive {
-					dest: bob,
-					value: transfer_amount,
-				}));
+				let call =
+					Box::new(RuntimeCall::Balances(pallet_balances::Call::transfer_keep_alive {
+						dest: bob,
+						value: transfer_amount,
+					}));
 
 				assert_ok!(Proxy::proxy(
 					RuntimeOrigin::signed(alice),
@@ -561,20 +562,22 @@ mod tests {
 
 				// proxy can not call ethereum transact
 				let call = Box::new(RuntimeCall::Ethereum(pallet_ethereum::Call::transact {
-					transaction: pallet_ethereum::Transaction::Legacy(ethereum::LegacyTransaction {
-						nonce: U256::zero(),
-						gas_price: U256::zero(),
-						gas_limit: U256::from(100_000),
-						action: ethereum::TransactionAction::Call(H160::zero()),
-						value: U256::zero(),
-						input: vec![],
-						signature: ethereum::TransactionSignature::new(
-							123,
-							H256::from_low_u64_be(1),
-							H256::from_low_u64_be(2),
-						)
-						.unwrap(),
-					}),
+					transaction: pallet_ethereum::Transaction::Legacy(
+						ethereum::LegacyTransaction {
+							nonce: U256::zero(),
+							gas_price: U256::zero(),
+							gas_limit: U256::from(100_000),
+							action: ethereum::TransactionAction::Call(H160::zero()),
+							value: U256::zero(),
+							input: vec![],
+							signature: ethereum::TransactionSignature::new(
+								123,
+								H256::from_low_u64_be(1),
+								H256::from_low_u64_be(2),
+							)
+							.unwrap(),
+						},
+					),
 				}));
 				assert_ok!(Proxy::proxy(
 					RuntimeOrigin::signed(alice),

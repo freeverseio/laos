@@ -15,8 +15,8 @@
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 use fp_rpc::TransactionStatus;
-use pallet_aura::Authorities;
 use frame_support::{traits::Hooks, weights::Weight};
+use pallet_aura::Authorities;
 use pallet_ethereum::{Call::transact, Transaction as EthereumTransaction};
 use pallet_evm::{Account as EVMAccount, FeeCalculator, Runner};
 use sp_api::impl_runtime_apis;

@@ -1,10 +1,10 @@
 use crate::{Runtime, RuntimeEvent};
+use cumulus_primitives_core::AggregateMessageOrigin;
 use frame_support::parameter_types;
-use sp_weights::Weight;
-use sp_runtime::Perbill;
 use laos_primitives::BlockWeights;
 use parachains_common::message_queue::NarrowOriginToSibling;
-use cumulus_primitives_core::AggregateMessageOrigin;
+use sp_runtime::Perbill;
+use sp_weights::Weight;
 
 parameter_types! {
 	/// The amount of weight (if any) which should be provided to the message queue for
@@ -40,10 +40,12 @@ impl pallet_message_queue::Config for Runtime {
 	type ServiceWeight = MessageQueueServiceWeight;
 	// The XCMP queue pallet is only ever able to handle the `Sibling(ParaId)` origin:
 	type QueueChangeHandler = NarrowOriginToSibling<()>; // TODO replace `()` with `XcmpQueue` when XCM is enabled
-	// NarrowOriginToSibling calls XcmpQueue's is_paused if Origin is sibling. Allows all other origins
+													  // NarrowOriginToSibling calls XcmpQueue's is_paused if Origin is sibling. Allows all other
+													  // origins
 	type QueuePausedQuery = NarrowOriginToSibling<()>;
-	// TODO replace `NarrowOriginToSibling<()>` with `NarrowOriginToSibling<XcmpQueue>` when XCM is enabled.
-	// Note: moonbeam has this definition -> `type QueuePausedQuery = (MaintenanceMode, NarrowOriginToSibling<XcmpQueue>);`
+	// TODO replace `NarrowOriginToSibling<()>` with `NarrowOriginToSibling<XcmpQueue>` when XCM is
+	// enabled. Note: moonbeam has this definition -> `type QueuePausedQuery = (MaintenanceMode,
+	// NarrowOriginToSibling<XcmpQueue>);`
 	type WeightInfo = pallet_message_queue::weights::SubstrateWeight<Runtime>;
 	type IdleMaxServiceWeight = MessageQueueServiceWeight;
 }

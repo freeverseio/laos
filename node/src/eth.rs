@@ -142,7 +142,10 @@ pub async fn spawn_frontier_tasks<RuntimeApi, Executor>(
 	task_manager: &TaskManager,
 	client: Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
 	backend: Arc<TFullBackend<Block>>,
-	frontier_backend: fc_db::Backend<Block, TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
+	frontier_backend: fc_db::Backend<
+		Block,
+		TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>,
+	>,
 	filter_pool: Option<FilterPool>,
 	overrides: Arc<dyn StorageOverride<Block>>,
 	fee_history_cache: FeeHistoryCache,
