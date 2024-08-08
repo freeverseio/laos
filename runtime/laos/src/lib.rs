@@ -131,6 +131,7 @@ construct_runtime!(
 		DmpQueue: cumulus_pallet_dmp_queue = 33,
 
 		// Governance
+		Council: pallet_collective::<Instance1> = 42,
 		Preimage: pallet_preimage = 45,
 
 		// Frontier

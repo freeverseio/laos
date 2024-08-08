@@ -1,7 +1,8 @@
 use crate::{
-	AccountId, BlockNumber, EnsureRoot, Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin,
+	weights::RuntimeBlockWeights, AccountId, BlockNumber, EnsureRoot, Runtime, RuntimeCall,
+	RuntimeEvent, RuntimeOrigin,
 };
-use frame_support::{pallet_prelule::Weight, parameter_types};
+use frame_support::{pallet_prelude::Weight, parameter_types};
 use parachains_common::DAYS;
 use sp_runtime::Perbill;
 
@@ -11,11 +12,12 @@ parameter_types! {
 	pub const CouncilMotionDuration: BlockNumber = COUNCIL_MOTION_DURATION;
 	pub const CouncilMaxProposals: u32 = 7;
 	pub const CouncilMaxMembers: u32 = 20;
-	pub const MaxProposalWeight: Weight = Perbill::from_percent(50) * RuntimeBlockWeights::get().max_block;
-	pub const MaxCollectivesProposalWeight: Weight = Perbill::from_percent(50) * RuntimeBlockWeights::get().max_block;
+	pub MaxProposalWeight: Weight = Perbill::from_percent(50) * RuntimeBlockWeights::get().max_block;
+	pub MaxCollectivesProposalWeight: Weight = Perbill::from_percent(50) * RuntimeBlockWeights::get().max_block;
 }
 
-impl pallet_collective::Config for Runtime {
+type CouncilCollective = pallet_collective::Instance1;
+impl pallet_collective::Config<CouncilCollective> for Runtime {
 	type DefaultVote = pallet_collective::MoreThanMajorityThenPrimeDefaultVote;
 	type MaxMembers = CouncilMaxMembers;
 	type MaxProposalWeight = MaxCollectivesProposalWeight;
