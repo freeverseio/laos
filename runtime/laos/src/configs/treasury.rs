@@ -1,17 +1,15 @@
-use crate::{ Runtime, AccountId, RuntimeEvent, Balances, Balance, EnsureRoot, BlockNumber, Permill, currency::UNIT };
+use crate::{ Runtime, AccountId, RuntimeEvent, Balances, Balance, EnsureRoot, BlockNumber, Permill, currency::UNIT, Treasury };
 use frame_support::{ parameter_types, PalletId };
  use parachains_common::DAYS;
 
 pub type SpendOrigin = frame_support::traits::NeverEnsureOrigin<Balance>;
-pub const SPEND_PERIOD: BlockNumber = 7 * DAYS;
 
 parameter_types! {
     pub const ProposalBond: Permill = Permill::from_percent(5);
-    pub const ProposalBondMinimum: Balance = 50 * UNIT;
-    pub const Burn: Permill = Permill::zero();
-    pub const SpendPeriod: BlockNumber = SPEND_PERIOD;
+    pub const ProposalBondMinimum: Balance = 100 * UNIT;
+    pub const SpendPeriod: BlockNumber = 7 * DAYS;
     pub const MaxApprovals: u32 = 100;
-    pub const TreasuryId: PalletId = PalletId(*b"plmc/tsy");
+    pub const TreasuryId: PalletId = PalletId(*b"py/trsry");
 }
 
 impl pallet_treasury::Config for Runtime {
@@ -21,11 +19,11 @@ impl pallet_treasury::Config for Runtime {
 	// >;
 	#[cfg(feature = "runtime-benchmarks")]
 	type BenchmarkHelper = TreasuryBenchmarkHelper;
-	type Burn = Burn;
+	type Burn = ();
 	type BurnDestination = ();
 	type Currency = Balances;
 	type MaxApprovals = MaxApprovals;
-	type OnSlash = (); // Treasury;
+	type OnSlash = Treasury;
 	type PalletId = TreasuryId;
 	type ProposalBond = ProposalBond;
 	type ProposalBondMaximum = ();
