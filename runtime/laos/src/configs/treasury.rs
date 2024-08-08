@@ -20,8 +20,6 @@ impl pallet_treasury::Config for Runtime {
 		EnsureRoot<AccountId>,
 		pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 1>,
 	>;
-	#[cfg(feature = "runtime-benchmarks")]
-	type BenchmarkHelper = TreasuryBenchmarkHelper;
 	type Burn = ();
 	type BurnDestination = ();
 	type Currency = Balances;
