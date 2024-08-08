@@ -5320,6 +5320,7 @@ dependencies = [
  "sp-consensus-aura",
  "sp-consensus-slots",
  "sp-core",
+ "sp-genesis-builder",
  "sp-inherents",
  "sp-io",
  "sp-offchain",

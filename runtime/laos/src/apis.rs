@@ -15,7 +15,11 @@
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 use fp_rpc::TransactionStatus;
-use frame_support::{traits::Hooks, weights::Weight};
+use frame_support::{
+	genesis_builder_helper::{build_state, get_preset},
+	traits::Hooks,
+	weights::Weight,
+};
 use pallet_aura::Authorities;
 use pallet_ethereum::{Call::transact, Transaction as EthereumTransaction};
 use pallet_evm::{Account as EVMAccount, FeeCalculator, Runner};
@@ -32,8 +36,8 @@ use sp_version::RuntimeVersion;
 // Local module imports
 use super::{
 	AccountId, Aura, AuraId, Balance, Block, Ethereum, Executive, InherentDataExt, Nonce,
-	ParachainSystem, Runtime, RuntimeCall, SessionKeys, System, TransactionPayment,
-	UncheckedExtrinsic, EVM, VERSION,
+	ParachainSystem, Runtime, RuntimeCall, RuntimeGenesisConfig, SessionKeys, System,
+	TransactionPayment, UncheckedExtrinsic, EVM, VERSION,
 };
 
 /// TODO: hackish way to get the runtime version public. Waiting for substrate to expose it.
@@ -413,6 +417,20 @@ impl_runtime_apis! {
 
 			if batches.is_empty() { return Err("Benchmark not found for this pallet.".into()) }
 			Ok(batches)
+		}
+	}
+
+	impl sp_genesis_builder::GenesisBuilder<Block> for Runtime {
+		fn build_state(config: Vec<u8>) -> sp_genesis_builder::Result {
+			build_state::<RuntimeGenesisConfig>(config)
+		}
+
+		fn get_preset(id: &Option<sp_genesis_builder::PresetId>) -> Option<Vec<u8>> {
+			get_preset::<RuntimeGenesisConfig>(id, |_| None)
+		}
+
+		fn preset_names() -> Vec<sp_genesis_builder::PresetId> {
+			Default::default()
 		}
 	}
 }

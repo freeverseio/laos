@@ -57,6 +57,7 @@ sp-transaction-pool = { workspace = true }
 sp-version = { workspace = true }
 sp-staking = { workspace = true }
 sp-weights ={ workspace = true }
+sp-genesis-builder ={ workspace = true }
 
 pallet-asset-metadata-extender = { workspace = true }
 pallet-laos-evolution = { workspace = true }
@@ -171,6 +172,7 @@ std = [
 	"sp-transaction-pool/std",
 	"sp-version/std",
 	"sp-weights/std",
+	"sp-genesis-builder/std",
 	"staging-xcm-builder/std",
 	"staging-xcm-executor/std",
 	"staging-xcm/std",
