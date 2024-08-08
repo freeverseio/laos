@@ -76,10 +76,10 @@ pub type WeightToFee = IdentityFee<Balance>;
 
 frame_support::parameter_types! {
 	/// Size limit of the Laos parachain blocks.
-	pub BlockLength: limits::BlockLength =
+	pub RuntimeBlockLength: limits::BlockLength =
 		limits::BlockLength::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
 	/// Weight limit of the Laos parachain blocks.
-	pub BlockWeights: limits::BlockWeights =
+	pub RuntimeBlockWeights: limits::BlockWeights =
 		limits::BlockWeights::with_sensible_defaults(MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO);
 }
 

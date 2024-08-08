@@ -1,8 +1,8 @@
 use crate::{
-	weights::RuntimeBlockWeights, AccountId, BlockNumber, EnsureRoot, Runtime, RuntimeCall,
-	RuntimeEvent, RuntimeOrigin,
+	AccountId, BlockNumber, EnsureRoot, Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin,
 };
 use frame_support::{pallet_prelude::Weight, parameter_types};
+use laos_primitives::RuntimeBlockWeights;
 use parachains_common::DAYS;
 use sp_runtime::Perbill;
 
