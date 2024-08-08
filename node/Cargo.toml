@@ -13,6 +13,7 @@ parity-scale-codec = { workspace = true, features = ["derive"] }
 serde = { workspace = true, features = ["derive"] }
 jsonrpsee = { workspace = true, features = ["server"] }
 hex-literal = { workspace = true }
+serde_json = { workspace = true, default-features = true }
 
 # Local
 laos-runtime = { workspace = true, features = ["std"] }

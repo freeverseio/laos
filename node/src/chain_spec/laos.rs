@@ -28,16 +28,30 @@ pub(crate) type ChainSpec =
 	sc_service::GenericChainSpec<laos_runtime::RuntimeGenesisConfig, Extensions>;
 
 pub(crate) fn development_config() -> ChainSpec {
-	generic_chain_config("Development", "dev", ChainType::Development, None)
+	ChainSpec::builder(
+		laos_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!"),
+		Extensions { relay_chain: "rococo-local".into(), para_id: PARA_ID },
+	)
+	.with_name("Development")
+	.with_id("dev")
+	.with_chain_type(ChainType::Development)
+	.with_properties(properties())
+	.with_genesis_config_patch(create_test_genesis_config())
+	.build()
 }
 
 pub(crate) fn local_testnet_config() -> ChainSpec {
-	generic_chain_config(
-		"Local Testnet",
-		"laos_local_testnet",
-		ChainType::Local,
-		Some("template-local"),
+	ChainSpec::builder(
+		laos_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!"),
+		Extensions { relay_chain: "rococo-local".into(), para_id: PARA_ID },
 	)
+	.with_name("Local Testnet")
+	.with_id("laos_local_testnet")
+	.with_chain_type(ChainType::Local)
+	.with_properties(properties())
+	.with_protocol_id("template-local")
+	.with_genesis_config_patch(create_test_genesis_config())
+	.build()
 }
 
 const PARA_ID: u32 = 2001;
@@ -59,36 +73,8 @@ fn properties() -> sc_chain_spec::Properties {
 	properties
 }
 
-fn generic_chain_config(
-	name: &str,
-	id: &str,
-	chain_type: ChainType,
-	protocol_id: Option<&str>,
-) -> ChainSpec {
-	ChainSpec::from_genesis(
-		name,
-		id,
-		chain_type,
-		create_test_genesis_config,
-		Vec::new(),
-		None,
-		protocol_id,
-		None,
-		Some(properties()),
-		Extensions { relay_chain: "rococo-local".into(), para_id: PARA_ID },
-		&[], // TODO check me when creating a spec
-	)
-}
-
-fn create_test_genesis_config() -> laos_runtime::RuntimeGenesisConfig {
-	laos_runtime::RuntimeGenesisConfig {
-		system: laos_runtime::SystemConfig {
-			// TODO IMPORTANT check where is the code supposed to be specified
-			// code: laos_runtime::WASM_BINARY
-			// 	.expect("WASM binary was not build, please build it!")
-			// 	.to_vec(),
-			..Default::default()
-		},
+fn create_test_genesis_config() -> serde_json::Value {
+	let config = laos_runtime::RuntimeGenesisConfig {
 		balances: laos_runtime::BalancesConfig {
 			balances: vec![
 				(predefined_accounts::ALITH.into(), 800000000 * UNIT),
@@ -160,5 +146,6 @@ fn create_test_genesis_config() -> laos_runtime::RuntimeGenesisConfig {
 			],
 		},
 		..Default::default()
-	}
+	};
+	serde_json::to_value(&config).expect("Could not build genesis config.")
 }
