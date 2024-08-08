@@ -132,6 +132,7 @@ construct_runtime!(
 
 		// Governance
 		Council: pallet_collective::<Instance1> = 42,
+		TechnicalCommittee: pallet_collective::<Instance2> = 43,
 		Preimage: pallet_preimage = 45,
 
 		// Frontier
