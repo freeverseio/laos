@@ -177,7 +177,7 @@ mod tests {
 				// check weights
 				assert_eq!(
 					wrong_address_call_result.actual_weight.unwrap(),
-					Weight::from_parts(428726_000, 5358)
+					Weight::from_parts(428726000, 5358)
 				);
 				assert_eq!(
 					call_result.actual_weight.unwrap(),

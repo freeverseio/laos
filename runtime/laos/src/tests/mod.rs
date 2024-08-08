@@ -16,7 +16,6 @@
 
 //! Runtime tests
 
-#![cfg(test)]
 mod precompile_tests;
 mod version_tests;
 // mod xcm_mock;
