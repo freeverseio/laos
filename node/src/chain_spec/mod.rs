@@ -23,7 +23,8 @@ pub mod laos;
 mod predefined_accounts;
 
 /// The default XCM version to set in genesis config.
-// const SAFE_XCM_VERSION: u32 = staging_xcm::prelude::XCM_VERSION; // TODO check after upgrade is performed
+// const SAFE_XCM_VERSION: u32 = staging_xcm::prelude::XCM_VERSION; // TODO check after upgrade is
+// performed
 
 /// Helper function to generate a crypto pair from seed
 fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public {

@@ -92,7 +92,7 @@ mod tests {
 	fn test_block_weights() {
 		let weights = BlockWeights::get();
 
-		assert_eq!(weights.base_block, Weight::from_parts(390584000, 0));
+		assert_eq!(weights.base_block, Weight::from_parts(453383000, 0));
 		assert_eq!(weights.max_block, Weight::from_parts(500000000000, 5242880));
 
 		let normal = weights.per_class.get(DispatchClass::Normal);
