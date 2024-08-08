@@ -5092,6 +5092,7 @@ dependencies = [
  "pallet-authorship",
  "pallet-balances",
  "pallet-base-fee",
+ "pallet-collective",
  "pallet-ethereum",
  "pallet-evm",
  "pallet-evm-chain-id",

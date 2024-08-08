@@ -37,6 +37,7 @@ pallet-session = { workspace = true }
 pallet-sudo = { workspace = true }
 pallet-preimage = { workspace = true }
 pallet-timestamp = { workspace = true }
+pallet-collective = { workspace = true }
 pallet-transaction-payment = { workspace = true }
 pallet-transaction-payment-rpc-runtime-api = { workspace = true }
 pallet-vesting = { workspace = true }
@@ -140,6 +141,7 @@ std = [
 	"pallet-authorship/std",
 	"pallet-balances/std",
 	"pallet-session/std",
+	"pallet-collective/std",
 	"pallet-sudo/std",
 	"pallet-preimage/std",
 	"pallet-laos-evolution/std",
@@ -218,6 +220,7 @@ runtime-benchmarks = [
 	"cumulus-pallet-parachain-system/runtime-benchmarks",
 	"pallet-ethereum/runtime-benchmarks",
 	"pallet-evm/runtime-benchmarks",
+	"pallet-collective/runtime-benchmarks",
 	"pallet-sudo/runtime-benchmarks",
 	"polkadot-primitives/runtime-benchmarks",
 	"polkadot-parachain-primitives/runtime-benchmarks",
@@ -245,6 +248,7 @@ try-runtime = [
 	"pallet-authorship/try-runtime",
 	"pallet-balances/try-runtime",
 	"pallet-session/try-runtime",
+	"pallet-collective/try-runtime",
 	"pallet-sudo/try-runtime",
 	"pallet-preimage/try-runtime",
 	"pallet-laos-evolution/try-runtime",
