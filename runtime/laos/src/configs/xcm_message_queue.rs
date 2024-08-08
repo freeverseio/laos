@@ -1,5 +1,5 @@
 use crate::{Runtime, RuntimeEvent};
-// use cumulus_primitives_core::AggregateMessageOrigin;
+use cumulus_primitives_core::AggregateMessageOrigin;
 use frame_support::parameter_types;
 use laos_primitives::BlockWeights;
 use parachains_common::message_queue::NarrowOriginToSibling;

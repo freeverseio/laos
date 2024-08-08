@@ -33,7 +33,6 @@ use sc_service::{
 };
 use sp_runtime::traits::AccountIdConversion;
 
-#[cfg(feature = "try-runtime")]
 use crate::{
 	chain_spec,
 	cli::{Cli, RelayChainCli, Subcommand},
