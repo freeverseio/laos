@@ -5049,6 +5049,7 @@ dependencies = [
  "fp-account",
  "frame-support",
  "frame-system",
+ "parachains-common",
  "sp-consensus-aura",
  "sp-core",
  "sp-runtime",

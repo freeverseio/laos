@@ -14,6 +14,7 @@ sp-core = { workspace = true }
 sp-runtime = { workspace = true }
 sp-consensus-aura = { workspace = true }
 cumulus-primitives-core = { workspace = true }
+parachains-common = { workspace = true }
 
 # EVM
 fp-account = { workspace = true, features = ["serde"] }

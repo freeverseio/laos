@@ -19,29 +19,14 @@
 #![warn(missing_docs)]
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use frame_support::weights::{constants::WEIGHT_REF_TIME_PER_SECOND, IdentityFee, Weight};
+use frame_support::weights::IdentityFee;
 use frame_system::limits;
+pub use parachains_common::{MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO};
 use sp_core::Hasher as HasherT;
-use sp_runtime::{
-	traits::{BlakeTwo256, IdentifyAccount, Verify},
-	Perbill,
-};
+use sp_runtime::traits::{BlakeTwo256, IdentifyAccount, Verify};
 
 /// Authority ID used in parachain.
 pub type AuraId = sp_consensus_aura::sr25519::AuthorityId;
-
-/// Maximal weight of single LaosParachain block.
-///
-/// This represents 0.5 seconds of compute assuming a target block time of 12 seconds.
-///
-/// Max PoV size is set to `5Mb` as all Cumulus-based parachains do.
-pub const MAXIMUM_BLOCK_WEIGHT: Weight = Weight::from_parts(
-	WEIGHT_REF_TIME_PER_SECOND.saturating_div(2),
-	cumulus_primitives_core::relay_chain::MAX_POV_SIZE as u64,
-);
-
-/// Represents the portion of a block that will be used by Normal extrinsics.
-pub const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 
 /// Block number type used in Laos chain.
 pub type BlockNumber = u32;
@@ -86,11 +71,11 @@ frame_support::parameter_types! {
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use frame_support::dispatch::DispatchClass;
+	use frame_support::{dispatch::DispatchClass, weights::Weight};
 
 	#[test]
 	fn test_block_weights() {
-		let weights = BlockWeights::get();
+		let weights = RuntimeBlockWeights::get();
 
 		assert_eq!(weights.base_block, Weight::from_parts(390584000, 0));
 		assert_eq!(weights.max_block, Weight::from_parts(500000000000, 5242880));
