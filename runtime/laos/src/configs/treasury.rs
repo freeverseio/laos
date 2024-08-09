@@ -5,10 +5,15 @@ use crate::{
 use frame_support::{parameter_types, traits::EitherOfDiverse, PalletId};
 use parachains_common::DAYS;
 
+#[cfg(feature = "fast-mode")]
+const TREASURY_SPENDING_PRERIOD: BlockNumber = 5 * MINUTES;
+#[cfg(not(feature = "fast-mode"))]
+const TREASURY_SPENDING_PRERIOD: BlockNumber = 7 * DAYS;
+
 parameter_types! {
 	pub const ProposalBond: Permill = Permill::from_percent(5);
 	pub const ProposalBondMinimum: Balance = 100 * UNIT;
-	pub const SpendPeriod: BlockNumber = 7 * DAYS;
+	pub const SpendPeriod: BlockNumber = TREASURY_SPENDING_PRERIOD;
 	pub const MaxApprovals: u32 = 100;
 	pub const TreasuryId: PalletId = PalletId(*b"py/trsry");
 }
