@@ -122,4 +122,4 @@ jobs:
           chmod +x ./try-runtime
       - name: Try Runtime for Laos Sigma
         run: |
-          RUST_LOG=try-runtime ./target/release/laos try-runtime --runtime ./target/release/wbuild/laos-runtime/laos_runtime.wasm on-runtime-upgrade --disable-spec-version-check --checks=all live --uri ws://159.223.241.51:9944
+          RUST_LOG=try-runtime ./try-runtime --runtime ./target/release/wbuild/laos-runtime/laos_runtime.wasm on-runtime-upgrade --disable-spec-version-check --checks=all live --uri ws://159.223.241.51:9944
