@@ -37,3 +37,16 @@ impl pallet_treasury::Config for Runtime {
 	type SpendPeriod = SpendPeriod;
 	type WeightInfo = weights::pallet_treasury::WeightInfo<Runtime>;
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn check_trasury_address() {
+		assert_eq!(
+			pallet_treasury::Pallet::<Runtime>::account_id().to_string(),
+			"0x6d6f646C70792f74727372790000000000000000"
+		);
+	}
+}
