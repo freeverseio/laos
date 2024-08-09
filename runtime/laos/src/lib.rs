@@ -133,6 +133,7 @@ construct_runtime!(
 		// Governance
 		Treasury: pallet_treasury = 40,
 		Council: pallet_collective::<Instance1> = 42,
+		Elections: pallet_elections_phragmen = 44,
 		Preimage: pallet_preimage = 45,
 
 		// Frontier

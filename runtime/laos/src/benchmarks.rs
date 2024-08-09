@@ -29,5 +29,6 @@ frame_benchmarking::define_benchmarks!(
 	[pallet_precompiles_benchmark, PrecompilesBenchmark]
 	[pallet_preimage, Preimage]
 	[pallet_collective, Council]
+	[pallet_elections_phragmen, Elections]
 	// TODO pallet_xcm?
 );

@@ -24,6 +24,7 @@ mod collective_council;
 mod cumulus_dmp_queue;
 mod cumulus_parachain_system;
 mod cumulus_xcmp_queue;
+mod election_phragmen;
 mod ethereum;
 pub(crate) mod evm;
 pub(crate) mod laos_evolution;
