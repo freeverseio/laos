@@ -51,7 +51,6 @@ sp-runtime = { workspace = true }
 sp-timestamp = { workspace = true }
 substrate-frame-rpc-system = { workspace = true }
 substrate-prometheus-endpoint = { workspace = true }
-# try-runtime-cli = { workspace = true, optional = true } # TODO
 
 # Polkadot
 polkadot-cli = { workspace = true, features = ["rococo-native"] }
@@ -104,7 +103,6 @@ runtime-benchmarks = [
 	"frame-benchmarking-cli/runtime-benchmarks",
 ]
 try-runtime = [
-	# "try-runtime-cli/try-runtime", # TODO
 	"laos-runtime/try-runtime",
 	"polkadot-cli/try-runtime",
 	"polkadot-service/try-runtime",

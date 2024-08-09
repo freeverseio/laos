@@ -345,13 +345,6 @@ pub fn run() -> Result<()> {
 						&id,
 					);
 
-				// TODO commented out as `generate_genesis_block` has been changed after polkadot
-				// v1.1.0 let block: laos_runtime::opaque::Block =
-				// 	generate_genesis_block(&*config.chain_spec, sp_runtime::StateVersion::V1)
-				// 		.map_err(|e| format!("{:?}", e))?;
-				// let genesis_state = format!("0x{:?}",
-				// HexDisplay::from(&block.header().encode()));
-
 				let tokio_handle = config.tokio_handle.clone();
 				let polkadot_config =
 					SubstrateCli::create_configuration(&polkadot_cli, &polkadot_cli, tokio_handle)
@@ -359,7 +352,6 @@ pub fn run() -> Result<()> {
 
 				info!("Parachain id: {:?}", id);
 				info!("Parachain Account: {}", parachain_account);
-				// info!("Parachain genesis state: {}", genesis_state);
 				info!("Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
 
 				crate::service::start_parachain_node(

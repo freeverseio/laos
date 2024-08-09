@@ -22,11 +22,11 @@ num_enum = { workspace = true }
 laos-primitives = { workspace = true }
 
 # Substrate
-frame-benchmarking = { workspace = true }
+frame-benchmarking = { workspace = true, optional = true }
 frame-executive = { workspace = true }
 frame-support = { workspace = true }
 frame-system = { workspace = true }
-frame-system-benchmarking = { workspace = true }
+frame-system-benchmarking = { workspace = true, optional = true }
 frame-system-rpc-runtime-api = { workspace = true }
 frame-try-runtime = { workspace = true, optional = true }
 pallet-aura = { workspace = true }
@@ -192,8 +192,8 @@ std = [
 	"pallet-evm-precompile-blake2/std",	
 	"pallet-evm-precompile-parachain-staking/std",	
 	"cumulus-pallet-session-benchmarking/std",
-	"frame-benchmarking/std",
-	"frame-system-benchmarking/std",
+	"frame-benchmarking?/std",
+	"frame-system-benchmarking?/std",
 	"frame-try-runtime",
 	# Bridge deps,
 	"laos-primitives/std",
