@@ -6,7 +6,10 @@ use laos_primitives::RuntimeBlockWeights;
 use parachains_common::DAYS;
 use sp_runtime::Perbill;
 
-const COUNCIL_MOTION_DURATION: BlockNumber = 7 * DAYS;
+#[cfg(feature = "fast-mode")]
+pub const COUNCIL_MOTION_DURATION: BlockNumber = 5 * MINUTES;
+#[cfg(not(feature = "fast-mode"))]
+pub const COUNCIL_MOTION_DURATION: BlockNumber = 7 * DAYS;
 
 parameter_types! {
 	pub const CouncilMotionDuration: BlockNumber = COUNCIL_MOTION_DURATION;
