@@ -37,6 +37,7 @@ pallet-session = { workspace = true }
 pallet-sudo = { workspace = true }
 pallet-preimage = { workspace = true }
 pallet-treasury = { workspace = true }
+pallet-identity = { workspace = true }
 pallet-timestamp = { workspace = true }
 pallet-collective = { workspace = true }
 pallet-transaction-payment = { workspace = true }
@@ -145,6 +146,7 @@ std = [
 	"pallet-session/std",
 	"pallet-collective/std",
 	"pallet-sudo/std",
+	"pallet-identity/std",
 	"pallet-preimage/std",
 	"pallet-treasury/std",
 	"pallet-laos-evolution/std",
@@ -235,6 +237,7 @@ runtime-benchmarks = [
 	"pallet-precompiles-benchmark/runtime-benchmarks",
 	"pallet-parachain-staking/runtime-benchmarks",
 	"pallet-proxy/runtime-benchmarks",
+	"pallet-identity/runtime-benchmarks",
 	"pallet-utility/runtime-benchmarks",
 	"pallet-proxy/runtime-benchmarks",
 ]
@@ -253,6 +256,7 @@ try-runtime = [
 	"pallet-balances/try-runtime",
 	"pallet-session/try-runtime",
 	"pallet-collective/try-runtime",
+	"pallet-identity/try-runtime",
 	"pallet-sudo/try-runtime",
 	"pallet-preimage/try-runtime",
 	"pallet-laos-evolution/try-runtime",
