@@ -150,12 +150,6 @@ fn create_test_genesis_config() -> laos_runtime::RuntimeGenesisConfig {
 				.collect(),
 			..Default::default()
 		},
-		vesting: laos_runtime::VestingConfig {
-			vesting: vec![
-				(predefined_accounts::ALITH.into(), 0, 100, 1000 * UNIT),
-				(predefined_accounts::ALITH.into(), 0, 200, 500 * UNIT),
-			],
-		},
 		..Default::default()
 	}
 }
