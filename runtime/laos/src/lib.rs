@@ -111,6 +111,7 @@ construct_runtime!(
 		Utility: pallet_utility = 5,
 		Multisig: pallet_multisig = 6,
 		Proxy: pallet_proxy = 7,
+		Identity: pallet_identity = 8,
 
 		// Monetary stuff.
 		Balances: pallet_balances = 10,

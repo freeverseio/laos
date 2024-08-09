@@ -26,6 +26,7 @@ mod cumulus_parachain_system;
 mod cumulus_xcmp_queue;
 mod ethereum;
 pub(crate) mod evm;
+mod identity;
 pub(crate) mod laos_evolution;
 mod multisig;
 pub(crate) mod parachain_staking;
