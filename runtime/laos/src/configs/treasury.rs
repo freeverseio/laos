@@ -18,6 +18,7 @@ parameter_types! {
 	pub const SpendPeriod: BlockNumber = TREASURY_SPENDING_PRERIOD;
 	pub const MaxApprovals: u32 = 100;
 	pub const TreasuryId: PalletId = PalletId(*b"py/trsry");
+	pub TreasuryAccount: AccountId = Treasury::account_id();
 }
 
 impl pallet_treasury::Config for Runtime {

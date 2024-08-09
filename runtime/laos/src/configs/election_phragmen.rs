@@ -1,6 +1,7 @@
 use crate::{Balances, Council, Runtime, RuntimeEvent, BlockNumber, currency::UNIT, Balance};
 use frame_support::parameter_types;
 use parachains_common::DAYS;
+use polkadot_runtime_common::CurrencyToVote;
 
 #[cfg(feature = "fast-mode")]
 pub const TERM_DURATION: BlockNumber = 4 * HOURS;
@@ -34,7 +35,7 @@ impl pallet_elections_phragmen::Config for Runtime {
 	/// Number of runners_up to keep.
 	type DesiredRunnersUp = DesiredRunnersUp;
 	type InitializeMembers = Council;
-	type LoserCandidate = ToTreasury;
+	type LoserCandidate = (); // TODO
 	type MaxCandidates = MaxCandidates;
 	type MaxVoters = MaxVoters;
 	type MaxVotesPerVoter = MaxVotesPerVoter;
