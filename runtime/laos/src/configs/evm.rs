@@ -181,7 +181,7 @@ mod tests {
 				);
 				assert_eq!(
 					call_result.actual_weight.unwrap(),
-					Weight::from_parts(1052626000, 11597)
+					Weight::from_parts(1045226000, 11523)
 				);
 
 				// check gas
@@ -195,18 +195,18 @@ mod tests {
 					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
 						call_result.actual_weight.unwrap()
 					),
-					42105
+					41809
 				);
 
 				// check weights from benchmarking
 				let weights_from_benchmarking =
 					weights::pallet_laos_evolution::WeightInfo::<Runtime>::precompile_create_collection();
-				assert_eq!(weights_from_benchmarking, Weight::from_parts(623907000, 3873));
+				assert_eq!(weights_from_benchmarking, Weight::from_parts(616519000, 3873));
 				assert_eq!(
 					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
 						weights_from_benchmarking
 					),
-					24956
+					24660
 				);
 			});
 	}
@@ -257,7 +257,7 @@ mod tests {
 					wrong_address_call_result.actual_weight.unwrap(),
 					Weight::from_parts(419526000, 5266)
 				);
-				assert_eq!(call_result.actual_weight.unwrap(), Weight::from_parts(449651000, 5567));
+				assert_eq!(call_result.actual_weight.unwrap(), Weight::from_parts(449176000, 5562));
 
 				// check gas
 				assert_eq!(
@@ -270,18 +270,18 @@ mod tests {
 					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
 						call_result.actual_weight.unwrap()
 					),
-					17986
+					17967
 				);
 
 				// check weights from benchmarking
 				let weights_from_benchmarking =
 					weights::pallet_laos_evolution::WeightInfo::<Runtime>::precompile_owner();
-				assert_eq!(weights_from_benchmarking, Weight::from_parts(29934000, 3509));
+				assert_eq!(weights_from_benchmarking, Weight::from_parts(29532000, 3509));
 				assert_eq!(
 					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
 						weights_from_benchmarking
 					),
-					1197
+					1181
 				);
 			});
 	}
