@@ -6,6 +6,8 @@ use frame_support::{parameter_types, traits::EitherOfDiverse, PalletId};
 use parachains_common::DAYS;
 
 #[cfg(feature = "fast-mode")]
+use parachains_common::MINUTES;
+#[cfg(feature = "fast-mode")]
 const TREASURY_SPENDING_PRERIOD: BlockNumber = 5 * MINUTES;
 #[cfg(not(feature = "fast-mode"))]
 const TREASURY_SPENDING_PRERIOD: BlockNumber = 7 * DAYS;
