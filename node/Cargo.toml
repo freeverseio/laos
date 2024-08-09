@@ -13,6 +13,7 @@ parity-scale-codec = { workspace = true, features = ["derive"] }
 serde = { workspace = true, features = ["derive"] }
 jsonrpsee = { workspace = true, features = ["server"] }
 hex-literal = { workspace = true }
+serde_json = { workspace = true, default-features = true }
 
 # Local
 laos-runtime = { workspace = true, features = ["std"] }
@@ -50,7 +51,6 @@ sp-runtime = { workspace = true }
 sp-timestamp = { workspace = true }
 substrate-frame-rpc-system = { workspace = true }
 substrate-prometheus-endpoint = { workspace = true }
-try-runtime-cli = { workspace = true, optional = true }
 
 # Polkadot
 polkadot-cli = { workspace = true, features = ["rococo-native"] }
@@ -103,7 +103,6 @@ runtime-benchmarks = [
 	"frame-benchmarking-cli/runtime-benchmarks",
 ]
 try-runtime = [
-	"try-runtime-cli/try-runtime",
 	"laos-runtime/try-runtime",
 	"polkadot-cli/try-runtime",
 	"polkadot-service/try-runtime",

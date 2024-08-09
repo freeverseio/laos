@@ -25,7 +25,7 @@
 //!
 //! At the start of every round,
 //! * issuance is calculated for collators (and their delegators) for block authoring
-//! `T::RewardPaymentDelay` rounds ago
+//!   `T::RewardPaymentDelay` rounds ago
 //! * a new set of collators is chosen from the candidates
 //!
 //! Immediately following a round change, payments are made once-per-block until all payments have

@@ -38,10 +38,13 @@ use pallet_evm::{
 	IdentityAddressMapping, SubstrateBlockHashMapping,
 };
 
-use orml_traits::{
-	location::{RelativeReserveProvider, Reserve},
-	parameter_type_with_key,
-};
+/// TODO This code has been commented out when upgrading polkadot-sdk from v1.1.0 to 1.6.0
+/// because conflicts with orml-trait crate and currently XCM is not used. It should be
+/// uncommented and fixed when XCM is used in the runtime.
+// use orml_traits::{
+// 	location::{RelativeReserveProvider, Reserve},
+// 	parameter_type_with_key,
+// };
 use pallet_xcm::XcmPassthrough;
 use parity_scale_codec::Encode;
 use polkadot_parachain_primitives::primitives::Sibling;
@@ -85,7 +88,7 @@ construct_runtime!(
 		CumulusXcm: cumulus_pallet_xcm,
 		DmpQueue: cumulus_pallet_dmp_queue,
 
-		Xtokens: orml_xtokens,
+		// Xtokens: orml_xtokens,
 		Assets: pallet_assets = 123,
 		LaosEvolution: pallet_laos_evolution,
 	}
@@ -664,24 +667,27 @@ impl Convert<AssetId, Option<MultiLocation>> for AssetIdConvert {
 	}
 }
 
-// The XCM message wrapper wrapper
-impl orml_xtokens::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type Balance = Balance;
-	type CurrencyId = AssetId;
-	type AccountIdToMultiLocation = AccountIdToMultiLocation;
-	type CurrencyIdConvert = AssetIdConvert;
-	type XcmExecutor = XcmExecutor<XcmConfig>;
-	type SelfLocation = OurLocation;
-	type Weigher =
-		staging_xcm_builder::FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
-	type BaseXcmWeight = UnitWeightCost;
-	type UniversalLocation = UniversalLocation;
-	type MaxAssetsForTransfer = MaxAssetsForTransfer;
-	type MinXcmFee = ParachainMinFee;
-	type MultiLocationsFilter = Everything;
-	type ReserveProvider = AbsoluteAndRelativeReserveProvider<UniversalLocation>;
-}
+/// TODO This code has been commented out when upgrading polkadot-sdk from v1.1.0 to 1.6.0
+/// because conflicts with orml-trait crate and currently XCM is not used. It should be
+/// uncommented and fixed when XCM is used in the runtime.
+// // The XCM message wrapper wrapper
+// impl orml_xtokens::Config for Runtime {
+// 	type RuntimeEvent = RuntimeEvent;
+// 	type Balance = Balance;
+// 	type CurrencyId = AssetId;
+// 	type AccountIdToMultiLocation = AccountIdToMultiLocation;
+// 	type CurrencyIdConvert = AssetIdConvert;
+// 	type XcmExecutor = XcmExecutor<XcmConfig>;
+// 	type SelfLocation = OurLocation;
+// 	type Weigher =
+// 		staging_xcm_builder::FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
+// 	type BaseXcmWeight = UnitWeightCost;
+// 	type UniversalLocation = UniversalLocation;
+// 	type MaxAssetsForTransfer = MaxAssetsForTransfer;
+// 	type MinXcmFee = ParachainMinFee;
+// 	type MultiLocationsFilter = Everything;
+// 	type ReserveProvider = AbsoluteAndRelativeReserveProvider<UniversalLocation>;
+// }
 
 parameter_types! {
 	pub const MaxTokenUriLength: u32 = 512;

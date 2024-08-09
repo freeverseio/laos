@@ -15,17 +15,22 @@
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 use crate::PhantomData;
-use frame_support::traits::{tokens::currency::Currency, OnUnbalanced};
+use frame_support::traits::{
+	fungible::{Balanced, Credit},
+	OnUnbalanced,
+};
 
 /// Logic for the author to get a portion of fees.
 pub struct ToAuthor<R>(PhantomData<R>);
-impl<R> OnUnbalanced<pallet_balances::NegativeImbalance<R>> for ToAuthor<R>
+impl<R> OnUnbalanced<Credit<R::AccountId, pallet_balances::Pallet<R>>> for ToAuthor<R>
 where
 	R: pallet_balances::Config + pallet_authorship::Config,
 {
-	fn on_nonzero_unbalanced(amount: pallet_balances::NegativeImbalance<R>) {
+	fn on_nonzero_unbalanced(
+		amount: Credit<<R as frame_system::Config>::AccountId, pallet_balances::Pallet<R>>,
+	) {
 		if let Some(author) = <pallet_authorship::Pallet<R>>::author() {
-			<pallet_balances::Pallet<R>>::resolve_creating(&author, amount);
+			let _ = <pallet_balances::Pallet<R>>::resolve(&author, amount);
 		}
 	}
 }
