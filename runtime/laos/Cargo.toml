@@ -36,6 +36,7 @@ pallet-multisig = { workspace = true }
 pallet-session = { workspace = true }
 pallet-sudo = { workspace = true }
 pallet-preimage = { workspace = true }
+pallet-treasury = { workspace = true }
 pallet-timestamp = { workspace = true }
 pallet-collective = { workspace = true }
 pallet-transaction-payment = { workspace = true }
@@ -145,6 +146,7 @@ std = [
 	"pallet-collective/std",
 	"pallet-sudo/std",
 	"pallet-preimage/std",
+	"pallet-treasury/std",
 	"pallet-laos-evolution/std",
 	"pallet-asset-metadata-extender/std",
 	"pallet-multisig/std",
@@ -209,6 +211,7 @@ runtime-benchmarks = [
 	"frame-system/runtime-benchmarks",
 	"pallet-assets/runtime-benchmarks",
 	"pallet-balances/runtime-benchmarks",
+	"pallet-treasury/runtime-benchmarks",
 	"pallet-preimage/runtime-benchmarks",
 	"pallet-laos-evolution/runtime-benchmarks",
 	"pallet-multisig/runtime-benchmarks",
@@ -255,6 +258,7 @@ try-runtime = [
 	"pallet-laos-evolution/try-runtime",
 	"pallet-multisig/try-runtime",
 	"pallet-timestamp/try-runtime",
+	"pallet-treasury/try-runtime",
 	"pallet-transaction-payment/try-runtime",
 	"pallet-xcm/try-runtime",
 	"parachain-info/try-runtime",
