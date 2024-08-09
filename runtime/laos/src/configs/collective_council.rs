@@ -7,6 +7,8 @@ use parachains_common::DAYS;
 use sp_runtime::Perbill;
 
 #[cfg(feature = "fast-mode")]
+use parachains_common::MINUTES;
+#[cfg(feature = "fast-mode")]
 pub const COUNCIL_MOTION_DURATION: BlockNumber = 5 * MINUTES;
 #[cfg(not(feature = "fast-mode"))]
 pub const COUNCIL_MOTION_DURATION: BlockNumber = 7 * DAYS;
