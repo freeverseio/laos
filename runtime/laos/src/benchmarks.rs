@@ -22,11 +22,13 @@ frame_benchmarking::define_benchmarks!(
 	[pallet_proxy, Proxy]
 	[pallet_session, SessionBench::<Runtime>] // TODO check why SessionBench::<Runtime>
 	[pallet_parachain_staking, ParachainStaking]
-	// [cumulus_pallet_xcmp_queue, XcmpQueue] // TODO enable with XCM
+	[cumulus_pallet_xcmp_queue, XcmpQueue]
 	[pallet_evm, EVM]
 	[pallet_laos_evolution, LaosEvolution]
 	[pallet_asset_metadata_extender, AssetMetadataExtender]
 	[pallet_precompiles_benchmark, PrecompilesBenchmark]
 	[pallet_vesting, Vesting]
+	[pallet_message_queue, MessageQueue]
+	[cumulus_pallet_parachain_system, ParachainSystem]
 	// TODO pallet_xcm?
 );

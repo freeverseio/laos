@@ -62,7 +62,7 @@ use staging_xcm_builder::{
 	EnsureXcmOrigin, FixedRateOfFungible, FixedWeightBounds, FungiblesAdapter, IsConcrete,
 	NativeAsset, NoChecking, ParentIsPreset, RelayChainAsNative, SiblingParachainAsNative,
 	SiblingParachainConvertsVia, SignedAccountKey20AsNative, SovereignSignedViaLocation,
-	TakeWeightCredit, TrailingSetTopicAsId, WithComputedOrigin,
+	TakeWeightCredit, TrailingSetTopicAsId, WithComputedOrigin, FrameTransactionalProcessor
 };
 use staging_xcm_executor::{traits::WeightTrader, XcmExecutor};
 use xcm_simulator::PhantomData;

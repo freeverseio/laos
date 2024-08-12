@@ -35,7 +35,7 @@ use staging_xcm_builder::{
 	AccountId32Aliases, AllowUnpaidExecutionFrom, ChildParachainAsNative,
 	ChildParachainConvertsVia, ChildSystemParachainAsSuperuser,
 	CurrencyAdapter as XcmCurrencyAdapter, FixedRateOfFungible, FixedWeightBounds, IsConcrete,
-	SignedAccountId32AsNative, SignedToAccountId32, SovereignSignedViaLocation,
+	SignedAccountId32AsNative, SignedToAccountId32, SovereignSignedViaLocation, FrameTransactionalProcessor, EnsureXcmOrigin, ProcessXcmMessage,
 };
 use staging_xcm_executor::XcmExecutor;
 
@@ -144,6 +144,10 @@ impl staging_xcm_executor::Config for XcmConfig {
 	type CallDispatcher = RuntimeCall;
 	type SafeCallFilter = Everything;
 	type Aliasers = Nothing;
+		type TransactionalProcessor = FrameTransactionalProcessor;
+	type HrmpNewChannelOpenRequestHandler = ();
+	type HrmpChannelAcceptedHandler = ();
+	type HrmpChannelClosingHandler = ();
 }
 
 pub type LocalOriginToLocation = SignedToAccountId32<RuntimeOrigin, AccountId, KusamaNetwork>;
@@ -157,11 +161,11 @@ parameter_types! {
 
 impl pallet_xcm::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type SendXcmOrigin = staging_xcm_builder::EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
+	type SendXcmOrigin = EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
 	type XcmRouter = XcmRouter;
 	// Anyone can execute XCM messages locally...
 	type ExecuteXcmOrigin =
-		staging_xcm_builder::EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
+		EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
 	type XcmExecuteFilter = Nothing;
 	type XcmExecutor = XcmExecutor<XcmConfig>;
 	type XcmTeleportFilter = Everything;
@@ -194,9 +198,7 @@ impl origin::Config for Runtime {}
 
 parameter_types! {
 	/// Amount of weight that can be spent per block to service messages.
-	pub MessageQueueServiceWeight: Weight = Weight::from_parts(4_000_000_000, 1_000_000);
-	pub const MessageQueueHeapSize: u32 = 655_536;
-	pub const MessageQueueMaxStale: u32 = 256;
+	pub MessageQueueServiceWeight: Weight = Perbill::from_percent(35) * RuntimeBlockWeights::get().max_block;
 }
 
 /// Message processor to handle any messages that were enqueued into the `MessageQueue` pallet.
@@ -213,7 +215,7 @@ impl ProcessMessage for MessageProcessor {
 		let para = match origin {
 			AggregateMessageOrigin::Ump(UmpQueueId::Para(para)) => para,
 		};
-		staging_xcm_builder::ProcessXcmMessage::<
+		ProcessXcmMessage::<
 			Junction,
 			staging_xcm_executor::XcmExecutor<XcmConfig>,
 			RuntimeCall,
@@ -224,11 +226,13 @@ impl ProcessMessage for MessageProcessor {
 impl pallet_message_queue::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Size = u32;
-	type HeapSize = MessageQueueHeapSize;
-	type MaxStale = MessageQueueMaxStale;
-	type ServiceWeight = MessageQueueServiceWeight;
 	type MessageProcessor = MessageProcessor;
-	type QueueChangeHandler = ();
+	// The XCMP queue pallet is only ever able to handle the `Sibling(ParaId)` origin:
+	type QueueChangeHandler = NarrowOriginToSibling<XcmpQueue>;
+	type QueuePausedQuery = NarrowOriginToSibling<XcmpQueue>;
+	type HeapSize = sp_core::ConstU32<{ 64 * 1024 }>;
+	type MaxStale = sp_core::ConstU32<8>;
+	type ServiceWeight = MessageQueueServiceWeight;
+	type IdleMaxServiceWeight = ();
 	type WeightInfo = ();
-	type QueuePausedQuery = ();
 }
