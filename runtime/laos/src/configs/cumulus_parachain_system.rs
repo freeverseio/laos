@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
-use crate::{Block, InherentDataExt, MessageQueue, ParachainInfo, Runtime, RuntimeEvent, weights};
+use crate::{weights, Block, InherentDataExt, MessageQueue, ParachainInfo, Runtime, RuntimeEvent};
 
 use cumulus_primitives_core::AggregateMessageOrigin;
 
@@ -39,8 +39,7 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
 	type CheckAssociatedRelayNumber = cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 	type ConsensusHook = cumulus_pallet_parachain_system::ExpectParentIncluded;
 	type DmpQueue = frame_support::traits::EnqueueWithOrigin<MessageQueue, RelayOrigin>;
-	type WeightInfo = cumulus_pallet_parachain_system::weights::SubstrateWeight<Runtime>;
-	// type WeightInfo = weights::cumulus_pallet_parachain_system::WeightInfo<Runtime>; // TODO
+	type WeightInfo = weights::cumulus_pallet_parachain_system::WeightInfo<Runtime>;
 }
 
 // This struct is never instantiated, it is only used for the `CheckInherents` implementation.
