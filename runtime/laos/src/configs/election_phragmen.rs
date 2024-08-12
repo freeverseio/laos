@@ -1,6 +1,9 @@
-use crate::{Balances, Council, Runtime, RuntimeEvent, BlockNumber, currency::UNIT, Balance};
+use crate::{currency::UNIT, Balance, Balances, BlockNumber, Council, Runtime, RuntimeEvent};
 use frame_support::parameter_types;
+#[cfg(not(feature = "fast-mode"))]
 use parachains_common::DAYS;
+#[cfg(feature = "fast-mode")]
+use parachains_common::{HOURS, MINUTES};
 use polkadot_runtime_common::CurrencyToVote;
 
 #[cfg(feature = "fast-mode")]
@@ -14,7 +17,7 @@ pub const ELECTION_VOTING_LOCK_DURATION: BlockNumber = 30 * MINUTES;
 pub const ELECTION_VOTING_LOCK_DURATION: BlockNumber = 28 * DAYS;
 
 parameter_types! {
-    pub const CandidacyBond: Balance = 1000 * UNIT;
+	pub const CandidacyBond: Balance = 1000 * UNIT;
 	pub TermDuration: BlockNumber = TERM_DURATION;
 	pub VotingLockPeriod: BlockNumber = ELECTION_VOTING_LOCK_DURATION;
 	pub const DesiredMembers: u32 = 9;
