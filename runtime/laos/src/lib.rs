@@ -125,6 +125,7 @@ construct_runtime!(
 		XcmpQueue: cumulus_pallet_xcmp_queue = 30,
 		PolkadotXcm: pallet_xcm = 31,
 		CumulusXcm: cumulus_pallet_xcm = 32,
+		// NOTE: `DmpQueue` has been commented out when uprading from polkadot-sdk v1.1.0 to v1.11.0 because xcm code (that used it) was removed too. It might be possible that in the future we will need to add it back.
 		// DmpQueue: cumulus_pallet_dmp_queue = 33,
 		MessageQueue: pallet_message_queue = 34,
 

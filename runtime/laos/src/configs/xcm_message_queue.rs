@@ -1,5 +1,4 @@
-use super::xcm_config::XcmConfig;
-use crate::{Runtime, RuntimeCall, RuntimeEvent, XcmpQueue, weights};
+use crate::{weights, Runtime, RuntimeEvent, XcmpQueue};
 use cumulus_primitives_core::AggregateMessageOrigin;
 use frame_support::parameter_types;
 use laos_primitives::BlockWeights;
@@ -7,8 +6,6 @@ use parachains_common::message_queue::NarrowOriginToSibling;
 use sp_core::ConstU32;
 use sp_runtime::Perbill;
 use sp_weights::Weight;
-use staging_xcm_builder::ProcessXcmMessage;
-use staging_xcm_executor::XcmExecutor;
 
 parameter_types! {
 	/// The amount of weight (if any) which should be provided to the message queue for
@@ -17,7 +14,7 @@ parameter_types! {
 	/// This may be legitimately `None` in the case that you will call
 	/// `ServiceQueues::service_queues` manually.
 	pub MessageQueueServiceWeight: Weight =
-		Perbill::from_percent(25) * BlockWeights::get().max_block;
+	Perbill::from_percent(25) * BlockWeights::get().max_block;
 }
 
 impl pallet_message_queue::Config for Runtime {
@@ -26,8 +23,11 @@ impl pallet_message_queue::Config for Runtime {
 	type MessageProcessor =
 		pallet_message_queue::mock_helpers::NoopMessageProcessor<AggregateMessageOrigin>;
 	#[cfg(not(feature = "runtime-benchmarks"))]
-	type MessageProcessor =
-		ProcessXcmMessage<AggregateMessageOrigin, XcmExecutor<XcmConfig>, RuntimeCall>;
+	type MessageProcessor = staging_xcm_builder::ProcessXcmMessage<
+		AggregateMessageOrigin,
+		staging_xcm_executor::XcmExecutor<super::xcm_config::XcmConfig>,
+		crate::RuntimeCall,
+	>;
 	type Size = u32;
 	type HeapSize = ConstU32<{ 64 * 1024 }>;
 	type MaxStale = ConstU32<8>;
