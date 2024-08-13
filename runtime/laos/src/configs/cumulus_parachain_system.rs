@@ -14,7 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
-use crate::{weights, Block, InherentDataExt, MessageQueue, ParachainInfo, Runtime, RuntimeEvent};
+use crate::{
+	weights, Block, InherentDataExt, MessageQueue, ParachainInfo, Runtime, RuntimeEvent, XcmpQueue,
+};
 
 use cumulus_primitives_core::AggregateMessageOrigin;
 

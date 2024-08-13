@@ -195,7 +195,7 @@ std = [
 	"cumulus-pallet-session-benchmarking/std",
 	"frame-benchmarking?/std",
 	"frame-system-benchmarking?/std",
-	"frame-try-runtime",
+	"frame-try-runtime?/std",
 	# Bridge deps,
 	"laos-primitives/std",
 	"hex/std",
