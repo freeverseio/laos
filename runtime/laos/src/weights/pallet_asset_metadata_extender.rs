@@ -172,7 +172,7 @@ impl<T: frame_system::Config> pallet_asset_metadata_extender::WeightInfo for Wei
 	/// Proof: `AssetMetadataExtender::TokenUrisByClaimerAndLocation` (`max_values`: None, `max_size`: Some(1080), added: 3555, mode: `MaxEncodedLen`)
 	/// The range of component `t` is `[0, 512]`.
 	/// The range of component `u` is `[0, 512]`.
-	fn update_token_uri_extension(t: u32, u: u32, ) -> Weight {
+	fn update_token_uri_extension(_t: u32, u: u32, ) -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `185 + u * (1 ±0)`
 		//  Estimated: `4545`
