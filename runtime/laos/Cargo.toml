@@ -72,7 +72,6 @@ polkadot-parachain-primitives = { workspace = true }
 staging-xcm = { workspace = true }
 staging-xcm-builder = { workspace = true }
 staging-xcm-executor = { workspace = true }
-# polkadot-primitives = { workspace = true }
 
 # Cumulus
 cumulus-pallet-aura-ext = { workspace = true }
@@ -105,7 +104,6 @@ pallet-evm-precompile-parachain-staking = { workspace = true }
 precompile-utils = { workspace = true }
 
 [dev-dependencies]
-# static_assertions = { workspace = true }
 precompile-utils = { workspace = true, features = ["testing"] }
 evm = { workspace = true }
 # TODO This code has been commented out when upgrading polkadot-sdk from v1.1.0 to 1.6.0
@@ -155,7 +153,6 @@ std = [
 	"pallet-xcm/std",
 	"staging-parachain-info/std",
 	"polkadot-parachain-primitives/std",
-	# "polkadot-primitives/std",
 	"polkadot-runtime-common/std",
 	"sp-api/std",
 	"sp-block-builder/std",
@@ -224,7 +221,6 @@ runtime-benchmarks = [
 	"pallet-ethereum/runtime-benchmarks",
 	"pallet-evm/runtime-benchmarks",
 	"pallet-sudo/runtime-benchmarks",
-	# "polkadot-primitives/runtime-benchmarks",
 	"polkadot-parachain-primitives/runtime-benchmarks",
 	"polkadot-runtime-common/runtime-benchmarks",
 	"staging-xcm-executor/runtime-benchmarks",
