@@ -23,6 +23,7 @@ use laos_runtime::{
 };
 use sc_service::ChainType;
 use sp_runtime::Perbill;
+use crate::chain_spec::SAFE_XCM_VERSION;
 
 pub(crate) type ChainSpec =
 	sc_service::GenericChainSpec<laos_runtime::RuntimeGenesisConfig, Extensions>;
