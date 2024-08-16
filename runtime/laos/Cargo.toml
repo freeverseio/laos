@@ -72,13 +72,12 @@ polkadot-parachain-primitives = { workspace = true }
 staging-xcm = { workspace = true }
 staging-xcm-builder = { workspace = true }
 staging-xcm-executor = { workspace = true }
-polkadot-primitives = { workspace = true }
+# polkadot-primitives = { workspace = true }
 
 # Cumulus
 cumulus-pallet-aura-ext = { workspace = true }
-cumulus-pallet-dmp-queue = { workspace = true }
 cumulus-pallet-parachain-system = { workspace = true }
-cumulus-pallet-session-benchmarking = { workspace = true }
+cumulus-pallet-session-benchmarking = { workspace = true, optional = true}
 cumulus-pallet-xcm = { workspace = true }
 cumulus-pallet-xcmp-queue = { workspace = true }
 cumulus-primitives-core = { workspace = true }
@@ -106,7 +105,7 @@ pallet-evm-precompile-parachain-staking = { workspace = true }
 precompile-utils = { workspace = true }
 
 [dev-dependencies]
-static_assertions = { workspace = true }
+# static_assertions = { workspace = true }
 precompile-utils = { workspace = true, features = ["testing"] }
 evm = { workspace = true }
 # TODO This code has been commented out when upgrading polkadot-sdk from v1.1.0 to 1.6.0
@@ -115,7 +114,6 @@ evm = { workspace = true }
 # orml-traits = { workspace = true }
 # orml-xtokens = { workspace = true, features = ["std"] }
 # orml-xcm-support = { workspace = true, features = ["std"] }
-xcm-simulator = { workspace = true }
 polkadot-runtime-parachains = { workspace = true }
 pallet-assets = { workspace = true }
 test-utils = { workspace = true }
@@ -129,7 +127,6 @@ std = [
 	"parity-scale-codec/std",
 	"scale-info/std",
 	"cumulus-pallet-aura-ext/std",
-	"cumulus-pallet-dmp-queue/std",
 	"cumulus-pallet-parachain-system/std",
 	"cumulus-pallet-xcm/std",
 	"cumulus-pallet-xcmp-queue/std",
@@ -158,7 +155,7 @@ std = [
 	"pallet-xcm/std",
 	"staging-parachain-info/std",
 	"polkadot-parachain-primitives/std",
-	"polkadot-primitives/std",
+	# "polkadot-primitives/std",
 	"polkadot-runtime-common/std",
 	"sp-api/std",
 	"sp-block-builder/std",
@@ -192,7 +189,7 @@ std = [
 	"pallet-evm-precompile-bn128/std",
 	"pallet-evm-precompile-blake2/std",	
 	"pallet-evm-precompile-parachain-staking/std",	
-	"cumulus-pallet-session-benchmarking/std",
+	"cumulus-pallet-session-benchmarking?/std",
 	"frame-benchmarking?/std",
 	"frame-system-benchmarking?/std",
 	"frame-try-runtime?/std",
@@ -227,7 +224,7 @@ runtime-benchmarks = [
 	"pallet-ethereum/runtime-benchmarks",
 	"pallet-evm/runtime-benchmarks",
 	"pallet-sudo/runtime-benchmarks",
-	"polkadot-primitives/runtime-benchmarks",
+	# "polkadot-primitives/runtime-benchmarks",
 	"polkadot-parachain-primitives/runtime-benchmarks",
 	"polkadot-runtime-common/runtime-benchmarks",
 	"staging-xcm-executor/runtime-benchmarks",
@@ -242,7 +239,6 @@ runtime-benchmarks = [
 
 try-runtime = [
 	"cumulus-pallet-aura-ext/try-runtime",
-	"cumulus-pallet-dmp-queue/try-runtime",
 	"cumulus-pallet-parachain-system/try-runtime",
 	"cumulus-pallet-xcm/try-runtime",
 	"cumulus-pallet-xcmp-queue/try-runtime",

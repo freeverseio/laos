@@ -10,14 +10,12 @@ license = "GPL-3.0-or-later WITH Classpath-exception-2.0"
 doctest = false
 
 [dependencies]
-sp-core = { workspace = true }
-frame-support = { workspace = true }
-sp-std = { workspace = true }
+# sp-core = { workspace = true }
+# sp-std = { workspace = true }
 
 [features]
 default = ["std"]
 std = [
-    "sp-std/std",
-    "sp-core/std",
-    "frame-support/std",
+    # "sp-std/std",
+    # "sp-core/std",
 ]
