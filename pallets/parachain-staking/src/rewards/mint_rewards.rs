@@ -41,32 +41,31 @@ impl<Runtime: crate::Config> PayoutReward<Runtime> for MintingRewards {
 }
 
 impl<T: Config> Pallet<T> {
-    /// Mint a specified reward amount to the collator's account. Emits the [Rewarded] event.
-    pub(crate) fn mint_collator_reward(
-        _round_idx: RoundIndex,
-        collator_id: T::AccountId,
-        amt: BalanceOf<T>,
-    ) -> Weight {
-        match T::Currency::deposit_into_existing(&collator_id, amt) {
-            Ok(amount_transferred) => {
-                Self::deposit_event(Event::Rewarded {
-                    account: collator_id.clone(),
-                    rewards: amount_transferred.peek(),
-                });
-            }
-            Err(e) => {
-                log::error!(
-                    "Failed to deposit reward of {:?} to collator {:?}: {:?}",
-                    amt,
-                    collator_id,
-                    e
-                );
-            }
-        }
-        T::WeightInfo::mint_collator_reward()
-    }
+	/// Mint a specified reward amount to the collator's account. Emits the [Rewarded] event.
+	pub(crate) fn mint_collator_reward(
+		_round_idx: RoundIndex,
+		collator_id: T::AccountId,
+		amt: BalanceOf<T>,
+	) -> Weight {
+		match T::Currency::deposit_into_existing(&collator_id, amt) {
+			Ok(amount_transferred) => {
+				Self::deposit_event(Event::Rewarded {
+					account: collator_id.clone(),
+					rewards: amount_transferred.peek(),
+				});
+			},
+			Err(e) => {
+				log::error!(
+					"Failed to deposit reward of {:?} to collator {:?}: {:?}",
+					amt,
+					collator_id,
+					e
+				);
+			},
+		}
+		T::WeightInfo::mint_collator_reward()
+	}
 }
-
 
 // tests
 #[cfg(test)]
