@@ -176,34 +176,6 @@ impl<T: frame_system::Config> pallet_laos_evolution::WeightInfo for WeightInfo<T
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
-	/// Storage: `LaosEvolution::CollectionOwner` (r:1 w:0)
-	/// Proof: `LaosEvolution::CollectionOwner` (`max_values`: None, `max_size`: Some(44), added: 2519, mode: `MaxEncodedLen`)
-	/// Storage: `LaosEvolution::CollectionPublicMintingEnabled` (r:0 w:1)
-	/// Proof: `LaosEvolution::CollectionPublicMintingEnabled` (`max_values`: None, `max_size`: Some(24), added: 2499, mode: `MaxEncodedLen`)
-	fn enable_public_minting() -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `139`
-		//  Estimated: `3509`
-		// Minimum execution time: 9_943_000 picoseconds.
-		Weight::from_parts(10_535_000, 0)
-			.saturating_add(Weight::from_parts(0, 3509))
-			.saturating_add(T::DbWeight::get().reads(1))
-			.saturating_add(T::DbWeight::get().writes(1))
-	}
-	/// Storage: `LaosEvolution::CollectionOwner` (r:1 w:0)
-	/// Proof: `LaosEvolution::CollectionOwner` (`max_values`: None, `max_size`: Some(44), added: 2519, mode: `MaxEncodedLen`)
-	/// Storage: `LaosEvolution::CollectionPublicMintingEnabled` (r:0 w:1)
-	/// Proof: `LaosEvolution::CollectionPublicMintingEnabled` (`max_values`: None, `max_size`: Some(24), added: 2499, mode: `MaxEncodedLen`)
-	fn disable_public_minting() -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `172`
-		//  Estimated: `3509`
-		// Minimum execution time: 10_405_000 picoseconds.
-		Weight::from_parts(10_688_000, 0)
-			.saturating_add(Weight::from_parts(0, 3509))
-			.saturating_add(T::DbWeight::get().reads(1))
-			.saturating_add(T::DbWeight::get().writes(1))
-	}
 	/// Storage: `LaosEvolution::CollectionOwner` (r:1 w:1)
 	/// Proof: `LaosEvolution::CollectionOwner` (`max_values`: None, `max_size`: Some(44), added: 2519, mode: `MaxEncodedLen`)
 	fn transfer_ownership() -> Weight {

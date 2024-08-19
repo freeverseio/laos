@@ -58,15 +58,6 @@ pub trait EvolutionCollection<AccountId, TokenUri> {
 		to: AccountId,
 		collection_id: CollectionId,
 	) -> DispatchResult;
-
-	/// Enables public minting for a specific collection.
-	fn enable_public_minting(who: AccountId, collection_id: CollectionId) -> DispatchResult;
-
-	/// Disables public minting for a specific collection.
-	fn disable_public_minting(who: AccountId, collection_id: CollectionId) -> DispatchResult;
-
-	/// Checks if public minting is enabled for a specific collection.
-	fn is_public_minting_enabled(collection_id: CollectionId) -> bool;
 }
 
 pub trait OnCreateCollection {

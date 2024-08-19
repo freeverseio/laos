@@ -324,33 +324,6 @@ mod benchmarks {
 	}
 
 	#[benchmark]
-	fn enable_public_minting() {
-		let caller: T::AccountId = whitelisted_caller();
-		let owner = caller.clone();
-		let collection_id = LaosEvolution::<T>::create_collection(owner.clone()).unwrap();
-
-		#[block]
-		{
-			LaosEvolution::<T>::enable_public_minting(owner, collection_id).unwrap();
-		}
-		assert!(CollectionPublicMintingEnabled::<T>::contains_key(collection_id));
-	}
-
-	#[benchmark]
-	fn disable_public_minting() {
-		let caller: T::AccountId = whitelisted_caller();
-		let owner = caller.clone();
-		let collection_id = LaosEvolution::<T>::create_collection(owner.clone()).unwrap();
-		LaosEvolution::<T>::enable_public_minting(owner.clone(), collection_id).unwrap();
-
-		#[block]
-		{
-			LaosEvolution::<T>::disable_public_minting(owner, collection_id).unwrap();
-		}
-		assert!(!CollectionPublicMintingEnabled::<T>::contains_key(collection_id));
-	}
-
-	#[benchmark]
 	fn transfer_ownership() {
 		let caller: T::AccountId = whitelisted_caller();
 		let owner = caller.clone();

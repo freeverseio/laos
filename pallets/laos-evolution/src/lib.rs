@@ -82,7 +82,12 @@ pub mod pallet {
 	pub type CollectionOwner<T: Config> =
 		StorageMap<_, Blake2_128Concat, CollectionId, AccountIdOf<T>, OptionQuery>;
 
-	/// Storage for the public minting policy of collections  
+	/// Storage for the public minting policy of collections
+	#[allow(deprecated)]
+	#[deprecated(
+		since = "0.17.4",
+		note = "Unused field, it will be removed in the future. It was kept only to avoid triggering a migration in LAOS Sigma."
+	)]
 	#[pallet::storage]
 	#[pallet::getter(fn collection_public_minting_enabled)]
 	pub type CollectionPublicMintingEnabled<T: Config> =
@@ -132,12 +137,6 @@ pub mod pallet {
 			from: AccountIdOf<T>,
 			to: AccountIdOf<T>,
 		},
-		/// Public minting enabled
-		/// [collection_id]
-		PublicMintingEnabled { collection_id: CollectionId },
-		/// Public minting disabled
-		/// [collection_id]
-		PublicMintingDisabled { collection_id: CollectionId },
 	}
 
 	// Errors inform users that something went wrong.
@@ -194,11 +193,7 @@ impl<T: Config> EvolutionCollection<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T>
 			CollectionOwner::<T>::contains_key(collection_id),
 			Error::<T>::CollectionDoesNotExist
 		);
-		ensure!(
-			Self::is_owner(collection_id, who) ||
-				CollectionPublicMintingEnabled::<T>::contains_key(collection_id),
-			Error::<T>::NoPermission
-		);
+		ensure!(Self::is_owner(collection_id, who), Error::<T>::NoPermission);
 
 		let to_as_h160 = T::AccountIdToH160::convert(to.clone());
 		// compose asset_id	from slot and owner
@@ -265,32 +260,6 @@ impl<T: Config> EvolutionCollection<AccountIdOf<T>, TokenUriOf<T>> for Pallet<T>
 
 			Ok(())
 		})
-	}
-
-	fn enable_public_minting(who: AccountIdOf<T>, collection_id: CollectionId) -> DispatchResult {
-		ensure!(
-			CollectionOwner::<T>::contains_key(collection_id),
-			Error::<T>::CollectionDoesNotExist
-		);
-		ensure!(Self::is_owner(collection_id, who), Error::<T>::NoPermission);
-		CollectionPublicMintingEnabled::<T>::insert(collection_id, ());
-		Self::deposit_event(Event::PublicMintingEnabled { collection_id });
-		Ok(())
-	}
-
-	fn disable_public_minting(who: AccountIdOf<T>, collection_id: CollectionId) -> DispatchResult {
-		ensure!(
-			CollectionOwner::<T>::contains_key(collection_id),
-			Error::<T>::CollectionDoesNotExist
-		);
-		ensure!(Self::is_owner(collection_id, who), Error::<T>::NoPermission);
-		CollectionPublicMintingEnabled::<T>::remove(collection_id);
-		Self::deposit_event(Event::PublicMintingDisabled { collection_id });
-		Ok(())
-	}
-
-	fn is_public_minting_enabled(collection_id: CollectionId) -> bool {
-		CollectionPublicMintingEnabled::<T>::contains_key(collection_id)
 	}
 }
 
