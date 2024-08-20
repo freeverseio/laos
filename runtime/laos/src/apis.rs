@@ -30,7 +30,7 @@ use sp_runtime::{
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, Permill,
 };
-use sp_std::{borrow::Cow, prelude::*};
+use sp_std::prelude::*;
 use sp_version::RuntimeVersion;
 
 // Local module imports
@@ -39,9 +39,6 @@ use super::{
 	ParachainSystem, Runtime, RuntimeCall, RuntimeGenesisConfig, SessionKeys, System,
 	TransactionPayment, UncheckedExtrinsic, EVM, VERSION,
 };
-
-/// TODO: hackish way to get the runtime version public. Waiting for substrate to expose it.
-pub const PUBLIC_RUNTIME_API_VERSIONS: Cow<'_, [([u8; 8], u32)]> = RUNTIME_API_VERSIONS;
 
 impl_runtime_apis! {
 	impl sp_consensus_aura::AuraApi<Block, AuraId> for Runtime {
