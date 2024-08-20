@@ -18,7 +18,7 @@ LAOS is fully open source and decentralized. The main code repositories are:
 * **[The Universal ERC721 Solidity Templates](https://github.com/freeverseio/laos-erc721)**. This template contains the minimal extensions of the ERC721 OpenZeppelin implementation that enables bridgeless minting and evolution in any EVM chain.
 
 LAOS secured a slot as a Parachain in Polkadot after winning auction 68,
-and LAOS Mainnet started producing blocks as on July 3rd, 2024.
+and LAOS Mainnet started producing blocks on July 3rd, 2024.
 
 ### LAOS Sigma Testnet
 
