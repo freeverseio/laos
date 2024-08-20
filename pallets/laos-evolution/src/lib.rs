@@ -82,13 +82,6 @@ pub mod pallet {
 	pub type CollectionOwner<T: Config> =
 		StorageMap<_, Blake2_128Concat, CollectionId, AccountIdOf<T>, OptionQuery>;
 
-	/// Deprecated field. It will be removed in a future release.
-	/// It hasn't been deleted to avoid triggering a migration solely for LAOS Sigma.
-	#[pallet::storage]
-	#[pallet::getter(fn collection_public_minting_enabled)]
-	pub type DeprecatedCollectionPublicMintingEnabled<T: Config> =
-		StorageMap<_, Blake2_128Concat, CollectionId, (), OptionQuery>;
-
 	/// Token URI which can override the default URI scheme and set explicitly
 	/// This will contain external URI in a raw form
 	#[pallet::storage]
