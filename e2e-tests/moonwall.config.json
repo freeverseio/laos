@@ -1,0 +1,23 @@
+{
+   "label": "moonwall_config",
+   "defaultTestTimeout": 30000,
+   "environments": [
+      {
+         "name": "default_env",
+         "testFileDir": [
+            "moonwall/"
+         ],
+         "runScripts": [
+            "moonwall/download-polkadot.sh",
+            "moonwall/build-laos.sh"
+         ],
+         "foundation": {
+            "type": "zombie",
+            "zombieSpec": {
+               "configPath": "../zombienet/native.json",
+               "disableLogEavesdropping": true
+            }
+         }
+      }
+   ]
+}
