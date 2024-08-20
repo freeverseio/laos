@@ -23,9 +23,9 @@ and LAOS Mainnet started producing blocks on July 3rd, 2024.
 ### LAOS Sigma Testnet
 
 LAOS Sigma serves as the testnet for LAOS, currently maintained by the LAOS Foundation.
-All development undergoes final testing in LAOS Sigma before being integrated in LAOS mainnet.
+All development undergoes final testing in LAOS Sigma before being integrated in LAOS Mainnet.
 
-You may use LAOS Sigma to test staking, or to develop and test your DApp, before launching to LAOS' mainnet.
+You may use LAOS Sigma to test staking, or to develop and test your DApp, before launching to LAOS Mainnet.
 
 * Testnet: **LAOS Sigma**
 * Substrate RPC endpoint: [wss://rpc.laossigma.laosfoundation.io](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Frpc.laossigma.laosfoundation.io#/rpc)   
