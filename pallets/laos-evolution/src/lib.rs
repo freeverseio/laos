@@ -82,15 +82,11 @@ pub mod pallet {
 	pub type CollectionOwner<T: Config> =
 		StorageMap<_, Blake2_128Concat, CollectionId, AccountIdOf<T>, OptionQuery>;
 
-	/// Storage for the public minting policy of collections
-	#[allow(deprecated)]
-	#[deprecated(
-		since = "0.17.4",
-		note = "Unused field, it will be removed in the future. It was kept only to avoid triggering a migration in LAOS Sigma."
-	)]
+	/// Deprecated field. It will be removed in a future release.
+	/// It hasn't been deleted to avoid triggering a migration solely for LAOS Sigma.
 	#[pallet::storage]
 	#[pallet::getter(fn collection_public_minting_enabled)]
-	pub type CollectionPublicMintingEnabled<T: Config> =
+	pub type DeprecatedCollectionPublicMintingEnabled<T: Config> =
 		StorageMap<_, Blake2_128Concat, CollectionId, (), OptionQuery>;
 
 	/// Token URI which can override the default URI scheme and set explicitly
