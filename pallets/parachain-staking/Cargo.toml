@@ -31,7 +31,7 @@ test-utils = { workspace = true }
 [features]
 default = [ "std" ]
 std = [
-	"frame-benchmarking/std",
+	"frame-benchmarking?/std",
 	"frame-support/std",
 	"frame-system/std",
 	"parity-scale-codec/std",

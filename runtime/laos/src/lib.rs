@@ -31,7 +31,6 @@ mod weights;
 pub use configs::laos_evolution::REVERT_BYTECODE;
 use core::marker::PhantomData;
 use frame_support::construct_runtime;
-use frame_system::EnsureRoot;
 pub use laos_primitives::{
 	AccountId, AuraId, Balance, BlockNumber, Hash, Header, Nonce, Signature,
 };
@@ -42,7 +41,6 @@ use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
-use staging_xcm_executor::XcmExecutor;
 
 /// Block type as expected by this runtime.
 pub type Block = generic::Block<Header, UncheckedExtrinsic>;
@@ -86,7 +84,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	authoring_version: 1,
 	spec_version: 1900,
 	impl_version: 0,
-	apis: apis::PUBLIC_RUNTIME_API_VERSIONS,
+	apis: apis::RUNTIME_API_VERSIONS,
 	transaction_version: 1,
 	state_version: 1,
 };
@@ -99,13 +97,13 @@ pub fn native_version() -> NativeVersion {
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
-	pub struct Runtime
+	pub enum Runtime
 	{
 		// System support stuff.
 		System: frame_system = 0,
 		ParachainSystem: cumulus_pallet_parachain_system = 1,
 		Timestamp: pallet_timestamp = 2,
-		ParachainInfo: parachain_info = 3,
+		ParachainInfo: staging_parachain_info = 3,
 		Sudo: pallet_sudo = 4,
 		Utility: pallet_utility = 5,
 		Multisig: pallet_multisig = 6,
@@ -127,7 +125,7 @@ construct_runtime!(
 		XcmpQueue: cumulus_pallet_xcmp_queue = 30,
 		PolkadotXcm: pallet_xcm = 31,
 		CumulusXcm: cumulus_pallet_xcm = 32,
-		DmpQueue: cumulus_pallet_dmp_queue = 33,
+		MessageQueue: pallet_message_queue = 34,
 
 		// Frontier
 		Ethereum: pallet_ethereum = 50,
@@ -165,6 +163,7 @@ type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPalletsWithSystem,
+	cumulus_pallet_xcmp_queue::migration::v4::MigrationToV4<Runtime>,
 >;
 
 #[cfg(test)]

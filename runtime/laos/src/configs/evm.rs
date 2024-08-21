@@ -24,7 +24,7 @@ use frame_support::{
 	weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight},
 };
 use laos_primitives::{MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO};
-use sp_core::U256;
+use sp_core::{ConstU32, U256};
 
 /// Current approximation of the gas/s consumption considering
 /// EVM execution over compiled WASM (on 4.4Ghz CPU).
@@ -60,12 +60,13 @@ impl pallet_evm::Config for Runtime {
 	type FindAuthor = CustomFindAuthor<pallet_session::FindAccountFromAuthorIndex<Self, Aura>>;
 	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
-	type OnChargeTransaction = pallet_evm::EVMCurrencyAdapter<Balances, ToAuthor<Self>>;
+	type OnChargeTransaction = pallet_evm::EVMFungibleAdapter<Balances, ToAuthor<Self>>;
 	type OnCreate = ();
 	type PrecompilesType = LaosPrecompiles<Self>;
 	type PrecompilesValue = PrecompilesInstance;
 	type Runner = pallet_evm::runner::stack::Runner<Self>;
 	type RuntimeEvent = RuntimeEvent;
+	type SuicideQuickClearLimit = ConstU32<0>;
 	type Timestamp = Timestamp;
 	type WeightPerGas = WeightPerGas;
 	type WithdrawOrigin = pallet_evm::EnsureAddressNever<AccountId>;
@@ -176,11 +177,11 @@ mod tests {
 				// check weights
 				assert_eq!(
 					wrong_address_call_result.actual_weight.unwrap(),
-					Weight::from_parts(411_386_000, 5_358)
+					Weight::from_parts(428726000, 5358)
 				);
 				assert_eq!(
 					call_result.actual_weight.unwrap(),
-					Weight::from_parts(1033661000, 11580)
+					Weight::from_parts(1046726000, 11538)
 				);
 
 				// check gas
@@ -188,24 +189,24 @@ mod tests {
 					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
 						wrong_address_call_result.actual_weight.unwrap()
 					),
-					16_455
+					17149
 				);
 				assert_eq!(
 					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
 						call_result.actual_weight.unwrap()
 					),
-					41346
+					41869
 				);
 
 				// check weights from benchmarking
 				let weights_from_benchmarking =
 					weights::pallet_laos_evolution::WeightInfo::<Runtime>::precompile_create_collection();
-				assert_eq!(weights_from_benchmarking, Weight::from_parts(622277000, 3_873));
+				assert_eq!(weights_from_benchmarking, Weight::from_parts(618022000, 3873));
 				assert_eq!(
 					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
 						weights_from_benchmarking
 					),
-					24891
+					24720
 				);
 			});
 	}
@@ -254,33 +255,33 @@ mod tests {
 				// check weights
 				assert_eq!(
 					wrong_address_call_result.actual_weight.unwrap(),
-					Weight::from_parts(402_186_000, 5_266)
+					Weight::from_parts(419526000, 5266)
 				);
-				assert_eq!(call_result.actual_weight.unwrap(), Weight::from_parts(432011000, 5564));
+				assert_eq!(call_result.actual_weight.unwrap(), Weight::from_parts(449176000, 5562));
 
 				// check gas
 				assert_eq!(
 					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
 						wrong_address_call_result.actual_weight.unwrap()
 					),
-					16_087
+					16781
 				);
 				assert_eq!(
 					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
 						call_result.actual_weight.unwrap()
 					),
-					17280
+					17967
 				);
 
 				// check weights from benchmarking
 				let weights_from_benchmarking =
 					weights::pallet_laos_evolution::WeightInfo::<Runtime>::precompile_owner();
-				assert_eq!(weights_from_benchmarking, Weight::from_parts(29655000, 3_509));
+				assert_eq!(weights_from_benchmarking, Weight::from_parts(29503000, 3509));
 				assert_eq!(
 					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
 						weights_from_benchmarking
 					),
-					1186
+					1180
 				);
 			});
 	}
