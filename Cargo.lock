@@ -4980,7 +4980,7 @@ dependencies = [
 
 [[package]]
 name = "laos"
-version = "0.17.1"
+version = "0.17.4"
 dependencies = [
  "clap",
  "cumulus-client-cli",
@@ -5067,7 +5067,7 @@ dependencies = [
 
 [[package]]
 name = "laos-runtime"
-version = "0.17.1"
+version = "0.17.4"
 dependencies = [
  "cumulus-pallet-aura-ext",
  "cumulus-pallet-dmp-queue",
