@@ -84,7 +84,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("laos"),
 	impl_name: create_runtime_str!("laos"),
 	authoring_version: 1,
-	spec_version: 1704,
+	spec_version: 1900,
 	impl_version: 0,
 	apis: apis::PUBLIC_RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -138,6 +138,7 @@ construct_runtime!(
 		// LAOS pallets
 		LaosEvolution: pallet_laos_evolution = 100,
 		AssetMetadataExtender: pallet_asset_metadata_extender = 101,
+		PrecompilesBenchmark: pallet_precompiles_benchmark = 102,
 	}
 );
 

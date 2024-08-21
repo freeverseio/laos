@@ -6,13 +6,16 @@
 	"scripts": {
 		"fmt-check": "prettier ./tests --check",
 		"fmt": "prettier ./tests --write",
-		"build": "cp -r ../pallets/laos-evolution/src/precompiles/evolution_collection_factory/contracts contracts && cp -r ../pallets/laos-evolution/src/precompiles/evolution_collection/contracts contracts && cp -r ../pallets/asset-metadata-extender/src/precompiles/asset_metadata_extender/contracts contracts && truffle compile && rm -rf contracts",
-		"test": "mocha -r ts-node/register 'tests/**/*.ts'",
+		"build": "./compile_contracts.sh",
+		"test": "mocha -r ts-node/register -t 270000 'tests/**/*.ts'",
 		"test-sql": "FRONTIER_BACKEND_TYPE='sql' mocha -r ts-node/register 'tests/**/*.ts'"
 	},
 	"author": "",
 	"license": "ISC",
 	"dependencies": {
+		"@polkadot/api": "^12.2.1",
+		"@polkadot/api-augment": "^12.2.1",
+		"@polkadot/types": "^12.2.1",
 		"@types/chai": "^4.3.5",
 		"@types/mocha": "^10.0.1",
 		"chai": "^4.3.7",

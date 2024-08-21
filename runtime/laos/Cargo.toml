@@ -58,6 +58,8 @@ sp-staking = { workspace = true }
 
 pallet-asset-metadata-extender = { workspace = true }
 pallet-laos-evolution = { workspace = true }
+pallet-parachain-staking = { workspace = true }
+pallet-precompiles-benchmark = { workspace = true }
 
 
 # Polkadot
@@ -95,8 +97,7 @@ pallet-evm-precompile-modexp = { workspace = true }
 pallet-evm-precompile-simple = { workspace = true }
 pallet-evm-precompile-bn128 = { workspace = true }
 pallet-evm-precompile-blake2 = { workspace = true }
-
-pallet-parachain-staking = { workspace = true }
+pallet-evm-precompile-parachain-staking = { workspace = true }
 
 precompile-utils = { workspace = true }
 
@@ -145,6 +146,7 @@ std = [
 	"pallet-timestamp/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-vesting/std",
+	"pallet-precompiles-benchmark/std",
 	"pallet-transaction-payment/std",
 	"pallet-xcm/std",
 	"parachain-info/std",
@@ -179,6 +181,7 @@ std = [
 	"pallet-evm-precompile-simple/std",
 	"pallet-evm-precompile-bn128/std",
 	"pallet-evm-precompile-blake2/std",	
+	"pallet-evm-precompile-parachain-staking/std",	
 	"cumulus-pallet-session-benchmarking/std",
 	"frame-benchmarking?/std",
 	"frame-system-benchmarking?/std",
@@ -219,6 +222,7 @@ runtime-benchmarks = [
 	"staging-xcm-executor/runtime-benchmarks",
 	"pallet-asset-metadata-extender/runtime-benchmarks",
 	"pallet-vesting/runtime-benchmarks",
+	"pallet-precompiles-benchmark/runtime-benchmarks",
 	"pallet-parachain-staking/runtime-benchmarks",
 	"pallet-proxy/runtime-benchmarks",
 	"pallet-utility/runtime-benchmarks",
@@ -255,6 +259,7 @@ try-runtime = [
 	"sp-runtime/try-runtime",
 	"pallet-asset-metadata-extender/try-runtime",
 	"pallet-vesting/try-runtime",
+	"pallet-precompiles-benchmark/try-runtime",
 	"pallet-parachain-staking/try-runtime",
 	"pallet-proxy/try-runtime",
 	"pallet-utility/try-runtime",

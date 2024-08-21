@@ -49,15 +49,14 @@ fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 		"laos" | "" => Box::new(chain_spec::laos::ChainSpec::from_json_bytes(
 			&include_bytes!("../../specs/laos.raw.json")[..],
 		)?),
-		"laos-omega" => Box::new(chain_spec::laos::ChainSpec::from_json_bytes(
-			&include_bytes!("../../specs/laos-omega.raw.json")[..],
+		"laos-sigma" => Box::new(chain_spec::laos::ChainSpec::from_json_bytes(
+			&include_bytes!("../../specs/laos-sigma.raw.json")[..],
 		)?),
-		"laos-sun" => Box::new(chain_spec::laos::ChainSpec::from_json_bytes(
-			&include_bytes!("../../specs/laos-sun.raw.json")[..],
+		"laos-mercury" => Box::new(chain_spec::laos::ChainSpec::from_json_bytes(
+			&include_bytes!("../../specs/laos-mercury.raw.json")[..],
 		)?),
 		"dev" => Box::new(chain_spec::laos::development_config()),
 		"local" => Box::new(chain_spec::laos::local_testnet_config()),
-		"local-v" => Box::new(chain_spec::laos::local_testnet_config()),
 		path => {
 			let chain_spec =
 				chain_spec::laos::ChainSpec::from_json_file(std::path::PathBuf::from(path))?;

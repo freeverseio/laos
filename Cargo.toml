@@ -3,7 +3,7 @@ description = "The LAOS parachain node."
 repository = "https://github.com/freeverseio/laos.git"
 homepage = "https://www.laosfoundation.io"
 authors = ["Freeverse"]
-version = "0.17.4"
+version = "0.19.0"
 
 [workspace]
 resolver = "2"
@@ -12,6 +12,7 @@ members = [
    "node",
    "runtime/*",
    "pallets/*",
+   "precompiles/*",
    "primitives",
 ]
 
@@ -45,7 +46,7 @@ async-trait = "0.1"
 num-format = "0.4"
 num-traits = "0.2"
 rbtag = "0.3"
-rustc-hex = "2.1"
+rustc-hex = { version = "2.1", default-features = false }
 structopt = "0.3"
 signal-hook = "0.3.16"
 signal-hook-async-std = "0.2.2"
@@ -247,11 +248,14 @@ orml-xtokens = { git = "https://github.com/open-web3-stack/open-runtime-module-l
 # Other pallets
 # (wasm)
 substrate-fixed = { git = "https://github.com/encointer/substrate-fixed", default-features = false }
+derive_more = "0.99"
 
 # LAOS pallets
 pallet-laos-evolution = { path = "./pallets/laos-evolution", default-features = false }
 pallet-asset-metadata-extender = { path = "./pallets/asset-metadata-extender", default-features = false }
 pallet-parachain-staking = { path = "./pallets/parachain-staking", default-features = false }
+pallet-evm-precompile-parachain-staking = { path = "./precompiles/parachain-staking", default-features = false }
+pallet-precompiles-benchmark = { path = "./pallets/precompiles-benchmark", default-features = false}
 
 # Primitives
 laos-primitives = { path = "./primitives", default-features = false }
