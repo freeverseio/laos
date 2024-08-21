@@ -19,7 +19,6 @@ serde_json = { workspace = true, default-features = true }
 laos-runtime = { workspace = true, features = ["std"] }
 
 # Substrate
-frame-benchmarking = { workspace = true }
 frame-benchmarking-cli = { workspace = true }
 pallet-transaction-payment-rpc = { workspace = true }
 sc-basic-authorship = { workspace = true }
@@ -46,7 +45,6 @@ sp-consensus-aura = { workspace = true }
 sp-core = { workspace = true }
 sp-inherents = { workspace = true }
 sp-keystore = { workspace = true }
-sp-io = { workspace = true }
 sp-runtime = { workspace = true }
 sp-timestamp = { workspace = true }
 substrate-frame-rpc-system = { workspace = true }
@@ -67,7 +65,6 @@ cumulus-client-consensus-common = { workspace = true }
 cumulus-client-consensus-proposer = { workspace = true }
 cumulus-client-service = { workspace = true }
 cumulus-primitives-core = { workspace = true }
-cumulus-primitives-parachain-inherent = { workspace = true }
 cumulus-relay-chain-interface = { workspace = true }
 
 # Frontier
@@ -78,11 +75,9 @@ fc-rpc-core = { workspace = true }
 fc-mapping-sync = { workspace = true, features = ["sql"] }
 fc-db = { workspace = true }
 fc-consensus = { workspace = true }
-fc-storage = { workspace = true }
 fp-rpc = { workspace = true, default-features = false }
 fp-evm = { workspace = true }
 fp-dynamic-fee = { workspace = true }
-fp-account = { workspace = true }
 
 [build-dependencies]
 substrate-build-script-utils = { workspace = true }
@@ -99,7 +94,6 @@ runtime-benchmarks = [
 	"sp-runtime/runtime-benchmarks",
 	"sc-service/runtime-benchmarks",
 	"polkadot-primitives/runtime-benchmarks",
-	"frame-benchmarking/runtime-benchmarks",
 	"frame-benchmarking-cli/runtime-benchmarks",
 ]
 try-runtime = [
