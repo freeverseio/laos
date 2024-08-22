@@ -32,6 +32,7 @@
 		"web3": "^1.9.0"
 	},
 	"devDependencies": {
+		"@moonwall/cli": "^5.3.3",
 		"@types/chai-as-promised": "^7.1.5",
 		"prettier": "^2.8.8"
 	}

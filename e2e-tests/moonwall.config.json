@@ -1,0 +1,19 @@
+{
+   "label": "moonwall.config.json",
+   "defaultTestTimeout": 120000,
+   "environments": [
+      {
+         "name": "zombienet",
+         "testFileDir": [
+            "moonwall/"
+         ],
+         "foundation": {
+            "type": "zombie",
+            "zombieSpec": {
+               "configPath": "./moonwall/zombienet.json",
+               "disableLogEavesdropping": true
+            }
+         }
+      }
+   ]
+}

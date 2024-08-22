@@ -1,0 +1,42 @@
+{
+    "settings": {
+        "provider": "native"
+    },
+    "relaychain": {
+        "default_command": "tmp/polkadot-v0.9.42",
+        "chain": "rococo-local",
+        "nodes": [
+            {
+                "name": "relay1",
+                "ws_port": 9944,
+                "validator": true
+            },
+            {
+                "name": "relay2",
+                "validator": true
+            }
+        ]
+    },
+    "parachains": [
+        {
+            "id": 2900,
+            "cumulus_based": true,
+            "chain": "local",
+            "force_decorator": "generic-evm",
+            "collators": [
+                {
+                    "name": "laos",
+                    "ws_port": 9999,
+                    "command": "tmp/laos",
+                    "validator": true
+                },
+                {
+                    "name": "laos-1",
+                    "ws_port": 10000,
+                    "command": "tmp/laos",
+                    "validator": true
+                }
+            ]
+        }
+    ]
+}
