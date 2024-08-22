@@ -39,7 +39,7 @@ std = [
 	"frame-system/std",
     	"sp-core/std",
 	"sp-runtime/std",
-	"frame-benchmarking/std",
+	"frame-benchmarking?/std",
 	"sp-std/std",
 	"fp-evm/std",
 	"precompile-utils/std",

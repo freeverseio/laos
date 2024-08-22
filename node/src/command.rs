@@ -14,15 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
-use std::{net::SocketAddr, sync::Arc};
+use std::net::SocketAddr;
 
-use cumulus_client_cli::generate_genesis_block;
+use cumulus_client_service::storage_proof_size::HostFunctions as ReclaimHostFunctions;
 use cumulus_primitives_core::ParaId;
 use fc_db::kv::frontier_database_dir;
 use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
 use laos_runtime::Block;
 use log::info;
-use parity_scale_codec::Encode;
 use polkadot_service::RococoChainSpec;
 use sc_cli::{
 	ChainSpec, CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams,
@@ -32,11 +31,8 @@ use sc_service::{
 	config::{BasePath, PrometheusConfig},
 	DatabaseSource, PartialComponents,
 };
-use sp_core::hexdisplay::HexDisplay;
-use sp_runtime::traits::{AccountIdConversion, Block as BlockT};
+use sp_runtime::traits::AccountIdConversion;
 
-#[cfg(feature = "try-runtime")]
-use crate::service::ParachainNativeExecutor;
 use crate::{
 	chain_spec,
 	cli::{Cli, RelayChainCli, Subcommand},
@@ -255,12 +251,11 @@ pub fn run() -> Result<()> {
 				cmd.run(config, polkadot_config)
 			})
 		},
-		Some(Subcommand::ExportGenesisState(cmd)) => {
+		Some(Subcommand::ExportGenesisHead(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			runner.sync_run(|config| {
 				let partials = new_partial(&config, &eth_cfg)?;
-				let spec = cli.load_spec(&cmd.shared_params.chain.clone().unwrap_or_default())?;
-				cmd.run::<laos_runtime::opaque::Block>(&*spec, &*partials.client)
+				cmd.run(partials.client)
 			})
 		},
 		Some(Subcommand::ExportGenesisWasm(cmd)) => {
@@ -276,7 +271,7 @@ pub fn run() -> Result<()> {
 			match cmd {
 				BenchmarkCmd::Pallet(cmd) =>
 					if cfg!(feature = "runtime-benchmarks") {
-						runner.sync_run(|config| cmd.run::<Block, ()>(config))
+						runner.sync_run(|config| cmd.run_with_spec::<sp_runtime::traits::HashingFor<Block>, ReclaimHostFunctions>(Some(config.chain_spec)))
 					} else {
 						Err("Benchmarking wasn't enabled when building the node. \
 					You can enable it with `--features runtime-benchmarks`."
@@ -309,40 +304,6 @@ pub fn run() -> Result<()> {
 				_ => Err("Benchmarking sub-command unsupported".into()),
 			}
 		},
-		#[cfg(feature = "try-runtime")]
-		Some(Subcommand::TryRuntime(cmd)) => {
-			use laos_runtime::MILLISECS_PER_BLOCK;
-			use sc_executor::{sp_wasm_interface::ExtendedHostFunctions, NativeExecutionDispatch};
-			use try_runtime_cli::block_building_info::timestamp_with_aura_info;
-
-			let runner = cli.create_runner(cmd)?;
-
-			type HostFunctionsOf<E> = ExtendedHostFunctions<
-				sp_io::SubstrateHostFunctions,
-				<E as NativeExecutionDispatch>::ExtendHostFunctions,
-			>;
-
-			// grab the task manager.
-			let registry = &runner.config().prometheus_config.as_ref().map(|cfg| &cfg.registry);
-			let task_manager =
-				sc_service::TaskManager::new(runner.config().tokio_handle.clone(), *registry)
-					.map_err(|e| format!("Error: {:?}", e))?;
-			let info_provider = timestamp_with_aura_info(MILLISECS_PER_BLOCK);
-
-			runner.async_run(|_| {
-				Ok((
-					#[allow(deprecated)]
-					cmd.run::<Block, HostFunctionsOf<ParachainNativeExecutor>, _>(Some(
-						info_provider,
-					)),
-					task_manager,
-				))
-			})
-		},
-		#[cfg(not(feature = "try-runtime"))]
-		Some(Subcommand::TryRuntime) => Err("Try-runtime was not enabled when building the node. \
-			You can enable it with `--features try-runtime`."
-			.into()),
 		Some(Subcommand::FrontierDb(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			runner.sync_run(|config| {
@@ -350,7 +311,7 @@ pub fn run() -> Result<()> {
 					crate::service::new_partial(&config, &cli.eth)?;
 				let (_, _, _, frontier_backend, _) = other;
 				let frontier_backend = match frontier_backend {
-					fc_db::Backend::KeyValue(kv) => Arc::new(kv),
+					fc_db::Backend::KeyValue(kv) => kv,
 					_ => panic!("Only fc_db::Backend::KeyValue supported"),
 				};
 				cmd.run(client, frontier_backend)
@@ -384,11 +345,6 @@ pub fn run() -> Result<()> {
 						&id,
 					);
 
-				let block: laos_runtime::opaque::Block =
-					generate_genesis_block(&*config.chain_spec, sp_runtime::StateVersion::V1)
-						.map_err(|e| format!("{:?}", e))?;
-				let genesis_state = format!("0x{:?}", HexDisplay::from(&block.header().encode()));
-
 				let tokio_handle = config.tokio_handle.clone();
 				let polkadot_config =
 					SubstrateCli::create_configuration(&polkadot_cli, &polkadot_cli, tokio_handle)
@@ -396,7 +352,6 @@ pub fn run() -> Result<()> {
 
 				info!("Parachain id: {:?}", id);
 				info!("Parachain Account: {}", parachain_account);
-				info!("Parachain genesis state: {}", genesis_state);
 				info!("Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
 
 				crate::service::start_parachain_node(

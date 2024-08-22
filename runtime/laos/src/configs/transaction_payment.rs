@@ -59,7 +59,7 @@ parameter_types! {
 impl pallet_transaction_payment::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type OnChargeTransaction =
-		pallet_transaction_payment::CurrencyAdapter<Balances, ToAuthor<Self>>;
+		pallet_transaction_payment::FungibleAdapter<Balances, ToAuthor<Self>>;
 	type OperationalFeeMultiplier = OperationalFeeMultiplier;
 	type WeightToFee = ConstantMultiplier<Balance, WeightToFee>;
 	type LengthToFee = LengthToFee;

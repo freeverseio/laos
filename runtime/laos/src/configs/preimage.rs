@@ -15,21 +15,31 @@
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 use crate::{
-	currency::calculate_deposit, weights, AccountId, Balance, Balances, EnsureRoot, Runtime,
-	RuntimeEvent,
+	currency::calculate_deposit, weights, AccountId, Balance, Balances, Runtime, RuntimeEvent,
+	RuntimeHoldReason,
 };
-use frame_support::parameter_types;
+use frame_support::{
+	parameter_types,
+	traits::{fungible::HoldConsideration, LinearStoragePrice},
+};
+use frame_system::EnsureRoot;
 
 parameter_types! {
 	pub const PreimageBaseDeposit: Balance = calculate_deposit(2, 64);
 	pub const PreimageByteDeposit: Balance = calculate_deposit(0, 1);
+	pub const PreimageHoldReason: RuntimeHoldReason =
+		RuntimeHoldReason::Preimage(pallet_preimage::HoldReason::Preimage);
 }
 
 impl pallet_preimage::Config for Runtime {
-	type BaseDeposit = PreimageBaseDeposit;
-	type ByteDeposit = PreimageByteDeposit;
 	type Currency = Balances;
 	type ManagerOrigin = EnsureRoot<AccountId>;
 	type RuntimeEvent = RuntimeEvent;
+	type Consideration = HoldConsideration<
+		AccountId,
+		Balances,
+		PreimageHoldReason,
+		LinearStoragePrice<PreimageBaseDeposit, PreimageByteDeposit, Balance>,
+	>;
 	type WeightInfo = weights::pallet_preimage::WeightInfo<Runtime>;
 }

@@ -14,7 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
-use crate::{Block, DmpQueue, InherentDataExt, ParachainInfo, Runtime, RuntimeEvent, XcmpQueue};
+use crate::{
+	weights, Block, InherentDataExt, MessageQueue, ParachainInfo, Runtime, RuntimeEvent, XcmpQueue,
+};
+
+use cumulus_primitives_core::AggregateMessageOrigin;
 
 use frame_support::{parameter_types, weights::Weight};
 
@@ -23,6 +27,7 @@ use laos_primitives::MAXIMUM_BLOCK_WEIGHT;
 parameter_types! {
 	pub const ReservedXcmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT.saturating_div(4);
 	pub const ReservedDmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT.saturating_div(4);
+	pub const RelayOrigin: AggregateMessageOrigin = AggregateMessageOrigin::Parent;
 }
 
 impl cumulus_pallet_parachain_system::Config for Runtime {
@@ -30,11 +35,13 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
 	type OnSystemEvent = ();
 	type SelfParaId = ParachainInfo;
 	type OutboundXcmpMessageSource = XcmpQueue;
-	type DmpMessageHandler = DmpQueue;
 	type ReservedDmpWeight = ReservedDmpWeight;
 	type XcmpMessageHandler = XcmpQueue;
 	type ReservedXcmpWeight = ReservedXcmpWeight;
 	type CheckAssociatedRelayNumber = cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
+	type ConsensusHook = cumulus_pallet_parachain_system::ExpectParentIncluded;
+	type DmpQueue = frame_support::traits::EnqueueWithOrigin<MessageQueue, RelayOrigin>;
+	type WeightInfo = weights::cumulus_pallet_parachain_system::WeightInfo<Runtime>;
 }
 
 // This struct is never instantiated, it is only used for the `CheckInherents` implementation.
@@ -42,6 +49,10 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
 // https://github.com/moonbeam-foundation/moonbeam/blob/26a88a553563647992f39fbd1cce3d45a363e991/runtime/moonbeam/src/lib.rs#L1585-L1614
 #[allow(dead_code)]
 struct CheckInherents;
+
+// Parity has decided to depreciate this trait, but does not offer a satisfactory replacement,
+// see issue: https://github.com/paritytech/polkadot-sdk/issues/2841
+#[allow(deprecated)]
 
 impl cumulus_pallet_parachain_system::CheckInherents<Block> for CheckInherents {
 	fn check_inherents(

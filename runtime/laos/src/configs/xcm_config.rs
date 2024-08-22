@@ -20,8 +20,8 @@ use crate::{
 };
 use core::marker::PhantomData;
 use frame_support::{
-	match_types, parameter_types,
-	traits::{ConstU32, Everything, Nothing, OriginTrait},
+	parameter_types,
+	traits::{ConstU32, Contains, Everything, Nothing, OriginTrait},
 	weights::Weight,
 };
 use frame_system::{EnsureRoot, RawOrigin as SystemRawOrigin};
@@ -31,20 +31,21 @@ use sp_runtime::traits::TryConvert;
 use staging_xcm::latest::prelude::*;
 use staging_xcm_builder::{
 	AccountKey20Aliases, AllowExplicitUnpaidExecutionFrom, AllowTopLevelPaidExecutionFrom,
-	CurrencyAdapter, DenyReserveTransferToRelayChain, DenyThenTry, EnsureXcmOrigin,
-	FixedWeightBounds, IsConcrete, NativeAsset, ParentIsPreset, RelayChainAsNative,
-	SiblingParachainAsNative, SiblingParachainConvertsVia, SignedAccountKey20AsNative,
-	SovereignSignedViaLocation, TakeWeightCredit, TrailingSetTopicAsId, UsingComponents,
-	WithComputedOrigin,
+	DenyReserveTransferToRelayChain, DenyThenTry, EnsureXcmOrigin, FixedWeightBounds,
+	FrameTransactionalProcessor, FungibleAdapter, IsConcrete, NativeAsset, ParentIsPreset,
+	RelayChainAsNative, SiblingParachainAsNative, SiblingParachainConvertsVia,
+	SignedAccountKey20AsNative, SovereignSignedViaLocation, TakeWeightCredit, TrailingSetTopicAsId,
+	UsingComponents, WithComputedOrigin,
 };
 use staging_xcm_executor::XcmExecutor;
 
 parameter_types! {
-	pub const ParentLocation: MultiLocation = MultiLocation::parent();
-	pub const OurLocation: MultiLocation = MultiLocation::here();
+	pub const RelayLocation: Location = Location::parent();
 	pub const RelayNetwork: Option<NetworkId> = None;
 	pub RelayChainOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into();
-	pub UniversalLocation: InteriorMultiLocation = Parachain(ParachainInfo::parachain_id().into()).into();
+	// For the real deployment, it is recommended to set `RelayNetwork` according to the relay chain
+	// and prepend `UniversalLocation` with `GlobalConsensus(RelayNetwork::get())`.
+	pub UniversalLocation: InteriorLocation = Parachain(ParachainInfo::parachain_id().into()).into();
 }
 
 /// Type for specifying how a `MultiLocation` can be converted into an `AccountId`. This is used
@@ -60,12 +61,12 @@ pub type LocationToAccountId = (
 );
 
 /// Means for transacting assets on this chain.
-pub type LocalAssetTransactor = CurrencyAdapter<
+pub type LocalAssetTransactor = FungibleAdapter<
 	// Use this currency:
 	Balances,
 	// Use this currency when it is a fungible asset matching the given location or name:
-	IsConcrete<OurLocation>, /* Do a simple pun to convert an AccountId20 MultiLocation into a
-	                          * native chain account ID: */
+	IsConcrete<RelayLocation>,
+	// Do a simple pun to convert an AccountId20 Location into a native chain account ID:
 	LocationToAccountId,
 	// Our chain's account ID type (we can't get away without mentioning it explicitly):
 	AccountId,
@@ -101,11 +102,11 @@ parameter_types! {
 	pub const MaxAssetsIntoHolding: u32 = 64;
 }
 
-match_types! {
-	pub type ParentOrParentsExecutivePlurality: impl Contains<MultiLocation> = {
-		MultiLocation { parents: 1, interior: Here } |
-		MultiLocation { parents: 1, interior: X1(Plurality { id: BodyId::Executive, .. }) }
-	};
+pub struct ParentOrParentsExecutivePlurality;
+impl Contains<Location> for ParentOrParentsExecutivePlurality {
+	fn contains(location: &Location) -> bool {
+		matches!(location.unpack(), (1, []) | (1, [Plurality { id: BodyId::Executive, .. }]))
+	}
 }
 
 pub type Barrier = TrailingSetTopicAsId<
@@ -140,7 +141,7 @@ impl staging_xcm_executor::Config for XcmConfig {
 	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
 	type Trader = UsingComponents<
 		<Runtime as pallet_transaction_payment::Config>::WeightToFee,
-		OurLocation,
+		RelayLocation,
 		AccountId,
 		Balances,
 		ToAuthor<Runtime>,
@@ -159,6 +160,10 @@ impl staging_xcm_executor::Config for XcmConfig {
 	type CallDispatcher = RuntimeCall;
 	type SafeCallFilter = Everything;
 	type Aliasers = Nothing;
+	type TransactionalProcessor = FrameTransactionalProcessor;
+	type HrmpNewChannelOpenRequestHandler = ();
+	type HrmpChannelAcceptedHandler = ();
+	type HrmpChannelClosingHandler = ();
 }
 
 /// No local origins on this chain are allowed to dispatch XCM sends/executions.
@@ -166,22 +171,12 @@ pub type LocalOriginToLocation = SignedToAccountId20<RuntimeOrigin, AccountId, R
 
 /// The means for routing XCM messages which are not for local execution into the right message
 /// queues.
-#[cfg(not(test))]
 pub type XcmRouter = staging_xcm_builder::WithUniqueTopic<(
 	// Two routers - use UMP to communicate with the relay chain:
 	cumulus_primitives_utility::ParentAsUmp<crate::ParachainSystem, (), ()>,
 	// ..and XCMP to communicate with the sibling chains.
 	crate::XcmpQueue,
 )>;
-
-/// Use different router in `xcm-simulator` tests.
-#[cfg(test)]
-pub type XcmRouter = crate::tests::ParachainXcmRouter<ParachainInfo>;
-
-#[cfg(feature = "runtime-benchmarks")]
-parameter_types! {
-	pub ReachableDest: Option<MultiLocation> = Some(Parent.into());
-}
 
 impl pallet_xcm::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
@@ -205,8 +200,6 @@ impl pallet_xcm::Config for Runtime {
 	type SovereignAccountOf = LocationToAccountId;
 	type MaxLockers = ConstU32<8>;
 	type WeightInfo = pallet_xcm::TestWeightInfo;
-	#[cfg(feature = "runtime-benchmarks")]
-	type ReachableDest = ReachableDest;
 	type AdminOrigin = EnsureRoot<AccountId>;
 	type MaxRemoteLockConsumers = ConstU32<0>;
 	type RemoteLockConsumerIdentifier = ();
@@ -224,13 +217,12 @@ impl<
 		RuntimeOrigin: OriginTrait + Clone,
 		AccountId: Into<[u8; 20]>,
 		Network: frame_support::traits::Get<Option<NetworkId>>,
-	> TryConvert<RuntimeOrigin, MultiLocation>
-	for SignedToAccountId20<RuntimeOrigin, AccountId, Network>
+	> TryConvert<RuntimeOrigin, Location> for SignedToAccountId20<RuntimeOrigin, AccountId, Network>
 where
 	RuntimeOrigin::PalletsOrigin: From<SystemRawOrigin<AccountId>>
 		+ TryInto<SystemRawOrigin<AccountId>, Error = RuntimeOrigin::PalletsOrigin>,
 {
-	fn try_convert(o: RuntimeOrigin) -> Result<MultiLocation, RuntimeOrigin> {
+	fn try_convert(o: RuntimeOrigin) -> Result<Location, RuntimeOrigin> {
 		o.try_with_caller(|caller| match caller.try_into() {
 			Ok(SystemRawOrigin::Signed(who)) =>
 				Ok(Junction::AccountKey20 { network: Network::get(), key: who.into() }.into()),
