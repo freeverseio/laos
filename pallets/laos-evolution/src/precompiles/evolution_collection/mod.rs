@@ -11,7 +11,7 @@ use pallet_evm::GasWeightMapping;
 use precompile_utils::{
 	keccak256,
 	prelude::{
-		log1, log2, log3, revert, Address, DiscriminantResult, EvmResult, LogExt, PrecompileHandle,
+		log2, log3, revert, Address, DiscriminantResult, EvmResult, LogExt, PrecompileHandle,
 		String,
 	},
 	solidity::{self, codec::UnboundedString},
@@ -30,11 +30,6 @@ pub const SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
 /// Solidity selector of the EvolvedWithExternalURI log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI: [u8; 32] =
 	keccak256!("EvolvedWithExternalURI(uint256,string)");
-
-/// Solidity selector of the PublicMintingEnabled log, which is the Keccak of the Log signature.
-pub const SELECTOR_LOG_PUBLIC_MINTING_ENABLED: [u8; 32] = keccak256!("PublicMintingEnabled()");
-/// Solidity selector of the PublicMintingDisabled log, which is the Keccak of the Log signature.
-pub const SELECTOR_LOG_PUBLIC_MINTING_DISABLED: [u8; 32] = keccak256!("PublicMintingDisabled()");
 
 /// Solidity selector of the `OwnershipTransferred` log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_OWNERSHIP_TRANSFERRED: [u8; 32] =
@@ -197,68 +192,6 @@ where
 		.record(handle)?;
 
 		Ok(())
-	}
-
-	#[precompile::public("enablePublicMinting()")]
-	pub fn enable_public_minting(
-		collection_id: CollectionId,
-		handle: &mut impl PrecompileHandle,
-	) -> EvmResult<()> {
-		super::register_cost::<R>(handle, R::WeightInfo::precompile_enable_public_minting())?;
-
-		match LaosEvolution::<R>::enable_public_minting(
-			R::AccountIdToH160::convert_back(handle.context().caller),
-			collection_id,
-		) {
-			Ok(()) => {
-				log1(
-					handle.context().address,
-					SELECTOR_LOG_PUBLIC_MINTING_ENABLED,
-					solidity::encode_event_data(()),
-				)
-				.record(handle)?;
-
-				Ok(())
-			},
-			Err(err) => Err(revert(convert_dispatch_error_to_string(err))),
-		}
-	}
-
-	#[precompile::public("disablePublicMinting()")]
-	pub fn disable_public_minting(
-		collection_id: CollectionId,
-		handle: &mut impl PrecompileHandle,
-	) -> EvmResult<()> {
-		super::register_cost::<R>(handle, R::WeightInfo::precompile_disable_public_minting())?;
-
-		match LaosEvolution::<R>::disable_public_minting(
-			R::AccountIdToH160::convert_back(handle.context().caller),
-			collection_id,
-		) {
-			Ok(()) => {
-				log1(
-					handle.context().address,
-					SELECTOR_LOG_PUBLIC_MINTING_DISABLED,
-					solidity::encode_event_data(()),
-				)
-				.record(handle)?;
-
-				Ok(())
-			},
-			Err(err) => Err(revert(convert_dispatch_error_to_string(err))),
-		}
-	}
-
-	#[precompile::public("isPublicMintingEnabled()")]
-	#[precompile::view]
-	pub fn is_public_minting_enabled(
-		collection_id: CollectionId,
-		handle: &mut impl PrecompileHandle,
-	) -> EvmResult<bool> {
-		super::register_cost::<R>(handle, R::WeightInfo::precompile_is_public_minting_enabled())?;
-
-		let is_enabled = LaosEvolution::<R>::is_public_minting_enabled(collection_id);
-		Ok(is_enabled)
 	}
 
 	#[precompile::public("tokenURI(uint256)")]

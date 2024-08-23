@@ -21,7 +21,6 @@ mod balances;
 mod base_fee;
 mod benchmark;
 mod collective_council;
-mod cumulus_dmp_queue;
 mod cumulus_parachain_system;
 mod cumulus_xcmp_queue;
 mod ethereum;
@@ -29,7 +28,6 @@ pub(crate) mod evm;
 pub(crate) mod laos_evolution;
 mod multisig;
 pub(crate) mod parachain_staking;
-mod preimage;
 mod proxy;
 mod session;
 mod sudo;
@@ -39,6 +37,7 @@ mod transaction_payment;
 mod utility;
 mod vesting;
 pub(crate) mod xcm_config;
+mod xcm_message_queue;
 
 use frame_support::parameter_types;
 
@@ -51,4 +50,4 @@ parameter_types! {
 
 impl cumulus_pallet_aura_ext::Config for Runtime {}
 impl pallet_evm_chain_id::Config for Runtime {}
-impl parachain_info::Config for Runtime {}
+impl staging_parachain_info::Config for Runtime {}

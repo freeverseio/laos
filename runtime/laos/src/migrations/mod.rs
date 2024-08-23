@@ -14,9 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
-mod init_pallet;
+use crate::Runtime;
 
-use crate::{Council, Preimage};
-
-pub type Migrations =
-	(init_pallet::InitializePallet<Preimage>, init_pallet::InitializePallet<Council>);
+pub type Migrations = (cumulus_pallet_xcmp_queue::migration::v4::MigrationToV4<Runtime>,);
