@@ -34,13 +34,13 @@ parameter_types! {
 	pub TreasuryAccount: AccountId = Treasury::account_id();
 }
 
-type EnsureRootOrMajorityCouncil = EnsureRoot<AccountId>;
+type RejectOrigin = EnsureRoot<AccountId>;
 
-type EnsureRootOrAllCouncil = EnsureRoot<AccountId>;
+type ApproveOrigin = EnsureRoot<AccountId>;
 
 impl pallet_treasury::Config for Runtime {
 	type AssetKind = ();
-	type ApproveOrigin = EnsureRootOrAllCouncil;
+	type ApproveOrigin = ApproveOrigin;
 	type BalanceConverter = UnityAssetBalanceConversion;
 	type Beneficiary = AccountId;
 	type BeneficiaryLookup = IdentityLookup<Self::Beneficiary>;
@@ -55,7 +55,7 @@ impl pallet_treasury::Config for Runtime {
 	type ProposalBond = ProposalBond;
 	type ProposalBondMaximum = ();
 	type ProposalBondMinimum = ProposalBondMinimum;
-	type RejectOrigin = EnsureRootOrMajorityCouncil;
+	type RejectOrigin = RejectOrigin;
 	type RuntimeEvent = RuntimeEvent;
 	type SpendFunds = ();
 	type SpendOrigin = frame_support::traits::NeverEnsureOrigin<Balance>;
