@@ -36,7 +36,7 @@ fn evm_call(source: impl Into<H160>, input: Vec<u8>) -> EvmCall<Runtime> {
 		target: Precompile1.into(),
 		input,
 		value: U256::zero(), // No value sent in EVM
-		gas_limit: u64::max_value(),
+		gas_limit: u64::MAX,
 		max_fee_per_gas: 0.into(),
 		max_priority_fee_per_gas: Some(U256::zero()),
 		nonce: None, // Use the next nonce

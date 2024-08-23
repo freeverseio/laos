@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
-use crate::{currency::UNIT, weights, Balance, Balances, Runtime, RuntimeEvent};
+use crate::{currency::UNIT, weights, Balance, Balances, Runtime, RuntimeEvent, System};
 use frame_support::{parameter_types, traits::WithdrawReasons};
 use sp_runtime::traits::ConvertInto;
 
@@ -30,6 +30,7 @@ impl pallet_vesting::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
 	type BlockNumberToBalance = ConvertInto;
+	type BlockNumberProvider = System;
 	type MinVestedTransfer = MinVestedTransfer;
 	type UnvestedFundsAllowedWithdrawReasons = UnvestedFundsAllowedWithdrawReasons;
 	type WeightInfo = weights::pallet_vesting::WeightInfo<Runtime>;

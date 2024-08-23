@@ -14,22 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
-use crate::{
-	currency::calculate_deposit, weights, AccountId, Balance, Balances, EnsureRoot, Runtime,
-	RuntimeEvent,
-};
-use frame_support::parameter_types;
+use crate::Runtime;
 
-parameter_types! {
-	pub const PreimageBaseDeposit: Balance = calculate_deposit(2, 64);
-	pub const PreimageByteDeposit: Balance = calculate_deposit(0, 1);
-}
-
-impl pallet_preimage::Config for Runtime {
-	type BaseDeposit = PreimageBaseDeposit;
-	type ByteDeposit = PreimageByteDeposit;
-	type Currency = Balances;
-	type ManagerOrigin = EnsureRoot<AccountId>;
-	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = weights::pallet_preimage::WeightInfo<Runtime>;
-}
+pub type Migrations = (cumulus_pallet_xcmp_queue::migration::v4::MigrationToV4<Runtime>,);

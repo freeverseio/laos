@@ -77,24 +77,24 @@ mod tests {
 	fn test_block_weights() {
 		let weights = RuntimeBlockWeights::get();
 
-		assert_eq!(weights.base_block, Weight::from_parts(390584000, 0));
+		assert_eq!(weights.base_block, Weight::from_parts(453383000, 0));
 		assert_eq!(weights.max_block, Weight::from_parts(500000000000, 5242880));
 
 		let normal = weights.per_class.get(DispatchClass::Normal);
-		assert_eq!(normal.base_extrinsic, Weight::from_parts(124414000, 0));
-		assert_eq!(normal.max_extrinsic, Some(Weight::from_parts(324875586000, 3407872)));
+		assert_eq!(normal.base_extrinsic, Weight::from_parts(107074000, 0));
+		assert_eq!(normal.max_extrinsic, Some(Weight::from_parts(324892926000, 3407872)));
 		assert_eq!(normal.max_total, Some(Weight::from_parts(375000000000, 3932160)));
 		assert_eq!(normal.reserved, Some(Weight::from_parts(0, 0)));
 
 		let mandatory = weights.per_class.get(DispatchClass::Mandatory);
-		assert_eq!(mandatory.base_extrinsic, Weight::from_parts(124414000, 0));
+		assert_eq!(mandatory.base_extrinsic, Weight::from_parts(107074000, 0));
 		assert_eq!(mandatory.max_extrinsic, None);
 		assert_eq!(mandatory.max_total, None);
 		assert_eq!(mandatory.reserved, None);
 
 		let operational = weights.per_class.get(DispatchClass::Operational);
-		assert_eq!(operational.base_extrinsic, Weight::from_parts(124414000, 0));
-		assert_eq!(operational.max_extrinsic, Some(Weight::from_parts(449875586000, 4718592)));
+		assert_eq!(operational.base_extrinsic, Weight::from_parts(107074000, 0));
+		assert_eq!(operational.max_extrinsic, Some(Weight::from_parts(449892926000, 4718592)));
 		assert_eq!(operational.max_total, Some(Weight::from_parts(500000000000, 5242880)));
 		assert_eq!(operational.reserved, Some(Weight::from_parts(125000000000, 1310720)));
 	}
