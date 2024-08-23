@@ -30,13 +30,12 @@ parameter_types! {
 	pub const SpendPeriod: BlockNumber = TREASURY_SPENDING_PRERIOD;
 	pub const MaxApprovals: u32 = 100;
 	pub const TreasuryId: PalletId = PalletId(*b"py/trsry");
-	pub const PayoutPeriod: BlockNumber = 0;
+	pub const PayoutPeriod: BlockNumber = 5;
 	pub TreasuryAccount: AccountId = Treasury::account_id();
 }
 
-type RejectOrigin = EnsureRoot<AccountId>;
-
 type ApproveOrigin = EnsureRoot<AccountId>;
+type RejectOrigin = EnsureRoot<AccountId>;
 
 impl pallet_treasury::Config for Runtime {
 	type AssetKind = ();
@@ -61,6 +60,22 @@ impl pallet_treasury::Config for Runtime {
 	type SpendOrigin = frame_support::traits::NeverEnsureOrigin<Balance>;
 	type SpendPeriod = SpendPeriod;
 	type WeightInfo = (); //  weights::pallet_treasury::WeightInfo<Runtime>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type BenchmarkHelper = TreasuryBenchmarkHelper;
+}
+
+#[cfg(feature = "runtime-benchmarks")]
+pub struct TreasuryBenchmarkHelper;
+
+#[cfg(feature = "runtime-benchmarks")]
+impl pallet_treasury::ArgumentsFactory<(), AccountId> for TreasuryBenchmarkHelper {
+	fn create_asset_kind(_seed: u32) -> () {
+		()
+	}
+
+	fn create_beneficiary(seed: [u8; 32]) -> AccountId {
+		AccountId::from(seed)
+	}
 }
 
 #[cfg(test)]
