@@ -1,9 +1,15 @@
 use crate::{
-	configs::collective_council::CouncilCollective, currency::UNIT, weights, AccountId, Balance,
-	Balances, BlockNumber, EnsureRoot, Permill, Runtime, RuntimeEvent, Treasury,
+	currency::UNIT, weights, AccountId, Balance, Balances, BlockNumber, Permill, Runtime,
+	RuntimeEvent, Treasury,
 };
-use frame_support::{parameter_types, traits::EitherOfDiverse, PalletId};
+use frame_support::{
+	parameter_types,
+	traits::tokens::{PayFromAccount, UnityAssetBalanceConversion},
+	PalletId,
+};
+use frame_system::EnsureRoot;
 use parachains_common::DAYS;
+use sp_runtime::traits::IdentityLookup;
 
 #[cfg(feature = "fast-mode")]
 use parachains_common::MINUTES;
@@ -12,32 +18,40 @@ const TREASURY_SPENDING_PRERIOD: BlockNumber = 5 * MINUTES;
 #[cfg(not(feature = "fast-mode"))]
 const TREASURY_SPENDING_PRERIOD: BlockNumber = 7 * DAYS;
 
+// // Required for the treasury spend benchmark.
+// #[cfg(feature = "runtime-benchmarks")]
+// parameter_types! {
+// 	pub const PayoutPeriod: BlockNumber = 5;
+// } TODO
+
 parameter_types! {
 	pub const ProposalBond: Permill = Permill::from_percent(5);
 	pub const ProposalBondMinimum: Balance = 100 * UNIT;
 	pub const SpendPeriod: BlockNumber = TREASURY_SPENDING_PRERIOD;
 	pub const MaxApprovals: u32 = 100;
 	pub const TreasuryId: PalletId = PalletId(*b"py/trsry");
+	pub const PayoutPeriod: BlockNumber = 0;
+	pub TreasuryAccount: AccountId = Treasury::account_id();
 }
 
-type EnsureRootOrMajorityCouncil = EitherOfDiverse<
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 2>,
->;
+type EnsureRootOrMajorityCouncil = EnsureRoot<AccountId>;
 
-type EnsureRootOrAllCouncil = EitherOfDiverse<
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 1>,
->;
+type EnsureRootOrAllCouncil = EnsureRoot<AccountId>;
 
 impl pallet_treasury::Config for Runtime {
+	type AssetKind = ();
 	type ApproveOrigin = EnsureRootOrAllCouncil;
+	type BalanceConverter = UnityAssetBalanceConversion;
+	type Beneficiary = AccountId;
+	type BeneficiaryLookup = IdentityLookup<Self::Beneficiary>;
 	type Burn = ();
 	type BurnDestination = ();
 	type Currency = Balances;
 	type MaxApprovals = MaxApprovals;
 	type OnSlash = Treasury;
 	type PalletId = TreasuryId;
+	type Paymaster = PayFromAccount<Balances, TreasuryAccount>;
+	type PayoutPeriod = PayoutPeriod;
 	type ProposalBond = ProposalBond;
 	type ProposalBondMaximum = ();
 	type ProposalBondMinimum = ProposalBondMinimum;
@@ -46,7 +60,7 @@ impl pallet_treasury::Config for Runtime {
 	type SpendFunds = ();
 	type SpendOrigin = frame_support::traits::NeverEnsureOrigin<Balance>;
 	type SpendPeriod = SpendPeriod;
-	type WeightInfo = weights::pallet_treasury::WeightInfo<Runtime>;
+	type WeightInfo = (); //  weights::pallet_treasury::WeightInfo<Runtime>;
 }
 
 #[cfg(test)]
