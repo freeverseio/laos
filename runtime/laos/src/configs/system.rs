@@ -16,7 +16,7 @@
 
 use crate::{
 	weights::RocksDbWeight, AccountId, Balance, Block, PalletInfo, Runtime, RuntimeCall,
-	RuntimeEvent, RuntimeOrigin, RuntimeVersion, VERSION,
+	RuntimeEvent, RuntimeOrigin, RuntimeTask, RuntimeVersion, VERSION,
 };
 use frame_support::{parameter_types, traits::Everything};
 use sp_runtime::traits::{BlakeTwo256, IdentityLookup};
@@ -46,6 +46,8 @@ impl frame_system::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	/// The ubiquitous origin type.
 	type RuntimeOrigin = RuntimeOrigin;
+	/// The aggregated RuntimeTask type.
+	type RuntimeTask = RuntimeTask;
 	/// Maximum number of block number to block hash mappings to keep (oldest pruned first).
 	type BlockHashCount = BlockHashCount;
 	/// Runtime version.
@@ -73,6 +75,11 @@ impl frame_system::Config for Runtime {
 	/// The action to take on a Runtime Upgrade
 	type OnSetCode = cumulus_pallet_parachain_system::ParachainSetCode<Self>;
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
+	type SingleBlockMigrations = ();
+	type MultiBlockMigrator = ();
+	type PreInherents = ();
+	type PostInherents = ();
+	type PostTransactions = ();
 }
 
 // tests
@@ -102,7 +109,7 @@ mod tests {
 			.execute_with(|| {
 				let to_account = AccountId::from_str(BOB).unwrap();
 				let transfer_amount = 100;
-				let call = RuntimeCall::Balances(pallet_balances::Call::transfer {
+				let call = RuntimeCall::Balances(pallet_balances::Call::transfer_keep_alive {
 					dest: to_account,
 					value: transfer_amount,
 				});

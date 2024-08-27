@@ -15,7 +15,12 @@
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 use fp_rpc::TransactionStatus;
-use frame_support::{traits::Hooks, weights::Weight};
+use frame_support::{
+	genesis_builder_helper::{build_state, get_preset},
+	traits::Hooks,
+	weights::Weight,
+};
+use pallet_aura::Authorities;
 use pallet_ethereum::{Call::transact, Transaction as EthereumTransaction};
 use pallet_evm::{Account as EVMAccount, FeeCalculator, Runner};
 use sp_api::impl_runtime_apis;
@@ -25,18 +30,15 @@ use sp_runtime::{
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, Permill,
 };
-use sp_std::{borrow::Cow, prelude::*};
+use sp_std::prelude::*;
 use sp_version::RuntimeVersion;
 
 // Local module imports
 use super::{
 	AccountId, Aura, AuraId, Balance, Block, Ethereum, Executive, InherentDataExt, Nonce,
-	ParachainSystem, Runtime, RuntimeCall, SessionKeys, System, TransactionPayment,
-	UncheckedExtrinsic, EVM, VERSION,
+	ParachainSystem, Runtime, RuntimeCall, RuntimeGenesisConfig, SessionKeys, System,
+	TransactionPayment, UncheckedExtrinsic, EVM, VERSION,
 };
-
-/// TODO: hackish way to get the runtime version public. Waiting for substrate to expose it.
-pub const PUBLIC_RUNTIME_API_VERSIONS: Cow<'_, [([u8; 8], u32)]> = RUNTIME_API_VERSIONS;
 
 impl_runtime_apis! {
 	impl sp_consensus_aura::AuraApi<Block, AuraId> for Runtime {
@@ -45,7 +47,7 @@ impl_runtime_apis! {
 		}
 
 		fn authorities() -> Vec<AuraId> {
-			Aura::authorities().into_inner()
+			Authorities::<Runtime>::get().into_inner()
 		}
 	}
 
@@ -58,7 +60,7 @@ impl_runtime_apis! {
 			Executive::execute_block(block)
 		}
 
-		fn initialize_block(header: &<Block as BlockT>::Header) {
+		fn initialize_block(header: &<Block as BlockT>::Header) -> sp_runtime::ExtrinsicInclusionMode {
 			Executive::initialize_block(header)
 		}
 	}
@@ -412,6 +414,20 @@ impl_runtime_apis! {
 
 			if batches.is_empty() { return Err("Benchmark not found for this pallet.".into()) }
 			Ok(batches)
+		}
+	}
+
+	impl sp_genesis_builder::GenesisBuilder<Block> for Runtime {
+		fn build_state(config: Vec<u8>) -> sp_genesis_builder::Result {
+			build_state::<RuntimeGenesisConfig>(config)
+		}
+
+		fn get_preset(id: &Option<sp_genesis_builder::PresetId>) -> Option<Vec<u8>> {
+			get_preset::<RuntimeGenesisConfig>(id, |_| None)
+		}
+
+		fn preset_names() -> Vec<sp_genesis_builder::PresetId> {
+			Default::default()
 		}
 	}
 }

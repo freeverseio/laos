@@ -14,8 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
-use crate::{AuraId, Runtime};
+use crate::{AuraId, Runtime, MILLISECS_PER_BLOCK};
 use frame_support::parameter_types;
+use sp_core::ConstU64;
 
 parameter_types! {
 	pub const MaxAuthorities : u32 = 100_000;
@@ -27,4 +28,5 @@ impl pallet_aura::Config for Runtime {
 	type DisabledValidators = ();
 	type MaxAuthorities = MaxAuthorities;
 	type AllowMultipleBlocksPerSlot = AllowMultipleBlocksPerSlot;
+	type SlotDuration = ConstU64<MILLISECS_PER_BLOCK>;
 }
