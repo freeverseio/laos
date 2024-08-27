@@ -1,10 +1,14 @@
+use super::collective_council::CouncilCollective;
 use crate::{
 	currency::UNIT, weights, AccountId, Balance, Balances, BlockNumber, Permill, Runtime,
 	RuntimeEvent, Treasury,
 };
 use frame_support::{
 	parameter_types,
-	traits::tokens::{PayFromAccount, UnityAssetBalanceConversion},
+	traits::{
+		tokens::{PayFromAccount, UnityAssetBalanceConversion},
+		EitherOfDiverse,
+	},
 	PalletId,
 };
 use frame_system::EnsureRoot;
@@ -28,8 +32,14 @@ parameter_types! {
 	pub TreasuryAccount: AccountId = Treasury::account_id();
 }
 
-type ApproveOrigin = EnsureRoot<AccountId>;
-type RejectOrigin = EnsureRoot<AccountId>;
+type ApproveOrigin = EitherOfDiverse<
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 1>,
+>;
+type RejectOrigin = EitherOfDiverse<
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 2>,
+>;
 
 impl pallet_treasury::Config for Runtime {
 	type AssetKind = ();
