@@ -130,6 +130,7 @@ construct_runtime!(
 
 		// Governance
 		Treasury: pallet_treasury = 40,
+		Council: pallet_collective::<Instance1> = 42,
 
 		// Frontier
 		Ethereum: pallet_ethereum = 50,
