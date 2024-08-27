@@ -29,12 +29,14 @@ use cumulus_client_consensus_common::ParachainBlockImport as TParachainBlockImpo
 use cumulus_client_consensus_proposer::Proposer;
 use cumulus_client_service::{
 	build_network, build_relay_chain_interface, prepare_node_config, start_relay_chain_tasks,
-	BuildNetworkParams, CollatorSybilResistance, DARecoveryProfile, StartRelayChainTasksParams,
+	BuildNetworkParams, CollatorSybilResistance, DARecoveryProfile, ParachainHostFunctions,
+	StartRelayChainTasksParams,
 };
 use cumulus_primitives_core::{relay_chain::CollatorPair, ParaId};
 use cumulus_relay_chain_interface::{OverseerHandle, RelayChainInterface};
 
 // Substrate Imports
+use fc_rpc::{StorageOverride, StorageOverrideHandler};
 use frame_benchmarking_cli::SUBSTRATE_REFERENCE_HARDWARE;
 use futures::FutureExt;
 use sc_client_api::Backend;
@@ -54,14 +56,14 @@ use substrate_prometheus_endpoint::Registry;
 // Frontier
 use crate::eth::{
 	db_config_dir, new_frontier_partial, spawn_frontier_tasks, BackendType, EthConfiguration,
-	FrontierBackend, FrontierBlockImport as TFrontierBlockImport, FrontierPartialComponents,
+	FrontierBlockImport as TFrontierBlockImport, FrontierPartialComponents,
 };
 
 /// Native executor type.
 pub struct ParachainNativeExecutor;
 
 impl sc_executor::NativeExecutionDispatch for ParachainNativeExecutor {
-	type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;
+	type ExtendHostFunctions = ParachainHostFunctions;
 
 	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
 		laos_runtime::apis::api::dispatch(method, data)
@@ -101,8 +103,8 @@ pub fn new_partial(
 			ParachainBlockImport,
 			Option<Telemetry>,
 			Option<TelemetryWorkerHandle>,
-			FrontierBackend,
-			Arc<fc_rpc::OverrideHandle<Block>>,
+			fc_db::Backend<Block, ParachainClient>,
+			Arc<dyn StorageOverride<Block>>,
 		),
 	>,
 	sc_service::Error,
@@ -155,13 +157,14 @@ pub fn new_partial(
 		client.clone(),
 	);
 
-	let overrides = crate::rpc::overrides_handle(client.clone());
+	let overrides = Arc::new(StorageOverrideHandler::new(client.clone()));
+	// TODO This is copied from frontier. It should be imported instead after https://github.com/paritytech/frontier/issues/333 is solved
 	let frontier_backend = match eth_config.frontier_backend_type {
-		BackendType::KeyValue => FrontierBackend::KeyValue(fc_db::kv::Backend::open(
+		BackendType::KeyValue => fc_db::Backend::KeyValue(Arc::new(fc_db::kv::Backend::open(
 			Arc::clone(&client),
 			&config.database,
 			&db_config_dir(config),
-		)?),
+		)?)),
 		BackendType::Sql => {
 			let db_path = db_config_dir(config).join("sql");
 			std::fs::create_dir_all(&db_path).expect("failed creating sql db directory");
@@ -181,7 +184,7 @@ pub fn new_partial(
 				overrides.clone(),
 			))
 			.unwrap_or_else(|err| panic!("failed creating sql backend: {:?}", err));
-			FrontierBackend::Sql(backend)
+			fc_db::Backend::Sql(Arc::new(backend))
 		},
 	};
 
@@ -258,7 +261,10 @@ async fn start_node_impl(
 	let validator = parachain_config.role.is_authority();
 	let prometheus_registry = parachain_config.prometheus_registry().cloned();
 	let import_queue_service = import_queue.service();
-	let net_config = sc_network::config::FullNetworkConfiguration::new(&parachain_config.network);
+	let net_config =
+		sc_network::config::FullNetworkConfiguration::<_, _, sc_network::NetworkWorker<_, _>>::new(
+			&parachain_config.network,
+		);
 
 	let (network, system_rpc_tx, tx_handler_controller, start_network, sync_service) =
 		build_network(BuildNetworkParams {
@@ -286,7 +292,7 @@ async fn start_node_impl(
 				transaction_pool: Some(OffchainTransactionPoolFactory::new(
 					transaction_pool.clone(),
 				)),
-				network_provider: network.clone(),
+				network_provider: Arc::new(network.clone()),
 				enable_http_requests: true,
 				custom_extensions: |_| vec![],
 			})
@@ -319,9 +325,9 @@ async fn start_node_impl(
 		enable_dev_signer: eth_config.enable_dev_signer,
 		network: network.clone(),
 		sync: sync_service.clone(),
-		frontier_backend: match frontier_backend.clone() {
-			fc_db::Backend::KeyValue(b) => Arc::new(b),
-			fc_db::Backend::Sql(b) => Arc::new(b),
+		frontier_backend: match frontier_backend {
+			fc_db::Backend::KeyValue(ref b) => b.clone(),
+			fc_db::Backend::Sql(ref b) => b.clone(),
 		},
 		overrides: overrides.clone(),
 		block_data_cache: Arc::new(fc_rpc::EthBlockDataCacheTask::new(
@@ -406,10 +412,14 @@ async fn start_node_impl(
 		// Here you can check whether the hardware meets your chains' requirements. Putting a link
 		// in there and swapping out the requirements for your own are probably a good idea. The
 		// requirements for a para-chain are dictated by its relay-chain.
-		if !SUBSTRATE_REFERENCE_HARDWARE.check_hardware(&hwbench) && validator {
-			log::warn!(
-				"⚠️  The hardware does not meet the minimal requirements for role 'Authority'."
+		match SUBSTRATE_REFERENCE_HARDWARE.check_hardware(&hwbench) {
+			Err(err) if validator => {
+				log::warn!(
+				"⚠️  The hardware does not meet the minimal requirements {} for role 'Authority'.",
+				err
 			);
+			},
+			_ => {},
 		}
 
 		if let Some(ref mut telemetry) = telemetry {
@@ -505,7 +515,6 @@ fn build_import_queue(
 		client,
 		block_import,
 		create_inherent_data_providers,
-		slot_duration,
 		&task_manager.spawn_essential_handle(),
 		config.prometheus_registry(),
 		telemetry,
@@ -536,8 +545,6 @@ fn start_consensus(
 	// NOTE: because we use Aura here explicitly, we can use `CollatorSybilResistance::Resistant`
 	// when starting the network.
 
-	let slot_duration = cumulus_client_consensus_aura::slot_duration(&*client)?;
-
 	let proposer_factory = sc_basic_authorship::ProposerFactory::with_proof_recording(
 		task_manager.spawn_handle(),
 		client.clone(),
@@ -565,12 +572,12 @@ fn start_consensus(
 		collator_key,
 		para_id,
 		overseer_handle,
-		slot_duration,
 		relay_chain_slot_duration,
 		proposer,
 		collator_service,
 		// Very limited proposal time.
 		authoring_duration: Duration::from_millis(500),
+		collation_request_receiver: None,
 	};
 
 	let fut =

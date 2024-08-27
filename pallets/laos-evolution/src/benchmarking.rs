@@ -75,7 +75,12 @@ impl PrecompileHandle for MockHandle {
 		Ok(())
 	}
 
-	fn record_external_cost(&mut self, _: Option<u64>, _: Option<u64>) -> Result<(), ExitError> {
+	fn record_external_cost(
+		&mut self,
+		_: Option<u64>,
+		_: Option<u64>,
+		_: Option<u64>,
+	) -> Result<(), ExitError> {
 		Ok(())
 	}
 
@@ -212,40 +217,6 @@ mod benchmarks {
 	}
 
 	#[benchmark]
-	fn precompile_enable_public_minting() {
-		let caller: T::AccountId = whitelisted_caller();
-		let owner = caller.clone();
-		let collection_id = LaosEvolution::<T>::create_collection(owner).unwrap();
-		let mut handle = MockHandle::new(T::AccountIdToH160::convert(caller));
-
-		#[block]
-		{
-			let res = EvolutionCollectionPrecompileSet::<T>::enable_public_minting(
-				collection_id,
-				&mut handle,
-			);
-			assert!(res.is_ok());
-		}
-	}
-
-	#[benchmark]
-	fn precompile_disable_public_minting() {
-		let caller: T::AccountId = whitelisted_caller();
-		let owner = caller.clone();
-		let collection_id = LaosEvolution::<T>::create_collection(owner).unwrap();
-		let mut handle = MockHandle::new(T::AccountIdToH160::convert(caller));
-
-		#[block]
-		{
-			let res = EvolutionCollectionPrecompileSet::<T>::disable_public_minting(
-				collection_id,
-				&mut handle,
-			);
-			assert!(res.is_ok());
-		}
-	}
-
-	#[benchmark]
 	fn precompile_owner() {
 		let caller: T::AccountId = whitelisted_caller();
 		let owner = caller.clone();
@@ -255,23 +226,6 @@ mod benchmarks {
 		#[block]
 		{
 			let res = EvolutionCollectionPrecompileSet::<T>::owner(collection_id, &mut handle);
-			assert!(res.is_ok());
-		}
-	}
-
-	#[benchmark]
-	fn precompile_is_public_minting_enabled() {
-		let caller: T::AccountId = whitelisted_caller();
-		let owner = caller.clone();
-		let collection_id = LaosEvolution::<T>::create_collection(owner).unwrap();
-		let mut handle = MockHandle::new(T::AccountIdToH160::convert(caller));
-
-		#[block]
-		{
-			let res = EvolutionCollectionPrecompileSet::<T>::is_public_minting_enabled(
-				collection_id,
-				&mut handle,
-			);
 			assert!(res.is_ok());
 		}
 	}
@@ -372,33 +326,6 @@ mod benchmarks {
 			LaosEvolution::<T>::token_uri(collection_id, token_id),
 			Some(vec![1u8; s as usize].try_into().unwrap())
 		);
-	}
-
-	#[benchmark]
-	fn enable_public_minting() {
-		let caller: T::AccountId = whitelisted_caller();
-		let owner = caller.clone();
-		let collection_id = LaosEvolution::<T>::create_collection(owner.clone()).unwrap();
-
-		#[block]
-		{
-			LaosEvolution::<T>::enable_public_minting(owner, collection_id).unwrap();
-		}
-		assert!(CollectionPublicMintingEnabled::<T>::contains_key(collection_id));
-	}
-
-	#[benchmark]
-	fn disable_public_minting() {
-		let caller: T::AccountId = whitelisted_caller();
-		let owner = caller.clone();
-		let collection_id = LaosEvolution::<T>::create_collection(owner.clone()).unwrap();
-		LaosEvolution::<T>::enable_public_minting(owner.clone(), collection_id).unwrap();
-
-		#[block]
-		{
-			LaosEvolution::<T>::disable_public_minting(owner, collection_id).unwrap();
-		}
-		assert!(!CollectionPublicMintingEnabled::<T>::contains_key(collection_id));
 	}
 
 	#[benchmark]

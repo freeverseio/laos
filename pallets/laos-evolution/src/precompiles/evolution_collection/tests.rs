@@ -17,8 +17,7 @@
 //! Living assets precompile tests.
 use super::*;
 use crate::TokenId;
-use evm::Context;
-use fp_evm::PrecompileSet;
+use fp_evm::{Context, PrecompileSet};
 use mock::*;
 use precompile_utils::testing::*;
 use solidity::codec::Writer;
@@ -82,9 +81,6 @@ fn selectors() {
 	assert!(PrecompileCall::owner_selectors().contains(&0x8DA5CB5B));
 	assert!(PrecompileCall::mint_selectors().contains(&0xFD024566));
 	assert!(PrecompileCall::evolve_selectors().contains(&0x2FD38F4D));
-	assert!(PrecompileCall::is_public_minting_enabled_selectors().contains(&0x441F06AC));
-	assert!(PrecompileCall::enable_public_minting_selectors().contains(&0xF7BEB98A));
-	assert!(PrecompileCall::disable_public_minting_selectors().contains(&0x9190AD47));
 	assert!(PrecompileCall::transfer_ownership_selectors().contains(&0xF2FDE38B));
 	assert!(PrecompileCall::token_uri_selectors().contains(&0xC87B56DD));
 }
@@ -305,61 +301,6 @@ fn when_evolve_reverts_should_return_error() {
 	});
 }
 
-#[test]
-fn enable_public_minting_generates_log() {
-	new_test_ext().execute_with(|| {
-		let alice = H160::from_str(ALICE).unwrap();
-		let collection_address = create_collection(alice);
-		precompiles()
-			.prepare_test(alice, collection_address, PrecompileCall::enable_public_minting {})
-			.expect_log(log1(collection_address, SELECTOR_LOG_PUBLIC_MINTING_ENABLED, vec![]))
-			.execute_some();
-
-		precompiles()
-			.prepare_test(alice, collection_address, PrecompileCall::is_public_minting_enabled {})
-			.execute_returns(true);
-	})
-}
-
-#[test]
-fn when_enable_public_minting_reverts_should_return_error() {
-	new_test_ext().execute_with(|| {
-		let alice = H160::from_str(ALICE).unwrap();
-		let collection_address = create_collection(alice);
-
-		precompiles()
-			.prepare_test(Bob, collection_address, PrecompileCall::enable_public_minting {})
-			.execute_reverts(|r| r == b"NoPermission");
-	})
-}
-
-#[test]
-fn disable_public_minting_generates_log() {
-	new_test_ext().execute_with(|| {
-		let alice = H160::from_str(ALICE).unwrap();
-		let collection_address = create_collection(alice);
-		precompiles()
-			.prepare_test(alice, collection_address, PrecompileCall::disable_public_minting {})
-			.expect_log(log1(collection_address, SELECTOR_LOG_PUBLIC_MINTING_DISABLED, vec![]))
-			.execute_some();
-
-		precompiles()
-			.prepare_test(alice, collection_address, PrecompileCall::is_public_minting_enabled {})
-			.execute_returns(false);
-	})
-}
-
-#[test]
-fn when_disable_public_minting_reverts_should_return_error() {
-	new_test_ext().execute_with(|| {
-		let alice = H160::from_str(ALICE).unwrap();
-		let collection_address = create_collection(alice);
-		precompiles()
-			.prepare_test(Bob, collection_address, PrecompileCall::disable_public_minting {})
-			.execute_reverts(|r| r == b"NoPermission");
-	})
-}
-
 // #[test]
 // fn test_expected_cost_token_uri() {
 // 	new_test_ext().execute_with(|| {
@@ -378,54 +319,6 @@ fn when_disable_public_minting_reverts_should_return_error() {
 // 			.execute_some();
 // 	})
 // }
-
-#[test]
-fn enable_public_minting_has_a_cost() {
-	new_test_ext().execute_with(|| {
-		let alice = H160::from_str(ALICE).unwrap();
-		let collection_address = create_collection(alice);
-
-		// Expected weight of the precompile call implementation.
-		// Since benchmarking precompiles is not supported yet, we are benchmarking
-		// functions that precompile calls internally.
-		precompiles()
-			.prepare_test(alice, collection_address, PrecompileCall::enable_public_minting {})
-			.expect_cost(164311000) //  [`WeightToGas`] set to 1:1 in mock
-			.execute_some();
-	})
-}
-
-#[test]
-fn disable_public_minting_has_a_cost() {
-	new_test_ext().execute_with(|| {
-		let alice = H160::from_str(ALICE).unwrap();
-		let collection_address = create_collection(alice);
-
-		// Expected weight of the precompile call implementation.
-		// Since benchmarking precompiles is not supported yet, we are benchmarking
-		// functions that precompile calls internally.
-		precompiles()
-			.prepare_test(alice, collection_address, PrecompileCall::disable_public_minting {})
-			.expect_cost(165285000) //  [`WeightToGas`] set to 1:1 in mock // TODO why is lower than enable?
-			.execute_some();
-	})
-}
-
-#[test]
-fn is_public_minting_enabled_has_a_cost() {
-	new_test_ext().execute_with(|| {
-		let alice = H160::from_str(ALICE).unwrap();
-		let collection_address = create_collection(alice);
-
-		// Expected weight of the precompile call implementation.
-		// Since benchmarking precompiles is not supported yet, we are benchmarking
-		// functions that precompile calls internally.
-		precompiles()
-			.prepare_test(alice, collection_address, PrecompileCall::is_public_minting_enabled {})
-			.expect_cost(55756000) //  [`WeightToGas`] set to 1:1 in mock
-			.execute_some();
-	})
-}
 
 #[test]
 fn expected_cost_owner() {

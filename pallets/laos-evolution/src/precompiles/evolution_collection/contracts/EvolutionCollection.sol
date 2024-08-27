@@ -6,6 +6,9 @@ pragma solidity >=0.8.3;
 /// @notice This interface allows Solidity contracts to interact with pallet-laos-evolution
 interface EvolutionCollection {
     /// @notice Emitted when a new token is minted
+    /// @notice The emitted tokenURI has not undergone any on-chain validation.
+    /// @notice Users are fully responsible for accuracy,
+    /// @notice authenticity and preventing potential misuse or exploits.
     /// @dev Id of the token is concatenation of `slot` and `to`
     /// @param _to the initial owner of the newly minted token
     /// @param _slot the slot of the token
@@ -19,6 +22,9 @@ interface EvolutionCollection {
     );
 
     /// @notice Emitted when a token metadata is updated
+    /// @notice The emitted tokenURI has not undergone any on-chain validation.
+    /// @notice Users are fully responsible for accuracy,
+    /// @notice authenticity and preventing potential misuse or exploits.
     /// @param _tokenId the id of the token for which the metadata has changed
     /// @param _tokenURI the new URI of the token
     event EvolvedWithExternalURI(uint256 indexed _tokenId, string _tokenURI);
@@ -31,24 +37,24 @@ interface EvolutionCollection {
         address indexed _newOwner
     );
 
-    /// @notice Emitted when public minting is enabled for the collection
-    event PublicMintingEnabled();
-
-    /// @notice Emitted when public minting is disabled for the collection
-    event PublicMintingDisabled();
-
     /// @notice Owner of the collection
     /// @dev Call this function to get the owner of a collection
     /// @return the owner of the collection
     function owner() external view returns (address);
 
     /// @notice Provides a distinct Uniform Resource Identifier (URI) for a given token within a specified collection.
+    /// @notice The tokenURI returned by this method has not undergone
+    /// @notice any on-chain validation. Users are fully responsible for accuracy,
+    /// @notice authenticity and preventing potential misuse or exploits.
     /// @dev Implementations must follow the ERC-721 standard for token URIs, which should point to a JSON file conforming to the "ERC721 Metadata JSON Schema".
     /// @param _tokenId The unique identifier of the token within the specified collection.
     /// @return A string representing the URI of the specified token.
     function tokenURI(uint256 _tokenId) external view returns (string memory);
 
     /// @notice Mint a new token
+    /// @notice The tokenURI provided to this method does not undergo
+    /// @notice any on-chain validation. Users are fully responsible for accuracy,
+    /// @notice authenticity and preventing potential misuse or exploits.
     /// @dev Call this function to mint a new token, the caller must be the owner of the collection
     /// @param _to the owner of the newly minted token
     /// @param _slot the slot of the token
@@ -61,6 +67,9 @@ interface EvolutionCollection {
     ) external returns (uint256);
 
     /// @notice Changes the tokenURI of an existing token
+    /// @notice The tokenURI provided to this method does not undergo
+    /// @notice any on-chain validation. Users are fully responsible for accuracy,
+    /// @notice authenticity and preventing potential misuse or exploits.
     /// @dev Call this function to evolve an existing token, the caller must be the owner of the collection
     /// @param _tokenId the id of the token
     /// @param _tokenURI the new tokenURI of the token
@@ -73,19 +82,4 @@ interface EvolutionCollection {
     /// @dev Call this function to transfer ownership of the collection, the caller must be the owner of the collection
     /// @param _newOwner The address to transfer ownership to.
     function transferOwnership(address _newOwner) external;
-
-    /// @notice Enables public minting for the collection
-    /// When enabled, any address is allowed to mint on this collection
-    /// This does not affect evolution: only the owner of the collection can continue evolving assets
-    /// @dev Call this function to enable public minting for the collection, the caller must be the owner of the collection
-    function enablePublicMinting() external;
-
-    /// @notice Disables public minting for the collection
-    /// @dev Call this function to disable public minting for the collection, the caller must be the owner of the collection
-    function disablePublicMinting() external;
-
-    /// @notice Checks if public minting is enabled for the collection
-    /// @dev Call this function to check if public minting is enabled for the collection
-    /// @return true if public minting is enabled for the collection, false otherwise
-    function isPublicMintingEnabled() external view returns (bool);
 }
