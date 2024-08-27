@@ -3,7 +3,7 @@ use frame_support::parameter_types;
 #[cfg(not(feature = "fast-mode"))]
 use parachains_common::DAYS;
 #[cfg(feature = "fast-mode")]
-use parachains_common::{HOURS, MINUTES};
+use parachains_common::HOURS;
 use polkadot_runtime_common::CurrencyToVote;
 
 #[cfg(feature = "fast-mode")]
@@ -12,7 +12,7 @@ pub const TERM_DURATION: BlockNumber = 4 * HOURS;
 pub const TERM_DURATION: BlockNumber = 28 * DAYS;
 
 #[cfg(feature = "fast-mode")]
-pub const ELECTION_VOTING_LOCK_DURATION: BlockNumber = 30 * MINUTES;
+pub const ELECTION_VOTING_LOCK_DURATION: BlockNumber = 4 * HOURS;
 #[cfg(not(feature = "fast-mode"))]
 pub const ELECTION_VOTING_LOCK_DURATION: BlockNumber = 28 * DAYS;
 
