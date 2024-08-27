@@ -18,12 +18,6 @@ const TREASURY_SPENDING_PRERIOD: BlockNumber = 5 * MINUTES;
 #[cfg(not(feature = "fast-mode"))]
 const TREASURY_SPENDING_PRERIOD: BlockNumber = 7 * DAYS;
 
-// // Required for the treasury spend benchmark.
-// #[cfg(feature = "runtime-benchmarks")]
-// parameter_types! {
-// 	pub const PayoutPeriod: BlockNumber = 5;
-// } TODO
-
 parameter_types! {
 	pub const ProposalBond: Permill = Permill::from_percent(5);
 	pub const ProposalBondMinimum: Balance = 100 * UNIT;
