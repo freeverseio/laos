@@ -2,11 +2,12 @@ use crate::{weights, AccountId, BlockNumber, Runtime, RuntimeCall, RuntimeEvent,
 use frame_support::{pallet_prelude::Weight, parameter_types};
 use frame_system::EnsureRoot;
 use laos_primitives::RuntimeBlockWeights;
-use parachains_common::DAYS;
 use sp_runtime::Perbill;
-
 #[cfg(feature = "fast-mode")]
 use parachains_common::MINUTES;
+#[cfg(not(feature = "fast-mode"))]
+use parachains_common::DAYS;
+
 #[cfg(feature = "fast-mode")]
 pub const COUNCIL_MOTION_DURATION: BlockNumber = 5 * MINUTES;
 #[cfg(not(feature = "fast-mode"))]
