@@ -1,4 +1,7 @@
-use crate::{currency::UNIT, Balance, Balances, BlockNumber, Council, Runtime, RuntimeEvent, weights, Treasury};
+use crate::{
+	currency::UNIT, weights, Balance, Balances, BlockNumber, Council, Runtime, RuntimeEvent,
+	Treasury,
+};
 use frame_support::parameter_types;
 #[cfg(not(feature = "fast-mode"))]
 use parachains_common::DAYS;
@@ -44,7 +47,7 @@ impl pallet_elections_phragmen::Config for Runtime {
 	type MaxCandidates = MaxCandidates;
 	type MaxVoters = MaxVoters;
 	type MaxVotesPerVoter = MaxVotesPerVoter;
-	type PalletId = (); // TODO
+	type PalletId = ();
 	type RuntimeEvent = RuntimeEvent;
 	/// How long each seat is kept. This defines the next block number at which
 	/// an election round will happen. If set to zero, no elections are ever
@@ -52,6 +55,6 @@ impl pallet_elections_phragmen::Config for Runtime {
 	type TermDuration = TermDuration;
 	type VotingBondBase = VotingBondBase;
 	type VotingBondFactor = VotingBondFactor;
-	type KickedMember = (); 
+	type KickedMember = ();
 	type WeightInfo = weights::pallet_elections_phragmen::WeightInfo<Runtime>;
 }
