@@ -10,12 +10,12 @@ use parachains_common::HOURS;
 use polkadot_runtime_common::CurrencyToVote;
 
 #[cfg(feature = "fast-mode")]
-pub const TERM_DURATION: BlockNumber = 14 * MINUTES;
+pub const TERM_DURATION: BlockNumber = 10 * MINUTES;
 #[cfg(not(feature = "fast-mode"))]
 pub const TERM_DURATION: BlockNumber = 28 * DAYS;
 
 #[cfg(feature = "fast-mode")]
-pub const ELECTION_VOTING_LOCK_DURATION: BlockNumber = 15 * MINUTES;
+pub const ELECTION_VOTING_LOCK_DURATION: BlockNumber = 10 * MINUTES;
 #[cfg(not(feature = "fast-mode"))]
 pub const ELECTION_VOTING_LOCK_DURATION: BlockNumber = 28 * DAYS;
 
