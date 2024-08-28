@@ -12,10 +12,10 @@ use frame_support::{
 	PalletId,
 };
 use frame_system::EnsureRoot;
-#[cfg(feature = "fast-mode")]
-use parachains_common::MINUTES;
 #[cfg(not(feature = "fast-mode"))]
 use parachains_common::DAYS;
+#[cfg(feature = "fast-mode")]
+use parachains_common::MINUTES;
 use sp_runtime::traits::IdentityLookup;
 
 #[cfg(feature = "fast-mode")]
