@@ -23,7 +23,7 @@ parameter_types! {
 	pub const CandidacyBond: Balance = 1000 * UNIT;
 	pub TermDuration: BlockNumber = TERM_DURATION;
 	pub VotingLockPeriod: BlockNumber = ELECTION_VOTING_LOCK_DURATION;
-	pub const DesiredMembers: u32 = 9;
+	pub const DesiredMembers: u32 = 7;
 	pub const DesiredRunnersUp: u32 = 20;
 	pub const MaxCandidates: u32 = 30;
 	pub const MaxVoters: u32 = 200;
