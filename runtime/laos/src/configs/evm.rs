@@ -181,7 +181,7 @@ mod tests {
 				);
 				assert_eq!(
 					call_result.actual_weight.unwrap(),
-					Weight::from_parts(1047726000, 11548)
+					Weight::from_parts(1046551000, 11536)
 				);
 
 				// check gas
@@ -257,7 +257,7 @@ mod tests {
 					wrong_address_call_result.actual_weight.unwrap(),
 					Weight::from_parts(419526000, 5266)
 				);
-				assert_eq!(call_result.actual_weight.unwrap(), Weight::from_parts(449426000, 5565));
+				assert_eq!(call_result.actual_weight.unwrap(), Weight::from_parts(449101000, 5561));
 
 				// check gas
 				assert_eq!(
