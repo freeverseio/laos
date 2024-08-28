@@ -1,4 +1,4 @@
-use crate::{currency::UNIT, Balance, Balances, BlockNumber, Council, Runtime, RuntimeEvent, weights};
+use crate::{currency::UNIT, Balance, Balances, BlockNumber, Council, Runtime, RuntimeEvent, weights, Treasury};
 use frame_support::parameter_types;
 #[cfg(not(feature = "fast-mode"))]
 use parachains_common::DAYS;
@@ -40,7 +40,7 @@ impl pallet_elections_phragmen::Config for Runtime {
 	/// Number of runners_up to keep.
 	type DesiredRunnersUp = DesiredRunnersUp;
 	type InitializeMembers = Council;
-	type LoserCandidate = (); // TODO
+	type LoserCandidate = Treasury;
 	type MaxCandidates = MaxCandidates;
 	type MaxVoters = MaxVoters;
 	type MaxVotesPerVoter = MaxVotesPerVoter;
