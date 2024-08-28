@@ -33,5 +33,6 @@ frame_benchmarking::define_benchmarks!(
 	[pallet_message_queue, MessageQueue]
 	[cumulus_pallet_parachain_system, ParachainSystem]
 	[pallet_treasury, Treasury]
+	[pallet_collective, Council]
 	// TODO pallet_xcm?
 );
