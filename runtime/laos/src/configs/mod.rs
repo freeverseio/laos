@@ -37,6 +37,7 @@ mod utility;
 mod vesting;
 pub(crate) mod xcm_config;
 mod xcm_message_queue;
+mod identity;
 
 use frame_support::parameter_types;
 
