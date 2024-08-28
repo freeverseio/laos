@@ -4,18 +4,18 @@ use crate::{
 };
 use frame_support::parameter_types;
 #[cfg(not(feature = "fast-mode"))]
-use parachains_common::DAYS;
+use parachains_common::MINUTES;
 #[cfg(feature = "fast-mode")]
 use parachains_common::HOURS;
 use polkadot_runtime_common::CurrencyToVote;
 
 #[cfg(feature = "fast-mode")]
-pub const TERM_DURATION: BlockNumber = 4 * HOURS;
+pub const TERM_DURATION: BlockNumber = 14 * MINUTES;
 #[cfg(not(feature = "fast-mode"))]
 pub const TERM_DURATION: BlockNumber = 28 * DAYS;
 
 #[cfg(feature = "fast-mode")]
-pub const ELECTION_VOTING_LOCK_DURATION: BlockNumber = 4 * HOURS;
+pub const ELECTION_VOTING_LOCK_DURATION: BlockNumber = 15 * MINUTES;
 #[cfg(not(feature = "fast-mode"))]
 pub const ELECTION_VOTING_LOCK_DURATION: BlockNumber = 28 * DAYS;
 
