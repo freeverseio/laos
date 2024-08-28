@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
-use crate::{Balance, Runtime, RuntimeEvent, RuntimeFreezeReason, System, RuntimeHoldReason};
+use crate::{Balance, Runtime, RuntimeEvent, RuntimeFreezeReason, RuntimeHoldReason, System};
 use frame_support::parameter_types;
 
 parameter_types! {
