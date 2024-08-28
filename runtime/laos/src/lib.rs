@@ -129,8 +129,8 @@ construct_runtime!(
 		MessageQueue: pallet_message_queue = 34,
 
 		// Governance
-		Treasury: pallet_treasury = 40,
-		Council: pallet_collective::<Instance1> = 42,
+		Council: pallet_collective::<Instance1> = 40,
+		Treasury: pallet_treasury = 41,
 
 		// Frontier
 		Ethereum: pallet_ethereum = 50,
