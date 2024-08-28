@@ -1,4 +1,4 @@
-use crate::{currency::UNIT, Balance, Balances, BlockNumber, Council, Runtime, RuntimeEvent};
+use crate::{currency::UNIT, Balance, Balances, BlockNumber, Council, Runtime, RuntimeEvent, weights};
 use frame_support::parameter_types;
 #[cfg(not(feature = "fast-mode"))]
 use parachains_common::DAYS;
@@ -25,6 +25,8 @@ parameter_types! {
 	pub const MaxCandidates: u32 = 30;
 	pub const MaxVoters: u32 = 200;
 	pub const MaxVotesPerVoter: u32 = 8;
+	pub const VotingBondBase: Balance = 1000 * UNIT;
+	pub const VotingBondFactor: Balance = 100 * UNIT;
 }
 
 impl pallet_elections_phragmen::Config for Runtime {
@@ -48,8 +50,8 @@ impl pallet_elections_phragmen::Config for Runtime {
 	/// an election round will happen. If set to zero, no elections are ever
 	/// triggered and the module will be in passive mode.
 	type TermDuration = TermDuration;
-	type VotingBondBase = (); // TODO
-	type VotingBondFactor = (); // TODO
-	type KickedMember = (); // TODO
-	type WeightInfo = (); // weights::pallet_elections_phragmen::WeightInfo<Runtime>;
+	type VotingBondBase = VotingBondBase;
+	type VotingBondFactor = VotingBondFactor;
+	type KickedMember = (); 
+	type WeightInfo = weights::pallet_elections_phragmen::WeightInfo<Runtime>;
 }
