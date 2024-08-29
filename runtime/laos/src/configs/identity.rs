@@ -1,4 +1,6 @@
-use crate::{currency::calculate_deposit, AccountId, Balances, Balance, Runtime, RuntimeEvent, Signature};
+use crate::{
+	currency::calculate_deposit, AccountId, Balance, Balances, Runtime, RuntimeEvent, Signature,
+};
 use frame_support::parameter_types;
 use frame_system::EnsureRoot;
 use parachains_common::DAYS;
