@@ -12,10 +12,10 @@ use frame_support::{
 	PalletId,
 };
 use frame_system::EnsureRoot;
-#[cfg(feature = "fast-mode")]
-use parachains_common::MINUTES;
 #[cfg(not(feature = "fast-mode"))]
 use parachains_common::DAYS;
+#[cfg(feature = "fast-mode")]
+use parachains_common::MINUTES;
 use sp_runtime::traits::IdentityLookup;
 
 #[cfg(feature = "fast-mode")]
@@ -24,6 +24,7 @@ const TREASURY_SPENDING_PERIOD: BlockNumber = 5 * MINUTES;
 const TREASURY_SPENDING_PERIOD: BlockNumber = 7 * DAYS;
 
 parameter_types! {
+	pub const Burn: Permill = Permill::zero();
 	pub const ProposalBond: Permill = Permill::from_percent(5);
 	pub const ProposalBondMinimum: Balance = 100 * UNIT;
 	pub const SpendPeriod: BlockNumber = TREASURY_SPENDING_PERIOD;
@@ -48,7 +49,7 @@ impl pallet_treasury::Config for Runtime {
 	type BalanceConverter = UnityAssetBalanceConversion;
 	type Beneficiary = AccountId;
 	type BeneficiaryLookup = IdentityLookup<Self::Beneficiary>;
-	type Burn = ();
+	type Burn = Burn;
 	type BurnDestination = ();
 	type Currency = Balances;
 	type MaxApprovals = MaxApprovals;
