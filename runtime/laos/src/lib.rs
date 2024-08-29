@@ -128,7 +128,7 @@ construct_runtime!(
 		MessageQueue: pallet_message_queue = 34,
 
 		// Governance
-		Preimage: pallet_preimage = 45,
+		Preimage: pallet_preimage = 43,
 
 		// Frontier
 		Ethereum: pallet_ethereum = 50,
