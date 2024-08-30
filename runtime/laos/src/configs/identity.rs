@@ -41,5 +41,5 @@ impl pallet_identity::Config for Runtime {
 	type PendingUsernameExpiration = PendingUsernameExpiration;
 	type MaxSuffixLength = MaxSuffixLength;
 	type MaxUsernameLength = MaxUsernameLength;
-	type WeightInfo = pallet_identity::weights::SubstrateWeight<Runtime>;
+	type WeightInfo = pallet_identity::weights::SubstrateWeight<Runtime>; // TODO is not recommended use default weights but currently there is a function within the benchmarks pallet code that cause a panic: https://github.com/paritytech/polkadot-sdk/blob/master/substrate/frame/identity/src/benchmarking.rs#L608
 }
