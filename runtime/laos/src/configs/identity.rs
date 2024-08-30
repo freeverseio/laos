@@ -41,5 +41,5 @@ impl pallet_identity::Config for Runtime {
 	type PendingUsernameExpiration = PendingUsernameExpiration;
 	type MaxSuffixLength = MaxSuffixLength;
 	type MaxUsernameLength = MaxUsernameLength;
-	type WeightInfo = (); // TODO
+	type WeightInfo = pallet_identity::weights::SubstrateWeight<Runtime>;
 }
