@@ -14,7 +14,7 @@ export const LOCAL_NODE_URL = "http://127.0.0.1:9999";
 
 // Chain config
 export const CHAIN_ID = 667;
-export const GAS_PRICE = "0x59682F00";
+export const GAS_PRICE = "0x3B9ACA00";
 export const ETH_BLOCK_GAS_LIMIT = 15000000; // The same configuration as runtime
 export const GAS_LIMIT = ETH_BLOCK_GAS_LIMIT - 10000000; // TODO remove subtraction
 
