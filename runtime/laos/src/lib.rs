@@ -127,6 +127,9 @@ construct_runtime!(
 		CumulusXcm: cumulus_pallet_xcm = 32,
 		MessageQueue: pallet_message_queue = 34,
 
+		// Governance
+		Preimage: pallet_preimage = 43,
+
 		// Frontier
 		Ethereum: pallet_ethereum = 50,
 		EVM: pallet_evm = 51,

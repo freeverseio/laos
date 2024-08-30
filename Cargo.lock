@@ -5274,6 +5274,7 @@ dependencies = [
  "pallet-multisig",
  "pallet-parachain-staking",
  "pallet-precompiles-benchmark",
+ "pallet-preimage",
  "pallet-proxy",
  "pallet-session",
  "pallet-sudo",
