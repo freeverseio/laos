@@ -2,11 +2,11 @@ use crate::{
 	currency::UNIT, weights, Balance, Balances, BlockNumber, Council, Runtime, RuntimeEvent,
 	Treasury,
 };
-use frame_support::parameter_types;
+use frame_support::{parameter_types, traits::LockIdentifier};
 #[cfg(not(feature = "fast-mode"))]
-use parachains_common::MINUTES;
+use parachains_common::DAYS;
 #[cfg(feature = "fast-mode")]
-use parachains_common::HOURS;
+use parachains_common::MINUTES;
 use polkadot_runtime_common::CurrencyToVote;
 
 #[cfg(feature = "fast-mode")]
@@ -30,6 +30,7 @@ parameter_types! {
 	pub const MaxVotesPerVoter: u32 = 8;
 	pub const VotingBondBase: Balance = 1000 * UNIT;
 	pub const VotingBondFactor: Balance = 100 * UNIT;
+	pub const ElectionsPhragmenPalletId: LockIdentifier = *b"phrelect";
 }
 
 impl pallet_elections_phragmen::Config for Runtime {
@@ -47,7 +48,7 @@ impl pallet_elections_phragmen::Config for Runtime {
 	type MaxCandidates = MaxCandidates;
 	type MaxVoters = MaxVoters;
 	type MaxVotesPerVoter = MaxVotesPerVoter;
-	type PalletId = ();
+	type PalletId = ElectionsPhragmenPalletId;
 	type RuntimeEvent = RuntimeEvent;
 	/// How long each seat is kept. This defines the next block number at which
 	/// an election round will happen. If set to zero, no elections are ever
