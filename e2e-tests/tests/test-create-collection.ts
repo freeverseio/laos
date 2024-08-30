@@ -35,9 +35,11 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
 
 	step("when collection is created, it should return owner", async function () {
 		const collectionContract = await createCollection(context);
+		console.log("collectionContract is: ", collectionContract.options.address);
 		testCollectionContract = collectionContract;
 
 		const owner = await collectionContract.methods.owner().call();
+		console.log("owner is: ", owner);
 		expect(owner).to.be.eq(FAITH);
 	});
 
@@ -47,6 +49,7 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
 			gas: GAS_LIMIT,
 			gasPrice: GAS_PRICE,
 		});
+		console.log("result is: ", result.status);
 		expect(result.status).to.be.eq(true);
 
 		expect(Object.keys(result.events).length).to.be.eq(1);
