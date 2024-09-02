@@ -1,5 +1,6 @@
 use crate::{
 	currency::calculate_deposit, AccountId, Balance, Balances, Runtime, RuntimeEvent, Signature,
+	Treasury,
 };
 use frame_support::parameter_types;
 use frame_system::EnsureRoot;
@@ -32,7 +33,7 @@ impl pallet_identity::Config for Runtime {
 	type MaxSubAccounts = MaxSubAccounts;
 	type IdentityInformation = pallet_identity::legacy::IdentityInfo<MaxAdditionalFields>;
 	type MaxRegistrars = MaxRegistrars;
-	type Slashed = (); // TODO: Treasury;
+	type Slashed = Treasury;
 	type ForceOrigin = IdentityForceOrigin;
 	type RegistrarOrigin = IdentityRegistrarOrigin;
 	type OffchainSignature = Signature;
