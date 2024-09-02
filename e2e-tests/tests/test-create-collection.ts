@@ -27,6 +27,7 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
 			{
 				from: FAITH,
 				gasPrice: GAS_PRICE,
+				gas: GAS_LIMIT,
 			}
 		);
 		context.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
