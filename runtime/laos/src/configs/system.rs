@@ -67,9 +67,9 @@ impl frame_system::Config for Runtime {
 	/// Weight information for the extrinsics of this pallet.
 	type SystemWeightInfo = ();
 	/// Block & extrinsics weights: base values and limits.
-	type BlockWeights = laos_primitives::BlockWeights;
+	type BlockWeights = laos_primitives::RuntimeBlockWeights;
 	/// The maximum length of a block (in bytes).
-	type BlockLength = laos_primitives::BlockLength;
+	type BlockLength = laos_primitives::RuntimeBlockLength;
 	/// This is used as an identifier of the chain. 42 is the generic substrate prefix.
 	type SS58Prefix = SS58Prefix;
 	/// The action to take on a Runtime Upgrade

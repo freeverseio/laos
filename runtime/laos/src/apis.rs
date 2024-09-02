@@ -360,7 +360,7 @@ impl_runtime_apis! {
 	impl frame_try_runtime::TryRuntime<Block> for Runtime {
 		fn on_runtime_upgrade(checks: frame_try_runtime::UpgradeCheckSelect) -> (Weight, Weight) {
 			let weight = Executive::try_runtime_upgrade(checks).unwrap();
-			(weight, laos_primitives::BlockWeights::get().max_block)
+			(weight, laos_primitives::RuntimeBlockWeights::get().max_block)
 		}
 
 		fn execute_block(
