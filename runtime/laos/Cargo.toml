@@ -39,6 +39,7 @@ pallet-sudo = { workspace = true }
 pallet-treasury = { workspace = true }
 pallet-timestamp = { workspace = true }
 pallet-collective = { workspace = true }
+pallet-elections-phragmen = { workspace = true }
 pallet-transaction-payment = { workspace = true }
 pallet-transaction-payment-rpc-runtime-api = { workspace = true }
 pallet-vesting = { workspace = true }
@@ -143,6 +144,7 @@ std = [
 	"pallet-aura/std",
 	"pallet-authorship/std",
 	"pallet-balances/std",
+	"pallet-elections-phragmen/std",
 	"pallet-session/std",
 	"pallet-sudo/std",
 	"pallet-treasury/std",
@@ -218,6 +220,7 @@ runtime-benchmarks = [
 	"pallet-multisig/runtime-benchmarks",
 	"pallet-treasury/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
+	"pallet-elections-phragmen/runtime-benchmarks",
 	"pallet-xcm/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
 	"staging-xcm-builder/runtime-benchmarks",
@@ -257,6 +260,7 @@ try-runtime = [
 	"pallet-collective/try-runtime",
 	"pallet-laos-evolution/try-runtime",
 	"pallet-multisig/try-runtime",
+	"pallet-elections-phragmen/try-runtime",
 	"pallet-timestamp/try-runtime",
 	"pallet-treasury/try-runtime",
 	"pallet-transaction-payment/try-runtime",
