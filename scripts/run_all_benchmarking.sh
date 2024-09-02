@@ -22,8 +22,6 @@
 # Should be run on a reference machine to gain accurate benchmarks
 # current reference machine: https://github.com/paritytech/substrate/pull/5848
 
-dev_mode=false
-
 while getopts 'bfp:vd' flag; do
   case "${flag}" in
     b)

@@ -29,6 +29,7 @@ frame_benchmarking::define_benchmarks!(
 	[pallet_precompiles_benchmark, PrecompilesBenchmark]
 	[pallet_collective, Council]
 	[pallet_elections_phragmen, Elections]
+	[pallet_preimage, Preimage]
 	[pallet_vesting, Vesting]
 	[pallet_message_queue, MessageQueue]
 	[cumulus_pallet_parachain_system, ParachainSystem]
