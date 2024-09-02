@@ -32,6 +32,14 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
 		context.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
 	});
 
+	step("when collection is created, it should return owner", async function () {
+		const collectionContract = await createCollection(context);
+		testCollectionContract = collectionContract;
+
+		const owner = await collectionContract.methods.owner().call();
+		expect(owner).to.be.eq(FAITH);
+	});
+
 	step("when collection is created event is emitted", async function () {
 		const result = await contract.methods.createCollection(FAITH).send({
 			from: FAITH,
@@ -56,14 +64,6 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
 		expect(result.events.NewCollection.raw.data.toLowerCase()).to.be.eq(
 			context.web3.utils.padLeft(result.events.NewCollection.returnValues._collectionAddress, 64).toLowerCase()
 		);
-	});
-
-	step("when collection is created, it should return owner", async function () {
-		const collectionContract = await createCollection(context);
-		testCollectionContract = collectionContract;
-
-		const owner = await collectionContract.methods.owner().call();
-		expect(owner).to.be.eq(FAITH);
 	});
 
 	step("when collection is created, bytecode is inserted in the storage", async function () {

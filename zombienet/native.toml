@@ -30,7 +30,13 @@ force_decorator = "generic-evm"
   name = "laos-1"
   ws_port = 10000
   command = "{{ZOMBIENET_LAOS_COMMAND}}"
-  validator = true  
+  validator = true
+
+  [[parachains.collators]]
+  name = "laos-2"
+  ws_port = 10001
+  command = "{{ZOMBIENET_LAOS_COMMAND}}"
+  validator = true
 
 # TODO uncomment when XCM needs to be tested again
 # [[parachains]]
