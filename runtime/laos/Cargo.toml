@@ -37,7 +37,11 @@ pallet-multisig = { workspace = true }
 pallet-session = { workspace = true }
 pallet-identity = { workspace = true }
 pallet-sudo = { workspace = true }
+pallet-treasury = { workspace = true }
+pallet-preimage = { workspace = true }
 pallet-timestamp = { workspace = true }
+pallet-collective = { workspace = true }
+pallet-elections-phragmen = { workspace = true }
 pallet-transaction-payment = { workspace = true }
 pallet-transaction-payment-rpc-runtime-api = { workspace = true }
 pallet-vesting = { workspace = true }
@@ -119,6 +123,7 @@ test-utils = { workspace = true }
 ethereum = { workspace = true }
 
 [features]
+fast-mode=[]
 default = [
 	"std",
 ]
@@ -141,8 +146,12 @@ std = [
 	"pallet-aura/std",
 	"pallet-authorship/std",
 	"pallet-balances/std",
+	"pallet-elections-phragmen/std",
 	"pallet-session/std",
 	"pallet-sudo/std",
+	"pallet-treasury/std",
+	"pallet-collective/std",
+	"pallet-preimage/std",
 	"pallet-laos-evolution/std",
 	"pallet-asset-metadata-extender/std",
 	"pallet-multisig/std",
@@ -211,9 +220,13 @@ runtime-benchmarks = [
 	"pallet-assets/runtime-benchmarks",
 	"pallet-identity/runtime-benchmarks",
 	"pallet-balances/runtime-benchmarks",
+	"pallet-collective/runtime-benchmarks",
+	"pallet-preimage/runtime-benchmarks",
 	"pallet-laos-evolution/runtime-benchmarks",
 	"pallet-multisig/runtime-benchmarks",
+	"pallet-treasury/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
+	"pallet-elections-phragmen/runtime-benchmarks",
 	"pallet-xcm/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
 	"staging-xcm-builder/runtime-benchmarks",
@@ -251,9 +264,13 @@ try-runtime = [
 	"pallet-identity/try-runtime",
 	"pallet-session/try-runtime",
 	"pallet-sudo/try-runtime",
+	"pallet-collective/try-runtime",
+	"pallet-preimage/try-runtime",
 	"pallet-laos-evolution/try-runtime",
 	"pallet-multisig/try-runtime",
+	"pallet-elections-phragmen/try-runtime",
 	"pallet-timestamp/try-runtime",
+	"pallet-treasury/try-runtime",
 	"pallet-transaction-payment/try-runtime",
 	"pallet-xcm/try-runtime",
 	"staging-parachain-info/try-runtime",

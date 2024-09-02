@@ -1,7 +1,7 @@
 use crate::{weights, Runtime, RuntimeEvent, XcmpQueue};
 use cumulus_primitives_core::AggregateMessageOrigin;
 use frame_support::parameter_types;
-use laos_primitives::BlockWeights;
+use laos_primitives::RuntimeBlockWeights;
 use parachains_common::message_queue::NarrowOriginToSibling;
 use sp_core::ConstU32;
 use sp_runtime::Perbill;
@@ -14,7 +14,7 @@ parameter_types! {
 	/// This may be legitimately `None` in the case that you will call
 	/// `ServiceQueues::service_queues` manually.
 	pub MessageQueueServiceWeight: Weight =
-	Perbill::from_percent(25) * BlockWeights::get().max_block;
+	Perbill::from_percent(25) * RuntimeBlockWeights::get().max_block;
 }
 
 impl pallet_message_queue::Config for Runtime {
