@@ -5115,6 +5115,7 @@ dependencies = [
  "pallet-multisig",
  "pallet-parachain-staking",
  "pallet-proxy",
+ "pallet-scheduler",
  "pallet-session",
  "pallet-sudo",
  "pallet-timestamp",
