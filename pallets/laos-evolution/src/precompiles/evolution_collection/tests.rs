@@ -17,8 +17,7 @@
 //! Living assets precompile tests.
 use super::*;
 use crate::TokenId;
-use evm::Context;
-use fp_evm::PrecompileSet;
+use fp_evm::{Context, PrecompileSet};
 use mock::*;
 use precompile_utils::testing::*;
 use solidity::codec::Writer;

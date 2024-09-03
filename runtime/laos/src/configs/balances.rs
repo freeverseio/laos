@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
-use crate::{Balance, Runtime, RuntimeEvent, RuntimeFreezeReason, System};
+use crate::{Balance, Runtime, RuntimeEvent, RuntimeFreezeReason, RuntimeHoldReason, System};
 use frame_support::parameter_types;
 
 parameter_types! {
@@ -42,8 +42,8 @@ impl pallet_balances::Config for Runtime {
 	type MaxReserves = MaxReserves;
 	type ReserveIdentifier = [u8; 8];
 	type FreezeIdentifier = RuntimeFreezeReason;
-	type MaxHolds = MaxHolds;
-	type RuntimeHoldReason = ();
+	type RuntimeFreezeReason = RuntimeFreezeReason;
+	type RuntimeHoldReason = RuntimeHoldReason;
 	type MaxFreezes = MaxFreezes;
 	type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>; // See: https://github.com/freeverseio/laos/pull/533#issuecomment-2034913428
 }

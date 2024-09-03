@@ -23,6 +23,7 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 pub mod apis;
 pub mod configs;
 pub mod currency;
+mod migrations;
 mod precompiles;
 mod self_contained_call;
 pub mod types;
@@ -31,7 +32,6 @@ mod weights;
 pub use configs::laos_evolution::REVERT_BYTECODE;
 use core::marker::PhantomData;
 use frame_support::construct_runtime;
-use frame_system::EnsureRoot;
 pub use laos_primitives::{
 	AccountId, AuraId, Balance, BlockNumber, Hash, Header, Nonce, Signature,
 };
@@ -42,7 +42,6 @@ use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
-use staging_xcm_executor::XcmExecutor;
 
 /// Block type as expected by this runtime.
 pub type Block = generic::Block<Header, UncheckedExtrinsic>;
@@ -84,9 +83,9 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("laos"),
 	impl_name: create_runtime_str!("laos"),
 	authoring_version: 1,
-	spec_version: 1704,
+	spec_version: 2000,
 	impl_version: 0,
-	apis: apis::PUBLIC_RUNTIME_API_VERSIONS,
+	apis: apis::RUNTIME_API_VERSIONS,
 	transaction_version: 1,
 	state_version: 1,
 };
@@ -99,17 +98,18 @@ pub fn native_version() -> NativeVersion {
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
-	pub struct Runtime
+	pub enum Runtime
 	{
 		// System support stuff.
 		System: frame_system = 0,
 		ParachainSystem: cumulus_pallet_parachain_system = 1,
 		Timestamp: pallet_timestamp = 2,
-		ParachainInfo: parachain_info = 3,
+		ParachainInfo: staging_parachain_info = 3,
 		Sudo: pallet_sudo = 4,
 		Utility: pallet_utility = 5,
 		Multisig: pallet_multisig = 6,
 		Proxy: pallet_proxy = 7,
+		Identity: pallet_identity = 8,
 
 		// Monetary stuff.
 		Balances: pallet_balances = 10,
@@ -127,7 +127,13 @@ construct_runtime!(
 		XcmpQueue: cumulus_pallet_xcmp_queue = 30,
 		PolkadotXcm: pallet_xcm = 31,
 		CumulusXcm: cumulus_pallet_xcm = 32,
-		DmpQueue: cumulus_pallet_dmp_queue = 33,
+		MessageQueue: pallet_message_queue = 34,
+
+		// Governance
+		Council: pallet_collective::<Instance1> = 40,
+		Treasury: pallet_treasury = 41,
+		Elections: pallet_elections_phragmen = 42,
+		Preimage: pallet_preimage = 43,
 
 		// Frontier
 		Ethereum: pallet_ethereum = 50,
@@ -138,6 +144,7 @@ construct_runtime!(
 		// LAOS pallets
 		LaosEvolution: pallet_laos_evolution = 100,
 		AssetMetadataExtender: pallet_asset_metadata_extender = 101,
+		PrecompilesBenchmark: pallet_precompiles_benchmark = 102,
 	}
 );
 
@@ -164,6 +171,7 @@ type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPalletsWithSystem,
+	migrations::Migrations,
 >;
 
 #[cfg(test)]

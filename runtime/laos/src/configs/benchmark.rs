@@ -14,12 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
-use crate::{AccountId, EnsureRoot, Runtime, RuntimeEvent, XcmExecutor};
+use crate::{types::AccountIdToH160, weights, Runtime};
+use pallet_precompiles_benchmark::pallet::Config;
 
-use super::xcm_config::XcmConfig;
-
-impl cumulus_pallet_dmp_queue::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type XcmExecutor = XcmExecutor<XcmConfig>;
-	type ExecuteOverweightOrigin = EnsureRoot<AccountId>;
+impl Config for Runtime {
+	type AccountIdToH160 = AccountIdToH160;
+	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
+	type WeightInfo = weights::pallet_precompiles_benchmark::WeightInfo<Runtime>;
 }

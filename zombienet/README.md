@@ -13,16 +13,14 @@ Download the Zombienet binary from the [releases page](https://github.com/parity
 For example:
 
 ```sh
-$ wget -O zombienet https://github.com/paritytech/zombienet/releases/download/v1.3.55/zombienet-linux-x64 && chmod +x zombienet
+$ wget -O zombienet https://github.com/paritytech/zombienet/releases/download/v1.3.106/zombienet-linux-x64 && chmod +x zombienet
 ```
 
 **Start Zombienet**
 
-This will launch a local Rococo relay chain with two parachains: Laos and Astar. By default, it comes with established hrmp channel between two parachains and is ready for XCM.
+This will launch a local Rococo relay chain with one parachain: Laos.
 
 Before running the commands, set up the environment variables `ZOMBIENET_RELAYCHAIN_COMMAND` and `ZOMBIENET_LAOS_COMMAND`, `ZOMBIENET_ASTAR_COMMAND` in your shell. 
-
-This will launch a local Rococo relay chain with two parachains: Laos and Astar. By default, it comes with established hrmp channel between two parachains and is ready for XCM.
 
 For example:
 
@@ -33,5 +31,5 @@ export ZOMBIENET_ASTAR_COMMAND=<path-to-astar-executable>
 ```
 
 ```sh
-$ ./zombienet spawn native.toml -p native
+$ ./zombienet spawn native.toml
 ```
