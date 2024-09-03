@@ -34,6 +34,7 @@ pub mod system;
 mod timestamp;
 mod transaction_payment;
 mod utility;
+mod scheduler;
 mod vesting;
 pub(crate) mod xcm_config;
 
