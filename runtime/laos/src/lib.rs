@@ -134,6 +134,7 @@ construct_runtime!(
 		Treasury: pallet_treasury = 41,
 		Elections: pallet_elections_phragmen = 42,
 		Preimage: pallet_preimage = 43,
+		TechnicalCommittee: pallet_collective::<Instance2> = 44,
 
 		// Frontier
 		Ethereum: pallet_ethereum = 50,

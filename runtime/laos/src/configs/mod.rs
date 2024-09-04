@@ -20,7 +20,7 @@ mod authorship;
 mod balances;
 mod base_fee;
 mod benchmark;
-mod collective_council;
+mod collective;
 mod cumulus_parachain_system;
 mod cumulus_xcmp_queue;
 mod election_phragmen;
