@@ -5263,6 +5263,7 @@ dependencies = [
  "pallet-balances",
  "pallet-base-fee",
  "pallet-collective",
+ "pallet-democracy",
  "pallet-elections-phragmen",
  "pallet-ethereum",
  "pallet-evm",
