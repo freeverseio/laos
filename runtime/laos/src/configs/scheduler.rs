@@ -1,4 +1,4 @@
-use crate::{AccountId, OriginCaller, Preimage, Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin};
+use crate::{AccountId, OriginCaller, Preimage, Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin, weights};
 use frame_support::{parameter_types, traits::PrivilegeCmp, weights::Weight};
 use frame_system::EnsureRoot;
 use laos_primitives::RuntimeBlockWeights;
@@ -36,5 +36,5 @@ impl pallet_scheduler::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeOrigin = RuntimeOrigin;
 	type ScheduleOrigin = EnsureRoot<AccountId>;
-	type WeightInfo = (); // weights::pallet_scheduler::WeightInfo<Runtime>;
+	type WeightInfo = weights::pallet_scheduler::WeightInfo<Runtime>;;
 }
