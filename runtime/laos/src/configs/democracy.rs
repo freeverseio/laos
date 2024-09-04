@@ -21,6 +21,8 @@ parameter_types! {
 	pub  CooloffPeriod: BlockNumber = prod_or_fast!(7 * DAYS, 1 * MINUTES, "COOLOFF_PERIOD");
 	pub const MaxProposals: u32 = 100;
 	pub const MaxVotes: u32 = 100;
+	pub const MaxDeposits: u32 = 100;
+	pub const MaxBlacklisted: u32 = 100;
 }
 
 impl pallet_democracy::Config for Runtime {
@@ -59,8 +61,8 @@ impl pallet_democracy::Config for Runtime {
 	// Same as EnactmentPeriod
 	/// How often (in blocks) new public referenda are launched.
 	type LaunchPeriod = LaunchPeriod;
-	type MaxBlacklisted = ConstU32<100>;
-	type MaxDeposits = ConstU32<100>;
+	type MaxBlacklisted = MaxBlacklisted;
+	type MaxDeposits = MaxDeposits;
 	type MaxProposals = MaxProposals;
 	type MaxVotes = MaxVotes;
 	/// The minimum amount to be used as a deposit for a public referendum
