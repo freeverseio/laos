@@ -13,6 +13,15 @@ pub const COUNCIL_MOTION_DURATION: BlockNumber = 5 * MINUTES;
 #[cfg(not(feature = "fast-mode"))]
 pub const COUNCIL_MOTION_DURATION: BlockNumber = 7 * DAYS;
 
+pub type CouncilMajority =
+	pallet_collective::EnsureProportionMoreThan<AccountId, CouncilCollective, 1, 2>;
+pub type AllOfCouncil =
+	pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 1>;
+pub type TwoThirdOfCouncil =
+	pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 2, 3>;
+pub type HalfOfCouncil =
+	pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 2>;
+
 parameter_types! {
 	pub const CouncilMotionDuration: BlockNumber = COUNCIL_MOTION_DURATION;
 	pub const CouncilMaxProposals: u32 = 7;

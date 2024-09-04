@@ -2,10 +2,10 @@ use super::collective_council::{
 	AllOfCouncil, CouncilCollective, HalfOfCouncil, TwoThirdOfCouncil,
 };
 use crate::{
-	currency::UNIT, weights, AccountId, Balance, BlockNumber, OriginCaller, Preimage, Runtime,
-	RuntimeEvent, Scheduler, Treasury,
+	currency::UNIT, weights, AccountId, Balance, Balances, BlockNumber, OriginCaller, Preimage,
+	Runtime, RuntimeEvent, Scheduler, Treasury,
 };
-use frame_support::parameter_types;
+use frame_support::{parameter_types, traits::EitherOfDiverse};
 use frame_system::{EnsureRoot, EnsureSigned};
 use parachains_common::{DAYS, HOURS, MINUTES};
 use polkadot_runtime_common::prod_or_fast;
@@ -29,7 +29,7 @@ impl pallet_democracy::Config for Runtime {
 	type CancelProposalOrigin = EnsureRoot<AccountId>;
 	// To cancel a proposal which has been passed, 2/3 of the council must agree to
 	// it.
-	type CancellationOrigin = EnsureRootOr<TwoThirdOfCouncil>;
+	type CancellationOrigin = EitherOfDiverse<EnsureRoot<AccountId>, TwoThirdOfCouncil>;
 	/// Period in blocks where an external proposal may not be re-submitted
 	/// after being vetoed.
 	type CooloffPeriod = CooloffPeriod;
@@ -52,10 +52,10 @@ impl pallet_democracy::Config for Runtime {
 	type ExternalOrigin = HalfOfCouncil;
 	/// Half of the council can have an ExternalMajority/ExternalDefault vote
 	/// be tabled immediately and with a shorter voting/enactment period.
-	type FastTrackOrigin = EnsureRootOr<HalfOfCouncil>;
+	type FastTrackOrigin = EitherOfDiverse<EnsureRoot<AccountId>, HalfOfCouncil>;
 	type FastTrackVotingPeriod = FastTrackVotingPeriod;
 	type InstantAllowed = InstantAllowed;
-	type InstantOrigin = EnsureRootOr<AllOfCouncil>;
+	type InstantOrigin = EitherOfDiverse<EnsureRoot<AccountId>, AllOfCouncil>;
 	// Same as EnactmentPeriod
 	/// How often (in blocks) new public referenda are launched.
 	type LaunchPeriod = LaunchPeriod;
@@ -79,5 +79,5 @@ impl pallet_democracy::Config for Runtime {
 	type VoteLockingPeriod = EnactmentPeriod;
 	/// How often (in blocks) to check for new votes.
 	type VotingPeriod = VotingPeriod;
-	type WeightInfo = (); //weights::pallet_democracy::WeightInfo<Runtime>;
+	type WeightInfo = weights::pallet_democracy::WeightInfo<Runtime>;
 }
