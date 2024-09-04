@@ -110,6 +110,7 @@ construct_runtime!(
 		Multisig: pallet_multisig = 6,
 		Proxy: pallet_proxy = 7,
 		Identity: pallet_identity = 8,
+		Scheduler: pallet_scheduler = 9,
 
 		// Monetary stuff.
 		Balances: pallet_balances = 10,
