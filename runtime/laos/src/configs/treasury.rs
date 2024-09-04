@@ -34,14 +34,10 @@ parameter_types! {
 	pub TreasuryAccount: AccountId = Treasury::account_id();
 }
 
-type ApproveOrigin = EitherOfDiverse<
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 1>,
->;
-type RejectOrigin = EitherOfDiverse<
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 2>,
->;
+type CouncilMajority =
+	pallet_collective::EnsureProportionMoreThan<AccountId, CouncilCollective, 1, 2>;
+type ApproveOrigin = EitherOfDiverse<EnsureRoot<AccountId>, CouncilMajority>;
+type RejectOrigin = EitherOfDiverse<EnsureRoot<AccountId>, CouncilMajority>;
 
 impl pallet_treasury::Config for Runtime {
 	type AssetKind = ();
