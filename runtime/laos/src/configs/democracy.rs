@@ -15,11 +15,11 @@ parameter_types! {
 	pub  LaunchPeriod: BlockNumber = prod_or_fast!(7 * DAYS, 1 * MINUTES, "LAUNCH_PERIOD");
 	pub  VotingPeriod: BlockNumber = prod_or_fast!(7 * DAYS, 1 * MINUTES, "VOTING_PERIOD");
 	pub  FastTrackVotingPeriod: BlockNumber = prod_or_fast!(3 * HOURS, 1 * MINUTES, "FAST_TRACK_VOTING_PERIOD");
-	pub const InstantAllowed: bool = false;
-	pub const MinimumDeposit: Balance = 1000 * UNIT;
 	pub  EnactmentPeriod: BlockNumber = prod_or_fast!(8 * DAYS, 1 * MINUTES, "ENACTMENT_PERIOD");
 	pub  CooloffPeriod: BlockNumber = prod_or_fast!(7 * DAYS, 1 * MINUTES, "COOLOFF_PERIOD");
 	pub const MaxProposals: u32 = 100;
+	pub const InstantAllowed: bool = false;
+	pub const MinimumDeposit: Balance = 1000 * UNIT;
 	pub const MaxVotes: u32 = 100;
 	pub const MaxDeposits: u32 = 100;
 	pub const MaxBlacklisted: u32 = 100;
