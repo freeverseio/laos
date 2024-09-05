@@ -18,7 +18,7 @@ parameter_types! {
 	pub  EnactmentPeriod: BlockNumber = prod_or_fast!(8 * DAYS, MINUTES, "ENACTMENT_PERIOD");
 	pub  CooloffPeriod: BlockNumber = prod_or_fast!(7 * DAYS, MINUTES, "COOLOFF_PERIOD");
 	pub const MaxProposals: u32 = 100;
-	pub const InstantAllowed: bool = false;
+	pub const InstantAllowed: bool = true;
 	pub const MinimumDeposit: Balance = 1000 * UNIT;
 	pub const MaxVotes: u32 = 100;
 	pub const MaxDeposits: u32 = 100;
