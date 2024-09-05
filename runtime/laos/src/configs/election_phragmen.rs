@@ -3,26 +3,13 @@ use crate::{
 	Treasury,
 };
 use frame_support::{parameter_types, traits::LockIdentifier};
-#[cfg(not(feature = "fast-mode"))]
-use parachains_common::DAYS;
-#[cfg(feature = "fast-mode")]
-use parachains_common::MINUTES;
-use polkadot_runtime_common::CurrencyToVote;
-
-#[cfg(feature = "fast-mode")]
-pub const TERM_DURATION: BlockNumber = 10 * MINUTES;
-#[cfg(not(feature = "fast-mode"))]
-pub const TERM_DURATION: BlockNumber = 28 * DAYS;
-
-#[cfg(feature = "fast-mode")]
-pub const ELECTION_VOTING_LOCK_DURATION: BlockNumber = 10 * MINUTES;
-#[cfg(not(feature = "fast-mode"))]
-pub const ELECTION_VOTING_LOCK_DURATION: BlockNumber = 28 * DAYS;
+use parachains_common::{DAYS, MINUTES};
+use polkadot_runtime_common::{prod_or_fast, CurrencyToVote};
 
 parameter_types! {
 	pub const CandidacyBond: Balance = 1000 * UNIT;
-	pub TermDuration: BlockNumber = TERM_DURATION;
-	pub VotingLockPeriod: BlockNumber = ELECTION_VOTING_LOCK_DURATION;
+	pub TermDuration: BlockNumber = prod_or_fast!(28 * DAYS, 10 * MINUTES);
+	pub VotingLockPeriod: BlockNumber = prod_or_fast!(28 * DAYS, 10 * MINUTES);
 	pub const DesiredMembers: u32 = 7;
 	pub const DesiredRunnersUp: u32 = 20;
 	pub const MaxCandidates: u32 = 30;
