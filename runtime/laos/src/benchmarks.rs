@@ -35,5 +35,6 @@ frame_benchmarking::define_benchmarks!(
 	[cumulus_pallet_parachain_system, ParachainSystem]
 	[pallet_scheduler, Scheduler]
 	[pallet_treasury, Treasury]
+	[pallet_democracy, Democracy]
 	// TODO pallet_xcm?
 );

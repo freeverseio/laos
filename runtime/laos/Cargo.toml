@@ -38,6 +38,7 @@ pallet-multisig = { workspace = true }
 pallet-session = { workspace = true }
 pallet-identity = { workspace = true }
 pallet-sudo = { workspace = true }
+pallet-democracy = { workspace = true }
 pallet-treasury = { workspace = true }
 pallet-preimage = { workspace = true }
 pallet-timestamp = { workspace = true }
@@ -124,7 +125,7 @@ test-utils = { workspace = true }
 ethereum = { workspace = true }
 
 [features]
-fast-mode=[]
+fast-runtime=[]
 default = [
 	"std",
 ]
@@ -149,6 +150,7 @@ std = [
 	"pallet-balances/std",
 	"pallet-elections-phragmen/std",
 	"pallet-session/std",
+	"pallet-democracy/std",
 	"pallet-sudo/std",
 	"pallet-treasury/std",
 	"pallet-collective/std",
@@ -226,6 +228,7 @@ runtime-benchmarks = [
 	"pallet-preimage/runtime-benchmarks",
 	"pallet-laos-evolution/runtime-benchmarks",
 	"pallet-multisig/runtime-benchmarks",
+	"pallet-democracy/runtime-benchmarks",
 	"pallet-treasury/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"pallet-elections-phragmen/runtime-benchmarks",
@@ -269,6 +272,7 @@ try-runtime = [
 	"pallet-sudo/try-runtime",
 	"pallet-collective/try-runtime",
 	"pallet-preimage/try-runtime",
+	"pallet-democracy/try-runtime",
 	"pallet-laos-evolution/try-runtime",
 	"pallet-multisig/try-runtime",
 	"pallet-scheduler/try-runtime",
