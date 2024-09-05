@@ -12,22 +12,15 @@ use frame_support::{
 	PalletId,
 };
 use frame_system::EnsureRoot;
-#[cfg(not(feature = "fast-mode"))]
-use parachains_common::DAYS;
-#[cfg(feature = "fast-mode")]
-use parachains_common::MINUTES;
+use parachains_common::{DAYS, MINUTES};
+use polkadot_runtime_common::prod_or_fast;
 use sp_runtime::traits::IdentityLookup;
-
-#[cfg(feature = "fast-mode")]
-const TREASURY_SPENDING_PERIOD: BlockNumber = 5 * MINUTES;
-#[cfg(not(feature = "fast-mode"))]
-const TREASURY_SPENDING_PERIOD: BlockNumber = 7 * DAYS;
 
 parameter_types! {
 	pub const Burn: Permill = Permill::zero();
 	pub const ProposalBond: Permill = Permill::from_percent(5);
 	pub const ProposalBondMinimum: Balance = 100 * UNIT;
-	pub const SpendPeriod: BlockNumber = TREASURY_SPENDING_PERIOD;
+	pub const SpendPeriod: BlockNumber = prod_or_fast!(7 * DAYS, 5 * MINUTES);
 	pub const MaxApprovals: u32 = 100;
 	pub const TreasuryId: PalletId = PalletId(*b"py/trsry");
 	pub const PayoutPeriod: BlockNumber = 5;

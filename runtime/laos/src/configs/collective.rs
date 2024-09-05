@@ -2,19 +2,12 @@ use crate::{weights, AccountId, BlockNumber, Runtime, RuntimeCall, RuntimeEvent,
 use frame_support::{pallet_prelude::Weight, parameter_types, traits::EitherOfDiverse};
 use frame_system::EnsureRoot;
 use laos_primitives::RuntimeBlockWeights;
-#[cfg(not(feature = "fast-mode"))]
-use parachains_common::DAYS;
-#[cfg(feature = "fast-mode")]
-use parachains_common::MINUTES;
+use parachains_common::{DAYS, MINUTES};
+use polkadot_runtime_common::prod_or_fast;
 use sp_runtime::Perbill;
 
-#[cfg(feature = "fast-mode")]
-pub const MOTION_DURATION: BlockNumber = 5 * MINUTES;
-#[cfg(not(feature = "fast-mode"))]
-pub const MOTION_DURATION: BlockNumber = 7 * DAYS;
-
 parameter_types! {
-	pub const MotionDuration: BlockNumber = MOTION_DURATION;
+	pub const MotionDuration: BlockNumber = prod_or_fast!(7 * DAYS, 5 * MINUTES);
 	pub const MaxProposals: u32 = 7;
 	pub const MaxMembers: u32 = 20;
 	pub MaxProposalWeight: Weight = Perbill::from_percent(50) * RuntimeBlockWeights::get().max_block;
