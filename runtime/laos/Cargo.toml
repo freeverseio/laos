@@ -125,7 +125,7 @@ test-utils = { workspace = true }
 ethereum = { workspace = true }
 
 [features]
-fast-mode=[]
+fast-runtime=[]
 default = [
 	"std",
 ]
