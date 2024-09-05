@@ -1,4 +1,4 @@
-use super::collective_council::CouncilMajority;
+use super::collective::CouncilMajority;
 use crate::{
 	currency::UNIT, weights, AccountId, Balance, Balances, BlockNumber, Permill, Runtime,
 	RuntimeEvent, Treasury,
