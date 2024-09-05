@@ -30,6 +30,7 @@ frame-system-benchmarking = { workspace = true, optional = true }
 frame-system-rpc-runtime-api = { workspace = true }
 frame-try-runtime = { workspace = true, optional = true }
 pallet-aura = { workspace = true }
+pallet-scheduler = { workspace = true }
 pallet-authorship = { workspace = true }
 pallet-balances = { workspace = true , features = ["insecure_zero_ed"] }
 pallet-message-queue = { workspace = true }
@@ -152,6 +153,7 @@ std = [
 	"pallet-treasury/std",
 	"pallet-collective/std",
 	"pallet-preimage/std",
+	"pallet-scheduler/std",
 	"pallet-laos-evolution/std",
 	"pallet-asset-metadata-extender/std",
 	"pallet-multisig/std",
@@ -242,6 +244,7 @@ runtime-benchmarks = [
 	"staging-xcm-executor/runtime-benchmarks",
 	"pallet-asset-metadata-extender/runtime-benchmarks",
 	"pallet-vesting/runtime-benchmarks",
+	"pallet-scheduler/runtime-benchmarks",
 	"pallet-precompiles-benchmark/runtime-benchmarks",
 	"pallet-parachain-staking/runtime-benchmarks",
 	"pallet-proxy/runtime-benchmarks",
@@ -268,6 +271,7 @@ try-runtime = [
 	"pallet-preimage/try-runtime",
 	"pallet-laos-evolution/try-runtime",
 	"pallet-multisig/try-runtime",
+	"pallet-scheduler/try-runtime",
 	"pallet-elections-phragmen/try-runtime",
 	"pallet-timestamp/try-runtime",
 	"pallet-treasury/try-runtime",

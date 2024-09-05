@@ -5280,6 +5280,7 @@ dependencies = [
  "pallet-precompiles-benchmark",
  "pallet-preimage",
  "pallet-proxy",
+ "pallet-scheduler",
  "pallet-session",
  "pallet-sudo",
  "pallet-timestamp",

@@ -32,6 +32,7 @@ mod multisig;
 pub(crate) mod parachain_staking;
 mod preimage;
 mod proxy;
+mod scheduler;
 mod session;
 mod sudo;
 pub mod system;

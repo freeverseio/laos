@@ -135,6 +135,7 @@ construct_runtime!(
 		Elections: pallet_elections_phragmen = 42,
 		Preimage: pallet_preimage = 43,
 		TechnicalCommittee: pallet_collective::<Instance2> = 44,
+		Scheduler: pallet_scheduler = 45,
 
 		// Frontier
 		Ethereum: pallet_ethereum = 50,
