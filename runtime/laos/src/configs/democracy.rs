@@ -1,4 +1,7 @@
-use super::collective::{AllOfCouncil, CouncilCollective, HalfOfCouncil, TwoThirdOfCouncil};
+use super::collective::{
+	AllOfCouncil, AllOfTechnicalCommittee, CouncilCollective, HalfOfCouncil, TechnicalCommittee,
+	TechnicalCommitteeMajority,
+};
 use crate::{
 	currency::UNIT, weights, AccountId, Balance, Balances, BlockNumber, OriginCaller, Preimage,
 	Runtime, RuntimeEvent, Scheduler, Treasury,
@@ -26,9 +29,9 @@ impl pallet_democracy::Config for Runtime {
 	type BlacklistOrigin = EnsureRoot<AccountId>;
 	// To cancel a proposal before it has been passed, must be root.
 	type CancelProposalOrigin = EnsureRoot<AccountId>;
-	// To cancel a proposal which has been passed, 2/3 of the council must agree to
-	// it.
-	type CancellationOrigin = EitherOfDiverse<EnsureRoot<AccountId>, TwoThirdOfCouncil>;
+	// To cancel a proposal before it has been passed, the technical committee must be unanimous or
+	// Root must agree.
+	type CancellationOrigin = EitherOfDiverse<EnsureRoot<AccountId>, AllOfTechnicalCommittee>;
 	/// Period in blocks where an external proposal may not be re-submitted
 	/// after being vetoed.
 	type CooloffPeriod = CooloffPeriod;
@@ -49,12 +52,12 @@ impl pallet_democracy::Config for Runtime {
 		pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 2>;
 	/// A straight majority of the council can decide what their next motion is.
 	type ExternalOrigin = HalfOfCouncil;
-	/// Half of the council can have an ExternalMajority/ExternalDefault vote
+	/// Majority of technical committee can have an ExternalMajority/ExternalDefault vote
 	/// be tabled immediately and with a shorter voting/enactment period.
-	type FastTrackOrigin = EitherOfDiverse<EnsureRoot<AccountId>, HalfOfCouncil>;
+	type FastTrackOrigin = TechnicalCommitteeMajority;
 	type FastTrackVotingPeriod = FastTrackVotingPeriod;
 	type InstantAllowed = InstantAllowed;
-	type InstantOrigin = EitherOfDiverse<EnsureRoot<AccountId>, AllOfCouncil>;
+	type InstantOrigin = AllOfTechnicalCommittee;
 	// Same as EnactmentPeriod
 	/// How often (in blocks) new public referenda are launched.
 	type LaunchPeriod = LaunchPeriod;
@@ -72,9 +75,9 @@ impl pallet_democracy::Config for Runtime {
 	/// Handler for the unbalanced reduction when slashing a preimage deposit.
 	type Slash = Treasury;
 	type SubmitOrigin = EnsureSigned<AccountId>;
-	// Any single council member may veto a coming council proposal, however they
-	// can only do it once and it lasts only for the cooloff period.
-	type VetoOrigin = pallet_collective::EnsureMember<AccountId, CouncilCollective>;
+	// Any single technical committee member may veto a coming council proposal, however they can
+	// only do it once and it lasts only for the cool-off period.
+	type VetoOrigin = pallet_collective::EnsureMember<AccountId, TechnicalCommittee>;
 	type VoteLockingPeriod = EnactmentPeriod;
 	/// How often (in blocks) to check for new votes.
 	type VotingPeriod = VotingPeriod;

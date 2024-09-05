@@ -24,10 +24,12 @@ pub type CouncilMajority =
 	pallet_collective::EnsureProportionMoreThan<AccountId, CouncilCollective, 1, 2>;
 pub type AllOfCouncil =
 	pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 1>;
-pub type TwoThirdOfCouncil =
-	pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 2, 3>;
 pub type HalfOfCouncil =
 	pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 2>;
+pub type TechnicalCommitteeMajority =
+	pallet_collective::EnsureProportionMoreThan<AccountId, TechnicalCommittee, 1, 2>;
+pub type AllOfTechnicalCommittee =
+	pallet_collective::EnsureProportionAtLeast<AccountId, TechnicalCommittee, 1, 1>;
 
 pub type CouncilCollective = pallet_collective::Instance1;
 impl pallet_collective::Config<CouncilCollective> for Runtime {
@@ -43,7 +45,6 @@ impl pallet_collective::Config<CouncilCollective> for Runtime {
 	type WeightInfo = weights::pallet_collective::WeightInfo<Runtime>;
 }
 
-#[allow(dead_code)] // TODO remove me when integrating https://github.com/freeverseio/laos/pull/759
 pub type TechnicalCommittee = pallet_collective::Instance2;
 impl pallet_collective::Config<TechnicalCommittee> for Runtime {
 	type DefaultVote = pallet_collective::MoreThanMajorityThenPrimeDefaultVote;
