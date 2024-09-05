@@ -22,6 +22,12 @@ parameter_types! {
 
 pub type CouncilMajority =
 	pallet_collective::EnsureProportionMoreThan<AccountId, CouncilCollective, 1, 2>;
+pub type AllOfCouncil =
+	pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 1>;
+pub type TwoThirdOfCouncil =
+	pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 2, 3>;
+pub type HalfOfCouncil =
+	pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 2>;
 
 pub type CouncilCollective = pallet_collective::Instance1;
 impl pallet_collective::Config<CouncilCollective> for Runtime {

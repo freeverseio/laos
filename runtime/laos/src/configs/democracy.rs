@@ -1,6 +1,4 @@
-use super::collective_council::{
-	AllOfCouncil, CouncilCollective, HalfOfCouncil, TwoThirdOfCouncil,
-};
+use super::collective::{AllOfCouncil, CouncilCollective, HalfOfCouncil, TwoThirdOfCouncil};
 use crate::{
 	currency::UNIT, weights, AccountId, Balance, Balances, BlockNumber, OriginCaller, Preimage,
 	Runtime, RuntimeEvent, Scheduler, Treasury,
