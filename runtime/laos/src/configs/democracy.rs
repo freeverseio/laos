@@ -12,11 +12,11 @@ use parachains_common::{DAYS, HOURS, MINUTES};
 use polkadot_runtime_common::prod_or_fast;
 
 parameter_types! {
-	pub  LaunchPeriod: BlockNumber = prod_or_fast!(7 * DAYS, MINUTES, "LAUNCH_PERIOD");
-	pub  VotingPeriod: BlockNumber = prod_or_fast!(7 * DAYS, MINUTES, "VOTING_PERIOD");
-	pub  FastTrackVotingPeriod: BlockNumber = prod_or_fast!(3 * HOURS, MINUTES, "FAST_TRACK_VOTING_PERIOD");
-	pub  EnactmentPeriod: BlockNumber = prod_or_fast!(8 * DAYS, MINUTES, "ENACTMENT_PERIOD");
-	pub  CooloffPeriod: BlockNumber = prod_or_fast!(7 * DAYS, MINUTES, "COOLOFF_PERIOD");
+	pub  LaunchPeriod: BlockNumber = prod_or_fast!(7 * DAYS, 7 * MINUTES, "LAUNCH_PERIOD");
+	pub  VotingPeriod: BlockNumber = prod_or_fast!(7 * DAYS, 7 * MINUTES, "VOTING_PERIOD");
+	pub  FastTrackVotingPeriod: BlockNumber = prod_or_fast!(3 * HOURS, 3 * MINUTES, "FAST_TRACK_VOTING_PERIOD");
+	pub  EnactmentPeriod: BlockNumber = prod_or_fast!(8 * DAYS, 8 * MINUTES, "ENACTMENT_PERIOD");
+	pub  CooloffPeriod: BlockNumber = prod_or_fast!(7 * DAYS, 7 * MINUTES, "COOLOFF_PERIOD");
 	pub const MaxProposals: u32 = 100;
 	pub const InstantAllowed: bool = true;
 	pub const MinimumDeposit: Balance = 1000 * UNIT;
