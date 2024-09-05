@@ -1,4 +1,4 @@
-use super::collective_council::CouncilCollective;
+use super::collective::CouncilMajority;
 use crate::{
 	currency::UNIT, weights, AccountId, Balance, Balances, BlockNumber, Permill, Runtime,
 	RuntimeEvent, Treasury,
@@ -34,8 +34,6 @@ parameter_types! {
 	pub TreasuryAccount: AccountId = Treasury::account_id();
 }
 
-type CouncilMajority =
-	pallet_collective::EnsureProportionMoreThan<AccountId, CouncilCollective, 1, 2>;
 type ApproveOrigin = EitherOfDiverse<EnsureRoot<AccountId>, CouncilMajority>;
 type RejectOrigin = EitherOfDiverse<EnsureRoot<AccountId>, CouncilMajority>;
 
