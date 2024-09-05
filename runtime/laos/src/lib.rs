@@ -110,7 +110,6 @@ construct_runtime!(
 		Multisig: pallet_multisig = 6,
 		Proxy: pallet_proxy = 7,
 		Identity: pallet_identity = 8,
-		Scheduler: pallet_scheduler = 9,
 
 		// Monetary stuff.
 		Balances: pallet_balances = 10,
@@ -135,6 +134,7 @@ construct_runtime!(
 		Treasury: pallet_treasury = 41,
 		Elections: pallet_elections_phragmen = 42,
 		Preimage: pallet_preimage = 43,
+		Scheduler: pallet_scheduler = 44,
 
 		// Frontier
 		Ethereum: pallet_ethereum = 50,
