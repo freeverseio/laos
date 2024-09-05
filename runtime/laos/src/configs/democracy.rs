@@ -1,5 +1,5 @@
 use super::collective::{
-	AllOfCouncil, AllOfTechnicalCommittee, CouncilCollective, HalfOfCouncil, TechnicalCommittee,
+	AllOfCouncil, AllOfTechnicalCommittee, CouncilMajority, TechnicalCommittee,
 	TechnicalCommitteeMajority, TwoThirdOfCouncil,
 };
 use crate::{
@@ -48,10 +48,9 @@ impl pallet_democracy::Config for Runtime {
 	type ExternalDefaultOrigin = AllOfCouncil;
 	/// A simple-majority can have the next scheduled referendum be a straight
 	/// majority-carries vote.
-	type ExternalMajorityOrigin =
-		pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 2>;
+	type ExternalMajorityOrigin = CouncilMajority;
 	/// A straight majority of the council can decide what their next motion is.
-	type ExternalOrigin = HalfOfCouncil;
+	type ExternalOrigin = CouncilMajority;
 	/// Majority of technical committee can have an ExternalMajority/ExternalDefault vote
 	/// be tabled immediately and with a shorter voting/enactment period.
 	type FastTrackOrigin = TechnicalCommitteeMajority;

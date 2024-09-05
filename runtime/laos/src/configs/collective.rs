@@ -26,8 +26,6 @@ pub type AllOfCouncil =
 	pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 1>;
 pub type TwoThirdOfCouncil =
 	pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 2, 3>;
-pub type HalfOfCouncil =
-	pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 2>;
 pub type TechnicalCommitteeMajority =
 	pallet_collective::EnsureProportionMoreThan<AccountId, TechnicalCommittee, 1, 2>;
 pub type AllOfTechnicalCommittee =
