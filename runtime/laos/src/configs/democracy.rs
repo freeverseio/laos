@@ -1,6 +1,6 @@
 use super::collective::{
 	AllOfCouncil, AllOfTechnicalCommittee, CouncilCollective, HalfOfCouncil, TechnicalCommittee,
-	TechnicalCommitteeMajority,
+	TechnicalCommitteeMajority, TwoThirdOfCouncil,
 };
 use crate::{
 	currency::UNIT, weights, AccountId, Balance, Balances, BlockNumber, OriginCaller, Preimage,
@@ -27,11 +27,11 @@ parameter_types! {
 
 impl pallet_democracy::Config for Runtime {
 	type BlacklistOrigin = EnsureRoot<AccountId>;
-	// To cancel a proposal before it has been passed, must be root.
-	type CancelProposalOrigin = EnsureRoot<AccountId>;
 	// To cancel a proposal before it has been passed, the technical committee must be unanimous or
 	// Root must agree.
-	type CancellationOrigin = EitherOfDiverse<EnsureRoot<AccountId>, AllOfTechnicalCommittee>;
+	type CancelProposalOrigin = EitherOfDiverse<EnsureRoot<AccountId>, AllOfTechnicalCommittee>;
+	// To cancel a proposal which has been passed, 2/3 of the council must agree to it.
+	type CancellationOrigin = TwoThirdOfCouncil;
 	/// Period in blocks where an external proposal may not be re-submitted
 	/// after being vetoed.
 	type CooloffPeriod = CooloffPeriod;
