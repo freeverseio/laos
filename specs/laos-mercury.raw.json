@@ -5,7 +5,12 @@
   "bootNodes": [
     "/dns4/laosmercury-boot-0.gorengine.com/tcp/30334/p2p/12D3KooWMfJKXB9JPKctMfZBe7u6HtTcwLPy1J1D4saT1HKisr5S"
   ],
-  "telemetryEndpoints": null,
+  "telemetryEndpoints": [
+    [
+      "/dns/telemetry.polkadot.io/tcp/443/x-parity-wss/%2Fsubmit%2F",
+      0
+    ]
+  ],
   "protocolId": "laos_mercury_testnet",
   "properties": {
     "ss58Format": 42,
