@@ -55,13 +55,11 @@ jobs:
       - uses: ./.github/actions/cache
         with:
           cache-key: lint
-      - name: install nightly
-        run: |
-          rustup toolchain install nightly
-          rustup component add rustfmt --toolchain nightly-x86_64-unknown-linux-gnu
+      - name: Use rust toolchain from rust-toolchain
+        run: rustup show
       - name: check format
         run: |
-          cargo +nightly fmt --all --check
+          cargo fmt --all --check
       - name: install clippy
         run: |
           rustup component add clippy
