@@ -132,7 +132,6 @@ type BalanceOf<Runtime> = <<Runtime as pallet_vesting::Config>::Currency as Curr
  *   T: Config + pallet_vesting: Config,
  * ```
  */
-#[allow(clippy::multiple_bound_locations)]
 #[benchmarks(
 	where
 		T: Config + pallet_vesting::Config,
