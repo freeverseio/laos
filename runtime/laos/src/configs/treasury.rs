@@ -16,6 +16,11 @@ use parachains_common::{DAYS, MINUTES};
 use polkadot_runtime_common::prod_or_fast;
 use sp_runtime::traits::IdentityLookup;
 
+#[cfg(feature = "runtime-benchmarks")]
+parameter_types! {
+	pub const MaxBalance: Balance = Balance::MAX;
+}
+
 parameter_types! {
 	pub const Burn: Permill = Permill::zero();
 	pub const ProposalBond: Permill = Permill::from_percent(5);
@@ -50,8 +55,13 @@ impl pallet_treasury::Config for Runtime {
 	type RejectOrigin = RejectOrigin;
 	type RuntimeEvent = RuntimeEvent;
 	type SpendFunds = ();
-	type SpendOrigin = frame_support::traits::NeverEnsureOrigin<Balance>;
 	type SpendPeriod = SpendPeriod;
+	// Disabled, no spending allowed.
+	#[cfg(not(feature = "runtime-benchmarks"))]
+	type SpendOrigin = frame_support::traits::NeverEnsureOrigin<Balance>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type SpendOrigin =
+		frame_system::EnsureWithSuccess<frame_system::EnsureRoot<AccountId>, AccountId, MaxBalance>;
 	type WeightInfo = weights::pallet_treasury::WeightInfo<Runtime>;
 	#[cfg(feature = "runtime-benchmarks")]
 	type BenchmarkHelper = TreasuryBenchmarkHelper;

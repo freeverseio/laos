@@ -147,5 +147,5 @@ fn create_test_genesis_config() -> serde_json::Value {
 		},
 		..Default::default()
 	};
-	serde_json::to_value(&config).expect("Could not build genesis config.")
+	serde_json::to_value(config).expect("Could not build genesis config.")
 }
