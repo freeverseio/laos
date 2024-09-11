@@ -1,5 +1,6 @@
 use super::collective::{
-	AllOfCouncil, AllOfTechnicalCommittee, CouncilMajority, HalfOfCouncil, TechnicalCommittee, TechnicalCommitteeMajority, TwoThirdOfCouncil
+	AllOfCouncil, AllOfTechnicalCommittee, CouncilMajority, HalfOfCouncil, TechnicalCommittee,
+	TechnicalCommitteeMajority, TwoThirdOfCouncil,
 };
 use crate::{
 	currency::UNIT, weights, AccountId, Balance, Balances, BlockNumber, OriginCaller, Preimage,
