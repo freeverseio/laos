@@ -469,7 +469,6 @@ async fn start_node_impl(
 			&task_manager,
 			relay_chain_interface.clone(),
 			transaction_pool,
-			sync_service.clone(),
 			keystore_container.keystore(),
 			relay_chain_slot_duration,
 			para_id,
@@ -530,7 +529,6 @@ fn start_consensus(
 	task_manager: &TaskManager,
 	relay_chain_interface: Arc<dyn RelayChainInterface>,
 	transaction_pool: Arc<sc_transaction_pool::FullPool<Block, ParachainClient>>,
-	sync_oracle: Arc<SyncingService<Block>>,
 	keystore: KeystorePtr,
 	relay_chain_slot_duration: Duration,
 	para_id: ParaId,
@@ -567,7 +565,6 @@ fn start_consensus(
 		block_import,
 		para_client: client,
 		relay_client: relay_chain_interface,
-		sync_oracle,
 		keystore,
 		collator_key,
 		para_id,
@@ -581,7 +578,7 @@ fn start_consensus(
 	};
 
 	let fut =
-		basic_aura::run::<Block, sp_consensus_aura::sr25519::AuthorityPair, _, _, _, _, _, _, _>(
+		basic_aura::run::<Block, sp_consensus_aura::sr25519::AuthorityPair, _, _, _, _, _, _>(
 			params,
 		);
 	task_manager.spawn_essential_handle().spawn("aura", None, fut);
