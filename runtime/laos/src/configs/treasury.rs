@@ -32,12 +32,10 @@ parameter_types! {
 	pub TreasuryAccount: AccountId = Treasury::account_id();
 }
 
-type ApproveOrigin = EitherOfDiverse<EnsureRoot<AccountId>, CouncilMajority>;
 type RejectOrigin = EitherOfDiverse<EnsureRoot<AccountId>, CouncilMajority>;
 
 impl pallet_treasury::Config for Runtime {
 	type AssetKind = ();
-	type ApproveOrigin = ApproveOrigin;
 	type BalanceConverter = UnityAssetBalanceConversion;
 	type Beneficiary = AccountId;
 	type BeneficiaryLookup = IdentityLookup<Self::Beneficiary>;
@@ -45,7 +43,6 @@ impl pallet_treasury::Config for Runtime {
 	type BurnDestination = ();
 	type Currency = Balances;
 	type MaxApprovals = MaxApprovals;
-	type OnSlash = Treasury;
 	type PalletId = TreasuryId;
 	type Paymaster = PayFromAccount<Balances, TreasuryAccount>;
 	type PayoutPeriod = PayoutPeriod;
