@@ -29,6 +29,7 @@ mod ethereum;
 pub(crate) mod evm;
 mod identity;
 pub(crate) mod laos_evolution;
+mod membership;
 mod multisig;
 pub(crate) mod parachain_staking;
 mod preimage;
