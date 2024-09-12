@@ -4886,7 +4886,8 @@ fn deferred_payment_steady_state_event_flow() {
 			let reset_issuance = || {
 				let new_issuance = Balances::total_issuance();
 				let diff = new_issuance - initial_issuance;
-				let _ = Balances::burn(Some(111).into(), diff, false).expect("Account can absorb burn");
+				let _ =
+					Balances::burn(Some(111).into(), diff, false).expect("Account can absorb burn");
 			};
 
 			// fn to roll through the first RewardPaymentDelay rounds. returns new round index

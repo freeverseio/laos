@@ -18,7 +18,7 @@ use crate::{weights, AccountId, MessageQueue, ParachainSystem, Runtime, RuntimeE
 
 use super::xcm_config::XcmOriginToTransactDispatchOrigin;
 use cumulus_primitives_core::{AggregateMessageOrigin, ParaId};
-use frame_support::{traits::TransformOrigin, parameter_types};
+use frame_support::{parameter_types, traits::TransformOrigin};
 use frame_system::EnsureRoot;
 use parachains_common::message_queue::ParaIdToSibling;
 use polkadot_runtime_common::xcm_sender::NoPriceForMessageDelivery;
