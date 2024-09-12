@@ -23,8 +23,6 @@ parameter_types! {
 
 parameter_types! {
 	pub const Burn: Permill = Permill::zero();
-	pub const ProposalBond: Permill = Permill::from_percent(5);
-	pub const ProposalBondMinimum: Balance = 100 * UNIT;
 	pub const SpendPeriod: BlockNumber = prod_or_fast!(7 * DAYS, 5 * MINUTES);
 	pub const MaxApprovals: u32 = 100;
 	pub const TreasuryId: PalletId = PalletId(*b"py/trsry");
@@ -46,9 +44,6 @@ impl pallet_treasury::Config for Runtime {
 	type PalletId = TreasuryId;
 	type Paymaster = PayFromAccount<Balances, TreasuryAccount>;
 	type PayoutPeriod = PayoutPeriod;
-	type ProposalBond = ProposalBond;
-	type ProposalBondMaximum = ();
-	type ProposalBondMinimum = ProposalBondMinimum;
 	type RejectOrigin = RejectOrigin;
 	type RuntimeEvent = RuntimeEvent;
 	type SpendFunds = ();
