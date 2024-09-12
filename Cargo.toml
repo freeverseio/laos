@@ -25,7 +25,7 @@ smallvec = "1.10.0"
 num_enum = { version = "0.7.0", default-features = false }
 clap = { version = "4.2.7" }
 futures = "0.3.25"
-jsonrpsee = { version = "0.22.5" }
+jsonrpsee = { version = "0.23.2" }
 log = { version = "0.4.20", default-features = false }
 serde = { version = "1.0.163", default-features = false }
 sha3 = { version = "0.10.1", default-features = false }
