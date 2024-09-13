@@ -11,14 +11,12 @@ import {
 	ALITH_PRIVATE_KEY,
 } from "./config";
 import { describeWithExistingNode, extractRevertReason } from "./util";
-import Web3 from "web3";
 
 describeWithExistingNode("Frontier RPC (Vesting)", (context) => {
 	let contract: Contract;
 
 	before(async function () {
 		contract = new context.web3.eth.Contract(VESTING_ABI, VESTING_CONTRACT_ADDRESS, {
-			from: FAITH,
 			gasPrice: GAS_PRICE,
 		});
 		context.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
@@ -33,6 +31,7 @@ describeWithExistingNode("Frontier RPC (Vesting)", (context) => {
 		try {
 			let nonce = await context.web3.eth.getTransactionCount(FAITH);
 			const estimatedGas = await contract.methods.vest().estimateGas();
+			contract.options.from = FAITH;
 			await contract.methods.vest().send({ from: FAITH, gas: estimatedGas, nonce: nonce++ });
 			expect.fail("Expected error was not thrown"); // Ensure an error is thrown
 		} catch (error) {
@@ -49,13 +48,14 @@ describeWithExistingNode("Frontier RPC (Vesting)", (context) => {
 	step("when vesting exists do vest returns ok", async function () {
 		let nonce = await context.web3.eth.getTransactionCount(ALITH);
 		contract.options.from = ALITH;
-		let estimatedGas = await contract.methods.vest().estimateGas();
+		const estimatedGas = await contract.methods.vest().estimateGas();
 		let result = await contract.methods.vest().send({ from: ALITH, gas: estimatedGas, nonce: nonce++ });
 		expect(result.status).to.be.eq(true);
 	});
 	step("when vesting exists do vestOther returns ok", async function () {
 		let nonce = await context.web3.eth.getTransactionCount(FAITH);
-		let estimatedGas = await contract.methods.vestOther(ALITH).estimateGas();
+		contract.options.from = FAITH;
+		const estimatedGas = await contract.methods.vestOther(ALITH).estimateGas();
 		let result = await contract.methods.vestOther(ALITH).send({ from: FAITH, gas: estimatedGas, nonce: nonce++ });
 		expect(result.status).to.be.eq(true);
 	});
