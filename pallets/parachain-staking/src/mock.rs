@@ -410,7 +410,6 @@ fn geneses() {
 
 #[allow(unused_imports)]
 #[frame_support::pallet]
-#[allow(clippy::manual_inspect)]
 pub(crate) mod block_author {
 	use super::*;
 	use frame_support::{pallet_prelude::*, traits::Get};

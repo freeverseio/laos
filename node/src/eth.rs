@@ -24,6 +24,7 @@ use std::{
 use futures::{future, prelude::*};
 // Substrate
 use sc_client_api::BlockchainEvents;
+#[allow(deprecated)]
 use sc_executor::{NativeElseWasmExecutor, NativeExecutionDispatch};
 
 use sc_network_sync::SyncingService;
@@ -138,6 +139,7 @@ impl<Api> EthCompatRuntimeApiCollection for Api where
 }
 
 #[allow(clippy::too_many_arguments)]
+#[allow(deprecated)]
 pub async fn spawn_frontier_tasks<RuntimeApi, Executor>(
 	task_manager: &TaskManager,
 	client: Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,

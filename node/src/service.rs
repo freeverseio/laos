@@ -41,6 +41,7 @@ use frame_benchmarking_cli::SUBSTRATE_REFERENCE_HARDWARE;
 use futures::FutureExt;
 use sc_client_api::Backend;
 use sc_consensus::ImportQueue;
+#[allow(deprecated)]
 use sc_executor::{
 	HeapAllocStrategy, NativeElseWasmExecutor, WasmExecutor, DEFAULT_HEAP_ALLOC_STRATEGY,
 };
@@ -73,6 +74,7 @@ impl sc_executor::NativeExecutionDispatch for ParachainNativeExecutor {
 	}
 }
 
+#[allow(deprecated)]
 type ParachainExecutor = NativeElseWasmExecutor<ParachainNativeExecutor>;
 
 type ParachainClient = TFullClient<Block, RuntimeApi, ParachainExecutor>;
