@@ -1,7 +1,6 @@
 use super::collective::CouncilMajority;
 use crate::{
-	currency::UNIT, weights, AccountId, Balance, Balances, BlockNumber, Permill, Runtime,
-	RuntimeEvent, Treasury,
+	weights, AccountId, Balance, Balances, BlockNumber, Permill, Runtime, RuntimeEvent, Treasury,
 };
 use frame_support::{
 	parameter_types,
