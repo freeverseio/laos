@@ -1,10 +1,8 @@
 import { describeWithExistingNode } from "./util";
 import {
-	GAS_LIMIT,
 	ALITH,
 	STAKING_ABI,
 	STAKING_CONTRACT_ADDRESS,
-	GAS_PRICE,
 	UNIT,
 	FAITH_PRIVATE_KEY,
 	FAITH,
