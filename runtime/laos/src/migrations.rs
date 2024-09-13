@@ -14,9 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
-use crate::Runtime;
-use cumulus_primitives_core::{ListChannelInfos, ParaId};
-use sp_std::vec::Vec;
+use crate::{ParachainSystem, Runtime};
 
 pub type Migrations = (
 	cumulus_pallet_xcmp_queue::migration::v4::MigrationToV4<Runtime>,
@@ -24,13 +22,5 @@ pub type Migrations = (
 );
 
 impl cumulus_pallet_xcmp_queue::migration::v5::V5Config for Runtime {
-	type ChannelList = EmptyChannelList;
-}
-
-pub struct EmptyChannelList;
-impl ListChannelInfos for EmptyChannelList {
-	fn outgoing_channels() -> Vec<ParaId> {
-		// No outgoing channels
-		Vec::new()
-	}
+	type ChannelList = ParachainSystem;
 }
