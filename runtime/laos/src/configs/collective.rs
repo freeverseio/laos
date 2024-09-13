@@ -13,6 +13,8 @@ parameter_types! {
 	pub MaxProposalWeight: Weight = Perbill::from_percent(50) * RuntimeBlockWeights::get().max_block;
 }
 
+pub type HalfOfCouncil =
+	pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 2>;
 pub type CouncilMajority =
 	pallet_collective::EnsureProportionMoreThan<AccountId, CouncilCollective, 1, 2>;
 pub type AllOfCouncil =

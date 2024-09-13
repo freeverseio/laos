@@ -1,20 +1,9 @@
+import { createCollection, describeWithExistingNode, slotAndOwnerToTokenId } from "./util";
 import {
-	addressToCollectionId,
-	createCollection,
-	describeWithExistingNode,
-	extractRevertReason,
-	slotAndOwnerToTokenId,
-} from "./util";
-import {
-	GAS_LIMIT,
 	FAITH,
 	SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI,
 	SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI,
 	SELECTOR_LOG_OWNERSHIP_TRANSFERRED,
-	SELECTOR_LOG_PUBLIC_MINTING_ENABLED,
-	SELECTOR_LOG_PUBLIC_MINTING_DISABLED,
-	ALITH,
-	ALITH_PRIVATE_KEY,
 } from "./config";
 import { expect } from "chai";
 import Contract from "web3-eth-contract";
@@ -47,9 +36,10 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
 		const tokenURI = "https://example.com";
 
 		let nonce = await context.web3.eth.getTransactionCount(FAITH);
+		const estimatedGas = await collectionContract.methods.mintWithExternalURI(to, slot, tokenURI).estimateGas();
 		const result = await collectionContract.methods
 			.mintWithExternalURI(to, slot, tokenURI)
-			.send({ from: FAITH, gas: GAS_LIMIT, nonce: nonce++ });
+			.send({ from: FAITH, gas: estimatedGas, nonce: nonce++ });
 		expect(result.status).to.be.eq(true);
 
 		const tokenId = result.events.MintedWithExternalURI.returnValues._tokenId;
@@ -72,9 +62,10 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
 		const to = FAITH;
 		const tokenURI = "https://example.com";
 
+		const estimatedGas = await collectionContract.methods.mintWithExternalURI(to, slot, tokenURI).estimateGas();
 		const result = await collectionContract.methods
 			.mintWithExternalURI(to, slot, tokenURI)
-			.send({ from: FAITH, gas: GAS_LIMIT });
+			.send({ from: FAITH, gas: estimatedGas });
 		expect(result.status).to.be.eq(true);
 
 		expect(Object.keys(result.events).length).to.be.eq(1);
@@ -108,14 +99,18 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
 		const tokenId = slotAndOwnerToTokenId(slot, to);
 		const tokenIdDecimal = new BN(tokenId, 16, "be").toString(10);
 
+		var estimatedGas = await collectionContract.methods.mintWithExternalURI(to, slot, tokenURI).estimateGas();
 		const mintingResult = await collectionContract.methods
 			.mintWithExternalURI(to, slot, tokenURI)
-			.send({ from: FAITH, gas: GAS_LIMIT });
+			.send({ from: FAITH, gas: estimatedGas });
 		expect(mintingResult.status).to.be.eq(true);
 
+		estimatedGas = await collectionContract.methods
+			.evolveWithExternalURI(tokenIdDecimal, newTokenURI)
+			.estimateGas();
 		const evolvingResult = await collectionContract.methods
 			.evolveWithExternalURI(tokenIdDecimal, newTokenURI)
-			.send({ from: FAITH, gas: GAS_LIMIT });
+			.send({ from: FAITH, gas: estimatedGas });
 		expect(evolvingResult.status).to.be.eq(true);
 
 		const got = await collectionContract.methods.tokenURI(tokenIdDecimal).call();
@@ -130,14 +125,18 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
 		const tokenId = slotAndOwnerToTokenId(slot, to);
 		const tokenIdDecimal = new BN(tokenId, 16, "be").toString(10);
 
+		var estimatedGas = await collectionContract.methods.mintWithExternalURI(to, slot, tokenURI).estimateGas();
 		const mintingResult = await collectionContract.methods
 			.mintWithExternalURI(to, slot, tokenURI)
-			.send({ from: FAITH, gas: GAS_LIMIT });
+			.send({ from: FAITH, gas: estimatedGas });
 		expect(mintingResult.status).to.be.eq(true);
 
+		estimatedGas = await collectionContract.methods
+			.evolveWithExternalURI(tokenIdDecimal, newTokenURI)
+			.estimateGas();
 		const evolvingResult = await collectionContract.methods
 			.evolveWithExternalURI(tokenIdDecimal, newTokenURI)
-			.send({ from: FAITH, gas: GAS_LIMIT });
+			.send({ from: FAITH, gas: estimatedGas });
 		expect(evolvingResult.status).to.be.eq(true);
 
 		expect(Object.keys(evolvingResult.events).length).to.be.eq(1);
@@ -171,9 +170,10 @@ describeWithExistingNode("Frontier RPC (Transfer Ownership)", (context) => {
 		const newOwner = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
 
 		expect(await collectionContract.methods.owner().call()).to.be.eq(FAITH);
+		const estimatedGas = await collectionContract.methods.transferOwnership(newOwner).estimateGas();
 		const tranferringResult = await collectionContract.methods
 			.transferOwnership(newOwner)
-			.send({ from: FAITH, gas: GAS_LIMIT });
+			.send({ from: FAITH, gas: estimatedGas });
 		expect(tranferringResult.status).to.be.eq(true);
 		expect(await collectionContract.methods.owner().call()).to.be.eq(newOwner);
 
@@ -198,10 +198,13 @@ describeWithExistingNode("Frontier RPC (Transfer Ownership)", (context) => {
 		expect(tranferringResult.events.OwnershipTransferred.raw.data).to.be.eq("0x");
 
 		try {
-			await collectionContract.methods.transferOwnership(FAITH).send({ from: FAITH, gas: GAS_LIMIT });
+			const estimatedGas = await collectionContract.methods.transferOwnership(FAITH).estimateGas();
+			await collectionContract.methods.transferOwnership(FAITH).send({ from: FAITH, gas: estimatedGas });
 			expect.fail("Expected error was not thrown"); // Ensure an error is thrown
 		} catch (error) {
-			expect(await extractRevertReason(context, error.receipt.transactionHash)).to.eq("NoPermission");
+			expect(error.message).to.eq(
+				"Returned error: VM Exception while processing transaction: revert NoPermission"
+			);
 		}
 	});
 });

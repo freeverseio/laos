@@ -4,7 +4,6 @@ import Web3 from "web3";
 import { JsonRpcResponse } from "web3-core-helpers";
 import {
 	EVOLUTION_COLLECTION_FACTORY_CONTRACT_ADDRESS,
-	GAS_LIMIT,
 	GAS_PRICE,
 	FAITH,
 	FAITH_PRIVATE_KEY,
@@ -87,9 +86,10 @@ export async function createCollection(context: { web3: Web3 }): Promise<Contrac
 
 	let nonce = await context.web3.eth.getTransactionCount(FAITH);
 	context.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
+	const estimatedGas = await contract.methods.createCollection(FAITH).estimateGas();
 	const result = await contract.methods.createCollection(FAITH).send({
 		from: FAITH,
-		gas: GAS_LIMIT,
+		gas: estimatedGas,
 		gasPrice: GAS_PRICE,
 		nonce: nonce++,
 	});
@@ -101,7 +101,6 @@ export async function createCollection(context: { web3: Web3 }): Promise<Contrac
 		result.events.NewCollection.returnValues._collectionAddress,
 		{
 			from: FAITH,
-			gas: GAS_LIMIT,
 			gasPrice: GAS_PRICE,
 		}
 	);
