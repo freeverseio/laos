@@ -1,10 +1,8 @@
 import { describeWithExistingNode } from "./util";
 import {
-	GAS_LIMIT,
 	ALITH,
 	STAKING_ABI,
 	STAKING_CONTRACT_ADDRESS,
-	GAS_PRICE,
 	UNIT,
 	FAITH_PRIVATE_KEY,
 	FAITH,
@@ -57,9 +55,10 @@ describeWithExistingNode("Frontier RPC (Staking)", (context) => {
 		expect(await contract.methods.isDelegator(BALTATHAR).call()).to.be.eq(false);
 		let nonce = await context.web3.eth.getTransactionCount(BALTATHAR);
 		const gasPrice = (await context.web3.eth.getGasPrice()) + 1; // if we don't add +1 tx never gets included in the block
+		const estimatedGas = await contract.methods.delegate(FAITH, BigInt(1000) * UNIT, 0, 0).estimateGas();
 		const result = await contract.methods
 			.delegate(FAITH, BigInt(1000) * UNIT, 0, 0)
-			.send({ from: BALTATHAR, gas: GAS_LIMIT, gasPrice, nonce: nonce++ });
+			.send({ from: BALTATHAR, gas: estimatedGas, gasPrice, nonce: nonce++ });
 		expect(result.status).to.be.eq(true);
 		expect(await contract.methods.isDelegator(BALTATHAR).call()).to.be.eq(true);
 	});
