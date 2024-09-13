@@ -25,8 +25,7 @@ use laos_runtime::{
 use sc_service::ChainType;
 use sp_runtime::Perbill;
 
-pub(crate) type ChainSpec =
-	sc_service::GenericChainSpec<laos_runtime::RuntimeGenesisConfig, Extensions>;
+pub(crate) type ChainSpec = sc_service::GenericChainSpec<Extensions>;
 
 pub(crate) fn development_config() -> ChainSpec {
 	ChainSpec::builder(

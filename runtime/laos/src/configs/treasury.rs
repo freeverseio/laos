@@ -1,7 +1,6 @@
 use super::collective::CouncilMajority;
 use crate::{
-	currency::UNIT, weights, AccountId, Balance, Balances, BlockNumber, Permill, Runtime,
-	RuntimeEvent, Treasury,
+	weights, AccountId, Balance, Balances, BlockNumber, Permill, Runtime, RuntimeEvent, Treasury,
 };
 use frame_support::{
 	parameter_types,
@@ -23,8 +22,6 @@ parameter_types! {
 
 parameter_types! {
 	pub const Burn: Permill = Permill::zero();
-	pub const ProposalBond: Permill = Permill::from_percent(5);
-	pub const ProposalBondMinimum: Balance = 100 * UNIT;
 	pub const SpendPeriod: BlockNumber = prod_or_fast!(7 * DAYS, 5 * MINUTES);
 	pub const MaxApprovals: u32 = 100;
 	pub const TreasuryId: PalletId = PalletId(*b"py/trsry");
@@ -32,12 +29,10 @@ parameter_types! {
 	pub TreasuryAccount: AccountId = Treasury::account_id();
 }
 
-type ApproveOrigin = EitherOfDiverse<EnsureRoot<AccountId>, CouncilMajority>;
 type RejectOrigin = EitherOfDiverse<EnsureRoot<AccountId>, CouncilMajority>;
 
 impl pallet_treasury::Config for Runtime {
 	type AssetKind = ();
-	type ApproveOrigin = ApproveOrigin;
 	type BalanceConverter = UnityAssetBalanceConversion;
 	type Beneficiary = AccountId;
 	type BeneficiaryLookup = IdentityLookup<Self::Beneficiary>;
@@ -45,13 +40,9 @@ impl pallet_treasury::Config for Runtime {
 	type BurnDestination = ();
 	type Currency = Balances;
 	type MaxApprovals = MaxApprovals;
-	type OnSlash = Treasury;
 	type PalletId = TreasuryId;
 	type Paymaster = PayFromAccount<Balances, TreasuryAccount>;
 	type PayoutPeriod = PayoutPeriod;
-	type ProposalBond = ProposalBond;
-	type ProposalBondMaximum = ();
-	type ProposalBondMinimum = ProposalBondMinimum;
 	type RejectOrigin = RejectOrigin;
 	type RuntimeEvent = RuntimeEvent;
 	type SpendFunds = ();
