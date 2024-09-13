@@ -4,7 +4,6 @@ import Contract from "web3-eth-contract";
 import {
 	ASSET_METADATA_EXTENDER_ADDRESS,
 	ASSET_METADATA_EXTENDER_ABI,
-	GAS_LIMIT,
 	GAS_PRICE,
 	FAITH,
 	FAITH_PRIVATE_KEY,
@@ -20,7 +19,6 @@ describeWithExistingNode("Frontier RPC (Extend Token URI)", (context) => {
 		contract = new context.web3.eth.Contract(ASSET_METADATA_EXTENDER_ABI, ASSET_METADATA_EXTENDER_ADDRESS, {
 			from: FAITH,
 			gasPrice: GAS_PRICE,
-			gas: GAS_LIMIT,
 		});
 		context.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
 	});
@@ -36,9 +34,10 @@ describeWithExistingNode("Frontier RPC (Extend Token URI)", (context) => {
 
 	step("extend should return ok", async function () {
 		let nonce = await context.web3.eth.getTransactionCount(FAITH);
+		const estimatedGas = await contract.methods.extendULWithExternalURI(uloc, tokenURI).estimateGas();
 		extendResult = await contract.methods.extendULWithExternalURI(uloc, tokenURI).send({
 			from: FAITH,
-			gas: GAS_LIMIT,
+			gas: estimatedGas,
 			gasPrice: GAS_PRICE,
 			nonce: nonce++,
 		});
@@ -94,15 +93,15 @@ describeWithExistingNode("Frontier RPC (Update Extended Token URI)", async (cont
 		contract = new context.web3.eth.Contract(ASSET_METADATA_EXTENDER_ABI, ASSET_METADATA_EXTENDER_ADDRESS, {
 			from: FAITH,
 			gasPrice: GAS_PRICE,
-			gas: GAS_LIMIT,
 		});
 		context.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
 
 		// we first create an extension to be updated later
 		let nonce = await context.web3.eth.getTransactionCount(FAITH);
+		const estimatedGas = await contract.methods.extendULWithExternalURI(uloc, tokenURI).estimateGas();
 		const createResult = await contract.methods.extendULWithExternalURI(uloc, tokenURI).send({
 			from: FAITH,
-			gas: GAS_LIMIT,
+			gas: estimatedGas,
 			gasPrice: GAS_PRICE,
 			nonce: nonce++,
 		});
@@ -119,9 +118,10 @@ describeWithExistingNode("Frontier RPC (Update Extended Token URI)", async (cont
 
 	step("update extension should return ok", async function () {
 		let nonce = await context.web3.eth.getTransactionCount(FAITH);
+		const estimatedGas = await contract.methods.updateExtendedULWithExternalURI(uloc, newTokenURI).estimateGas();
 		updateExtensionResult = await contract.methods.updateExtendedULWithExternalURI(uloc, newTokenURI).send({
 			from: FAITH,
-			gas: GAS_LIMIT,
+			gas: estimatedGas,
 			gasPrice: GAS_PRICE,
 			nonce: nonce++,
 		});

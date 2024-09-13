@@ -4,7 +4,6 @@ import Contract from "web3-eth-contract";
 import {
 	EVOLUTION_COLLECTION_FACTORY_CONTRACT_ADDRESS,
 	EVOLUTION_COLLECTION_FACTORY_ABI,
-	GAS_LIMIT,
 	GAS_PRICE,
 	FAITH,
 	FAITH_PRIVATE_KEY,
@@ -27,7 +26,6 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
 			{
 				from: FAITH,
 				gasPrice: GAS_PRICE,
-				gas: GAS_LIMIT,
 			}
 		);
 		context.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
@@ -42,9 +40,10 @@ describeWithExistingNode("Frontier RPC (Create Collection)", (context) => {
 	});
 
 	step("when collection is created event is emitted", async function () {
+		const estimatedGas = await contract.methods.createCollection(FAITH).estimateGas();
 		const result = await contract.methods.createCollection(FAITH).send({
 			from: FAITH,
-			gas: GAS_LIMIT,
+			gas: estimatedGas,
 			gasPrice: GAS_PRICE,
 		});
 		expect(result.status).to.be.eq(true);
