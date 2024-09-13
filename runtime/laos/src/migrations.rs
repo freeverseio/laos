@@ -15,7 +15,7 @@
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 use crate::Runtime;
-use cumulus_primitives_core::{ChannelInfo, ListChannelInfos, ParaId};
+use cumulus_primitives_core::{ListChannelInfos, ParaId};
 use sp_std::vec::Vec;
 
 pub type Migrations = (
