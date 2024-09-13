@@ -35,7 +35,6 @@ pub use types::*;
 pub use weights::WeightInfo;
 
 #[frame_support::pallet]
-#[allow(clippy::manual_inspect)]
 pub mod pallet {
 	use super::*;
 

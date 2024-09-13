@@ -4833,8 +4833,6 @@ fn deferred_payment_and_at_stake_storage_items_cleaned_up_for_candidates_not_pro
 
 #[test]
 fn deferred_payment_steady_state_event_flow() {
-	use frame_support::traits::{Currency, ExistenceRequirement, WithdrawReasons};
-
 	// this test "flows" through a number of rounds, asserting that certain things do/don't happen
 	// once the staking pallet is in a "steady state" (specifically, once we are past the first few
 	// rounds to clear RewardPaymentDelay)
@@ -4886,8 +4884,7 @@ fn deferred_payment_steady_state_event_flow() {
 			let reset_issuance = || {
 				let new_issuance = Balances::total_issuance();
 				let diff = new_issuance - initial_issuance;
-				let _ =
-					Balances::burn(Some(111).into(), diff, false).expect("Account can absorb burn");
+				Balances::burn(Some(111).into(), diff, false).expect("Account can absorb burn");
 			};
 
 			// fn to roll through the first RewardPaymentDelay rounds. returns new round index

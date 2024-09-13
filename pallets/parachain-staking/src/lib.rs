@@ -77,7 +77,6 @@ pub use types::*;
 pub use RoundIndex;
 
 #[pallet]
-#[allow(clippy::manual_inspect)]
 pub mod pallet {
 	use crate::{
 		delegation_requests::{CancelledScheduledRequest, DelegationAction, ScheduledRequest},
