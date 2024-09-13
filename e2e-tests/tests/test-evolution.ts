@@ -1,4 +1,4 @@
-import { createCollection, describeWithExistingNode, extractRevertReason, slotAndOwnerToTokenId } from "./util";
+import { createCollection, describeWithExistingNode, slotAndOwnerToTokenId } from "./util";
 import {
 	FAITH,
 	SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI,
@@ -198,11 +198,13 @@ describeWithExistingNode("Frontier RPC (Transfer Ownership)", (context) => {
 		expect(tranferringResult.events.OwnershipTransferred.raw.data).to.be.eq("0x");
 
 		try {
-			const estimatedGas = collectionContract.methods.transferOwnership(FAITH).estimatedGas();
+			const estimatedGas = await collectionContract.methods.transferOwnership(FAITH).estimateGas();
 			await collectionContract.methods.transferOwnership(FAITH).send({ from: FAITH, gas: estimatedGas });
 			expect.fail("Expected error was not thrown"); // Ensure an error is thrown
 		} catch (error) {
-			expect(await extractRevertReason(context, error.receipt.transactionHash)).to.eq("NoPermission");
+			expect(error.message).to.eq(
+				"Returned error: VM Exception while processing transaction: revert NoPermission"
+			);
 		}
 	});
 });

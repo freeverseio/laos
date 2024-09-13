@@ -10,8 +10,7 @@ import {
 	ALITH,
 	ALITH_PRIVATE_KEY,
 } from "./config";
-import { describeWithExistingNode, extractRevertReason } from "./util";
-import Web3 from "web3";
+import { describeWithExistingNode } from "./util";
 
 describeWithExistingNode("Frontier RPC (Vesting)", (context) => {
 	let contract: Contract;
@@ -36,7 +35,7 @@ describeWithExistingNode("Frontier RPC (Vesting)", (context) => {
 			await contract.methods.vest().send({ from: FAITH, gas: estimatedGas, nonce: nonce++ });
 			expect.fail("Expected error was not thrown"); // Ensure an error is thrown
 		} catch (error) {
-			expect(await extractRevertReason(context, error.receipt.transactionHash)).to.eq("NotVesting");
+			expect(error.message).to.eq("Returned error: VM Exception while processing transaction: revert NotVesting");
 		}
 	});
 	it("when vesting exists it returns the list", async function () {
@@ -49,13 +48,13 @@ describeWithExistingNode("Frontier RPC (Vesting)", (context) => {
 	step("when vesting exists do vest returns ok", async function () {
 		let nonce = await context.web3.eth.getTransactionCount(ALITH);
 		contract.options.from = ALITH;
-		let estimatedGas = await contract.methods.vest().estimateGas();
+		const estimatedGas = await contract.methods.vest().estimateGas();
 		let result = await contract.methods.vest().send({ from: ALITH, gas: estimatedGas, nonce: nonce++ });
 		expect(result.status).to.be.eq(true);
 	});
 	step("when vesting exists do vestOther returns ok", async function () {
 		let nonce = await context.web3.eth.getTransactionCount(FAITH);
-		let estimatedGas = await contract.methods.vestOther(ALITH).estimateGas();
+		const estimatedGas = await contract.methods.vestOther(ALITH).estimateGas();
 		let result = await contract.methods.vestOther(ALITH).send({ from: FAITH, gas: estimatedGas, nonce: nonce++ });
 		expect(result.status).to.be.eq(true);
 	});
