@@ -1,7 +1,7 @@
 use frame_support::traits::EitherOfDiverse;
 use frame_system::EnsureRoot;
 
-use crate::{AccountId, Council, Runtime, RuntimeEvent, TechnicalCommittee};
+use crate::{weights, AccountId, Council, Runtime, RuntimeEvent, TechnicalCommittee};
 
 use super::collective::CouncilMajority;
 
@@ -16,7 +16,7 @@ impl pallet_membership::Config<CouncilMembership> for Runtime {
 	type MembershipInitialized = Council;
 	type MembershipChanged = Council;
 	type MaxMembers = super::collective::MaxMembers;
-	type WeightInfo = pallet_membership::weights::SubstrateWeight<Runtime>;
+	type WeightInfo = weights::pallet_membership::WeightInfo<Runtime>;
 }
 
 type TechnicalCommitteeMembership = pallet_membership::Instance2;
@@ -30,5 +30,5 @@ impl pallet_membership::Config<TechnicalCommitteeMembership> for Runtime {
 	type MembershipInitialized = TechnicalCommittee;
 	type MembershipChanged = TechnicalCommittee;
 	type MaxMembers = super::collective::MaxMembers;
-	type WeightInfo = pallet_membership::weights::SubstrateWeight<Runtime>; // TODO change me
+	type WeightInfo = weights::pallet_membership::WeightInfo<Runtime>;
 }

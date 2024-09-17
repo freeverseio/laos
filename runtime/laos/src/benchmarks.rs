@@ -36,5 +36,6 @@ frame_benchmarking::define_benchmarks!(
 	[pallet_scheduler, Scheduler]
 	[pallet_treasury, Treasury]
 	[pallet_democracy, Democracy]
+	[pallet_membership, CouncilMembership]
 	// TODO pallet_xcm?
 );

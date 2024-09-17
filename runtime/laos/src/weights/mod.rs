@@ -28,6 +28,7 @@ pub mod pallet_democracy;
 pub mod pallet_elections_phragmen;
 pub mod pallet_evm;
 pub mod pallet_laos_evolution;
+pub mod pallet_membership;
 pub mod pallet_message_queue;
 pub mod pallet_multisig;
 pub mod pallet_parachain_staking;
