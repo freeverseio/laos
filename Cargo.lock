@@ -5275,6 +5275,7 @@ dependencies = [
  "pallet-evm-precompile-simple",
  "pallet-identity",
  "pallet-laos-evolution",
+ "pallet-membership",
  "pallet-message-queue",
  "pallet-multisig",
  "pallet-parachain-staking",
