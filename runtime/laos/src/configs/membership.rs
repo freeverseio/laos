@@ -1,23 +1,9 @@
 use frame_support::traits::EitherOfDiverse;
 use frame_system::EnsureRoot;
 
-use crate::{weights, AccountId, Council, Runtime, RuntimeEvent, TechnicalCommittee};
+use crate::{weights, AccountId, Runtime, RuntimeEvent, TechnicalCommittee};
 
 use super::collective::CouncilMajority;
-
-type CouncilMembership = pallet_membership::Instance1;
-impl pallet_membership::Config<CouncilMembership> for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type AddOrigin = EnsureRoot<AccountId>;
-	type RemoveOrigin = EnsureRoot<AccountId>;
-	type SwapOrigin = EnsureRoot<AccountId>;
-	type ResetOrigin = EnsureRoot<AccountId>;
-	type PrimeOrigin = EnsureRoot<AccountId>;
-	type MembershipInitialized = Council;
-	type MembershipChanged = Council;
-	type MaxMembers = super::collective::MaxMembers;
-	type WeightInfo = weights::pallet_membership::WeightInfo<Runtime>;
-}
 
 type TechnicalCommitteeMembership = pallet_membership::Instance2;
 impl pallet_membership::Config<TechnicalCommitteeMembership> for Runtime {

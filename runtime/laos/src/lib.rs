@@ -127,6 +127,7 @@ construct_runtime!(
 		XcmpQueue: cumulus_pallet_xcmp_queue = 30,
 		PolkadotXcm: pallet_xcm = 31,
 		CumulusXcm: cumulus_pallet_xcm = 32,
+		// TODO put the name of the remove pallet as placeholder = 33,
 		MessageQueue: pallet_message_queue = 34,
 
 		// Governance
@@ -137,8 +138,7 @@ construct_runtime!(
 		TechnicalCommittee: pallet_collective::<Instance2> = 44,
 		Scheduler: pallet_scheduler = 45,
 		Democracy: pallet_democracy = 46,
-		CouncilMembership: pallet_membership::<Instance1> = 47,
-		TechnicalCommitteeMembership: pallet_membership::<Instance2> = 48,
+		TechnicalCommitteeMembership: pallet_membership::<Instance2> = 47,
 
 		// Frontier
 		Ethereum: pallet_ethereum = 50,
