@@ -83,7 +83,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("laos"),
 	impl_name: create_runtime_str!("laos"),
 	authoring_version: 1,
-	spec_version: 2000,
+	spec_version: 2192,
 	impl_version: 0,
 	apis: apis::RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -127,6 +127,7 @@ construct_runtime!(
 		XcmpQueue: cumulus_pallet_xcmp_queue = 30,
 		PolkadotXcm: pallet_xcm = 31,
 		CumulusXcm: cumulus_pallet_xcm = 32,
+		// DmpQueue: cumulus_pallet_dmp_queue = 33,
 		MessageQueue: pallet_message_queue = 34,
 
 		// Governance
@@ -137,6 +138,7 @@ construct_runtime!(
 		TechnicalCommittee: pallet_collective::<Instance2> = 44,
 		Scheduler: pallet_scheduler = 45,
 		Democracy: pallet_democracy = 46,
+		TechnicalCommitteeMembership: pallet_membership::<Instance2> = 47,
 
 		// Frontier
 		Ethereum: pallet_ethereum = 50,

@@ -9,15 +9,13 @@ import Balances from "../build/contracts/Balances.json";
 
 // Node config
 export const RUNTIME_SPEC_NAME = "laos";
-export const RUNTIME_SPEC_VERSION = 2000;
+export const RUNTIME_SPEC_VERSION = 2192;
 export const RUNTIME_IMPL_VERSION = 0;
 export const LOCAL_NODE_URL = "http://127.0.0.1:9999";
 
 // Chain config
 export const CHAIN_ID = 667;
 export const GAS_PRICE = "0x3B9ACA00";
-export const ETH_BLOCK_GAS_LIMIT = 15000000; // The same configuration as runtime
-export const GAS_LIMIT = ETH_BLOCK_GAS_LIMIT - 10000000; // TODO remove subtraction
 
 // Accounts
 export const FAITH = "0xC0F0f4ab324C46e55D02D0033343B4Be8A55532d";

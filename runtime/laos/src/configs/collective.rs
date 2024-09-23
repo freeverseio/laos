@@ -1,5 +1,5 @@
 use crate::{weights, AccountId, BlockNumber, Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin};
-use frame_support::{pallet_prelude::Weight, parameter_types, traits::EitherOfDiverse};
+use frame_support::{pallet_prelude::Weight, parameter_types};
 use frame_system::EnsureRoot;
 use laos_primitives::RuntimeBlockWeights;
 use parachains_common::{DAYS, MINUTES};
@@ -13,6 +13,8 @@ parameter_types! {
 	pub MaxProposalWeight: Weight = Perbill::from_percent(50) * RuntimeBlockWeights::get().max_block;
 }
 
+pub type HalfOfCouncil =
+	pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 2>;
 pub type CouncilMajority =
 	pallet_collective::EnsureProportionMoreThan<AccountId, CouncilCollective, 1, 2>;
 pub type AllOfCouncil =
@@ -48,7 +50,7 @@ impl pallet_collective::Config<TechnicalCommittee> for Runtime {
 	type Proposal = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeOrigin = RuntimeOrigin;
-	// the root or a turnout of 50%+1 of the council can select the technical committee
-	type SetMembersOrigin = EitherOfDiverse<EnsureRoot<AccountId>, CouncilMajority>;
+	// the root can select the technical committee
+	type SetMembersOrigin = EnsureRoot<AccountId>;
 	type WeightInfo = weights::pallet_collective::WeightInfo<Runtime>;
 }
