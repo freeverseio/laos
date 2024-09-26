@@ -3,7 +3,7 @@ description = "The LAOS parachain node."
 repository = "https://github.com/freeverseio/laos.git"
 homepage = "https://www.laosfoundation.io"
 authors = ["Freeverse"]
-version = "0.21.92"
+version = "0.22.0"
 
 [workspace]
 resolver = "2"
