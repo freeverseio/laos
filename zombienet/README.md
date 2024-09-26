@@ -1,5 +1,7 @@
 # Zombienet
 
+TODO update me (how to build `polkadot-parachain` and spawn zombienet with the proper file if you want assethub)
+
 The [Zombienet](https://github.com/paritytech/zombienet) configuration is located in the `native.toml` file.
 
 Zombienet uses environment variables in the `native.toml` configuration file for easy customization. You can define these variables in your shell before running the commands. 
