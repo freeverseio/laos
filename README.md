@@ -48,14 +48,18 @@ Check [LAOS Roadmap](https://laosnetwork.io/roadmap-after-tge) for a list of fea
 ## Releases
 
 ### Stable versions
-Stable versions follow semver conventions and are monotonically increasing from `X.Y.0` to `X.Y.89`, e.g. 0.1.0, 0.1.1 (patch), 0.2.0 (new version).
+Stable versions follow semver conventions and are monotonically increasing from `X.Y.0` to `X.Y.89`.
+
+Example: `0.1.0`, `0.1.1` (patch), `0.2.0` (new version).
 
 Stable versions are published as GitHub releases [here](https://github.com/freeverseio/laos/releases).
 
 ### Dev versions
 Dev versions are used for testing purposes, thus, they are not published as GitHub releases.
 
-Dev versions follow semver conventions and are are monotonically increasing from `X.Y.90` to `X.Y.99`, e.g. 0.1.90, 0.1.91.
+Dev versions follow semver conventions and are are monotonically increasing from `X.Y.90` to `X.Y.99`.
+
+Example: `0.1.90`, `0.1.91`.
 
 Whenever something is merged to `main`, a PR has to be created increasing the spec version of the runtime as described above. When the PR is merged, the runtime of the dev version can be produced and installed in the testing network.
 
