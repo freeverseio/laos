@@ -45,6 +45,20 @@ Check [LAOS Roadmap](https://laosnetwork.io/roadmap-after-tge) for a list of fea
 * EVM Chain ID: 6283
 * Chainlist Entry: https://chainlist.org/chain/6283
 
+## Releases
+
+### Stable versions
+Stable versions follow semver conventions and are monotonically increasing from `X.Y.0` to `X.Y.89`, e.g. 0.1.0, 0.1.1 (patch), 0.2.0 (new version).
+
+Stable versions are published as GitHub releases [here](https://github.com/freeverseio/laos/releases).
+
+### Dev versions
+Dev versions are used for testing purposes, thus, they are not published as GitHub releases.
+
+Dev versions follow semver conventions and are are monotonically increasing from `X.Y.90` to `X.Y.99`, e.g. 0.1.90, 0.1.91.
+
+Whenever something is merged to `main`, a PR has to be created increasing the spec version of the runtime as described above. When the PR is merged, the runtime of the dev version can be produced and installed in the testing network.
+
 ## Running your own node
 
 The quickest entry point to run your own LAOS Parachain node:
@@ -55,7 +69,7 @@ where:
 * `<chain_name>` shall be set to `laos` or `laos-sigma` to operate on the mainnet /testnet, and
 * `<release>` shall be chosen among the available releases published [here](https://github.com/freeverseio/laos/releases).
 
-# Contributing
+## Contributing
 
 Contributions to the LAOS Parachain project are highly appreciated. Please adhere to [GitHub's contribution guidelines](https://docs.github.com/en/get-started/quickstart/contributing-to-projects) to ensure a smooth collaboration process.
 
