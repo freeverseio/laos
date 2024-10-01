@@ -3,6 +3,7 @@ description = "The LAOS parachain node."
 repository = "https://github.com/freeverseio/laos.git"
 homepage = "https://www.laosfoundation.io"
 authors = ["Freeverse"]
+edition = "2021"
 version = "0.22.0"
 
 [workspace]
@@ -14,6 +15,7 @@ members = [
    "pallets/*",
    "precompiles/*",
    "primitives",
+   "xcm-simulator",
 ]
 
 [workspace.dependencies]
@@ -207,6 +209,7 @@ cumulus-pallet-xcm = { git = "https://github.com/paritytech/polkadot-sdk", branc
 staging-xcm = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.11.0", default-features = false }
 staging-xcm-builder = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.11.0", default-features = false }
 staging-xcm-executor = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.11.0", default-features = false }
+xcm-simulator = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.11.0", default-features = false }
 
 # (native)
 polkadot-cli = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.11.0" }
