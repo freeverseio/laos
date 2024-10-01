@@ -15,6 +15,7 @@ members = [
    "pallets/*",
    "precompiles/*",
    "primitives",
+   "xcm-simulator"
 ]
 
 [workspace.dependencies]

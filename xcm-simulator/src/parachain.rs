@@ -16,7 +16,7 @@
 
 //! Parachain runtime mock.
 
-use parity_scale_codec::{Decode, Encode};
+use codec::{Decode, Encode};
 use core::marker::PhantomData;
 use frame_support::{
 	construct_runtime, derive_impl, parameter_types,
@@ -96,7 +96,6 @@ parameter_types! {
 	pub const MaxReserves: u32 = 50;
 }
 
-mod configs;
 impl pallet_balances::Config for Runtime {
 	type MaxLocks = MaxLocks;
 	type Balance = Balance;
