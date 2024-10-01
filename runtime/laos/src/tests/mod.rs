@@ -18,7 +18,7 @@
 
 mod precompile_tests;
 mod version_tests;
-// mod xcm_simulator;
+mod xcm_simulator;
 
 use core::str::FromStr;
 use sp_runtime::BuildStorage;
