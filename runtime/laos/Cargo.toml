@@ -110,6 +110,7 @@ pallet-evm-precompile-blake2 = { workspace = true }
 pallet-evm-precompile-parachain-staking = { workspace = true }
 
 precompile-utils = { workspace = true }
+xcm-simulator = { workspace = true }
 
 [dev-dependencies]
 precompile-utils = { workspace = true, features = ["testing"] }
@@ -118,7 +119,6 @@ polkadot-runtime-parachains = { workspace = true }
 pallet-assets = { workspace = true }
 test-utils = { workspace = true }
 ethereum = { workspace = true }
-xcm-simulator = { workspace = true }
 
 [features]
 fast-runtime=[]
