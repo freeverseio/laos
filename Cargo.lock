@@ -5290,6 +5290,7 @@ dependencies = [
  "pallet-laos-evolution",
  "pallet-membership",
  "pallet-message-queue",
+ "pallet-mock-msg-queue",
  "pallet-multisig",
  "pallet-parachain-staking",
  "pallet-precompiles-benchmark",
@@ -5335,7 +5336,6 @@ dependencies = [
  "staging-xcm-executor",
  "substrate-wasm-builder",
  "test-utils",
- "xcm-simulator",
 ]
 
 [[package]]

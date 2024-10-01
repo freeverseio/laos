@@ -71,6 +71,7 @@ pallet-asset-metadata-extender = { workspace = true }
 pallet-laos-evolution = { workspace = true }
 pallet-parachain-staking = { workspace = true }
 pallet-precompiles-benchmark = { workspace = true }
+pallet-mock-msg-queue = { workspace = true }
 
 
 # Polkadot
@@ -110,7 +111,6 @@ pallet-evm-precompile-blake2 = { workspace = true }
 pallet-evm-precompile-parachain-staking = { workspace = true }
 
 precompile-utils = { workspace = true }
-xcm-simulator = { workspace = true }
 
 [dev-dependencies]
 precompile-utils = { workspace = true, features = ["testing"] }

@@ -1,13 +1,11 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-/// Edit this file to define custom logic or remove it if it is not needed.
-/// Learn more about FRAME and the core library of Substrate FRAME pallets:
-/// <https://docs.substrate.io/v3/runtime/frame>
 pub use pallet::*;
 use polkadot_core_primitives::BlockNumber as RelayBlockNumber;
 use polkadot_parachain_primitives::primitives::{
 	DmpMessageHandler, Id as ParaId, XcmpMessageFormat, XcmpMessageHandler,
 };
+use scale_info::prelude::vec::Vec;
 use sp_runtime::traits::{Get, Hash};
 use xcm::{latest::prelude::*, VersionedXcm};
 
