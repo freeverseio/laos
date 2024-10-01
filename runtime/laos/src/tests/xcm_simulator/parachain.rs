@@ -96,6 +96,7 @@ parameter_types! {
 	pub const MaxReserves: u32 = 50;
 }
 
+mod configs;
 impl pallet_balances::Config for Runtime {
 	type MaxLocks = MaxLocks;
 	type Balance = Balance;
