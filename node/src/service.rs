@@ -32,8 +32,10 @@ use cumulus_client_service::{
 	BuildNetworkParams, CollatorSybilResistance, DARecoveryProfile, ParachainHostFunctions,
 	StartRelayChainTasksParams,
 };
-use cumulus_primitives_core::{relay_chain::CollatorPair, ParaId};
+use cumulus_primitives_core::{relay_chain::CollatorPair, ParaId, PersistedValidationData};
+use cumulus_primitives_parachain_inherent::ParachainInherentData;
 use cumulus_relay_chain_interface::{OverseerHandle, RelayChainInterface};
+use cumulus_test_relay_sproof_builder::RelayStateSproofBuilder;
 
 // Substrate Imports
 use fc_rpc::{StorageOverride, StorageOverrideHandler};
@@ -344,15 +346,38 @@ async fn start_node_impl(
 		execute_gas_limit_multiplier: eth_config.execute_gas_limit_multiplier,
 		forced_parent_hashes: None,
 		pending_create_inherent_data_providers: move |_, ()| async move {
-			let current = sp_timestamp::InherentDataProvider::from_system_time();
-			let next_slot = current.timestamp().as_millis() + slot_duration.as_millis();
-			let timestamp = sp_timestamp::InherentDataProvider::new(next_slot.into());
-			let slot = sp_consensus_aura::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
-				*timestamp,
-				slot_duration,
-			);
-			let dynamic_fee = fp_dynamic_fee::InherentDataProvider(U256::from(target_gas_price));
-			Ok((slot, timestamp, dynamic_fee))
+			// let current = sp_timestamp::InherentDataProvider::from_system_time();
+			// let next_slot = current.timestamp().as_millis() + slot_duration.as_millis();
+			// let timestamp = sp_timestamp::InherentDataProvider::new(next_slot.into());
+			// let slot =
+			// sp_consensus_aura::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
+			// 	*timestamp,
+			// 	slot_duration,
+			// );
+			// let dynamic_fee = fp_dynamic_fee::InherentDataProvider(U256::from(target_gas_price));
+			// Ok((slot, timestamp, dynamic_fee))
+
+			let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
+			// Create a dummy parachain inherent data provider which is required to pass
+			// the checks by the para chain system. We use dummy values because in the 'pending
+			// context' neither do we have access to the real values nor do we need them.
+			let (relay_parent_storage_root, relay_chain_state) =
+				RelayStateSproofBuilder::default().into_state_root_and_proof();
+			let vfp = PersistedValidationData {
+				// This is a hack to make
+				// `cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases` happy. Relay
+				// parent number can't be bigger than u32::MAX.
+				relay_parent_number: u32::MAX,
+				relay_parent_storage_root,
+				..Default::default()
+			};
+			let parachain_inherent_data = ParachainInherentData {
+				validation_data: vfp,
+				relay_chain_state,
+				downward_messages: Default::default(),
+				horizontal_messages: Default::default(),
+			};
+			Ok((timestamp, parachain_inherent_data))
 		},
 	};
 

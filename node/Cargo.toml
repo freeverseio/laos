@@ -65,6 +65,8 @@ cumulus-client-consensus-common = { workspace = true }
 cumulus-client-consensus-proposer = { workspace = true }
 cumulus-client-service = { workspace = true }
 cumulus-primitives-core = { workspace = true }
+cumulus-primitives-parachain-inherent = { workspace = true }
+cumulus-test-relay-sproof-builder = { workspace = true }
 cumulus-relay-chain-interface = { workspace = true }
 
 # Frontier
