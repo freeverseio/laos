@@ -123,6 +123,7 @@ pallet-xcm = { workspace = true }
 pallet-uniques = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.11.0", default-features = false }
 polkadot-core-primitives = { workspace = true }
 polkadot-parachain-primitives = { workspace = true }
+sp-tracing = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.11.0", default-features = false }
 
 [features]
 fast-runtime=[]
