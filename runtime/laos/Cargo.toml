@@ -77,9 +77,9 @@ pallet-precompiles-benchmark = { workspace = true }
 pallet-xcm = { workspace = true }
 polkadot-runtime-common = { workspace = true }
 polkadot-parachain-primitives = { workspace = true }
-staging-xcm = { workspace = true }
-staging-xcm-builder = { workspace = true }
-staging-xcm-executor = { workspace = true }
+xcm = { workspace = true }
+xcm-builder = { workspace = true }
+xcm-executor = { workspace = true }
 
 # Cumulus
 cumulus-pallet-aura-ext = { workspace = true }
@@ -90,7 +90,7 @@ cumulus-pallet-xcmp-queue = { workspace = true }
 cumulus-primitives-core = { workspace = true }
 cumulus-primitives-timestamp = { workspace = true }
 cumulus-primitives-utility = { workspace = true }
-staging-parachain-info = { workspace = true }
+parachain-info = { workspace = true }
 parachains-common = { workspace = true }
 
 # Frontier
@@ -114,16 +114,15 @@ precompile-utils = { workspace = true }
 [dev-dependencies]
 precompile-utils = { workspace = true, features = ["testing"] }
 evm = { workspace = true }
-# TODO This code has been commented out when upgrading polkadot-sdk from v1.1.0 to 1.6.0
-# because conflicts with orml-trait crate and currently XCM is not used. It should be
-# uncommented and fixed when XCM is used in the runtime.
-# orml-traits = { workspace = true }
-# orml-xtokens = { workspace = true, features = ["std"] }
-# orml-xcm-support = { workspace = true, features = ["std"] }
 polkadot-runtime-parachains = { workspace = true }
 pallet-assets = { workspace = true }
 test-utils = { workspace = true }
 ethereum = { workspace = true }
+xcm-simulator = { workspace = true }
+pallet-xcm = { workspace = true }
+pallet-uniques = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.11.0", default-features = false }
+polkadot-core-primitives = { workspace = true }
+polkadot-parachain-primitives = { workspace = true }
 
 [features]
 fast-runtime=[]
@@ -168,7 +167,7 @@ std = [
 	"pallet-precompiles-benchmark/std",
 	"pallet-transaction-payment/std",
 	"pallet-xcm/std",
-	"staging-parachain-info/std",
+	"parachain-info/std",
 	"polkadot-parachain-primitives/std",
 	"polkadot-runtime-common/std",
 	"sp-api/std",
@@ -185,9 +184,9 @@ std = [
 	"sp-version/std",
 	"sp-weights/std",
 	"sp-genesis-builder/std",
-	"staging-xcm-builder/std",
-	"staging-xcm-executor/std",
-	"staging-xcm/std",
+	"xcm-builder/std",
+	"xcm-executor/std",
+	"xcm/std",
 	"substrate-wasm-builder",
 	# Frontier
 	"fp-evm/std",
@@ -237,7 +236,7 @@ runtime-benchmarks = [
 	"pallet-elections-phragmen/runtime-benchmarks",
 	"pallet-xcm/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
-	"staging-xcm-builder/runtime-benchmarks",
+	"xcm-builder/runtime-benchmarks",
 	"cumulus-pallet-session-benchmarking/runtime-benchmarks",
 	"cumulus-pallet-xcmp-queue/runtime-benchmarks",
 	"pallet-message-queue/runtime-benchmarks",
@@ -247,7 +246,7 @@ runtime-benchmarks = [
 	"pallet-sudo/runtime-benchmarks",
 	"polkadot-parachain-primitives/runtime-benchmarks",
 	"polkadot-runtime-common/runtime-benchmarks",
-	"staging-xcm-executor/runtime-benchmarks",
+	"xcm-executor/runtime-benchmarks",
 	"pallet-asset-metadata-extender/runtime-benchmarks",
 	"pallet-vesting/runtime-benchmarks",
 	"pallet-scheduler/runtime-benchmarks",
@@ -285,7 +284,7 @@ try-runtime = [
 	"pallet-treasury/try-runtime",
 	"pallet-transaction-payment/try-runtime",
 	"pallet-xcm/try-runtime",
-	"staging-parachain-info/try-runtime",
+	"parachain-info/try-runtime",
 	"pallet-evm/try-runtime",
 	"pallet-evm-chain-id/try-runtime",
 	"pallet-ethereum/try-runtime",
