@@ -1,5 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use frame_support::pallet_prelude::*;
 pub use pallet::*;
 use polkadot_core_primitives::BlockNumber as RelayBlockNumber;
 use polkadot_parachain_primitives::primitives::{
@@ -12,7 +13,10 @@ use xcm::{latest::prelude::*, VersionedXcm};
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use frame_support::pallet_prelude::*;
+
+	#[pallet::pallet]
+	#[pallet::without_storage_info]
+	pub struct Pallet<T>(_);
 
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
@@ -22,10 +26,6 @@ pub mod pallet {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {}
-
-	#[pallet::pallet]
-	#[pallet::without_storage_info]
-	pub struct Pallet<T>(_);
 
 	#[pallet::storage]
 	#[pallet::getter(fn parachain_id)]

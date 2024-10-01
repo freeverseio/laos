@@ -155,6 +155,7 @@ std = [
 	"pallet-scheduler/std",
 	"pallet-laos-evolution/std",
 	"pallet-asset-metadata-extender/std",
+	"pallet-mock-msg-queue/std",
 	"pallet-multisig/std",
 	"pallet-timestamp/std",
 	"pallet-identity/std",

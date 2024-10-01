@@ -210,6 +210,11 @@ impl cumulus_pallet_xcm::Config for Runtime {
 	type XcmExecutor = XcmExecutor<XcmConfig>;
 }
 
+impl pallet_mock_msg_queue::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type XcmExecutor = XcmExecutor<XcmConfig>;
+}
+
 pub struct SignedToAccountId20<RuntimeOrigin, AccountId, Network>(
 	PhantomData<(RuntimeOrigin, AccountId, Network)>,
 );
