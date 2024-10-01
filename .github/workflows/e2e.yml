@@ -27,7 +27,9 @@ jobs:
           cargo build --release --locked
 
       - name: Download polkadot
-        run: ./zombienet/download_polkadot.sh
+        run: |
+          chmod +x ./zombienet/download_polkadot.sh
+          ./zombienet/download_polkadot.sh
 
       - name: Run zombienet
         run: |
