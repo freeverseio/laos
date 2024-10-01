@@ -129,6 +129,7 @@ construct_runtime!(
 		CumulusXcm: cumulus_pallet_xcm = 32,
 		// DmpQueue: cumulus_pallet_dmp_queue = 33,
 		MessageQueue: pallet_message_queue = 34,
+		MsgQueue: xcm_simulator::pallet::MsgQueue = 35,
 
 		// Governance
 		Council: pallet_collective::<Instance1> = 40,
