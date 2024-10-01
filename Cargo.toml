@@ -12,10 +12,10 @@ resolver = "2"
 members = [
    "node",
    "runtime/*",
+   "runtime/laos/src/tests/xcm-simulator",
    "pallets/*",
    "precompiles/*",
    "primitives",
-   "xcm-simulator",
 ]
 
 [workspace.dependencies]
