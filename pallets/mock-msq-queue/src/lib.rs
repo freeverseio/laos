@@ -4,33 +4,17 @@
 /// Learn more about FRAME and the core library of Substrate FRAME pallets:
 /// <https://docs.substrate.io/v3/runtime/frame>
 pub use pallet::*;
-use polkadot_parachain_primitives::primitives::{
-	DmpMessageHandler, Id as ParaId, Sibling, XcmpMessageFormat, XcmpMessageHandler,
-};
 use polkadot_core_primitives::BlockNumber as RelayBlockNumber;
+use polkadot_parachain_primitives::primitives::{
+	DmpMessageHandler, Id as ParaId, XcmpMessageFormat, XcmpMessageHandler,
+};
+use sp_runtime::traits::{Get, Hash};
 use xcm::{latest::prelude::*, VersionedXcm};
-use xcm_builder::{
-	Account32Hash, AccountId32Aliases, AllowUnpaidExecutionFrom, ConvertedConcreteId,
-	EnsureDecodableXcm, EnsureXcmOrigin, FixedRateOfFungible, FixedWeightBounds,
-	FrameTransactionalProcessor, FungibleAdapter, IsConcrete, NativeAsset, NoChecking,
-	NonFungiblesAdapter, ParentIsPreset, SiblingParachainConvertsVia, SignedAccountId32AsNative,
-	SignedToAccountId32, SovereignSignedViaLocation,
-};
-use xcm_executor::{
-	traits::{ConvertLocation, JustTry},
-	Config, XcmExecutor,
-};
-use sp_runtime::{
-	traits::{Get, Hash, IdentityLookup},
-	AccountId32,
-};
 
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
 	use frame_support::pallet_prelude::*;
-	use frame_support::StorageHasher;
-use frame_support::sp_runtime::traits::Block;
 
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
@@ -122,30 +106,30 @@ use frame_support::sp_runtime::traits::Block;
 		}
 	}
 
-	// impl<T: Config> XcmpMessageHandler for Pallet<T> {
-	// 	fn handle_xcmp_messages<'a, I: Iterator<Item = (ParaId, RelayBlockNumber, &'a [u8])>>(
-	// 		iter: I,
-	// 		max_weight: Weight,
-	// 	) -> Weight {
-	// 		for (sender, sent_at, data) in iter {
-	// 			let mut data_ref = data;
-	// 			let _ = XcmpMessageFormat::decode(&mut data_ref)
-	// 				.expect("Simulator encodes with versioned xcm format; qed");
+	impl<T: Config> XcmpMessageHandler for Pallet<T> {
+		fn handle_xcmp_messages<'a, I: Iterator<Item = (ParaId, RelayBlockNumber, &'a [u8])>>(
+			iter: I,
+			max_weight: Weight,
+		) -> Weight {
+			for (sender, sent_at, data) in iter {
+				let mut data_ref = data;
+				let _ = XcmpMessageFormat::decode(&mut data_ref)
+					.expect("Simulator encodes with versioned xcm format; qed");
 
-	// 			let mut remaining_fragments = data_ref;
-	// 			while !remaining_fragments.is_empty() {
-	// 				if let Ok(xcm) =
-	// 					VersionedXcm::<T::RuntimeCall>::decode(&mut remaining_fragments)
-	// 				{
-	// 					let _ = Self::handle_xcmp_message(sender, sent_at, xcm, max_weight);
-	// 				} else {
-	// 					debug_assert!(false, "Invalid incoming XCMP message data");
-	// 				}
-	// 			}
-	// 		}
-	// 		max_weight
-	// 	}
-	// }
+				let mut remaining_fragments = data_ref;
+				while !remaining_fragments.is_empty() {
+					if let Ok(xcm) =
+						VersionedXcm::<T::RuntimeCall>::decode(&mut remaining_fragments)
+					{
+						let _ = Self::handle_xcmp_message(sender, sent_at, xcm, max_weight);
+					} else {
+						debug_assert!(false, "Invalid incoming XCMP message data");
+					}
+				}
+			}
+			max_weight
+		}
+	}
 
 	impl<T: Config> DmpMessageHandler for Pallet<T> {
 		fn handle_dmp_messages(
