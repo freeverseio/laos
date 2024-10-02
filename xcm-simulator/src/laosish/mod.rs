@@ -58,37 +58,38 @@ use xcm_executor::{
 
 pub type AccountId = laos_primitives::AccountId;
 pub type Balance = laos_primitives::Balance;
+type Block = frame_system::mocking::MockBlock<Runtime>;
 
-parameter_types! {
-	pub const BlockHashCount: u64 = 250;
-}
+// parameter_types! {
+// 	pub const BlockHashCount: u64 = 250;
+// }
 
-#[derive_impl(frame_system::config_preludes::TestDefaultConfig)]
-impl frame_system::Config for Runtime {
-	type RuntimeOrigin = RuntimeOrigin;
-	type RuntimeCall = RuntimeCall;
-	type Nonce = u64;
-	type Hash = H256;
-	type Hashing = ::sp_runtime::traits::BlakeTwo256;
-	type AccountId = AccountId;
-	type Lookup = IdentityLookup<Self::AccountId>;
-	type Block = Block;
-	type RuntimeEvent = RuntimeEvent;
-	type BlockHashCount = BlockHashCount;
-	type BlockWeights = ();
-	type BlockLength = ();
-	type Version = ();
-	type PalletInfo = PalletInfo;
-	type AccountData = pallet_balances::AccountData<Balance>;
-	type OnNewAccount = ();
-	type OnKilledAccount = ();
-	type DbWeight = ();
-	type BaseCallFilter = Everything;
-	type SystemWeightInfo = ();
-	type SS58Prefix = ();
-	type OnSetCode = ();
-	type MaxConsumers = ConstU32<16>;
-}
+// #[derive_impl(frame_system::config_preludes::TestDefaultConfig)]
+// impl frame_system::Config for Runtime {
+// 	type RuntimeOrigin = RuntimeOrigin;
+// 	type RuntimeCall = RuntimeCall;
+// 	type Nonce = u64;
+// 	type Hash = H256;
+// 	type Hashing = ::sp_runtime::traits::BlakeTwo256;
+// 	type AccountId = AccountId;
+// 	type Lookup = IdentityLookup<Self::AccountId>;
+// 	type Block = Block;
+// 	type RuntimeEvent = RuntimeEvent;
+// 	type BlockHashCount = BlockHashCount;
+// 	type BlockWeights = ();
+// 	type BlockLength = ();
+// 	type Version = ();
+// 	type PalletInfo = PalletInfo;
+// 	type AccountData = pallet_balances::AccountData<Balance>;
+// 	type OnNewAccount = ();
+// 	type OnKilledAccount = ();
+// 	type DbWeight = ();
+// 	type BaseCallFilter = Everything;
+// 	type SystemWeightInfo = ();
+// 	type SS58Prefix = ();
+// 	type OnSetCode = ();
+// 	type MaxConsumers = ConstU32<16>;
+// }
 
 #[cfg(feature = "runtime-benchmarks")]
 pub struct UniquesHelper;
@@ -399,7 +400,6 @@ impl pallet_xcm::Config for Runtime {
 	type AdminOrigin = EnsureRoot<AccountId>;
 }
 
-type Block = frame_system::mocking::MockBlock<Runtime>;
 
 construct_runtime!(
 	pub enum Runtime
