@@ -16,7 +16,7 @@
 
 use crate::{
 	types::ToAuthor, AccountId, AllPalletsWithSystem, Balances, ParachainInfo, PolkadotXcm,
-	Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin,
+	Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin, MsgQueue,
 };
 use core::marker::PhantomData;
 use frame_support::{
@@ -41,11 +41,12 @@ use xcm_executor::XcmExecutor;
 
 parameter_types! {
 	pub const RelayLocation: Location = Location::parent();
-	pub const RelayNetwork: Option<NetworkId> = None;
+	pub const RelayNetwork: NetworkId = NetworkId::Kusama;
 	pub RelayChainOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into();
 	// For the real deployment, it is recommended to set `RelayNetwork` according to the relay chain
 	// and prepend `UniversalLocation` with `GlobalConsensus(RelayNetwork::get())`.
-	pub UniversalLocation: InteriorLocation = Parachain(ParachainInfo::parachain_id().into()).into();
+	// pub UniversalLocation: InteriorLocation = Parachain(ParachainInfo::parachain_id().into()).into();
+	pub UniversalLocation: InteriorLocation = [GlobalConsensus(RelayNetwork::get()), Parachain(MsgQueue::parachain_id().into())].into();
 }
 
 /// Type for specifying how a `MultiLocation` can be converted into an `AccountId`. This is used
@@ -171,12 +172,13 @@ pub type LocalOriginToLocation = SignedToAccountId20<RuntimeOrigin, AccountId, R
 
 /// The means for routing XCM messages which are not for local execution into the right message
 /// queues.
-pub type XcmRouter = xcm_builder::WithUniqueTopic<(
-	// Two routers - use UMP to communicate with the relay chain:
-	cumulus_primitives_utility::ParentAsUmp<crate::ParachainSystem, (), ()>,
-	// ..and XCMP to communicate with the sibling chains.
-	crate::XcmpQueue,
-)>;
+// pub type XcmRouter = xcm_builder::WithUniqueTopic<(
+// 	// Two routers - use UMP to communicate with the relay chain:
+// 	cumulus_primitives_utility::ParentAsUmp<crate::ParachainSystem, (), ()>,
+// 	// ..and XCMP to communicate with the sibling chains.
+// 	crate::XcmpQueue,
+// )>;
+pub type XcmRouter = xcm_builder::EnsureDecodableXcm<xcm_simulator::ParachainXcmRouter<MsgQueue>>;
 
 impl pallet_xcm::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;

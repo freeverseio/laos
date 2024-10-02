@@ -5336,6 +5336,7 @@ dependencies = [
  "staging-xcm-executor",
  "substrate-wasm-builder",
  "test-utils",
+ "xcm-simulator",
 ]
 
 [[package]]
@@ -16333,7 +16334,6 @@ version = "7.0.0"
 dependencies = [
  "frame-support",
  "frame-system",
- "laos-runtime",
  "log",
  "pallet-balances",
  "pallet-message-queue",

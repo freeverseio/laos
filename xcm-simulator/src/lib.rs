@@ -28,7 +28,7 @@ pub const INITIAL_BALANCE: u128 = 1_000_000_000;
 
 decl_test_parachain! {
 	pub struct ParaA {
-		Runtime = laos_runtime::Runtime,
+		Runtime = parachain::Runtime,
 		XcmpMessageHandler = parachain::MsgQueue,
 		DmpMessageHandler = parachain::MsgQueue,
 		new_ext = para_ext(1),

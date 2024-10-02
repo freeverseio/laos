@@ -10,7 +10,6 @@ codec = { package = "parity-scale-codec", version = "3.6.1" }
 scale-info = { version = "2.11.1", features = ["derive"] }
 log = { workspace = true }
 
-laos-runtime = { workspace = true }
 frame-system = { workspace = true }
 frame-support = { workspace = true }
 pallet-balances = { workspace = true }
@@ -45,7 +44,6 @@ std = [
 	"sp-runtime/std",
 	"sp-tracing/std",
 	"pallet-uniques/std",
-	"laos-runtime/std",
 ]
 runtime-benchmarks = [
 	"frame-support/runtime-benchmarks",
