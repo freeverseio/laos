@@ -61,9 +61,9 @@ pub type SovereignAccountOf = (
 pub type AccountId = laos_primitives::AccountId;
 pub type Balance = laos_primitives::Balance;
 
-parameter_types! {
-	pub const BlockHashCount: u64 = 250;
-}
+// parameter_types! {
+// 	pub const BlockHashCount: u64 = 250;
+// }
 
 #[derive_impl(frame_system::config_preludes::TestDefaultConfig)]
 impl frame_system::Config for Runtime {
