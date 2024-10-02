@@ -6,8 +6,8 @@ edition.workspace = true
 version = "7.0.0"
 
 [dependencies]
-codec = { package = "parity-scale-codec", version = "3.6.1" }
-scale-info = { version = "2.11.1", features = ["derive"] }
+codec = { package = "parity-scale-codec", version = "3.6.1", default-features = false }
+scale-info = { workspace = true }
 log = { workspace = true }
 
 frame-system = { workspace = true }
@@ -21,15 +21,16 @@ sp-runtime = { workspace = true }
 sp-io = { workspace = true }
 sp-tracing = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.11.0", default-features = false }
 
-xcm = { package = "staging-xcm", git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.11.0", default-features = false }
-xcm-executor = { package = "staging-xcm-executor", git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.11.0", default-features = false }
-xcm-builder = { package = "staging-xcm-builder", git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.11.0", default-features = false }
+xcm = { workspace = true }
+xcm-executor = { workspace = true }
+xcm-builder = { workspace = true }
 xcm-simulator = { workspace = true }
 pallet-xcm = { workspace = true }
 pallet-uniques = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.11.0", default-features = false }
 polkadot-core-primitives = { workspace = true }
 polkadot-runtime-parachains = { workspace = true }
 polkadot-parachain-primitives = { workspace = true }
+#laos-primitives = { workspace = true }
 
 [features]
 default = ["std"]
@@ -44,6 +45,15 @@ std = [
 	"sp-runtime/std",
 	"sp-tracing/std",
 	"pallet-uniques/std",
+#	"laos-primitives/std",
+	"sp-std/std",
+	"sp-io/std",
+	"sp-core/std",
+	"sp-runtime/std",
+	"polkadot-core-primitives/std",
+	"xcm/std",
+	"xcm-builder/std",
+	"xcm-executor/std",
 ]
 runtime-benchmarks = [
 	"frame-support/runtime-benchmarks",

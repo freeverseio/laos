@@ -29,4 +29,5 @@ std = [
 	"fp-account/std",
 	"sp-consensus-aura/std",
 	"cumulus-primitives-core/std",
+	"parachains-common/std"
 ]
