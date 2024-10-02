@@ -15,8 +15,8 @@
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 use crate::laosish::{
-	AccountId, Balance, Block, PalletInfo, Runtime, RuntimeCall,
-	RuntimeEvent, RuntimeOrigin, RuntimeTask, 
+	AccountId, Balance, Block, PalletInfo, Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin,
+	RuntimeTask,
 };
 use frame_support::{parameter_types, traits::Everything};
 use sp_runtime::traits::{BlakeTwo256, IdentityLookup};

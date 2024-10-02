@@ -21,21 +21,15 @@ mod configs;
 use codec::{Decode, Encode};
 use core::marker::PhantomData;
 use frame_support::{
-	construct_runtime, derive_impl, parameter_types,
-	traits::{
-		ContainsPair, EnsureOrigin, EnsureOriginWithArg, Everything, EverythingBut, Nothing,
-		OriginTrait,
-	},
-	weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight},
+	construct_runtime, parameter_types,
+	traits::{ContainsPair, Everything, EverythingBut, Nothing, OriginTrait},
+	weights::Weight,
 };
 use sp_runtime::traits::TryConvert;
 
 use frame_system::{EnsureRoot, RawOrigin as SystemRawOrigin};
-use sp_core::{ConstU32, H256};
-use sp_runtime::{
-	traits::{Get, Hash, IdentityLookup},
-	AccountId32,
-};
+use sp_core::ConstU32;
+use sp_runtime::traits::{Get, Hash};
 use sp_std::prelude::*;
 
 use pallet_xcm::XcmPassthrough;
@@ -45,51 +39,16 @@ use polkadot_parachain_primitives::primitives::{
 };
 use xcm::{latest::prelude::*, VersionedXcm};
 use xcm_builder::{
-	Account32Hash, AccountId32Aliases, AccountKey20Aliases, AllowUnpaidExecutionFrom,
-	ConvertedConcreteId, EnsureDecodableXcm, EnsureXcmOrigin, FixedRateOfFungible,
-	FixedWeightBounds, FrameTransactionalProcessor, FungibleAdapter, IsConcrete, NativeAsset,
-	NoChecking, NonFungiblesAdapter, ParentIsPreset, SiblingParachainConvertsVia,
-	SignedAccountId32AsNative, SignedToAccountId32, SovereignSignedViaLocation,
+	AccountKey20Aliases, AllowUnpaidExecutionFrom, EnsureDecodableXcm, EnsureXcmOrigin,
+	FixedRateOfFungible, FixedWeightBounds, FrameTransactionalProcessor, FungibleAdapter,
+	IsConcrete, NativeAsset, ParentIsPreset, SiblingParachainConvertsVia,
+	SovereignSignedViaLocation,
 };
-use xcm_executor::{
-	traits::{ConvertLocation, JustTry},
-	Config, XcmExecutor,
-};
+use xcm_executor::{Config, XcmExecutor};
 
 pub type AccountId = laos_primitives::AccountId;
 pub type Balance = laos_primitives::Balance;
 type Block = frame_system::mocking::MockBlock<Runtime>;
-
-// parameter_types! {
-// 	pub const BlockHashCount: u64 = 250;
-// }
-
-// #[derive_impl(frame_system::config_preludes::TestDefaultConfig)]
-// impl frame_system::Config for Runtime {
-// 	type RuntimeOrigin = RuntimeOrigin;
-// 	type RuntimeCall = RuntimeCall;
-// 	type Nonce = u64;
-// 	type Hash = H256;
-// 	type Hashing = ::sp_runtime::traits::BlakeTwo256;
-// 	type AccountId = AccountId;
-// 	type Lookup = IdentityLookup<Self::AccountId>;
-// 	type Block = Block;
-// 	type RuntimeEvent = RuntimeEvent;
-// 	type BlockHashCount = BlockHashCount;
-// 	type BlockWeights = ();
-// 	type BlockLength = ();
-// 	type Version = ();
-// 	type PalletInfo = PalletInfo;
-// 	type AccountData = pallet_balances::AccountData<Balance>;
-// 	type OnNewAccount = ();
-// 	type OnKilledAccount = ();
-// 	type DbWeight = ();
-// 	type BaseCallFilter = Everything;
-// 	type SystemWeightInfo = ();
-// 	type SS58Prefix = ();
-// 	type OnSetCode = ();
-// 	type MaxConsumers = ConstU32<16>;
-// }
 
 #[cfg(feature = "runtime-benchmarks")]
 pub struct UniquesHelper;
