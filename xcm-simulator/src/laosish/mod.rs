@@ -400,7 +400,6 @@ impl pallet_xcm::Config for Runtime {
 	type AdminOrigin = EnsureRoot<AccountId>;
 }
 
-
 construct_runtime!(
 	pub enum Runtime
 	{
