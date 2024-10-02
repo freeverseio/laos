@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Polkadot.  If not, see <http://www.gnu.org/licenses/>.
 
+mod laosish;
 mod parachain;
 mod relay_chain;
 
@@ -28,9 +29,9 @@ pub const INITIAL_BALANCE: u128 = 1_000_000_000;
 
 decl_test_parachain! {
 	pub struct ParaA {
-		Runtime = parachain::Runtime,
-		XcmpMessageHandler = parachain::MsgQueue,
-		DmpMessageHandler = parachain::MsgQueue,
+		Runtime = laosish::Runtime,
+		XcmpMessageHandler = laosish::MsgQueue,
+		DmpMessageHandler = laosish::MsgQueue,
 		new_ext = para_ext(1),
 	}
 }
