@@ -16,11 +16,16 @@
 
 //! Parachain runtime mock.
 
+mod configs;
+
 use codec::{Decode, Encode};
 use core::marker::PhantomData;
 use frame_support::{
 	construct_runtime, derive_impl, parameter_types,
-	traits::{ContainsPair, EnsureOrigin, EnsureOriginWithArg, Everything, OriginTrait, EverythingBut, Nothing},
+	traits::{
+		ContainsPair, EnsureOrigin, EnsureOriginWithArg, Everything, EverythingBut, Nothing,
+		OriginTrait,
+	},
 	weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight},
 };
 use sp_runtime::traits::TryConvert;
@@ -40,30 +45,23 @@ use polkadot_parachain_primitives::primitives::{
 };
 use xcm::{latest::prelude::*, VersionedXcm};
 use xcm_builder::{
-	AccountKey20Aliases,
-	Account32Hash, AccountId32Aliases, AllowUnpaidExecutionFrom, ConvertedConcreteId,
-	EnsureDecodableXcm, EnsureXcmOrigin, FixedRateOfFungible, FixedWeightBounds,
-	FrameTransactionalProcessor, FungibleAdapter, IsConcrete, NativeAsset, NoChecking,
-	NonFungiblesAdapter, ParentIsPreset, SiblingParachainConvertsVia, SignedAccountId32AsNative,
-	SignedToAccountId32, SovereignSignedViaLocation,
+	Account32Hash, AccountId32Aliases, AccountKey20Aliases, AllowUnpaidExecutionFrom,
+	ConvertedConcreteId, EnsureDecodableXcm, EnsureXcmOrigin, FixedRateOfFungible,
+	FixedWeightBounds, FrameTransactionalProcessor, FungibleAdapter, IsConcrete, NativeAsset,
+	NoChecking, NonFungiblesAdapter, ParentIsPreset, SiblingParachainConvertsVia,
+	SignedAccountId32AsNative, SignedToAccountId32, SovereignSignedViaLocation,
 };
 use xcm_executor::{
 	traits::{ConvertLocation, JustTry},
 	Config, XcmExecutor,
 };
 
-pub type SovereignAccountOf = (
-	SiblingParachainConvertsVia<Sibling, AccountId>,
-	AccountId32Aliases<RelayNetwork, AccountId>,
-	ParentIsPreset<AccountId>,
-);
-
 pub type AccountId = laos_primitives::AccountId;
 pub type Balance = laos_primitives::Balance;
 
-// parameter_types! {
-// 	pub const BlockHashCount: u64 = 250;
-// }
+parameter_types! {
+	pub const BlockHashCount: u64 = 250;
+}
 
 #[derive_impl(frame_system::config_preludes::TestDefaultConfig)]
 impl frame_system::Config for Runtime {
@@ -92,28 +90,6 @@ impl frame_system::Config for Runtime {
 	type MaxConsumers = ConstU32<16>;
 }
 
-parameter_types! {
-	pub ExistentialDeposit: Balance = 1;
-	pub const MaxLocks: u32 = 50;
-	pub const MaxReserves: u32 = 50;
-}
-
-impl pallet_balances::Config for Runtime {
-	type MaxLocks = MaxLocks;
-	type Balance = Balance;
-	type RuntimeEvent = RuntimeEvent;
-	type DustRemoval = ();
-	type ExistentialDeposit = ExistentialDeposit;
-	type AccountStore = System;
-	type WeightInfo = ();
-	type MaxReserves = MaxReserves;
-	type ReserveIdentifier = [u8; 8];
-	type RuntimeHoldReason = RuntimeHoldReason;
-	type RuntimeFreezeReason = RuntimeFreezeReason;
-	type FreezeIdentifier = ();
-	type MaxFreezes = ConstU32<0>;
-}
-
 #[cfg(feature = "runtime-benchmarks")]
 pub struct UniquesHelper;
 #[cfg(feature = "runtime-benchmarks")]
@@ -126,10 +102,11 @@ impl pallet_uniques::BenchmarkHelper<Location, AssetInstance> for UniquesHelper 
 	}
 }
 
-parameter_types! {
-	pub const ReservedXcmpWeight: Weight = Weight::from_parts(WEIGHT_REF_TIME_PER_SECOND.saturating_div(4), 0);
-	pub const ReservedDmpWeight: Weight = Weight::from_parts(WEIGHT_REF_TIME_PER_SECOND.saturating_div(4), 0);
-}
+// parameter_types! {
+// 	pub const ReservedXcmpWeight: Weight =
+// Weight::from_parts(WEIGHT_REF_TIME_PER_SECOND.saturating_div(4), 0); 	pub const
+// ReservedDmpWeight: Weight = Weight::from_parts(WEIGHT_REF_TIME_PER_SECOND.saturating_div(4), 0);
+// }
 
 parameter_types! {
 	pub const KsmLocation: Location = Location::parent();
@@ -158,9 +135,8 @@ parameter_types! {
 	pub ForeignPrefix: Location = (Parent,).into();
 }
 
-pub type LocalAssetTransactor = (
-	FungibleAdapter<Balances, IsConcrete<KsmLocation>, LocationToAccountId, AccountId, ()>,
-);
+pub type LocalAssetTransactor =
+	(FungibleAdapter<Balances, IsConcrete<KsmLocation>, LocationToAccountId, AccountId, ()>,);
 
 pub type XcmRouter = EnsureDecodableXcm<super::ParachainXcmRouter<MsgQueue>>;
 pub type Barrier = AllowUnpaidExecutionFrom<Everything>;
@@ -397,12 +373,6 @@ impl<T: Get<(Location, AssetFilter)>> ContainsPair<Location, Asset> for TrustedL
 	}
 }
 
-parameter_types! {
-	pub RelayTokenForRelay: (Location, AssetFilter) = (Parent.into(), Wild(AllOf { id: AssetId(Parent.into()), fun: WildFungible }));
-}
-
-pub type TrustedLockers = TrustedLockerCase<RelayTokenForRelay>;
-
 impl pallet_xcm::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type SendXcmOrigin = EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
@@ -420,7 +390,7 @@ impl pallet_xcm::Config for Runtime {
 	type AdvertisedXcmVersion = pallet_xcm::CurrentXcmVersion;
 	type Currency = Balances;
 	type CurrencyMatcher = ();
-	type TrustedLockers = TrustedLockers;
+	type TrustedLockers = ();
 	type SovereignAccountOf = LocationToAccountId;
 	type MaxLockers = ConstU32<8>;
 	type MaxRemoteLockConsumers = ConstU32<0>;
