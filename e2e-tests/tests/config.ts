@@ -5,7 +5,6 @@ import EvolutionCollection from "../build/contracts/EvolutionCollection.json";
 import EvolutionCollectionFactory from "../build/contracts/EvolutionCollectionFactory.json";
 import Vesting from "../build/contracts/Vesting.json";
 import ParachainStaking from "../build/contracts/ParachainStaking.json";
-import Balances from "../build/contracts/Balances.json";
 
 // Node config
 export const RUNTIME_SPEC_NAME = "laos";
@@ -54,8 +53,6 @@ export const VESTING_ABI = Vesting.abi as AbiItem[];
 // Staking contract
 export const STAKING_CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000800";
 export const STAKING_ABI = ParachainStaking.abi as AbiItem[];
-export const BALANCES_ABI = Balances.abi as AbiItem[];
-export const BALANCES_BYTECODE = Balances.bytecode;
 
 // Constants
 export const MAX_U96 = new BN("79228162514264337593543950336"); // 2^96 - 1

@@ -13,7 +13,6 @@
 	"author": "",
 	"license": "ISC",
 	"dependencies": {
-		"@openzeppelin/contracts": "^5.0.2",
 		"@polkadot/api": "^12.2.1",
 		"@polkadot/api-augment": "^12.2.1",
 		"@polkadot/types": "^12.2.1",
