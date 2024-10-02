@@ -15,8 +15,8 @@
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 use crate::{
-	types::ToAuthor, AccountId, AllPalletsWithSystem, Balances, MsgQueue, ParachainInfo,
-	PolkadotXcm, Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin,
+	types::ToAuthor, AccountId, AllPalletsWithSystem, Balances, ParachainInfo, PolkadotXcm,
+	Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin,
 };
 use core::marker::PhantomData;
 use frame_support::{
