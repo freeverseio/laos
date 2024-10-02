@@ -25,14 +25,12 @@ force_decorator = "generic-evm"
   ws_port = 9999
   command = "{{ZOMBIENET_LAOS_COMMAND}}"
   validator = true
-  args = ["-levm=trace,debug", "-lethereum=trace,debug"]
 
   [[parachains.collators]]
   name = "laos-1"
   ws_port = 10000
   command = "{{ZOMBIENET_LAOS_COMMAND}}"
   validator = true
-  args = ["-levm=trace,debug", "-lethereum=trace,debug"]
 
   [[parachains.collators]]
   name = "laos-2"
