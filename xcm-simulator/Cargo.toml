@@ -30,7 +30,7 @@ pallet-uniques = { git = "https://github.com/paritytech/polkadot-sdk", branch = 
 polkadot-core-primitives = { workspace = true }
 polkadot-runtime-parachains = { workspace = true }
 polkadot-parachain-primitives = { workspace = true }
-#laos-primitives = { workspace = true }
+laos-primitives = { workspace = true }
 
 [features]
 default = ["std"]
@@ -45,7 +45,7 @@ std = [
 	"sp-runtime/std",
 	"sp-tracing/std",
 	"pallet-uniques/std",
-#	"laos-primitives/std",
+	"laos-primitives/std",
 	"sp-std/std",
 	"sp-io/std",
 	"sp-core/std",

@@ -16334,6 +16334,7 @@ version = "7.0.0"
 dependencies = [
  "frame-support",
  "frame-system",
+ "laos-primitives",
  "log",
  "pallet-balances",
  "pallet-message-queue",
