@@ -66,7 +66,6 @@ pallet-asset-metadata-extender = { workspace = true }
 pallet-laos-evolution = { workspace = true }
 pallet-parachain-staking = { workspace = true }
 pallet-precompiles-benchmark = { workspace = true }
-pallet-mock-msg-queue = { workspace = true }
 
 
 # Polkadot
@@ -165,7 +164,6 @@ std = [
 	"pallet-scheduler/std",
 	"pallet-laos-evolution/std",
 	"pallet-asset-metadata-extender/std",
-	"pallet-mock-msg-queue/std",
 	"pallet-multisig/std",
 	"pallet-timestamp/std",
 	"pallet-identity/std",

@@ -5290,7 +5290,6 @@ dependencies = [
  "pallet-laos-evolution",
  "pallet-membership",
  "pallet-message-queue",
- "pallet-mock-msg-queue",
  "pallet-multisig",
  "pallet-parachain-staking",
  "pallet-precompiles-benchmark",
@@ -7733,23 +7732,6 @@ dependencies = [
  "sp-mmr-primitives",
  "sp-runtime",
  "sp-std 14.0.0 (git+https://github.com/paritytech/polkadot-sdk?branch=release-polkadot-v1.11.0)",
-]
-
-[[package]]
-name = "pallet-mock-msg-queue"
-version = "0.0.0"
-dependencies = [
- "frame-support",
- "frame-system",
- "parity-scale-codec",
- "polkadot-core-primitives",
- "polkadot-parachain-primitives",
- "scale-info",
- "sp-io",
- "sp-runtime",
- "staging-xcm",
- "staging-xcm-builder",
- "staging-xcm-executor",
 ]
 
 [[package]]
@@ -16373,7 +16355,6 @@ dependencies = [
  "pallet-laos-evolution",
  "pallet-membership",
  "pallet-message-queue",
- "pallet-mock-msg-queue",
  "pallet-multisig",
  "pallet-parachain-staking",
  "pallet-precompiles-benchmark",
