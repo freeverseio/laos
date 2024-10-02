@@ -17,6 +17,7 @@
 //! Parachain runtime mock.
 
 mod configs;
+mod types;
 
 use codec::{Decode, Encode};
 use core::marker::PhantomData;

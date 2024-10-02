@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
-use crate::{
+use crate::laosish::{
 	types::ToAuthor, AccountId, AllPalletsWithSystem, Balances, MsgQueue, ParachainInfo,
 	PolkadotXcm, Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin,
 };
@@ -173,9 +173,9 @@ pub type LocalOriginToLocation = SignedToAccountId20<RuntimeOrigin, AccountId, R
 /// queues.
 pub type XcmRouter = staging_xcm_builder::WithUniqueTopic<(
 	// Two routers - use UMP to communicate with the relay chain:
-	cumulus_primitives_utility::ParentAsUmp<crate::ParachainSystem, (), ()>,
+	cumulus_primitives_utility::ParentAsUmp<crate::laosish::ParachainSystem, (), ()>,
 	// ..and XCMP to communicate with the sibling chains.
-	crate::XcmpQueue,
+	crate::laosish::XcmpQueue,
 )>;
 
 impl pallet_xcm::Config for Runtime {
