@@ -22,7 +22,7 @@ use codec::{Decode, Encode};
 use core::marker::PhantomData;
 use frame_support::{
 	construct_runtime, parameter_types,
-	traits::{ContainsPair, Everything, EverythingBut, Nothing, OriginTrait},
+	traits::{ContainsPair, Everything, Nothing, OriginTrait},
 	weights::Weight,
 };
 use sp_runtime::traits::TryConvert;
@@ -50,24 +50,6 @@ pub type AccountId = laos_primitives::AccountId;
 pub type Balance = laos_primitives::Balance;
 type Block = frame_system::mocking::MockBlock<Runtime>;
 
-#[cfg(feature = "runtime-benchmarks")]
-pub struct UniquesHelper;
-#[cfg(feature = "runtime-benchmarks")]
-impl pallet_uniques::BenchmarkHelper<Location, AssetInstance> for UniquesHelper {
-	fn collection(i: u16) -> Location {
-		GeneralIndex(i as u128).into()
-	}
-	fn item(i: u16) -> AssetInstance {
-		AssetInstance::Index(i as u128)
-	}
-}
-
-// parameter_types! {
-// 	pub const ReservedXcmpWeight: Weight =
-// Weight::from_parts(WEIGHT_REF_TIME_PER_SECOND.saturating_div(4), 0); 	pub const
-// ReservedDmpWeight: Weight = Weight::from_parts(WEIGHT_REF_TIME_PER_SECOND.saturating_div(4), 0);
-// }
-
 parameter_types! {
 	pub const KsmLocation: Location = Location::parent();
 	pub const RelayNetwork: NetworkId = NetworkId::Kusama;
@@ -81,18 +63,14 @@ pub type LocationToAccountId = (
 	AccountKey20Aliases<RelayNetwork, AccountId>,
 );
 
-pub type XcmOriginToCallOrigin = (
-	SovereignSignedViaLocation<LocationToAccountId, RuntimeOrigin>,
-	// SignedAccountId32AsNative<RelayNetwork, RuntimeOrigin>,
-	XcmPassthrough<RuntimeOrigin>,
-);
+pub type XcmOriginToCallOrigin =
+	(SovereignSignedViaLocation<LocationToAccountId, RuntimeOrigin>, XcmPassthrough<RuntimeOrigin>);
 
 parameter_types! {
 	pub const UnitWeightCost: Weight = Weight::from_parts(1, 1);
 	pub KsmPerSecondPerByte: (AssetId, u128, u128) = (AssetId(Parent.into()), 1, 1);
 	pub const MaxInstructions: u32 = 100;
 	pub const MaxAssetsIntoHolding: u32 = 64;
-	pub ForeignPrefix: Location = (Parent,).into();
 }
 
 pub type LocalAssetTransactor =
@@ -101,23 +79,14 @@ pub type LocalAssetTransactor =
 pub type XcmRouter = EnsureDecodableXcm<super::ParachainXcmRouter<MsgQueue>>;
 pub type Barrier = AllowUnpaidExecutionFrom<Everything>;
 
-parameter_types! {
-	pub NftCollectionOne: AssetFilter
-		= Wild(AllOf { fun: WildNonFungible, id: AssetId((Parent, GeneralIndex(1)).into()) });
-	pub NftCollectionOneForRelay: (AssetFilter, Location)
-		= (NftCollectionOne::get(), (Parent,).into());
-}
-pub type TrustedTeleporters = xcm_builder::Case<NftCollectionOneForRelay>;
-pub type TrustedReserves = EverythingBut<xcm_builder::Case<NftCollectionOneForRelay>>;
-
 pub struct XcmConfig;
 impl Config for XcmConfig {
 	type RuntimeCall = RuntimeCall;
 	type XcmSender = XcmRouter;
 	type AssetTransactor = LocalAssetTransactor;
 	type OriginConverter = XcmOriginToCallOrigin;
-	type IsReserve = (NativeAsset, TrustedReserves);
-	type IsTeleporter = TrustedTeleporters;
+	type IsReserve = NativeAsset;
+	type IsTeleporter = ();
 	type UniversalLocation = UniversalLocation;
 	type Barrier = Barrier;
 	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
