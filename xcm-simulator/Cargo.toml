@@ -6,219 +6,55 @@ edition.workspace = true
 version = "7.0.0"
 
 [dependencies]
-codec = { package = "parity-scale-codec", version = "3.6.1", default-features = false }
-scale-info = { workspace = true }
+codec = { package = "parity-scale-codec", version = "3.6.1" }
+scale-info = { version = "2.11.1", features = ["derive"] }
 log = { workspace = true }
 
-sp-tracing = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.11.0", default-features = false }
-pallet-uniques = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.11.0", default-features = false }
-polkadot-runtime-parachains = { workspace = true }
-polkadot-core-primitives = { workspace = true }
-laos-primitives = { workspace = true }
-
-# Substrate
-frame-benchmarking = { workspace = true, optional = true }
-frame-executive = { workspace = true }
-frame-support = { workspace = true }
 frame-system = { workspace = true }
-frame-system-benchmarking = { workspace = true, optional = true }
-frame-system-rpc-runtime-api = { workspace = true }
-frame-try-runtime = { workspace = true, optional = true }
-pallet-aura = { workspace = true }
-pallet-scheduler = { workspace = true }
-pallet-authorship = { workspace = true }
-pallet-balances = { workspace = true , features = ["insecure_zero_ed"] }
+frame-support = { workspace = true }
+pallet-balances = { workspace = true }
 pallet-message-queue = { workspace = true }
-pallet-multisig = { workspace = true }
-pallet-session = { workspace = true }
-pallet-identity = { workspace = true }
-pallet-sudo = { workspace = true }
-pallet-democracy = { workspace = true }
-pallet-treasury = { workspace = true }
-pallet-preimage = { workspace = true }
-pallet-timestamp = { workspace = true }
-pallet-collective = { workspace = true }
-pallet-membership ={ workspace = true }
-pallet-elections-phragmen = { workspace = true }
-pallet-transaction-payment = { workspace = true }
-pallet-transaction-payment-rpc-runtime-api = { workspace = true }
-pallet-vesting = { workspace = true }
-pallet-proxy = { workspace = true }
-pallet-utility = { workspace = true }
-sp-api = { workspace = true }
-sp-io = { workspace = true }
-sp-block-builder = { workspace = true }
-sp-consensus-aura = { workspace = true }
-sp-consensus-slots = { workspace = true }
-sp-core = { workspace = true }
-sp-inherents = { workspace = true }
-sp-offchain = { workspace = true }
-sp-runtime = { workspace = true }
-sp-session = { workspace = true }
+pallet-uniques = { workspace = true }
 sp-std = { workspace = true }
-sp-transaction-pool = { workspace = true }
-sp-version = { workspace = true }
-sp-staking = { workspace = true }
-sp-weights ={ workspace = true }
-sp-genesis-builder ={ workspace = true }
+sp-core = { workspace = true }
+sp-runtime = { workspace = true }
+sp-io = { workspace = true }
+sp-tracing = { workspace = true }
 
-pallet-asset-metadata-extender = { workspace = true }
-pallet-laos-evolution = { workspace = true }
-pallet-parachain-staking = { workspace = true }
-pallet-precompiles-benchmark = { workspace = true }
-
-
-# Polkadot
-pallet-xcm = { workspace = true }
-polkadot-runtime-common = { workspace = true }
-polkadot-parachain-primitives = { workspace = true }
 xcm = { workspace = true }
-xcm-builder = { workspace = true }
-xcm-executor = { workspace = true }
-
-# Cumulus
-cumulus-pallet-aura-ext = { workspace = true }
-cumulus-pallet-parachain-system = { workspace = true }
-cumulus-pallet-session-benchmarking = { workspace = true, optional = true}
-cumulus-pallet-xcm = { workspace = true }
-cumulus-pallet-xcmp-queue = { workspace = true }
-cumulus-primitives-core = { workspace = true }
-cumulus-primitives-timestamp = { workspace = true }
-cumulus-primitives-utility = { workspace = true }
-parachain-info = { workspace = true }
-parachains-common = { workspace = true }
 xcm-simulator = { workspace = true }
+xcm-executor = { workspace = true }
+xcm-builder = { workspace = true }
+pallet-xcm = { workspace = true }
+polkadot-core-primitives = { workspace = true }
+polkadot-runtime-parachains = { workspace = true }
+polkadot-parachain-primitives = { workspace = true }
+laos-primitives = { workspace = true }
+parachain-info = { workspace = true }
 
-# Frontier
-fp-evm = { workspace = true }
-fp-rpc = { workspace = true }
-fp-self-contained = { workspace = true, features = ["serde"] }
-
-# Frontier FRAME
-pallet-base-fee = { workspace = true }
-pallet-evm = { workspace = true }
-pallet-ethereum = { workspace = true }
-pallet-evm-chain-id = { workspace = true }
-pallet-evm-precompile-modexp = { workspace = true }
-pallet-evm-precompile-simple = { workspace = true }
-pallet-evm-precompile-bn128 = { workspace = true }
-pallet-evm-precompile-blake2 = { workspace = true }
-pallet-evm-precompile-parachain-staking = { workspace = true }
-
-
-hex = { workspace = true }
 
 [features]
 default = ["std"]
 std = [
-	"cumulus-primitives-utility/std",
-	"cumulus-pallet-parachain-system/std",
-	"pallet-transaction-payment/std",
-	"fp-rpc/std",
-	"cumulus-pallet-xcm/std",
 	"parachain-info/std",
-	"frame-support/std",
-	"frame-system/std",
-	"pallet-balances/std",
-	"pallet-message-queue/std",
-	"pallet-xcm/std",
-	"polkadot-parachain-primitives/std",
-	"polkadot-runtime-parachains/std",
-	"sp-runtime/std",
-	"sp-tracing/std",
-	"pallet-uniques/std",
 	"laos-primitives/std",
-	"sp-std/std",
-	"sp-io/std",
-	"sp-core/std",
-	"sp-runtime/std",
-	"polkadot-core-primitives/std",
-	"xcm/std",
-	"xcm-builder/std",
-	"xcm-executor/std",
-	"scale-info/std",
-	"cumulus-pallet-aura-ext/std",
-	"cumulus-pallet-parachain-system/std",
-	"cumulus-pallet-xcm/std",
-	"cumulus-pallet-xcmp-queue/std",
-	"pallet-message-queue/std",
-	"cumulus-primitives-core/std",
-	"cumulus-primitives-timestamp/std",
-	"cumulus-primitives-utility/std",
-	"parachains-common/std",
-	"frame-executive/std",
-	"frame-support/std",
-	"frame-system-rpc-runtime-api/std",
-	"frame-system/std",
-	"pallet-aura/std",
-	"pallet-authorship/std",
-	"pallet-balances/std",
-	"pallet-elections-phragmen/std",
-	"pallet-session/std",
-	"pallet-democracy/std",
-	"pallet-sudo/std",
-	"pallet-treasury/std",
-	"pallet-collective/std",
-	"pallet-membership/std",
-	"pallet-preimage/std",
-	"pallet-scheduler/std",
-	"pallet-laos-evolution/std",
-	"pallet-asset-metadata-extender/std",
-	"pallet-multisig/std",
-	"pallet-timestamp/std",
-	"pallet-identity/std",
-	"pallet-transaction-payment-rpc-runtime-api/std",
-	"pallet-vesting/std",
-	"pallet-precompiles-benchmark/std",
-	"pallet-transaction-payment/std",
-	"pallet-xcm/std",
-	"parachain-info/std",
-	"polkadot-parachain-primitives/std",
-	"polkadot-runtime-common/std",
-	"sp-api/std",
-	"sp-block-builder/std",
-	"sp-consensus-aura/std",
-	"sp-core/std",
-	"sp-io/std",
-	"sp-inherents/std",
-	"sp-offchain/std",
-	"sp-runtime/std",
-	"sp-session/std",
-	"sp-std/std",
-	"sp-transaction-pool/std",
-	"sp-version/std",
-	"sp-weights/std",
-	"sp-genesis-builder/std",
-	"xcm-builder/std",
-	"xcm-executor/std",
-	"xcm/std",
-	# Frontier
-	"fp-evm/std",
-	"fp-rpc/std",
-	"fp-self-contained/std",
-	# Frontier FRAME
-	"pallet-base-fee/std",
-	"pallet-ethereum/std",
-	"pallet-evm/std",
-	"pallet-evm-chain-id/std",
-	"pallet-evm-precompile-modexp/std",
-	"pallet-evm-precompile-simple/std",
-	"pallet-evm-precompile-bn128/std",
-	"pallet-evm-precompile-blake2/std",	
-	"pallet-evm-precompile-parachain-staking/std",	
-	"cumulus-pallet-session-benchmarking?/std",
-	"frame-benchmarking?/std",
-	"frame-system-benchmarking?/std",
-	"frame-try-runtime?/std",
-	# Bridge deps,
-	"laos-primitives/std",
-	"hex/std",
-	"pallet-parachain-staking/std",
-	"log/std",
-	"sp-consensus-slots/std",
-	"sp-staking/std",
-	"pallet-utility/std",
-	"pallet-proxy/std",
+    "frame-system/std",
+    "frame-support/std",
+    "pallet-balances/std",
+    "pallet-message-queue/std",
+    "pallet-uniques/std",
+    "sp-std/std",
+    "sp-core/std",
+    "sp-runtime/std",
+    "sp-io/std",
+    "sp-tracing/std",
+    "xcm/std",
+    "xcm-executor/std",
+    "xcm-builder/std",
+    "pallet-xcm/std",
+    "polkadot-core-primitives/std",
+    "polkadot-runtime-parachains/std",
+    "polkadot-parachain-primitives/std"
 ]
 runtime-benchmarks = [
 	"frame-support/runtime-benchmarks",
@@ -230,6 +66,6 @@ runtime-benchmarks = [
 	"polkadot-parachain-primitives/runtime-benchmarks",
 	"polkadot-runtime-parachains/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
-#	"xcm-builder/runtime-benchmarks",
-#	"xcm-executor/runtime-benchmarks",
+	"xcm-builder/runtime-benchmarks",
+	"xcm-executor/runtime-benchmarks",
 ]
