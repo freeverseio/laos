@@ -22,29 +22,21 @@ use codec::{Decode, Encode};
 use core::marker::PhantomData;
 use frame_support::{
 	construct_runtime, parameter_types,
-	traits::{ContainsPair, Everything, Nothing, OriginTrait},
+	traits::{ContainsPair, OriginTrait},
 	weights::Weight,
 };
 use sp_runtime::traits::TryConvert;
 
-use frame_system::{EnsureRoot, RawOrigin as SystemRawOrigin};
-use sp_core::ConstU32;
+use frame_system::RawOrigin as SystemRawOrigin;
 use sp_runtime::traits::{Get, Hash};
 use sp_std::prelude::*;
 
-use pallet_xcm::XcmPassthrough;
 use polkadot_core_primitives::BlockNumber as RelayBlockNumber;
 use polkadot_parachain_primitives::primitives::{
-	DmpMessageHandler, Id as ParaId, Sibling, XcmpMessageFormat, XcmpMessageHandler,
+	DmpMessageHandler, Id as ParaId, XcmpMessageFormat, XcmpMessageHandler,
 };
 use xcm::{latest::prelude::*, VersionedXcm};
-use xcm_builder::{
-	AccountKey20Aliases, AllowUnpaidExecutionFrom, EnsureDecodableXcm, EnsureXcmOrigin,
-	FixedRateOfFungible, FixedWeightBounds, FrameTransactionalProcessor, FungibleAdapter,
-	IsConcrete, NativeAsset, ParentIsPreset, SiblingParachainConvertsVia,
-	SovereignSignedViaLocation,
-};
-use xcm_executor::{Config, XcmExecutor};
+use xcm_executor::XcmExecutor;
 
 pub type AccountId = laos_primitives::AccountId;
 pub type Balance = laos_primitives::Balance;
@@ -55,16 +47,6 @@ parameter_types! {
 	pub const RelayNetwork: NetworkId = NetworkId::Kusama;
 	pub UniversalLocation: InteriorLocation = [GlobalConsensus(RelayNetwork::get()), Parachain(MsgQueue::parachain_id().into())].into();
 }
-
-pub type LocationToAccountId = (
-	ParentIsPreset<AccountId>,
-	SiblingParachainConvertsVia<Sibling, AccountId>,
-	// Straight up local `AccountId20` origins just alias directly to `AccountId`.
-	AccountKey20Aliases<RelayNetwork, AccountId>,
-);
-
-pub type XcmOriginToCallOrigin =
-	(SovereignSignedViaLocation<LocationToAccountId, RuntimeOrigin>, XcmPassthrough<RuntimeOrigin>);
 
 parameter_types! {
 	pub KsmPerSecondPerByte: (AssetId, u128, u128) = (AssetId(Parent.into()), 1, 1);
@@ -227,9 +209,6 @@ impl mock_msg_queue::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type XcmExecutor = XcmExecutor<configs::xcm_config::XcmConfig>;
 }
-
-/// No local origins on this chain are allowed to dispatch XCM sends/executions.
-pub type LocalOriginToLocation = SignedToAccountId20<RuntimeOrigin, AccountId, RelayNetwork>;
 
 pub struct SignedToAccountId20<RuntimeOrigin, AccountId, Network>(
 	PhantomData<(RuntimeOrigin, AccountId, Network)>,
