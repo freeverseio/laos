@@ -32,10 +32,7 @@ use cumulus_client_service::{
 	BuildNetworkParams, CollatorSybilResistance, DARecoveryProfile, ParachainHostFunctions,
 	StartRelayChainTasksParams,
 };
-use cumulus_primitives_core::{
-	relay_chain::CollatorPair,
-	ParaId, PersistedValidationData,
-};
+use cumulus_primitives_core::{relay_chain::CollatorPair, ParaId, PersistedValidationData};
 use cumulus_primitives_parachain_inherent::ParachainInherentData;
 use cumulus_relay_chain_interface::{OverseerHandle, RelayChainInterface};
 use cumulus_test_relay_sproof_builder::RelayStateSproofBuilder;
