@@ -27,7 +27,14 @@ jobs:
           cargo build --release --locked
 
       - name: Download polkadot
-        run: ./zombienet/download_polkadot.sh
+        run: |
+          chmod +x ./zombienet/download_polkadot.sh
+          ./zombienet/download_polkadot.sh
+
+      - name: Copy zombienet binary
+        run: |
+          wget https://github.com/paritytech/zombienet/releases/download/v1.3.106/zombienet-linux-x64
+          chmod +x ./zombienet-linux-x64
 
       - name: Run zombienet
         run: |
