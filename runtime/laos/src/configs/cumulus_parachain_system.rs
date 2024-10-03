@@ -39,7 +39,7 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
 	type XcmpMessageHandler = XcmpQueue;
 	type ReservedXcmpWeight = ReservedXcmpWeight;
 	type CheckAssociatedRelayNumber =
-		cumulus_pallet_parachain_system::RelayNumberMonotonicallyIncreases;
+		cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 	type ConsensusHook = ConsensusHook;
 	type DmpQueue = frame_support::traits::EnqueueWithOrigin<MessageQueue, RelayOrigin>;
 	type WeightInfo = weights::cumulus_pallet_parachain_system::WeightInfo<Runtime>;
@@ -47,14 +47,14 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
 
 /// Maximum number of blocks simultaneously accepted by the Runtime, not yet included
 /// into the relay chain.
-const UNINCLUDED_SEGMENT_CAPACITY: u32 = 1;
+const UNINCLUDED_SEGMENT_CAPACITY: u32 = 3;
 /// How many parachain blocks are processed by the relay chain per parent. Limits the
 /// number of blocks authored per slot.
 const BLOCK_PROCESSING_VELOCITY: u32 = 1;
 /// Relay chain slot duration, in milliseconds.
 const RELAY_CHAIN_SLOT_DURATION_MILLIS: u32 = 6000;
 
-pub type ConsensusHook = cumulus_pallet_aura_ext::FixedVelocityConsensusHook<
+type ConsensusHook = cumulus_pallet_aura_ext::FixedVelocityConsensusHook<
 	Runtime,
 	RELAY_CHAIN_SLOT_DURATION_MILLIS,
 	BLOCK_PROCESSING_VELOCITY,
@@ -95,4 +95,5 @@ impl cumulus_pallet_parachain_system::CheckInherents<Block> for CheckInherents {
 cumulus_pallet_parachain_system::register_validate_block! {
 	Runtime = Runtime,
 	BlockExecutor = cumulus_pallet_aura_ext::BlockExecutor::<Runtime, crate::Executive>,
+	CheckInherents = CheckInherents,
 }
