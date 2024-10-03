@@ -225,7 +225,7 @@ pub mod mock_msg_queue {
 
 impl mock_msg_queue::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type XcmExecutor = (); // XcmExecutor<configs::xcm_config::XcmConfig>;
+	type XcmExecutor = XcmExecutor<configs::xcm_config::XcmConfig>;
 }
 
 /// No local origins on this chain are allowed to dispatch XCM sends/executions.
@@ -269,6 +269,6 @@ construct_runtime!(
 		ParachainInfo: parachain_info,
 		Balances: pallet_balances,
 		MsgQueue: mock_msg_queue,
-		// PolkadotXcm: pallet_xcm,
+		PolkadotXcm: pallet_xcm,
 	}
 );
