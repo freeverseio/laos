@@ -36,7 +36,7 @@ use sp_std::prelude::*;
 use sp_version::RuntimeVersion;
 // Local module imports
 use super::{
-	AccountId, Aura, AuraId, Balance, Block, Ethereum, Executive, InherentDataExt, Nonce,
+	AccountId, AuraId, Balance, Block, Ethereum, Executive, InherentDataExt, Nonce,
 	ParachainSystem, Runtime, RuntimeCall, RuntimeGenesisConfig, SessionKeys, System,
 	TransactionPayment, UncheckedExtrinsic, EVM, VERSION,
 };
