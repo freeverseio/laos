@@ -76,6 +76,7 @@ impl_opaque_keys! {
 
 /// This determines the average expected block time that we are targeting.
 pub const MILLISECS_PER_BLOCK: u64 = 12000;
+pub const SLOT_DURATION: u64 = MILLISECS_PER_BLOCK;
 
 /// Version of the runtime
 #[sp_version::runtime_version]

@@ -2,7 +2,7 @@
 
 # Default version and download directory
 VERSION=${1:-"v1.11.0"}
-DOWNLOAD_DIR=${2:-"./tmp"}  # Default is the current directory
+DOWNLOAD_DIR=${2:-"./tmp"}  # Default is tmp
 
 BASE_URL="https://github.com/paritytech/polkadot-sdk/releases/download/polkadot-$VERSION"
 

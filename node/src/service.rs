@@ -27,20 +27,26 @@ use laos_runtime::{apis::RuntimeApi, opaque::Block, types::TransactionConverter,
 use cumulus_client_collator::service::CollatorService;
 use cumulus_client_consensus_common::ParachainBlockImport as TParachainBlockImport;
 use cumulus_client_consensus_proposer::Proposer;
+use cumulus_client_consensus_relay_chain::Verifier as RelayChainVerifier;
 use cumulus_client_service::{
 	build_network, build_relay_chain_interface, prepare_node_config, start_relay_chain_tasks,
 	BuildNetworkParams, CollatorSybilResistance, DARecoveryProfile, ParachainHostFunctions,
 	StartRelayChainTasksParams,
 };
-use cumulus_primitives_core::{relay_chain::CollatorPair, ParaId};
+use cumulus_primitives_core::{
+	relay_chain::{CollatorPair, ValidationCode},
+	ParaId, PersistedValidationData,
+};
+use cumulus_primitives_parachain_inherent::ParachainInherentData;
 use cumulus_relay_chain_interface::{OverseerHandle, RelayChainInterface};
+use cumulus_test_relay_sproof_builder::RelayStateSproofBuilder;
 
 // Substrate Imports
 use fc_rpc::{StorageOverride, StorageOverrideHandler};
 use frame_benchmarking_cli::SUBSTRATE_REFERENCE_HARDWARE;
 use futures::FutureExt;
 use sc_client_api::Backend;
-use sc_consensus::ImportQueue;
+use sc_consensus::{import_queue::BasicQueue, ImportQueue};
 use sc_executor::{
 	HeapAllocStrategy, NativeElseWasmExecutor, WasmExecutor, DEFAULT_HEAP_ALLOC_STRATEGY,
 };
@@ -49,6 +55,10 @@ use sc_network_sync::SyncingService;
 use sc_service::{Configuration, PartialComponents, TFullBackend, TFullClient, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryHandle, TelemetryWorker, TelemetryWorkerHandle};
 use sc_transaction_pool_api::OffchainTransactionPoolFactory;
+use sp_consensus_aura::{
+	sr25519::{AuthorityId as AuraId, AuthorityPair as AuraPair},
+	AuraApi,
+};
 use sp_core::U256;
 use sp_keystore::KeystorePtr;
 use substrate_prometheus_endpoint::Registry;
@@ -347,12 +357,34 @@ async fn start_node_impl(
 			let current = sp_timestamp::InherentDataProvider::from_system_time();
 			let next_slot = current.timestamp().as_millis() + slot_duration.as_millis();
 			let timestamp = sp_timestamp::InherentDataProvider::new(next_slot.into());
-			let slot = sp_consensus_aura::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
+			let slot =
+			sp_consensus_aura::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
 				*timestamp,
 				slot_duration,
 			);
 			let dynamic_fee = fp_dynamic_fee::InherentDataProvider(U256::from(target_gas_price));
-			Ok((slot, timestamp, dynamic_fee))
+
+			let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
+			// Create a dummy parachain inherent data provider which is required to pass
+			// the checks by the para chain system. We use dummy values because in the 'pending
+			// context' neither do we have access to the real values nor do we need them.
+			let (relay_parent_storage_root, relay_chain_state) =
+				RelayStateSproofBuilder::default().into_state_root_and_proof();
+			let vfp = PersistedValidationData {
+				// This is a hack to make
+				// `cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases` happy. Relay
+				// parent number can't be bigger than u32::MAX.
+				relay_parent_number: u32::MAX,
+				relay_parent_storage_root,
+				..Default::default()
+			};
+			let parachain_inherent_data = ParachainInherentData {
+				validation_data: vfp,
+				relay_chain_state,
+				downward_messages: Default::default(),
+				horizontal_messages: Default::default(),
+			};
+			Ok((slot, timestamp, dynamic_fee, parachain_inherent_data))
 		},
 	};
 
@@ -396,7 +428,7 @@ async fn start_node_impl(
 	spawn_frontier_tasks(
 		&task_manager,
 		client.clone(),
-		backend,
+		backend.clone(),
 		frontier_backend,
 		filter_pool,
 		overrides,
@@ -463,6 +495,7 @@ async fn start_node_impl(
 	if validator {
 		start_consensus(
 			client.clone(),
+			backend.clone(),
 			block_import,
 			prometheus_registry.as_ref(),
 			telemetry.as_ref().map(|t| t.handle()),
@@ -524,6 +557,7 @@ fn build_import_queue(
 #[allow(clippy::too_many_arguments)]
 fn start_consensus(
 	client: Arc<ParachainClient>,
+	backend: Arc<ParachainBackend>,
 	block_import: ParachainBlockImport,
 	prometheus_registry: Option<&Registry>,
 	telemetry: Option<TelemetryHandle>,
@@ -538,9 +572,7 @@ fn start_consensus(
 	overseer_handle: OverseerHandle,
 	announce_block: Arc<dyn Fn(Hash, Option<Vec<u8>>) + Send + Sync>,
 ) -> Result<(), sc_service::Error> {
-	use cumulus_client_consensus_aura::collators::basic::{
-		self as basic_aura, Params as BasicAuraParams,
-	};
+	use cumulus_client_consensus_aura::collators::lookahead::{self as aura, Params as AuraParams};
 
 	// NOTE: because we use Aura here explicitly, we can use `CollatorSybilResistance::Resistant`
 	// when starting the network.
@@ -562,11 +594,15 @@ fn start_consensus(
 		client.clone(),
 	);
 
-	let params = BasicAuraParams {
+	let params = AuraParams {
 		create_inherent_data_providers: move |_, ()| async move { Ok(()) },
 		block_import,
-		para_client: client,
+		para_client: client.clone(),
+		para_backend: backend.clone(),
 		relay_client: relay_chain_interface,
+		code_hash_provider: move |block_hash| {
+			client.code_at(block_hash).ok().map(|c| ValidationCode::from(c).hash())
+		},
 		sync_oracle,
 		keystore,
 		collator_key,
@@ -576,12 +612,12 @@ fn start_consensus(
 		proposer,
 		collator_service,
 		// Very limited proposal time.
-		authoring_duration: Duration::from_millis(500),
-		collation_request_receiver: None,
+		authoring_duration: Duration::from_millis(1500),
+		reinitialize: false,
 	};
 
 	let fut =
-		basic_aura::run::<Block, sp_consensus_aura::sr25519::AuthorityPair, _, _, _, _, _, _, _>(
+		aura::run::<Block, sp_consensus_aura::sr25519::AuthorityPair, _, _, _, _, _, _, _, _, _>(
 			params,
 		);
 	task_manager.spawn_essential_handle().spawn("aura", None, fut);
