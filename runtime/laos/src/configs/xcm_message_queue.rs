@@ -23,9 +23,9 @@ impl pallet_message_queue::Config for Runtime {
 	type MessageProcessor =
 		pallet_message_queue::mock_helpers::NoopMessageProcessor<AggregateMessageOrigin>;
 	#[cfg(not(feature = "runtime-benchmarks"))]
-	type MessageProcessor = staging_xcm_builder::ProcessXcmMessage<
+	type MessageProcessor = xcm_builder::ProcessXcmMessage<
 		AggregateMessageOrigin,
-		staging_xcm_executor::XcmExecutor<super::xcm_config::XcmConfig>,
+		xcm_executor::XcmExecutor<super::xcm_config::XcmConfig>,
 		crate::RuntimeCall,
 	>;
 	type Size = u32;
