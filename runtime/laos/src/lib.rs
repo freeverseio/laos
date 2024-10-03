@@ -104,7 +104,7 @@ construct_runtime!(
 		System: frame_system = 0,
 		ParachainSystem: cumulus_pallet_parachain_system = 1,
 		Timestamp: pallet_timestamp = 2,
-		ParachainInfo: staging_parachain_info = 3,
+		ParachainInfo: parachain_info = 3,
 		Sudo: pallet_sudo = 4,
 		Utility: pallet_utility = 5,
 		Multisig: pallet_multisig = 6,
