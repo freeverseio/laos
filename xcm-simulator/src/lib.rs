@@ -143,8 +143,8 @@ pub type ParachainPalletXcm = pallet_xcm::Pallet<parachain::Runtime>;
 mod tests {
 	use super::*;
 
-	use parity_scale_codec::Encode;
 	use frame_support::{assert_ok, weights::Weight};
+	use parity_scale_codec::Encode;
 	use xcm::latest::QueryResponseInfo;
 	use xcm_simulator::TestExt;
 
