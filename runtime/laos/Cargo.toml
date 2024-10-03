@@ -92,7 +92,6 @@ cumulus-primitives-timestamp = { workspace = true }
 cumulus-primitives-utility = { workspace = true }
 parachain-info = { workspace = true }
 parachains-common = { workspace = true }
-xcm-simulator = { workspace = true }
 
 # Frontier
 fp-evm = { workspace = true }

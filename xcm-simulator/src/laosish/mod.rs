@@ -18,13 +18,13 @@
 
 mod configs;
 
-use codec::{Decode, Encode};
 use core::marker::PhantomData;
 use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{ContainsPair, OriginTrait},
 	weights::Weight,
 };
+use parity_scale_codec::{Decode, Encode};
 use sp_runtime::traits::TryConvert;
 
 use frame_system::RawOrigin as SystemRawOrigin;
