@@ -12,7 +12,7 @@ log = { workspace = true }
 
 frame-system = { workspace = true }
 frame-support = { workspace = true }
-pallet-balances = { workspace = true }
+pallet-balances = { workspace = true, features = ["insecure_zero_ed"] }
 pallet-message-queue = { workspace = true }
 pallet-uniques = { workspace = true }
 sp-std = { workspace = true }
