@@ -16316,6 +16316,7 @@ dependencies = [
  "cumulus-pallet-xcm",
  "frame-support",
  "frame-system",
+ "hex-literal",
  "laos-primitives",
  "log",
  "pallet-balances",

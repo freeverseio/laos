@@ -18,12 +18,14 @@ mod laosish;
 mod parachain;
 mod relay_chain;
 
+use hex_literal::hex;
 use sp_runtime::BuildStorage;
 use xcm::prelude::*;
 use xcm_executor::traits::ConvertLocation;
 use xcm_simulator::{decl_test_network, decl_test_parachain, decl_test_relay_chain, TestExt};
 
 pub const ALICE: sp_runtime::AccountId32 = sp_runtime::AccountId32::new([0u8; 32]);
+pub const ALITH: [u8; 20] = hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac");
 pub const INITIAL_BALANCE: u128 = 1_000_000_000;
 
 decl_test_parachain! {
@@ -49,7 +51,7 @@ decl_test_parachain! {
 		Runtime = laosish::Runtime,
 		XcmpMessageHandler = laosish::MsgQueue,
 		DmpMessageHandler = laosish::MsgQueue,
-		new_ext = para_ext(3),
+		new_ext = para_ext_ethereum(3),
 	}
 }
 
@@ -71,6 +73,7 @@ decl_test_network! {
 		parachains = vec![
 			(1, ParaA),
 			(2, ParaB),
+			(3, Laosish),
 		],
 	}
 }
@@ -120,6 +123,28 @@ pub fn para_ext(para_id: u32) -> sp_io::TestExternalities {
 	ext
 }
 
+pub fn para_ext_ethereum(para_id: u32) -> sp_io::TestExternalities {
+	use laosish::{MsgQueue, Runtime, System};
+
+	let mut t = frame_system::GenesisConfig::<Runtime>::default().build_storage().unwrap();
+
+	pallet_balances::GenesisConfig::<Runtime> {
+		balances: vec![
+			(ALITH.into(), INITIAL_BALANCE), /* , (parent_account_id(), INITIAL_BALANCE) TODO */
+		],
+	}
+	.assimilate_storage(&mut t)
+	.unwrap();
+
+	let mut ext = sp_io::TestExternalities::new(t);
+	ext.execute_with(|| {
+		sp_tracing::try_init_simple();
+		System::set_block_number(1);
+		MsgQueue::set_para_id(para_id.into());
+	});
+	ext
+}
+
 pub fn relay_ext() -> sp_io::TestExternalities {
 	use relay_chain::{Runtime, RuntimeOrigin, System, Uniques};
 
@@ -130,6 +155,7 @@ pub fn relay_ext() -> sp_io::TestExternalities {
 			(ALICE, INITIAL_BALANCE),
 			(child_account_id(1), INITIAL_BALANCE),
 			(child_account_id(2), INITIAL_BALANCE),
+			(child_account_id(3), INITIAL_BALANCE),
 		],
 	}
 	.assimilate_storage(&mut t)

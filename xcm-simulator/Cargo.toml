@@ -9,6 +9,7 @@ version = "7.0.0"
 parity-scale-codec = { workspace = true }
 scale-info = { workspace = true }
 log = { workspace = true }
+hex-literal = { workspace = true }
 
 frame-system = { workspace = true }
 frame-support = { workspace = true }
