@@ -5,7 +5,7 @@ use parity_scale_codec::Encode;
 use xcm::latest::QueryResponseInfo;
 use xcm_simulator::TestExt;
 
-mod laosish;
+mod laosish_xcm;
 
 // Helper function for forming buy execution message
 fn buy_execution<C>(fees: impl Into<Asset>) -> Instruction<C> {
