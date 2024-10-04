@@ -33,9 +33,9 @@ use xcm_builder::{
 	AccountKey20Aliases, AllowExplicitUnpaidExecutionFrom, AllowTopLevelPaidExecutionFrom,
 	DenyReserveTransferToRelayChain, DenyThenTry, EnsureDecodableXcm, EnsureXcmOrigin,
 	FixedRateOfFungible, FixedWeightBounds, FrameTransactionalProcessor, FungibleAdapter,
-	IsConcrete, NativeAsset, ParentIsPreset, RelayChainAsNative, SiblingParachainConvertsVia,
-	SignedAccountKey20AsNative, SovereignSignedViaLocation, TakeWeightCredit, TrailingSetTopicAsId,
-	WithComputedOrigin,
+	IsConcrete, NativeAsset, ParentIsPreset, RelayChainAsNative, SiblingParachainAsNative,
+	SiblingParachainConvertsVia, SignedAccountKey20AsNative, SovereignSignedViaLocation,
+	TakeWeightCredit, TrailingSetTopicAsId, WithComputedOrigin,
 };
 use xcm_executor::XcmExecutor;
 
@@ -85,9 +85,9 @@ pub type XcmOriginToTransactDispatchOrigin = (
 	// Native converter for Relay-chain (Parent) location; will convert to a `Relay` origin when
 	// recognized.
 	RelayChainAsNative<RelayChainOrigin, RuntimeOrigin>,
-	// // Native converter for sibling Parachains; will convert to a `SiblingPara` origin when
-	// // recognized.
-	// SiblingParachainAsNative<cumulus_pallet_xcm::Origin, RuntimeOrigin>,
+	// Native converter for sibling Parachains; will convert to a `SiblingPara` origin when
+	// recognized.
+	SiblingParachainAsNative<cumulus_pallet_xcm::Origin, RuntimeOrigin>,
 	// Native signed account converter; this just converts an `AccountId20` origin into a normal
 	// `RuntimeOrigin::Signed` origin of the same 20-byte value.
 	SignedAccountKey20AsNative<RelayNetwork, RuntimeOrigin>,
