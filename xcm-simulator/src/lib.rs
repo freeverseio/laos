@@ -19,7 +19,6 @@ mod parachain;
 mod relay_chain;
 
 use sp_runtime::BuildStorage;
-use sp_tracing;
 use xcm::prelude::*;
 use xcm_executor::traits::ConvertLocation;
 use xcm_simulator::{decl_test_network, decl_test_parachain, decl_test_relay_chain, TestExt};
@@ -269,7 +268,7 @@ mod tests {
 				Unlimited,
 			));
 			assert_eq!(
-				relay_chain::Balances::free_balance(&child_account_id(1)),
+				relay_chain::Balances::free_balance(child_account_id(1)),
 				INITIAL_BALANCE + withdraw_amount
 			);
 		});
@@ -300,7 +299,7 @@ mod tests {
 		Relay::execute_with(|| {
 			use pallet_balances::{BalanceLock, Reasons};
 			assert_eq!(
-				relay_chain::Balances::locks(&child_account_id(2)),
+				relay_chain::Balances::locks(child_account_id(2)),
 				vec![BalanceLock {
 					id: *b"py/xcmlk",
 					amount: locked_amount,
@@ -332,7 +331,7 @@ mod tests {
 			use pallet_balances::{BalanceLock, Reasons};
 			// Lock is reduced
 			assert_eq!(
-				relay_chain::Balances::locks(&child_account_id(2)),
+				relay_chain::Balances::locks(child_account_id(2)),
 				vec![BalanceLock {
 					id: *b"py/xcmlk",
 					amount: locked_amount - 50,
@@ -562,7 +561,7 @@ mod tests {
 			assert_ok!(ParachainPalletXcm::send_xcm(alice, Parent, message));
 		});
 		ParaA::execute_with(|| {
-			assert_eq!(parachain::Balances::reserved_balance(&parent_account_id()), 1000);
+			assert_eq!(parachain::Balances::reserved_balance(parent_account_id()), 1000);
 			assert_eq!(
 				parachain::ForeignUniques::collection_owner((Parent, 2u64).into()),
 				Some(parent_account_id())
