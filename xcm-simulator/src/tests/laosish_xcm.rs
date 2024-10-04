@@ -5,8 +5,9 @@ fn alish_has_tokens() {
 	MockNet::reset();
 
 	Laosish::execute_with(|| {
+		let alith: laosish::AccountId = ALITH.into();
 		assert_eq!(
-			pallet_balances::Pallet::<laosish::Runtime>::free_balance(&ALITH.into()),
+			pallet_balances::Pallet::<laosish::Runtime>::free_balance(alith),
 			INITIAL_BALANCE
 		);
 	});
