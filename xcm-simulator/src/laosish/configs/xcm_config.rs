@@ -15,8 +15,8 @@
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 use crate::laosish::{
-	mock_msg_queue, AccountId, AllPalletsWithSystem, Balances, KsmPerSecondPerByte, MsgQueue,
-	ParachainInfo, PolkadotXcm, Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin,
+	mock_msg_queue, AccountId, AllPalletsWithSystem, Balances, MsgQueue, ParachainInfo,
+	PolkadotXcm, Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin,
 };
 use core::marker::PhantomData;
 use frame_support::{
@@ -126,6 +126,10 @@ pub type Barrier = TrailingSetTopicAsId<
 		),
 	>,
 >;
+
+parameter_types! {
+	pub KsmPerSecondPerByte: (AssetId, u128, u128) = (AssetId(Parent.into()), 1, 1);
+}
 
 pub struct XcmConfig;
 impl xcm_executor::Config for XcmConfig {

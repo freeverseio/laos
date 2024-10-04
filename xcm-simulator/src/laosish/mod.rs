@@ -47,10 +47,6 @@ parameter_types! {
 	pub UniversalLocation: InteriorLocation = [GlobalConsensus(RelayNetwork::get()), Parachain(MsgQueue::parachain_id().into())].into();
 }
 
-parameter_types! {
-	pub KsmPerSecondPerByte: (AssetId, u128, u128) = (AssetId(Parent.into()), 1, 1);
-}
-
 #[frame_support::pallet]
 pub mod mock_msg_queue {
 	use super::*;
