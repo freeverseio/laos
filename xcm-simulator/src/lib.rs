@@ -71,6 +71,7 @@ decl_test_network! {
 		parachains = vec![
 			(1, ParaA),
 			(2, ParaB),
+			(3, Laosish),
 		],
 	}
 }
@@ -274,6 +275,62 @@ mod tests {
 
 		ParaB::execute_with(|| {
 			use parachain::{RuntimeEvent, System};
+			assert!(System::events().iter().any(|r| matches!(
+				r.event,
+				RuntimeEvent::System(frame_system::Event::Remarked { .. })
+			)));
+		});
+	}
+
+	#[test]
+	fn xcmp_laosish_to_para_b() {
+		MockNet::reset();
+
+		let remark = parachain::RuntimeCall::System(
+			frame_system::Call::<parachain::Runtime>::remark_with_event { remark: vec![1, 2, 3] },
+		);
+		Laosish::execute_with(|| {
+			assert_ok!(LaosishPalletXcm::send_xcm(
+				Here,
+				(Parent, Parachain(2)),
+				Xcm(vec![Transact {
+					origin_kind: OriginKind::SovereignAccount,
+					require_weight_at_most: Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024),
+					call: remark.encode().into(),
+				}]),
+			));
+		});
+
+		ParaB::execute_with(|| {
+			use parachain::{RuntimeEvent, System};
+			assert!(System::events().iter().any(|r| matches!(
+				r.event,
+				RuntimeEvent::System(frame_system::Event::Remarked { .. })
+			)));
+		});
+	}
+
+	#[test]
+	fn xcmp_para_a_to_laosish() {
+		MockNet::reset();
+
+		let remark = laosish::RuntimeCall::System(
+			frame_system::Call::<laosish::Runtime>::remark_with_event { remark: vec![1, 2, 3] },
+		);
+		ParaA::execute_with(|| {
+			assert_ok!(LaosishPalletXcm::send_xcm(
+				Here,
+				(Parent, Parachain(3)),
+				Xcm(vec![Transact {
+					origin_kind: OriginKind::SovereignAccount,
+					require_weight_at_most: Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024),
+					call: remark.encode().into(),
+				}]),
+			));
+		});
+
+		Laosish::execute_with(|| {
+			use laosish::{RuntimeEvent, System};
 			assert!(System::events().iter().any(|r| matches!(
 				r.event,
 				RuntimeEvent::System(frame_system::Event::Remarked { .. })
