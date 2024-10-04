@@ -18,16 +18,9 @@
 
 mod configs;
 
-use core::marker::PhantomData;
-use frame_support::{
-	construct_runtime,
-	traits::{ContainsPair, OriginTrait},
-	weights::Weight,
-};
+use frame_support::{construct_runtime, weights::Weight};
 use parity_scale_codec::{Decode, Encode};
-use sp_runtime::traits::TryConvert;
 
-use frame_system::RawOrigin as SystemRawOrigin;
 use sp_runtime::traits::{Get, Hash};
 use sp_std::prelude::*;
 
@@ -191,36 +184,6 @@ pub mod mock_msg_queue {
 			}
 			limit
 		}
-	}
-}
-
-pub struct SignedToAccountId20<RuntimeOrigin, AccountId, Network>(
-	PhantomData<(RuntimeOrigin, AccountId, Network)>,
-);
-impl<
-		RuntimeOrigin: OriginTrait + Clone,
-		AccountId: Into<[u8; 20]>,
-		Network: frame_support::traits::Get<Option<NetworkId>>,
-	> TryConvert<RuntimeOrigin, Location> for SignedToAccountId20<RuntimeOrigin, AccountId, Network>
-where
-	RuntimeOrigin::PalletsOrigin: From<SystemRawOrigin<AccountId>>
-		+ TryInto<SystemRawOrigin<AccountId>, Error = RuntimeOrigin::PalletsOrigin>,
-{
-	fn try_convert(o: RuntimeOrigin) -> Result<Location, RuntimeOrigin> {
-		o.try_with_caller(|caller| match caller.try_into() {
-			Ok(SystemRawOrigin::Signed(who)) =>
-				Ok(Junction::AccountKey20 { network: Network::get(), key: who.into() }.into()),
-			Ok(other) => Err(other.into()),
-			Err(other) => Err(other),
-		})
-	}
-}
-
-pub struct TrustedLockerCase<T>(PhantomData<T>);
-impl<T: Get<(Location, AssetFilter)>> ContainsPair<Location, Asset> for TrustedLockerCase<T> {
-	fn contains(origin: &Location, asset: &Asset) -> bool {
-		let (o, a) = T::get();
-		a.matches(asset) && &o == origin
 	}
 }
 

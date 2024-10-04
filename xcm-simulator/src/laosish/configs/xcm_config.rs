@@ -128,7 +128,7 @@ pub type Barrier = TrailingSetTopicAsId<
 >;
 
 parameter_types! {
-	pub KsmPerSecondPerByte: (AssetId, u128, u128) = (AssetId(Parent.into()), 1, 1);
+	pub ParentTojenPerSecondPerByte: (AssetId, u128, u128) = (AssetId(Parent.into()), 1, 1);
 }
 
 pub struct XcmConfig;
@@ -143,7 +143,7 @@ impl xcm_executor::Config for XcmConfig {
 	type UniversalLocation = UniversalLocation;
 	type Barrier = Barrier;
 	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
-	type Trader = FixedRateOfFungible<KsmPerSecondPerByte, ()>;
+	type Trader = FixedRateOfFungible<ParentTojenPerSecondPerByte, ()>;
 	type ResponseHandler = PolkadotXcm;
 	type AssetTrap = PolkadotXcm;
 	type AssetClaims = PolkadotXcm;
