@@ -29,9 +29,9 @@ pub const INITIAL_BALANCE: u128 = 1_000_000_000;
 
 decl_test_parachain! {
 	pub struct ParaA {
-		Runtime = laosish::Runtime,
-		XcmpMessageHandler = laosish::MsgQueue,
-		DmpMessageHandler = laosish::MsgQueue,
+		Runtime = parachain::Runtime,
+		XcmpMessageHandler = parachain::MsgQueue,
+		DmpMessageHandler = parachain::MsgQueue,
 		new_ext = para_ext(1),
 	}
 }
@@ -42,6 +42,15 @@ decl_test_parachain! {
 		XcmpMessageHandler = parachain::MsgQueue,
 		DmpMessageHandler = parachain::MsgQueue,
 		new_ext = para_ext(2),
+	}
+}
+
+decl_test_parachain! {
+	pub struct Laosish {
+		Runtime = laosish::Runtime,
+		XcmpMessageHandler = laosish::MsgQueue,
+		DmpMessageHandler = laosish::MsgQueue,
+		new_ext = para_ext(3),
 	}
 }
 
