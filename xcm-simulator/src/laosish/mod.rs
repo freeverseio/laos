@@ -36,7 +36,6 @@ use polkadot_parachain_primitives::primitives::{
 	DmpMessageHandler, Id as ParaId, XcmpMessageFormat, XcmpMessageHandler,
 };
 use xcm::{latest::prelude::*, VersionedXcm};
-use xcm_executor::XcmExecutor;
 
 pub type AccountId = laos_primitives::AccountId;
 pub type Balance = laos_primitives::Balance;
@@ -205,11 +204,6 @@ pub mod mock_msg_queue {
 	}
 }
 
-impl mock_msg_queue::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type XcmExecutor = XcmExecutor<configs::xcm_config::XcmConfig>;
-}
-
 pub struct SignedToAccountId20<RuntimeOrigin, AccountId, Network>(
 	PhantomData<(RuntimeOrigin, AccountId, Network)>,
 );
@@ -244,7 +238,6 @@ construct_runtime!(
 	pub enum Runtime
 	{
 		System: frame_system,
-		// ParachainSystem: cumulus_pallet_parachain_system,
 		ParachainInfo: parachain_info,
 		Balances: pallet_balances,
 		MsgQueue: mock_msg_queue,

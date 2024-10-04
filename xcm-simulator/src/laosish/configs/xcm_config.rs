@@ -15,8 +15,8 @@
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 use crate::laosish::{
-	AccountId, AllPalletsWithSystem, Balances, KsmPerSecondPerByte, MsgQueue, ParachainInfo,
-	PolkadotXcm, Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin,
+	mock_msg_queue, AccountId, AllPalletsWithSystem, Balances, KsmPerSecondPerByte, MsgQueue,
+	ParachainInfo, PolkadotXcm, Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin,
 };
 use core::marker::PhantomData;
 use frame_support::{
@@ -183,6 +183,11 @@ impl pallet_xcm::Config for Runtime {
 	type AdminOrigin = EnsureRoot<AccountId>;
 	type MaxRemoteLockConsumers = ConstU32<0>;
 	type RemoteLockConsumerIdentifier = ();
+}
+
+impl mock_msg_queue::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type XcmExecutor = XcmExecutor<XcmConfig>;
 }
 
 pub struct SignedToAccountId20<RuntimeOrigin, AccountId, Network>(
