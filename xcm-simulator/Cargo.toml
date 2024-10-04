@@ -31,11 +31,13 @@ polkadot-runtime-parachains = { workspace = true }
 polkadot-parachain-primitives = { workspace = true }
 laos-primitives = { workspace = true }
 parachain-info = { workspace = true }
+cumulus-pallet-xcm = { workspace = true }
 
 
 [features]
 default = ["std"]
 std = [
+    "cumulus-pallet-xcm/std",
 	"parachain-info/std",
 	"laos-primitives/std",
     "frame-system/std",

@@ -242,5 +242,6 @@ construct_runtime!(
 		Balances: pallet_balances,
 		MsgQueue: mock_msg_queue,
 		PolkadotXcm: pallet_xcm,
+		CumulusXcm: cumulus_pallet_xcm,
 	}
 );

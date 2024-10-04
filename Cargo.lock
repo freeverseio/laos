@@ -16313,6 +16313,7 @@ dependencies = [
 name = "xcm-simulator-example"
 version = "7.0.0"
 dependencies = [
+ "cumulus-pallet-xcm",
  "frame-support",
  "frame-system",
  "laos-primitives",
