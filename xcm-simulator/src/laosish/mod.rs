@@ -20,7 +20,7 @@ mod configs;
 
 use core::marker::PhantomData;
 use frame_support::{
-	construct_runtime, parameter_types,
+	construct_runtime,
 	traits::{ContainsPair, OriginTrait},
 	weights::Weight,
 };
@@ -40,12 +40,6 @@ use xcm::{latest::prelude::*, VersionedXcm};
 pub type AccountId = laos_primitives::AccountId;
 pub type Balance = laos_primitives::Balance;
 type Block = frame_system::mocking::MockBlock<Runtime>;
-
-parameter_types! {
-	pub const KsmLocation: Location = Location::parent();
-	pub const RelayNetwork: NetworkId = NetworkId::Kusama;
-	pub UniversalLocation: InteriorLocation = [GlobalConsensus(RelayNetwork::get()), Parachain(MsgQueue::parachain_id().into())].into();
-}
 
 #[frame_support::pallet]
 pub mod mock_msg_queue {
