@@ -45,9 +45,10 @@ fn ump_laosish() {
 fn dmp_laosish() {
 	MockNet::reset();
 
-	let remark = laosish::RuntimeCall::System(
-		frame_system::Call::<laosish::Runtime>::remark_with_event { remark: vec![1, 2, 3] },
-	);
+	let remark =
+		laosish::RuntimeCall::System(frame_system::Call::<laosish::Runtime>::remark_with_event {
+			remark: vec![1, 2, 3],
+		});
 	Relay::execute_with(|| {
 		assert_ok!(RelayChainPalletXcm::send_xcm(
 			Here,
@@ -68,4 +69,3 @@ fn dmp_laosish() {
 		)));
 	});
 }
-
