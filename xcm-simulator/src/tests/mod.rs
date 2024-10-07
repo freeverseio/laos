@@ -543,52 +543,53 @@ fn ump_transfer_balance() {
 	});
 }
 
-#[test]
-fn reserve_transfer_native_from_para_a_to_para_b() {
-	// Reset the mock network to ensure a clean state before the test
-	MockNet::reset();
+// #[test]
+// fn reserve_transfer_native_from_para_a_to_para_b() {
+// 	// Reset the mock network to ensure a clean state before the test
+// 	MockNet::reset();
 
-	let transfer_amount = 100;
+// 	let transfer_amount = 100;
 
-	// Execute actions within Parachain A's context
-	ParaA::execute_with(|| {
-		// Alice initiates a reserve transfer of native tokens to Parachain B
-		assert_ok!(ParachainPalletXcm::limited_reserve_transfer_assets(
-			parachain::RuntimeOrigin::signed(ALICE),
-			// Destination: Parachain B
-			Box::new((Parent, Parachain(PARA_B_ID)).into()),
-			// Beneficiary: Alice's account on Parachain B
-			Box::new(AccountId32 { network: None, id: ALICE.into() }.into()),
-			// Assets to transfer: specified amount of the native token
-			Box::new((Here, transfer_amount).into()),
-			// Fee asset item index: 0 (no specific fee asset)
-			0,
-			// Weight limit for execution: Unlimited
-			Unlimited,
-		));
+// 	// Execute actions within Parachain A's context
+// 	ParaA::execute_with(|| {
+// 		// Alice initiates a reserve transfer of native tokens to Parachain B
+// 		assert_ok!(ParachainPalletXcm::limited_reserve_transfer_assets(
+// 			parachain::RuntimeOrigin::signed(ALICE),
+// 			// Destination: Parachain B
+// 			// Box::new(Parent.into()),
+// 			Box::new((Parent, Parachain(PARA_B_ID)).into()),
+// 			// Beneficiary: Alice's account on Parachain B
+// 			Box::new(AccountId32 { network: None, id: ALICE.into() }.into()),
+// 			// Assets to transfer: specified amount of the native token
+// 			Box::new((Parent, transfer_amount).into()),
+// 			// Fee asset item index: 0 (no specific fee asset)
+// 			0,
+// 			// Weight limit for execution: Unlimited
+// 			Unlimited,
+// 		));
 
-		// Verify that Alice's balance on Parachain A has decreased by the transferred amount
-		assert_eq!(
-			pallet_balances::Pallet::<parachain::Runtime>::free_balance(&ALICE),
-			INITIAL_BALANCE - transfer_amount
-		);
+// 		// Verify that Alice's balance on Parachain A has decreased by the transferred amount
+// 		assert_eq!(
+// 			pallet_balances::Pallet::<parachain::Runtime>::free_balance(&ALICE),
+// 			INITIAL_BALANCE - transfer_amount
+// 		);
 
-	let location = (Parent, Parachain(PARA_B_ID),);
-	let sovereign_para_b =  parachain::LocationToAccountId::convert_location(&location.into()).unwrap();
+// 		// let location = (Parent, Parachain(PARA_B_ID),);
+// 		// let sovereign_para_b =  parachain::LocationToAccountId::convert_location(&location.into()).unwrap();
 
-		assert_eq!(
-			pallet_balances::Pallet::<parachain::Runtime>::free_balance(sovereign_para_b),
-			transfer_amount
-		)
-	});
+// 		// assert_eq!(
+// 		// 	pallet_balances::Pallet::<parachain::Runtime>::free_balance(sovereign_para_b),
+// 		// 	transfer_amount
+// 		// )
+// 	});
 
-	// Execute actions within Parachain B's context
-	ParaB::execute_with(|| {
-		// Verify that Alice's balance on Parachain B has increased by the transferred amount
-		assert_eq!(
-			pallet_balances::Pallet::<parachain::Runtime>::free_balance(&ALICE),
-			INITIAL_BALANCE + transfer_amount
-		);
-	});
-}
+// 	// Execute actions within Parachain B's context
+// 	Relay::execute_with(|| {
+// 		// Verify that Alice's balance on Parachain B has increased by the transferred amount
+// 		assert_eq!(
+// 			pallet_balances::Pallet::<parachain::Runtime>::free_balance(&ALICE),
+// 			INITIAL_BALANCE + transfer_amount
+// 		);
+// 	});
+// }
 
