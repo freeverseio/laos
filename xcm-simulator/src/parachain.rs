@@ -32,10 +32,7 @@ use sp_runtime::{
 };
 use sp_std::prelude::*;
 
-use assets_common::{
-	foreign_creators::ForeignCreators,
-	matching::{FromNetwork, FromSiblingParachain},
-};
+use assets_common::{foreign_creators::ForeignCreators, matching::FromSiblingParachain};
 use pallet_xcm::XcmPassthrough;
 use polkadot_core_primitives::BlockNumber as RelayBlockNumber;
 use polkadot_parachain_primitives::primitives::{
@@ -467,15 +464,11 @@ pub type ForeignCreatorsSovereignAccountOf = (
 	GlobalConsensusParachainConvertsFor<UniversalLocation, AccountId>,
 );
 
-/// We allow root to execute privileged asset operations.
-pub type AssetsForceOrigin = EnsureRoot<AccountId>;
-
 /// Assets managed by some foreign location. Note: we do not declare a `ForeignAssetsCall` type, as
 /// this type is used in proxy definitions. We assume that a foreign location would not want to set
 /// an individual, local account as a proxy for the issuance of their assets. This issuance should
 /// be managed by the foreign location's governance.
-pub type ForeignAssetsInstance = pallet_assets::Instance2;
-impl pallet_assets::Config<ForeignAssetsInstance> for Runtime {
+impl pallet_assets::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Balance = Balance;
 	type AssetId = xcm::v3::Location;
@@ -487,7 +480,7 @@ impl pallet_assets::Config<ForeignAssetsInstance> for Runtime {
 		AccountId,
 		xcm::v3::Location,
 	>;
-	type ForceOrigin = AssetsForceOrigin;
+	type ForceOrigin = EnsureRoot<AccountId>;
 	type AssetDeposit = frame_support::traits::ConstU128<1_000>;
 	type MetadataDepositBase = frame_support::traits::ConstU128<1_000>;
 	type MetadataDepositPerByte = frame_support::traits::ConstU128<1_000>;
@@ -516,6 +509,6 @@ construct_runtime!(
 		MsgQueue: mock_msg_queue,
 		PolkadotXcm: pallet_xcm,
 		ForeignUniques: pallet_uniques,
-		ForeignAssets: pallet_assets::<Instance2> = 53,
+		ForeignAssets: pallet_assets,
 	}
 );

@@ -1,6 +1,6 @@
 use super::*;
 
-use frame_support::{assert_ok, weights::Weight};
+use frame_support::{assert_ok, traits::fungibles::roles::Inspect, weights::Weight};
 use parity_scale_codec::Encode;
 use xcm::latest::QueryResponseInfo;
 use xcm_simulator::TestExt;
@@ -543,53 +543,38 @@ fn ump_transfer_balance() {
 	});
 }
 
-// #[test]
-// fn reserve_transfer_native_from_para_a_to_para_b() {
-// 	// Reset the mock network to ensure a clean state before the test
-// 	MockNet::reset();
+#[test]
+fn create_a_fungible_in_para_a() {
+	MockNet::reset();
 
-// 	let transfer_amount = 100;
+	ParaA::execute_with(|| {
+		// check relay chain account balance
+		assert_eq!(relay_chain::Balances::free_balance(parent_account_id()), INITIAL_BALANCE);
+	});
 
-// 	// Execute actions within Parachain A's context
-// 	ParaA::execute_with(|| {
-// 		// Alice initiates a reserve transfer of native tokens to Parachain B
-// 		assert_ok!(ParachainPalletXcm::limited_reserve_transfer_assets(
-// 			parachain::RuntimeOrigin::signed(ALICE),
-// 			// Destination: Parachain B
-// 			// Box::new(Parent.into()),
-// 			Box::new((Parent, Parachain(PARA_B_ID)).into()),
-// 			// Beneficiary: Alice's account on Parachain B
-// 			Box::new(AccountId32 { network: None, id: ALICE.into() }.into()),
-// 			// Assets to transfer: specified amount of the native token
-// 			Box::new((Parent, transfer_amount).into()),
-// 			// Fee asset item index: 0 (no specific fee asset)
-// 			0,
-// 			// Weight limit for execution: Unlimited
-// 			Unlimited,
-// 		));
+	let foreign_asset_id_location =
+		xcm::v3::Location::new(2, [xcm::v3::Junction::GlobalConsensus(xcm::v3::NetworkId::Kusama)]);
 
-// 		// Verify that Alice's balance on Parachain A has decreased by the transferred amount
-// 		assert_eq!(
-// 			pallet_balances::Pallet::<parachain::Runtime>::free_balance(&ALICE),
-// 			INITIAL_BALANCE - transfer_amount
-// 		);
+	let create_asset =
+		parachain::RuntimeCall::ForeignAssets(pallet_assets::Call::<parachain::Runtime>::create {
+			id: foreign_asset_id_location,
+			admin: ALICE,
+			min_balance: 100,
+		});
 
-// 		// let location = (Parent, Parachain(PARA_B_ID),);
-// 		// let sovereign_para_b =
-// parachain::LocationToAccountId::convert_location(&location.into()).unwrap();
+	Relay::execute_with(|| {
+		assert_ok!(RelayChainPalletXcm::send_xcm(
+			Here,
+			Parachain(PARA_A_ID),
+			Xcm(vec![Transact {
+				origin_kind: OriginKind::SovereignAccount,
+				require_weight_at_most: Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024),
+				call: create_asset.encode().into(),
+			}]),
+		));
+	});
 
-// 		// assert_eq!(
-// 		// 	pallet_balances::Pallet::<parachain::Runtime>::free_balance(sovereign_para_b),
-// 		// 	transfer_amount
-// 		// )
-// 	});
-
-// 	// Execute actions within Parachain B's context
-// 	Relay::execute_with(|| {
-// 		// Verify that Alice's balance on Parachain B has increased by the transferred amount
-// 		assert_eq!(
-// 			pallet_balances::Pallet::<parachain::Runtime>::free_balance(&ALICE),
-// 			INITIAL_BALANCE + transfer_amount
-// 		);
-// 	});
-// }
+	ParaA::execute_with(|| {
+		assert_eq!(parachain::ForeignAssets::owner(foreign_asset_id_location), Some(ALICE));
+	});
+}
