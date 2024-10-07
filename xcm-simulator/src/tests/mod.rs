@@ -575,7 +575,8 @@ fn ump_transfer_balance() {
 // 		);
 
 // 		// let location = (Parent, Parachain(PARA_B_ID),);
-// 		// let sovereign_para_b =  parachain::LocationToAccountId::convert_location(&location.into()).unwrap();
+// 		// let sovereign_para_b =
+// parachain::LocationToAccountId::convert_location(&location.into()).unwrap();
 
 // 		// assert_eq!(
 // 		// 	pallet_balances::Pallet::<parachain::Runtime>::free_balance(sovereign_para_b),
@@ -592,4 +593,3 @@ fn ump_transfer_balance() {
 // 		);
 // 	});
 // }
-
