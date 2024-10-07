@@ -132,13 +132,9 @@ pub fn para_ext_ethereum(para_id: u32) -> sp_io::TestExternalities {
 
 	let mut t = frame_system::GenesisConfig::<Runtime>::default().build_storage().unwrap();
 
-	pallet_balances::GenesisConfig::<Runtime> {
-		balances: vec![
-			(ALITH.into(), INITIAL_BALANCE), /* , (parent_account_id(), INITIAL_BALANCE) TODO */
-		],
-	}
-	.assimilate_storage(&mut t)
-	.unwrap();
+	pallet_balances::GenesisConfig::<Runtime> { balances: vec![(ALITH.into(), INITIAL_BALANCE)] }
+		.assimilate_storage(&mut t)
+		.unwrap();
 
 	let mut ext = sp_io::TestExternalities::new(t);
 	ext.execute_with(|| {
