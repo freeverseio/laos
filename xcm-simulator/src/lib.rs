@@ -28,12 +28,16 @@ pub const ALICE: sp_runtime::AccountId32 = sp_runtime::AccountId32::new([0u8; 32
 pub const ALITH: [u8; 20] = hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac");
 pub const INITIAL_BALANCE: u128 = 1_000_000_000;
 
+const PARA_A_ID: u32 = 1;
+const PARA_B_ID: u32 = 2;
+const PARA_LAOSISH_ID: u32 = 3;
+
 decl_test_parachain! {
 	pub struct ParaA {
 		Runtime = parachain::Runtime,
 		XcmpMessageHandler = parachain::MsgQueue,
 		DmpMessageHandler = parachain::MsgQueue,
-		new_ext = para_ext(1),
+		new_ext = para_ext(PARA_A_ID),
 	}
 }
 
@@ -42,7 +46,7 @@ decl_test_parachain! {
 		Runtime = parachain::Runtime,
 		XcmpMessageHandler = parachain::MsgQueue,
 		DmpMessageHandler = parachain::MsgQueue,
-		new_ext = para_ext(2),
+		new_ext = para_ext(PARA_B_ID),
 	}
 }
 
@@ -51,7 +55,7 @@ decl_test_parachain! {
 		Runtime = laosish::Runtime,
 		XcmpMessageHandler = laosish::MsgQueue,
 		DmpMessageHandler = laosish::MsgQueue,
-		new_ext = para_ext_ethereum(3),
+		new_ext = para_ext_ethereum(PARA_LAOSISH_ID),
 	}
 }
 
@@ -71,9 +75,9 @@ decl_test_network! {
 	pub struct MockNet {
 		relay_chain = Relay,
 		parachains = vec![
-			(1, ParaA),
-			(2, ParaB),
-			(3, Laosish),
+			(PARA_A_ID, ParaA),
+			(PARA_B_ID, ParaB),
+			(PARA_LAOSISH_ID, Laosish),
 		],
 	}
 }
@@ -153,9 +157,9 @@ pub fn relay_ext() -> sp_io::TestExternalities {
 	pallet_balances::GenesisConfig::<Runtime> {
 		balances: vec![
 			(ALICE, INITIAL_BALANCE),
-			(child_account_id(1), INITIAL_BALANCE),
-			(child_account_id(2), INITIAL_BALANCE),
-			(child_account_id(3), INITIAL_BALANCE),
+			(child_account_id(PARA_A_ID), INITIAL_BALANCE),
+			(child_account_id(PARA_B_ID), INITIAL_BALANCE),
+			(child_account_id(PARA_LAOSISH_ID), INITIAL_BALANCE),
 		],
 	}
 	.assimilate_storage(&mut t)

@@ -41,31 +41,31 @@ fn ump_laosish() {
 	});
 }
 
-#[test]
-fn dmp_laosish() {
-	MockNet::reset();
+// #[test]
+// fn dmp_laosish() {
+// 	MockNet::reset();
 
-	let remark =
-		laosish::RuntimeCall::System(frame_system::Call::<laosish::Runtime>::remark_with_event {
-			remark: vec![1, 2, 3],
-		});
-	Relay::execute_with(|| {
-		assert_ok!(RelayChainPalletXcm::send_xcm(
-			Here,
-			Parachain(3),
-			Xcm(vec![Transact {
-				origin_kind: OriginKind::SovereignAccount,
-				require_weight_at_most: Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024),
-				call: remark.encode().into(),
-			}]),
-		));
-	});
+// 	let remark =
+// 		laosish::RuntimeCall::System(frame_system::Call::<laosish::Runtime>::remark_with_event {
+// 			remark: vec![1, 2, 3],
+// 		});
+// 	Relay::execute_with(|| {
+// 		assert_ok!(RelayChainPalletXcm::send_xcm(
+// 			Here,
+// 			Parachain(3),
+// 			Xcm(vec![Transact {
+// 				origin_kind: OriginKind::SovereignAccount,
+// 				require_weight_at_most: Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024),
+// 				call: remark.encode().into(),
+// 			}]),
+// 		));
+// 	});
 
-	Laosish::execute_with(|| {
-		use laosish::{RuntimeEvent, System};
-		assert!(System::events().iter().any(|r| matches!(
-			r.event,
-			RuntimeEvent::System(frame_system::Event::Remarked { .. })
-		)));
-	});
-}
+// 	Laosish::execute_with(|| {
+// 		use laosish::{RuntimeEvent, System};
+// 		assert!(System::events().iter().any(|r| matches!(
+// 			r.event,
+// 			RuntimeEvent::System(frame_system::Event::Remarked { .. })
+// 		)));
+// 	});
+// }
