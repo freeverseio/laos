@@ -572,6 +572,14 @@ fn reserve_transfer_native_from_para_a_to_para_b() {
 			pallet_balances::Pallet::<parachain::Runtime>::free_balance(&ALICE),
 			INITIAL_BALANCE - transfer_amount
 		);
+
+	let location = (Parent, Parachain(PARA_B_ID),);
+	let sovereign_para_b =  parachain::LocationToAccountId::convert_location(&location.into()).unwrap();
+
+		assert_eq!(
+			pallet_balances::Pallet::<parachain::Runtime>::free_balance(sovereign_para_b),
+			transfer_amount
+		)
 	});
 
 	// Execute actions within Parachain B's context
@@ -583,3 +591,4 @@ fn reserve_transfer_native_from_para_a_to_para_b() {
 		);
 	});
 }
+
