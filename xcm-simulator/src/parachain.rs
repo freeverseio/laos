@@ -25,7 +25,7 @@ use frame_support::{
 use parity_scale_codec::{Decode, Encode};
 
 use frame_system::EnsureRoot;
-use sp_core::{ConstU32, H256};
+use sp_core::ConstU32;
 use sp_runtime::{
 	traits::{Get, Hash, IdentityLookup},
 	AccountId32,
