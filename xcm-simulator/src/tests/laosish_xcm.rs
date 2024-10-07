@@ -72,3 +72,38 @@ fn dmp_laosish_of_remark_tx_should_be_unallowed() {
 		);
 	});
 }
+
+#[test]
+fn ump_transfer_balance() {
+	MockNet::reset();
+
+	let amount = 1;
+
+	let transfer = relay_chain::RuntimeCall::Balances(pallet_balances::Call::<
+		relay_chain::Runtime,
+	>::transfer_keep_alive {
+		dest: ALICE,
+		value: amount,
+	});
+
+	Laosish::execute_with(|| {
+		assert_ok!(LaosishPalletXcm::send_xcm(
+			Here,
+			Parent,
+			Xcm(vec![Transact {
+				origin_kind: OriginKind::SovereignAccount,
+				require_weight_at_most: Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024),
+				call: transfer.encode().into(),
+			}]),
+		));
+	});
+
+	// Check that transfer was executed
+	Relay::execute_with(|| {
+		assert_eq!(relay_chain::Balances::free_balance(ALICE), INITIAL_BALANCE + amount);
+		assert_eq!(
+			relay_chain::Balances::free_balance(child_account_id(PARA_LAOSISH_ID)),
+			INITIAL_BALANCE - amount
+		);
+	});
+}
