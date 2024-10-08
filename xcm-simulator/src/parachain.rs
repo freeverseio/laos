@@ -22,23 +22,19 @@ use frame_support::{
 	traits::{ContainsPair, EnsureOrigin, EnsureOriginWithArg, Everything, EverythingBut, Nothing},
 	weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight},
 };
-use parity_scale_codec::{Decode, Encode};
 
 use frame_system::EnsureRoot;
 use sp_core::ConstU32;
 use sp_runtime::{
-	traits::{Get, Hash, IdentityLookup},
+	traits::{Get, IdentityLookup},
 	AccountId32,
 };
 use sp_std::prelude::*;
 
 use crate::mock_msg_queue;
 use pallet_xcm::XcmPassthrough;
-use polkadot_core_primitives::BlockNumber as RelayBlockNumber;
-use polkadot_parachain_primitives::primitives::{
-	DmpMessageHandler, Id as ParaId, Sibling, XcmpMessageFormat, XcmpMessageHandler,
-};
-use xcm::{latest::prelude::*, VersionedXcm};
+use polkadot_parachain_primitives::primitives::Sibling;
+use xcm::latest::prelude::*;
 use xcm_builder::{
 	Account32Hash, AccountId32Aliases, AllowUnpaidExecutionFrom, ConvertedConcreteId,
 	EnsureDecodableXcm, EnsureXcmOrigin, FixedRateOfFungible, FixedWeightBounds,

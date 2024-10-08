@@ -18,18 +18,9 @@
 
 mod configs;
 
-use frame_support::{construct_runtime, weights::Weight};
-use parity_scale_codec::{Decode, Encode};
-
-use sp_runtime::traits::{Get, Hash};
-use sp_std::prelude::*;
+use frame_support::construct_runtime;
 
 use crate::mock_msg_queue;
-use polkadot_core_primitives::BlockNumber as RelayBlockNumber;
-use polkadot_parachain_primitives::primitives::{
-	DmpMessageHandler, Id as ParaId, XcmpMessageFormat, XcmpMessageHandler,
-};
-use xcm::{latest::prelude::*, VersionedXcm};
 
 pub type AccountId = laos_primitives::AccountId;
 pub type Balance = laos_primitives::Balance;
