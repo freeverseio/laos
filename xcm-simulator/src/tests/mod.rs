@@ -544,28 +544,49 @@ fn ump_transfer_balance() {
 }
 
 #[test]
-fn create_a_fungible_in_para_a() {
+fn force_create_a_foreign_asset_in_para_b() {
+	let asset_id = xcm::v3::Location::default();
+
+	ParaB::execute_with(|| {
+		assert_ok!(parachain::ForeignAssets::force_create(
+			parachain::RuntimeOrigin::root(),
+			asset_id,
+			ALICE,
+			false,
+			1000,
+		));
+
+		assert_eq!(parachain::ForeignAssets::owner(asset_id), Some(ALICE));
+	});
+}
+
+#[test]
+fn xcmp_create_asset() {
 	MockNet::reset();
 
-	ParaA::execute_with(|| {
-		// check relay chain account balance
-		assert_eq!(relay_chain::Balances::free_balance(parent_account_id()), INITIAL_BALANCE);
-	});
+	// ParaB::execute_with(|| {
+	// 	assert_ok!(parachain::Balances::force_set_balance(
+	// 		parachain::RuntimeOrigin::root(),
+	// 		child_account_id(PARA_A_ID),
+	// 		INITIAL_BALANCE
+	// 	));
+	// 	assert_eq!(parachain::Balances::free_balance(child_account_id(PARA_A_ID)), INITIAL_BALANCE);
+	// });
 
 	let foreign_asset_id_location =
-		xcm::v3::Location::new(2, [xcm::v3::Junction::GlobalConsensus(xcm::v3::NetworkId::Kusama)]);
+		xcm::v3::Location::new(1, [xcm::v3::Junction::Parachain(PARA_A_ID)]);
 
 	let create_asset =
 		parachain::RuntimeCall::ForeignAssets(pallet_assets::Call::<parachain::Runtime>::create {
 			id: foreign_asset_id_location,
 			admin: ALICE,
-			min_balance: 100,
+			min_balance: 1000,
 		});
 
-	Relay::execute_with(|| {
-		assert_ok!(RelayChainPalletXcm::send_xcm(
+	ParaA::execute_with(|| {
+		assert_ok!(ParachainPalletXcm::send_xcm(
 			Here,
-			Parachain(PARA_A_ID),
+			(Parent, Parachain(PARA_B_ID)),
 			Xcm(vec![Transact {
 				origin_kind: OriginKind::SovereignAccount,
 				require_weight_at_most: Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024),
@@ -574,7 +595,18 @@ fn create_a_fungible_in_para_a() {
 		));
 	});
 
-	ParaA::execute_with(|| {
-		assert_eq!(parachain::ForeignAssets::owner(foreign_asset_id_location), Some(ALICE));
+	ParaB::execute_with(|| {
+		// print all the events
+		for r in parachain::System::events() {
+			println!("{:?}", r.event);
+		}
+
+		// check size of events
+		assert_eq!(parachain::System::events().len(), 1);
+
+		assert!(parachain::System::events().iter().any(|r| matches!(
+			r.event,
+			parachain::RuntimeEvent::ForeignAssets(pallet_assets::Event::Created { .. })
+		)));
 	});
 }
