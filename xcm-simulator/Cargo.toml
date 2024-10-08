@@ -39,8 +39,8 @@ cumulus-pallet-xcm = { workspace = true }
 default = ["std"]
 std = [
     "cumulus-pallet-xcm/std",
-	"parachain-info/std",
-	"laos-primitives/std",
+    "parachain-info/std",
+    "laos-primitives/std",
     "frame-system/std",
     "frame-support/std",
     "pallet-balances/std",
