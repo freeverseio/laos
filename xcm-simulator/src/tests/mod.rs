@@ -545,18 +545,19 @@ fn ump_transfer_balance() {
 
 #[test]
 fn force_create_a_foreign_asset_in_para_b() {
-	let asset_id = xcm::v3::Location::default();
+	let para_a_native_asset_location =
+		xcm::v3::Location::new(1, [xcm::v3::Junction::Parachain(PARA_A_ID)]);
 
 	ParaB::execute_with(|| {
 		assert_ok!(parachain::ForeignAssets::force_create(
 			parachain::RuntimeOrigin::root(),
-			asset_id,
+			para_a_native_asset_location,
 			ALICE,
 			false,
 			1000,
 		));
 
-		assert_eq!(parachain::ForeignAssets::owner(asset_id), Some(ALICE));
+		assert_eq!(parachain::ForeignAssets::owner(para_a_native_asset_location), Some(ALICE));
 	});
 }
 
