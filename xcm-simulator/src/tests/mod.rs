@@ -651,11 +651,6 @@ fn xcmp_create_asset_in_para_b() {
 	});
 
 	ParaB::execute_with(|| {
-		// print all the events
-		for r in parachain::System::events() {
-			println!("{:?}", r.event);
-		}
-
 		assert!(parachain::System::events().iter().any(|r| matches!(
 			r.event,
 			parachain::RuntimeEvent::Assets(pallet_assets::Event::Created { .. })
@@ -689,14 +684,6 @@ fn xcmp_create_foreign_asset() {
 	});
 
 	ParaB::execute_with(|| {
-		// print all the events
-		for r in parachain::System::events() {
-			println!("{:?}", r.event);
-		}
-
-		// check size of events
-		// assert_eq!(parachain::System::events().len(), 1);
-
 		assert!(parachain::System::events().iter().any(|r| matches!(
 			r.event,
 			parachain::RuntimeEvent::ForeignAssets(pallet_assets::Event::Created { .. })
