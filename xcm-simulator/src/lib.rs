@@ -107,6 +107,11 @@ pub fn sibling_account_id(para: u32) -> parachain::AccountId {
 	parachain::LocationToAccountId::convert_location(&location.into()).unwrap()
 }
 
+pub fn sibling_account_id_20(para: u32) -> laosish::AccountId {
+	let location = (Parent, Parachain(para));
+	laosish::LocationToAccountId::convert_location(&location.into()).unwrap()
+}
+
 pub fn parent_account_account_id(who: sp_runtime::AccountId32) -> parachain::AccountId {
 	let location = (Parent, AccountId32 { network: None, id: who.into() });
 	parachain::LocationToAccountId::convert_location(&location.into()).unwrap()
@@ -143,9 +148,15 @@ pub fn para_ext_ethereum(para_id: u32) -> sp_io::TestExternalities {
 
 	let mut t = frame_system::GenesisConfig::<Runtime>::default().build_storage().unwrap();
 
-	pallet_balances::GenesisConfig::<Runtime> { balances: vec![(ALITH.into(), INITIAL_BALANCE)] }
-		.assimilate_storage(&mut t)
-		.unwrap();
+	pallet_balances::GenesisConfig::<Runtime> {
+		balances: vec![
+			(ALITH.into(), INITIAL_BALANCE),
+			(sibling_account_id_20(PARA_A_ID), INITIAL_BALANCE),
+			(sibling_account_id_20(PARA_B_ID), INITIAL_BALANCE),
+		],
+	}
+	.assimilate_storage(&mut t)
+	.unwrap();
 
 	let mut ext = sp_io::TestExternalities::new(t);
 	ext.execute_with(|| {

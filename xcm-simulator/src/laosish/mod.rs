@@ -18,6 +18,8 @@
 
 mod configs;
 
+pub use configs::xcm_config::LocationToAccountId;
+
 use frame_support::{construct_runtime, weights::Weight};
 use parity_scale_codec::{Decode, Encode};
 
