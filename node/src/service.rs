@@ -21,7 +21,10 @@ use std::{path::Path, sync::Arc, time::Duration};
 
 use cumulus_client_cli::CollatorOptions;
 // Local Runtime Types
-use laos_runtime::{apis::RuntimeApi, opaque::Block, types::TransactionConverter, Hash};
+use laos_runtime::{
+	apis::RuntimeApi, opaque::Block, types::TransactionConverter, Hash,
+	RELAY_CHAIN_SLOT_DURATION_MILLIS,
+};
 
 // Cumulus Imports
 use cumulus_client_collator::service::CollatorService;
@@ -57,7 +60,7 @@ use sc_telemetry::{Telemetry, TelemetryHandle, TelemetryWorker, TelemetryWorkerH
 use sc_transaction_pool_api::OffchainTransactionPoolFactory;
 use sp_consensus_aura::{
 	sr25519::{AuthorityId as AuraId, AuthorityPair as AuraPair},
-	AuraApi,
+	AuraApi, Slot, SlotDuration,
 };
 use sp_core::U256;
 use sp_keystore::KeystorePtr;
@@ -354,26 +357,22 @@ async fn start_node_impl(
 		execute_gas_limit_multiplier: eth_config.execute_gas_limit_multiplier,
 		forced_parent_hashes: None,
 		pending_create_inherent_data_providers: move |_, ()| async move {
-			let current = sp_timestamp::InherentDataProvider::from_system_time();
-			let next_slot = current.timestamp().as_millis() + slot_duration.as_millis();
-			let timestamp = sp_timestamp::InherentDataProvider::new(next_slot.into());
-			let slot =
-			sp_consensus_aura::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
-				*timestamp,
-				slot_duration,
+			let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
+			let relay_chain_slot = Slot::from_timestamp(
+				timestamp.timestamp(),
+				SlotDuration::from_millis(RELAY_CHAIN_SLOT_DURATION_MILLIS as u64),
 			);
-			let dynamic_fee = fp_dynamic_fee::InherentDataProvider(U256::from(target_gas_price));
 
 			let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
-			// Create a dummy parachain inherent data provider which is required to pass
-			// the checks by the para chain system. We use dummy values because in the 'pending
-			// context' neither do we have access to the real values nor do we need them.
+			// patch suggested here: https://github.com/darwinia-network/darwinia/pull/1608
+			let mut state_proof_builder =
+				cumulus_test_relay_sproof_builder::RelayStateSproofBuilder::default();
+			state_proof_builder.para_id = para_id;
+			state_proof_builder.current_slot = relay_chain_slot;
+			state_proof_builder.included_para_head = Some(polkadot_primitives::HeadData(vec![]));
 			let (relay_parent_storage_root, relay_chain_state) =
-				RelayStateSproofBuilder::default().into_state_root_and_proof();
+				state_proof_builder.into_state_root_and_proof();
 			let vfp = PersistedValidationData {
-				// This is a hack to make
-				// `cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases` happy. Relay
-				// parent number can't be bigger than u32::MAX.
 				relay_parent_number: u32::MAX,
 				relay_parent_storage_root,
 				..Default::default()
@@ -384,7 +383,8 @@ async fn start_node_impl(
 				downward_messages: Default::default(),
 				horizontal_messages: Default::default(),
 			};
-			Ok((slot, timestamp, dynamic_fee, parachain_inherent_data))
+			let dynamic_fee = fp_dynamic_fee::InherentDataProvider(U256::from(target_gas_price));
+			Ok((timestamp, dynamic_fee, parachain_inherent_data))
 		},
 	};
 
@@ -528,15 +528,22 @@ fn build_import_queue(
 ) -> Result<sc_consensus::DefaultImportQueue<Block>, sc_service::Error> {
 	let slot_duration = cumulus_client_consensus_aura::slot_duration(&*client)?;
 	let target_gas_price = eth_config.target_gas_price;
-	let create_inherent_data_providers = move |_, _| async move {
-		let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
-		let slot =
-			sp_consensus_aura::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
-				*timestamp,
-				slot_duration,
-			);
-		let dynamic_fee = fp_dynamic_fee::InherentDataProvider(U256::from(target_gas_price));
-		Ok((slot, timestamp, dynamic_fee))
+	let cidp_client = client.clone();
+	let create_inherent_data_providers = move |parent_hash, _| {
+		let cidp_client = cidp_client.clone();
+		async move {
+			let slot_duration =
+				sc_consensus_aura::standalone::slot_duration_at(&*cidp_client, parent_hash)?;
+			let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
+
+			let slot =
+						sp_consensus_aura::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
+							*timestamp,
+							slot_duration,
+						);
+
+			Ok((slot, timestamp))
+		}
 	};
 	Ok(cumulus_client_consensus_aura::equivocation_import_queue::fully_verifying_import_queue::<
 		sp_consensus_aura::sr25519::AuthorityPair,
