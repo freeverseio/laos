@@ -54,6 +54,7 @@ use sc_transaction_pool_api::OffchainTransactionPoolFactory;
 use sp_core::U256;
 use sp_keystore::KeystorePtr;
 use substrate_prometheus_endpoint::Registry;
+use sp_consensus_aura::{Slot, SlotDuration};
 
 // Frontier
 use crate::eth::{
@@ -346,37 +347,32 @@ async fn start_node_impl(
 		execute_gas_limit_multiplier: eth_config.execute_gas_limit_multiplier,
 		forced_parent_hashes: None,
 		pending_create_inherent_data_providers: move |_, ()| async move {
-			let current = sp_timestamp::InherentDataProvider::from_system_time();
-			let next_slot = current.timestamp().as_millis() + slot_duration.as_millis();
-			let timestamp = sp_timestamp::InherentDataProvider::new(next_slot.into());
-			let slot =
-			sp_consensus_aura::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
-				*timestamp,
-				slot_duration,
-			);
-			let dynamic_fee = fp_dynamic_fee::InherentDataProvider(U256::from(target_gas_price));
-
+			// Patch from https://github.com/darwinia-network/darwinia/pull/1608
 			let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
-			// Create a dummy parachain inherent data provider which is required to pass
-			// the checks by the para chain system. We use dummy values because in the 'pending
-			// context' neither do we have access to the real values nor do we need them.
+			let relay_chain_slot = Slot::from_timestamp(
+				timestamp.timestamp(),
+				SlotDuration::from_millis(6000 as u64), // RELAY_CHAIN_SLOT_DURATION_MILLIS
+			);
+
+			let mut state_proof_builder =
+				cumulus_test_relay_sproof_builder::RelayStateSproofBuilder::default();
+			state_proof_builder.para_id = para_id;
+			state_proof_builder.current_slot = relay_chain_slot;
+			state_proof_builder.included_para_head = Some(polkadot_primitives::HeadData(vec![]));
 			let (relay_parent_storage_root, relay_chain_state) =
-				RelayStateSproofBuilder::default().into_state_root_and_proof();
-			let vfp = PersistedValidationData {
-				// This is a hack to make
-				// `cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases` happy. Relay
-				// parent number can't be bigger than u32::MAX.
-				relay_parent_number: u32::MAX,
-				relay_parent_storage_root,
-				..Default::default()
-			};
-			let parachain_inherent_data = ParachainInherentData {
-				validation_data: vfp,
-				relay_chain_state,
-				downward_messages: Default::default(),
-				horizontal_messages: Default::default(),
-			};
-			Ok((slot, timestamp, dynamic_fee, parachain_inherent_data))
+				state_proof_builder.into_state_root_and_proof();
+			let parachain_inherent_data =
+				cumulus_primitives_parachain_inherent::ParachainInherentData {
+					validation_data: cumulus_primitives_core::PersistedValidationData {
+						relay_parent_number: u32::MAX,
+						relay_parent_storage_root,
+						..Default::default()
+					},
+					relay_chain_state,
+					downward_messages: Default::default(),
+					horizontal_messages: Default::default(),
+				};
+			Ok((timestamp, parachain_inherent_data))
 		},
 	};
 
