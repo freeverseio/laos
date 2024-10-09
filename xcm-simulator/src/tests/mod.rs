@@ -7,6 +7,9 @@ use xcm_simulator::TestExt;
 
 mod laosish_xcm;
 
+pub type ForeignAssetsCall =
+	pallet_assets::Call<parachain::Runtime, parachain::ForeignAssetsInstance>;
+
 // Helper function for forming buy execution message
 fn buy_execution<C>(fees: impl Into<Asset>) -> Instruction<C> {
 	BuyExecution { fees: fees.into(), weight_limit: Unlimited }
@@ -582,10 +585,7 @@ fn xcmp_create_asset() {
 	let para_a_native_asset_location =
 		xcm::v3::Location::new(1, [xcm::v3::Junction::Parachain(PARA_A_ID)]);
 
-	let create_asset = parachain::RuntimeCall::ForeignAssets(pallet_assets::Call::<
-		parachain::Runtime,
-		parachain::ForeignAssetsInstance,
-	>::create {
+	let create_asset = parachain::RuntimeCall::ForeignAssets(ForeignAssetsCall::create {
 		id: para_a_native_asset_location,
 		admin: ALICE,
 		min_balance: 1000,

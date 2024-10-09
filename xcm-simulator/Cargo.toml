@@ -35,11 +35,13 @@ laos-primitives = { workspace = true }
 parachain-info = { workspace = true }
 cumulus-pallet-xcm = { workspace = true }
 assets-common = { workspace = true }
+parachains-common = { workspace = true }
 
 
 [features]
 default = ["std"]
 std = [
+    "parachains-common/std",
     "cumulus-pallet-xcm/std",
 	"parachain-info/std",
 	"laos-primitives/std",

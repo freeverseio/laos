@@ -16348,6 +16348,7 @@ dependencies = [
  "pallet-message-queue",
  "pallet-uniques",
  "pallet-xcm",
+ "parachains-common",
  "parity-scale-codec",
  "polkadot-core-primitives",
  "polkadot-parachain-primitives",

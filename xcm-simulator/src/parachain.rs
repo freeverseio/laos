@@ -19,14 +19,18 @@
 use core::marker::PhantomData;
 use frame_support::{
 	construct_runtime, derive_impl, parameter_types,
-	traits::{ContainsPair, EnsureOrigin, EnsureOriginWithArg, Everything, EverythingBut, Nothing},
+	traits::{
+		AsEnsureOriginWithArg, ContainsPair, EnsureOrigin, EnsureOriginWithArg, Everything,
+		EverythingBut, Nothing,
+	},
 	weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight},
 };
 use parity_scale_codec::{Decode, Encode};
 
-use frame_system::EnsureRoot;
+use frame_system::{EnsureRoot, EnsureSigned};
 use sp_core::{ConstU32, H256};
 use sp_runtime::{
+	codec,
 	traits::{Get, Hash, IdentityLookup},
 	AccountId32,
 };
@@ -34,6 +38,7 @@ use sp_std::prelude::*;
 
 use assets_common::{foreign_creators::ForeignCreators, matching::FromSiblingParachain};
 use pallet_xcm::XcmPassthrough;
+use parachains_common::AssetIdForTrustBackedAssets;
 use polkadot_core_primitives::BlockNumber as RelayBlockNumber;
 use polkadot_parachain_primitives::primitives::{
 	DmpMessageHandler, Id as ParaId, Sibling, XcmpMessageFormat, XcmpMessageHandler,
@@ -464,6 +469,33 @@ pub type ForeignCreatorsSovereignAccountOf = (
 	GlobalConsensusParachainConvertsFor<UniversalLocation, AccountId>,
 );
 
+// Called "Trust Backed" assets because these are generally registered by some account, and users of
+// the asset assume it has some claimed backing. The pallet is called `Assets` in
+// `construct_runtime` to avoid breaking changes on storage reads.
+pub type TrustBackedAssetsInstance = pallet_assets::Instance1;
+impl pallet_assets::Config<TrustBackedAssetsInstance> for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Balance = Balance;
+	type AssetId = AssetIdForTrustBackedAssets;
+	type AssetIdParameter = codec::Compact<AssetIdForTrustBackedAssets>;
+	type Currency = Balances;
+	type CreateOrigin = AsEnsureOriginWithArg<EnsureSigned<AccountId>>;
+	type ForceOrigin = EnsureRoot<AccountId>;
+	type AssetDeposit = frame_support::traits::ConstU128<1_000>;
+	type MetadataDepositBase = frame_support::traits::ConstU128<1_000>;
+	type MetadataDepositPerByte = frame_support::traits::ConstU128<1_000>;
+	type ApprovalDeposit = ExistentialDeposit;
+	type StringLimit = frame_support::traits::ConstU32<50>;
+	type Freezer = ();
+	type Extra = ();
+	type WeightInfo = ();
+	type CallbackHandle = ();
+	type AssetAccountDeposit = frame_support::traits::ConstU128<1_000>;
+	type RemoveItemsLimit = frame_support::traits::ConstU32<1000>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type BenchmarkHelper = ();
+}
+
 /// Assets managed by some foreign location. Note: we do not declare a `ForeignAssetsCall` type, as
 /// this type is used in proxy definitions. We assume that a foreign location would not want to set
 /// an individual, local account as a proxy for the issuance of their assets. This issuance should
@@ -510,6 +542,7 @@ construct_runtime!(
 		MsgQueue: mock_msg_queue,
 		PolkadotXcm: pallet_xcm,
 		ForeignUniques: pallet_uniques,
+		Assets: pallet_assets::<Instance1> = 50,
 		ForeignAssets: pallet_assets::<Instance2> = 53,
 	}
 );
