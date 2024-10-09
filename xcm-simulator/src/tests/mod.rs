@@ -558,6 +558,11 @@ fn force_create_a_foreign_asset_in_para_b() {
 		));
 
 		assert_eq!(parachain::ForeignAssets::owner(para_a_native_asset_location), Some(ALICE));
+
+		assert!(parachain::System::events().iter().any(|r| matches!(
+			r.event,
+			parachain::RuntimeEvent::ForeignAssets(pallet_assets::Event::ForceCreated { .. })
+		)));
 	});
 }
 
