@@ -322,6 +322,15 @@ impl pallet_assets::Config<TrustBackedAssetsInstance> for Runtime {
 	type BenchmarkHelper = ();
 }
 
+/// Simple conversion of `u32` into an `AssetId` for use in benchmarking.
+pub struct XcmBenchmarkHelper;
+#[cfg(feature = "runtime-benchmarks")]
+impl pallet_assets::BenchmarkHelper<xcm::v3::Location> for XcmBenchmarkHelper {
+	fn create_asset_id_parameter(id: u32) -> xcm::v3::Location {
+		xcm::v3::Location::new(1, xcm::v3::Junction::Parachain(id))
+	}
+}
+
 /// Assets managed by some foreign location. Note: we do not declare a `ForeignAssetsCall` type, as
 /// this type is used in proxy definitions. We assume that a foreign location would not want to set
 /// an individual, local account as a proxy for the issuance of their assets. This issuance should
@@ -352,7 +361,7 @@ impl pallet_assets::Config<ForeignAssetsInstance> for Runtime {
 	type AssetAccountDeposit = frame_support::traits::ConstU128<1_000>;
 	type RemoveItemsLimit = frame_support::traits::ConstU32<1000>;
 	#[cfg(feature = "runtime-benchmarks")]
-	type BenchmarkHelper = xcm_config::XcmBenchmarkHelper;
+	type BenchmarkHelper = XcmBenchmarkHelper;
 }
 
 impl parachain_info::Config for Runtime {}
