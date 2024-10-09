@@ -573,12 +573,12 @@ fn xcmp_create_asset() {
 	// 	assert_eq!(parachain::Balances::free_balance(child_account_id(PARA_A_ID)), INITIAL_BALANCE);
 	// });
 
-	let foreign_asset_id_location =
+	let para_a_native_asset_location =
 		xcm::v3::Location::new(1, [xcm::v3::Junction::Parachain(PARA_A_ID)]);
 
 	let create_asset =
 		parachain::RuntimeCall::ForeignAssets(pallet_assets::Call::<parachain::Runtime>::create {
-			id: foreign_asset_id_location,
+			id: para_a_native_asset_location,
 			admin: ALICE,
 			min_balance: 1000,
 		});
