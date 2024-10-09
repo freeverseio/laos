@@ -605,18 +605,6 @@ fn xcmp_transfer_native_tokens() {
 		},
 	);
 
-	ParaB::execute_with(|| {
-		assert_ok!(parachain::Balances::force_set_balance(
-			parachain::RuntimeOrigin::root(),
-			sibling_account_id(PARA_A_ID),
-			INITIAL_BALANCE
-		));
-		assert_eq!(
-			parachain::Balances::free_balance(sibling_account_id(PARA_A_ID)),
-			INITIAL_BALANCE
-		);
-	});
-
 	ParaA::execute_with(|| {
 		assert_ok!(ParachainPalletXcm::send_xcm(
 			Here,
@@ -641,18 +629,6 @@ fn xcmp_transfer_native_tokens() {
 #[test]
 fn xcmp_create_asset_in_para_b() {
 	MockNet::reset();
-
-	ParaB::execute_with(|| {
-		assert_ok!(parachain::Balances::force_set_balance(
-			parachain::RuntimeOrigin::root(),
-			sibling_account_id(PARA_A_ID),
-			INITIAL_BALANCE
-		));
-		assert_eq!(
-			parachain::Balances::free_balance(sibling_account_id(PARA_A_ID)),
-			INITIAL_BALANCE
-		);
-	});
 
 	let asset_id = 2;
 
@@ -690,18 +666,6 @@ fn xcmp_create_asset_in_para_b() {
 #[test]
 fn xcmp_create_foreign_asset() {
 	MockNet::reset();
-
-	ParaB::execute_with(|| {
-		assert_ok!(parachain::Balances::force_set_balance(
-			parachain::RuntimeOrigin::root(),
-			sibling_account_id(PARA_A_ID),
-			INITIAL_BALANCE
-		));
-		assert_eq!(
-			parachain::Balances::free_balance(sibling_account_id(PARA_A_ID)),
-			INITIAL_BALANCE
-		);
-	});
 
 	let para_a_native_asset_location =
 		xcm::v3::Location::new(1, [xcm::v3::Junction::Parachain(PARA_A_ID)]);
