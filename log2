@@ -1,0 +1,13 @@
+
+running 1 test
+RuntimeEvent::PolkadotXcm(Event::Sent { origin: Location { parents: 0, interior: Here }, destination: Location { parents: 1, interior: X1([Parachain(2)]) }, message: Xcm([Transact { origin_kind: SovereignAccount, require_weight_at_most: Weight { ref_time: 1000000000, proof_size: 1048576 }, call: "0x0600010100040000000000000000000000000000000000000000000000000000000000000000e8030000000000000000000000000000" }]), message_id: [118, 249, 225, 31, 225, 125, 74, 27, 16, 237, 90, 92, 61, 186, 65, 196, 73, 228, 115, 34, 185, 157, 229, 106, 106, 42, 250, 197, 73, 73, 103, 142] })
+RuntimeEvent::MsgQueue(Event::Success(Some(0x2926ca22e0fa2fcb2271b30d958d4fd5e6a734eafca471319860480f075b5c55)))
+test tests::xcmp_create_asset ... FAILED
+
+failures:
+
+failures:
+    tests::xcmp_create_asset
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 24 filtered out; finished in 0.01s
+

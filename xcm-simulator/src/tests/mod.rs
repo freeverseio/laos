@@ -4,9 +4,9 @@ use frame_support::{assert_ok, traits::fungibles::roles::Inspect, weights::Weigh
 use parity_scale_codec::Encode;
 use xcm::latest::QueryResponseInfo;
 use xcm_simulator::TestExt;
-
+use frame_system::RawOrigin;
 mod laosish_xcm;
-
+use xcm::v3;
 // Helper function for forming buy execution message
 fn buy_execution<C>(fees: impl Into<Asset>) -> Instruction<C> {
 	BuyExecution { fees: fees.into(), weight_limit: Unlimited }
@@ -590,15 +590,20 @@ fn xcmp_create_asset() {
 		});
 
 	ParaA::execute_with(|| {
-		assert_ok!(ParachainPalletXcm::send_xcm(
-			Here,
-			(Parent, Parachain(PARA_B_ID)),
-			Xcm(vec![Transact {
-				origin_kind: OriginKind::SovereignAccount,
+		assert_ok!(ParachainPalletXcm::send(
+			RawOrigin::Root.into(),
+			Box::new((Parent, Parachain(PARA_B_ID)).into()),
+			Box::new(xcm::VersionedXcm::V4(Xcm(vec![Transact {
+				origin_kind: xcm::v4::OriginKind::Xcm,
 				require_weight_at_most: Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024),
 				call: create_asset.encode().into(),
-			}]),
+			}]))),
 		));
+
+		for r in parachain::System::events() {
+			println!("{:?}", r.event);
+		}
+
 	});
 
 	ParaB::execute_with(|| {
@@ -609,6 +614,8 @@ fn xcmp_create_asset() {
 
 		// check size of events
 		assert_eq!(parachain::System::events().len(), 1);
+		// check that asset is created
+		// assert_eq!(Assets::total_balance(1, &ALITH), 0);
 
 		assert!(parachain::System::events().iter().any(|r| matches!(
 			r.event,
