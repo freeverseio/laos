@@ -468,7 +468,8 @@ pub type ForeignCreatorsSovereignAccountOf = (
 /// this type is used in proxy definitions. We assume that a foreign location would not want to set
 /// an individual, local account as a proxy for the issuance of their assets. This issuance should
 /// be managed by the foreign location's governance.
-impl pallet_assets::Config for Runtime {
+pub type ForeignAssetsInstance = pallet_assets::Instance2;
+impl pallet_assets::Config<ForeignAssetsInstance> for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Balance = Balance;
 	type AssetId = xcm::v3::Location;
@@ -509,6 +510,6 @@ construct_runtime!(
 		MsgQueue: mock_msg_queue,
 		PolkadotXcm: pallet_xcm,
 		ForeignUniques: pallet_uniques,
-		ForeignAssets: pallet_assets,
+		ForeignAssets: pallet_assets::<Instance2> = 53,
 	}
 );

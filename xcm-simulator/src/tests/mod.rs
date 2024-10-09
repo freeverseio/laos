@@ -582,12 +582,14 @@ fn xcmp_create_asset() {
 	let para_a_native_asset_location =
 		xcm::v3::Location::new(1, [xcm::v3::Junction::Parachain(PARA_A_ID)]);
 
-	let create_asset =
-		parachain::RuntimeCall::ForeignAssets(pallet_assets::Call::<parachain::Runtime>::create {
-			id: para_a_native_asset_location,
-			admin: ALICE,
-			min_balance: 1000,
-		});
+	let create_asset = parachain::RuntimeCall::ForeignAssets(pallet_assets::Call::<
+		parachain::Runtime,
+		parachain::ForeignAssetsInstance,
+	>::create {
+		id: para_a_native_asset_location,
+		admin: ALICE,
+		min_balance: 1000,
+	});
 
 	ParaA::execute_with(|| {
 		assert_ok!(ParachainPalletXcm::send_xcm(
