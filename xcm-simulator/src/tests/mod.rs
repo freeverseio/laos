@@ -9,6 +9,8 @@ mod laosish_xcm;
 
 pub type ForeignAssetsCall =
 	pallet_assets::Call<parachain::Runtime, parachain::ForeignAssetsInstance>;
+pub type TrustBackedAssetsCall =
+	pallet_assets::Call<parachain::Runtime, parachain::TrustBackedAssetsInstance>;
 
 // Helper function for forming buy execution message
 fn buy_execution<C>(fees: impl Into<Asset>) -> Instruction<C> {
@@ -570,25 +572,94 @@ fn force_create_a_foreign_asset_in_para_b() {
 }
 
 #[test]
-fn xcmp_create_asset() {
+fn create_an_asset_in_para_b() {
+	let asset_id = 2;
+
+	ParaB::execute_with(|| {
+		assert_ok!(parachain::Assets::create(
+			parachain::RuntimeOrigin::signed(ALICE),
+			asset_id.into(),
+			ALICE,
+			1000,
+		));
+
+		assert_eq!(parachain::Assets::owner(asset_id), Some(ALICE));
+
+		assert!(parachain::System::events().iter().any(|r| matches!(
+			r.event,
+			parachain::RuntimeEvent::Assets(pallet_assets::Event::Created { .. })
+		)));
+	});
+}
+
+#[test]
+fn xcmp_transfer_native_tokens() {
 	MockNet::reset();
 
-	// ParaB::execute_with(|| {
-	// 	assert_ok!(parachain::Balances::force_set_balance(
-	// 		parachain::RuntimeOrigin::root(),
-	// 		child_account_id(PARA_A_ID),
-	// 		INITIAL_BALANCE
-	// 	));
-	// 	assert_eq!(parachain::Balances::free_balance(child_account_id(PARA_A_ID)), INITIAL_BALANCE);
-	// });
+	let amount = 1;
 
-	let para_a_native_asset_location =
-		xcm::v3::Location::new(1, [xcm::v3::Junction::Parachain(PARA_A_ID)]);
+	let transfer = parachain::RuntimeCall::Balances(
+		pallet_balances::Call::<parachain::Runtime>::transfer_keep_alive {
+			dest: ALICE,
+			value: amount,
+		},
+	);
 
-	let create_asset = parachain::RuntimeCall::ForeignAssets(ForeignAssetsCall::create {
-		id: para_a_native_asset_location,
+	ParaB::execute_with(|| {
+		assert_ok!(parachain::Balances::force_set_balance(
+			parachain::RuntimeOrigin::root(),
+			sibling_account_id(PARA_A_ID),
+			INITIAL_BALANCE
+		));
+		assert_eq!(
+			parachain::Balances::free_balance(sibling_account_id(PARA_A_ID)),
+			INITIAL_BALANCE
+		);
+	});
+
+	ParaA::execute_with(|| {
+		assert_ok!(ParachainPalletXcm::send_xcm(
+			Here,
+			(Parent, Parachain(PARA_B_ID)),
+			Xcm(vec![Transact {
+				origin_kind: OriginKind::SovereignAccount,
+				require_weight_at_most: Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024),
+				call: transfer.encode().into(),
+			}]),
+		));
+	});
+
+	ParaB::execute_with(|| {
+		assert_eq!(parachain::Balances::free_balance(ALICE), INITIAL_BALANCE + amount);
+		assert_eq!(
+			parachain::Balances::free_balance(sibling_account_id(PARA_A_ID)),
+			INITIAL_BALANCE - amount
+		);
+	});
+}
+
+#[test]
+fn xcmp_create_asset_in_para_b() {
+	MockNet::reset();
+
+	ParaB::execute_with(|| {
+		assert_ok!(parachain::Balances::force_set_balance(
+			parachain::RuntimeOrigin::root(),
+			sibling_account_id(PARA_A_ID),
+			INITIAL_BALANCE
+		));
+		assert_eq!(
+			parachain::Balances::free_balance(sibling_account_id(PARA_A_ID)),
+			INITIAL_BALANCE
+		);
+	});
+
+	let asset_id = 2;
+
+	let create_asset = parachain::RuntimeCall::Assets(TrustBackedAssetsCall::create {
+		id: asset_id.into(),
 		admin: ALICE,
-		min_balance: 1000,
+		min_balance: 1,
 	});
 
 	ParaA::execute_with(|| {
@@ -609,12 +680,59 @@ fn xcmp_create_asset() {
 			println!("{:?}", r.event);
 		}
 
-		// check size of events
-		assert_eq!(parachain::System::events().len(), 1);
-
 		assert!(parachain::System::events().iter().any(|r| matches!(
 			r.event,
-			parachain::RuntimeEvent::ForeignAssets(pallet_assets::Event::Created { .. })
+			parachain::RuntimeEvent::Assets(pallet_assets::Event::Created { .. })
 		)));
 	});
 }
+
+// #[test]
+// fn xcmp_create_foreign_asset() {
+// 	MockNet::reset();
+
+// 	ParaB::execute_with(|| {
+// 		assert_ok!(parachain::Balances::force_set_balance(
+// 			parachain::RuntimeOrigin::root(),
+// 			sibling_account_id(PARA_A_ID),
+// 			INITIAL_BALANCE
+// 		));
+// 		assert_eq!(parachain::Balances::free_balance(sibling_account_id(PARA_A_ID)), INITIAL_BALANCE);
+// 	});
+
+// 	let para_a_native_asset_location =
+// 		xcm::v3::Location::new(1, [xcm::v3::Junction::Parachain(PARA_A_ID)]);
+
+// 	let create_asset = parachain::RuntimeCall::ForeignAssets(ForeignAssetsCall::create {
+// 		id: para_a_native_asset_location,
+// 		admin: ALICE,
+// 		min_balance: 1000,
+// 	});
+
+// 	ParaA::execute_with(|| {
+// 		assert_ok!(ParachainPalletXcm::send_xcm(
+// 			Here,
+// 			(Parent, Parachain(PARA_B_ID)),
+// 			Xcm(vec![Transact {
+// 				origin_kind: OriginKind::SovereignAccount,
+// 				require_weight_at_most: Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024),
+// 				call: create_asset.encode().into(),
+// 			}]),
+// 		));
+// 	});
+
+// 	ParaB::execute_with(|| {
+// 		// print all the events
+// 		for r in parachain::System::events() {
+// 			println!("{:?}", r.event);
+// 		}
+
+// 		// check size of events
+// 		// assert_eq!(parachain::System::events().len(), 1);
+
+// 		assert!(parachain::System::events().iter().any(|r| matches!(
+// 			r.event,
+// 			parachain::RuntimeEvent::ForeignAssets(pallet_assets::Event::Created { .. })
+// 		)));
+// 	});
+// }

@@ -102,6 +102,11 @@ pub fn sibling_account_account_id(para: u32, who: sp_runtime::AccountId32) -> pa
 	parachain::LocationToAccountId::convert_location(&location.into()).unwrap()
 }
 
+pub fn sibling_account_id(para: u32) -> parachain::AccountId {
+	let location = (Parent, Parachain(para));
+	parachain::LocationToAccountId::convert_location(&location.into()).unwrap()
+}
+
 pub fn parent_account_account_id(who: sp_runtime::AccountId32) -> parachain::AccountId {
 	let location = (Parent, AccountId32 { network: None, id: who.into() });
 	parachain::LocationToAccountId::convert_location(&location.into()).unwrap()
