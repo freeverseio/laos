@@ -123,6 +123,6 @@ jobs:
       - name: Try Runtime for Laos Sigma
         run: |
           RUST_LOG=try-runtime ./try-runtime --runtime ./target/release/wbuild/laos-runtime/laos_runtime.wasm on-runtime-upgrade --disable-spec-version-check --checks=all live --uri ws://159.223.241.51:9944
-      - name: Try Runtime for Laos Laos
+      - name: Try Runtime for Laos
         run: |
           RUST_LOG=try-runtime ./try-runtime --runtime ./target/release/wbuild/laos-runtime/laos_runtime.wasm on-runtime-upgrade --disable-spec-version-check --checks=all live --uri wss://rpc.laos.laosfoundation.io
