@@ -35,7 +35,7 @@ use xcm_builder::{
 	FixedRateOfFungible, FixedWeightBounds, FrameTransactionalProcessor, FungibleAdapter,
 	IsConcrete, NativeAsset, ParentIsPreset, RelayChainAsNative, SiblingParachainAsNative,
 	SiblingParachainConvertsVia, SignedAccountKey20AsNative, SovereignSignedViaLocation,
-	TakeWeightCredit, TrailingSetTopicAsId, WithComputedOrigin,
+	TakeWeightCredit, TrailingSetTopicAsId, WithComputedOrigin, MintLocation,
 };
 use xcm_executor::XcmExecutor;
 
@@ -51,6 +51,9 @@ parameter_types! {
 		GlobalConsensus(RelayNetwork::get()),
 		Parachain(ParachainInfo::parachain_id().into()),
 	).into();
+	pub HereLocation: Location = Location::here();
+	pub CheckingAccount: AccountId = PolkadotXcm::check_account();
+	pub Checking: (AccountId, MintLocation) = (CheckingAccount::get(), MintLocation::Local);
 }
 
 /// Type for specifying how a `MultiLocation` can be converted into an `AccountId`. This is used
@@ -70,13 +73,13 @@ pub type LocalAssetTransactor = FungibleAdapter<
 	// Use this currency:
 	Balances,
 	// Use this currency when it is a fungible asset matching the given location or name:
-	IsConcrete<RelayLocation>,
+	IsConcrete<HereLocation>,
 	// Do a simple pun to convert an AccountId20 Location into a native chain account ID:
 	LocationToAccountId,
 	// Our chain's account ID type (we can't get away without mentioning it explicitly):
 	AccountId,
-	// We don't track any teleports.
-	(),
+	// We track any teleports.
+	Checking,
 >;
 
 /// This is the type we use to convert an (incoming) XCM origin into a local `Origin` instance,
