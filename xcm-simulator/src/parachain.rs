@@ -32,15 +32,20 @@ use sp_runtime::{
 use sp_std::prelude::*;
 
 use crate::mock_msg_queue;
+use assets_common::{foreign_creators::ForeignCreators, matching::FromSiblingParachain};
+use frame_support::traits::AsEnsureOriginWithArg;
+use frame_system::EnsureSigned;
 use pallet_xcm::XcmPassthrough;
+use parachains_common::AssetIdForTrustBackedAssets;
 use polkadot_parachain_primitives::primitives::Sibling;
+use sp_runtime::codec;
 use xcm::latest::prelude::*;
 use xcm_builder::{
 	Account32Hash, AccountId32Aliases, AllowUnpaidExecutionFrom, ConvertedConcreteId,
 	EnsureDecodableXcm, EnsureXcmOrigin, FixedRateOfFungible, FixedWeightBounds,
-	FrameTransactionalProcessor, FungibleAdapter, IsConcrete, NativeAsset, NoChecking,
-	NonFungiblesAdapter, ParentIsPreset, SiblingParachainConvertsVia, SignedAccountId32AsNative,
-	SignedToAccountId32, SovereignSignedViaLocation,
+	FrameTransactionalProcessor, FungibleAdapter, GlobalConsensusParachainConvertsFor, IsConcrete,
+	NativeAsset, NoChecking, NonFungiblesAdapter, ParentIsPreset, SiblingParachainConvertsVia,
+	SignedAccountId32AsNative, SignedToAccountId32, SovereignSignedViaLocation,
 };
 use xcm_executor::{
 	traits::{ConvertLocation, JustTry},
@@ -109,7 +114,7 @@ impl pallet_uniques::Config for Runtime {
 	type CollectionId = Location;
 	type ItemId = AssetInstance;
 	type Currency = Balances;
-	type CreateOrigin = ForeignCreators;
+	type CreateOrigin = ForeignCreatorsUnique;
 	type ForceOrigin = frame_system::EnsureRoot<AccountId>;
 	type CollectionDeposit = frame_support::traits::ConstU128<1_000>;
 	type ItemDeposit = frame_support::traits::ConstU128<1_000>;
@@ -127,8 +132,8 @@ impl pallet_uniques::Config for Runtime {
 
 // `EnsureOriginWithArg` impl for `CreateOrigin` which allows only XCM origins
 // which are locations containing the class location.
-pub struct ForeignCreators;
-impl EnsureOriginWithArg<RuntimeOrigin, Location> for ForeignCreators {
+pub struct ForeignCreatorsUnique;
+impl EnsureOriginWithArg<RuntimeOrigin, Location> for ForeignCreatorsUnique {
 	type Success = AccountId;
 
 	fn try_origin(
@@ -283,15 +288,96 @@ impl pallet_xcm::Config for Runtime {
 	type AdminOrigin = EnsureRoot<AccountId>;
 }
 
+pub type ForeignCreatorsSovereignAccountOf = (
+	SiblingParachainConvertsVia<Sibling, AccountId>,
+	AccountId32Aliases<RelayNetwork, AccountId>,
+	ParentIsPreset<AccountId>,
+	GlobalConsensusParachainConvertsFor<UniversalLocation, AccountId>,
+);
+
+// Called "Trust Backed" assets because these are generally registered by some account, and users of
+// the asset assume it has some claimed backing. The pallet is called `Assets` in
+// `construct_runtime` to avoid breaking changes on storage reads.
+pub type TrustBackedAssetsInstance = pallet_assets::Instance1;
+impl pallet_assets::Config<TrustBackedAssetsInstance> for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Balance = Balance;
+	type AssetId = AssetIdForTrustBackedAssets;
+	type AssetIdParameter = codec::Compact<AssetIdForTrustBackedAssets>;
+	type Currency = Balances;
+	type CreateOrigin = AsEnsureOriginWithArg<EnsureSigned<AccountId>>;
+	type ForceOrigin = EnsureRoot<AccountId>;
+	type AssetDeposit = frame_support::traits::ConstU128<1_000>;
+	type MetadataDepositBase = frame_support::traits::ConstU128<1_000>;
+	type MetadataDepositPerByte = frame_support::traits::ConstU128<1_000>;
+	type ApprovalDeposit = ExistentialDeposit;
+	type StringLimit = frame_support::traits::ConstU32<50>;
+	type Freezer = ();
+	type Extra = ();
+	type WeightInfo = ();
+	type CallbackHandle = ();
+	type AssetAccountDeposit = frame_support::traits::ConstU128<1_000>;
+	type RemoveItemsLimit = frame_support::traits::ConstU32<1000>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type BenchmarkHelper = ();
+}
+
+/// Simple conversion of `u32` into an `AssetId` for use in benchmarking.
+pub struct XcmBenchmarkHelper;
+#[cfg(feature = "runtime-benchmarks")]
+impl pallet_assets::BenchmarkHelper<xcm::v3::Location> for XcmBenchmarkHelper {
+	fn create_asset_id_parameter(id: u32) -> xcm::v3::Location {
+		xcm::v3::Location::new(1, xcm::v3::Junction::Parachain(id))
+	}
+}
+
+/// Assets managed by some foreign location. Note: we do not declare a `ForeignAssetsCall` type, as
+/// this type is used in proxy definitions. We assume that a foreign location would not want to set
+/// an individual, local account as a proxy for the issuance of their assets. This issuance should
+/// be managed by the foreign location's governance.
+pub type ForeignAssetsInstance = pallet_assets::Instance2;
+impl pallet_assets::Config<ForeignAssetsInstance> for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Balance = Balance;
+	type AssetId = xcm::v3::Location;
+	type AssetIdParameter = xcm::v3::Location;
+	type Currency = Balances;
+	type CreateOrigin = ForeignCreators<
+		FromSiblingParachain<parachain_info::Pallet<Runtime>, xcm::v3::Location>,
+		ForeignCreatorsSovereignAccountOf,
+		AccountId,
+		xcm::v3::Location,
+	>;
+	type ForceOrigin = EnsureRoot<AccountId>;
+	type AssetDeposit = frame_support::traits::ConstU128<1_000>;
+	type MetadataDepositBase = frame_support::traits::ConstU128<1_000>;
+	type MetadataDepositPerByte = frame_support::traits::ConstU128<1_000>;
+	type ApprovalDeposit = ExistentialDeposit;
+	type StringLimit = ConstU32<64>;
+	type Freezer = ();
+	type Extra = ();
+	type WeightInfo = ();
+	type CallbackHandle = ();
+	type AssetAccountDeposit = frame_support::traits::ConstU128<1_000>;
+	type RemoveItemsLimit = frame_support::traits::ConstU32<1000>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type BenchmarkHelper = XcmBenchmarkHelper;
+}
+
+impl parachain_info::Config for Runtime {}
+
 type Block = frame_system::mocking::MockBlock<Runtime>;
 
 construct_runtime!(
 	pub enum Runtime
 	{
 		System: frame_system,
+		ParachainInfo: parachain_info,
 		Balances: pallet_balances,
 		MsgQueue: mock_msg_queue,
 		PolkadotXcm: pallet_xcm,
 		ForeignUniques: pallet_uniques,
+		Assets: pallet_assets::<Instance1> = 50,
+		ForeignAssets: pallet_assets::<Instance2> = 53,
 	}
 );
