@@ -39,7 +39,7 @@ use xcm_builder::{
 };
 use xcm_executor::XcmExecutor;
 
-const ASSET_HUB_ID: u32 = crate::PARA_B_ID;
+pub const ASSET_HUB_ID: u32 = crate::PARA_B_ID;
 
 parameter_types! {
 	pub const RelayLocation: Location = Location::parent();
