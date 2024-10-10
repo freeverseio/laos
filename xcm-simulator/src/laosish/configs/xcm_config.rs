@@ -39,6 +39,8 @@ use xcm_builder::{
 };
 use xcm_executor::XcmExecutor;
 
+const ASSET_HUB_ID: u32 = crate::PARA_B_ID;
+
 parameter_types! {
 	pub const RelayLocation: Location = Location::parent();
 	pub const RelayNetwork: NetworkId = NetworkId::Kusama;
@@ -132,6 +134,13 @@ pub type Barrier = TrailingSetTopicAsId<
 
 parameter_types! {
 	pub ParentTokenPerSecondPerByte: (AssetId, u128, u128) = (AssetId(Parent.into()), 1, 1);
+}
+
+parameter_types! {
+	pub NativeToken: AssetId = AssetId(Location::here());
+	pub NativeTokenFilter: AssetFilter = Wild(AllOf { fun: WildFungible, id: NativeToken::get() });
+	pub AssetHubLocation: Location = Location::new(1, [Parachain(ASSET_HUB_ID)]);
+	pub AssetHubTrustedTeleporter: (AssetFilter, Location) = (NativeTokenFilter::get(), AssetHubLocation::get());
 }
 
 pub struct XcmConfig;
