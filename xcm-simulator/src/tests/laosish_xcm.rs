@@ -139,4 +139,33 @@ fn xcmp_create_foreign_asset() {
 			parachain::RuntimeEvent::ForeignAssets(pallet_assets::Event::Created { .. })
 		)));
 	});
+	let withdraw_amount = 123;
+
+	Laosish::execute_with(|| {
+		// let destination = xcm::v3::Location::new(1, [xcm::v3::Junction::Parachain(PARA_B_ID)]); // destination (AssetHub) from source (Laos)
+		// let beneficiary =  xcm::v3::Location::new(0, [xcm::v3::Junction::AccountId32 { network: None, id: ALICE.into() }]); // Address from (AssetHub)
+		assert_ok!(LaosishPalletXcm::limited_reserve_transfer_assets(
+			laosish::RuntimeOrigin::signed(ALITH.into()),
+			Box::new((Parent, Parachain(PARA_B_ID)).into()),
+			Box::new(AccountId32 { network: None, id: ALICE.into() }.into()),
+			Box::new(vec![xcm::v3::MultiAsset {id: AssetId(Here.into()).into(), fun: xcm::v3::Fungibility::Fungible(withdraw_amount)}.into()].into()),
+			// Fee asset item index: 0 (no specific fee asset)
+			0,
+			// Weight limit for execution: Unlimited
+			Unlimited,
+		));
+		// Assert that the para B sovereign account has increased by the transferred amount
+		assert_eq!(
+			parachain::Balances::free_balance(sibling_account_id(PARA_B_ID)),
+			INITIAL_BALANCE + withdraw_amount
+		);
+	});
+
+	ParaB::execute_with(|| {
+		// Verify that ALICE's balance on Parachain A has increased by the transferred amount
+		assert_eq!(
+			pallet_balances::Pallet::<parachain::Runtime>::free_balance(&ALICE),
+			INITIAL_BALANCE + withdraw_amount
+		);
+	});
 }
