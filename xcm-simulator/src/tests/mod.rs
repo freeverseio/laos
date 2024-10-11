@@ -9,6 +9,8 @@ mod laosish_xcm;
 
 pub type ForeignAssetsCall =
 	pallet_assets::Call<parachain::Runtime, parachain::ForeignAssetsInstance>;
+pub type TeleportAssetsCall =
+	pallet_assets::Call<parachain_teleporter::Runtime, parachain_teleporter::ForeignAssetsInstance>;
 pub type TrustBackedAssetsCall =
 	pallet_assets::Call<parachain::Runtime, parachain::TrustBackedAssetsInstance>;
 
@@ -689,4 +691,41 @@ fn xcmp_create_foreign_asset() {
 			parachain::RuntimeEvent::ForeignAssets(pallet_assets::Event::Created { .. })
 		)));
 	});
+}
+
+#[test]
+fn teleport_para_teleport_to_para_a() {
+	MockNet::reset();
+
+	let para_teleporter_native_asset_location =
+		xcm::v3::Location::new(1, [xcm::v3::Junction::Parachain(PARA_TELEPORTER_ID)]);
+
+	let create_asset = parachain_teleporter::RuntimeCall::ForeignAssets(TeleportAssetsCall::create {
+		id: para_teleporter_native_asset_location,
+		admin: sibling_account_id(PARA_TELEPORTER_ID),
+		min_balance: 1000,
+	});
+
+	ParaTeleporter::execute_with(|| {
+		assert_ok!(ParachainTeleporterPalletXcm::send_xcm(
+			Here,
+			(Parent, Parachain(PARA_A_ID)),
+			Xcm(vec![Transact {
+				origin_kind: OriginKind::Xcm,
+				require_weight_at_most: Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024),
+				call: create_asset.encode().into(),
+			}]),
+		));
+	});
+
+	let amount = 1_000;
+
+	assert_ok!(ParachainTeleporterPalletXcm::limited_teleport_assets(
+		parachain_teleporter::RuntimeOrigin::signed(ALICE.into()),
+		Box::new(Parachain(PARA_A_ID).into()),
+		Box::new(AccountId32 { network: None, id: ALICE.into() }.into()),
+		Box::new((Here, amount).into()),
+		0,
+		WeightLimit::Limited(Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024)),
+	));
 }

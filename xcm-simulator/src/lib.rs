@@ -17,6 +17,7 @@
 mod laosish;
 mod parachain;
 mod relay_chain;
+mod parachain_teleporter;
 
 use hex_literal::hex;
 
@@ -32,6 +33,7 @@ pub const INITIAL_BALANCE: u128 = 1_000_000_000;
 
 const PARA_A_ID: u32 = 1;
 const PARA_B_ID: u32 = 2;
+const PARA_TELEPORTER_ID: u32 = 7;
 const PARA_LAOSISH_ID: u32 = 3;
 
 decl_test_parachain! {
@@ -49,6 +51,15 @@ decl_test_parachain! {
 		XcmpMessageHandler = parachain::MsgQueue,
 		DmpMessageHandler = parachain::MsgQueue,
 		new_ext = para_ext(PARA_B_ID),
+	}
+}
+
+decl_test_parachain! {
+	pub struct ParaTeleporter {
+		Runtime = parachain::Runtime,
+		XcmpMessageHandler = parachain::MsgQueue,
+		DmpMessageHandler = parachain::MsgQueue,
+		new_ext = para_ext(PARA_TELEPORTER_ID),
 	}
 }
 
@@ -79,6 +90,7 @@ decl_test_network! {
 		parachains = vec![
 			(PARA_A_ID, ParaA),
 			(PARA_B_ID, ParaB),
+			(PARA_TELEPORTER_ID, ParaTeleporter),
 			(PARA_LAOSISH_ID, Laosish),
 		],
 	}
@@ -185,6 +197,7 @@ pub fn relay_ext() -> sp_io::TestExternalities {
 
 pub type RelayChainPalletXcm = pallet_xcm::Pallet<relay_chain::Runtime>;
 pub type ParachainPalletXcm = pallet_xcm::Pallet<parachain::Runtime>;
+pub type ParachainTeleporterPalletXcm = pallet_xcm::Pallet<parachain_teleporter::Runtime>;
 pub type LaosishPalletXcm = pallet_xcm::Pallet<laosish::Runtime>;
 
 #[frame_support::pallet]
