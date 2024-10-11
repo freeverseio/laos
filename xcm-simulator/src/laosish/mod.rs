@@ -16,7 +16,7 @@
 
 //! Parachain runtime mock.
 
-mod configs;
+pub mod configs;
 
 use frame_support::construct_runtime;
 

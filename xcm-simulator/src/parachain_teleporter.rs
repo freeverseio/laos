@@ -19,7 +19,7 @@
 use core::marker::PhantomData;
 use frame_support::{
 	construct_runtime, derive_impl, parameter_types,
-	traits::{ContainsPair, EnsureOrigin, EnsureOriginWithArg, Everything, EverythingBut, Nothing},
+	traits::{ContainsPair, EnsureOrigin, EnsureOriginWithArg, Everything, Nothing},
 	weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight},
 };
 
@@ -41,16 +41,13 @@ use polkadot_parachain_primitives::primitives::Sibling;
 use sp_runtime::codec;
 use xcm::latest::prelude::*;
 use xcm_builder::{
-	Account32Hash, AccountId32Aliases, AllowUnpaidExecutionFrom, ConvertedConcreteId,
-	EnsureDecodableXcm, EnsureXcmOrigin, FixedRateOfFungible, FixedWeightBounds,
-	FrameTransactionalProcessor, FungibleAdapter, GlobalConsensusParachainConvertsFor, IsConcrete,
-	NativeAsset, NoChecking, NonFungiblesAdapter, ParentIsPreset, SiblingParachainConvertsVia,
-	SignedAccountId32AsNative, SignedToAccountId32, SovereignSignedViaLocation,
+	Account32Hash, AccountId32Aliases, AllowUnpaidExecutionFrom, EnsureDecodableXcm,
+	EnsureXcmOrigin, FixedRateOfFungible, FixedWeightBounds, FrameTransactionalProcessor,
+	FungibleAdapter, GlobalConsensusParachainConvertsFor, IsConcrete, MintLocation, ParentIsPreset,
+	SiblingParachainConvertsVia, SignedAccountId32AsNative, SignedToAccountId32,
+	SovereignSignedViaLocation,
 };
-use xcm_executor::{
-	traits::{ConvertLocation, JustTry},
-	Config, XcmExecutor,
-};
+use xcm_executor::{traits::ConvertLocation, Config, XcmExecutor};
 
 pub type SovereignAccountOf = (
 	SiblingParachainConvertsVia<Sibling, AccountId>,
@@ -159,9 +156,12 @@ parameter_types! {
 }
 
 parameter_types! {
-	pub const KsmLocation: Location = Location::parent();
+	pub const RelayLocation: Location = Location::parent();
 	pub const RelayNetwork: NetworkId = NetworkId::Kusama;
 	pub UniversalLocation: InteriorLocation = [GlobalConsensus(RelayNetwork::get()), Parachain(MsgQueue::parachain_id().into())].into();
+	pub HereLocation: Location = Location::here();
+	pub CheckingAccount: AccountId = PolkadotXcm::check_account();
+	pub Checking: (AccountId, MintLocation) = (CheckingAccount::get(), MintLocation::Local);
 }
 
 pub type LocationToAccountId = (
@@ -185,29 +185,30 @@ parameter_types! {
 	pub ForeignPrefix: Location = (Parent,).into();
 }
 
-pub type LocalAssetTransactor = (
-	FungibleAdapter<Balances, IsConcrete<KsmLocation>, LocationToAccountId, AccountId, ()>,
-	NonFungiblesAdapter<
-		ForeignUniques,
-		ConvertedConcreteId<Location, AssetInstance, JustTry, JustTry>,
-		SovereignAccountOf,
-		AccountId,
-		NoChecking,
-		(),
-	>,
-);
+/// Means for transacting assets on this chain.
+pub type LocalAssetTransactor = FungibleAdapter<
+	// Use this currency:
+	Balances,
+	// Use this currency when it is a fungible asset matching the given location or name:
+	IsConcrete<HereLocation>,
+	// Do a simple pun to convert an AccountId20 Location into a native chain account ID:
+	LocationToAccountId,
+	// Our chain's account ID type (we can't get away without mentioning it explicitly):
+	AccountId,
+	// We track any teleports.
+	Checking,
+>;
 
 pub type XcmRouter = EnsureDecodableXcm<super::ParachainXcmRouter<MsgQueue>>;
 pub type Barrier = AllowUnpaidExecutionFrom<Everything>;
-
 parameter_types! {
-	pub NftCollectionOne: AssetFilter
-		= Wild(AllOf { fun: WildNonFungible, id: AssetId((Parent, GeneralIndex(1)).into()) });
-	pub NftCollectionOneForRelay: (AssetFilter, Location)
-		= (NftCollectionOne::get(), (Parent,).into());
+	pub NativeToken: AssetId = AssetId(Location::here());
+	pub NativeTokenFilter: AssetFilter = Wild(AllOf { fun: WildFungible, id: NativeToken::get() });
+	pub AssetHubLocation: Location = Location::new(1, [Parachain(crate::PARA_A_ID)]);
+	pub AssetHubTrustedTeleporter: (AssetFilter, Location) = (NativeTokenFilter::get(), AssetHubLocation::get());
 }
-pub type TrustedTeleporters = xcm_builder::Case<NftCollectionOneForRelay>;
-pub type TrustedReserves = EverythingBut<xcm_builder::Case<NftCollectionOneForRelay>>;
+
+pub type TrustedTeleporters = xcm_builder::Case<AssetHubTrustedTeleporter>;
 
 pub struct XcmConfig;
 impl Config for XcmConfig {
@@ -215,7 +216,7 @@ impl Config for XcmConfig {
 	type XcmSender = XcmRouter;
 	type AssetTransactor = LocalAssetTransactor;
 	type OriginConverter = XcmOriginToCallOrigin;
-	type IsReserve = (NativeAsset, TrustedReserves);
+	type IsReserve = ();
 	type IsTeleporter = TrustedTeleporters;
 	type UniversalLocation = UniversalLocation;
 	type Barrier = Barrier;
@@ -269,7 +270,7 @@ impl pallet_xcm::Config for Runtime {
 	type ExecuteXcmOrigin = EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
 	type XcmExecuteFilter = Everything;
 	type XcmExecutor = XcmExecutor<XcmConfig>;
-	type XcmTeleportFilter = Nothing;
+	type XcmTeleportFilter = Everything;
 	type XcmReserveTransferFilter = Everything;
 	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
 	type UniversalLocation = UniversalLocation;

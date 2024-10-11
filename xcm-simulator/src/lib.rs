@@ -16,6 +16,7 @@
 
 mod laosish;
 mod parachain;
+mod parachain_teleporter;
 mod relay_chain;
 
 use hex_literal::hex;
@@ -30,12 +31,17 @@ pub const ALICE: sp_runtime::AccountId32 = sp_runtime::AccountId32::new([0u8; 32
 pub const ALITH: [u8; 20] = hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac");
 pub const INITIAL_BALANCE: u128 = 1_000_000_000;
 
+const PARA_A_ID: u32 = 1;
+const PARA_B_ID: u32 = 2;
+const PARA_TELEPORTER_ID: u32 = 7;
+const PARA_LAOSISH_ID: u32 = 3;
+
 decl_test_parachain! {
 	pub struct ParaA {
 		Runtime = parachain::Runtime,
 		XcmpMessageHandler = parachain::MsgQueue,
 		DmpMessageHandler = parachain::MsgQueue,
-		new_ext = para_ext(1),
+		new_ext = para_ext(PARA_A_ID),
 	}
 }
 
@@ -44,7 +50,16 @@ decl_test_parachain! {
 		Runtime = parachain::Runtime,
 		XcmpMessageHandler = parachain::MsgQueue,
 		DmpMessageHandler = parachain::MsgQueue,
-		new_ext = para_ext(2),
+		new_ext = para_ext(PARA_B_ID),
+	}
+}
+
+decl_test_parachain! {
+	pub struct ParaTeleporter {
+		Runtime = parachain::Runtime,
+		XcmpMessageHandler = parachain::MsgQueue,
+		DmpMessageHandler = parachain::MsgQueue,
+		new_ext = para_ext(PARA_TELEPORTER_ID),
 	}
 }
 
@@ -53,7 +68,7 @@ decl_test_parachain! {
 		Runtime = laosish::Runtime,
 		XcmpMessageHandler = laosish::MsgQueue,
 		DmpMessageHandler = laosish::MsgQueue,
-		new_ext = para_ext_ethereum(3),
+		new_ext = para_ext_ethereum(PARA_LAOSISH_ID),
 	}
 }
 
@@ -73,9 +88,10 @@ decl_test_network! {
 	pub struct MockNet {
 		relay_chain = Relay,
 		parachains = vec![
-			(1, ParaA),
-			(2, ParaB),
-			(3, Laosish),
+			(PARA_A_ID, ParaA),
+			(PARA_B_ID, ParaB),
+			(PARA_TELEPORTER_ID, ParaTeleporter),
+			(PARA_LAOSISH_ID, Laosish),
 		],
 	}
 }
@@ -100,6 +116,11 @@ pub fn sibling_account_account_id(para: u32, who: sp_runtime::AccountId32) -> pa
 	parachain::LocationToAccountId::convert_location(&location.into()).unwrap()
 }
 
+pub fn sibling_account_id(para: u32) -> parachain::AccountId {
+	let location = (Parent, Parachain(para));
+	parachain::LocationToAccountId::convert_location(&location.into()).unwrap()
+}
+
 pub fn parent_account_account_id(who: sp_runtime::AccountId32) -> parachain::AccountId {
 	let location = (Parent, AccountId32 { network: None, id: who.into() });
 	parachain::LocationToAccountId::convert_location(&location.into()).unwrap()
@@ -111,7 +132,14 @@ pub fn para_ext(para_id: u32) -> sp_io::TestExternalities {
 	let mut t = frame_system::GenesisConfig::<Runtime>::default().build_storage().unwrap();
 
 	pallet_balances::GenesisConfig::<Runtime> {
-		balances: vec![(ALICE, INITIAL_BALANCE), (parent_account_id(), INITIAL_BALANCE)],
+		balances: vec![
+			(ALICE, INITIAL_BALANCE),
+			(parent_account_id(), INITIAL_BALANCE),
+			(sibling_account_id(PARA_A_ID), INITIAL_BALANCE),
+			(sibling_account_id(PARA_B_ID), INITIAL_BALANCE),
+			(sibling_account_id(PARA_TELEPORTER_ID), INITIAL_BALANCE),
+			(sibling_account_id(PARA_LAOSISH_ID), INITIAL_BALANCE),
+		],
 	}
 	.assimilate_storage(&mut t)
 	.unwrap();
@@ -151,9 +179,9 @@ pub fn relay_ext() -> sp_io::TestExternalities {
 	pallet_balances::GenesisConfig::<Runtime> {
 		balances: vec![
 			(ALICE, INITIAL_BALANCE),
-			(child_account_id(1), INITIAL_BALANCE),
-			(child_account_id(2), INITIAL_BALANCE),
-			(child_account_id(3), INITIAL_BALANCE),
+			(child_account_id(PARA_A_ID), INITIAL_BALANCE),
+			(child_account_id(PARA_B_ID), INITIAL_BALANCE),
+			(child_account_id(PARA_LAOSISH_ID), INITIAL_BALANCE),
 		],
 	}
 	.assimilate_storage(&mut t)
@@ -170,6 +198,7 @@ pub fn relay_ext() -> sp_io::TestExternalities {
 
 pub type RelayChainPalletXcm = pallet_xcm::Pallet<relay_chain::Runtime>;
 pub type ParachainPalletXcm = pallet_xcm::Pallet<parachain::Runtime>;
+pub type ParachainTeleporterPalletXcm = pallet_xcm::Pallet<parachain_teleporter::Runtime>;
 pub type LaosishPalletXcm = pallet_xcm::Pallet<laosish::Runtime>;
 
 #[frame_support::pallet]
