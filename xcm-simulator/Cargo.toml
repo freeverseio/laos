@@ -1,6 +1,5 @@
 [package]
-name = "xcm-simulator-example"
-description = "Examples of xcm-simulator usage."
+name = "laos-xcm-simulator"
 authors.workspace = true
 edition.workspace = true
 version = "7.0.0"
