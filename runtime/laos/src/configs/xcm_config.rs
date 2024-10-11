@@ -32,7 +32,7 @@ use xcm::latest::prelude::*;
 use xcm_builder::{
 	AccountKey20Aliases, AllowExplicitUnpaidExecutionFrom, AllowTopLevelPaidExecutionFrom,
 	DenyReserveTransferToRelayChain, DenyThenTry, EnsureXcmOrigin, FixedWeightBounds,
-	FrameTransactionalProcessor, FungibleAdapter, IsConcrete, NativeAsset, ParentIsPreset,
+	FrameTransactionalProcessor, FungibleAdapter, IsConcrete, MintLocation, ParentIsPreset,
 	RelayChainAsNative, SiblingParachainAsNative, SiblingParachainConvertsVia,
 	SignedAccountKey20AsNative, SovereignSignedViaLocation, TakeWeightCredit, TrailingSetTopicAsId,
 	UsingComponents, WithComputedOrigin,
@@ -45,7 +45,7 @@ parameter_types! {
 	// Represents the location of the Relay Chain (parent in the XCM hierarchy).
 	pub const RelayLocation: Location = Location::parent();
 	// Optional network identifier for the Relay Chain; set to `None` for default behavior.
-	pub const RelayNetwork: Option<NetworkId> = NetworkId::Polkadot;
+	pub const RelayNetwork: NetworkId = NetworkId::Polkadot;
 	// Defines the origin for messages coming from the Relay Chain.
 	pub RelayChainOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into();
 	// For the real deployment, it is recommended to set `RelayNetwork` according to the relay chain
