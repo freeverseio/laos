@@ -728,4 +728,6 @@ fn teleport_para_teleport_to_para_a() {
 		0,
 		WeightLimit::Limited(Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024)),
 	));
+
+    assert_eq!(parachain_teleporter::Balances::free_balance(ALICE), INITIAL_BALANCE - amount);
 }
