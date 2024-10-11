@@ -137,6 +137,7 @@ pub fn para_ext(para_id: u32) -> sp_io::TestExternalities {
 			(parent_account_id(), INITIAL_BALANCE),
 			(sibling_account_id(PARA_A_ID), INITIAL_BALANCE),
 			(sibling_account_id(PARA_B_ID), INITIAL_BALANCE),
+			(sibling_account_id(PARA_TELEPORTER_ID), INITIAL_BALANCE),
 			(sibling_account_id(PARA_LAOSISH_ID), INITIAL_BALANCE),
 		],
 	}

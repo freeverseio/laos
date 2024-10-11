@@ -716,18 +716,18 @@ fn teleport_para_teleport_to_para_a() {
 				call: create_asset.encode().into(),
 			}]),
 		));
+
+        let amount = 1_000;
+
+        assert_ok!(ParachainTeleporterPalletXcm::limited_teleport_assets(
+            parachain_teleporter::RuntimeOrigin::signed(ALICE.into()),
+            Box::new(Parachain(PARA_A_ID).into()),
+            Box::new(AccountId32 { network: None, id: ALICE.into() }.into()),
+            Box::new((Here, amount).into()),
+            0,
+            WeightLimit::Limited(Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024)),
+        ));
+    
+        assert_eq!(parachain_teleporter::Balances::free_balance(ALICE), INITIAL_BALANCE - amount);
 	});
-
-	let amount = 1_000;
-
-	assert_ok!(ParachainTeleporterPalletXcm::limited_teleport_assets(
-		parachain_teleporter::RuntimeOrigin::signed(ALICE.into()),
-		Box::new(Parachain(PARA_A_ID).into()),
-		Box::new(AccountId32 { network: None, id: ALICE.into() }.into()),
-		Box::new((Here, amount).into()),
-		0,
-		WeightLimit::Limited(Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024)),
-	));
-
-    assert_eq!(parachain_teleporter::Balances::free_balance(ALICE), INITIAL_BALANCE - amount);
 }
