@@ -19,7 +19,7 @@
 use core::marker::PhantomData;
 use frame_support::{
 	construct_runtime, derive_impl, parameter_types,
-	traits::{ContainsPair, EnsureOrigin, EnsureOriginWithArg, Everything, EverythingBut, Nothing},
+	traits::{ContainsPair, EnsureOrigin, EnsureOriginWithArg, Everything, Nothing},
 	weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight},
 };
 
@@ -41,16 +41,13 @@ use polkadot_parachain_primitives::primitives::Sibling;
 use sp_runtime::codec;
 use xcm::latest::prelude::*;
 use xcm_builder::{
-	Account32Hash, AccountId32Aliases, AllowUnpaidExecutionFrom, ConvertedConcreteId,
-	EnsureDecodableXcm, EnsureXcmOrigin, FixedRateOfFungible, FixedWeightBounds,
-	FrameTransactionalProcessor, FungibleAdapter, GlobalConsensusParachainConvertsFor, IsConcrete,
-	NativeAsset, NoChecking, NonFungiblesAdapter, ParentIsPreset, SiblingParachainConvertsVia,
-	SignedAccountId32AsNative, SignedToAccountId32, SovereignSignedViaLocation, MintLocation
+	Account32Hash, AccountId32Aliases, AllowUnpaidExecutionFrom, EnsureDecodableXcm,
+	EnsureXcmOrigin, FixedRateOfFungible, FixedWeightBounds, FrameTransactionalProcessor,
+	FungibleAdapter, GlobalConsensusParachainConvertsFor, IsConcrete, MintLocation, ParentIsPreset,
+	SiblingParachainConvertsVia, SignedAccountId32AsNative, SignedToAccountId32,
+	SovereignSignedViaLocation,
 };
-use xcm_executor::{
-	traits::{ConvertLocation, JustTry},
-	Config, XcmExecutor,
-};
+use xcm_executor::{traits::ConvertLocation, Config, XcmExecutor};
 
 pub type SovereignAccountOf = (
 	SiblingParachainConvertsVia<Sibling, AccountId>,
@@ -162,7 +159,7 @@ parameter_types! {
 	pub const RelayLocation: Location = Location::parent();
 	pub const RelayNetwork: NetworkId = NetworkId::Kusama;
 	pub UniversalLocation: InteriorLocation = [GlobalConsensus(RelayNetwork::get()), Parachain(MsgQueue::parachain_id().into())].into();
-    pub HereLocation: Location = Location::here();
+	pub HereLocation: Location = Location::here();
 	pub CheckingAccount: AccountId = PolkadotXcm::check_account();
 	pub Checking: (AccountId, MintLocation) = (CheckingAccount::get(), MintLocation::Local);
 }
@@ -327,6 +324,7 @@ impl pallet_assets::Config<TrustBackedAssetsInstance> for Runtime {
 }
 
 /// Simple conversion of `u32` into an `AssetId` for use in benchmarking.
+#[cfg(feature = "runtime-benchmarks")]
 pub struct XcmBenchmarkHelper;
 #[cfg(feature = "runtime-benchmarks")]
 impl pallet_assets::BenchmarkHelper<xcm::v3::Location> for XcmBenchmarkHelper {

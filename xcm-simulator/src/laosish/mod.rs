@@ -16,9 +16,8 @@
 
 //! Parachain runtime mock.
 
-mod configs;
+pub mod configs;
 
-pub use configs::xcm_config::ASSET_HUB_ID;
 use frame_support::construct_runtime;
 
 use crate::mock_msg_queue;

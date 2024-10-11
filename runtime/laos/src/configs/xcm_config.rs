@@ -39,16 +39,24 @@ use xcm_builder::{
 };
 use xcm_executor::XcmExecutor;
 
+pub const ASSET_HUB_ID: u32 = 1000;
+
 parameter_types! {
 	// Represents the location of the Relay Chain (parent in the XCM hierarchy).
 	pub const RelayLocation: Location = Location::parent();
 	// Optional network identifier for the Relay Chain; set to `None` for default behavior.
-	pub const RelayNetwork: Option<NetworkId> = None;
+	pub const RelayNetwork: Option<NetworkId> = NetworkId::Polkadot;
 	// Defines the origin for messages coming from the Relay Chain.
 	pub RelayChainOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into();
-	// Universal location for the parachain in the network topology.
-	// For production, consider setting `RelayNetwork` and using `GlobalConsensus`.
-	pub UniversalLocation: InteriorLocation = Parachain(ParachainInfo::parachain_id().into()).into();
+	// For the real deployment, it is recommended to set `RelayNetwork` according to the relay chain
+	// and prepend `UniversalLocation` with `GlobalConsensus(RelayNetwork::get())`.
+	pub UniversalLocation: InteriorLocation = (
+		GlobalConsensus(RelayNetwork::get()),
+		Parachain(ParachainInfo::parachain_id().into()),
+	).into();
+	pub HereLocation: Location = Location::here();
+	pub CheckingAccount: AccountId = PolkadotXcm::check_account();
+	pub Checking: (AccountId, MintLocation) = (CheckingAccount::get(), MintLocation::Local);
 }
 
 /// Converts a `MultiLocation` into an `AccountId`.
@@ -73,7 +81,7 @@ pub type LocalAssetTransactor = FungibleAdapter<
 	// Specifies the local `AccountId` type.
 	AccountId,
 	// Teleportation of assets is not tracked or allowed.
-	(),
+	Checking,
 >;
 
 /// Converts incoming XCM origins into local `Origin` instances for dispatching transactions.
@@ -138,6 +146,19 @@ pub type Barrier = TrailingSetTopicAsId<
 	>,
 >;
 
+parameter_types! {
+	pub ParentTokenPerSecondPerByte: (AssetId, u128, u128) = (AssetId(Parent.into()), 1, 1);
+}
+
+parameter_types! {
+	pub NativeToken: AssetId = AssetId(Location::here());
+	pub NativeTokenFilter: AssetFilter = Wild(AllOf { fun: WildFungible, id: NativeToken::get() });
+	pub AssetHubLocation: Location = Location::new(1, [Parachain(ASSET_HUB_ID)]);
+	pub AssetHubTrustedTeleporter: (AssetFilter, Location) = (NativeTokenFilter::get(), AssetHubLocation::get());
+}
+
+pub type TrustedTeleporters = xcm_builder::Case<AssetHubTrustedTeleporter>;
+
 pub struct XcmConfig;
 impl xcm_executor::Config for XcmConfig {
 	type RuntimeCall = RuntimeCall;
@@ -146,9 +167,8 @@ impl xcm_executor::Config for XcmConfig {
 	type AssetTransactor = LocalAssetTransactor;
 	// Converts XCM origins to local dispatch origins.
 	type OriginConverter = XcmOriginToTransactDispatchOrigin;
-	// Identifies which assets are considered reserve assets.
-	type IsReserve = NativeAsset;
-	type IsTeleporter = (); // Teleporting is disabled.
+	type IsReserve = (); // no reserve trasfer are accepted
+	type IsTeleporter = TrustedTeleporters;
 	type UniversalLocation = UniversalLocation;
 	// Filters and allows XCM messages based on security policies.
 	type Barrier = Barrier;

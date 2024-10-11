@@ -323,6 +323,7 @@ impl pallet_assets::Config<TrustBackedAssetsInstance> for Runtime {
 }
 
 /// Simple conversion of `u32` into an `AssetId` for use in benchmarking.
+#[cfg(feature = "runtime-benchmarks")]
 pub struct XcmBenchmarkHelper;
 #[cfg(feature = "runtime-benchmarks")]
 impl pallet_assets::BenchmarkHelper<xcm::v3::Location> for XcmBenchmarkHelper {
