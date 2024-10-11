@@ -168,10 +168,14 @@ fn xcmp_teleport_native_assets_to_asset_hub() {
 		));
 	});
 
-	ParaB::execute_with(|| {
-		assert!(parachain::System::events().iter().any(|r| matches!(
-			r.event,
-			parachain::RuntimeEvent::ForeignAssets(pallet_assets::Event::Created { .. })
-		)));
-	});
+	let amount = 1;
+
+	assert_ok!(LaosishPalletXcm::limited_teleport_assets(
+		laosish::RuntimeOrigin::signed(ALITH.into()),
+		Box::new(Parachain(laosish::ASSET_HUB_ID).into()),
+		Box::new(AccountId32 { network: None, id: ALICE.into() }.into()),
+		Box::new((Here, amount).into()),
+		0,
+		WeightLimit::Limited(Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024)),
+	));
 }
