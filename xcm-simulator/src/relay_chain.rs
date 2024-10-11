@@ -32,7 +32,7 @@ use polkadot_runtime_parachains::{
 	inclusion::{AggregateMessageOrigin, UmpQueueId},
 	origin, shared,
 };
-use xcm::latest::prelude::*;
+use xcm::v3::prelude::*;
 use xcm_builder::{
 	Account32Hash, AccountId32Aliases, AllowUnpaidExecutionFrom, AsPrefixedGeneralIndex,
 	ChildParachainAsNative, ChildParachainConvertsVia, ChildSystemParachainAsSuperuser,
@@ -114,7 +114,7 @@ parameter_types! {
 	pub const TokenLocation: Location = Here.into_location();
 	pub RelayNetwork: NetworkId = ByGenesis([0; 32]);
 	pub const AnyNetwork: Option<NetworkId> = None;
-	pub UniversalLocation: InteriorLocation = RelayNetwork::get().into();
+	pub UniversalLocation: InteriorMultiLocation = RelayNetwork::get().into();
 	pub UnitWeightCost: u64 = 1_000;
 }
 
@@ -146,7 +146,7 @@ type LocalOriginConverter = (
 parameter_types! {
 	pub const BaseXcmWeight: Weight = Weight::from_parts(1_000, 1_000);
 	pub TokensPerSecondPerByte: (AssetId, u128, u128) =
-		(AssetId(TokenLocation::get()), 1_000_000_000_000, 1024 * 1024);
+		(TokenLocation::get().into(), 1_000_000_000_000, 1024 * 1024);
 	pub const MaxInstructions: u32 = 100;
 	pub const MaxAssetsIntoHolding: u32 = 64;
 }

@@ -30,6 +30,7 @@ use sp_runtime::{
 	AccountId32,
 };
 use sp_std::prelude::*;
+use xcm_simulator::{Asset, AssetFilter};
 
 use crate::mock_msg_queue;
 use assets_common::{foreign_creators::ForeignCreators, matching::FromSiblingParachain};
@@ -39,7 +40,7 @@ use pallet_xcm::XcmPassthrough;
 use parachains_common::AssetIdForTrustBackedAssets;
 use polkadot_parachain_primitives::primitives::Sibling;
 use sp_runtime::codec;
-use xcm::latest::prelude::*;
+use xcm::v3::prelude::*;
 use xcm_builder::{
 	Account32Hash, AccountId32Aliases, AllowUnpaidExecutionFrom, EnsureDecodableXcm,
 	EnsureXcmOrigin, FixedRateOfFungible, FixedWeightBounds, FrameTransactionalProcessor,
@@ -158,7 +159,7 @@ parameter_types! {
 parameter_types! {
 	pub const RelayLocation: Location = Location::parent();
 	pub const RelayNetwork: NetworkId = NetworkId::Kusama;
-	pub UniversalLocation: InteriorLocation = [GlobalConsensus(RelayNetwork::get()), Parachain(MsgQueue::parachain_id().into())].into();
+	pub UniversalLocation: InteriorMultiLocation = [GlobalConsensus(RelayNetwork::get()), Parachain(MsgQueue::parachain_id().into())].into();
 	pub HereLocation: Location = Location::here();
 	pub CheckingAccount: AccountId = PolkadotXcm::check_account();
 	pub Checking: (AccountId, MintLocation) = (CheckingAccount::get(), MintLocation::Local);
@@ -179,7 +180,7 @@ pub type XcmOriginToCallOrigin = (
 
 parameter_types! {
 	pub const UnitWeightCost: Weight = Weight::from_parts(1, 1);
-	pub KsmPerSecondPerByte: (AssetId, u128, u128) = (AssetId(Parent.into()), 1, 1);
+	pub KsmPerSecondPerByte: (AssetId, u128, u128) = (Parent.into(), 1, 1);
 	pub const MaxInstructions: u32 = 100;
 	pub const MaxAssetsIntoHolding: u32 = 64;
 	pub ForeignPrefix: Location = (Parent,).into();
@@ -202,7 +203,7 @@ pub type LocalAssetTransactor = FungibleAdapter<
 pub type XcmRouter = EnsureDecodableXcm<super::ParachainXcmRouter<MsgQueue>>;
 pub type Barrier = AllowUnpaidExecutionFrom<Everything>;
 parameter_types! {
-	pub NativeToken: AssetId = AssetId(Location::here());
+	pub NativeToken: AssetId = Location::here();
 	pub NativeTokenFilter: AssetFilter = Wild(AllOf { fun: WildFungible, id: NativeToken::get() });
 	pub AssetHubLocation: Location = Location::new(1, [Parachain(crate::PARA_A_ID)]);
 	pub AssetHubTrustedTeleporter: (AssetFilter, Location) = (NativeTokenFilter::get(), AssetHubLocation::get());
@@ -258,7 +259,7 @@ impl<T: Get<(Location, AssetFilter)>> ContainsPair<Location, Asset> for TrustedL
 }
 
 parameter_types! {
-	pub RelayTokenForRelay: (Location, AssetFilter) = (Parent.into(), Wild(AllOf { id: AssetId(Parent.into()), fun: WildFungible }));
+	pub RelayTokenForRelay: (Location, AssetFilter) = (Parent.into(), Wild(AllOf { id: Parent.into(), fun: WildFungible }));
 }
 
 pub type TrustedLockers = TrustedLockerCase<RelayTokenForRelay>;

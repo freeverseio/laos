@@ -18,6 +18,7 @@ mod laosish;
 mod parachain;
 mod parachain_teleporter;
 mod relay_chain;
+mod asset_hub;
 
 use hex_literal::hex;
 
