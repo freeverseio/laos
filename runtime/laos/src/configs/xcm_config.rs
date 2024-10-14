@@ -25,7 +25,6 @@ use frame_support::{
 	weights::Weight,
 };
 use frame_system::{EnsureRoot, RawOrigin as SystemRawOrigin};
-use hex_literal::hex;
 use pallet_xcm::XcmPassthrough;
 use polkadot_parachain_primitives::primitives::Sibling;
 use sp_runtime::traits::TryConvert;
