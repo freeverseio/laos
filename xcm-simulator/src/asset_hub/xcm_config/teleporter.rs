@@ -12,7 +12,7 @@ mod sandbox {
 	{
 		fn contains(asset: &Asset, origin: &Location) -> bool {
 			log::trace!(target: "xcm::contains", "IsForeignConcreteAsset asset: {:?}, origin: {:?}", asset, origin);
-			matches!(asset.id, ref id if IsForeign::contains(id, origin))
+			matches!(asset.id, ref id if IsForeign::contains(&id.0, origin))
 		}
 	}
 

@@ -28,7 +28,7 @@ use frame_system::{EnsureRoot, RawOrigin as SystemRawOrigin};
 use pallet_xcm::XcmPassthrough;
 use polkadot_parachain_primitives::primitives::Sibling;
 use sp_runtime::traits::TryConvert;
-use xcm::v3::prelude::*;
+use xcm::latest::prelude::*;
 use xcm_builder::{
 	AccountKey20Aliases, AllowExplicitUnpaidExecutionFrom, AllowTopLevelPaidExecutionFrom,
 	DenyReserveTransferToRelayChain, DenyThenTry, EnsureDecodableXcm, EnsureXcmOrigin,
@@ -48,7 +48,7 @@ parameter_types! {
 	pub RelayChainOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into();
 	// For the real deployment, it is recommended to set `RelayNetwork` according to the relay chain
 	// and prepend `UniversalLocation` with `GlobalConsensus(RelayNetwork::get())`.
-	pub UniversalLocation: InteriorMultiLocation = (
+	pub UniversalLocation: InteriorLocation = (
 		GlobalConsensus(RelayNetwork::get()),
 		Parachain(ParachainInfo::parachain_id().into()),
 	).into();
@@ -141,7 +141,7 @@ parameter_types! {
 }
 
 parameter_types! {
-	pub NativeToken: AssetId = Location::here();
+	pub NativeToken: AssetId = AssetId(Location::here());
 	pub NativeTokenFilter: AssetFilter = Wild(AllOf { fun: WildFungible, id: NativeToken::get() });
 	pub AssetHubLocation: Location = Location::new(1, [Parachain(ASSET_HUB_ID)]);
 	pub AssetHubTrustedTeleporter: (AssetFilter, Location) = (NativeTokenFilter::get(), AssetHubLocation::get());

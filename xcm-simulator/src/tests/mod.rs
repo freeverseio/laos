@@ -2,7 +2,7 @@ use super::*;
 
 use frame_support::{assert_ok, traits::fungibles::roles::Inspect, weights::Weight};
 use parity_scale_codec::Encode;
-use xcm::v3::QueryResponseInfo;
+use xcm::latest::QueryResponseInfo;
 use xcm_simulator::TestExt;
 
 mod laosish_xcm;

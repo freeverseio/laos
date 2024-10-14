@@ -40,7 +40,7 @@ use pallet_xcm::XcmPassthrough;
 use parachains_common::AssetIdForTrustBackedAssets;
 use polkadot_parachain_primitives::primitives::Sibling;
 use sp_runtime::codec;
-use xcm::v3::prelude::*;
+use xcm::latest::prelude::*;
 use xcm_builder::{
 	Account32Hash, AccountId32Aliases, AllowUnpaidExecutionFrom, EnsureDecodableXcm,
 	EnsureXcmOrigin, FixedRateOfFungible, FixedWeightBounds, FrameTransactionalProcessor,
@@ -159,7 +159,7 @@ parameter_types! {
 parameter_types! {
 	pub const RelayLocation: Location = Location::parent();
 	pub const RelayNetwork: NetworkId = NetworkId::Kusama;
-	pub UniversalLocation: InteriorMultiLocation = [GlobalConsensus(RelayNetwork::get()), Parachain(MsgQueue::parachain_id().into())].into();
+	pub UniversalLocation: InteriorLocation = [GlobalConsensus(RelayNetwork::get()), Parachain(MsgQueue::parachain_id().into())].into();
 	pub HereLocation: Location = Location::here();
 	pub CheckingAccount: AccountId = PolkadotXcm::check_account();
 	pub Checking: (AccountId, MintLocation) = (CheckingAccount::get(), MintLocation::Local);
@@ -203,7 +203,7 @@ pub type LocalAssetTransactor = FungibleAdapter<
 pub type XcmRouter = EnsureDecodableXcm<super::ParachainXcmRouter<MsgQueue>>;
 pub type Barrier = AllowUnpaidExecutionFrom<Everything>;
 parameter_types! {
-	pub NativeToken: AssetId = Location::here();
+	pub NativeToken: AssetId = AssetId(Location::here());
 	pub NativeTokenFilter: AssetFilter = Wild(AllOf { fun: WildFungible, id: NativeToken::get() });
 	pub AssetHubLocation: Location = Location::new(1, [Parachain(crate::PARA_A_ID)]);
 	pub AssetHubTrustedTeleporter: (AssetFilter, Location) = (NativeTokenFilter::get(), AssetHubLocation::get());
