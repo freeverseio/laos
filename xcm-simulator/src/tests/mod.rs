@@ -693,9 +693,8 @@ fn xcmp_create_foreign_asset() {
 	});
 }
 
-#[ignore] // TODO
 #[test]
-fn teleport_para_teleport_to_para_a() {
+fn teleport_para_teleport_to_para_assethub() {
 	MockNet::reset();
 
 	let para_teleporter_native_asset_location =
@@ -711,7 +710,7 @@ fn teleport_para_teleport_to_para_a() {
 	ParaTeleporter::execute_with(|| {
 		assert_ok!(ParachainTeleporterPalletXcm::send_xcm(
 			Here,
-			(Parent, Parachain(PARA_A_ID)),
+			(Parent, Parachain(PARA_ASSETHUB_ID)),
 			Xcm(vec![Transact {
 				origin_kind: OriginKind::Xcm,
 				require_weight_at_most: Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024),
@@ -723,7 +722,7 @@ fn teleport_para_teleport_to_para_a() {
 
 		assert_ok!(ParachainTeleporterPalletXcm::limited_teleport_assets(
 			parachain_teleporter::RuntimeOrigin::signed(ALICE.into()),
-			Box::new(Parachain(PARA_A_ID).into()),
+			Box::new(Parachain(PARA_ASSETHUB_ID).into()),
 			Box::new(AccountId32 { network: None, id: ALICE.into() }.into()),
 			Box::new((Here, amount).into()),
 			0,

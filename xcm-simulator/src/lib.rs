@@ -36,6 +36,7 @@ const PARA_A_ID: u32 = 1;
 const PARA_B_ID: u32 = 2;
 const PARA_TELEPORTER_ID: u32 = 7;
 const PARA_LAOSISH_ID: u32 = 3;
+const PARA_ASSETHUB_ID: u32 = 1000;
 
 decl_test_parachain! {
 	pub struct ParaA {
@@ -61,6 +62,15 @@ decl_test_parachain! {
 		XcmpMessageHandler = parachain::MsgQueue,
 		DmpMessageHandler = parachain::MsgQueue,
 		new_ext = para_ext(PARA_TELEPORTER_ID),
+	}
+}
+
+decl_test_parachain! {
+	pub struct AssetHub {
+		Runtime = asset_hub::Runtime,
+		XcmpMessageHandler = asset_hub::MsgQueue,
+		DmpMessageHandler = asset_hub::MsgQueue,
+		new_ext = para_ext(PARA_ASSETHUB_ID),
 	}
 }
 
@@ -93,6 +103,7 @@ decl_test_network! {
 			(PARA_B_ID, ParaB),
 			(PARA_TELEPORTER_ID, ParaTeleporter),
 			(PARA_LAOSISH_ID, Laosish),
+			(PARA_ASSETHUB_ID, AssetHub),
 		],
 	}
 }

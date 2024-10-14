@@ -61,7 +61,6 @@ impl pallet_balances::Config for Runtime {
 	type AccountStore = System;
 }
 
-// TODO: Put reasonable values.
 parameter_types! {
 	pub const AssetDeposit: Balance = 1;
 	pub const ApprovalDeposit: Balance = 1;
@@ -234,19 +233,6 @@ impl pallet_xcm::Config for Runtime {
 type Block = frame_system::mocking::MockBlock<Runtime>;
 
 impl parachain_info::Config for Runtime {}
-
-// construct_runtime!(
-// 	pub enum Runtime
-// 	{
-// 		System: frame_system,
-// 		ParachainInfo: parachain_info,
-// 		Balances: pallet_balances,
-// 		MsgQueue: mock_msg_queue,
-// 		PolkadotXcm: pallet_xcm,
-// 		CumulusXcm: cumulus_pallet_xcm,
-// 	}
-// );
-
 construct_runtime!(
 	pub enum Runtime
 	{
@@ -254,7 +240,7 @@ construct_runtime!(
 		ParachainInfo: parachain_info,
 		Balances: pallet_balances,
 		Assets: pallet_assets::<Instance1>,
-		MessageQueue: mock_msg_queue,
+		MsgQueue: mock_msg_queue,
 		PolkadotXcm: pallet_xcm,
 		Uniques: pallet_uniques::<Instance1>,
 		ForeignUniques: pallet_uniques::<Instance2>,

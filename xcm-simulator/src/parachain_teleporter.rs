@@ -205,7 +205,7 @@ pub type Barrier = AllowUnpaidExecutionFrom<Everything>;
 parameter_types! {
 	pub NativeToken: AssetId = AssetId(Location::here());
 	pub NativeTokenFilter: AssetFilter = Wild(AllOf { fun: WildFungible, id: NativeToken::get() });
-	pub AssetHubLocation: Location = Location::new(1, [Parachain(crate::PARA_A_ID)]);
+	pub AssetHubLocation: Location = Location::new(1, [Parachain(crate::PARA_ASSETHUB_ID)]);
 	pub AssetHubTrustedTeleporter: (AssetFilter, Location) = (NativeTokenFilter::get(), AssetHubLocation::get());
 }
 

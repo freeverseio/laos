@@ -7,13 +7,12 @@ pub mod reserve;
 pub mod teleporter;
 pub mod weigher;
 
-use super::{MessageQueue, PolkadotXcm, RuntimeCall};
+use super::{MsgQueue, PolkadotXcm, RuntimeCall};
 use frame_support::traits::{Everything, Nothing};
 use xcm_builder::{FixedRateOfFungible, FrameTransactionalProcessor};
 
 // Generated from `decl_test_network!`
-// TODO: EnsureDecodableXcm when available
-pub type XcmRouter = crate::ParachainXcmRouter<MessageQueue>;
+pub type XcmRouter = crate::ParachainXcmRouter<MsgQueue>;
 
 pub struct XcmConfig;
 impl xcm_executor::Config for XcmConfig {
