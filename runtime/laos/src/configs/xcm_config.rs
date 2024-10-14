@@ -25,6 +25,7 @@ use frame_support::{
 	weights::Weight,
 };
 use frame_system::{EnsureRoot, RawOrigin as SystemRawOrigin};
+use hex_literal::hex;
 use pallet_xcm::XcmPassthrough;
 use polkadot_parachain_primitives::primitives::Sibling;
 use sp_runtime::traits::TryConvert;
@@ -40,12 +41,17 @@ use xcm_builder::{
 use xcm_executor::XcmExecutor;
 
 pub const ASSET_HUB_ID: u32 = 1000;
+#[cfg(not(feature = "paseo"))]
+pub const RELAY_NETWORK: NetworkId = NetworkId::Polkadot;
+#[cfg(feature = "paseo")]
+pub const RELAY_NETWORK: NetworkId =
+	NetworkId::ByGenesis(hex!("77afd6190f1554ad45fd0d31aee62aacc33c6db0ea801129acb813f913e0764f"));
 
 parameter_types! {
 	// Represents the location of the Relay Chain (parent in the XCM hierarchy).
 	pub const RelayLocation: Location = Location::parent();
 	// Optional network identifier for the Relay Chain; set to `None` for default behavior.
-	pub const RelayNetwork: NetworkId = NetworkId::Polkadot;
+	pub const RelayNetwork: NetworkId = RELAY_NETWORK;
 	// Defines the origin for messages coming from the Relay Chain.
 	pub RelayChainOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into();
 	// For the real deployment, it is recommended to set `RelayNetwork` according to the relay chain

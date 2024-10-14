@@ -120,6 +120,7 @@ test-utils = { workspace = true }
 ethereum = { workspace = true }
 
 [features]
+paseo=[]
 fast-runtime=[]
 default = [
 	"std",
