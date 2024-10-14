@@ -151,6 +151,7 @@ pub fn para_ext(para_id: u32) -> sp_io::TestExternalities {
 			(sibling_account_id(PARA_B_ID), INITIAL_BALANCE),
 			(sibling_account_id(PARA_TELEPORTER_ID), INITIAL_BALANCE),
 			(sibling_account_id(PARA_LAOSISH_ID), INITIAL_BALANCE),
+			(sibling_account_id(PARA_ASSETHUB_ID), INITIAL_BALANCE),
 		],
 	}
 	.assimilate_storage(&mut t)
@@ -194,6 +195,8 @@ pub fn relay_ext() -> sp_io::TestExternalities {
 			(child_account_id(PARA_A_ID), INITIAL_BALANCE),
 			(child_account_id(PARA_B_ID), INITIAL_BALANCE),
 			(child_account_id(PARA_LAOSISH_ID), INITIAL_BALANCE),
+			(child_account_id(PARA_ASSETHUB_ID), INITIAL_BALANCE),
+			(child_account_id(PARA_TELEPORTER_ID), INITIAL_BALANCE),
 		],
 	}
 	.assimilate_storage(&mut t)
