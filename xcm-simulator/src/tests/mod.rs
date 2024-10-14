@@ -722,7 +722,7 @@ fn teleport_para_teleport_to_para_a() {
 		let amount = 1_000;
 
 		assert_ok!(ParachainTeleporterPalletXcm::limited_teleport_assets(
-			parachain_teleporter::RuntimeOrigin::signed(ALICE.into()),
+			parachain_teleporter::RuntimeOrigin::signed(ALICE),
 			Box::new(Parachain(PARA_A_ID).into()),
 			Box::new(AccountId32 { network: None, id: ALICE.into() }.into()),
 			Box::new((Here, amount).into()),
