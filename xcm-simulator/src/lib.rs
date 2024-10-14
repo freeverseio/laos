@@ -58,9 +58,9 @@ decl_test_parachain! {
 
 decl_test_parachain! {
 	pub struct ParaTeleporter {
-		Runtime = parachain::Runtime,
-		XcmpMessageHandler = parachain::MsgQueue,
-		DmpMessageHandler = parachain::MsgQueue,
+		Runtime = parachain_teleporter::Runtime,
+		XcmpMessageHandler = parachain_teleporter::MsgQueue,
+		DmpMessageHandler = parachain_teleporter::MsgQueue,
 		new_ext = para_ext(PARA_TELEPORTER_ID),
 	}
 }

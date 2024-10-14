@@ -107,6 +107,7 @@ impl EnsureOriginWithArg<RuntimeOrigin, Location> for ForeignCreators {
 	}
 }
 
+pub type ForeignAssetsInstance = pallet_assets::Instance2;
 #[derive_impl(pallet_assets::config_preludes::TestDefaultConfig)]
 impl pallet_assets::Config<pallet_assets::Instance2> for Runtime {
 	type AssetId = Location;
