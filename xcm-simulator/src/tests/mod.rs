@@ -694,14 +694,14 @@ fn xcmp_create_foreign_asset() {
 }
 
 #[test]
-fn teleport_para_teleport_to_para_assethub() {
+fn roundtrip_teleport_para_teleport_to_assethub() {
 	MockNet::reset();
 
 	let para_teleporter_native_asset_location =
 		xcm::v4::Location::new(1, [xcm::v4::Junction::Parachain(PARA_TELEPORTER_ID)]);
 
 	let create_asset = asset_hub::RuntimeCall::ForeignAssets(AssetHubAssetsCall::create {
-		id: para_teleporter_native_asset_location.try_into().unwrap(),
+		id: para_teleporter_native_asset_location,
 		admin: sibling_account_id(PARA_TELEPORTER_ID),
 		min_balance: 100,
 	});
@@ -723,7 +723,7 @@ fn teleport_para_teleport_to_para_assethub() {
 
 	ParaTeleporter::execute_with(|| {
 		assert_ok!(ParachainTeleporterPalletXcm::limited_teleport_assets(
-			parachain_teleporter::RuntimeOrigin::signed(ALICE.into()),
+			parachain_teleporter::RuntimeOrigin::signed(ALICE),
 			Box::new((Parent, Parachain(PARA_ASSETHUB_ID)).into()),
 			Box::new(AccountId32 { network: None, id: ALICE.into() }.into()),
 			Box::new((Here, teleport_amount_1).into()),
@@ -747,7 +747,7 @@ fn teleport_para_teleport_to_para_assethub() {
 		);
 
 		assert_ok!(AssetHubPalletXcm::limited_teleport_assets(
-			asset_hub::RuntimeOrigin::signed(ALICE.into()),
+			asset_hub::RuntimeOrigin::signed(ALICE),
 			Box::new((Parent, Parachain(PARA_TELEPORTER_ID)).into()),
 			Box::new(AccountId32 { network: None, id: ALICE.into() }.into()),
 			Box::new(((Parent, Parachain(PARA_TELEPORTER_ID)), 100).into()),

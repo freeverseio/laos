@@ -22,7 +22,7 @@ mod sandbox {
 	{
 		fn contains(a: &Location, b: &Location) -> bool {
 			// `a` needs to be from `b` at least.
-			if !a.starts_with(&b) {
+			if !a.starts_with(b) {
 				return false;
 			}
 

@@ -109,9 +109,19 @@ impl EnsureOriginWithArg<RuntimeOrigin, Location> for ForeignCreators {
 	}
 }
 
+/// Simple conversion of `u32` into an `AssetId` for use in benchmarking.
+#[cfg(feature = "runtime-benchmarks")]
+pub struct XcmBenchmarkHelper;
+#[cfg(feature = "runtime-benchmarks")]
+impl pallet_assets::BenchmarkHelper<Location> for XcmBenchmarkHelper {
+	fn create_asset_id_parameter(id: u32) -> Location {
+		Location::new(1, Junction::Parachain(id))
+	}
+}
+
 pub type ForeignAssetsInstance = pallet_assets::Instance2;
 #[derive_impl(pallet_assets::config_preludes::TestDefaultConfig)]
-impl pallet_assets::Config<pallet_assets::Instance2> for Runtime {
+impl pallet_assets::Config<ForeignAssetsInstance> for Runtime {
 	type AssetId = Location;
 	type AssetIdParameter = Location;
 	type Currency = Balances;
@@ -124,6 +134,8 @@ impl pallet_assets::Config<pallet_assets::Instance2> for Runtime {
 	type MetadataDepositBase = MetadataDepositBase;
 	type MetadataDepositPerByte = MetadataDepositPerByte;
 	type Freezer = ();
+	#[cfg(feature = "runtime-benchmarks")]
+	type BenchmarkHelper = XcmBenchmarkHelper;
 }
 
 #[cfg(feature = "runtime-benchmarks")]
@@ -154,7 +166,7 @@ impl pallet_uniques::Config<pallet_uniques::Instance1> for Runtime {
 	type ValueLimit = ConstU32<128>;
 	type WeightInfo = ();
 	#[cfg(feature = "runtime-benchmarks")]
-	type Helper = UniquesHelper;
+	type Helper = ();
 	type CreateOrigin = AsEnsureOriginWithArg<EnsureSigned<AccountId>>;
 	type Locker = ();
 }
