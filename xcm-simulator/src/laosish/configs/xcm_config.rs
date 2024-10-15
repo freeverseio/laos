@@ -40,8 +40,6 @@ use xcm_builder::{
 use xcm_executor::XcmExecutor;
 use xcm_simulator::AssetFilter;
 
-pub const ASSET_HUB_ID: u32 = crate::PARA_B_ID;
-
 parameter_types! {
 	pub const RelayLocation: Location = Location::parent();
 	pub const RelayNetwork: NetworkId = NetworkId::Kusama;
@@ -143,7 +141,7 @@ parameter_types! {
 parameter_types! {
 	pub NativeToken: AssetId = AssetId(Location::here());
 	pub NativeTokenFilter: AssetFilter = Wild(AllOf { fun: WildFungible, id: NativeToken::get() });
-	pub AssetHubLocation: Location = Location::new(1, [Parachain(ASSET_HUB_ID)]);
+	pub AssetHubLocation: Location = Location::new(1, [Parachain(crate::PARA_ASSETHUB_ID)]);
 	pub AssetHubTrustedTeleporter: (AssetFilter, Location) = (NativeTokenFilter::get(), AssetHubLocation::get());
 }
 
@@ -193,7 +191,7 @@ impl pallet_xcm::Config for Runtime {
 	type ExecuteXcmOrigin = EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
 	type XcmExecuteFilter = Nothing;
 	type XcmExecutor = XcmExecutor<XcmConfig>;
-	type XcmTeleportFilter = Nothing;
+	type XcmTeleportFilter = Everything; // TODO restrict me
 	type XcmReserveTransferFilter = Everything;
 	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
 	type UniversalLocation = UniversalLocation;

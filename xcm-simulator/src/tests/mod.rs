@@ -750,7 +750,7 @@ fn roundtrip_teleport_para_teleport_to_assethub() {
 			asset_hub::RuntimeOrigin::signed(ALICE),
 			Box::new((Parent, Parachain(PARA_TELEPORTER_ID)).into()),
 			Box::new(AccountId32 { network: None, id: ALICE.into() }.into()),
-			Box::new(((Parent, Parachain(PARA_TELEPORTER_ID)), 100).into()),
+			Box::new(((Parent, Parachain(PARA_TELEPORTER_ID)), teleport_amount_2).into()),
 			0,
 			WeightLimit::Unlimited,
 		));
