@@ -26,20 +26,8 @@ force_decorator = "generic-evm"
   command = "{{ZOMBIENET_LAOS_COMMAND}}"
   validator = true
 
-  [[parachains.collators]]
-  name = "laos-1"
-  ws_port = 10000
-  command = "{{ZOMBIENET_LAOS_COMMAND}}"
-  validator = true
-
-  [[parachains.collators]]
-  name = "laos-2"
-  ws_port = 10001
-  command = "{{ZOMBIENET_LAOS_COMMAND}}"
-  validator = true
-
 [[parachains]]
-id = 2000
+id = 1000
 cumulus_based = true
 chain = "asset-hub-rococo-local"
 
