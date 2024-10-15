@@ -40,7 +40,7 @@ jobs:
         run: |
           export ZOMBIENET_RELAYCHAIN_COMMAND=./tmp/polkadot
           export ZOMBIENET_LAOS_COMMAND=./target/release/laos
-          export ZOMBIENET_ASSETHUB_COMMAND=./target/release/polkadot-parachain
+          export ZOMBIENET_ASSETHUB_COMMAND=./tmp/polkadot-parachain
           ./zombienet-linux-x64 spawn ./zombienet/native.toml &
           echo "Zombienet started"
 
