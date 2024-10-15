@@ -70,7 +70,7 @@ decl_test_parachain! {
 		Runtime = asset_hub::Runtime,
 		XcmpMessageHandler = asset_hub::MsgQueue,
 		DmpMessageHandler = asset_hub::MsgQueue,
-		new_ext = para_ext(PARA_ASSETHUB_ID),
+		new_ext = para_ext_asset_hub(PARA_ASSETHUB_ID),
 	}
 }
 
@@ -140,6 +140,34 @@ pub fn parent_account_account_id(who: sp_runtime::AccountId32) -> parachain::Acc
 
 pub fn para_ext(para_id: u32) -> sp_io::TestExternalities {
 	use parachain::{MsgQueue, Runtime, System};
+
+	let mut t = frame_system::GenesisConfig::<Runtime>::default().build_storage().unwrap();
+
+	pallet_balances::GenesisConfig::<Runtime> {
+		balances: vec![
+			(ALICE, INITIAL_BALANCE),
+			(parent_account_id(), INITIAL_BALANCE),
+			(sibling_account_id(PARA_A_ID), INITIAL_BALANCE),
+			(sibling_account_id(PARA_B_ID), INITIAL_BALANCE),
+			(sibling_account_id(PARA_TELEPORTER_ID), INITIAL_BALANCE),
+			(sibling_account_id(PARA_LAOSISH_ID), INITIAL_BALANCE),
+			(sibling_account_id(PARA_ASSETHUB_ID), INITIAL_BALANCE),
+		],
+	}
+	.assimilate_storage(&mut t)
+	.unwrap();
+
+	let mut ext = sp_io::TestExternalities::new(t);
+	ext.execute_with(|| {
+		sp_tracing::try_init_simple();
+		System::set_block_number(1);
+		MsgQueue::set_para_id(para_id.into());
+	});
+	ext
+}
+
+pub fn para_ext_asset_hub(para_id: u32) -> sp_io::TestExternalities {
+	use asset_hub::{MsgQueue, Runtime, System};
 
 	let mut t = frame_system::GenesisConfig::<Runtime>::default().build_storage().unwrap();
 

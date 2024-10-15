@@ -719,10 +719,6 @@ fn teleport_para_teleport_to_para_assethub() {
 		));
 	});
 
-    AssetHub::execute_with(||{
-        asset_hub::Balances::force_set_balance(asset_hub::RuntimeOrigin::root(), ALICE, 1_000_000_000);
-    });
-
 	ParaTeleporter::execute_with(|| {
 	 	let amount = 1_000;
 
