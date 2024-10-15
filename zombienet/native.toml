@@ -9,10 +9,12 @@ chain = "rococo-local"
   name = "relay1"
   ws_port = 9944
   validator = true
+  args = ["--log=xcm=trace"]
 
   [[relaychain.nodes]]
   name = "relay2"
   validator = true
+  args = ["--log=xcm=trace"]
 
 [[parachains]]
 id = 2900
@@ -25,6 +27,7 @@ force_decorator = "generic-evm"
   ws_port = 9999
   command = "{{ZOMBIENET_LAOS_COMMAND}}"
   validator = true
+  args = ["--log=xcm=trace"]
 
 [[parachains]]
 id = 1000
