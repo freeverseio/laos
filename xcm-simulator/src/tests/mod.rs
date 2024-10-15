@@ -704,7 +704,7 @@ fn teleport_para_teleport_to_para_assethub() {
 		asset_hub::RuntimeCall::ForeignAssets(AssetHubAssetsCall::create {
 			id: para_teleporter_native_asset_location.try_into().unwrap(),
 			admin: sibling_account_id(PARA_TELEPORTER_ID),
-			min_balance: 1000,
+			min_balance: 100,
 		});
 
 	ParaTeleporter::execute_with(|| {
@@ -719,37 +719,26 @@ fn teleport_para_teleport_to_para_assethub() {
 		));
 	});
 
-	// AssetHub::execute_with(|| {
-	// 	assert_ok!(
-	// 		pallet_assets::Pallet::<asset_hub::Runtime, pallet_assets::Instance2>::set_metadata(
-	// 			asset_hub::RuntimeOrigin::signed(ALICE),
-	// 			para_teleporter_native_asset_location.try_into().unwrap(),
-	// 			b"pepito".to_vec(),
-	// 			b"PEP".to_vec(),
-	// 			10,
-	// 		)
-	// 	);
-	// });
+    AssetHub::execute_with(||{
+        asset_hub::Balances::force_set_balance(asset_hub::RuntimeOrigin::root(), ALICE, 1_000_000_000);
+    });
 
 	ParaTeleporter::execute_with(|| {
-		let amount = 1_000;
+	 	let amount = 1_000;
 
-		assert_ok!(ParachainTeleporterPalletXcm::limited_teleport_assets(
-			parachain_teleporter::RuntimeOrigin::signed(ALICE.into()),
-			Box::new((Parent, Parachain(PARA_ASSETHUB_ID)).into()),
-			Box::new(AccountId32 { network: None, id: ALICE.into() }.into()),
-			Box::new((Here, amount).into()),
-			0,
-			WeightLimit::Unlimited,
-		));
+        assert_ok!(ParachainTeleporterPalletXcm::limited_teleport_assets(
+            parachain_teleporter::RuntimeOrigin::signed(ALICE.into()),
+            Box::new((Parent, Parachain(PARA_ASSETHUB_ID)).into()),
+            Box::new(AccountId32 { network: Some(NetworkId::Kusama), id: ALICE.into() }.into()),
+            Box::new((Here, amount).into()),
+            0,
+            WeightLimit::Unlimited,
+        ));
 
 		assert_eq!(parachain_teleporter::Balances::free_balance(ALICE), INITIAL_BALANCE - amount);
 	});
 
-	AssetHub::execute_with(|| {
-		log::trace!(
-			target:"xcm:events",
-			"{:?}", asset_hub::System::events()
-		);
-	});
+    AssetHub::execute_with(||{
+        assert_eq!(asset_hub::ForeignAssets::balance((Parent, Parachain(PARA_TELEPORTER_ID)).into(), &ALICE), 1_000);
+    });
 }
