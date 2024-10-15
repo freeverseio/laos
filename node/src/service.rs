@@ -39,7 +39,7 @@ use cumulus_relay_chain_interface::{OverseerHandle, RelayChainInterface};
 use fc_rpc::{StorageOverride, StorageOverrideHandler};
 use frame_benchmarking_cli::SUBSTRATE_REFERENCE_HARDWARE;
 use futures::FutureExt;
-use laos_runtime::{api, RuntimeApi};
+use laos_runtime::RuntimeApi;
 use sc_client_api::Backend;
 use sc_consensus::ImportQueue;
 use sc_executor::{
