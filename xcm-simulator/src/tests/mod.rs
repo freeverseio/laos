@@ -698,14 +698,16 @@ fn teleport_para_teleport_to_para_assethub() {
 	MockNet::reset();
 
 	let para_teleporter_native_asset_location =
-		xcm::v3::Location::new(1, [xcm::v3::Junction::Parachain(PARA_TELEPORTER_ID)]);
+		xcm::v4::Location::new(1, [xcm::v4::Junction::Parachain(PARA_TELEPORTER_ID)]);
 
-	let create_asset =
-		asset_hub::RuntimeCall::ForeignAssets(AssetHubAssetsCall::create {
-			id: para_teleporter_native_asset_location.try_into().unwrap(),
-			admin: sibling_account_id(PARA_TELEPORTER_ID),
-			min_balance: 100,
-		});
+	let create_asset = asset_hub::RuntimeCall::ForeignAssets(AssetHubAssetsCall::create {
+		id: para_teleporter_native_asset_location.try_into().unwrap(),
+		admin: sibling_account_id(PARA_TELEPORTER_ID),
+		min_balance: 100,
+	});
+
+	let teleport_amount_1 = 1_000;
+	let teleport_amount_2 = 100;
 
 	ParaTeleporter::execute_with(|| {
 		assert_ok!(ParachainTeleporterPalletXcm::send_xcm(
@@ -720,21 +722,52 @@ fn teleport_para_teleport_to_para_assethub() {
 	});
 
 	ParaTeleporter::execute_with(|| {
-	 	let amount = 1_000;
+		assert_ok!(ParachainTeleporterPalletXcm::limited_teleport_assets(
+			parachain_teleporter::RuntimeOrigin::signed(ALICE.into()),
+			Box::new((Parent, Parachain(PARA_ASSETHUB_ID)).into()),
+			Box::new(AccountId32 { network: None, id: ALICE.into() }.into()),
+			Box::new((Here, teleport_amount_1).into()),
+			0,
+			WeightLimit::Unlimited,
+		));
 
-        assert_ok!(ParachainTeleporterPalletXcm::limited_teleport_assets(
-            parachain_teleporter::RuntimeOrigin::signed(ALICE.into()),
-            Box::new((Parent, Parachain(PARA_ASSETHUB_ID)).into()),
-            Box::new(AccountId32 { network: Some(NetworkId::Kusama), id: ALICE.into() }.into()),
-            Box::new((Here, amount).into()),
-            0,
-            WeightLimit::Unlimited,
-        ));
-
-		assert_eq!(parachain_teleporter::Balances::free_balance(ALICE), INITIAL_BALANCE - amount);
+		assert_eq!(
+			parachain_teleporter::Balances::free_balance(ALICE),
+			INITIAL_BALANCE - teleport_amount_1
+		);
 	});
 
-    AssetHub::execute_with(||{
-        assert_eq!(asset_hub::ForeignAssets::balance((Parent, Parachain(PARA_TELEPORTER_ID)).into(), &ALICE), 1_000);
-    });
+	AssetHub::execute_with(|| {
+		assert_eq!(
+			asset_hub::ForeignAssets::balance(
+				(Parent, Parachain(PARA_TELEPORTER_ID)).into(),
+				&ALICE
+			),
+			teleport_amount_1
+		);
+
+		assert_ok!(AssetHubPalletXcm::limited_teleport_assets(
+			asset_hub::RuntimeOrigin::signed(ALICE.into()),
+			Box::new((Parent, Parachain(PARA_TELEPORTER_ID)).into()),
+			Box::new(AccountId32 { network: None, id: ALICE.into() }.into()),
+			Box::new(((Parent, Parachain(PARA_TELEPORTER_ID)), 100).into()),
+			0,
+			WeightLimit::Unlimited,
+		));
+
+		assert_eq!(
+			asset_hub::ForeignAssets::balance(
+				(Parent, Parachain(PARA_TELEPORTER_ID)).into(),
+				&ALICE
+			),
+			teleport_amount_1 - teleport_amount_2
+		);
+	});
+
+	ParaTeleporter::execute_with(|| {
+		assert_eq!(
+			parachain_teleporter::Balances::free_balance(ALICE),
+			INITIAL_BALANCE - (teleport_amount_1 - teleport_amount_2)
+		);
+	});
 }

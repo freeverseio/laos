@@ -44,7 +44,7 @@ mod sandbox {
 	/// We do this by matching on all possible Locations and excluding the ones
 	/// inside our local chain.
 	pub type ForeignAssetsMatcher = MatchedConvertedConcreteId<
-		Location,                      // Asset id.
+		Location,                               // Asset id.
 		Balance,                                // Balance type.
 		EverythingBut<StartsWith<LocalPrefix>>, // Location matcher.
 		JustTry,                                // How to convert from Location to AssetId.

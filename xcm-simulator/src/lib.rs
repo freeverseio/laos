@@ -14,11 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Polkadot.  If not, see <http://www.gnu.org/licenses/>.
 
+mod asset_hub;
 mod laosish;
 mod parachain;
 mod parachain_teleporter;
 mod relay_chain;
-mod asset_hub;
 
 use hex_literal::hex;
 
@@ -242,6 +242,7 @@ pub fn relay_ext() -> sp_io::TestExternalities {
 pub type RelayChainPalletXcm = pallet_xcm::Pallet<relay_chain::Runtime>;
 pub type ParachainPalletXcm = pallet_xcm::Pallet<parachain::Runtime>;
 pub type ParachainTeleporterPalletXcm = pallet_xcm::Pallet<parachain_teleporter::Runtime>;
+pub type AssetHubPalletXcm = pallet_xcm::Pallet<asset_hub::Runtime>;
 pub type LaosishPalletXcm = pallet_xcm::Pallet<laosish::Runtime>;
 
 #[frame_support::pallet]

@@ -17,16 +17,18 @@
 //! AssetHub Parachain runtime mock.
 
 mod xcm_config;
+use crate::mock_msg_queue;
 pub use xcm_config::*;
 use xcm_simulator::{Asset, AssetFilter};
-use crate::mock_msg_queue;
 
 use core::marker::PhantomData;
 use frame_support::{
-	construct_runtime, derive_impl, parameter_types, traits::{
+	construct_runtime, derive_impl, parameter_types,
+	traits::{
 		AsEnsureOriginWithArg, ConstU128, ContainsPair, EnsureOrigin, EnsureOriginWithArg,
 		Everything,
-	}, weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight}
+	},
+	weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight},
 };
 use frame_system::{EnsureRoot, EnsureSigned};
 use sp_core::ConstU32;
