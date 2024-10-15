@@ -27,6 +27,19 @@ fn remote_account_ids_work() {
 }
 
 #[test]
+fn test_child_account_id() {
+	let mercury_para_id = 4023;
+	assert_eq!(
+		child_account_id(mercury_para_id).to_ss58check(),
+		"5Ec4AhPPwDMAVDP2wYGzGyJuq1wHrKeDVJ2znDdyj9Zb7x7t"
+	);
+	assert_eq!(
+		sibling_account_id(mercury_para_id).to_ss58check(),
+		"5Eg2fntD1wY4cp7BVYE5Pcej5VcbZjhKYwgS3BAUbsb9ykJ9"
+	);
+}
+
+#[test]
 fn dmp() {
 	MockNet::reset();
 
