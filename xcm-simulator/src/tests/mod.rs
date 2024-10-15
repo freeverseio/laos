@@ -2,6 +2,7 @@ use super::*;
 
 use frame_support::{assert_ok, traits::fungibles::roles::Inspect, weights::Weight};
 use parity_scale_codec::Encode;
+use sp_core::crypto::Ss58Codec;
 use xcm::latest::QueryResponseInfo;
 use xcm_simulator::TestExt;
 
@@ -27,12 +28,14 @@ fn remote_account_ids_work() {
 }
 
 #[test]
-fn test_child_account_id() {
+fn check_sovereign_accounts() {
 	let mercury_para_id = 4023;
+	// mercury parachain on ralay chain
 	assert_eq!(
 		child_account_id(mercury_para_id).to_ss58check(),
 		"5Ec4AhPPwDMAVDP2wYGzGyJuq1wHrKeDVJ2znDdyj9Zb7x7t"
 	);
+	// mercury parachain on sibling chains
 	assert_eq!(
 		sibling_account_id(mercury_para_id).to_ss58check(),
 		"5Eg2fntD1wY4cp7BVYE5Pcej5VcbZjhKYwgS3BAUbsb9ykJ9"
