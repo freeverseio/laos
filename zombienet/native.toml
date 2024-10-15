@@ -6,13 +6,13 @@ default_command = "{{ZOMBIENET_RELAYCHAIN_COMMAND}}"
 chain = "rococo-local"
 
   [[relaychain.nodes]]
-  name = "relay1"
+  name = "relay0"
   ws_port = 9944
   validator = true
   args = ["--log=xcm=trace"]
 
   [[relaychain.nodes]]
-  name = "relay2"
+  name = "relay1"
   validator = true
   args = ["--log=xcm=trace"]
 
@@ -23,11 +23,21 @@ chain = "local"
 force_decorator = "generic-evm"
 
   [[parachains.collators]]
-  name = "laos"
+  name = "laos0"
   ws_port = 9999
   command = "{{ZOMBIENET_LAOS_COMMAND}}"
   validator = true
   args = ["--log=xcm=trace"]
+  
+  [[parachains.collators]]
+  name = "laos1"
+  command = "{{ZOMBIENET_LAOS_COMMAND}}"
+  validator = true
+
+    [[parachains.collators]]
+  name = "laos2"
+  command = "{{ZOMBIENET_LAOS_COMMAND}}"
+  validator = true
 
 [[parachains]]
 id = 1000
