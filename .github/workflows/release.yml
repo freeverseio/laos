@@ -156,7 +156,7 @@ jobs:
           cat laos-info.txt >> description.txt
           echo '```' >> description.txt
 
-          printf "\n\n## Paseo Runtime\nThis runtime was built using $RUSTC_VERSION_PASEO with srtool $SRTOOL_VERSION_PASEO\n" >> description.txt
+          printf "\n\n## Laos Runtime for Paseo\nThis runtime was built using $RUSTC_VERSION_PASEO with srtool $SRTOOL_VERSION_PASEO\n" >> description.txt
           echo '```' >> description.txt
           cat paseo-info.txt >> description.txt
           echo '```' >> description.txt
