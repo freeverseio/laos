@@ -16,6 +16,7 @@ export const LOCAL_ASSETHUB_NODE_URL = "http://127.0.0.1:9950";
 // Chain config
 export const CHAIN_ID = 667;
 export const GAS_PRICE = "0x3B9ACA00";
+export const ASSET_HUB_PARACHAIN_ID = 2000;
 
 // Accounts
 export const FAITH = "0xC0F0f4ab324C46e55D02D0033343B4Be8A55532d";

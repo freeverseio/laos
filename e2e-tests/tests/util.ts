@@ -58,18 +58,22 @@ export function describeWithExistingNode(
 		} = {
 			web3: null,
 			ethersjs: null,
-			polkadot: undefined,
+			polkadot: {
+				laos: null,
+				assetHub: null,
+			},
 		};
 
 		before(async () => {
 			if (providerLaosNodeUrl) {
 				context.web3 = new Web3(providerLaosNodeUrl);
 				const wsProvider = new HttpProvider(providerLaosNodeUrl);
-				context.polkadot.laos = await new ApiPromise({ provider: wsProvider }).isReady;
+				context.polkadot.laos = await ApiPromise.create({ provider: wsProvider });
 			} else {
 				context.web3 = new Web3(LOCAL_LAOS_NODE_URL);
 				const wsProvider = new HttpProvider(LOCAL_LAOS_NODE_URL);
-				context.polkadot.laos = await new ApiPromise({ provider: wsProvider }).isReady;
+				context.polkadot.laos = await ApiPromise.create({ provider: wsProvider });
+				// context.polkadot.laos = await new ApiPromise({ provider: wsProvider }).isReady;
 			}
 
 			if (providerAssetHubNodeUrl) {
