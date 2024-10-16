@@ -148,8 +148,7 @@ fn xcmp_create_foreign_asset_in_para_b() {
 fn roundtrip_teleport_laosish_to_assethub() {
 	MockNet::reset();
 
-	let laosish_native_asset_location =
-		Location::new(1, [Junction::Parachain(PARA_LAOSISH_ID)]);
+	let laosish_native_asset_location = Location::new(1, [Junction::Parachain(PARA_LAOSISH_ID)]);
 
 	let create_asset = asset_hub::RuntimeCall::ForeignAssets(AssetHubAssetsCall::create {
 		id: laosish_native_asset_location,
@@ -173,11 +172,8 @@ fn roundtrip_teleport_laosish_to_assethub() {
 			}]),
 		));
 
-		assert_eq!(
-			laosish::Balances::free_balance(alith),
-			INITIAL_BALANCE
-		);
-	
+		assert_eq!(laosish::Balances::free_balance(alith), INITIAL_BALANCE);
+
 		assert_ok!(LaosishPalletXcm::limited_teleport_assets(
 			laosish::RuntimeOrigin::signed(ALITH.into()),
 			Box::new((Parent, Parachain(PARA_ASSETHUB_ID)).into()),
@@ -187,18 +183,12 @@ fn roundtrip_teleport_laosish_to_assethub() {
 			WeightLimit::Unlimited,
 		));
 
-		assert_eq!(
-			laosish::Balances::free_balance(alith),
-			INITIAL_BALANCE - teleport_amount_1
-		);
+		assert_eq!(laosish::Balances::free_balance(alith), INITIAL_BALANCE - teleport_amount_1);
 	});
 
 	AssetHub::execute_with(|| {
 		assert_eq!(
-			asset_hub::ForeignAssets::balance(
-				(Parent, Parachain(PARA_LAOSISH_ID)).into(),
-				&ALICE
-			),
+			asset_hub::ForeignAssets::balance((Parent, Parachain(PARA_LAOSISH_ID)).into(), &ALICE),
 			teleport_amount_1
 		);
 
@@ -212,10 +202,7 @@ fn roundtrip_teleport_laosish_to_assethub() {
 		));
 
 		assert_eq!(
-			asset_hub::ForeignAssets::balance(
-				(Parent, Parachain(PARA_LAOSISH_ID)).into(),
-				&ALICE
-			),
+			asset_hub::ForeignAssets::balance((Parent, Parachain(PARA_LAOSISH_ID)).into(), &ALICE),
 			teleport_amount_1 - teleport_amount_2
 		);
 	});
@@ -226,5 +213,4 @@ fn roundtrip_teleport_laosish_to_assethub() {
 			INITIAL_BALANCE - (teleport_amount_1 - teleport_amount_2)
 		);
 	});
-
 }

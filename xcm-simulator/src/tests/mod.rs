@@ -9,8 +9,6 @@ mod laosish_xcm;
 
 pub type ForeignAssetsCall =
 	pallet_assets::Call<parachain::Runtime, parachain::ForeignAssetsInstance>;
-pub type AssetHubAssetsCall =
-	pallet_assets::Call<asset_hub::Runtime, asset_hub::ForeignAssetsInstance>;
 pub type TrustBackedAssetsCall =
 	pallet_assets::Call<parachain::Runtime, parachain::TrustBackedAssetsInstance>;
 
