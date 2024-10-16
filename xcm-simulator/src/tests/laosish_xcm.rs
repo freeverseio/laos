@@ -154,11 +154,13 @@ fn roundtrip_teleport_laosish_to_assethub() {
 	let create_asset = asset_hub::RuntimeCall::ForeignAssets(AssetHubAssetsCall::create {
 		id: laosish_native_asset_location,
 		admin: sibling_account_id(PARA_LAOSISH_ID),
-		min_balance: 1000,
+		min_balance: 1,
 	});
 
 	let teleport_amount_1 = 100;
 	let teleport_amount_2 = 10;
+
+	let alith: laosish::AccountId = ALITH.into();
 
 	Laosish::execute_with(|| {
 		assert_ok!(LaosishPalletXcm::send_xcm(
@@ -170,6 +172,11 @@ fn roundtrip_teleport_laosish_to_assethub() {
 				call: create_asset.encode().into(),
 			}]),
 		));
+
+		assert_eq!(
+			laosish::Balances::free_balance(alith),
+			INITIAL_BALANCE
+		);
 	
 		assert_ok!(LaosishPalletXcm::limited_teleport_assets(
 			laosish::RuntimeOrigin::signed(ALITH.into()),
@@ -180,7 +187,6 @@ fn roundtrip_teleport_laosish_to_assethub() {
 			WeightLimit::Unlimited,
 		));
 
-		let alith: laosish::AccountId = ALITH.into();
 		assert_eq!(
 			laosish::Balances::free_balance(alith),
 			INITIAL_BALANCE - teleport_amount_1
@@ -194,6 +200,30 @@ fn roundtrip_teleport_laosish_to_assethub() {
 				&ALICE
 			),
 			teleport_amount_1
+		);
+
+		assert_ok!(AssetHubPalletXcm::limited_teleport_assets(
+			asset_hub::RuntimeOrigin::signed(ALICE),
+			Box::new((Parent, Parachain(PARA_LAOSISH_ID)).into()),
+			Box::new(AccountKey20 { network: None, key: ALITH }.into()),
+			Box::new(((Parent, Parachain(PARA_LAOSISH_ID)), teleport_amount_2).into()),
+			0,
+			WeightLimit::Unlimited,
+		));
+
+		assert_eq!(
+			asset_hub::ForeignAssets::balance(
+				(Parent, Parachain(PARA_LAOSISH_ID)).into(),
+				&ALICE
+			),
+			teleport_amount_1 - teleport_amount_2
+		);
+	});
+
+	Laosish::execute_with(|| {
+		assert_eq!(
+			laosish::Balances::free_balance(alith),
+			INITIAL_BALANCE - (teleport_amount_1 - teleport_amount_2)
 		);
 	});
 
