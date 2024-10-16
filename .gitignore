@@ -21,3 +21,5 @@
 node_modules/
 frontier-test-tmp
 build/
+
+tmp/
