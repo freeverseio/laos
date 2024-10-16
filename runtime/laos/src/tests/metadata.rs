@@ -1,6 +1,9 @@
-use crate::Runtime;
-use serde_json::Value;
 use super::ExtBuilder;
+use crate::Runtime;
+use assert_json_diff::assert_json_eq;
+use frame_metadata::RuntimeMetadataPrefixed;
+use parity_scale_codec::Decode;
+use serde_json::Value;
 
 #[test]
 fn test_metadata_matches_golden_json() {
@@ -11,18 +14,15 @@ fn test_metadata_matches_golden_json() {
 
 	ExtBuilder::default().build().execute_with(|| {
 		// Obtain the current metadata.
-		let current_metadata_prefixed = Runtime::metadata();
+		let current_metadata_prefixed = Runtime::metadata_at_version(15).unwrap();
 
-		// Serialize current metadata to JSON.
-		let current_json = serde_json::to_string_pretty(&current_metadata_prefixed)
-			.expect("Failed to serialize current metadata to JSON");
-		let current_metadata: Value =
-			serde_json::from_str(&current_json).expect("Failed to parse current JSON metadata");
+		let bytes = &*current_metadata_prefixed;
+		let metadata: RuntimeMetadataPrefixed = Decode::decode(&mut &bytes[..]).unwrap();
 
-		// Compare the JSON metadata.
-		assert_eq!(
-			golden_metadata, current_metadata,
-			"Runtime JSON metadata does not match the golden file"
-		);
+		// Serialize metadata directly to a serde_json::Value
+		let metadata_value: Value = serde_json::to_value(&metadata)
+			.expect("Failed to serialize current metadata to JSON Value");
+
+		assert_json_eq!(metadata_value, golden_metadata);
 	});
 }

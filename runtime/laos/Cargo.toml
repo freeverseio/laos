@@ -125,6 +125,8 @@ pallet-assets = { workspace = true }
 test-utils = { workspace = true }
 ethereum = { workspace = true }
 serde_json = { workspace = true }
+frame-metadata = "16.0.0"
+assert-json-diff = "2.0.2"
 
 [features]
 fast-runtime=[]
