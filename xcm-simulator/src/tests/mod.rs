@@ -127,35 +127,26 @@ fn xcmp() {
 #[test]
 fn reserve_transfer() {
 	// Reset the mock network to a clean state before the test
-	// Reset the mock network to a clean state before the test
 	MockNet::reset();
 
 	let withdraw_amount = 123;
 
 	// Execute actions within the Relay chain's context
-	// Execute actions within the Relay chain's context
 	Relay::execute_with(|| {
-		// Perform a limited reserve transfer of assets from ALICE to Parachain 1
 		// Perform a limited reserve transfer of assets from ALICE to Parachain 1
 		assert_ok!(RelayChainPalletXcm::limited_reserve_transfer_assets(
 			relay_chain::RuntimeOrigin::signed(ALICE),
 			// Destination: Parachain with ID 1
-			// Destination: Parachain with ID 1
 			Box::new(Parachain(1).into()),
-			// Beneficiary: ALICE's account on the parachain
 			// Beneficiary: ALICE's account on the parachain
 			Box::new(AccountId32 { network: None, id: ALICE.into() }.into()),
 			// Assets to transfer: specified amount of the native currency
-			// Assets to transfer: specified amount of the native currency
 			Box::new((Here, withdraw_amount).into()),
-			// Fee asset item index: 0 (no specific fee asset)
 			// Fee asset item index: 0 (no specific fee asset)
 			0,
 			// Weight limit for execution: Unlimited
-			// Weight limit for execution: Unlimited
 			Unlimited,
 		));
-		// Assert that the relay chain's child account for Parachain 1 has the expected balance
 		// Assert that the relay chain's child account for Parachain 1 has the expected balance
 		assert_eq!(
 			relay_chain::Balances::free_balance(child_account_id(1)),
@@ -164,9 +155,7 @@ fn reserve_transfer() {
 	});
 
 	// Execute actions within Parachain A's context
-	// Execute actions within Parachain A's context
 	ParaA::execute_with(|| {
-		// Verify that ALICE's balance on Parachain A has increased by the transferred amount
 		// Verify that ALICE's balance on Parachain A has increased by the transferred amount
 		assert_eq!(
 			pallet_balances::Pallet::<parachain::Runtime>::free_balance(&ALICE),
