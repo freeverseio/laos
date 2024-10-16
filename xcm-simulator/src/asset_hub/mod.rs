@@ -252,7 +252,6 @@ construct_runtime!(
 	pub enum Runtime
 	{
 		System: frame_system,
-		ParachainInfo: parachain_info,
 		Balances: pallet_balances,
 		Assets: pallet_assets::<Instance1>,
 		MsgQueue: mock_msg_queue,

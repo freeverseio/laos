@@ -144,7 +144,7 @@ fn xcmp_create_foreign_asset_in_para_b() {
 	});
 }
 
-#[test] // TODO fix me
+#[test]
 fn roundtrip_teleport_laosish_to_assethub() {
 	MockNet::reset();
 

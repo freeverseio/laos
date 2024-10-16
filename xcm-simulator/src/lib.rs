@@ -20,6 +20,8 @@ mod parachain;
 mod parachain_teleporter;
 mod relay_chain;
 
+use std::marker::PhantomData;
+
 use hex_literal::hex;
 
 use sp_runtime::BuildStorage;
@@ -200,6 +202,10 @@ pub fn para_ext_ethereum(para_id: u32) -> sp_io::TestExternalities {
 	let mut t = frame_system::GenesisConfig::<Runtime>::default().build_storage().unwrap();
 
 	pallet_balances::GenesisConfig::<Runtime> { balances: vec![(ALITH.into(), INITIAL_BALANCE)] }
+		.assimilate_storage(&mut t)
+		.unwrap();
+
+	parachain_info::GenesisConfig::<Runtime> { parachain_id: para_id.into(), _config: PhantomData }
 		.assimilate_storage(&mut t)
 		.unwrap();
 
