@@ -14,6 +14,10 @@ chain = "rococo-local"
   name = "relay2"
   validator = true
 
+  [[relaychain.nodes]]
+  name = "relay3"
+  validator = true
+
 [[parachains]]
 id = 2900
 cumulus_based = true
@@ -37,3 +41,9 @@ chain = "asset-hub-rococo-local"
   ws_port = 9950
   command = "{{ZOMBIENET_ASSETHUB_COMMAND}}"
   args = ["--log=xcm=trace,pallet-assets=trace"]
+
+# [[hrmp_channels]]
+# sender = 2900
+# recipient = 2000
+# max_capacity = 8
+# max_message_size = 1048576
