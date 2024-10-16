@@ -10,7 +10,8 @@ import {
 	EVOLUTION_COLLECTION_FACTORY_ABI,
 	EVOLUTION_COLLECTION_ABI,
 	MAX_U96,
-	LOCAL_NODE_URL,
+	LOCAL_LAOS_NODE_URL,
+	LOCAL_ASSETHUB_NODE_URL,
 } from "./config";
 import BN from "bn.js";
 import { expect } from "chai";
@@ -45,14 +46,15 @@ export async function customRequest(web3: Web3, method: string, params: any[]) {
 
 export function describeWithExistingNode(
 	title: string,
-	cb: (context: { web3: Web3; polkadot: ApiPromise }) => void,
-	providerNodeUrl?: string
+	cb: (context: { web3: Web3; polkadot: { laos: ApiPromise, assetHub: ApiPromise} }) => void,
+	providerLaosNodeUrl?: string,
+	providerAssetHubNodeUrl?: string
 ) {
 	describe(title, () => {
 		let context: {
 			web3: Web3;
 			ethersjs: ethers.JsonRpcProvider;
-			polkadot: ApiPromise;
+			polkadot: { laos: ApiPromise, assetHub: ApiPromise };
 		} = {
 			web3: null,
 			ethersjs: null,
@@ -60,14 +62,22 @@ export function describeWithExistingNode(
 		};
 
 		before(async () => {
-			if (providerNodeUrl) {
-				context.web3 = new Web3(providerNodeUrl);
-				const wsProvider = new HttpProvider(providerNodeUrl);
-				context.polkadot = await new ApiPromise({ provider: wsProvider }).isReady;
+			if (providerLaosNodeUrl) {
+				context.web3 = new Web3(providerLaosNodeUrl);
+				const wsProvider = new HttpProvider(providerLaosNodeUrl);
+				context.polkadot.laos = await new ApiPromise({ provider: wsProvider }).isReady;
 			} else {
-				context.web3 = new Web3(LOCAL_NODE_URL);
-				const wsProvider = new HttpProvider(LOCAL_NODE_URL);
-				context.polkadot = await new ApiPromise({ provider: wsProvider }).isReady;
+				context.web3 = new Web3(LOCAL_LAOS_NODE_URL);
+				const wsProvider = new HttpProvider(LOCAL_LAOS_NODE_URL);
+				context.polkadot.laos = await new ApiPromise({ provider: wsProvider }).isReady;
+			}
+
+			if (providerAssetHubNodeUrl) {
+				const wsProvider = new HttpProvider(providerAssetHubNodeUrl);
+				context.polkadot.assetHub = await new ApiPromise({ provider: wsProvider }).isReady;
+			} else {
+				const wsProvider = new HttpProvider(LOCAL_ASSETHUB_NODE_URL);
+				context.polkadot.assetHub = await new ApiPromise({ provider: wsProvider }).isReady;
 			}
 		});
 		cb(context);

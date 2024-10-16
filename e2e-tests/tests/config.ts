@@ -10,7 +10,8 @@ import ParachainStaking from "../build/contracts/ParachainStaking.json";
 export const RUNTIME_SPEC_NAME = "laos";
 export const RUNTIME_SPEC_VERSION = 2291;
 export const RUNTIME_IMPL_VERSION = 0;
-export const LOCAL_NODE_URL = "http://127.0.0.1:9999";
+export const LOCAL_LAOS_NODE_URL = "http://127.0.0.1:9999";
+export const LOCAL_ASSETHUB_NODE_URL = "http://127.0.0.1:9950";
 
 // Chain config
 export const CHAIN_ID = 667;
