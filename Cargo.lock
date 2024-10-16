@@ -5299,6 +5299,7 @@ dependencies = [
  "polkadot-runtime-parachains",
  "precompile-utils",
  "scale-info",
+ "serde_json",
  "smallvec",
  "sp-api",
  "sp-block-builder",
