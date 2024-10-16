@@ -2,6 +2,7 @@ use super::*;
 
 use frame_support::{assert_ok, traits::fungibles::roles::Inspect, weights::Weight};
 use parity_scale_codec::Encode;
+use sp_core::crypto::Ss58Codec;
 use xcm::latest::QueryResponseInfo;
 use xcm_simulator::TestExt;
 
@@ -22,6 +23,21 @@ fn remote_account_ids_work() {
 	child_account_account_id(1, ALICE);
 	sibling_account_account_id(1, ALICE);
 	parent_account_account_id(ALICE);
+}
+
+#[test]
+fn check_sovereign_accounts() {
+	let mercury_para_id = 4023;
+	// mercury parachain on ralay chain
+	assert_eq!(
+		child_account_id(mercury_para_id).to_ss58check(),
+		"5Ec4AhPPwDMAVDP2wYGzGyJuq1wHrKeDVJ2znDdyj9Zb7x7t"
+	);
+	// mercury parachain on sibling chains
+	assert_eq!(
+		sibling_account_id(mercury_para_id).to_ss58check(),
+		"5Eg2fntD1wY4cp7BVYE5Pcej5VcbZjhKYwgS3BAUbsb9ykJ9"
+	);
 }
 
 #[test]
@@ -111,26 +127,35 @@ fn xcmp() {
 #[test]
 fn reserve_transfer() {
 	// Reset the mock network to a clean state before the test
+	// Reset the mock network to a clean state before the test
 	MockNet::reset();
 
 	let withdraw_amount = 123;
 
 	// Execute actions within the Relay chain's context
+	// Execute actions within the Relay chain's context
 	Relay::execute_with(|| {
+		// Perform a limited reserve transfer of assets from ALICE to Parachain 1
 		// Perform a limited reserve transfer of assets from ALICE to Parachain 1
 		assert_ok!(RelayChainPalletXcm::limited_reserve_transfer_assets(
 			relay_chain::RuntimeOrigin::signed(ALICE),
 			// Destination: Parachain with ID 1
+			// Destination: Parachain with ID 1
 			Box::new(Parachain(1).into()),
+			// Beneficiary: ALICE's account on the parachain
 			// Beneficiary: ALICE's account on the parachain
 			Box::new(AccountId32 { network: None, id: ALICE.into() }.into()),
 			// Assets to transfer: specified amount of the native currency
+			// Assets to transfer: specified amount of the native currency
 			Box::new((Here, withdraw_amount).into()),
+			// Fee asset item index: 0 (no specific fee asset)
 			// Fee asset item index: 0 (no specific fee asset)
 			0,
 			// Weight limit for execution: Unlimited
+			// Weight limit for execution: Unlimited
 			Unlimited,
 		));
+		// Assert that the relay chain's child account for Parachain 1 has the expected balance
 		// Assert that the relay chain's child account for Parachain 1 has the expected balance
 		assert_eq!(
 			relay_chain::Balances::free_balance(child_account_id(1)),
@@ -139,7 +164,9 @@ fn reserve_transfer() {
 	});
 
 	// Execute actions within Parachain A's context
+	// Execute actions within Parachain A's context
 	ParaA::execute_with(|| {
+		// Verify that ALICE's balance on Parachain A has increased by the transferred amount
 		// Verify that ALICE's balance on Parachain A has increased by the transferred amount
 		assert_eq!(
 			pallet_balances::Pallet::<parachain::Runtime>::free_balance(&ALICE),

@@ -606,6 +606,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "assert-json-diff"
+version = "2.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "47e4f2b81832e72834d7518d8487a0396a28cc408186a2e8854c0f98011faf12"
+dependencies = [
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "assert_matches"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5202,7 +5212,7 @@ dependencies = [
 
 [[package]]
 name = "laos"
-version = "0.22.0"
+version = "0.22.92"
 dependencies = [
  "clap",
  "cumulus-client-cli",
@@ -5285,8 +5295,9 @@ dependencies = [
 
 [[package]]
 name = "laos-runtime"
-version = "0.22.0"
+version = "0.22.92"
 dependencies = [
+ "assert-json-diff",
  "cumulus-pallet-aura-ext",
  "cumulus-pallet-parachain-system",
  "cumulus-pallet-session-benchmarking",
@@ -5302,6 +5313,7 @@ dependencies = [
  "fp-self-contained",
  "frame-benchmarking",
  "frame-executive",
+ "frame-metadata",
  "frame-support",
  "frame-system",
  "frame-system-benchmarking",
@@ -5355,6 +5367,7 @@ dependencies = [
  "polkadot-runtime-parachains",
  "precompile-utils",
  "scale-info",
+ "serde_json",
  "smallvec",
  "sp-api",
  "sp-block-builder",

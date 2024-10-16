@@ -16,8 +16,10 @@
 
 //! Runtime tests
 
+mod metadata;
 mod precompile_tests;
 mod version_tests;
+
 use core::str::FromStr;
 use sp_runtime::BuildStorage;
 
