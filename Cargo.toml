@@ -4,7 +4,7 @@ repository = "https://github.com/freeverseio/laos.git"
 homepage = "https://www.laosfoundation.io"
 authors = ["Freeverse"]
 edition = "2021"
-version = "0.22.91"
+version = "0.22.92"
 
 [workspace]
 resolver = "2"
@@ -34,6 +34,8 @@ sha3 = { version = "0.10.1", default-features = false }
 similar-asserts = { version = "1.1.0" }
 serde_json = { version = "1.0.104", default-features = true }
 rustc-hex = { version = "2.1", default-features = false }
+frame-metadata = "16.0.0"
+assert-json-diff = "2.0.2"
 
 # Wasm builder
 substrate-wasm-builder = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.11.0" }
