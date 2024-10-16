@@ -17,7 +17,6 @@
 mod asset_hub;
 mod laosish;
 mod parachain;
-mod parachain_teleporter;
 mod relay_chain;
 
 use std::marker::PhantomData;
@@ -36,7 +35,6 @@ pub const INITIAL_BALANCE: u128 = 1_000_000_000;
 
 const PARA_A_ID: u32 = 1;
 const PARA_B_ID: u32 = 2;
-const PARA_TELEPORTER_ID: u32 = 7;
 const PARA_LAOSISH_ID: u32 = 3;
 const PARA_ASSETHUB_ID: u32 = 1000;
 
@@ -55,15 +53,6 @@ decl_test_parachain! {
 		XcmpMessageHandler = parachain::MsgQueue,
 		DmpMessageHandler = parachain::MsgQueue,
 		new_ext = para_ext(PARA_B_ID),
-	}
-}
-
-decl_test_parachain! {
-	pub struct ParaTeleporter {
-		Runtime = parachain_teleporter::Runtime,
-		XcmpMessageHandler = parachain_teleporter::MsgQueue,
-		DmpMessageHandler = parachain_teleporter::MsgQueue,
-		new_ext = para_ext(PARA_TELEPORTER_ID),
 	}
 }
 
@@ -103,7 +92,6 @@ decl_test_network! {
 		parachains = vec![
 			(PARA_A_ID, ParaA),
 			(PARA_B_ID, ParaB),
-			(PARA_TELEPORTER_ID, ParaTeleporter),
 			(PARA_LAOSISH_ID, Laosish),
 			(PARA_ASSETHUB_ID, AssetHub),
 		],
@@ -151,7 +139,6 @@ pub fn para_ext(para_id: u32) -> sp_io::TestExternalities {
 			(parent_account_id(), INITIAL_BALANCE),
 			(sibling_account_id(PARA_A_ID), INITIAL_BALANCE),
 			(sibling_account_id(PARA_B_ID), INITIAL_BALANCE),
-			(sibling_account_id(PARA_TELEPORTER_ID), INITIAL_BALANCE),
 			(sibling_account_id(PARA_LAOSISH_ID), INITIAL_BALANCE),
 			(sibling_account_id(PARA_ASSETHUB_ID), INITIAL_BALANCE),
 		],
@@ -179,7 +166,6 @@ pub fn para_ext_asset_hub(para_id: u32) -> sp_io::TestExternalities {
 			(parent_account_id(), INITIAL_BALANCE),
 			(sibling_account_id(PARA_A_ID), INITIAL_BALANCE),
 			(sibling_account_id(PARA_B_ID), INITIAL_BALANCE),
-			(sibling_account_id(PARA_TELEPORTER_ID), INITIAL_BALANCE),
 			(sibling_account_id(PARA_LAOSISH_ID), INITIAL_BALANCE),
 			(sibling_account_id(PARA_ASSETHUB_ID), INITIAL_BALANCE),
 		],
@@ -230,7 +216,6 @@ pub fn relay_ext() -> sp_io::TestExternalities {
 			(child_account_id(PARA_B_ID), INITIAL_BALANCE),
 			(child_account_id(PARA_LAOSISH_ID), INITIAL_BALANCE),
 			(child_account_id(PARA_ASSETHUB_ID), INITIAL_BALANCE),
-			(child_account_id(PARA_TELEPORTER_ID), INITIAL_BALANCE),
 		],
 	}
 	.assimilate_storage(&mut t)
@@ -247,7 +232,6 @@ pub fn relay_ext() -> sp_io::TestExternalities {
 
 pub type RelayChainPalletXcm = pallet_xcm::Pallet<relay_chain::Runtime>;
 pub type ParachainPalletXcm = pallet_xcm::Pallet<parachain::Runtime>;
-pub type ParachainTeleporterPalletXcm = pallet_xcm::Pallet<parachain_teleporter::Runtime>;
 pub type AssetHubPalletXcm = pallet_xcm::Pallet<asset_hub::Runtime>;
 pub type LaosishPalletXcm = pallet_xcm::Pallet<laosish::Runtime>;
 
