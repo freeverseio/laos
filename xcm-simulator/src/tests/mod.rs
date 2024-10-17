@@ -40,6 +40,16 @@ fn check_sovereign_accounts() {
 		sibling_account_id(mercury_para_id).to_ss58check(),
 		"5Eg2fntD1wY4cp7BVYE5Pcej5VcbZjhKYwgS3BAUbsb9ykJ9"
 	);
+
+	let zombinet_para_id = 2900;
+	assert_eq!(
+		child_account_id(zombinet_para_id).to_ss58check(),
+		"5Ec4AhP46VPM4vExknHUS8u67utHtaw8SdHejuTMb6kJcDMp"
+	);
+	assert_eq!(
+		sibling_account_id(zombinet_para_id).to_ss58check(),
+		"5Eg2fnssBDaFCWy7JnEZYnEuNPZbbzzEWGw5zryrTpmsTuPL"
+	);
 }
 
 #[test]
