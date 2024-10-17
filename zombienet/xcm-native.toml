@@ -14,10 +14,6 @@ chain = "rococo-local"
   name = "relay2"
   validator = true
 
-  [[relaychain.nodes]]
-  name = "relay3"
-  validator = true
-
 [[parachains]]
 id = 2900
 cumulus_based = true
@@ -27,6 +23,18 @@ force_decorator = "generic-evm"
   [[parachains.collators]]
   name = "laos"
   ws_port = 9999
+  command = "{{ZOMBIENET_LAOS_COMMAND}}"
+  validator = true
+
+  [[parachains.collators]]
+  name = "laos-1"
+  ws_port = 10000
+  command = "{{ZOMBIENET_LAOS_COMMAND}}"
+  validator = true
+
+  [[parachains.collators]]
+  name = "laos-2"
+  ws_port = 10001
   command = "{{ZOMBIENET_LAOS_COMMAND}}"
   validator = true
 
@@ -41,15 +49,3 @@ chain = "asset-hub-rococo-local"
   ws_port = 9950
   command = "{{ZOMBIENET_ASSETHUB_COMMAND}}"
   args = ["--log=xcm=trace,pallet-assets=trace"]
-
-[[hrmp_channels]]
-sender = 2900
-recipient = 2000
-max_capacity = 8
-max_message_size = 1048576
-
-[[hrmp_channels]]
-sender = 2000
-recipient = 2900
-max_capacity = 8
-max_message_size = 1048576
