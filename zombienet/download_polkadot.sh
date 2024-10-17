@@ -7,7 +7,7 @@ DOWNLOAD_DIR=${2:-"./tmp"}  # Default is the current directory
 BASE_URL="https://github.com/paritytech/polkadot-sdk/releases/download/polkadot-$VERSION"
 
 # List of artifacts to download
-ARTIFACTS=("polkadot" "polkadot-execute-worker" "polkadot-prepare-worker")
+ARTIFACTS=("polkadot" "polkadot-execute-worker" "polkadot-prepare-worker", "polkadot-parachain")
 
 # Create the download directory if it doesn't exist
 mkdir -p "$DOWNLOAD_DIR"
