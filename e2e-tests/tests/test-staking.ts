@@ -28,8 +28,8 @@ describeWithExistingNode("Frontier RPC (Staking)", (context) => {
 	step("Faith can join as candidate", async function () {
 		// insert session key into the node and link to Faith
 		const faith = new Keyring({ type: "ethereum" }).addFromUri(FAITH_PRIVATE_KEY);
-		const key = (await context.polkadot.laos.rpc.author.rotateKeys()).toHex();
-		context.polkadot.laos.tx.session
+		const key = (await context.networks.laos.rpc.author.rotateKeys()).toHex();
+		context.networks.laos.tx.session
 			.setKeys(key, "")
 			.signAndSend(faith, () => {})
 			.catch((error: any) => {

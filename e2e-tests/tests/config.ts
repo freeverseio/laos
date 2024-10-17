@@ -10,13 +10,15 @@ import ParachainStaking from "../build/contracts/ParachainStaking.json";
 export const RUNTIME_SPEC_NAME = "laos";
 export const RUNTIME_SPEC_VERSION = 2291;
 export const RUNTIME_IMPL_VERSION = 0;
-export const LOCAL_LAOS_NODE_URL = "http://127.0.0.1:9999";
-export const LOCAL_ASSETHUB_NODE_URL = "http://127.0.0.1:9950";
+export const LAOS_NODE_URL = "http://127.0.0.1:9999";
+export const ASSET_HUB_NODE_URL = "http://127.0.0.1:9950";
+export const RELAYCHAIN_NODE_URL = "http://127.0.0.1:9944";
 
 // Chain config
 export const CHAIN_ID = 667;
 export const GAS_PRICE = "0x3B9ACA00";
-export const ASSET_HUB_PARACHAIN_ID = 2000;
+export const ASSET_HUB_PARA_ID = 2000;
+export const LAOS_PARA_ID = 2900;
 
 // Accounts
 export const FAITH = "0xC0F0f4ab324C46e55D02D0033343B4Be8A55532d";

@@ -10,8 +10,9 @@ import {
 	EVOLUTION_COLLECTION_FACTORY_ABI,
 	EVOLUTION_COLLECTION_ABI,
 	MAX_U96,
-	LOCAL_LAOS_NODE_URL,
-	LOCAL_ASSETHUB_NODE_URL,
+	LAOS_NODE_URL,
+	ASSET_HUB_NODE_URL,
+	RELAYCHAIN_NODE_URL,
 } from "./config";
 import BN from "bn.js";
 import { expect } from "chai";
@@ -46,21 +47,23 @@ export async function customRequest(web3: Web3, method: string, params: any[]) {
 
 export function describeWithExistingNode(
 	title: string,
-	cb: (context: { web3: Web3; polkadot: { laos: ApiPromise, assetHub: ApiPromise} }) => void,
+	cb: (context: { web3: Web3; networks: { laos: ApiPromise, assetHub: ApiPromise, relaychain: ApiPromise } }) => void,
 	providerLaosNodeUrl?: string,
-	providerAssetHubNodeUrl?: string
+	providerAssetHubNodeUrl?: string,
+	providerRelaychainNodeUrl?: string
 ) {
 	describe(title, () => {
 		let context: {
 			web3: Web3;
 			ethersjs: ethers.JsonRpcProvider;
-			polkadot: { laos: ApiPromise, assetHub: ApiPromise };
+			networks: { laos: ApiPromise, assetHub: ApiPromise, relaychain: ApiPromise };
 		} = {
 			web3: null,
 			ethersjs: null,
-			polkadot: {
+			networks: {
 				laos: null,
 				assetHub: null,
+				relaychain: null,
 			},
 		};
 
@@ -68,20 +71,27 @@ export function describeWithExistingNode(
 			if (providerLaosNodeUrl) {
 				context.web3 = new Web3(providerLaosNodeUrl);
 				const wsProvider = new HttpProvider(providerLaosNodeUrl);
-				context.polkadot.laos = await ApiPromise.create({ provider: wsProvider });
+				context.networks.laos = await new ApiPromise({ provider: wsProvider }).isReady;
 			} else {
-				context.web3 = new Web3(LOCAL_LAOS_NODE_URL);
-				const wsProvider = new HttpProvider(LOCAL_LAOS_NODE_URL);
-				context.polkadot.laos = await ApiPromise.create({ provider: wsProvider });
-				// context.polkadot.laos = await new ApiPromise({ provider: wsProvider }).isReady;
+				context.web3 = new Web3(LAOS_NODE_URL);
+				const wsProvider = new HttpProvider(LAOS_NODE_URL);
+				context.networks.laos = await new ApiPromise({ provider: wsProvider }).isReady;
 			}
 
 			if (providerAssetHubNodeUrl) {
 				const wsProvider = new HttpProvider(providerAssetHubNodeUrl);
-				context.polkadot.assetHub = await new ApiPromise({ provider: wsProvider }).isReady;
+				context.networks.assetHub = await new ApiPromise({ provider: wsProvider }).isReady;
 			} else {
-				const wsProvider = new HttpProvider(LOCAL_ASSETHUB_NODE_URL);
-				context.polkadot.assetHub = await new ApiPromise({ provider: wsProvider }).isReady;
+				const wsProvider = new HttpProvider(ASSET_HUB_NODE_URL);
+				context.networks.assetHub = await new ApiPromise({ provider: wsProvider }).isReady;
+			}
+
+			if (providerRelaychainNodeUrl) {
+				const wsProvider = new HttpProvider(providerRelaychainNodeUrl);
+				context.networks.relaychain = await new ApiPromise({ provider: wsProvider }).isReady;
+			} else {
+				const wsProvider = new HttpProvider(RELAYCHAIN_NODE_URL);
+				context.networks.relaychain = await new ApiPromise({ provider: wsProvider }).isReady;
 			}
 		});
 		cb(context);

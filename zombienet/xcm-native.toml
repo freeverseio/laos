@@ -42,8 +42,14 @@ chain = "asset-hub-rococo-local"
   command = "{{ZOMBIENET_ASSETHUB_COMMAND}}"
   args = ["--log=xcm=trace,pallet-assets=trace"]
 
-# [[hrmp_channels]]
-# sender = 2900
-# recipient = 2000
-# max_capacity = 8
-# max_message_size = 1048576
+[[hrmp_channels]]
+sender = 2900
+recipient = 2000
+max_capacity = 8
+max_message_size = 1048576
+
+[[hrmp_channels]]
+sender = 2000
+recipient = 2900
+max_capacity = 8
+max_message_size = 1048576
