@@ -82,12 +82,12 @@ pub type LocalAssetTransactor = FungibleAdapter<
 	// Uses the Balances pallet as the fungible asset handler.
 	Balances,
 	// Recognizes assets that are concrete representations of the Relay Chain's location.
-	IsConcrete<RelayLocation>,
+	IsConcrete<HereLocation>,
 	// Converts `MultiLocation` into local `AccountId` for asset operations.
 	LocationToAccountId,
 	// Specifies the local `AccountId` type.
 	AccountId,
-	// Teleportation of assets is not tracked or allowed.
+	// Teleportation allowed: making sure the receiver can mint our assets
 	Checking,
 >;
 
@@ -232,7 +232,7 @@ impl pallet_xcm::Config for Runtime {
 	type ExecuteXcmOrigin = EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
 	type XcmExecuteFilter = Nothing;
 	type XcmExecutor = XcmExecutor<XcmConfig>;
-	type XcmTeleportFilter = Nothing;
+	type XcmTeleportFilter = Everything;
 	// Allows all reserve asset transfers.
 	type XcmReserveTransferFilter = Everything;
 	// Calculates the weight of XCM messages.
