@@ -14,10 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Polkadot.  If not, see <http://www.gnu.org/licenses/>.
 
+mod asset_hub;
 mod laosish;
 mod parachain;
-mod parachain_teleporter;
 mod relay_chain;
+
+use std::marker::PhantomData;
 
 use hex_literal::hex;
 
@@ -33,8 +35,8 @@ pub const INITIAL_BALANCE: u128 = 1_000_000_000;
 
 const PARA_A_ID: u32 = 1;
 const PARA_B_ID: u32 = 2;
-const PARA_TELEPORTER_ID: u32 = 7;
 const PARA_LAOSISH_ID: u32 = 3;
+const PARA_ASSETHUB_ID: u32 = 1000;
 
 decl_test_parachain! {
 	pub struct ParaA {
@@ -55,11 +57,11 @@ decl_test_parachain! {
 }
 
 decl_test_parachain! {
-	pub struct ParaTeleporter {
-		Runtime = parachain::Runtime,
-		XcmpMessageHandler = parachain::MsgQueue,
-		DmpMessageHandler = parachain::MsgQueue,
-		new_ext = para_ext(PARA_TELEPORTER_ID),
+	pub struct AssetHub {
+		Runtime = asset_hub::Runtime,
+		XcmpMessageHandler = asset_hub::MsgQueue,
+		DmpMessageHandler = asset_hub::MsgQueue,
+		new_ext = para_ext_asset_hub(PARA_ASSETHUB_ID),
 	}
 }
 
@@ -90,8 +92,8 @@ decl_test_network! {
 		parachains = vec![
 			(PARA_A_ID, ParaA),
 			(PARA_B_ID, ParaB),
-			(PARA_TELEPORTER_ID, ParaTeleporter),
 			(PARA_LAOSISH_ID, Laosish),
+			(PARA_ASSETHUB_ID, AssetHub),
 		],
 	}
 }
@@ -137,8 +139,35 @@ pub fn para_ext(para_id: u32) -> sp_io::TestExternalities {
 			(parent_account_id(), INITIAL_BALANCE),
 			(sibling_account_id(PARA_A_ID), INITIAL_BALANCE),
 			(sibling_account_id(PARA_B_ID), INITIAL_BALANCE),
-			(sibling_account_id(PARA_TELEPORTER_ID), INITIAL_BALANCE),
 			(sibling_account_id(PARA_LAOSISH_ID), INITIAL_BALANCE),
+			(sibling_account_id(PARA_ASSETHUB_ID), INITIAL_BALANCE),
+		],
+	}
+	.assimilate_storage(&mut t)
+	.unwrap();
+
+	let mut ext = sp_io::TestExternalities::new(t);
+	ext.execute_with(|| {
+		sp_tracing::try_init_simple();
+		System::set_block_number(1);
+		MsgQueue::set_para_id(para_id.into());
+	});
+	ext
+}
+
+pub fn para_ext_asset_hub(para_id: u32) -> sp_io::TestExternalities {
+	use asset_hub::{MsgQueue, Runtime, System};
+
+	let mut t = frame_system::GenesisConfig::<Runtime>::default().build_storage().unwrap();
+
+	pallet_balances::GenesisConfig::<Runtime> {
+		balances: vec![
+			(ALICE, INITIAL_BALANCE),
+			(parent_account_id(), INITIAL_BALANCE),
+			(sibling_account_id(PARA_A_ID), INITIAL_BALANCE),
+			(sibling_account_id(PARA_B_ID), INITIAL_BALANCE),
+			(sibling_account_id(PARA_LAOSISH_ID), INITIAL_BALANCE),
+			(sibling_account_id(PARA_ASSETHUB_ID), INITIAL_BALANCE),
 		],
 	}
 	.assimilate_storage(&mut t)
@@ -162,6 +191,10 @@ pub fn para_ext_ethereum(para_id: u32) -> sp_io::TestExternalities {
 		.assimilate_storage(&mut t)
 		.unwrap();
 
+	parachain_info::GenesisConfig::<Runtime> { parachain_id: para_id.into(), _config: PhantomData }
+		.assimilate_storage(&mut t)
+		.unwrap();
+
 	let mut ext = sp_io::TestExternalities::new(t);
 	ext.execute_with(|| {
 		sp_tracing::try_init_simple();
@@ -182,6 +215,7 @@ pub fn relay_ext() -> sp_io::TestExternalities {
 			(child_account_id(PARA_A_ID), INITIAL_BALANCE),
 			(child_account_id(PARA_B_ID), INITIAL_BALANCE),
 			(child_account_id(PARA_LAOSISH_ID), INITIAL_BALANCE),
+			(child_account_id(PARA_ASSETHUB_ID), INITIAL_BALANCE),
 		],
 	}
 	.assimilate_storage(&mut t)
@@ -198,7 +232,7 @@ pub fn relay_ext() -> sp_io::TestExternalities {
 
 pub type RelayChainPalletXcm = pallet_xcm::Pallet<relay_chain::Runtime>;
 pub type ParachainPalletXcm = pallet_xcm::Pallet<parachain::Runtime>;
-pub type ParachainTeleporterPalletXcm = pallet_xcm::Pallet<parachain_teleporter::Runtime>;
+pub type AssetHubPalletXcm = pallet_xcm::Pallet<asset_hub::Runtime>;
 pub type LaosishPalletXcm = pallet_xcm::Pallet<laosish::Runtime>;
 
 #[frame_support::pallet]

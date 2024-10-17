@@ -1,5 +1,8 @@
 use super::*;
 
+pub type AssetHubAssetsCall =
+	pallet_assets::Call<asset_hub::Runtime, asset_hub::ForeignAssetsInstance>;
+
 #[test]
 fn alish_has_tokens() {
 	MockNet::reset();
@@ -109,10 +112,8 @@ fn ump_transfer_balance() {
 }
 
 #[test]
-fn xcmp_create_foreign_asset() {
+fn xcmp_create_foreign_asset_in_para_b() {
 	MockNet::reset();
-
-	assert_eq!(laosish::configs::xcm_config::ASSET_HUB_ID, PARA_B_ID);
 
 	let para_a_native_asset_location =
 		xcm::v3::Location::new(1, [xcm::v3::Junction::Parachain(PARA_LAOSISH_ID)]);
@@ -126,7 +127,7 @@ fn xcmp_create_foreign_asset() {
 	Laosish::execute_with(|| {
 		assert_ok!(LaosishPalletXcm::send_xcm(
 			Here,
-			(Parent, Parachain(laosish::configs::xcm_config::ASSET_HUB_ID)),
+			(Parent, Parachain(PARA_B_ID)),
 			Xcm(vec![Transact {
 				origin_kind: OriginKind::Xcm,
 				require_weight_at_most: Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024),
@@ -143,40 +144,73 @@ fn xcmp_create_foreign_asset() {
 	});
 }
 
-#[ignore] // TODO
 #[test]
-fn xcmp_teleport_native_assets_to_asset_hub() {
+fn roundtrip_teleport_laosish_to_assethub() {
 	MockNet::reset();
 
-	let para_a_native_asset_location =
-		xcm::v3::Location::new(1, [xcm::v3::Junction::Parachain(PARA_LAOSISH_ID)]);
+	let laosish_native_asset_location = Location::new(1, [Junction::Parachain(PARA_LAOSISH_ID)]);
 
-	let create_asset = parachain::RuntimeCall::ForeignAssets(ForeignAssetsCall::create {
-		id: para_a_native_asset_location,
+	let create_asset = asset_hub::RuntimeCall::ForeignAssets(AssetHubAssetsCall::create {
+		id: laosish_native_asset_location,
 		admin: sibling_account_id(PARA_LAOSISH_ID),
-		min_balance: 1000,
+		min_balance: 1,
 	});
+
+	let teleport_amount_1 = 100;
+	let teleport_amount_2 = 10;
+
+	let alith: laosish::AccountId = ALITH.into();
 
 	Laosish::execute_with(|| {
 		assert_ok!(LaosishPalletXcm::send_xcm(
 			Here,
-			(Parent, Parachain(laosish::configs::xcm_config::ASSET_HUB_ID)),
+			(Parent, Parachain(PARA_ASSETHUB_ID)),
 			Xcm(vec![Transact {
 				origin_kind: OriginKind::Xcm,
 				require_weight_at_most: Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024),
 				call: create_asset.encode().into(),
 			}]),
 		));
+
+		assert_eq!(laosish::Balances::free_balance(alith), INITIAL_BALANCE);
+
+		assert_ok!(LaosishPalletXcm::limited_teleport_assets(
+			laosish::RuntimeOrigin::signed(ALITH.into()),
+			Box::new((Parent, Parachain(PARA_ASSETHUB_ID)).into()),
+			Box::new(AccountId32 { network: None, id: ALICE.into() }.into()),
+			Box::new((Here, teleport_amount_1).into()),
+			0,
+			WeightLimit::Unlimited,
+		));
+
+		assert_eq!(laosish::Balances::free_balance(alith), INITIAL_BALANCE - teleport_amount_1);
 	});
 
-	let amount = 1;
+	AssetHub::execute_with(|| {
+		assert_eq!(
+			asset_hub::ForeignAssets::balance((Parent, Parachain(PARA_LAOSISH_ID)).into(), &ALICE),
+			teleport_amount_1
+		);
 
-	assert_ok!(LaosishPalletXcm::limited_teleport_assets(
-		laosish::RuntimeOrigin::signed(ALITH.into()),
-		Box::new(Parachain(laosish::configs::xcm_config::ASSET_HUB_ID).into()),
-		Box::new(AccountId32 { network: None, id: ALICE.into() }.into()),
-		Box::new((Here, amount).into()),
-		0,
-		WeightLimit::Limited(Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024)),
-	));
+		assert_ok!(AssetHubPalletXcm::limited_teleport_assets(
+			asset_hub::RuntimeOrigin::signed(ALICE),
+			Box::new((Parent, Parachain(PARA_LAOSISH_ID)).into()),
+			Box::new(AccountKey20 { network: None, key: ALITH }.into()),
+			Box::new(((Parent, Parachain(PARA_LAOSISH_ID)), teleport_amount_2).into()),
+			0,
+			WeightLimit::Unlimited,
+		));
+
+		assert_eq!(
+			asset_hub::ForeignAssets::balance((Parent, Parachain(PARA_LAOSISH_ID)).into(), &ALICE),
+			teleport_amount_1 - teleport_amount_2
+		);
+	});
+
+	Laosish::execute_with(|| {
+		assert_eq!(
+			laosish::Balances::free_balance(alith),
+			INITIAL_BALANCE - (teleport_amount_1 - teleport_amount_2)
+		);
+	});
 }
