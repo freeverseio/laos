@@ -17,7 +17,7 @@ export const RELAYCHAIN_NODE_URL = "http://127.0.0.1:9944";
 // Chain config
 export const CHAIN_ID = 667;
 export const GAS_PRICE = "0x3B9ACA00";
-export const ASSET_HUB_PARA_ID = 2000;
+export const ASSET_HUB_PARA_ID = 1000;
 export const LAOS_PARA_ID = 2900;
 
 // Accounts

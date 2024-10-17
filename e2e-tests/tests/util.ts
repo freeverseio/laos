@@ -47,7 +47,7 @@ export async function customRequest(web3: Web3, method: string, params: any[]) {
 
 export function describeWithExistingNode(
 	title: string,
-	cb: (context: { web3: Web3; networks: { laos: ApiPromise, assetHub: ApiPromise, relaychain: ApiPromise } }) => void,
+	cb: (context: { web3: Web3; networks: { laos: ApiPromise; assetHub: ApiPromise; relaychain: ApiPromise } }) => void,
 	providerLaosNodeUrl?: string,
 	providerAssetHubNodeUrl?: string,
 	providerRelaychainNodeUrl?: string
@@ -56,7 +56,7 @@ export function describeWithExistingNode(
 		let context: {
 			web3: Web3;
 			ethersjs: ethers.JsonRpcProvider;
-			networks: { laos: ApiPromise, assetHub: ApiPromise, relaychain: ApiPromise };
+			networks: { laos: ApiPromise; assetHub: ApiPromise; relaychain: ApiPromise };
 		} = {
 			web3: null,
 			ethersjs: null,
