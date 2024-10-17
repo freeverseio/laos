@@ -21,7 +21,7 @@ use std::{path::Path, sync::Arc, time::Duration};
 
 use cumulus_client_cli::CollatorOptions;
 // Local Runtime Types
-use laos_runtime::{apis::RuntimeApi, opaque::Block, types::TransactionConverter, Hash};
+use laos_runtime::{opaque::Block, types::TransactionConverter, Hash};
 
 // Cumulus Imports
 use cumulus_client_collator::service::CollatorService;
@@ -39,6 +39,7 @@ use cumulus_relay_chain_interface::{OverseerHandle, RelayChainInterface};
 use fc_rpc::{StorageOverride, StorageOverrideHandler};
 use frame_benchmarking_cli::SUBSTRATE_REFERENCE_HARDWARE;
 use futures::FutureExt;
+use laos_runtime::RuntimeApi;
 use sc_client_api::Backend;
 use sc_consensus::ImportQueue;
 #[allow(deprecated)]
@@ -52,7 +53,6 @@ use sc_transaction_pool_api::OffchainTransactionPoolFactory;
 use sp_core::U256;
 use sp_keystore::KeystorePtr;
 use substrate_prometheus_endpoint::Registry;
-
 // Frontier
 use crate::eth::{
 	db_config_dir, new_frontier_partial, spawn_frontier_tasks, BackendType, EthConfiguration,
@@ -66,7 +66,7 @@ impl sc_executor::NativeExecutionDispatch for ParachainNativeExecutor {
 	type ExtendHostFunctions = ParachainHostFunctions;
 
 	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
-		laos_runtime::apis::api::dispatch(method, data)
+		laos_runtime::api::dispatch(method, data)
 	}
 
 	fn native_version() -> sc_executor::NativeVersion {

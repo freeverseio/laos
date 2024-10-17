@@ -26,15 +26,10 @@ jobs:
         run: |
           cargo build --release --locked
 
-      - name: Copy polkadot relay chain binary
+      - name: Download polkadot
         run: |
-          wget https://github.com/paritytech/polkadot/releases/download/v0.9.42/polkadot
-          chmod +x ./polkadot
-      - name: Copy Astar parachain binary
-        run: |
-          wget https://github.com/AstarNetwork/Astar/releases/download/v5.23.0/astar-collator-v5.23.0-ubuntu-x86_64.tar.gz
-          tar xf astar-collator-v5.23.0-ubuntu-x86_64.tar.gz
-          chmod +x ./astar-collator
+          chmod +x ./zombienet/download_polkadot.sh
+          ./zombienet/download_polkadot.sh
 
       - name: Copy zombienet binary
         run: |
@@ -43,9 +38,8 @@ jobs:
 
       - name: Run zombienet
         run: |
-          export ZOMBIENET_RELAYCHAIN_COMMAND=./polkadot
+          export ZOMBIENET_RELAYCHAIN_COMMAND=./tmp/polkadot
           export ZOMBIENET_LAOS_COMMAND=./target/release/laos
-          export ZOMBIENET_ASTAR_COMMAND=./astar-collator
           ./zombienet-linux-x64 spawn ./zombienet/native.toml &
           echo "Zombienet started"
 

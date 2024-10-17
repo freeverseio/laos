@@ -29,6 +29,7 @@ mod ethereum;
 pub(crate) mod evm;
 mod identity;
 pub(crate) mod laos_evolution;
+mod membership;
 mod multisig;
 pub(crate) mod parachain_staking;
 mod preimage;
@@ -56,4 +57,4 @@ parameter_types! {
 
 impl cumulus_pallet_aura_ext::Config for Runtime {}
 impl pallet_evm_chain_id::Config for Runtime {}
-impl staging_parachain_info::Config for Runtime {}
+impl parachain_info::Config for Runtime {}

@@ -1,13 +1,13 @@
 use super::collective::{
-	AllOfCouncil, AllOfTechnicalCommittee, CouncilMajority, HalfOfCouncil, TechnicalCommittee,
+	AllOfCouncil, AllOfTechnicalCommittee, CouncilMajority, HalfOfCouncil,
 	TechnicalCommitteeMajority, TwoThirdOfCouncil,
 };
 use crate::{
 	currency::UNIT, weights, AccountId, Balance, Balances, BlockNumber, OriginCaller, Preimage,
-	Runtime, RuntimeEvent, Scheduler, Treasury,
+	Runtime, RuntimeEvent, Scheduler, TechnicalCommitteeMembership, Treasury,
 };
 use frame_support::{parameter_types, traits::EitherOfDiverse};
-use frame_system::{EnsureRoot, EnsureSigned};
+use frame_system::{EnsureRoot, EnsureSigned, EnsureSignedBy};
 use parachains_common::{DAYS, HOURS, MINUTES};
 use polkadot_runtime_common::prod_or_fast;
 
@@ -76,9 +76,91 @@ impl pallet_democracy::Config for Runtime {
 	type SubmitOrigin = EnsureSigned<AccountId>;
 	// Any single technical committee member may veto a coming council proposal, however they can
 	// only do it once and it lasts only for the cool-off period.
-	type VetoOrigin = pallet_collective::EnsureMember<AccountId, TechnicalCommittee>;
+	type VetoOrigin = EnsureSignedBy<TechnicalCommitteeMembership, AccountId>;
 	type VoteLockingPeriod = EnactmentPeriod;
 	/// How often (in blocks) to check for new votes.
 	type VotingPeriod = VotingPeriod;
 	type WeightInfo = weights::pallet_democracy::WeightInfo<Runtime>;
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use crate::{
+		tests::{ExtBuilder, ALICE, BOB},
+		AccountId, RuntimeCall, RuntimeOrigin,
+	};
+	use core::str::FromStr;
+	use frame_support::{assert_noop, assert_ok, error::BadOrigin, traits::StorePreimage};
+
+	#[test]
+	fn can_veto_proposal() {
+		let alice = AccountId::from_str(ALICE).unwrap();
+		let bob = AccountId::from_str(BOB).unwrap();
+
+		ExtBuilder::default()
+			.with_balances(vec![(alice, 1000 * UNIT), (bob, 1000 * UNIT)])
+			.build()
+			.execute_with(|| {
+				frame_system::Pallet::<Runtime>::set_block_number(1);
+
+				let call_to_execute = frame_system::Call::remark { remark: b"123".to_vec() };
+				let call_to_bound = RuntimeCall::System(call_to_execute);
+				let preimage = pallet_preimage::Pallet::<Runtime>::bound(call_to_bound).unwrap();
+				let preimage_hash = preimage.hash();
+
+				// adding the external proposal
+				assert_ok!(pallet_democracy::Pallet::<Runtime>::external_propose(
+					OriginCaller::Council(pallet_collective::RawOrigin::Members(1, 1)).into(),
+					preimage.clone()
+				));
+
+				// alice cannot veto the external proposal as she does not belong to the technical
+				// committee yet
+				assert_noop!(
+					pallet_democracy::Pallet::<Runtime>::veto_external(
+						RuntimeOrigin::signed(alice),
+						preimage_hash
+					),
+					BadOrigin
+				);
+
+				// adding alice to the technical committee
+				frame_system::Pallet::<Runtime>::set_block_number(2);
+				pallet_membership::Pallet::<Runtime, pallet_membership::Instance2>::add_member(
+					RuntimeOrigin::root(),
+					alice,
+				)
+				.unwrap();
+
+				// alice can now veto the proposal
+				assert_ok!(pallet_democracy::Pallet::<Runtime>::veto_external(
+					RuntimeOrigin::signed(alice),
+					preimage_hash
+				));
+				// the same preimage cannot be proposed again as we're still in the cooloff period
+				assert_noop!(
+					pallet_democracy::Pallet::<Runtime>::external_propose(
+						OriginCaller::Council(pallet_collective::RawOrigin::Members(1, 1)).into(),
+						preimage.clone()
+					),
+					pallet_democracy::Error::<Runtime>::ProposalBlacklisted
+				);
+
+				// the same preimage can be re-proposed as the cooloff period is over
+				frame_system::Pallet::<Runtime>::set_block_number(50402);
+				assert_ok!(pallet_democracy::Pallet::<Runtime>::external_propose(
+					OriginCaller::Council(pallet_collective::RawOrigin::Members(1, 1)).into(),
+					preimage
+				));
+				// alice cannot veto the external proposal again as she already vetoed it
+				assert_noop!(
+					pallet_democracy::Pallet::<Runtime>::veto_external(
+						RuntimeOrigin::signed(alice),
+						preimage_hash
+					),
+					pallet_democracy::Error::<Runtime>::AlreadyVetoed
+				);
+			});
+	}
 }
