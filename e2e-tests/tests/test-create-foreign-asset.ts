@@ -2,7 +2,7 @@ import BN from "bn.js";
 import { assert, expect } from "chai";
 import { step } from "mocha-steps";
 
-import { ASSET_HUB_PARA_ID, CHAIN_ID, FAITH, FAITH_PRIVATE_KEY, LAOS_PARA_ID, RUNTIME_IMPL_VERSION, RUNTIME_SPEC_NAME, RUNTIME_SPEC_VERSION } from "./config";
+import { ALITH_PRIVATE_KEY, ASSET_HUB_PARA_ID, CHAIN_ID, FAITH, FAITH_PRIVATE_KEY, LAOS_PARA_ID, RUNTIME_IMPL_VERSION, RUNTIME_SPEC_NAME, RUNTIME_SPEC_VERSION } from "./config";
 import { customRequest, describeWithExistingNode } from "./util";
 import { Keyring } from "@polkadot/api";
 
@@ -19,79 +19,87 @@ describeWithExistingNode("Asset Hub (Create Foreign Asset)", (context) => {
         });
         expect(assetHubToLaosChannel.isEmpty).to.be.false;
     });
-    // step("", async function () {
-    //     const api = await context.polkadot.laos;
-    //     const destination = api.createType('XcmVersionedLocation', {
-    //         V2: {
-    //             parents: '1',
-    //             interior: {
-    //                 X1: { Parachain: ASSET_HUB_PARACHAIN_ID },
-    //             },
-    //         },
-    //     });
 
-    //     let address = 'EGVQCe73TpFyAZx5uKfE1222XfkT3BSKozjgcqzLBnc5eYo';
-    //     let accountId = api.createType('AccountId', address);
-    //     console.log(accountId.toHex())
+    step("", async function () {
+        const apiLaos = await context.networks.laos;
+        const apiAssetHub = await context.networks.assetHub;
+        const faith = new Keyring().addFromUri(FAITH_PRIVATE_KEY);
+        const alith = new Keyring({ type: "ethereum" }).addFromUri(ALITH_PRIVATE_KEY);
 
-    //     const beneficiary = api.createType('XcmVersionedLocation', {
-    //         V2: {
-    //             parents: '0',
-    //             interior: {
-    //                 X1: {
-    //                     AccountKey20: { // TODO
-    //                         network: 'Any',
-    //                         id: accountId.toHex(),
-    //                     },
-    //                 },
-    //             },
-    //         },
-    //     });
+        const destination = apiLaos.createType('XcmVersionedLocation', {
+            V3: {
+                parents: '1',
+                interior: {
+                    X1: { Parachain: ASSET_HUB_PARA_ID },
+                },
+            },
+        });
+        
+        let accountId = apiAssetHub.createType('AccountId', faith.address);
+        const beneficiary = apiLaos.createType('XcmVersionedLocation', {
+            V2: {
+                parents: '0',
+                interior: {
+                    X1: {
+                        AccountId32: {
+                            network: 'Any',
+                            id: accountId.toHex(),
+                        },
+                    },
+                },
+            },
+        });
 
-    //     // 1 KSM = 10^12, this is .1 KSM
-    //     const amount = 100000000000;
-    //     const assets = api.createType('XcmVersionedAssets', {
-    //         V2: [
-    //             {
-    //                 id: {
-    //                     Concrete: {
-    //                         parents: 0,
-    //                         interior: {
-    //                             Here: '',
-    //                         },
-    //                     },
-    //                 },
-    //                 fun: {
-    //                     Fungible: amount,
-    //                 },
-    //             },
-    //         ],
-    //     });
-    //     const fee_asset_item = '0';
-    //     const weight_limit = 'Unlimited';
+        // 1 KSM = 10^12, this is .1 KSM
+        const amount = 100000000000;
+        const assets = apiLaos.createType('XcmVersionedAssets', {
+            V2: [
+                {
+                    id: {
+                        Concrete: {
+                            parents: 0,
+                            interior: {
+                                Here: '',
+                            },
+                        },
+                    },
+                    fun: {
+                        Fungible: amount,
+                    },
+                },
+            ],
+        });
+        const fee_asset_item = '0';
+        const weight_limit = 'Unlimited';
 
-    //     const call = api.tx.polkadotXcm.limitedTeleportAssets(
-    //         destination,
-    //         beneficiary,
-    //         assets,
-    //         fee_asset_item,
-    //         weight_limit
-    //     );
+        const call = apiLaos.tx.polkadotXcm.limitedTeleportAssets(
+            destination,
+            beneficiary,
+            assets,
+            fee_asset_item,
+            weight_limit
+        );
 
-    //     const faith = new Keyring({ type: "ethereum" }).addFromUri(FAITH_PRIVATE_KEY);
-    //     const unsubscribe = await call.signAndSend(
-    //         faith,
-    //         ( status ) => {
-    //             console.log(`Current status is ${status}`);
+        // const unsubscribe = await call.signAndSend(
+        //     alith,
+        //     ( {status} ) => {
+        //         console.log(`Current status is ${status}`);
 
-    //             // if (status.isInBlock) {
-    //             //     console.log(`Transaction included at blockHash ${status.asInBlock}`);
-    //             // } else if (status.isFinalized) {
-    //             //     console.log(`Transaction finalized at blockHash ${status.asFinalized}`);
-    //             //     unsubscribe();
-    //             // }
-    //         }
-    //     );
-    // });
+        //         if (status.isInBlock) {
+        //             console.log(`Transaction included at blockHash ${status.asInBlock}`);
+        //         } else if (status.isFinalized) {
+        //             console.log(`Transaction finalized at blockHash ${status.asFinalized}`);
+        //             unsubscribe();
+        //         }
+        //     }
+        // );
+
+        call.signAndSend(alith, (result) => {
+            console.log(`RESULT =>>> ${result}`);
+         })
+            .catch((error: any) => {
+                console.log("transaction failed", error);
+            });
+    });
 
 });
