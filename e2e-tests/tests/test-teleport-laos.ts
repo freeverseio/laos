@@ -15,13 +15,12 @@ import {
 } from "./config";
 import { customRequest, describeWithExistingNode } from "./util";
 import { Keyring } from "@polkadot/api";
-import { withExpect } from '@acala-network/chopsticks-testing'
 
 
 describeWithExistingNode("Asset Hub (Create Foreign Asset)", (context) => {
 	// See: https://github.com/paritytech/polkadot-sdk/pull/1616
 	before("Open HRMP channels between LAOS and AssetHub", async function () {
-        // TODO wait till channel is not openned
+		// TODO wait till channel is not openned, ex: https://github.com/paritytech/asset-transfer-api/blob/main/scripts/testNetworkForeignAssets.ts#L213
 		const apiRelaychain = await context.networks.relaychain;
 		const maxCapacity = 8;
 		const maxMessageSize = 1048576;
