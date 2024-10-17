@@ -118,6 +118,9 @@ polkadot-runtime-parachains = { workspace = true }
 pallet-assets = { workspace = true }
 test-utils = { workspace = true }
 ethereum = { workspace = true }
+serde_json = { workspace = true }
+frame-metadata = { workspace = true }
+assert-json-diff = { workspace = true }
 
 [features]
 paseo=[]
