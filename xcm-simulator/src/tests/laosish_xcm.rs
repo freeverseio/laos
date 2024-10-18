@@ -112,6 +112,34 @@ fn ump_transfer_balance() {
 }
 
 #[test]
+fn xcmp_remark_para_b() {
+	MockNet::reset();
+
+	let remark = parachain::RuntimeCall::System(
+		frame_system::Call::<parachain::Runtime>::remark_with_event { remark: vec![1, 2, 3] },
+	);
+
+	Laosish::execute_with(|| {
+		assert_ok!(LaosishPalletXcm::send_xcm(
+			Here,
+			(Parent, Parachain(PARA_B_ID)),
+			Xcm(vec![Transact {
+				origin_kind: OriginKind::SovereignAccount,
+				require_weight_at_most: Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024),
+				call: remark.encode().into(),
+			}]),
+		));
+	});
+
+	ParaB::execute_with(|| {
+		assert!(parachain::System::events().iter().any(|r| matches!(
+			r.event,
+			parachain::RuntimeEvent::System(frame_system::Event::Remarked { .. })
+		)));
+	});
+}
+
+#[test]
 fn xcmp_create_foreign_asset_in_para_b() {
 	MockNet::reset();
 
