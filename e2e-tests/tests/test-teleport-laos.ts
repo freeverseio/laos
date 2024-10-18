@@ -16,56 +16,7 @@ import {
 import { customRequest, describeWithExistingNode } from "./util";
 import { Keyring } from "@polkadot/api";
 
-
-describeWithExistingNode("Asset Hub (Create Foreign Asset)", (context) => {
-	// See: https://github.com/paritytech/polkadot-sdk/pull/1616
-	before("Open HRMP channels between LAOS and AssetHub", async function () {
-		// TODO wait till channel is not openned, ex: https://github.com/paritytech/asset-transfer-api/blob/main/scripts/testNetworkForeignAssets.ts#L213
-		const apiRelaychain = await context.networks.relaychain;
-		const maxCapacity = 8;
-		const maxMessageSize = 1048576;
-		const keyring = new Keyring({ type: "sr25519" });
-		const sudo = keyring.addFromUri("//Alice");
-
-		const laosToAssetHubChannel = await context.networks.relaychain.query.hrmp.hrmpChannels({
-			sender: LAOS_PARA_ID,
-			recipient: ASSET_HUB_PARA_ID,
-		});
-		if (laosToAssetHubChannel.isEmpty) {
-			const tx = apiRelaychain.tx.hrmp.forceOpenHrmpChannel(
-				LAOS_PARA_ID,
-				ASSET_HUB_PARA_ID,
-				maxCapacity,
-				maxMessageSize
-			);
-			apiRelaychain.tx.sudo
-				.sudo(tx)
-				.signAndSend(sudo, () => {})
-				.catch((error: any) => {
-					console.log("transaction failed", error);
-				});
-		}
-
-		const assetHubToLaosChannel = await context.networks.relaychain.query.hrmp.hrmpChannels({
-			sender: ASSET_HUB_PARA_ID,
-			recipient: LAOS_PARA_ID,
-		});
-		if (assetHubToLaosChannel.isEmpty) {
-			const tx = apiRelaychain.tx.hrmp.forceOpenHrmpChannel(
-				ASSET_HUB_PARA_ID,
-				LAOS_PARA_ID,
-				maxCapacity,
-				maxMessageSize
-			);
-			apiRelaychain.tx.sudo
-				.sudo(tx)
-				.signAndSend(sudo, () => {})
-				.catch((error: any) => {
-					console.log("transaction failed", error);
-				});
-		}
-	});
-
+describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 	step("HRMP channels between Asset Hub and LAOS are open", async function () {
 		const laosToAssetHubChannel = await context.networks.relaychain.query.hrmp.hrmpChannels({
 			sender: LAOS_PARA_ID,
@@ -151,6 +102,5 @@ describeWithExistingNode("Asset Hub (Create Foreign Asset)", (context) => {
 		}).catch((error: any) => {
 			console.log("transaction failed", error);
 		});
-
 	});
 });
