@@ -351,13 +351,12 @@ async fn start_node_impl(
 				SlotDuration::from_millis(6000_u64), // RELAY_CHAIN_SLOT_DURATION_MILLIS
 			);
 
-			let state_proof_builder =
-				cumulus_test_relay_sproof_builder::RelayStateSproofBuilder {
-					para_id,
-					current_slot: relay_chain_slot,
-					included_para_head: Some(polkadot_primitives::HeadData(vec![])),
-					..Default::default()
-				};
+			let state_proof_builder = cumulus_test_relay_sproof_builder::RelayStateSproofBuilder {
+				para_id,
+				current_slot: relay_chain_slot,
+				included_para_head: Some(polkadot_primitives::HeadData(vec![])),
+				..Default::default()
+			};
 			let (relay_parent_storage_root, relay_chain_state) =
 				state_proof_builder.into_state_root_and_proof();
 			let parachain_inherent_data =
