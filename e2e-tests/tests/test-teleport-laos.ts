@@ -52,19 +52,24 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 				},
 			},
 		});
-		const alith = new Keyring({ type: "ethereum" }).addFromUri(ALITH_PRIVATE_KEY);
+	  const relayToken = apiLaos.createType("AssetIdV3", {
+			Concrete: {
+				parents: "1",
+				interior: {
+					Here
+				},
+			},
+		});	
+    const alith = new Keyring({ type: "ethereum" }).addFromUri(ALITH_PRIVATE_KEY);
 		const keyring = new Keyring({ type: "sr25519" });
 		const alice = keyring.addFromUri("//Alice");
 		const laosSiblingInAssetHub = "5Eg2fnssBDaFCWy7JnEZYnEuNPZbbzzEWGw5zryrTpmsTuPL";
-		console.log(alice.address);
-		const alicebalance = await apiAssetHub.query.system.account(alice.address);
 		console.log(alicebalance.data.free.toHuman());
 		const balanceTx = apiAssetHub.tx.balances.transferKeepAlive(laosSiblingInAssetHub, 100000000000000).signAndSend(alice, () => { })
 			.catch((error: any) => {
 				console.log("transaction failed", error);
 			});;
 		const balance = await apiAssetHub.query.system.account(laosSiblingInAssetHub);
-		console.log(balance.data.free.toHuman());
 		let accountId = apiAssetHub.createType("AccountId", laosSiblingInAssetHub);
 		let amount = 7123;
 		const destination = apiLaos.createType("XcmVersionedLocation", {
@@ -88,6 +93,22 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 
 		const instruction = apiLaos.createType("XcmVersionedXcm", {
 			V3 : [
+        {
+          WithdrawAsset:[
+            apiLaos.createType("MultiAssetV3",{
+              id:relayToken,
+              fun:apiLaos.createType("FungibilityV3",{
+                Fungible:1000000
+              })
+            })
+          ]
+        },
+        {
+          BuyExecution: {
+            fees:relayToken,
+            weight_limit: "Unlimited"
+          }
+        },
 				{
 					Transact: {
 						originKind, // XcmOriginKind instance
