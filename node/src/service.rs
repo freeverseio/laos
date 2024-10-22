@@ -32,8 +32,10 @@ use cumulus_client_service::{
 	BuildNetworkParams, CollatorSybilResistance, DARecoveryProfile, ParachainHostFunctions,
 	StartRelayChainTasksParams,
 };
-use cumulus_primitives_core::{relay_chain::CollatorPair, ParaId};
+use cumulus_primitives_core::{relay_chain::CollatorPair, ParaId, PersistedValidationData};
+use cumulus_primitives_parachain_inherent::ParachainInherentData;
 use cumulus_relay_chain_interface::{OverseerHandle, RelayChainInterface};
+use cumulus_test_relay_sproof_builder::RelayStateSproofBuilder;
 
 // Substrate Imports
 use fc_rpc::{StorageOverride, StorageOverrideHandler};
@@ -50,9 +52,11 @@ use sc_network_sync::SyncingService;
 use sc_service::{Configuration, PartialComponents, TFullBackend, TFullClient, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryHandle, TelemetryWorker, TelemetryWorkerHandle};
 use sc_transaction_pool_api::OffchainTransactionPoolFactory;
+use sp_consensus_aura::{Slot, SlotDuration};
 use sp_core::U256;
 use sp_keystore::KeystorePtr;
 use substrate_prometheus_endpoint::Registry;
+
 // Frontier
 use crate::eth::{
 	db_config_dir, new_frontier_partial, spawn_frontier_tasks, BackendType, EthConfiguration,
@@ -344,15 +348,32 @@ async fn start_node_impl(
 		execute_gas_limit_multiplier: eth_config.execute_gas_limit_multiplier,
 		forced_parent_hashes: None,
 		pending_create_inherent_data_providers: move |_, ()| async move {
-			let current = sp_timestamp::InherentDataProvider::from_system_time();
-			let next_slot = current.timestamp().as_millis() + slot_duration.as_millis();
-			let timestamp = sp_timestamp::InherentDataProvider::new(next_slot.into());
-			let slot = sp_consensus_aura::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
-				*timestamp,
-				slot_duration,
+			// Patch from https://github.com/darwinia-network/darwinia/pull/1608
+			let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
+			let relay_chain_slot = Slot::from_timestamp(
+				timestamp.timestamp(),
+				SlotDuration::from_millis(6000 as u64), // RELAY_CHAIN_SLOT_DURATION_MILLIS
 			);
-			let dynamic_fee = fp_dynamic_fee::InherentDataProvider(U256::from(target_gas_price));
-			Ok((slot, timestamp, dynamic_fee))
+
+			let mut state_proof_builder =
+				cumulus_test_relay_sproof_builder::RelayStateSproofBuilder::default();
+			state_proof_builder.para_id = para_id;
+			state_proof_builder.current_slot = relay_chain_slot;
+			state_proof_builder.included_para_head = Some(polkadot_primitives::HeadData(vec![]));
+			let (relay_parent_storage_root, relay_chain_state) =
+				state_proof_builder.into_state_root_and_proof();
+			let parachain_inherent_data =
+				cumulus_primitives_parachain_inherent::ParachainInherentData {
+					validation_data: cumulus_primitives_core::PersistedValidationData {
+						relay_parent_number: u32::MAX,
+						relay_parent_storage_root,
+						..Default::default()
+					},
+					relay_chain_state,
+					downward_messages: Default::default(),
+					horizontal_messages: Default::default(),
+				};
+			Ok((timestamp, parachain_inherent_data))
 		},
 	};
 
