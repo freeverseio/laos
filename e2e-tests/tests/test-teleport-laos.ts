@@ -17,7 +17,8 @@ import { customRequest, describeWithExistingNode } from "./util";
 import { Keyring } from "@polkadot/api";
 import { MultiLocationV3, JunctionsV3, XcmV3, InstructionV3, AssetIdV3 } from "@polkadot/types/interfaces";
 import { u64, u8 } from "@polkadot/types";
-import { XcmVersionedLocation, XcmVersionedXcm } from "@polkadot/types/lookup";
+import { StagingXcmV3MultiLocation, XcmVersionedLocation, XcmVersionedXcm } from "@polkadot/types/lookup";
+import { u8aToHex } from "@polkadot/util";
 // const siblingAccountId = (paraId: number) => {
 // 	let type = paraType.value;
 // 	let typeEncoded = stringToU8a(type);
@@ -45,14 +46,12 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 		const apiAssetHub = await context.networks.assetHub;
 		const apiLaos = await context.networks.laos;
 		const apiRelay = await context.networks.relaychain;
-		const laosAssetId = apiAssetHub.createType("XcmVersionedLocation", {
-			V3: {
+		const laosAssetId = apiAssetHub.createType("StagingXcmV3MultiLocation", {
 				parents: "1",
 				interior: {
 					X1: { Parachain: LAOS_PARA_ID },
 				},
-			},
-		}) as XcmVersionedLocation;
+		}) as StagingXcmV3MultiLocation;
 		const relayToken = apiLaos.createType("AssetIdV3", {
 			Concrete: {
 				parents: "1",
@@ -94,9 +93,11 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 		});
 		const createCall = apiAssetHub.tx.foreignAssets.create(laosAssetId, accountId, amount);
 		console.log(createCall.method.toHex())
+		console.log(u8aToHex(createCall.method.toU8a()))
+		console.log(u8aToHex(createCall.method.data))
 		const doubleEncodedCall = apiLaos.createType("DoubleEncodedCall", {
-			encoded: "0x3500201010051d007369626c540b0000000000000000000000000000000000000000000000000000000064a7b3b6e00d0000000000000000",
-			// encoded: createCall.method.toHex(), // TODO
+			// encoded: "0x3500201010051d007369626c540b0000000000000000000000000000000000000000000000000000000064a7b3b6e00d0000000000000000",
+			encoded: u8aToHex(createCall.method.toU8a()), // TODO
 		});
 
 		const instruction = apiLaos.createType("XcmVersionedXcm", {
