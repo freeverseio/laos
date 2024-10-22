@@ -348,14 +348,16 @@ async fn start_node_impl(
 			let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
 			let relay_chain_slot = Slot::from_timestamp(
 				timestamp.timestamp(),
-				SlotDuration::from_millis(6000 as u64), // RELAY_CHAIN_SLOT_DURATION_MILLIS
+				SlotDuration::from_millis(6000_u64), // RELAY_CHAIN_SLOT_DURATION_MILLIS
 			);
 
-			let mut state_proof_builder =
-				cumulus_test_relay_sproof_builder::RelayStateSproofBuilder::default();
-			state_proof_builder.para_id = para_id;
-			state_proof_builder.current_slot = relay_chain_slot;
-			state_proof_builder.included_para_head = Some(polkadot_primitives::HeadData(vec![]));
+			let state_proof_builder =
+				cumulus_test_relay_sproof_builder::RelayStateSproofBuilder {
+					para_id,
+					current_slot: relay_chain_slot,
+					included_para_head: Some(polkadot_primitives::HeadData(vec![])),
+					..Default::default()
+				};
 			let (relay_parent_storage_root, relay_chain_state) =
 				state_proof_builder.into_state_root_and_proof();
 			let parachain_inherent_data =
