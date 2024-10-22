@@ -21,7 +21,7 @@ use std::{path::Path, sync::Arc, time::Duration};
 
 use cumulus_client_cli::CollatorOptions;
 // Local Runtime Types
-use laos_runtime::{apis::RuntimeApi, opaque::Block, types::TransactionConverter, Hash};
+use laos_runtime::{opaque::Block, types::TransactionConverter, Hash};
 
 // Cumulus Imports
 use cumulus_client_collator::service::CollatorService;
@@ -41,6 +41,7 @@ use cumulus_test_relay_sproof_builder::RelayStateSproofBuilder;
 use fc_rpc::{StorageOverride, StorageOverrideHandler};
 use frame_benchmarking_cli::SUBSTRATE_REFERENCE_HARDWARE;
 use futures::FutureExt;
+use laos_runtime::RuntimeApi;
 use sc_client_api::Backend;
 use sc_consensus::ImportQueue;
 use sc_executor::{
@@ -51,10 +52,10 @@ use sc_network_sync::SyncingService;
 use sc_service::{Configuration, PartialComponents, TFullBackend, TFullClient, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryHandle, TelemetryWorker, TelemetryWorkerHandle};
 use sc_transaction_pool_api::OffchainTransactionPoolFactory;
+use sp_consensus_aura::{Slot, SlotDuration};
 use sp_core::U256;
 use sp_keystore::KeystorePtr;
 use substrate_prometheus_endpoint::Registry;
-use sp_consensus_aura::{Slot, SlotDuration};
 
 // Frontier
 use crate::eth::{
@@ -69,7 +70,7 @@ impl sc_executor::NativeExecutionDispatch for ParachainNativeExecutor {
 	type ExtendHostFunctions = ParachainHostFunctions;
 
 	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
-		laos_runtime::apis::api::dispatch(method, data)
+		laos_runtime::api::dispatch(method, data)
 	}
 
 	fn native_version() -> sc_executor::NativeVersion {
