@@ -32,10 +32,8 @@ use cumulus_client_service::{
 	BuildNetworkParams, CollatorSybilResistance, DARecoveryProfile, ParachainHostFunctions,
 	StartRelayChainTasksParams,
 };
-use cumulus_primitives_core::{relay_chain::CollatorPair, ParaId, PersistedValidationData};
-use cumulus_primitives_parachain_inherent::ParachainInherentData;
+use cumulus_primitives_core::{relay_chain::CollatorPair, ParaId};
 use cumulus_relay_chain_interface::{OverseerHandle, RelayChainInterface};
-use cumulus_test_relay_sproof_builder::RelayStateSproofBuilder;
 
 // Substrate Imports
 use fc_rpc::{StorageOverride, StorageOverrideHandler};
@@ -314,8 +312,6 @@ async fn start_node_impl(
 		fc_mapping_sync::EthereumBlockNotification<Block>,
 	> = Default::default();
 	let pubsub_notification_sinks = Arc::new(pubsub_notification_sinks);
-	let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
-	let target_gas_price = eth_config.target_gas_price;
 
 	// for ethereum-compatibility rpc.
 	parachain_config.rpc_id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
