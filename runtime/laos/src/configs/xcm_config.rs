@@ -286,3 +286,16 @@ where
 		})
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn check_checking_account() {
+		assert_eq!(
+			CheckingAccount::get().to_string(),
+			"0x6d6F646c70792F78636D63680000000000000000"
+		);
+	}
+}
