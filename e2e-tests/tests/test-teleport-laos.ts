@@ -152,8 +152,8 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 		expect(eventFound.event.data[1].toString()).to.equal(laosSiblingInAssetHub);
 		expect(eventFound.event.data[2].toString()).to.equal(laosSiblingInAssetHub);
 		// TODO check balance of sudo alith account in laos
-		// TODO balance of laosSiblingInAssetHub in asset hub
-
+		// TODO balance of laosSiblingInAssetHub in asset hub for foreign asset?
+		// TODO check balance of native token of laosSiblingInAssetHub in asset hub
 	});
 
 	// TODO foreign asset mint
@@ -163,29 +163,22 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 
 		// STEP 1: Build create pool call params
 		const laosAssetId = apiAssetHub.createType("StagingXcmV3MultiLocation", {
-			// V3: {
 			parents: "1",
 			interior: {
 				X1: { Parachain: LAOS_PARA_ID },
 			},
-			// },
 		}) as StagingXcmV3MultiLocation;
 		const relayAssetId = apiAssetHub.createType("StagingXcmV3MultiLocation", {
-			// V3: {
-				parents: "1",
-				interior: {
-					Here: "",
-				},
-			// },
+			parents: "1",
+			interior: {
+				Here: "",
+			},
 		}) as StagingXcmV3MultiLocation;
 
-		const createPoolCall = apiAssetHub.tx.assetConversion.createPool(relayAssetId.toU8a(), laosAssetId.toU8a())
+		const createPoolCall = apiAssetHub.tx.assetConversion.createPool(relayAssetId.toU8a(), laosAssetId.toU8a());
 
 		// STEP 2: Build XCM instruction to be included in xcm.send call
-		console.log(u8aToHex(createPoolCall.method.toU8a()))
 		const doubleEncodedCall = apiLaos.createType("DoubleEncodedCall", {
-			// encoded: "0x38000100010100512d",
-			// encoded: "0x38000000010100512d",
 			encoded: u8aToHex(createPoolCall.method.toU8a()),
 		}) as DoubleEncodedCall;
 		const relayToken = apiLaos.createType("AssetIdV3", {
@@ -244,12 +237,13 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 		// STEP 3: Send the XCM instruction from Laos to Asset Hub
 		const sudoCall = apiLaos.tx.sudo.sudo(apiLaos.tx.polkadotXcm.send(destination, instruction));
 		await sudoCall
-			.signAndSend(alith, () => { })
+			.signAndSend(alith, () => {})
 			.catch((error: any) => {
 				console.log("transaction failed", error);
 			});
 
-			// TODO check pool is created
+		// TODO check pool is created
+		// TODO check balance of native token of laosSiblingInAssetHub in asset hub
 	});
 
 	// step("Teleport from LAOS to AssetHub", async function () {
