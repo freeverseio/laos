@@ -14,11 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
-use crate::{weights, Aura, Runtime, MILLISECS_PER_BLOCK};
+use crate::{weights, Aura, Runtime};
 use frame_support::parameter_types;
 
 parameter_types! {
-	pub const MinimumPeriod: u64 = MILLISECS_PER_BLOCK / 2;
+	pub const MinimumPeriod: u64 = 0;
 }
 
 impl pallet_timestamp::Config for Runtime {

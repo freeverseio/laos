@@ -50,9 +50,11 @@ use sc_network_sync::SyncingService;
 use sc_service::{Configuration, PartialComponents, TFullBackend, TFullClient, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryHandle, TelemetryWorker, TelemetryWorkerHandle};
 use sc_transaction_pool_api::OffchainTransactionPoolFactory;
+use sp_consensus_aura::{Slot, SlotDuration};
 use sp_core::U256;
 use sp_keystore::KeystorePtr;
 use substrate_prometheus_endpoint::Registry;
+
 // Frontier
 use crate::eth::{
 	db_config_dir, new_frontier_partial, spawn_frontier_tasks, BackendType, EthConfiguration,
@@ -310,8 +312,6 @@ async fn start_node_impl(
 		fc_mapping_sync::EthereumBlockNotification<Block>,
 	> = Default::default();
 	let pubsub_notification_sinks = Arc::new(pubsub_notification_sinks);
-	let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
-	let target_gas_price = eth_config.target_gas_price;
 
 	// for ethereum-compatibility rpc.
 	parachain_config.rpc_id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
@@ -344,15 +344,33 @@ async fn start_node_impl(
 		execute_gas_limit_multiplier: eth_config.execute_gas_limit_multiplier,
 		forced_parent_hashes: None,
 		pending_create_inherent_data_providers: move |_, ()| async move {
-			let current = sp_timestamp::InherentDataProvider::from_system_time();
-			let next_slot = current.timestamp().as_millis() + slot_duration.as_millis();
-			let timestamp = sp_timestamp::InherentDataProvider::new(next_slot.into());
-			let slot = sp_consensus_aura::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
-				*timestamp,
-				slot_duration,
+			// Patch from https://github.com/darwinia-network/darwinia/pull/1608
+			let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
+			let relay_chain_slot = Slot::from_timestamp(
+				timestamp.timestamp(),
+				SlotDuration::from_millis(6000_u64), // RELAY_CHAIN_SLOT_DURATION_MILLIS
 			);
-			let dynamic_fee = fp_dynamic_fee::InherentDataProvider(U256::from(target_gas_price));
-			Ok((slot, timestamp, dynamic_fee))
+
+			let state_proof_builder = cumulus_test_relay_sproof_builder::RelayStateSproofBuilder {
+				para_id,
+				current_slot: relay_chain_slot,
+				included_para_head: Some(polkadot_primitives::HeadData(vec![])),
+				..Default::default()
+			};
+			let (relay_parent_storage_root, relay_chain_state) =
+				state_proof_builder.into_state_root_and_proof();
+			let parachain_inherent_data =
+				cumulus_primitives_parachain_inherent::ParachainInherentData {
+					validation_data: cumulus_primitives_core::PersistedValidationData {
+						relay_parent_number: u32::MAX,
+						relay_parent_storage_root,
+						..Default::default()
+					},
+					relay_chain_state,
+					downward_messages: Default::default(),
+					horizontal_messages: Default::default(),
+				};
+			Ok((timestamp, parachain_inherent_data))
 		},
 	};
 

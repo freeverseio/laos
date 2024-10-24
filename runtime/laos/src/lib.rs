@@ -91,7 +91,10 @@ impl_opaque_keys! {
 }
 
 /// This determines the average expected block time that we are targeting.
-pub const MILLISECS_PER_BLOCK: u64 = 12000;
+pub const MILLISECS_PER_BLOCK: u64 = 6000;
+pub const MINUTES: BlockNumber = 60_000 / (MILLISECS_PER_BLOCK as BlockNumber);
+pub const HOURS: BlockNumber = MINUTES * 60;
+pub const DAYS: BlockNumber = HOURS * 24;
 
 /// Version of the runtime
 #[sp_version::runtime_version]
