@@ -42,11 +42,7 @@ use xcm_builder::{
 use xcm_executor::XcmExecutor;
 
 pub const ASSET_HUB_ID: u32 = 1000;
-#[cfg(not(feature = "paseo"))]
 pub const RELAY_NETWORK: NetworkId = NetworkId::Polkadot;
-#[cfg(feature = "paseo")]
-pub const RELAY_NETWORK: NetworkId =
-	NetworkId::ByGenesis(hex!("77afd6190f1554ad45fd0d31aee62aacc33c6db0ea801129acb813f913e0764f"));
 
 parameter_types! {
 	// Represents the location of the Relay Chain (parent in the XCM hierarchy).
