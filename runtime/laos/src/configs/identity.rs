@@ -1,10 +1,9 @@
 use crate::{
 	currency::calculate_deposit, AccountId, Balance, Balances, Runtime, RuntimeEvent, Signature,
-	Treasury,
+	Treasury, DAYS,
 };
 use frame_support::parameter_types;
 use frame_system::EnsureRoot;
-use parachains_common::DAYS;
 
 parameter_types! {
 	pub const MaxSubAccounts: u32 = 100;
