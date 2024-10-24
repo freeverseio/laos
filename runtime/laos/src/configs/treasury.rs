@@ -54,7 +54,7 @@ impl pallet_treasury::Config for Runtime {
 	type ProposalBondMinimum = ProposalBondMinimum;
 	type RejectOrigin = RejectOrigin;
 	type RuntimeEvent = RuntimeEvent;
-	type SpendFunds = ();
+	type SpendFunds = EnsureRoot<AccountId>;
 	type SpendPeriod = SpendPeriod;
 	// Disabled, no spending allowed.
 	#[cfg(not(feature = "runtime-benchmarks"))]
