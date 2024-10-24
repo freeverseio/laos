@@ -2,7 +2,7 @@ import { BN } from "bn.js";
 import { expect } from "chai";
 import { step } from "mocha-steps";
 
-import { ALITH_PRIVATE_KEY, ASSET_HUB_PARA_ID, LAOS_PARA_ID } from "./config";
+import { ALITH_PRIVATE_KEY, ASSET_HUB_PARA_ID, FAITH_PRIVATE_KEY, LAOS_PARA_ID } from "./config";
 import { describeWithExistingNode, fundAccount, isChannelOpen, sendOpenHrmpChannelTxs, siblingAccountId } from "./util";
 import { ApiPromise, Keyring } from "@polkadot/api";
 import { AssetIdV3, DoubleEncodedCall, MultiAddress } from "@polkadot/types/interfaces";
@@ -151,11 +151,110 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 		expect(eventFound.event.data[0].toString()).to.equal(laosAssetId.toString());
 		expect(eventFound.event.data[1].toString()).to.equal(laosSiblingInAssetHub);
 		expect(eventFound.event.data[2].toString()).to.equal(laosSiblingInAssetHub);
+		// TODO check balance of sudo alith account in laos
+		// TODO balance of laosSiblingInAssetHub in asset hub
+
+	});
+
+	// TODO foreign asset mint
+
+	step("Create LAOS/RelayToken pool", async function () {
+		const alith = new Keyring({ type: "ethereum" }).addFromUri(ALITH_PRIVATE_KEY);
+
+		// STEP 1: Build create pool call params
+		const laosAssetId = apiAssetHub.createType("StagingXcmV3MultiLocation", {
+			// V3: {
+			parents: "1",
+			interior: {
+				X1: { Parachain: LAOS_PARA_ID },
+			},
+			// },
+		}) as StagingXcmV3MultiLocation;
+		const relayAssetId = apiAssetHub.createType("StagingXcmV3MultiLocation", {
+			// V3: {
+				parents: "1",
+				interior: {
+					Here: "",
+				},
+			// },
+		}) as StagingXcmV3MultiLocation;
+
+		const createPoolCall = apiAssetHub.tx.assetConversion.createPool(relayAssetId.toU8a(), laosAssetId.toU8a())
+
+		// STEP 2: Build XCM instruction to be included in xcm.send call
+		console.log(u8aToHex(createPoolCall.method.toU8a()))
+		const doubleEncodedCall = apiLaos.createType("DoubleEncodedCall", {
+			// encoded: "0x38000100010100512d",
+			// encoded: "0x38000000010100512d",
+			encoded: u8aToHex(createPoolCall.method.toU8a()),
+		}) as DoubleEncodedCall;
+		const relayToken = apiLaos.createType("AssetIdV3", {
+			Concrete: {
+				parents: "1",
+				interior: {
+					Here: "",
+				},
+			},
+		}) as AssetIdV3;
+		const instruction = apiLaos.createType("XcmVersionedXcm", {
+			V3: [
+				{
+					WithdrawAsset: [
+						apiLaos.createType("MultiAssetV3", {
+							id: relayToken,
+							fun: apiLaos.createType("FungibilityV3", {
+								Fungible: new BN("1000000000000"), // 1 DOT
+							}),
+						}),
+					],
+				},
+				{
+					BuyExecution: {
+						fees: apiLaos.createType("MultiAssetV3", {
+							id: relayToken,
+							fun: apiLaos.createType("FungibilityV3", {
+								Fungible: new BN("1000000000000"), // 1 DOT
+							}),
+						}),
+						weight_limit: "Unlimited",
+					},
+				},
+				{
+					Transact: {
+						originKind: apiLaos.createType("XcmOriginKind", "SovereignAccount"),
+						requireWeightAtMost: apiLaos.createType("WeightV2", {
+							refTime: new BN("2000000000"), // Adjust as needed
+							proofSize: new BN("7000"),
+						}),
+						call: doubleEncodedCall, // DoubleEncodedCall instance
+					},
+				},
+			],
+		}) as XcmVersionedXcm;
+
+		const destination = apiLaos.createType("XcmVersionedLocation", {
+			V3: {
+				parents: "1",
+				interior: {
+					X1: { Parachain: ASSET_HUB_PARA_ID },
+				},
+			},
+		}) as XcmVersionedLocation;
+
+		// STEP 3: Send the XCM instruction from Laos to Asset Hub
+		const sudoCall = apiLaos.tx.sudo.sudo(apiLaos.tx.polkadotXcm.send(destination, instruction));
+		await sudoCall
+			.signAndSend(alith, () => { })
+			.catch((error: any) => {
+				console.log("transaction failed", error);
+			});
+
+			// TODO check pool is created
 	});
 
 	// step("Teleport from LAOS to AssetHub", async function () {
-	// 	const apiLaos = await context.networks.laos;
-	// 	const apiAssetHub = await context.networks.assetHub;
+	// 	apiLaos = context.networks.laos;
+	// 	apiAssetHub = context.networks.assetHub;
 	// 	const faith = new Keyring().addFromUri(FAITH_PRIVATE_KEY);
 	// 	const alith = new Keyring({ type: "ethereum" }).addFromUri(ALITH_PRIVATE_KEY);
 
@@ -185,7 +284,7 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 	// 	});
 
 	// 	// 1 LAOS = 10^18, this is .1 LAOS
-	// 	const amount = 1; // TODO 100000000000000000
+	// 	const amount = new BN("100000000000000000");
 	// 	const assets = apiLaos.createType("XcmVersionedAssets", {
 	// 		V3: [
 	// 			{
