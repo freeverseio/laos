@@ -147,7 +147,7 @@ mod tests {
 				);
 
 				// the same preimage can be re-proposed as the cooloff period is over
-				frame_system::Pallet::<Runtime>::set_block_number(50402 * 2);
+				frame_system::Pallet::<Runtime>::set_block_number(100804);
 				assert_ok!(pallet_democracy::Pallet::<Runtime>::external_propose(
 					OriginCaller::Council(pallet_collective::RawOrigin::Members(1, 1)).into(),
 					preimage
