@@ -126,10 +126,10 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 			expect(balanceAlithBefore).to.be.a.bignumber.that.equals(
 				new BN((await apiLaos.query.system.account(alith.address)).data.free)
 			);
-			const balanceDifference = balanceLaosAccountBefore.sub(
+			const laosAccountBalanceDifference = balanceLaosAccountBefore.sub(
 				new BN((await apiAssetHub.query.system.account(laosAccountInAssetHub)).data.free)
 			);
-			expect(balanceDifference).to.be.a.bignumber.that.equals(ONE_DOT.add(DEPOSIT));
+			expect(laosAccountBalanceDifference).to.be.a.bignumber.that.equals(ONE_DOT.add(DEPOSIT));
 		}
 	});
 
