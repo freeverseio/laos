@@ -16,7 +16,7 @@
 
 use crate::{
 	types::ToAuthor, AccountId, AllPalletsWithSystem, Balances, ParachainInfo, PolkadotXcm,
-	Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin,
+	Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin, Vec
 };
 use core::marker::PhantomData;
 use frame_support::{
