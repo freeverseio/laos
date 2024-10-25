@@ -221,10 +221,4 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 	// 		console.log("transaction failed", error);
 	// 	});
 	// });
-
-	after(async function () {
-		await apiAssetHub.disconnect();
-		await apiLaos.disconnect();
-		await apiRelaychain.disconnect();
-	});
 });

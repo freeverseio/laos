@@ -20,7 +20,7 @@ import BN from "bn.js";
 import { expect } from "chai";
 import "@polkadot/api-augment";
 
-import { ApiPromise, HttpProvider, Keyring } from "@polkadot/api";
+import { ApiPromise, WsProvider, Keyring } from "@polkadot/api";
 import { KeyringPair } from "@polkadot/keyring/types";
 import { bnToU8a, stringToU8a } from "@polkadot/util";
 import { encodeAddress } from "@polkadot/util-crypto";
@@ -74,32 +74,27 @@ export function describeWithExistingNode(
 
 		before(async () => {
 			if (providerLaosNodeUrl) {
-				context.web3 = new Web3(providerLaosNodeUrl);
-				const wsProvider = new HttpProvider(providerLaosNodeUrl);
-				context.networks.laos = await new ApiPromise({ provider: wsProvider }).isReady;
-			} else {
-				context.web3 = new Web3(LAOS_NODE_URL);
-				const wsProvider = new HttpProvider(LAOS_NODE_URL);
+				context.web3 = new Web3(providerLaosNodeUrl || LAOS_NODE_URL);
+				const wsProvider = new WsProvider(providerLaosNodeUrl || LAOS_NODE_URL);
 				context.networks.laos = await new ApiPromise({ provider: wsProvider }).isReady;
 			}
 
 			if (providerAssetHubNodeUrl) {
-				const wsProvider = new HttpProvider(providerAssetHubNodeUrl);
-				context.networks.assetHub = await new ApiPromise({ provider: wsProvider }).isReady;
-			} else {
-				const wsProvider = new HttpProvider(ASSET_HUB_NODE_URL);
+				const wsProvider = new WsProvider(providerAssetHubNodeUrl || ASSET_HUB_NODE_URL);
 				context.networks.assetHub = await new ApiPromise({ provider: wsProvider }).isReady;
 			}
 
 			if (providerRelaychainNodeUrl) {
-				const wsProvider = new HttpProvider(providerRelaychainNodeUrl);
-				context.networks.relaychain = await new ApiPromise({ provider: wsProvider }).isReady;
-			} else {
-				const wsProvider = new HttpProvider(RELAYCHAIN_NODE_URL);
+				const wsProvider = new WsProvider(providerRelaychainNodeUrl || RELAYCHAIN_NODE_URL);
 				context.networks.relaychain = await new ApiPromise({ provider: wsProvider }).isReady;
 			}
 		});
 		cb(context);
+		after(async function () {
+			await apiAssetHub.disconnect();
+			await apiLaos.disconnect();
+			await apiRelaychain.disconnect();
+		});
 	});
 }
 
