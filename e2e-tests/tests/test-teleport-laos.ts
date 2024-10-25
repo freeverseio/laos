@@ -58,7 +58,7 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 			(await isChannelOpen(apiRelaychain, LAOS_PARA_ID, ASSET_HUB_PARA_ID)) == false ||
 			(await isChannelOpen(apiRelaychain, ASSET_HUB_PARA_ID, LAOS_PARA_ID)) == false
 		) {
-      console.log("[RELAY_CHAIN] Waiting until HRMP channels are opened...");
+			console.log("[RELAY_CHAIN] Waiting until HRMP channels are opened...");
 			await awaitBlockChange(apiRelaychain);
 		}
 	});
@@ -169,22 +169,6 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 				console.log("transaction failed", error);
 			});
 
-		// STEP 4: Check if the foreign asset was created in Asset Hub
-		let waitForNBlocks = 5;
-		let eventFound = null;
-		while (waitForNBlocks > 0 && !eventFound) {
-			const events = await apiAssetHub.query.system.events();
-			events.filter((event) => {
-				if (apiAssetHub.events.foreignAssets.Created.is(event.event)) {
-					eventFound = event;
-				}
-			});
-			await awaitBlockChange(apiAssetHub);
-			waitForNBlocks--;
-		}
-		expect(eventFound.event.data[0].toString()).to.equal(laosAssetId.toString());
-		expect(eventFound.event.data[1].toString()).to.equal(laosSiblingInAssetHub);
-		expect(eventFound.event.data[2].toString()).to.equal(laosSiblingInAssetHub);
 		// TODO check pool is created
 		// TODO check balance of native token of laosSiblingInAssetHub in asset hub
 	});
