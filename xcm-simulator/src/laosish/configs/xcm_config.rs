@@ -186,17 +186,17 @@ pub type XcmRouter = EnsureDecodableXcm<crate::ParachainXcmRouter<MsgQueue>>;
 
 //Filter all teleports that aren't the native asset
 pub struct OnlyTeleportNative;
-impl Contains<(Location, Vec<Asset>)> for OnlyTeleportNative{
-    fn contains(t:&(Location, Vec<Asset>)) -> bool{
-        t.1.iter().all(|asset|{
-            log::trace!(target: "xcm::OnlyTeleportNative", "Asset to be teleported: {:?}", asset);
-            if let Asset{ id: asset_id, fun: Fungible(_)}= asset{
-                asset_id.0 == HereLocation::get()
-            } else{
-                false
-            }
-        })
-    }
+impl Contains<(Location, Vec<Asset>)> for OnlyTeleportNative {
+	fn contains(t: &(Location, Vec<Asset>)) -> bool {
+		t.1.iter().all(|asset| {
+			log::trace!(target: "xcm::OnlyTeleportNative", "Asset to be teleported: {:?}", asset);
+			if let Asset { id: asset_id, fun: Fungible(_) } = asset {
+				asset_id.0 == HereLocation::get()
+			} else {
+				false
+			}
+		})
+	}
 }
 
 impl pallet_xcm::Config for Runtime {
