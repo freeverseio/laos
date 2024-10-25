@@ -26,7 +26,7 @@ use(chaiBn(BN));
 const ONE_LAOS = new BN("1000000000000000000");
 const ONE_DOT = new BN("1000000000000");
 const HUNDRED_DOTS = new BN("100000000000000");
-const DEPOSIT = new BN("1000000000000"); // Deposit for creating a foreign asset
+const DEPOSIT = new BN("100000000000"); // Deposit for creating a foreign asset
 
 describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 	const laosAccountInAssetHub = sovereignAccountOf(LAOS_PARA_ID);
