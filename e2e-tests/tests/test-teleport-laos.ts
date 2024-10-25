@@ -24,7 +24,7 @@ use(chaiBn(BN)); // TODO remove
 
 const ONE_LAOS = new BN("1000000000000000000");
 const ONE_DOT = new BN("1000000000000");
-const DEPOSIT = new BN(100000000000); // Deposit for creating a foreign asset
+const DEPOSIT = new BN(100000000000); // Deposit for creating a foreign asset, TODO get this amount from pallet
 const WAITING_BLOCKS_FOR_EVENTS = 10;
 
 describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
@@ -109,7 +109,7 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 				});
 
 			// Check if the foreign asset has been created in Asset Hub
-			let waitForNBlocks = WAITING_BLOCKS_FOR_EVENTS; // TODO refactor create wait for events function
+			let waitForNBlocks = WAITING_BLOCKS_FOR_EVENTS; // TODO refactor create wait for events function, and maybe add logs when fetching events
 			let eventFound = null;
 			while (WAITING_BLOCKS_FOR_EVENTS > 0 && !eventFound) {
 				const events = await apiAssetHub.query.system.events();
@@ -296,6 +296,7 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 			});
 	});
 
+	// TODO refacto a little bit this step
 	step("Teleport from LAOS to AssetHub", async function () {
 		const charlie = new Keyring({ type: "sr25519" }).addFromUri("//Charlie");
 		const alith = new Keyring({ type: "ethereum" }).addFromUri(ALITH_PRIVATE_KEY);
