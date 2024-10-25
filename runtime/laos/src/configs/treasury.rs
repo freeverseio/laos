@@ -6,7 +6,7 @@ use crate::{
 use frame_support::{
 	parameter_types,
 	traits::{
-		tokens::{PayFromAccount, UnityAstransferBalanceConversion},
+		tokens::{PayFromAccount, UnityAssetBalanceConversion},
 		EitherOfDiverse,
 	},
 	PalletId,
@@ -38,7 +38,7 @@ type RejectOrigin = EitherOfDiverse<EnsureRoot<AccountId>, CouncilMajority>;
 impl pallet_treasury::Config for Runtime {
 	type AssetKind = ();
 	type ApproveOrigin = ApproveOrigin;
-	type BalanceConverter = UnityAstransferBalanceConversion;
+	type BalanceConverter = UnityAssetBalanceConversion;
 	type Beneficiary = AccountId;
 	type BeneficiaryLookup = IdentityLookup<Self::Beneficiary>;
 	type Burn = Burn;
