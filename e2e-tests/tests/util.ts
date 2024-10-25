@@ -24,6 +24,8 @@ import { ApiPromise, HttpProvider, Keyring } from "@polkadot/api";
 import { KeyringPair } from "@polkadot/keyring/types";
 import { bnToU8a, stringToU8a } from "@polkadot/util";
 import { encodeAddress } from "@polkadot/util-crypto";
+import { AssetIdV3, DoubleEncodedCall, XcmOriginKind } from "@polkadot/types/interfaces";
+import { XcmVersionedXcm } from "@polkadot/types/lookup";
 
 require("events").EventEmitter.prototype._maxListeners = 100;
 
@@ -263,7 +265,7 @@ const concatUint8Arrays = (...arrays: Uint8Array[]): Uint8Array => {
 	return result;
 };
 
-export const siblingAccountId = (paraId: number): string => {
+export const sovereignAccountOf = (paraId: number): string => {
 	let type = "sibl";
 	let typeEncoded = stringToU8a(type);
 	let paraIdEncoded = bnToU8a(paraId, { bitLength: 16 });
@@ -299,4 +301,80 @@ export const sendOpenHrmpChannelTxs = async (api: ApiPromise) => {
 		.catch((error: any) => {
 			console.log("transaction failed", error);
 		});
+};
+
+export const waitForBlockProduction = async (api: ApiPromise, name: string) => {
+	console.log(`[${name}] Waiting for block production...`);
+	await awaitBlockChange(api);
+};
+
+export const siblingLocation = (id: number) => ({
+	parents: "1",
+	interior: {
+		X1: { Parachain: id },
+	},
+});
+export const relayLocation = () => ({
+	parents: "1",
+	interior: {
+		Here: "",
+	},
+});
+
+interface XcmInstructionParams {
+	api: ApiPromise;
+	call: DoubleEncodedCall;
+	refTime: BN;
+	proofSize: BN;
+	amount: BN;
+	originKind: XcmOriginKind;
+}
+
+export const buildXcmInstruction = ({
+	api,
+	call,
+	refTime,
+	proofSize,
+	amount,
+	originKind,
+}: XcmInstructionParams): XcmVersionedXcm => {
+	const relayToken = api.createType("AssetIdV3", {
+		Concrete: relayLocation(),
+	}) as AssetIdV3;
+
+	return api.createType("XcmVersionedXcm", {
+		V3: [
+			{
+				WithdrawAsset: [
+					api.createType("MultiAssetV3", {
+						id: relayToken,
+						fun: api.createType("FungibilityV3", {
+							Fungible: amount,
+						}),
+					}),
+				],
+			},
+			{
+				BuyExecution: {
+					fees: api.createType("MultiAssetV3", {
+						id: relayToken,
+						fun: api.createType("FungibilityV3", {
+							Fungible: amount,
+						}),
+					}),
+					weight_limit: "Unlimited",
+				},
+			},
+			{
+				Transact: {
+					originKind,
+					requireWeightAtMost: api.createType("WeightV2", {
+						refTime,
+						proofSize,
+					}),
+					call,
+				},
+			},
+		],
+	});
 };
