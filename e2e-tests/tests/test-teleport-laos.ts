@@ -48,7 +48,6 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 			await awaitBlockChange(apiRelaychain);
 		}
 	});
-
 	step("HRMP channels between Asset Hub and LAOS are open", async function () {
 		expect(await isChannelOpen(apiRelaychain, LAOS_PARA_ID, ASSET_HUB_PARA_ID)).to.be.true;
 		expect(await isChannelOpen(apiRelaychain, ASSET_HUB_PARA_ID, LAOS_PARA_ID)).to.be.true;
@@ -151,6 +150,7 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 		expect(eventFound.event.data[0].toString()).to.equal(laosAssetId.toString());
 		expect(eventFound.event.data[1].toString()).to.equal(laosSiblingInAssetHub);
 		expect(eventFound.event.data[2].toString()).to.equal(laosSiblingInAssetHub);
+		done();
 	});
 
 	// step("Teleport from LAOS to AssetHub", async function () {

@@ -20,7 +20,7 @@ import BN from "bn.js";
 import { expect } from "chai";
 import "@polkadot/api-augment";
 
-import { ApiPromise, WsProvider, Keyring } from "@polkadot/api";
+import { ApiPromise, HttpProvider, Keyring } from "@polkadot/api";
 import { KeyringPair } from "@polkadot/keyring/types";
 import { bnToU8a, stringToU8a } from "@polkadot/util";
 import { encodeAddress } from "@polkadot/util-crypto";
@@ -73,27 +73,21 @@ export function describeWithExistingNode(
 		};
 
 		before(async () => {
-			if (providerLaosNodeUrl) {
-				context.web3 = new Web3(providerLaosNodeUrl || LAOS_NODE_URL);
-				const wsProvider = new WsProvider(providerLaosNodeUrl || LAOS_NODE_URL);
-				context.networks.laos = await new ApiPromise({ provider: wsProvider }).isReady;
-			}
+			context.web3 = new Web3(providerLaosNodeUrl || LAOS_NODE_URL);
+			let Provider = new HttpProvider(providerLaosNodeUrl || LAOS_NODE_URL);
+			context.networks.laos = await new ApiPromise({ provider: Provider }).isReady;
 
-			if (providerAssetHubNodeUrl) {
-				const wsProvider = new WsProvider(providerAssetHubNodeUrl || ASSET_HUB_NODE_URL);
-				context.networks.assetHub = await new ApiPromise({ provider: wsProvider }).isReady;
-			}
+			Provider = new HttpProvider(providerAssetHubNodeUrl || ASSET_HUB_NODE_URL);
+			context.networks.assetHub = await new ApiPromise({ provider: Provider }).isReady;
 
-			if (providerRelaychainNodeUrl) {
-				const wsProvider = new WsProvider(providerRelaychainNodeUrl || RELAYCHAIN_NODE_URL);
-				context.networks.relaychain = await new ApiPromise({ provider: wsProvider }).isReady;
-			}
+			Provider = new HttpProvider(providerRelaychainNodeUrl || RELAYCHAIN_NODE_URL);
+			context.networks.relaychain = await new ApiPromise({ provider: Provider }).isReady;
 		});
 		cb(context);
 		after(async function () {
-			await apiAssetHub.disconnect();
-			await apiLaos.disconnect();
-			await apiRelaychain.disconnect();
+			await context.networks.laos.disconnect();
+			await context.networks.assetHub.disconnect();
+			await context.networks.relaychain.disconnect();
 		});
 	});
 }
@@ -236,7 +230,7 @@ export const awaitNBlocks = async (api: ApiPromise, n: number) => {
 export const fundAccount = async (api: ApiPromise, source: KeyringPair, dest: string, amount: number) => {
 	api.tx.balances
 		.transferKeepAlive(dest, amount)
-		.signAndSend(source, () => {})
+		.signAndSend(source)
 		.catch((error: any) => {
 			console.log("transaction failed", error);
 		});
@@ -288,7 +282,7 @@ export const sendOpenHrmpChannelTxs = async (api: ApiPromise) => {
 	hrmpChannelCalls.push(
 		api.tx.hrmp.forceOpenHrmpChannel(ASSET_HUB_PARA_ID, LAOS_PARA_ID, maxCapacity, maxMessageSize)
 	);
-	await api.tx.sudo
+	api.tx.sudo
 		.sudo(api.tx.utility.batchAll(hrmpChannelCalls))
 		.signAndSend(sudo)
 		.catch((error: any) => {
