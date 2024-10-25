@@ -29,22 +29,17 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 			0
 		);
 
-		console.log("[RELAY_CHAIN] Waiting for block production...");
-		await awaitBlockChange(apiRelaychain);
+		console.log("Waiting until all the relay chain, Asset Hub and LAOS produce blocks...");
+		await Promise.all([awaitBlockChange(apiRelaychain), awaitBlockChange(apiAssetHub), awaitBlockChange(apiLaos)]);
 
-		console.log("[RELAY_CHAIN] Opening channels..."); // See: https://github.com/paritytech/polkadot-sdk/pull/1616
+		console.log("[RELAY_CHAIN] Send transaction to open HRMP channels between AssetHub and LAOS..."); // See: https://github.com/paritytech/polkadot-sdk/pull/1616
 		await sendOpenHrmpChannelTxs(apiRelaychain);
-
-		console.log("[ASSET_HUB] Waiting for block production...");
-		await awaitBlockChange(apiAssetHub);
-
-		console.log("[LAOS] Waiting for block production...");
-		await awaitBlockChange(apiLaos);
 
 		while (
 			(await isChannelOpen(apiRelaychain, LAOS_PARA_ID, ASSET_HUB_PARA_ID)) == false ||
 			(await isChannelOpen(apiRelaychain, ASSET_HUB_PARA_ID, LAOS_PARA_ID)) == false
 		) {
+      console.log("[RELAY_CHAIN] Waiting until HRMP channels are opened...");
 			await awaitBlockChange(apiRelaychain);
 		}
 	});
