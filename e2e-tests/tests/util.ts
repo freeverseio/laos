@@ -13,8 +13,6 @@ import {
 	LAOS_NODE_URL,
 	ASSET_HUB_NODE_URL,
 	RELAYCHAIN_NODE_URL,
-	LAOS_PARA_ID,
-	ASSET_HUB_PARA_ID,
 } from "./config";
 import BN from "bn.js";
 import { expect } from "chai";
@@ -229,17 +227,26 @@ export const awaitNBlocks = async (api: ApiPromise, n: number) => {
 	}
 };
 
-export const fundAccount = async (api: ApiPromise, source: KeyringPair, dest: string, amount: number) => {
-	api.tx.balances
-		.transferKeepAlive(dest, amount)
-		.signAndSend(source)
-		.catch((error: any) => {
-			console.log("transaction failed", error);
-		});
-	let balance = await api.query.system.account(dest);
-	while (balance.data.free.toNumber() == 0) {
+export const transferBalance = async (
+	api: ApiPromise,
+	origin: KeyringPair,
+	beneficiary: string,
+	amount: number | BN
+) => {
+	try {
+		await api.tx.balances.transferKeepAlive(beneficiary, amount).signAndSend(origin);
+	} catch (error) {
+		console.log("transaction failed: ", error);
+	}
+
+	let balance = await api.query.system.account(beneficiary);
+
+	while (balance.data.free.toNumber() != amount) {
+		console.log(`Waiting til the funds have been transferred from ${origin.address} to ${beneficiary}...`);
+
 		await awaitBlockChange(api);
-		balance = await api.query.system.account(dest);
+
+		balance = await api.query.system.account(beneficiary);
 	}
 };
 
@@ -271,25 +278,27 @@ export const isChannelOpen = async (api: ApiPromise, sender: number, recipient: 
 	return !channel.isEmpty;
 };
 
-export const sendOpenHrmpChannelTxs = async (api: ApiPromise) => {
+export const sendOpenHrmpChannelTxs = async (api: ApiPromise, paraA: number, paraB: number) => {
 	const maxCapacity = 8;
 	const maxMessageSize = 1048576;
 	const sudo = new Keyring({ type: "sr25519" }).addFromUri("//Alice");
 
 	const hrmpChannelCalls = [];
 
-	hrmpChannelCalls.push(
-		api.tx.hrmp.forceOpenHrmpChannel(LAOS_PARA_ID, ASSET_HUB_PARA_ID, maxCapacity, maxMessageSize)
-	);
-	hrmpChannelCalls.push(
-		api.tx.hrmp.forceOpenHrmpChannel(ASSET_HUB_PARA_ID, LAOS_PARA_ID, maxCapacity, maxMessageSize)
-	);
-	api.tx.sudo
-		.sudo(api.tx.utility.batchAll(hrmpChannelCalls))
-		.signAndSend(sudo)
-		.catch((error: any) => {
-			console.log("transaction failed", error);
-		});
+	hrmpChannelCalls.push(api.tx.hrmp.forceOpenHrmpChannel(paraA, paraB, maxCapacity, maxMessageSize));
+	hrmpChannelCalls.push(api.tx.hrmp.forceOpenHrmpChannel(paraB, paraA, maxCapacity, maxMessageSize));
+
+	try {
+		await api.tx.sudo.sudo(api.tx.utility.batchAll(hrmpChannelCalls)).signAndSend(sudo);
+	} catch (error) {
+		console.log(`Open HRMP channels transactions between parachains ${paraA} and ${paraB} failed: `, error);
+	}
+
+	while ((await isChannelOpen(api, paraA, paraB)) == false || (await isChannelOpen(api, paraB, paraA)) == false) {
+		console.log(`Waiting until HRMP channels between parachains ${paraA} and ${paraB} are opened...`);
+
+		await awaitBlockChange(api);
+	}
 };
 
 export const waitForBlockProduction = async (api: ApiPromise, name: string) => {

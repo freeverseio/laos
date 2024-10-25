@@ -9291,7 +9291,7 @@
                         {
                           "name": "amount",
                           "type": 6,
-                          "typeName": "AssetBalanceOf<T, I>"
+                          "typeName": "AstransferBalanceOf<T, I>"
                         },
                         {
                           "name": "beneficiary",
@@ -22973,7 +22973,7 @@
                         {
                           "name": "amount",
                           "type": 68,
-                          "typeName": "AssetBalanceOf<T, I>"
+                          "typeName": "AstransferBalanceOf<T, I>"
                         },
                         {
                           "name": "beneficiary",
@@ -30162,7 +30162,7 @@
                   "type": 36
                 },
                 {
-                  "name": "AssetBalance",
+                  "name": "AstransferBalance",
                   "type": 6
                 },
                 {
@@ -30189,7 +30189,7 @@
                     {
                       "name": "amount",
                       "type": 6,
-                      "typeName": "AssetBalance"
+                      "typeName": "AstransferBalance"
                     },
                     {
                       "name": "beneficiary",

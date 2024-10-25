@@ -5,7 +5,7 @@ import { step } from "mocha-steps";
 import { ALITH_PRIVATE_KEY, ASSET_HUB_PARA_ID, LAOS_PARA_ID } from "./config";
 import {
 	describeWithExistingNode,
-	fundAccount,
+	transferBalance,
 	isChannelOpen,
 	sendOpenHrmpChannelTxs,
 	sovereignAccountOf,
@@ -16,6 +16,7 @@ import {
 	relayLocation,
 } from "./util";
 import { ApiPromise, Keyring } from "@polkadot/api";
+import { KeyringPair } from "@polkadot/keyring/types";
 import { DoubleEncodedCall, MultiAddress } from "@polkadot/types/interfaces";
 import { StagingXcmV3MultiLocation, XcmVersionedLocation } from "@polkadot/types/lookup";
 import { u8aToHex } from "@polkadot/util";
@@ -24,13 +25,20 @@ use(chaiBn(BN));
 
 const ONE_LAOS = new BN("1000000000000000000");
 const ONE_DOT = new BN("1000000000000");
-const DEPOSIT = new BN(100000000000); // Deposit for creating a foreign asset
+const HUNDRED_DOTS = new BN("100000000000000");
+const DEPOSIT = new BN("1000000000000"); // Deposit for creating a foreign asset
 
 describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 	const laosAccountInAssetHub = sovereignAccountOf(LAOS_PARA_ID);
+
+	// APIS
 	let apiAssetHub: ApiPromise;
 	let apiLaos: ApiPromise;
 	let apiRelaychain: ApiPromise;
+
+	//Accounts
+	let alice: KeyringPair;
+	let alith: KeyringPair;
 
 	before(async function () {
 		// Initialize the APIs
@@ -38,30 +46,17 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 		apiLaos = context.networks.laos;
 		apiRelaychain = context.networks.relaychain;
 
-		// Fund the LAOS Sovereign Account in AssetHub
-		const alice = new Keyring({ type: "sr25519" }).addFromUri("//Alice");
-		const balanceInAssetHub = await apiAssetHub.query.system.account(laosAccountInAssetHub);
-		if (balanceInAssetHub.data.free.toNumber() == 0) {
-			await fundAccount(apiAssetHub, alice, laosAccountInAssetHub, 100000000000000); // 100 DOTS
-		}
-		expect((await apiAssetHub.query.system.account(laosAccountInAssetHub)).data.free.toNumber()).to.be.greaterThan(
-			0
-		);
+		//Initialize the accounts
+		alice = new Keyring({ type: "sr25519" }).addFromUri("//Alice");
+		alith = new Keyring({ type: "ethereum" }).addFromUri(ALITH_PRIVATE_KEY);
 
 		console.log("Waiting until all the relay chain, Asset Hub and LAOS produce blocks...");
 		await Promise.all([awaitBlockChange(apiRelaychain), awaitBlockChange(apiAssetHub), awaitBlockChange(apiLaos)]);
 
 		console.log("[RELAY_CHAIN] Send transaction to open HRMP channels between AssetHub and LAOS..."); // See: https://github.com/paritytech/polkadot-sdk/pull/1616
-		await sendOpenHrmpChannelTxs(apiRelaychain);
-
-		while (
-			(await isChannelOpen(apiRelaychain, LAOS_PARA_ID, ASSET_HUB_PARA_ID)) == false ||
-			(await isChannelOpen(apiRelaychain, ASSET_HUB_PARA_ID, LAOS_PARA_ID)) == false
-		) {
-			console.log("[RELAY_CHAIN] Waiting until HRMP channels are opened...");
-			await awaitBlockChange(apiRelaychain);
-		}
+		await sendOpenHrmpChannelTxs(apiRelaychain, LAOS_PARA_ID, ASSET_HUB_PARA_ID);
 	});
+
 	step("HRMP channels between AssetHub and LAOS are open", async function () {
 		expect(await isChannelOpen(apiRelaychain, LAOS_PARA_ID, ASSET_HUB_PARA_ID)).to.be.true;
 		expect(await isChannelOpen(apiRelaychain, ASSET_HUB_PARA_ID, LAOS_PARA_ID)).to.be.true;
@@ -72,15 +67,24 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 			"StagingXcmV3MultiLocation",
 			siblingLocation(LAOS_PARA_ID)
 		) as StagingXcmV3MultiLocation;
+
 		const laosForeignAssetExists = !(await apiAssetHub.query.foreignAssets.asset(laosAssetid)).isEmpty;
+
 		// NOTE: We only create the foreign asset if it hasn't been created yet, in this way we ensure tests are idempotent
 		if (!laosForeignAssetExists) {
+			//Fund LAOS sovereigna account
+			console.log("[ASSET_HUB] Funding LAOS sovereign account...");
+			await transferBalance(apiAssetHub, alice, laosAccountInAssetHub, HUNDRED_DOTS);
+
 			// Build XCM instruction
-			const accountId = apiAssetHub.createType("MultiAddress", laosAccountInAssetHub) as MultiAddress;
-			const createCall = apiAssetHub.tx.foreignAssets.create(laosAssetid, accountId, ONE_LAOS);
+			const foreign_asset_admin = apiAssetHub.createType("MultiAddress", laosAccountInAssetHub) as MultiAddress;
+
+			const createCall = apiAssetHub.tx.foreignAssets.create(laosAssetid, foreign_asset_admin, ONE_LAOS);
+
 			const createEncodedCall = apiLaos.createType("DoubleEncodedCall", {
 				encoded: u8aToHex(createCall.method.toU8a()),
 			}) as DoubleEncodedCall;
+
 			const instruction = buildXcmInstruction({
 				api: apiLaos,
 				call: createEncodedCall,
@@ -89,46 +93,59 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 				amount: ONE_DOT,
 				originKind: apiLaos.createType("XcmOriginKind", "Xcm"),
 			});
+
 			const destination = apiLaos.createType("XcmVersionedLocation", {
 				V3: siblingLocation(ASSET_HUB_PARA_ID),
 			}) as XcmVersionedLocation;
 
-			// Send the XCM instruction from Laos to Asset Hub
-			const alith = new Keyring({ type: "ethereum" }).addFromUri(ALITH_PRIVATE_KEY);
+			// Get balances before teleporting.
 			const balanceAlithBefore = new BN((await apiLaos.query.system.account(alith.address)).data.free);
 			const balanceLaosAccountBefore = new BN(
 				(await apiAssetHub.query.system.account(laosAccountInAssetHub)).data.free
 			);
-			const sudoCall = apiLaos.tx.sudo.sudo(apiLaos.tx.polkadotXcm.send(destination, instruction));
-			await sudoCall
-				.signAndSend(alith, () => {})
-				.catch((error: any) => {
-					console.log("transaction failed", error);
-				});
 
-			// Check if the foreign asset has been created in Asset Hub
+			// Send the XCM instruction from LAOS too Asset Hub
+			const sudoCall = apiLaos.tx.sudo.sudo(apiLaos.tx.polkadotXcm.send(destination, instruction));
+			try {
+				await sudoCall.signAndSend(alith);
+			} catch (error) {
+				console.log("transaction failed", error);
+			}
+
+			// Check if the foreign asset create event has been emitted in Asset Hub
 			let waitForNBlocks = 5;
 			let eventFound = null;
 			while (waitForNBlocks > 0 && !eventFound) {
+				console.log("[ASSET_HUB] Waiting til LAOS asset has been created...");
+
 				const events = await apiAssetHub.query.system.events();
+
 				events.filter((event) => {
 					if (apiAssetHub.events.foreignAssets.Created.is(event.event)) {
 						eventFound = event;
 					}
 				});
+
 				await awaitBlockChange(apiAssetHub);
 				waitForNBlocks--;
 			}
+
 			expect(eventFound.event.data[0].toString()).to.equal(laosAssetid.toString());
 			expect(eventFound.event.data[1].toString()).to.equal(laosAccountInAssetHub);
 			expect(eventFound.event.data[2].toString()).to.equal(laosAccountInAssetHub);
+
+			// Check that balances are correct.
 			expect(balanceAlithBefore).to.be.a.bignumber.that.equals(
 				new BN((await apiLaos.query.system.account(alith.address)).data.free)
 			);
+
 			const laosAccountBalanceDifference = balanceLaosAccountBefore.sub(
 				new BN((await apiAssetHub.query.system.account(laosAccountInAssetHub)).data.free)
 			);
 			expect(laosAccountBalanceDifference).to.be.a.bignumber.that.equals(ONE_DOT.add(DEPOSIT));
+
+      // The asset's found in the pallet
+      expect((await apiAssetHub.query.foreignAssets.asset(laosAssetid)).isEmpty).to.be.false;
 		}
 	});
 
