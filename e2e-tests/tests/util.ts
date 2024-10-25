@@ -309,21 +309,21 @@ export const waitForBlockProduction = async (api: ApiPromise, name: string) => {
 };
 
 export const siblingLocation = (id: number) => ({
-	parents: "1",
+	parents: 1,
 	interior: {
-		X1: { Parachain: id },
+		x1: { parachain: id },
 	},
 });
 export const relayLocation = () => ({
-	parents: "1",
+	parents: 1,
 	interior: {
-		Here: "",
+		here: null,
 	},
 });
 
 interface XcmInstructionParams {
 	api: ApiPromise;
-	call: DoubleEncodedCall;
+	calls: DoubleEncodedCall[];
 	refTime: BN;
 	proofSize: BN;
 	amount: BN;
@@ -332,7 +332,7 @@ interface XcmInstructionParams {
 
 export const buildXcmInstruction = ({
 	api,
-	call,
+	calls,
 	refTime,
 	proofSize,
 	amount,
@@ -341,6 +341,17 @@ export const buildXcmInstruction = ({
 	const relayToken = api.createType("AssetIdV3", {
 		Concrete: relayLocation(),
 	}) as AssetIdV3;
+
+	const transacts = calls.map((call) => ({
+		Transact: {
+			originKind,
+			requireWeightAtMost: api.createType("WeightV2", {
+				refTime,
+				proofSize,
+			}),
+			call,
+		},
+	}));
 
 	return api.createType("XcmVersionedXcm", {
 		V3: [
@@ -365,16 +376,7 @@ export const buildXcmInstruction = ({
 					weight_limit: "Unlimited",
 				},
 			},
-			{
-				Transact: {
-					originKind,
-					requireWeightAtMost: api.createType("WeightV2", {
-						refTime,
-						proofSize,
-					}),
-					call,
-				},
-			},
+			...transacts,
 		],
 	});
 };
