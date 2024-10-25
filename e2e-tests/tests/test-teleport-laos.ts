@@ -144,8 +144,8 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 			);
 			expect(laosAccountBalanceDifference).to.be.a.bignumber.that.equals(ONE_DOT.add(DEPOSIT));
 
-      // The asset's found in the pallet
-      expect((await apiAssetHub.query.foreignAssets.asset(laosAssetid)).isEmpty).to.be.false;
+			// The asset's found in the pallet
+			expect((await apiAssetHub.query.foreignAssets.asset(laosAssetid)).isEmpty).to.be.false;
 		}
 	});
 
