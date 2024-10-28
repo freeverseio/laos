@@ -45,8 +45,6 @@ pub const ASSET_HUB_ID: u32 = 1000;
 pub const RELAY_NETWORK: NetworkId = NetworkId::Polkadot;
 
 parameter_types! {
-	// Represents the location of the Relay Chain (parent in the XCM hierarchy).
-	pub const RelayLocation: Location = Location::parent();
 	// Optional network identifier for the Relay Chain; set to `None` for default behavior.
 	pub const RelayNetwork: NetworkId = RELAY_NETWORK;
 	// Defines the origin for messages coming from the Relay Chain.
@@ -180,7 +178,7 @@ impl xcm_executor::Config for XcmConfig {
 	// Converts weight fees into asset payments and handles fee charging.
 	type Trader = UsingComponents<
 		<Runtime as pallet_transaction_payment::Config>::WeightToFee,
-		RelayLocation,
+		HereLocation,
 		AccountId,
 		Balances,
 		ToAuthor<Runtime>,
