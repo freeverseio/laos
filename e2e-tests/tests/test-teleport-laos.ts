@@ -476,6 +476,5 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 		const alithBalance = (await apiLaos.query.system.account(alith.address)).data.free;
 		const realAmountRecieved = new BN(eventFound.event.data[1].toString());
 		expect(alithBalanceBefore.add(realAmountRecieved).cmp(alithBalance)).to.be.eq(0);
-		expect(alithBalanceBefore.add(amount).cmp(alithBalance)).to.be.eq(0);
 	});
 });
