@@ -14,6 +14,7 @@ import {
 	siblingLocation,
 	buildXcmInstruction,
 	relayLocation,
+	hereLocation,
 } from "./util";
 import { ApiPromise, Keyring } from "@polkadot/api";
 import { KeyringPair } from "@polkadot/keyring/types";
@@ -339,12 +340,7 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 			V3: [
 				{
 					id: {
-						Concrete: {
-							parents: 0,
-							interior: {
-								Here: "",
-							},
-						},
+						Concrete: hereLocation(),
 					},
 					fun: {
 						Fungible: amount,
@@ -356,6 +352,13 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 		const fee_asset_item = "0";
 		const weight_limit = "Unlimited";
 
+		const laosAssetid = apiAssetHub.createType(
+			"StagingXcmV3MultiLocation",
+			siblingLocation(LAOS_PARA_ID)
+		) as StagingXcmV3MultiLocation;
+		const charlieBalanceBefore = hexToBn(
+			(await apiAssetHub.query.foreignAssets.account(laosAssetid, charlie.address)).toJSON()?.["balance"] ?? "0x0"
+		);
 		const call = apiLaos.tx.polkadotXcm.limitedTeleportAssets(
 			destination,
 			beneficiary,
@@ -368,8 +371,111 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 			console.log("transaction failed", error);
 		});
 
-		// TODO check Charlie amount
+		// Check that LAOS has been sent in Asset Hub
+		let waitForNBlocks = WAITING_BLOCKS_FOR_EVENTS; // TODO refactor create wait for events function
+		let eventFound = null;
+		while (waitForNBlocks > 0 && !eventFound) {
+			const events = await apiAssetHub.query.system.events();
+			events.filter((event) => {
+				if (apiAssetHub.events.foreignAssets.Issued.is(event.event)) {
+					eventFound = event;
+				}
+			});
+			await awaitBlockChange(apiAssetHub);
+			waitForNBlocks--;
+		}
+		expect(eventFound.event.data[0].toJSON()).to.deep.equal(laosAssetid.toJSON()); // assetId
+		expect(eventFound.event.data[1].toString()).to.equal(charlie.address); // owner
+		const charlieBalance = hexToBn(
+			(await apiAssetHub.query.foreignAssets.account(laosAssetid, charlie.address)).toJSON()["balance"]
+		);
+		const realAmountRecieved = new BN(eventFound.event.data[2].toString())
+		expect(charlieBalanceBefore.add(realAmountRecieved).cmp(charlieBalance)).to.be.eq(0);
 	});
 
-	// TODO teleport back
+	step("Teleport back from AssetHub to LAOS", async function () {
+		const charlie = new Keyring({ type: "sr25519" }).addFromUri("//Charlie");
+		const alith = new Keyring({ type: "ethereum" }).addFromUri(ALITH_PRIVATE_KEY);
+
+		const destination = apiAssetHub.createType("XcmVersionedLocation", {
+			V3: siblingLocation(LAOS_PARA_ID),
+		});
+
+		// We need to use AssetHub api otherwise we get an error as LAOS does not use AccountId32
+		let accountId = apiLaos.createType("AccountId", alith.address);
+		const beneficiary = apiAssetHub.createType("XcmVersionedLocation", {
+			V3: {
+				parents: "0",
+				interior: {
+					X1: {
+						AccountKey20: {
+							// network: 'Any',
+							key: accountId.toHex(),
+						},
+					},
+				},
+			},
+		});
+
+		const amount = ONE_LAOS.muln(1);
+		const assets = apiAssetHub.createType("XcmVersionedAssets", {
+			V3: [
+				{
+					id: {
+						Concrete: siblingLocation(LAOS_PARA_ID),
+					},
+					fun: {
+						Fungible: amount,
+					},
+				},
+			],
+		});
+		// TODO check this in production we should pay
+		const fee_asset_item = "0";
+		const weight_limit = "Unlimited";
+
+		const laosAssetid = apiAssetHub.createType(
+			"StagingXcmV3MultiLocation",
+			siblingLocation(LAOS_PARA_ID)
+		) as StagingXcmV3MultiLocation;
+		const charlieBalanceBefore = hexToBn(
+			(await apiAssetHub.query.foreignAssets.account(laosAssetid, charlie.address)).toJSON()["balance"]
+		);
+		const alithBalanceBefore = (await apiLaos.query.system.account(alith.address)).data.free;
+
+		const call = apiAssetHub.tx.polkadotXcm.limitedTeleportAssets(
+			destination,
+			beneficiary,
+			assets,
+			fee_asset_item,
+			weight_limit
+		);
+		call.signAndSend(charlie).catch((error: any) => {
+			console.log("transaction failed", error);
+		});
+
+		// Check that LAOS has been sent in Asset Hub
+		let waitForNBlocks = WAITING_BLOCKS_FOR_EVENTS; // TODO refactor create wait for events function
+		let eventFound = null;
+		while (waitForNBlocks > 0 && !eventFound) {
+			const events = await apiLaos.query.system.events();
+			events.filter((event) => {
+				if (apiLaos.events.balances.Minted.is(event.event)) {
+					eventFound = event;
+				}
+			});
+			await awaitBlockChange(apiLaos);
+			waitForNBlocks--;
+		}
+		expect(eventFound.event.data[0].toString()).to.equal(alith.address); // beneficiary
+
+		const charlieBalance = hexToBn(
+			(await apiAssetHub.query.foreignAssets.account(laosAssetid, charlie.address)).toJSON()["balance"]
+		);
+		expect(charlieBalanceBefore.sub(amount).cmp(charlieBalance)).to.be.eq(0);
+		const alithBalance = (await apiLaos.query.system.account(alith.address)).data.free;
+		const realAmountRecieved = new BN(eventFound.event.data[1].toString());
+		expect(alithBalanceBefore.add(realAmountRecieved).cmp(alithBalance)).to.be.eq(0);
+		expect(alithBalanceBefore.add(amount).cmp(alithBalance)).to.be.eq(0);
+	});
 });

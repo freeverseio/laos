@@ -49,8 +49,6 @@ pub const RELAY_NETWORK: NetworkId =
 	NetworkId::ByGenesis(hex!("77afd6190f1554ad45fd0d31aee62aacc33c6db0ea801129acb813f913e0764f"));
 
 parameter_types! {
-	// Represents the location of the Relay Chain (parent in the XCM hierarchy).
-	pub const RelayLocation: Location = Location::parent();
 	// Optional network identifier for the Relay Chain; set to `None` for default behavior.
 	pub const RelayNetwork: NetworkId = RELAY_NETWORK;
 	// Defines the origin for messages coming from the Relay Chain.
@@ -184,7 +182,7 @@ impl xcm_executor::Config for XcmConfig {
 	// Converts weight fees into asset payments and handles fee charging.
 	type Trader = UsingComponents<
 		<Runtime as pallet_transaction_payment::Config>::WeightToFee,
-		RelayLocation,
+		HereLocation,
 		AccountId,
 		Balances,
 		ToAuthor<Runtime>,

@@ -318,6 +318,12 @@ export const relayLocation = () => ({
 		here: null,
 	},
 });
+export const hereLocation = () => ({
+	parents: 0,
+	interior: {
+		here: null,
+	},
+});
 
 interface XcmInstructionParams {
 	api: ApiPromise;
