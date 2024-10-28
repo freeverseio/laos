@@ -14,6 +14,33 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
-use crate::Runtime;
+use crate::{Runtime, Vesting};
+use frame_support::traits::GetStorageVersion;
+use sp_runtime::DispatchError;
+use sp_std::vec::Vec;
 
-pub type Migrations = (cumulus_pallet_xcmp_queue::migration::v4::MigrationToV4<Runtime>,);
+pub type Migrations = (cumulus_pallet_xcmp_queue::migration::v4::MigrationToV4<Runtime>, MigrationPalletVestingTo6SecBlockProduction);
+
+pub struct MigrationPalletVestingTo6SecBlockProduction;
+impl frame_support::traits::OnRuntimeUpgrade for MigrationPalletVestingTo6SecBlockProduction {
+    #[cfg(feature = "try-runtime")]
+	fn pre_upgrade() -> Result<Vec<u8>, DispatchError> {
+		log::info!("Pallet Vesting migrating from {:#?}", Vesting::on_chain_storage_version());
+		Ok(Vec::new())
+	}
+
+	#[cfg(feature = "try-runtime")]
+	fn post_upgrade(_state: Vec<u8>) -> Result<(), DispatchError> {
+		// log::info!("{} migrated to {:#?}", Pallet::name(), Pallet::on_chain_storage_version());
+		Ok(())
+	}
+
+	fn on_runtime_upgrade() -> frame_support::weights::Weight {log::info!("Pallet Vesting migrating from {:#?}", Vesting::on_chain_storage_version());
+log::info!("ciaooooooooo");
+log::info!("Pallet Vesting migrating from {:#?}", Vesting::on_chain_storage_version());
+		// if Pallet::on_chain_storage_version() == StorageVersion::new(0) {
+		// 	Pallet::current_storage_version().put::<Pallet>();
+		// }
+		<Runtime as frame_system::Config>::DbWeight::get().reads_writes(1, 1)
+	}
+}
