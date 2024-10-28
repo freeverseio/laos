@@ -14,33 +14,96 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
-use crate::{Runtime, Vesting};
-use frame_support::traits::GetStorageVersion;
-use sp_runtime::DispatchError;
-use sp_std::vec::Vec;
+use crate::{Runtime, Weight};
+use frame_support::{
+	traits::{Currency, OnRuntimeUpgrade},
+	BoundedVec,
+};
+use frame_system::pallet_prelude::BlockNumberFor;
+use pallet_vesting::MaxVestingSchedulesGet;
 
-pub type Migrations = (cumulus_pallet_xcmp_queue::migration::v4::MigrationToV4<Runtime>, MigrationPalletVestingTo6SecBlockProduction);
+pub type Migrations = (
+	cumulus_pallet_xcmp_queue::migration::v4::MigrationToV4<Runtime>,
+	VestingBlockTimeMigrationTo6Sec,
+);
 
-pub struct MigrationPalletVestingTo6SecBlockProduction;
-impl frame_support::traits::OnRuntimeUpgrade for MigrationPalletVestingTo6SecBlockProduction {
-    #[cfg(feature = "try-runtime")]
-	fn pre_upgrade() -> Result<Vec<u8>, DispatchError> {
-		log::info!("Pallet Vesting migrating from {:#?}", Vesting::on_chain_storage_version());
-		Ok(Vec::new())
+pub struct VestingBlockTimeMigrationTo6Sec;
+
+type BalanceOf<T> = <<T as pallet_vesting::Config>::Currency as Currency<
+	<T as frame_system::Config>::AccountId,
+>>::Balance;
+
+impl OnRuntimeUpgrade for VestingBlockTimeMigrationTo6Sec {
+	fn on_runtime_upgrade() -> Weight {
+		let mut reads = 0u64;
+		let mut writes = 0u64;
+
+		// Drain existing vesting schedules
+		for (account_id, mut schedules) in pallet_vesting::Vesting::<Runtime>::drain() {
+			reads += 1;
+
+			// Create a new set of schedules with adjusted starting blocks
+			let mut new_schedules: BoundedVec<
+				pallet_vesting::VestingInfo<BalanceOf<Runtime>, BlockNumberFor<Runtime>>,
+				MaxVestingSchedulesGet<Runtime>,
+			> = BoundedVec::new();
+
+			for schedule in &mut schedules {
+				// Adjust starting block and period for the 6-second block time
+				let adjusted_schedule = pallet_vesting::VestingInfo::new(
+					schedule.locked(),
+					schedule.per_block(),
+					schedule.starting_block().saturating_mul(2u32.into()),
+				);
+
+				// Attempt to add adjusted schedule, handling potential overflow gracefully
+				if new_schedules.try_push(adjusted_schedule).is_err() {
+					log::warn!("Failed to push vesting schedule for account {:?}", account_id);
+				}
+			}
+
+			// Update storage with the new schedules
+			pallet_vesting::Vesting::<Runtime>::insert(&account_id, &new_schedules);
+			writes += 1;
+		}
+
+		// Calculate weight based on database operations
+		<Runtime as frame_system::Config>::DbWeight::get().reads_writes(reads + 1, writes + 1)
 	}
+}
 
-	#[cfg(feature = "try-runtime")]
-	fn post_upgrade(_state: Vec<u8>) -> Result<(), DispatchError> {
-		// log::info!("{} migrated to {:#?}", Pallet::name(), Pallet::on_chain_storage_version());
-		Ok(())
-	}
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use crate::{
+		currency::UNIT, tests::ExtBuilder, AccountId, Balance, Balances, BlockNumber,
+		RuntimeOrigin, Vesting,
+	};
+	use frame_support::{assert_noop, assert_ok};
+	use sp_runtime::traits::Saturating;
+	use std::str::FromStr;
 
-	fn on_runtime_upgrade() -> frame_support::weights::Weight {log::info!("Pallet Vesting migrating from {:#?}", Vesting::on_chain_storage_version());
-log::info!("ciaooooooooo");
-log::info!("Pallet Vesting migrating from {:#?}", Vesting::on_chain_storage_version());
-		// if Pallet::on_chain_storage_version() == StorageVersion::new(0) {
-		// 	Pallet::current_storage_version().put::<Pallet>();
-		// }
-		<Runtime as frame_system::Config>::DbWeight::get().reads_writes(1, 1)
+	pub(crate) const ALICE: &str = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
+	pub(crate) const BOB: &str = "0x6c2b9c9b5007740e52d80dddb8e197b0c844f239";
+
+	#[test]
+	fn migration_adjusts_starting_block_correctly() {
+		ExtBuilder::default().build().execute_with(|| {
+			let alice = AccountId::from_str(ALICE).unwrap();
+			assert_ok!(Balances::force_set_balance(
+				RuntimeOrigin::root(),
+				alice.clone(),
+				10000 * UNIT
+			));
+
+			let bob = AccountId::from_str(BOB).unwrap();
+			let locked = 1000 * UNIT;
+			let per_block = 1 * UNIT;
+			let starting_block = 10;
+
+			let schedule = pallet_vesting::VestingInfo::new(locked, per_block, starting_block);
+
+			assert_ok!(Vesting::vested_transfer(RuntimeOrigin::signed(alice), bob, schedule));
+		});
 	}
 }
