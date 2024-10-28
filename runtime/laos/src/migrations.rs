@@ -104,6 +104,19 @@ mod tests {
 			let schedule = pallet_vesting::VestingInfo::new(locked, per_block, starting_block);
 
 			assert_ok!(Vesting::vested_transfer(RuntimeOrigin::signed(alice), bob, schedule));
+
+			// execute the migration
+			assert_eq!(
+				VestingBlockTimeMigrationTo6Sec::on_runtime_upgrade(),
+				Weight::from_parts(250000000, 0)
+			);
+
+			// check that the schedule has been adjusted
+			let schedules = pallet_vesting::Vesting::<Runtime>::get(&bob).unwrap();
+			assert_eq!(schedules.len(), 1);
+			assert_eq!(schedules[0].starting_block(), 20);
+			assert_eq!(schedules[0].locked(), locked);
+			assert_eq!(schedules[0].per_block(), per_block);
 		});
 	}
 }
