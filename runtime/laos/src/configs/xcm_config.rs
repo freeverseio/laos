@@ -170,7 +170,9 @@ impl xcm_executor::Config for XcmConfig {
 	type AssetTransactor = LocalAssetTransactor;
 	// Converts XCM origins to local dispatch origins.
 	type OriginConverter = XcmOriginToTransactDispatchOrigin;
-	type IsReserve = (); // no reserve trasfer are accepted
+	// No reserve transfer accepted
+	type IsReserve = ();
+	// This defines tuples of (Asset, Location) we trust as teleports (either from or to LAOS)
 	type IsTeleporter = TrustedTeleporters;
 	type UniversalLocation = UniversalLocation;
 	// Filters and allows XCM messages based on security policies.
@@ -243,6 +245,7 @@ impl pallet_xcm::Config for Runtime {
 	type ExecuteXcmOrigin = EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
 	type XcmExecuteFilter = Nothing;
 	type XcmExecutor = XcmExecutor<XcmConfig>;
+	// This filter wheter an origin may teleport out different assets.
 	type XcmTeleportFilter = OnlyTeleportNative;
 	// Allows all reserve asset transfers.
 	type XcmReserveTransferFilter = Everything;
@@ -308,5 +311,26 @@ mod tests {
 			CheckingAccount::get().to_string(),
 			"0x6d6F646c70792F78636D63680000000000000000"
 		);
+	}
+
+	#[test]
+	fn only_teleport_native_contains_only_native_asset() {
+		let assets: Vec<Asset> = vec![(HereLocation::get(), Fungible(1_000)).into()];
+
+		// The first parameter passed to contains may be any location as it's not used by the
+		// function. We use HereLocation for simplicity.
+		assert!(OnlyTeleportNative::contains(&(HereLocation::get(), assets)));
+	}
+
+	#[test]
+	fn only_teleport_native_contains_not_all_assets_are_native() {
+		let assets: Vec<Asset> = vec![
+			(HereLocation::get(), Fungible(1_000)).into(),
+			(RelayLocation::get(), Fungible(1_000)).into(),
+		];
+
+		// The first parameter passed to contains may be any location as it's not used by the
+		// function. We use HereLocation for simplicity.
+		assert!(!OnlyTeleportNative::contains(&(HereLocation::get(), assets)));
 	}
 }
