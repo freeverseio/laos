@@ -8,96 +8,159 @@ use pallet_vesting::MaxVestingSchedulesGet;
 
 pub struct VestingMigrationTo6SecBlockTime;
 
-// Define a type alias for Balance, simplifying the readability of types later in the code
+// Type alias for Balance to improve readability in function signatures and types
 type BalanceOf<T> = <<T as pallet_vesting::Config>::Currency as Currency<
 	<T as frame_system::Config>::AccountId,
 >>::Balance;
 
 impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
-	// Function called during runtime upgrade to migrate vesting schedules for 6-second block time
 	fn on_runtime_upgrade() -> Weight {
-		// Initialize counters for database reads and writes
 		let mut read_count = 0u64;
 		let mut write_count = 0u64;
 
-		// Drain all existing vesting schedules from storage
-		// `drain()` will remove all items from `Vesting` storage and iterate over them
-		for (account_id, mut schedules) in pallet_vesting::Vesting::<Runtime>::drain() {
-			read_count += 1; // Increment read counter as we read the schedules from storage
+		for (account_id, schedules) in pallet_vesting::Vesting::<Runtime>::drain() {
+			read_count += 1;
 
-			// Create a new collection to hold updated vesting schedules with adjusted starting
-			// blocks
-			let mut updated_schedules: BoundedVec<
-				pallet_vesting::VestingInfo<BalanceOf<Runtime>, BlockNumberFor<Runtime>>,
-				MaxVestingSchedulesGet<Runtime>,
-			> = BoundedVec::new();
+			// Call the separate logic function to adjust schedules
+			let adjusted_schedules = adjust_schedule(
+				frame_system::Pallet::<Runtime>::block_number(),
+				schedules.to_vec(),
+			);
 
-			// Iterate over each existing vesting schedule to adjust for the 6-second block time
-			for schedule in &mut schedules {
-				let current_block = frame_system::Pallet::<Runtime>::block_number();
-				let starting_block = schedule.starting_block();
-
-				if current_block <= starting_block {
-					let adjusted_starting_block = 2 * schedule.starting_block() - current_block;
-					let adjusted_per_block = schedule.per_block().saturating_div(2u32.into());
-					let adjusted_schedule = pallet_vesting::VestingInfo::new(
-						schedule.locked(),
-						adjusted_per_block,
-						adjusted_starting_block,
-					);
-					if updated_schedules.try_push(adjusted_schedule).is_err() {
-						log::warn!(
-							"Failed to push adjusted vesting schedule for account {:?}",
-							account_id
-						);
-					}
-				} else if (current_block as u128 - starting_block as u128) *
-					(schedule.per_block() as u128) <
-					schedule.locked()
-				{
-					// we need to split it in 2 schedules
-					let how_much_left = schedule.locked() -
-						schedule.per_block() * (current_block as u128 - starting_block as u128);
-					let past_schedule = pallet_vesting::VestingInfo::new(
-						schedule.locked() - how_much_left,
-						schedule.per_block(),
-						starting_block,
-					);
-					let new_schedule = pallet_vesting::VestingInfo::new(
-						how_much_left,
-						schedule.per_block().saturating_div(2u32.into()),
-						current_block,
-					);
-					if updated_schedules.try_push(past_schedule).is_err() {
-						log::warn!(
-							"Failed to push adjusted vesting schedule for account {:?}",
-							account_id
-						);
-					}
-					if updated_schedules.try_push(new_schedule).is_err() {
-						log::warn!(
-							"Failed to push adjusted vesting schedule for account {:?}",
-							account_id
-						);
-					}
-				} else {
-					if updated_schedules.try_push(schedule.clone()).is_err() {
-						log::warn!(
-							"Failed to push adjusted vesting schedule for account {:?}",
-							account_id
-						);
-					}
-				}
-			}
-
-			// Update storage with the new set of adjusted schedules for the account
-			pallet_vesting::Vesting::<Runtime>::insert(&account_id, &updated_schedules);
-			write_count += 1; // Increment write counter as we write the updated schedules to storage
+			// Insert the adjusted schedules back into storage
+			pallet_vesting::Vesting::<Runtime>::insert(&account_id, adjusted_schedules);
+			write_count += 1;
 		}
 
-		// Calculate the total weight based on the number of database reads and writes performed
 		<Runtime as frame_system::Config>::DbWeight::get()
 			.reads_writes(read_count + 1, write_count + 1)
+	}
+}
+/// Adjusts vesting schedules for a new 6-second block time and handles various cases like schedule
+/// splitting.
+///
+/// # Parameters
+/// - `current_block`: The current block number at which the migration is taking place.
+/// - `schedules`: A vector of vesting schedules to be adjusted.
+///
+/// # Returns
+/// A bounded vector of updated vesting schedules that respect the new 6-second block time.
+fn adjust_schedule(
+	current_block: BlockNumberFor<Runtime>,
+	schedules: Vec<pallet_vesting::VestingInfo<BalanceOf<Runtime>, BlockNumberFor<Runtime>>>,
+) -> BoundedVec<
+	pallet_vesting::VestingInfo<BalanceOf<Runtime>, BlockNumberFor<Runtime>>,
+	MaxVestingSchedulesGet<Runtime>,
+> {
+	let mut adjusted_schedules = BoundedVec::new();
+
+	for schedule in schedules {
+		if current_block <= schedule.starting_block() {
+			// Case 1: Current block is before or at the starting block, so adjust the schedule for
+			// 6-second block time.
+			let new_schedule = adjust_future_schedule(schedule, current_block);
+			try_push_schedule(&mut adjusted_schedules, new_schedule);
+		} else if remaining_vesting(schedule.clone(), current_block) > 0 {
+			// Case 2: Current block is within the schedule range, so split it into past and new
+			// vesting schedules.
+			let (past_schedule, new_schedule) = split_schedule(schedule, current_block);
+			try_push_schedule(&mut adjusted_schedules, past_schedule);
+			try_push_schedule(&mut adjusted_schedules, new_schedule);
+		} else {
+			// Case 3: Current block is beyond the end of the schedule; add the schedule as-is.
+			try_push_schedule(&mut adjusted_schedules, schedule);
+		}
+	}
+	adjusted_schedules
+}
+
+/// Adjusts a vesting schedule when the current block is before or at the schedule's start,
+/// halving the per-block rate for 6-second block time and recalculating the starting block.
+///
+/// # Parameters
+/// - `schedule`: The original vesting schedule.
+/// - `current_block`: The current block number.
+///
+/// # Returns
+/// A new vesting schedule with adjusted starting block and per-block rate.
+fn adjust_future_schedule(
+	schedule: pallet_vesting::VestingInfo<BalanceOf<Runtime>, BlockNumberFor<Runtime>>,
+	current_block: BlockNumberFor<Runtime>,
+) -> pallet_vesting::VestingInfo<BalanceOf<Runtime>, BlockNumberFor<Runtime>> {
+	let adjusted_starting_block = 2 * schedule.starting_block() - current_block;
+	let adjusted_per_block = schedule.per_block().saturating_div(2u32.into());
+	pallet_vesting::VestingInfo::new(schedule.locked(), adjusted_per_block, adjusted_starting_block)
+}
+
+/// Splits a vesting schedule into two parts: a past vesting schedule covering blocks
+/// before `current_block`, and a new vesting schedule starting at `current_block`.
+///
+/// # Parameters
+/// - `schedule`: The original vesting schedule to be split.
+/// - `current_block`: The current block number, marking the split point.
+///
+/// # Returns
+/// A tuple with:
+/// - `past_schedule`: Covers vesting before `current_block`.
+/// - `new_schedule`: Covers vesting from `current_block`.
+fn split_schedule(
+	schedule: pallet_vesting::VestingInfo<BalanceOf<Runtime>, BlockNumberFor<Runtime>>,
+	current_block: BlockNumberFor<Runtime>,
+) -> (
+	pallet_vesting::VestingInfo<BalanceOf<Runtime>, BlockNumberFor<Runtime>>,
+	pallet_vesting::VestingInfo<BalanceOf<Runtime>, BlockNumberFor<Runtime>>,
+) {
+	let vested_amount =
+		schedule.per_block() * (current_block as u128 - schedule.starting_block() as u128);
+	let remaining_amount = schedule.locked() - vested_amount;
+
+	let past_schedule = pallet_vesting::VestingInfo::new(
+		vested_amount,
+		schedule.per_block(),
+		schedule.starting_block(),
+	);
+
+	let new_per_block = schedule.per_block().saturating_div(2u32.into());
+	let new_schedule =
+		pallet_vesting::VestingInfo::new(remaining_amount, new_per_block, current_block);
+
+	(past_schedule, new_schedule)
+}
+
+/// Calculates the remaining vesting amount for a schedule from the current block
+///
+/// # Parameters
+/// - `schedule`: The vesting schedule to check.
+/// - `current_block`: The current block number.
+///
+/// # Returns
+/// The remaining amount of tokens to vest after the current block.
+fn remaining_vesting(
+	schedule: pallet_vesting::VestingInfo<BalanceOf<Runtime>, BlockNumberFor<Runtime>>,
+	current_block: BlockNumberFor<Runtime>,
+) -> BalanceOf<Runtime> {
+	if current_block > schedule.starting_block() {
+		let elapsed_blocks = current_block as u128 - schedule.starting_block() as u128;
+		schedule.locked().saturating_sub(schedule.per_block() * elapsed_blocks)
+	} else {
+		schedule.locked()
+	}
+}
+
+/// Attempts to push a schedule to the bounded vector and logs a warning if unsuccessful.
+///
+/// # Parameters
+/// - `schedules`: The bounded vector to which the schedule should be added.
+/// - `schedule`: The vesting schedule to add.
+fn try_push_schedule(
+	schedules: &mut BoundedVec<
+		pallet_vesting::VestingInfo<BalanceOf<Runtime>, BlockNumberFor<Runtime>>,
+		MaxVestingSchedulesGet<Runtime>,
+	>,
+	schedule: pallet_vesting::VestingInfo<BalanceOf<Runtime>, BlockNumberFor<Runtime>>,
+) {
+	if schedules.try_push(schedule).is_err() {
+		log::warn!("Failed to push vesting schedule due to bounded vector limit");
 	}
 }
 
