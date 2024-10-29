@@ -1,10 +1,12 @@
-use crate::{Runtime, Weight};
+use crate::{AccountId, Runtime, Weight};
 use frame_support::{
 	traits::{Currency, OnRuntimeUpgrade},
 	BoundedVec,
 };
 use frame_system::pallet_prelude::BlockNumberFor;
 use pallet_vesting::MaxVestingSchedulesGet;
+use parity_scale_codec::{Decode, Encode};
+use sp_runtime::DispatchError;
 
 pub struct VestingMigrationTo6SecBlockTime;
 
@@ -86,7 +88,7 @@ impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
 		let mut max_schedule_count_post_migration = 0;
 
 		assert_eq!(
-			new_account_count, old_account_count,
+			new_account_count, old_account_count as usize,
 			"Mismatch in vesting account count after migration: expected {}, got {}",
 			old_account_count, new_account_count
 		);
