@@ -1,19 +1,3 @@
-// Copyright 2023-2024 Freeverse.io
-// This file is part of LAOS.
-
-// LAOS is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-
-// LAOS is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// You should have received a copy of the GNU General Public License
-// along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
-
 use crate::{Runtime, Weight};
 use frame_support::{
 	traits::{Currency, OnRuntimeUpgrade},
@@ -21,11 +5,6 @@ use frame_support::{
 };
 use frame_system::pallet_prelude::BlockNumberFor;
 use pallet_vesting::MaxVestingSchedulesGet;
-
-pub type Migrations = (
-	cumulus_pallet_xcmp_queue::migration::v4::MigrationToV4<Runtime>,
-	VestingBlockTimeMigrationTo6Sec,
-);
 
 pub struct VestingBlockTimeMigrationTo6Sec;
 
@@ -92,6 +71,9 @@ mod tests {
 				alice.clone(),
 				10000 * UNIT
 			));
+
+			// check current block
+			assert_eq!(frame_system::Pallet::<Runtime>::block_number(), 0);
 
 			let bob = AccountId::from_str(BOB).unwrap();
 			let locked = 1000 * UNIT;
