@@ -38,11 +38,9 @@ use xcm_builder::{
 	TakeWeightCredit, TrailingSetTopicAsId, WithComputedOrigin,
 };
 use xcm_executor::XcmExecutor;
-
-pub const ASSET_HUB_ID: u32 = crate::PARA_B_ID;
+use xcm_simulator::AssetFilter;
 
 parameter_types! {
-	pub const RelayLocation: Location = Location::parent();
 	pub const RelayNetwork: NetworkId = NetworkId::Kusama;
 	pub RelayChainOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into();
 	// For the real deployment, it is recommended to set `RelayNetwork` according to the relay chain
@@ -136,13 +134,13 @@ pub type Barrier = TrailingSetTopicAsId<
 >;
 
 parameter_types! {
-	pub ParentTokenPerSecondPerByte: (AssetId, u128, u128) = (AssetId(Parent.into()), 1, 1);
+	pub ParentTokenPerSecondPerByte: (AssetId, u128, u128) = (Parent.into(), 1, 1);
 }
 
 parameter_types! {
 	pub NativeToken: AssetId = AssetId(Location::here());
 	pub NativeTokenFilter: AssetFilter = Wild(AllOf { fun: WildFungible, id: NativeToken::get() });
-	pub AssetHubLocation: Location = Location::new(1, [Parachain(ASSET_HUB_ID)]);
+	pub AssetHubLocation: Location = Location::new(1, [Parachain(crate::PARA_ASSETHUB_ID)]);
 	pub AssetHubTrustedTeleporter: (AssetFilter, Location) = (NativeTokenFilter::get(), AssetHubLocation::get());
 }
 
@@ -186,6 +184,21 @@ impl xcm_executor::Config for XcmConfig {
 pub type LocalOriginToLocation = SignedToAccountId20<RuntimeOrigin, AccountId, RelayNetwork>;
 pub type XcmRouter = EnsureDecodableXcm<crate::ParachainXcmRouter<MsgQueue>>;
 
+//Filter all teleports that aren't the native asset
+pub struct OnlyTeleportNative;
+impl Contains<(Location, Vec<Asset>)> for OnlyTeleportNative {
+	fn contains(t: &(Location, Vec<Asset>)) -> bool {
+		t.1.iter().all(|asset| {
+			log::trace!(target: "xcm::OnlyTeleportNative", "Asset to be teleported: {:?}", asset);
+			if let Asset { id: asset_id, fun: Fungible(_) } = asset {
+				asset_id.0 == HereLocation::get()
+			} else {
+				false
+			}
+		})
+	}
+}
+
 impl pallet_xcm::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type SendXcmOrigin = EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
@@ -193,8 +206,8 @@ impl pallet_xcm::Config for Runtime {
 	type ExecuteXcmOrigin = EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
 	type XcmExecuteFilter = Nothing;
 	type XcmExecutor = XcmExecutor<XcmConfig>;
-	type XcmTeleportFilter = Nothing;
-	type XcmReserveTransferFilter = Everything;
+	type XcmTeleportFilter = OnlyTeleportNative;
+	type XcmReserveTransferFilter = Nothing;
 	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
 	type UniversalLocation = UniversalLocation;
 	type RuntimeOrigin = RuntimeOrigin;

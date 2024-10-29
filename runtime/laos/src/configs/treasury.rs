@@ -25,7 +25,7 @@ parameter_types! {
 	pub const SpendPeriod: BlockNumber = prod_or_fast!(7 * DAYS, 5 * MINUTES);
 	pub const MaxApprovals: u32 = 100;
 	pub const TreasuryId: PalletId = PalletId(*b"py/trsry");
-	pub const PayoutPeriod: BlockNumber = 5;
+	pub const PayoutPeriod: BlockNumber = 28 * DAYS;
 	pub TreasuryAccount: AccountId = Treasury::account_id();
 }
 
