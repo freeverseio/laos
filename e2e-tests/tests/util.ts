@@ -450,7 +450,9 @@ export const waitForEvent = async (
 		startBlock = currentHeader.number.toNumber();
 		endBlock = startBlock + blockTimeout;
 
-		debugEvents(`[${api.runtimeVersion.specName.toString()}] Starting to watch for events from block ${startBlock} to ${endBlock}...`);
+		debugEvents(
+			`[${api.runtimeVersion.specName.toString()}] Starting to watch for events from block ${startBlock} to ${endBlock}...`
+		);
 
 		// Subscribe to new blocks
 		unsub = await api.rpc.chain.subscribeNewHeads(async (header) => {

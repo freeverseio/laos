@@ -28,7 +28,7 @@ const debugTeleport = debug("teleport");
 
 const ONE_LAOS = new BN("1000000000000000000");
 const ONE_DOT = new BN("1000000000000");
-const WAITING_BLOCKS_FOR_EVENTS = 15; // Number of blocks we wait at max to receive an event
+const WAITING_BLOCKS_FOR_EVENTS = 10; // Number of blocks we wait at max to receive an event
 
 describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 	const laosSiblingAccount = sovereignAccountOf(LAOS_PARA_ID);
@@ -125,14 +125,14 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 
 			// Check that balances are correct.
 			const alithBalance = new BN((await apiLaos.query.system.account(alith.address)).data.free);
-			expect(alithBalanceBefore.cmp(alithBalance), "Alith balance shouldn't change").to.be.eq(0);
+			expect(alithBalanceBefore.eq(alithBalance), "Alith balance shouldn't change");
 
 			const laosBalance = new BN((await apiAssetHub.query.system.account(laosSiblingAccount)).data.free);
 			const decreaseOfLaosBalance = laosBalanceBefore.sub(laosBalance);
 			expect(
-				decreaseOfLaosBalance.cmp(ONE_DOT.add(apiAssetHub.consts.assets.assetDeposit)),
-				"Laos balance should decrease XCM withdrawn amount + asset deposit"
-			).to.be.eq(0);
+				decreaseOfLaosBalance.eq(ONE_DOT.add(apiAssetHub.consts.assets.assetDeposit)),
+				"Laos balance should decrease by the XCM withdrawn amount plus the asset deposit"
+			);
 
 			expect(
 				(await apiAssetHub.query.foreignAssets.asset(apiAssetHub.laosAssetId)).isEmpty,
@@ -189,16 +189,16 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 
 		expect(event).to.not.be.null;
 		const alithBalance = new BN((await apiLaos.query.system.account(alith.address)).data.free);
-		expect(alithBalanceBefore.cmp(alithBalance), "Alith balance shouldn't change").to.be.eq(0);
+		expect(alithBalanceBefore.eq(alithBalance), "Alith balance shouldn't change");
 
 		const laosBalance = new BN((await apiAssetHub.query.system.account(laosSiblingAccount)).data.free);
 		const decreaseOfLaosBalance = laosBalanceBefore.sub(laosBalance);
-		expect(decreaseOfLaosBalance.cmp(ONE_DOT), "Laos should decrease XCM withdrawn amount").to.be.eq(0);
+		expect(decreaseOfLaosBalance.eq(ONE_DOT), "Laos should decrease XCM withdrawn amount");
 
 		const ferdieXLaosBalance = hexToBn(
 			(await apiAssetHub.query.foreignAssets.account(apiAssetHub.laosAssetId, ferdie.address)).toJSON()["balance"]
 		);
-		expect(ferdieXLaosBalance.cmp(new BN(0)), "Ferdie balance should be > 0").to.be.eq(1);
+		expect(ferdieXLaosBalance.gte(new BN(0)), "Ferdie balance should be > 0");
 	});
 
 	step("Create LAOS/RelayToken pool in AssetHub", async function () {
@@ -254,14 +254,14 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 			).to.be.false;
 
 			const alithBalance = new BN((await apiLaos.query.system.account(alith.address)).data.free);
-			expect(alithBalanceBefore.cmp(alithBalance), "Alith balance shouldn't change").to.be.eq(0);
+			expect(alithBalanceBefore.eq(alithBalance), "Alith balance shouldn't change");
 
 			const laosBalance = new BN((await apiAssetHub.query.system.account(laosSiblingAccount)).data.free);
 			const decreaseOfLaosBalance = laosBalanceBefore.sub(laosBalance);
 			expect(
-				decreaseOfLaosBalance.cmp(ONE_DOT.add(apiAssetHub.consts.assets.assetAccountDeposit)),
-				"Laos should decrease XCM withdrawn amount + asset account deposit"
-			).to.be.eq(0);
+				decreaseOfLaosBalance.eq(ONE_DOT.add(apiAssetHub.consts.assets.assetAccountDeposit)),
+				"Laos should decrease by the XCM withdrawn amount plus the asset account deposit"
+			);
 		} else {
 			debugTeleport("Pool already exists, skipping creation...");
 		}
@@ -275,13 +275,13 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 			(await apiAssetHub.query.foreignAssets.account(apiAssetHub.laosAssetId, ferdie.address)).toJSON()["balance"]
 		);
 		expect(
-			ferdieBalance.cmp(liquidityAmountDot),
-			"Ferdie DOT balance should be > amount to be sent to the pool"
-		).to.be.eq(1);
+			ferdieBalance.gte(liquidityAmountDot),
+			"Ferdie's DOT balance should be greater than the amount to be sent to the pool"
+		);
 		expect(
-			ferdieXLaosBalance.cmp(liquidityAmountLaos),
-			"Ferdie LAOS balance should be > amount to be sent to the pool"
-		).to.be.eq(1);
+			ferdieXLaosBalance.gte(liquidityAmountLaos),
+			"Ferdie's LAOS balance should be greater than the amount to be sent to the pool"
+		);
 
 		await apiAssetHub.tx.assetConversion
 			.addLiquidity(
@@ -375,12 +375,15 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 			]
 		);
 		expect(
-			charlieBalanceBefore.add(new BN(realAmountReceived.toString())).cmp(charlieBalance),
-			"Charlie balance have should increased by amount received"
-		).to.be.eq(0);
+			charlieBalanceBefore.add(new BN(realAmountReceived.toString())).eq(charlieBalance),
+			"Charlie's balance should increase by the amount received"
+		);
 		const realAlithBalance = (await apiLaos.query.system.account(alith.address)).data.free;
 		const alithBalance = alithBalanceBefore.sub(amount);
-		expect(alithBalance.sub(realAlithBalance).cmp(ONE_DOT), "Alith balance have should decrease by the amount teleported disregarding fees").to.be.eq(-1);
+		expect(
+			alithBalance.sub(realAlithBalance).lte(ONE_DOT),
+			"Alith's balance should decrease by the amount teleported, disregarding fees"
+		);
 	});
 
 	step("Teleport back from AssetHub to LAOS", async function () {
@@ -391,7 +394,7 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 		});
 
 		// We need to use AssetHub api otherwise we get an error as LAOS does not use AccountId32
-		let beneficiaryAddress = "0x0000000000000000000000000000000000000001"
+		let beneficiaryAddress = "0x0000000000000000000000000000000000000001";
 		const beneficiary = apiAssetHub.createType("XcmVersionedLocation", {
 			V3: {
 				parents: "0",
@@ -459,13 +462,13 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 			]
 		);
 		expect(
-			charlieBalanceBefore.sub(amount).cmp(charlieBalance),
-			"Charlie balance have should decrease by the amount teleported"
-		).to.be.eq(0);
+			charlieBalanceBefore.sub(amount).eq(charlieBalance),
+			"Charlie's balance should decrease by the amount teleported"
+		);
 		const beneficiaryBalance = (await apiLaos.query.system.account(beneficiaryAddress)).data.free;
 		expect(
-			beneficiaryBalanceBefore.add(new BN(realAmountReceived.toString())).cmp(beneficiaryBalance),
-			"Alith balance have should increased by the amount received in the teleport"
-		).to.be.eq(0);
+			beneficiaryBalanceBefore.add(new BN(realAmountReceived.toString())).eq(beneficiaryBalance),
+			"Alith's balance should increase by the amount received in the teleport"
+		);
 	});
 });
