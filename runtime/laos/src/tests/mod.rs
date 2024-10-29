@@ -16,7 +16,7 @@
 
 //! Runtime tests
 
-// mod metadata; // TODO reactive me
+mod metadata; 
 mod precompile_tests;
 mod version_tests;
 
