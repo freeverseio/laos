@@ -20,5 +20,5 @@ use crate::Runtime;
 
 pub type Migrations = (
 	cumulus_pallet_xcmp_queue::migration::v4::MigrationToV4<Runtime>,
-	vesting_migration_6s::VestingBlockTimeMigrationTo6Sec,
+	vesting_migration_6s::VestingMigrationTo6SecBlockTime,
 );

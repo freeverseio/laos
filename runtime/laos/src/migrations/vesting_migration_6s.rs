@@ -6,48 +6,61 @@ use frame_support::{
 use frame_system::pallet_prelude::BlockNumberFor;
 use pallet_vesting::MaxVestingSchedulesGet;
 
-pub struct VestingBlockTimeMigrationTo6Sec;
+pub struct VestingMigrationTo6SecBlockTime;
 
+// Define a type alias for Balance, simplifying the readability of types later in the code
 type BalanceOf<T> = <<T as pallet_vesting::Config>::Currency as Currency<
 	<T as frame_system::Config>::AccountId,
 >>::Balance;
 
-impl OnRuntimeUpgrade for VestingBlockTimeMigrationTo6Sec {
+impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
+	// Function called during runtime upgrade to migrate vesting schedules for 6-second block time
 	fn on_runtime_upgrade() -> Weight {
-		let mut reads = 0u64;
-		let mut writes = 0u64;
+		// Initialize counters for database reads and writes
+		let mut read_count = 0u64;
+		let mut write_count = 0u64;
 
-		// Drain existing vesting schedules
+		// Drain all existing vesting schedules from storage
+		// `drain()` will remove all items from `Vesting` storage and iterate over them
 		for (account_id, mut schedules) in pallet_vesting::Vesting::<Runtime>::drain() {
-			reads += 1;
+			read_count += 1; // Increment read counter as we read the schedules from storage
 
-			// Create a new set of schedules with adjusted starting blocks
-			let mut new_schedules: BoundedVec<
+			// Create a new collection to hold updated vesting schedules with adjusted starting
+			// blocks
+			let mut updated_schedules: BoundedVec<
 				pallet_vesting::VestingInfo<BalanceOf<Runtime>, BlockNumberFor<Runtime>>,
 				MaxVestingSchedulesGet<Runtime>,
 			> = BoundedVec::new();
 
+			// Iterate over each existing vesting schedule to adjust for the 6-second block time
 			for schedule in &mut schedules {
-				// Adjust starting block and period for the 6-second block time
+				// Adjust starting block and period for the new 6-second block time
 				let adjusted_schedule = pallet_vesting::VestingInfo::new(
-					schedule.locked(),
-					schedule.per_block(),
-					schedule.starting_block().saturating_mul(2u32.into()),
+					schedule.locked(),    // The total amount locked remains unchanged
+					schedule.per_block(), // The per-block release rate remains unchanged
+					schedule.starting_block().saturating_mul(2u32.into()), /* Adjust starting
+					                                                        * block (multiplying
+					                                                        * by 2) */
 				);
 
-				// Attempt to add adjusted schedule, handling potential overflow gracefully
-				if new_schedules.try_push(adjusted_schedule).is_err() {
-					log::warn!("Failed to push vesting schedule for account {:?}", account_id);
+				// Attempt to add the adjusted schedule to the new schedules list
+				// If adding fails (due to exceeding the max number of schedules), log a warning
+				if updated_schedules.try_push(adjusted_schedule).is_err() {
+					log::warn!(
+						"Failed to push adjusted vesting schedule for account {:?}",
+						account_id
+					);
 				}
 			}
 
-			// Update storage with the new schedules
-			pallet_vesting::Vesting::<Runtime>::insert(&account_id, &new_schedules);
-			writes += 1;
+			// Update storage with the new set of adjusted schedules for the account
+			pallet_vesting::Vesting::<Runtime>::insert(&account_id, &updated_schedules);
+			write_count += 1; // Increment write counter as we write the updated schedules to storage
 		}
 
-		// Calculate weight based on database operations
-		<Runtime as frame_system::Config>::DbWeight::get().reads_writes(reads + 1, writes + 1)
+		// Calculate the total weight based on the number of database reads and writes performed
+		<Runtime as frame_system::Config>::DbWeight::get()
+			.reads_writes(read_count + 1, write_count + 1)
 	}
 }
 
@@ -86,7 +99,7 @@ mod tests {
 
 			// execute the migration
 			assert_eq!(
-				VestingBlockTimeMigrationTo6Sec::on_runtime_upgrade(),
+				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
 				Weight::from_parts(250000000, 0)
 			);
 
@@ -133,7 +146,7 @@ mod tests {
 			));
 
 			// execute the migration
-			VestingBlockTimeMigrationTo6Sec::on_runtime_upgrade();
+			VestingMigrationTo6SecBlockTime::on_runtime_upgrade();
 
 			// check that both schedules have been adjusted
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(&bob).unwrap();
@@ -152,7 +165,7 @@ mod tests {
 			assert!(pallet_vesting::Vesting::<Runtime>::get(&bob).is_none());
 
 			// execute the migration
-			VestingBlockTimeMigrationTo6Sec::on_runtime_upgrade();
+			VestingMigrationTo6SecBlockTime::on_runtime_upgrade();
 
 			// There should still be no vesting schedules
 			assert!(pallet_vesting::Vesting::<Runtime>::get(&bob).is_none());
@@ -185,7 +198,7 @@ mod tests {
 			}
 
 			// execute the migration
-			VestingBlockTimeMigrationTo6Sec::on_runtime_upgrade();
+			VestingMigrationTo6SecBlockTime::on_runtime_upgrade();
 
 			// check that the number of schedules does not exceed the maximum allowed
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(&bob).unwrap();
