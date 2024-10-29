@@ -303,6 +303,10 @@ where
 mod tests {
 	use super::*;
 
+	parameter_types! {
+		pub SomeLocation: Location = Location::new(1, [Junction::Parachain(123)] );
+	}
+
 	#[test]
 	fn check_checking_account() {
 		assert_eq!(
@@ -324,7 +328,7 @@ mod tests {
 	fn only_teleport_native_contains_not_all_assets_are_native() {
 		let assets: Vec<Asset> = vec![
 			(HereLocation::get(), Fungible(1_000)).into(),
-			(RelayLocation::get(), Fungible(1_000)).into(),
+			(SomeLocation::get(), Fungible(1_000)).into(),
 		];
 
 		// The first parameter passed to contains may be any location as it's not used by the
