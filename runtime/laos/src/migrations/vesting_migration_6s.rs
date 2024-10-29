@@ -34,20 +34,59 @@ impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
 
 			// Iterate over each existing vesting schedule to adjust for the 6-second block time
 			for schedule in &mut schedules {
-				// Adjust starting block and period for the new 6-second block time
-				let adjusted_schedule = pallet_vesting::VestingInfo::new(
-					schedule.locked(), // The total amount locked remains unchanged
-					schedule.per_block().saturating_div(2u32.into()),
-					schedule.starting_block().saturating_mul(2u32.into()),
-				);
+				let current_block = frame_system::Pallet::<Runtime>::block_number();
+				let starting_block = schedule.starting_block();
 
-				// Attempt to add the adjusted schedule to the new schedules list
-				// If adding fails (due to exceeding the max number of schedules), log a warning
-				if updated_schedules.try_push(adjusted_schedule).is_err() {
-					log::warn!(
-						"Failed to push adjusted vesting schedule for account {:?}",
-						account_id
+				if current_block <= starting_block {
+					let adjusted_starting_block = 2 * schedule.starting_block() - current_block;
+					let adjusted_per_block = schedule.per_block().saturating_div(2u32.into());
+					let adjusted_schedule = pallet_vesting::VestingInfo::new(
+						schedule.locked(),
+						adjusted_per_block,
+						adjusted_starting_block,
 					);
+					if updated_schedules.try_push(adjusted_schedule).is_err() {
+						log::warn!(
+							"Failed to push adjusted vesting schedule for account {:?}",
+							account_id
+						);
+					}
+				} else if (current_block as u128 - starting_block as u128) *
+					(schedule.per_block() as u128) <
+					schedule.locked()
+				{
+					// we need to split it in 2 schedules
+					let how_much_left = schedule.locked() -
+						schedule.per_block() * (current_block as u128 - starting_block as u128);
+					let past_schedule = pallet_vesting::VestingInfo::new(
+						schedule.locked() - how_much_left,
+						schedule.per_block(),
+						starting_block,
+					);
+					let new_schedule = pallet_vesting::VestingInfo::new(
+						how_much_left,
+						schedule.per_block().saturating_div(2u32.into()),
+						current_block,
+					);
+					if updated_schedules.try_push(past_schedule).is_err() {
+						log::warn!(
+							"Failed to push adjusted vesting schedule for account {:?}",
+							account_id
+						);
+					}
+					if updated_schedules.try_push(new_schedule).is_err() {
+						log::warn!(
+							"Failed to push adjusted vesting schedule for account {:?}",
+							account_id
+						);
+					}
+				} else {
+					if updated_schedules.try_push(schedule.clone()).is_err() {
+						log::warn!(
+							"Failed to push adjusted vesting schedule for account {:?}",
+							account_id
+						);
+					}
 				}
 			}
 
@@ -74,39 +113,186 @@ mod tests {
 	pub(crate) const BOB: &str = "0x6c2b9c9b5007740e52d80dddb8e197b0c844f239";
 
 	#[test]
-	fn migration_adjusts_starting_block_correctly() {
+	fn migration_updates_vesting_schedule_with_correct_starting_block_and_per_block_rate() {
 		ExtBuilder::default().build().execute_with(|| {
-			let alice = AccountId::from_str(ALICE).unwrap();
-			assert_ok!(Balances::force_set_balance(
-				RuntimeOrigin::root(),
-				alice.clone(),
-				10000 * UNIT
-			));
+			let alice = setup_account(ALICE, 10000 * UNIT);
+			let bob = setup_account(BOB, 0);
 
-			// check current block
+			// Verify current block number is the initial value
 			assert_eq!(frame_system::Pallet::<Runtime>::block_number(), 0);
 
-			let bob = AccountId::from_str(BOB).unwrap();
-			let locked = 1000 * UNIT;
-			let per_block = 2 * UNIT;
+			let locked_amount = 1000 * UNIT;
+			let per_block_reward = 2 * UNIT;
 			let starting_block = 10;
+			let vesting_schedule =
+				pallet_vesting::VestingInfo::new(locked_amount, per_block_reward, starting_block);
 
-			let schedule = pallet_vesting::VestingInfo::new(locked, per_block, starting_block);
+			// Alice transfers vested tokens to Bob
+			assert_ok!(Vesting::vested_transfer(
+				RuntimeOrigin::signed(alice.clone()),
+				bob.clone(),
+				vesting_schedule
+			));
 
-			assert_ok!(Vesting::vested_transfer(RuntimeOrigin::signed(alice), bob, schedule));
-
-			// execute the migration
+			// Execute the migration
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
 				Weight::from_parts(250000000, 0)
 			);
 
-			// check that the schedule has been adjusted
+			// Verify vesting schedule adjustments
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(&bob).unwrap();
 			assert_eq!(schedules.len(), 1);
 			assert_eq!(schedules[0].starting_block(), 20);
-			assert_eq!(schedules[0].locked(), locked);
+			assert_eq!(schedules[0].locked(), locked_amount);
 			assert_eq!(schedules[0].per_block(), 1 * UNIT);
+		});
+	}
+
+	#[test]
+	fn migration_when_current_block_is_before_starting_block() {
+		ExtBuilder::default().build().execute_with(|| {
+			frame_system::Pallet::<Runtime>::set_block_number(5);
+
+			let alice = setup_account(ALICE, 10000 * UNIT);
+			let bob = setup_account(BOB, 0);
+
+			let locked_amount = 1000 * UNIT;
+			let per_block_reward = 2 * UNIT;
+			let starting_block = 10;
+			let vesting_schedule =
+				pallet_vesting::VestingInfo::new(locked_amount, per_block_reward, starting_block);
+
+			// Alice transfers vested tokens to Bob
+			assert_ok!(Vesting::vested_transfer(
+				RuntimeOrigin::signed(alice.clone()),
+				bob.clone(),
+				vesting_schedule
+			));
+
+			// Execute the migration
+			assert_eq!(
+				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
+				Weight::from_parts(250000000, 0)
+			);
+
+			// Verify vesting schedule adjustments
+			let schedules = pallet_vesting::Vesting::<Runtime>::get(&bob).unwrap();
+			assert_eq!(schedules.len(), 1);
+			assert_eq!(schedules[0].starting_block(), 15);
+			assert_eq!(schedules[0].locked(), locked_amount);
+			assert_eq!(schedules[0].per_block(), 1 * UNIT);
+		});
+	}
+
+	#[test]
+	fn migration_when_current_block_is_at_starting_block() {
+		ExtBuilder::default().build().execute_with(|| {
+			let starting_block = 10;
+			frame_system::Pallet::<Runtime>::set_block_number(starting_block);
+
+			let alice = setup_account(ALICE, 10000 * UNIT);
+			let bob = setup_account(BOB, 0);
+
+			let locked_amount = 1000 * UNIT;
+			let per_block_reward = 2 * UNIT;
+			let vesting_schedule =
+				pallet_vesting::VestingInfo::new(locked_amount, per_block_reward, starting_block);
+
+			// Alice transfers vested tokens to Bob
+			assert_ok!(Vesting::vested_transfer(
+				RuntimeOrigin::signed(alice.clone()),
+				bob.clone(),
+				vesting_schedule
+			));
+
+			// Execute the migration
+			assert_eq!(
+				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
+				Weight::from_parts(250000000, 0)
+			);
+
+			// Verify vesting schedule adjustments
+			let schedules = pallet_vesting::Vesting::<Runtime>::get(&bob).unwrap();
+			assert_eq!(schedules.len(), 1);
+			assert_eq!(schedules[0].starting_block(), 10);
+			assert_eq!(schedules[0].locked(), locked_amount);
+			assert_eq!(schedules[0].per_block(), 1 * UNIT);
+		});
+	}
+
+	#[test]
+	fn migration_when_current_block_is_after_starting_block_but_within_schedule() {
+		ExtBuilder::default().build().execute_with(|| {
+			frame_system::Pallet::<Runtime>::set_block_number(15);
+
+			let alice = setup_account(ALICE, 10000 * UNIT);
+			let bob = setup_account(BOB, 0);
+
+			let locked_amount = 1000 * UNIT;
+			let per_block_reward = 2 * UNIT;
+			let starting_block = 10;
+			let vesting_schedule =
+				pallet_vesting::VestingInfo::new(locked_amount, per_block_reward, starting_block);
+
+			// Alice transfers vested tokens to Bob
+			assert_ok!(Vesting::vested_transfer(
+				RuntimeOrigin::signed(alice.clone()),
+				bob.clone(),
+				vesting_schedule
+			));
+
+			// Execute the migration
+			assert_eq!(
+				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
+				Weight::from_parts(250000000, 0)
+			);
+
+			// Verify vesting schedule adjustments
+			let schedules = pallet_vesting::Vesting::<Runtime>::get(&bob).unwrap();
+			assert_eq!(schedules.len(), 2);
+			assert_eq!(schedules[0].starting_block(), 10);
+			assert_eq!(schedules[0].locked(), 10 * UNIT);
+			assert_eq!(schedules[0].per_block(), 2 * UNIT);
+			assert_eq!(schedules[1].starting_block(), 15);
+			assert_eq!(schedules[1].locked(), 990 * UNIT);
+			assert_eq!(schedules[1].per_block(), 1 * UNIT);
+		});
+	}
+
+	#[test]
+	fn migration_when_schedule_is_already_expired() {
+		ExtBuilder::default().build().execute_with(|| {
+			let alice = setup_account(ALICE, 10000 * UNIT);
+			let bob = setup_account(BOB, 0);
+
+			let locked_amount = 1000 * UNIT;
+			let per_block_reward = 2 * UNIT;
+			let starting_block = 10;
+			let vesting_schedule =
+				pallet_vesting::VestingInfo::new(locked_amount, per_block_reward, starting_block);
+
+			// Alice transfers vested tokens to Bob
+			assert_ok!(Vesting::vested_transfer(
+				RuntimeOrigin::signed(alice.clone()),
+				bob.clone(),
+				vesting_schedule
+			));
+
+			frame_system::Pallet::<Runtime>::set_block_number(5000);
+
+			// Execute the migration
+			assert_eq!(
+				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
+				Weight::from_parts(250000000, 0)
+			);
+
+			// Verify vesting schedule adjustments
+			let schedules = pallet_vesting::Vesting::<Runtime>::get(&bob).unwrap();
+			assert_eq!(schedules.len(), 1);
+			assert_eq!(schedules[0].starting_block(), 10);
+			assert_eq!(schedules[0].locked(), locked_amount);
+			assert_eq!(schedules[0].per_block(), 2 * UNIT);
 		});
 	}
 
@@ -202,5 +388,11 @@ mod tests {
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(&bob).unwrap();
 			assert!(schedules.len() <= MaxVestingSchedulesGet::<Runtime>::get() as usize);
 		});
+	}
+
+	fn setup_account(account_str: &str, balance: u128) -> AccountId {
+		let account = AccountId::from_str(account_str).unwrap();
+		assert_ok!(Balances::force_set_balance(RuntimeOrigin::root(), account.clone(), balance));
+		account
 	}
 }
