@@ -71,6 +71,10 @@ impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
 		let mut write_count = 0u64;
 
 		if sp_io::storage::exists(LAOS_VESTING_MIGRATION_6S) {
+			log::info!(
+				target: "runtime::migration",
+				"VestingMigrationTo6SecBlockTime::on_runtime_upgrade - Migration already completed"
+			);
 			read_count += 1;
 		} else {
 			log::info!(
