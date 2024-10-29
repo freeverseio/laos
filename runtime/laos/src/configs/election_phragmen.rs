@@ -43,6 +43,6 @@ impl pallet_elections_phragmen::Config for Runtime {
 	type TermDuration = TermDuration;
 	type VotingBondBase = VotingBondBase;
 	type VotingBondFactor = VotingBondFactor;
-	type KickedMember = ();
+	type KickedMember = Treasury;
 	type WeightInfo = weights::pallet_elections_phragmen::WeightInfo<Runtime>;
 }
