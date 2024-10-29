@@ -28,7 +28,7 @@ const debugTeleport = debug("teleport");
 
 const ONE_LAOS = new BN("1000000000000000000");
 const ONE_DOT = new BN("1000000000000");
-const WAITING_BLOCKS_FOR_EVENTS = 10; // Number of blocks we wait at max to receive an event
+const WAITING_BLOCKS_FOR_EVENTS = 15; // Number of blocks we wait at max to receive an event
 
 describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 	const laosSiblingAccount = sovereignAccountOf(LAOS_PARA_ID);
@@ -145,7 +145,8 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 
 	// TODO merge this step with the previous one, investigate why mint xcm has to be sent with originKind: SovereignAccount
 	// whereas create xcm has to be sent with originKind: Xcm
-	step("Mint LAOS foreign asset in AssetHub", async function () { // TODO is not idempotent
+	step("Mint LAOS foreign asset in AssetHub", async function () {
+		// TODO is not idempotent
 		// Build XCM instructions
 		const ferdie = new Keyring({ type: "sr25519" }).addFromUri("//Ferdie");
 		const ferdieMultiaddress = apiAssetHub.createType("MultiAddress", ferdie.address) as MultiAddress;

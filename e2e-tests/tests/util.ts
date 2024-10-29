@@ -243,13 +243,7 @@ export const awaitBlockChange = async (api: ApiPromise) => {
 		}
 
 		debugBlocks(`Waiting for block change...`);
-		await delay(2000);
-	}
-};
-
-export const awaitNBlocks = async (api: ApiPromise, n: number) => {
-	for (let i = 0; i < n; i++) {
-		await awaitBlockChange(api);
+		await delay(1000);
 	}
 };
 
