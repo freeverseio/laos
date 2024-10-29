@@ -36,11 +36,9 @@ impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
 			for schedule in &mut schedules {
 				// Adjust starting block and period for the new 6-second block time
 				let adjusted_schedule = pallet_vesting::VestingInfo::new(
-					schedule.locked(),    // The total amount locked remains unchanged
-					schedule.per_block(), // The per-block release rate remains unchanged
-					schedule.starting_block().saturating_mul(2u32.into()), /* Adjust starting
-					                                                        * block (multiplying
-					                                                        * by 2) */
+					schedule.locked(), // The total amount locked remains unchanged
+					schedule.per_block().saturating_div(2u32.into()),
+					schedule.starting_block().saturating_mul(2u32.into()),
 				);
 
 				// Attempt to add the adjusted schedule to the new schedules list
@@ -90,7 +88,7 @@ mod tests {
 
 			let bob = AccountId::from_str(BOB).unwrap();
 			let locked = 1000 * UNIT;
-			let per_block = 1 * UNIT;
+			let per_block = 2 * UNIT;
 			let starting_block = 10;
 
 			let schedule = pallet_vesting::VestingInfo::new(locked, per_block, starting_block);
@@ -108,7 +106,7 @@ mod tests {
 			assert_eq!(schedules.len(), 1);
 			assert_eq!(schedules[0].starting_block(), 20);
 			assert_eq!(schedules[0].locked(), locked);
-			assert_eq!(schedules[0].per_block(), per_block);
+			assert_eq!(schedules[0].per_block(), 1 * UNIT);
 		});
 	}
 
