@@ -16,7 +16,7 @@
 
 //! Runtime tests
 
-mod metadata; 
+mod metadata;
 mod precompile_tests;
 mod version_tests;
 
