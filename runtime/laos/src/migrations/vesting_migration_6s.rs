@@ -12,6 +12,8 @@ use sp_std::{vec, vec::Vec};
 
 pub struct VestingMigrationTo6SecBlockTime;
 
+const LAOS_VESTING_MIGRATION_6S: &[u8] = b":laos:vesting_migration_6s:";
+
 // Type alias for Balance to improve readability in function signatures and types
 type BalanceOf<T> = <<T as pallet_vesting::Config>::Currency as Currency<
 	<T as frame_system::Config>::AccountId,
@@ -65,34 +67,42 @@ impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
 	}
 
 	fn on_runtime_upgrade() -> Weight {
-		log::info!(
-			target: "runtime::migration",
-			"VestingMigrationTo6SecBlockTime::on_runtime_upgrade - Starting migration"
-		);
 		let mut read_count = 0u64;
 		let mut write_count = 0u64;
 
-		for (account_id, schedules) in pallet_vesting::Vesting::<Runtime>::drain() {
+		if sp_io::storage::exists(LAOS_VESTING_MIGRATION_6S) {
 			read_count += 1;
-
-			// Adjust vesting schedules for the new block time
-			let adjusted_schedules = adjust_schedule(
-				frame_system::Pallet::<Runtime>::block_number(),
-				schedules.to_vec(),
+		} else {
+			log::info!(
+				target: "runtime::migration",
+				"VestingMigrationTo6SecBlockTime::on_runtime_upgrade - Starting migration"
 			);
 
-			// Insert the adjusted schedules back into storage
-			pallet_vesting::Vesting::<Runtime>::insert(&account_id, adjusted_schedules);
+			for (account_id, schedules) in pallet_vesting::Vesting::<Runtime>::drain() {
+				read_count += 1;
+
+				// Adjust vesting schedules for the new block time
+				let adjusted_schedules = adjust_schedule(
+					frame_system::Pallet::<Runtime>::block_number(),
+					schedules.to_vec(),
+				);
+
+				// Insert the adjusted schedules back into storage
+				pallet_vesting::Vesting::<Runtime>::insert(&account_id, adjusted_schedules);
+				write_count += 1;
+			}
+
+			// Logging completion of the runtime upgrade
+			log::info!(
+				target: "runtime::migration",
+				"VestingMigrationTo6SecBlockTime::on_runtime_upgrade - Migration completed with {} reads and {} writes",
+				read_count,
+				write_count
+			);
+
+			sp_io::storage::set(LAOS_VESTING_MIGRATION_6S, &[]);
 			write_count += 1;
 		}
-
-		// Logging completion of the runtime upgrade
-		log::info!(
-			target: "runtime::migration",
-			"VestingMigrationTo6SecBlockTime::on_runtime_upgrade - Migration completed with {} reads and {} writes",
-			read_count,
-			write_count
-		);
 
 		<Runtime as frame_system::Config>::DbWeight::get()
 			.reads_writes(read_count + 1, write_count + 1)
@@ -327,7 +337,7 @@ mod tests {
 
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
-				Weight::from_parts(250000000, 0)
+				Weight::from_parts(350000000, 0)
 			);
 
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(&bob).unwrap();
@@ -357,7 +367,7 @@ mod tests {
 
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
-				Weight::from_parts(250000000, 0)
+				Weight::from_parts(350000000, 0)
 			);
 
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(&bob).unwrap();
@@ -386,7 +396,7 @@ mod tests {
 
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
-				Weight::from_parts(250000000, 0)
+				Weight::from_parts(350000000, 0)
 			);
 
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(&bob).unwrap();
@@ -415,7 +425,7 @@ mod tests {
 
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
-				Weight::from_parts(250000000, 0)
+				Weight::from_parts(350000000, 0)
 			);
 
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(&bob).unwrap();
@@ -446,7 +456,7 @@ mod tests {
 			frame_system::Pallet::<Runtime>::set_block_number(5000);
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
-				Weight::from_parts(250000000, 0)
+				Weight::from_parts(350000000, 0)
 			);
 
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(&bob).unwrap();
@@ -480,7 +490,7 @@ mod tests {
 
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
-				Weight::from_parts(250000000, 0)
+				Weight::from_parts(350000000, 0)
 			);
 
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(&bob).unwrap();
@@ -500,7 +510,7 @@ mod tests {
 
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
-				Weight::from_parts(125000000, 0)
+				Weight::from_parts(225000000, 0)
 			);
 
 			assert!(pallet_vesting::Vesting::<Runtime>::get(&bob).is_none());
@@ -531,7 +541,7 @@ mod tests {
 			// Execute the migration
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
-				Weight::from_parts(250000000, 0)
+				Weight::from_parts(350000000, 0)
 			);
 
 			// Check that the number of schedules does not exceed the maximum allowed
