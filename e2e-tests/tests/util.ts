@@ -19,13 +19,13 @@ import BN from "bn.js";
 import { expect } from "chai";
 import "@polkadot/api-augment";
 
-import { ApiPromise, HttpProvider, Keyring, SubmittableResult, WsProvider } from "@polkadot/api";
+import { ApiPromise, Keyring, WsProvider } from "@polkadot/api";
 import { KeyringPair } from "@polkadot/keyring/types";
 import { bnToU8a, stringToU8a } from "@polkadot/util";
 import { encodeAddress } from "@polkadot/util-crypto";
 import { AssetIdV3, DoubleEncodedCall, EventRecord, XcmOriginKind } from "@polkadot/types/interfaces";
 import { StagingXcmV3MultiLocation, XcmVersionedXcm } from "@polkadot/types/lookup";
-import { SubmittableExtrinsic } from "@polkadot/api/types";
+import debug from "debug";
 
 require("events").EventEmitter.prototype._maxListeners = 100;
 
@@ -230,6 +230,8 @@ export async function extractRevertReason(context: { web3: Web3 }, transactionHa
 
 export const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+const debugBlocks = debug("blocks");
+
 export const awaitBlockChange = async (api: ApiPromise) => {
 	const currentBlock = await api.rpc.chain.getBlock();
 	let changedBlock = false;
@@ -240,7 +242,8 @@ export const awaitBlockChange = async (api: ApiPromise) => {
 			changedBlock = true;
 		}
 
-		await delay(1000);
+		debugBlocks(`Waiting for block change...`);
+		await delay(2000);
 	}
 };
 
@@ -265,8 +268,6 @@ export const transferBalance = async (
 	let balance = await api.query.system.account(beneficiary);
 
 	while (balance.data.free.toNumber() != amount) {
-		console.log(`Waiting til the funds have been transferred from ${origin.address} to ${beneficiary}...`);
-
 		await awaitBlockChange(api);
 
 		balance = await api.query.system.account(beneficiary);
@@ -318,15 +319,8 @@ export const sendOpenHrmpChannelTxs = async (api: ApiPromise, paraA: number, par
 	}
 
 	while ((await isChannelOpen(api, paraA, paraB)) == false || (await isChannelOpen(api, paraB, paraA)) == false) {
-		console.log(`Waiting until HRMP channels between parachains ${paraA} and ${paraB} are opened...`);
-
 		await awaitBlockChange(api);
 	}
-};
-
-export const waitForBlockProduction = async (api: ApiPromise, name: string) => {
-	console.log(`[${name}] Waiting for block production...`);
-	await awaitBlockChange(api);
 };
 
 export const siblingLocation = (id: number) => ({
@@ -437,8 +431,10 @@ export const buildXcmInstruction = ({
 	});
 };
 
+const debugEvents = debug("events");
+
 /**
- * Waits for a specific event on AssetHub starting from the newest block, with a block-based timeout.
+ * Waits for a specific event starting from the newest block, with a block-based timeout.
  * @param api - The ApiPromise instance connected to AssetHub.
  * @param filter - A function that filters events.
  * @param blockTimeout - The maximum number of blocks to wait before timing out.
@@ -460,14 +456,14 @@ export const waitForEvent = async (
 		startBlock = currentHeader.number.toNumber();
 		endBlock = startBlock + blockTimeout;
 
-		console.log(`Starting to watch for events on AssetHub from block ${startBlock} to ${endBlock}...`);
+		debugEvents(`Starting to watch for events from block ${startBlock} to ${endBlock}...`);
 
-		// Subscribe to new blocks on AssetHub
+		// Subscribe to new blocks
 		unsub = await api.rpc.chain.subscribeNewHeads(async (header) => {
 			try {
 				currentBlock = header.number.toNumber();
 
-				console.log(`Checking block ${currentBlock} on AssetHub...`);
+				debugEvents(`Checking block ${currentBlock}...`);
 
 				if (currentBlock >= startBlock) {
 					const blockHash = header.hash;
@@ -476,13 +472,13 @@ export const waitForEvent = async (
 					const matchingEvent = events.find((eventRecord) => filter(eventRecord));
 
 					if (matchingEvent) {
-						console.log(`Event found at block ${currentBlock}`);
+						debugEvents(`Event found at block ${currentBlock}`);
 						if (unsub) unsub();
 						resolve(matchingEvent);
 					} else if (currentBlock >= endBlock) {
 						// Block timeout reached without finding the event
 						if (unsub) unsub();
-						reject(new Error(`Timeout waiting for event on AssetHub after ${blockTimeout} blocks`));
+						reject(new Error(`Timeout waiting for event after ${blockTimeout} blocks`));
 					}
 				}
 			} catch (error) {

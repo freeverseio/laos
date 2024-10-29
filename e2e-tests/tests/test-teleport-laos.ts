@@ -22,10 +22,12 @@ import { KeyringPair } from "@polkadot/keyring/types";
 import { DoubleEncodedCall, EventRecord, MultiAddress } from "@polkadot/types/interfaces";
 import { XcmVersionedLocation } from "@polkadot/types/lookup";
 import { hexToBn, u8aToHex } from "@polkadot/util";
+import debug from "debug";
+
+const debugTeleport = debug("teleport");
 
 const ONE_LAOS = new BN("1000000000000000000");
 const ONE_DOT = new BN("1000000000000");
-const HUNDRED_DOTS = new BN("100000000000000");
 const WAITING_BLOCKS_FOR_EVENTS = 10; // Number of blocks we wait at max to receive an event
 
 describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
@@ -50,10 +52,10 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 		alice = new Keyring({ type: "sr25519" }).addFromUri("//Alice");
 		alith = new Keyring({ type: "ethereum" }).addFromUri(ALITH_PRIVATE_KEY);
 
-		console.log("Waiting until all the relay chain, Asset Hub and LAOS produce blocks...");
+		debugTeleport("Waiting until all the relay chain, Asset Hub and LAOS produce blocks...");
 		await Promise.all([awaitBlockChange(apiRelaychain), awaitBlockChange(apiAssetHub), awaitBlockChange(apiLaos)]);
 
-		console.log("[RELAY_CHAIN] Send transaction to open HRMP channels between AssetHub and LAOS..."); // See: https://github.com/paritytech/polkadot-sdk/pull/1616
+		debugTeleport("[RELAY_CHAIN] Send transaction to open HRMP channels between AssetHub and LAOS..."); // See: https://github.com/paritytech/polkadot-sdk/pull/1616
 		await sendOpenHrmpChannelTxs(apiRelaychain, LAOS_PARA_ID, ASSET_HUB_PARA_ID);
 	});
 
@@ -68,8 +70,8 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 		// NOTE: We only create the foreign asset if it hasn't been created yet, in this way we ensure tests are idempotent
 		if (!laosForeignAssetExists) {
 			//Fund LAOS sovereigna account
-			console.log("[ASSET_HUB] Funding LAOS sovereign account...");
-			await transferBalance(apiAssetHub, alice, laosSiblingAccount, HUNDRED_DOTS);
+			debugTeleport("[ASSET_HUB] Funding LAOS sovereign account...");
+			await transferBalance(apiAssetHub, alice, laosSiblingAccount, ONE_DOT.muln(100));
 
 			// Build XCM instruction
 			const foreign_asset_admin = apiAssetHub.createType("MultiAddress", laosSiblingAccount) as MultiAddress;
@@ -136,12 +138,14 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 				(await apiAssetHub.query.foreignAssets.asset(apiAssetHub.laosAssetId)).isEmpty,
 				"LAOS foreign asset has not been created"
 			).to.be.false;
+		} else {
+			debugTeleport("LAOS foreign asset already exists, skipping creation...");
 		}
 	});
 
 	// TODO merge this step with the previous one, investigate why mint xcm has to be sent with originKind: SovereignAccount
 	// whereas create xcm has to be sent with originKind: Xcm
-	step("Mint LAOS foreign asset in AssetHub", async function () {
+	step("Mint LAOS foreign asset in AssetHub", async function () { // TODO is not idempotent
 		// Build XCM instructions
 		const ferdie = new Keyring({ type: "sr25519" }).addFromUri("//Ferdie");
 		const ferdieMultiaddress = apiAssetHub.createType("MultiAddress", ferdie.address) as MultiAddress;
@@ -166,7 +170,6 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 		}) as XcmVersionedLocation;
 
 		// Send the XCM instruction from Laos to Asset Hub
-		const alith = new Keyring({ type: "ethereum" }).addFromUri(ALITH_PRIVATE_KEY);
 		const alithBalanceBefore = new BN((await apiLaos.query.system.account(alith.address)).data.free);
 		const laosBalanceBefore = new BN((await apiAssetHub.query.system.account(laosSiblingAccount)).data.free);
 		const sudoCall = apiLaos.tx.sudo.sudo(apiLaos.tx.polkadotXcm.send(destination, instruction));
@@ -224,10 +227,9 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 			}) as XcmVersionedLocation;
 
 			// Send the XCM instruction from Laos to Asset Hub
-			const alith = new Keyring({ type: "ethereum" }).addFromUri(ALITH_PRIVATE_KEY);
-			const sudoCall = apiLaos.tx.sudo.sudo(apiLaos.tx.polkadotXcm.send(destination, instruction));
 			const laosBalanceBefore = new BN((await apiAssetHub.query.system.account(laosSiblingAccount)).data.free);
 			const alithBalanceBefore = new BN((await apiLaos.query.system.account(alith.address)).data.free);
+			const sudoCall = apiLaos.tx.sudo.sudo(apiLaos.tx.polkadotXcm.send(destination, instruction));
 			await sudoCall
 				.signAndSend(alith, () => {})
 				.catch((error: any) => {
@@ -259,6 +261,8 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 				decreaseOfLaosBalance.cmp(ONE_DOT.add(apiAssetHub.consts.assets.assetAccountDeposit)),
 				"Laos should decrease XCM withdrawn amount + asset account deposit"
 			).to.be.eq(0);
+		} else {
+			debugTeleport("Pool already exists, skipping creation...");
 		}
 
 		// Add liquidity to the pool
@@ -297,7 +301,6 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 	// TODO refacto a little bit this step
 	step("Teleport from LAOS to AssetHub", async function () {
 		const charlie = new Keyring({ type: "sr25519" }).addFromUri("//Charlie");
-		const alith = new Keyring({ type: "ethereum" }).addFromUri(ALITH_PRIVATE_KEY);
 
 		const destination = apiLaos.createType("XcmVersionedLocation", {
 			V3: siblingLocation(ASSET_HUB_PARA_ID),
@@ -377,7 +380,6 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 
 	step("Teleport back from AssetHub to LAOS", async function () {
 		const charlie = new Keyring({ type: "sr25519" }).addFromUri("//Charlie");
-		const alith = new Keyring({ type: "ethereum" }).addFromUri(ALITH_PRIVATE_KEY);
 
 		const destination = apiAssetHub.createType("XcmVersionedLocation", {
 			V3: siblingLocation(LAOS_PARA_ID),
@@ -436,7 +438,7 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 
 		// Check that LAOS has been sent back in LAOS
 		const event = await waitForEvent(
-			apiAssetHub,
+			apiLaos,
 			({ event }) => apiLaos.events.balances.Minted.is(event),
 			WAITING_BLOCKS_FOR_EVENTS
 		);
