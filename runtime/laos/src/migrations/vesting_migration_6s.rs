@@ -209,8 +209,6 @@ mod tests {
 	#[test]
 	fn migrate_adjusts_future_schedule_when_current_block_is_before_starting_block() {
 		ExtBuilder::default().build().execute_with(|| {
-			frame_system::Pallet::<Runtime>::set_block_number(5);
-
 			let alice = setup_account(ALICE, 10000 * UNIT);
 			let bob = setup_account(BOB, 0);
 
@@ -220,6 +218,8 @@ mod tests {
 				bob.clone(),
 				vesting_schedule
 			));
+
+			frame_system::Pallet::<Runtime>::set_block_number(5);
 
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
@@ -238,8 +238,6 @@ mod tests {
 	#[test]
 	fn migrate_keeps_schedule_unchanged_when_current_block_matches_starting_block() {
 		ExtBuilder::default().build().execute_with(|| {
-			frame_system::Pallet::<Runtime>::set_block_number(10);
-
 			let alice = setup_account(ALICE, 10000 * UNIT);
 			let bob = setup_account(BOB, 0);
 
@@ -249,6 +247,8 @@ mod tests {
 				bob.clone(),
 				vesting_schedule
 			));
+
+			frame_system::Pallet::<Runtime>::set_block_number(10);
 
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
@@ -267,8 +267,6 @@ mod tests {
 	#[test]
 	fn migrate_splits_schedule_when_current_block_is_within_schedule_range() {
 		ExtBuilder::default().build().execute_with(|| {
-			frame_system::Pallet::<Runtime>::set_block_number(15);
-
 			let alice = setup_account(ALICE, 10000 * UNIT);
 			let bob = setup_account(BOB, 0);
 
@@ -278,6 +276,8 @@ mod tests {
 				bob.clone(),
 				vesting_schedule
 			));
+
+			frame_system::Pallet::<Runtime>::set_block_number(15);
 
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
@@ -327,14 +327,9 @@ mod tests {
 	#[test]
 	fn migrate_adjusts_multiple_schedules_for_single_account() {
 		ExtBuilder::default().build().execute_with(|| {
-			let alice = AccountId::from_str(ALICE).unwrap();
-			assert_ok!(Balances::force_set_balance(
-				RuntimeOrigin::root(),
-				alice.clone(),
-				20000 * UNIT
-			));
-
+			let alice = setup_account(ALICE, 20000 * UNIT);
 			let bob = AccountId::from_str(BOB).unwrap();
+
 			let schedule1 = pallet_vesting::VestingInfo::new(1000 * UNIT, 1 * UNIT, 10);
 			let schedule2 = pallet_vesting::VestingInfo::new(2000 * UNIT, 2 * UNIT, 15);
 
@@ -349,7 +344,10 @@ mod tests {
 				schedule2
 			));
 
-			VestingMigrationTo6SecBlockTime::on_runtime_upgrade();
+			assert_eq!(
+				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
+				Weight::from_parts(250000000, 0)
+			);
 
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(&bob).unwrap();
 			assert_eq!(schedules.len(), 2);
@@ -366,7 +364,10 @@ mod tests {
 
 			assert!(pallet_vesting::Vesting::<Runtime>::get(&bob).is_none());
 
-			VestingMigrationTo6SecBlockTime::on_runtime_upgrade();
+			assert_eq!(
+				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
+				Weight::from_parts(125000000, 0)
+			);
 
 			assert!(pallet_vesting::Vesting::<Runtime>::get(&bob).is_none());
 		});
@@ -377,14 +378,9 @@ mod tests {
 	#[test]
 	fn migrate_respects_max_schedule_limit() {
 		ExtBuilder::default().build().execute_with(|| {
-			let alice = AccountId::from_str(ALICE).unwrap();
-			assert_ok!(Balances::force_set_balance(
-				RuntimeOrigin::root(),
-				alice.clone(),
-				50000 * UNIT
-			));
-
+			let alice = setup_account(ALICE, 5000000000 * UNIT);
 			let bob = AccountId::from_str(BOB).unwrap();
+
 			let vesting_schedule = pallet_vesting::VestingInfo::new(1000 * UNIT, 1 * UNIT, 10);
 
 			// Attempt to create more schedules than allowed by MaxVestingSchedulesGet
@@ -396,8 +392,13 @@ mod tests {
 				);
 			}
 
+			frame_system::Pallet::<Runtime>::set_block_number(15);
+
 			// Execute the migration
-			VestingMigrationTo6SecBlockTime::on_runtime_upgrade();
+			assert_eq!(
+				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
+				Weight::from_parts(250000000, 0)
+			);
 
 			// Check that the number of schedules does not exceed the maximum allowed
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(&bob).unwrap();
