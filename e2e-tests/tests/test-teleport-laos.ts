@@ -15,17 +15,17 @@ import {
 	relayLocation,
 	hereLocation,
 	ExtendedAssetHubApi,
+	waitForEvent,
 } from "./util";
 import { ApiPromise, Keyring } from "@polkadot/api";
 import { KeyringPair } from "@polkadot/keyring/types";
-import { DoubleEncodedCall, MultiAddress } from "@polkadot/types/interfaces";
+import { DoubleEncodedCall, EventRecord, MultiAddress } from "@polkadot/types/interfaces";
 import { XcmVersionedLocation } from "@polkadot/types/lookup";
 import { hexToBn, u8aToHex } from "@polkadot/util";
 
 const ONE_LAOS = new BN("1000000000000000000");
 const ONE_DOT = new BN("1000000000000");
 const HUNDRED_DOTS = new BN("100000000000000");
-const DEPOSIT = new BN(100000000000); // Deposit for creating a foreign asset, TODO get this amount from pallet
 const WAITING_BLOCKS_FOR_EVENTS = 10; // Number of blocks we wait at max to receive an event
 
 describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
@@ -108,26 +108,18 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 				console.log("transaction failed", error);
 			}
 
-			// Check if the foreign asset create event has been emitted in Asset Hub
-			let eventFound = null;
-			let waitForNBlocks = WAITING_BLOCKS_FOR_EVENTS; // TODO refactor create wait for events function, and maybe add logs when fetching events
-			while (WAITING_BLOCKS_FOR_EVENTS > 0 && !eventFound) {
-				console.log("[ASSET_HUB] Waiting til LAOS asset has been created...");
-				const events = await apiAssetHub.query.system.events();
+			// Check if the foreign asset has been created in Asset Hub
+			const event = await waitForEvent(
+				apiAssetHub,
+				({ event }) => apiAssetHub.events.foreignAssets.Created.is(event),
+				WAITING_BLOCKS_FOR_EVENTS
+			);
 
-				events.filter((event) => {
-					if (apiAssetHub.events.foreignAssets.Created.is(event.event)) {
-						eventFound = event;
-					}
-				});
-
-				await awaitBlockChange(apiAssetHub);
-				waitForNBlocks--;
-			}
-
-			expect(eventFound.event.data[0].toString()).to.equal(apiAssetHub.laosAssetId.toString());
-			expect(eventFound.event.data[1].toString()).to.equal(laosSiblingAccount);
-			expect(eventFound.event.data[2].toString()).to.equal(laosSiblingAccount);
+			expect(event).to.not.be.null;
+			const [assetId, creator, owner] = event.event.data;
+			expect(assetId.toString()).to.equal(apiAssetHub.laosAssetId.toString());
+			expect(creator.toString()).to.equal(laosSiblingAccount);
+			expect(owner.toString()).to.equal(laosSiblingAccount);
 
 			// Check that balances are correct.
 			const alithBalance = new BN((await apiLaos.query.system.account(alith.address)).data.free);
@@ -136,8 +128,8 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 			const laosBalance = new BN((await apiAssetHub.query.system.account(laosSiblingAccount)).data.free);
 			const decreaseOfLaosBalance = laosBalanceBefore.sub(laosBalance);
 			expect(
-				decreaseOfLaosBalance.cmp(ONE_DOT.add(DEPOSIT)),
-				"Laos balance should decrease XCM withdrawn amount + deposit"
+				decreaseOfLaosBalance.cmp(ONE_DOT.add(apiAssetHub.consts.assets.assetDeposit)),
+				"Laos balance should decrease XCM withdrawn amount + asset deposit"
 			).to.be.eq(0);
 
 			expect(
@@ -185,18 +177,13 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 			});
 
 		// Check if the foreign asset has been minted in Asset Hub
-		let waitForNBlocks = WAITING_BLOCKS_FOR_EVENTS; // TODO refactor create wait for events function
-		let eventFound = null;
-		while (WAITING_BLOCKS_FOR_EVENTS > 0 && !eventFound) {
-			const events = await apiAssetHub.query.system.events();
-			events.filter((event) => {
-				if (apiAssetHub.events.foreignAssets.Issued.is(event.event)) {
-					eventFound = event;
-				}
-			});
-			await awaitBlockChange(apiAssetHub);
-			waitForNBlocks--;
-		}
+		const event = await waitForEvent(
+			apiAssetHub,
+			({ event }) => apiAssetHub.events.foreignAssets.Issued.is(event),
+			WAITING_BLOCKS_FOR_EVENTS
+		);
+
+		expect(event).to.not.be.null;
 		const alithBalance = new BN((await apiLaos.query.system.account(alith.address)).data.free);
 		expect(alithBalanceBefore.cmp(alithBalance), "Alith balance shouldn't change").to.be.eq(0);
 
@@ -248,20 +235,16 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 				});
 
 			// Check that pool has been created in Asset Hub
-			let waitForNBlocks = WAITING_BLOCKS_FOR_EVENTS; // TODO refactor create wait for events function
-			let eventFound = null;
-			while (waitForNBlocks > 0 && !eventFound) {
-				const events = await apiAssetHub.query.system.events();
-				events.filter((event) => {
-					if (apiAssetHub.events.assetConversion.PoolCreated.is(event.event)) {
-						eventFound = event;
-					}
-				});
-				await awaitBlockChange(apiAssetHub);
-				waitForNBlocks--;
-			}
-			expect(eventFound.event.data[0].toString()).to.equal(laosSiblingAccount); // creator
-			expect(eventFound.event.data[1].toJSON()).to.deep.equal([relayLocation(), siblingLocation(LAOS_PARA_ID)]); // poolId
+			const event = await waitForEvent(
+				apiAssetHub,
+				({ event }) => apiAssetHub.events.assetConversion.PoolCreated.is(event),
+				WAITING_BLOCKS_FOR_EVENTS
+			);
+
+			expect(event).to.not.be.null;
+			const [creator, poolId] = event.event.data;
+			expect(creator.toString()).to.equal(laosSiblingAccount);
+			expect(poolId.toJSON()).to.deep.equal([relayLocation(), siblingLocation(LAOS_PARA_ID)]);
 			expect(
 				(await apiAssetHub.query.assetConversion.pools([apiAssetHub.relayAssetId, apiAssetHub.laosAssetId]))
 					.isEmpty
@@ -274,7 +257,7 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 			const decreaseOfLaosBalance = laosBalanceBefore.sub(laosBalance);
 			expect(
 				decreaseOfLaosBalance.cmp(ONE_DOT.add(apiAssetHub.consts.assets.assetAccountDeposit)),
-				"Laos should decrease XCM withdrawn amount + deposit"
+				"Laos should decrease XCM withdrawn amount + asset account deposit"
 			).to.be.eq(0);
 		}
 
@@ -371,28 +354,23 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 		});
 
 		// Check that LAOS has been sent in Asset Hub
-		let waitForNBlocks = WAITING_BLOCKS_FOR_EVENTS; // TODO refactor create wait for events function
-		let eventFound = null;
-		while (waitForNBlocks > 0 && !eventFound) {
-			const events = await apiAssetHub.query.system.events();
-			events.filter((event) => {
-				if (apiAssetHub.events.foreignAssets.Issued.is(event.event)) {
-					eventFound = event;
-				}
-			});
-			await awaitBlockChange(apiAssetHub);
-			waitForNBlocks--;
-		}
-		expect(eventFound.event.data[0].toJSON()).to.deep.equal(apiAssetHub.laosAssetId.toJSON()); // assetId
-		expect(eventFound.event.data[1].toString()).to.equal(charlie.address); // owner
+		const event = await waitForEvent(
+			apiAssetHub,
+			({ event }) => apiAssetHub.events.foreignAssets.Issued.is(event),
+			WAITING_BLOCKS_FOR_EVENTS
+		);
+
+		expect(event).to.not.be.null;
+		const [assetId, owner, realAmountReceived] = event.event.data;
+		expect(assetId.toJSON()).to.deep.equal(apiAssetHub.laosAssetId.toJSON());
+		expect(owner.toString()).to.equal(charlie.address);
 		const charlieBalance = hexToBn(
 			(await apiAssetHub.query.foreignAssets.account(apiAssetHub.laosAssetId, charlie.address)).toJSON()[
 				"balance"
 			]
 		);
-		const realAmountRecieved = new BN(eventFound.event.data[2].toString());
 		expect(
-			charlieBalanceBefore.add(realAmountRecieved).cmp(charlieBalance),
+			charlieBalanceBefore.add(new BN(realAmountReceived.toString())).cmp(charlieBalance),
 			"Charlie balance have should increased by amount received"
 		).to.be.eq(0);
 	});
@@ -456,21 +434,16 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 			console.log("transaction failed", error);
 		});
 
-		// Check that LAOS has been sent in Asset Hub
-		let waitForNBlocks = WAITING_BLOCKS_FOR_EVENTS; // TODO refactor create wait for events function
-		let eventFound = null;
-		while (waitForNBlocks > 0 && !eventFound) {
-			const events = await apiLaos.query.system.events();
-			events.filter((event) => {
-				if (apiLaos.events.balances.Minted.is(event.event)) {
-					eventFound = event;
-				}
-			});
-			await awaitBlockChange(apiLaos);
-			waitForNBlocks--;
-		}
-		expect(eventFound.event.data[0].toString()).to.equal(alith.address); // beneficiary
+		// Check that LAOS has been sent back in LAOS
+		const event = await waitForEvent(
+			apiAssetHub,
+			({ event }) => apiLaos.events.balances.Minted.is(event),
+			WAITING_BLOCKS_FOR_EVENTS
+		);
 
+		expect(event).to.not.be.null;
+		const [receiver, realAmountReceived] = event.event.data;
+		expect(receiver.toString()).to.equal(alith.address);
 		const charlieBalance = hexToBn(
 			(await apiAssetHub.query.foreignAssets.account(apiAssetHub.laosAssetId, charlie.address)).toJSON()[
 				"balance"
@@ -481,9 +454,8 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 			"Charlie balance have should decrease by the amount teleported"
 		).to.be.eq(0);
 		const alithBalance = (await apiLaos.query.system.account(alith.address)).data.free;
-		const realAmountRecieved = new BN(eventFound.event.data[1].toString());
 		expect(
-			alithBalanceBefore.add(realAmountRecieved).cmp(alithBalance),
+			alithBalanceBefore.add(new BN(realAmountReceived.toString())).cmp(alithBalance),
 			"Alith balance have should increased by the amount received in the teleport"
 		).to.be.eq(0);
 	});

@@ -19,12 +19,13 @@ import BN from "bn.js";
 import { expect } from "chai";
 import "@polkadot/api-augment";
 
-import { ApiPromise, HttpProvider, Keyring } from "@polkadot/api";
+import { ApiPromise, HttpProvider, Keyring, SubmittableResult, WsProvider } from "@polkadot/api";
 import { KeyringPair } from "@polkadot/keyring/types";
 import { bnToU8a, stringToU8a } from "@polkadot/util";
 import { encodeAddress } from "@polkadot/util-crypto";
-import { AssetIdV3, DoubleEncodedCall, XcmOriginKind } from "@polkadot/types/interfaces";
+import { AssetIdV3, DoubleEncodedCall, EventRecord, XcmOriginKind } from "@polkadot/types/interfaces";
 import { StagingXcmV3MultiLocation, XcmVersionedXcm } from "@polkadot/types/lookup";
+import { SubmittableExtrinsic } from "@polkadot/api/types";
 
 require("events").EventEmitter.prototype._maxListeners = 100;
 
@@ -82,10 +83,10 @@ export function describeWithExistingNode(
 
 		before(async () => {
 			context.web3 = new Web3(providerLaosNodeUrl || LAOS_NODE_URL);
-			let Provider = new HttpProvider(providerLaosNodeUrl || LAOS_NODE_URL);
+			let Provider = new WsProvider(providerLaosNodeUrl || LAOS_NODE_URL);
 			context.networks.laos = await new ApiPromise({ provider: Provider }).isReady;
 
-			Provider = new HttpProvider(providerAssetHubNodeUrl || ASSET_HUB_NODE_URL);
+			Provider = new WsProvider(providerAssetHubNodeUrl || ASSET_HUB_NODE_URL);
 
 			const apiAssetHub = (await ApiPromise.create({ provider: Provider })) as ExtendedAssetHubApi;
 
@@ -102,7 +103,7 @@ export function describeWithExistingNode(
 
 			context.networks.assetHub = apiAssetHub;
 
-			Provider = new HttpProvider(providerRelaychainNodeUrl || RELAYCHAIN_NODE_URL);
+			Provider = new WsProvider(providerRelaychainNodeUrl || RELAYCHAIN_NODE_URL);
 			context.networks.relaychain = await new ApiPromise({ provider: Provider }).isReady;
 		});
 		cb(context);
@@ -334,12 +335,14 @@ export const siblingLocation = (id: number) => ({
 		x1: { parachain: id },
 	},
 });
+
 export const relayLocation = () => ({
 	parents: 1,
 	interior: {
 		here: null,
 	},
 });
+
 export const hereLocation = () => ({
 	parents: 0,
 	interior: {
@@ -356,6 +359,33 @@ interface XcmInstructionParams {
 	originKind: XcmOriginKind;
 }
 
+/**
+ * Builds an XCM (Cross-Consensus Message) instruction.
+ *
+ * This function constructs an XCM instruction using the provided parameters. The instruction
+ * includes a series of operations such as withdrawing assets, buying execution, and performing
+ * transactions.
+ *
+ * @param {Object} params - The parameters for building the XCM instruction.
+ * @param {ApiPromise} params.api - The Polkadot API instance.
+ * @param {DoubleEncodedCall[]} params.calls - An array of double-encoded calls to be included in the XCM instruction.
+ * @param {BN} params.refTime - The reference time for the weight limit.
+ * @param {BN} params.proofSize - The proof size for the weight limit.
+ * @param {BN} params.amount - The amount of the asset to be used in the XCM instruction.
+ * @param {XcmOriginKind} params.originKind - The origin kind for the XCM instruction.
+ *
+ * @returns {XcmVersionedXcm} - The constructed XCM instruction.
+ *
+ * @example
+ * const instruction = buildXcmInstruction({
+ *   api,
+ *   calls: [encodedCall1, encodedCall2],
+ *   refTime: new BN(1000000),
+ *   proofSize: new BN(1000),
+ *   amount: new BN(1000000000),
+ *   originKind: api.createType('XcmOriginKind', 'Native'),
+ * });
+ */
 export const buildXcmInstruction = ({
 	api,
 	calls,
@@ -404,5 +434,61 @@ export const buildXcmInstruction = ({
 			},
 			...transacts,
 		],
+	});
+};
+
+/**
+ * Waits for a specific event on AssetHub starting from the newest block, with a block-based timeout.
+ * @param api - The ApiPromise instance connected to AssetHub.
+ * @param filter - A function that filters events.
+ * @param blockTimeout - The maximum number of blocks to wait before timing out.
+ * @returns A promise that resolves to the matching event when found.
+ */
+export const waitForEvent = async (
+	api: ApiPromise,
+	filter: (event: EventRecord) => boolean,
+	blockTimeout: number
+): Promise<EventRecord> => {
+	return new Promise(async (resolve, reject) => {
+		let unsub: () => void;
+		let currentBlock: number;
+		let startBlock: number;
+		let endBlock: number;
+
+		// Fetch the current block number to use as the starting point
+		const currentHeader = await api.rpc.chain.getHeader();
+		startBlock = currentHeader.number.toNumber();
+		endBlock = startBlock + blockTimeout;
+
+		console.log(`Starting to watch for events on AssetHub from block ${startBlock} to ${endBlock}...`);
+
+		// Subscribe to new blocks on AssetHub
+		unsub = await api.rpc.chain.subscribeNewHeads(async (header) => {
+			try {
+				currentBlock = header.number.toNumber();
+
+				console.log(`Checking block ${currentBlock} on AssetHub...`);
+
+				if (currentBlock >= startBlock) {
+					const blockHash = header.hash;
+					const events = await api.query.system.events.at(blockHash);
+
+					const matchingEvent = events.find((eventRecord) => filter(eventRecord));
+
+					if (matchingEvent) {
+						console.log(`Event found at block ${currentBlock}`);
+						if (unsub) unsub();
+						resolve(matchingEvent);
+					} else if (currentBlock >= endBlock) {
+						// Block timeout reached without finding the event
+						if (unsub) unsub();
+						reject(new Error(`Timeout waiting for event on AssetHub after ${blockTimeout} blocks`));
+					}
+				}
+			} catch (error) {
+				if (unsub) unsub();
+				reject(error);
+			}
+		});
 	});
 };
