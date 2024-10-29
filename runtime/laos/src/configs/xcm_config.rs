@@ -247,8 +247,8 @@ impl pallet_xcm::Config for Runtime {
 	type XcmExecutor = XcmExecutor<XcmConfig>;
 	// This filter wheter an origin may teleport out different assets.
 	type XcmTeleportFilter = OnlyTeleportNative;
-	// Allows all reserve asset transfers.
-	type XcmReserveTransferFilter = Everything;
+	// Deny all reserve asset transfers.
+	type XcmReserveTransferFilter = Nothing;
 	// Calculates the weight of XCM messages.
 	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
 	type UniversalLocation = UniversalLocation;
