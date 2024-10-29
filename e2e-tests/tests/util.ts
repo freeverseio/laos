@@ -242,8 +242,8 @@ export const awaitBlockChange = async (api: ApiPromise) => {
 			changedBlock = true;
 		}
 
-		debugBlocks(`Waiting for block change...`);
-		await delay(1000);
+		debugBlocks(`[${api.runtimeVersion.specName.toString()}] Waiting for block change...`);
+		await delay(2000);
 	}
 };
 
@@ -450,14 +450,14 @@ export const waitForEvent = async (
 		startBlock = currentHeader.number.toNumber();
 		endBlock = startBlock + blockTimeout;
 
-		debugEvents(`Starting to watch for events from block ${startBlock} to ${endBlock}...`);
+		debugEvents(`[${api.runtimeVersion.specName.toString()}] Starting to watch for events from block ${startBlock} to ${endBlock}...`);
 
 		// Subscribe to new blocks
 		unsub = await api.rpc.chain.subscribeNewHeads(async (header) => {
 			try {
 				currentBlock = header.number.toNumber();
 
-				debugEvents(`Checking block ${currentBlock}...`);
+				debugEvents(`[${api.runtimeVersion.specName.toString()}] Checking block ${currentBlock}...`);
 
 				if (currentBlock >= startBlock) {
 					const blockHash = header.hash;
@@ -466,7 +466,7 @@ export const waitForEvent = async (
 					const matchingEvent = events.find((eventRecord) => filter(eventRecord));
 
 					if (matchingEvent) {
-						debugEvents(`Event found at block ${currentBlock}`);
+						debugEvents(`[${api.runtimeVersion.specName.toString()}] Event found at block ${currentBlock}`);
 						if (unsub) unsub();
 						resolve(matchingEvent);
 					} else if (currentBlock >= endBlock) {

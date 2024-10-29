@@ -2,7 +2,7 @@ import BN from "bn.js";
 import { expect } from "chai";
 import { step } from "mocha-steps";
 
-import { ALITH_PRIVATE_KEY, ASSET_HUB_PARA_ID, LAOS_PARA_ID } from "./config";
+import { ALITH_PRIVATE_KEY, ASSET_HUB_PARA_ID, CHECKING_ACCOUNT, LAOS_PARA_ID } from "./config";
 import {
 	describeWithExistingNode,
 	transferBalance,
@@ -345,6 +345,7 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 				"balance"
 			] ?? "0x0"
 		);
+		const alithBalanceBefore = (await apiLaos.query.system.account(alith.address)).data.free;
 		const call = apiLaos.tx.polkadotXcm.limitedTeleportAssets(
 			destination,
 			beneficiary,
@@ -377,6 +378,9 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 			charlieBalanceBefore.add(new BN(realAmountReceived.toString())).cmp(charlieBalance),
 			"Charlie balance have should increased by amount received"
 		).to.be.eq(0);
+		const realAlithBalance = (await apiLaos.query.system.account(alith.address)).data.free;
+		const alithBalance = alithBalanceBefore.sub(amount);
+		expect(alithBalance.sub(realAlithBalance).cmp(ONE_DOT), "Alith balance have should decrease by the amount teleported disregarding fees").to.be.eq(-1);
 	});
 
 	step("Teleport back from AssetHub to LAOS", async function () {
@@ -387,7 +391,7 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 		});
 
 		// We need to use AssetHub api otherwise we get an error as LAOS does not use AccountId32
-		let accountId = apiLaos.createType("AccountId", alith.address);
+		let beneficiaryAddress = "0x0000000000000000000000000000000000000001"
 		const beneficiary = apiAssetHub.createType("XcmVersionedLocation", {
 			V3: {
 				parents: "0",
@@ -395,7 +399,7 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 					X1: {
 						AccountKey20: {
 							// network: 'Any',
-							key: accountId.toHex(),
+							key: beneficiaryAddress,
 						},
 					},
 				},
@@ -424,7 +428,7 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 				"balance"
 			]
 		);
-		const alithBalanceBefore = (await apiLaos.query.system.account(alith.address)).data.free;
+		const beneficiaryBalanceBefore = (await apiLaos.query.system.account(beneficiaryAddress)).data.free;
 
 		const call = apiAssetHub.tx.polkadotXcm.limitedTeleportAssets(
 			destination,
@@ -440,13 +444,15 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 		// Check that LAOS has been sent back in LAOS
 		const event = await waitForEvent(
 			apiLaos,
-			({ event }) => apiLaos.events.balances.Minted.is(event),
+			({ event }) => {
+				return apiLaos.events.balances.Minted.is(event) && event.data[0].toString() !== CHECKING_ACCOUNT;
+			},
 			WAITING_BLOCKS_FOR_EVENTS
 		);
 
 		expect(event).to.not.be.null;
 		const [receiver, realAmountReceived] = event.event.data;
-		expect(receiver.toString()).to.equal(alith.address);
+		expect(receiver.toString()).to.equal(beneficiaryAddress);
 		const charlieBalance = hexToBn(
 			(await apiAssetHub.query.foreignAssets.account(apiAssetHub.laosAssetId, charlie.address)).toJSON()[
 				"balance"
@@ -456,9 +462,9 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 			charlieBalanceBefore.sub(amount).cmp(charlieBalance),
 			"Charlie balance have should decrease by the amount teleported"
 		).to.be.eq(0);
-		const alithBalance = (await apiLaos.query.system.account(alith.address)).data.free;
+		const beneficiaryBalance = (await apiLaos.query.system.account(beneficiaryAddress)).data.free;
 		expect(
-			alithBalanceBefore.add(new BN(realAmountReceived.toString())).cmp(alithBalance),
+			beneficiaryBalanceBefore.add(new BN(realAmountReceived.toString())).cmp(beneficiaryBalance),
 			"Alith balance have should increased by the amount received in the teleport"
 		).to.be.eq(0);
 	});
