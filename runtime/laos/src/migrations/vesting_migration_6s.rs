@@ -14,6 +14,41 @@ type BalanceOf<T> = <<T as pallet_vesting::Config>::Currency as Currency<
 >>::Balance;
 
 impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
+	#[cfg(feature = "try-runtime")]
+	/// Logs the total number of accounts with vesting schedules, the count of schedules per
+	/// account, and the maximum schedule count per account before migration.
+	fn pre_upgrade() -> Result<Vec<u8>, DispatchError> {
+		let vesting_accounts_count = pallet_vesting::Vesting::<Runtime>::iter().count();
+		let mut schedules_per_account = vec![];
+		let mut max_schedule_count = 0;
+
+		for (account_id, schedules) in pallet_vesting::Vesting::<Runtime>::iter() {
+			let schedule_count = schedules.len();
+			schedules_per_account.push((account_id.clone(), schedule_count as u32));
+			if schedule_count > max_schedule_count {
+				max_schedule_count = schedule_count;
+			}
+			log::info!(
+				target: "runtime::migration",
+				"Pre-migration: Account {:?} has {} vesting schedules",
+				account_id,
+				schedule_count
+			);
+		}
+
+		log::info!(
+			target: "runtime::migration",
+			"VestingMigrationTo6SecBlockTime::pre_upgrade - Found {} accounts with vesting schedules, \
+			 maximum schedules per account: {}",
+			vesting_accounts_count,
+			max_schedule_count
+		);
+
+		// Encode the number of accounts, schedule counts per account, and max schedule count
+		Ok((vesting_accounts_count as u32, schedules_per_account, max_schedule_count as u32)
+			.encode())
+	}
+
 	fn on_runtime_upgrade() -> Weight {
 		let mut read_count = 0u64;
 		let mut write_count = 0u64;
@@ -34,6 +69,77 @@ impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
 
 		<Runtime as frame_system::Config>::DbWeight::get()
 			.reads_writes(read_count + 1, write_count + 1)
+	}
+
+	#[cfg(feature = "try-runtime")]
+	/// Verifies migration by checking the vesting data has been migrated, allows for possible
+	/// splits in schedules.
+	fn post_upgrade(encoded_data: Vec<u8>) -> Result<(), DispatchError> {
+		let (old_account_count, schedules_per_account, old_max_schedule_count): (
+			u32,
+			Vec<(AccountId, u32)>,
+			u32,
+		) = Decode::decode(&mut &encoded_data[..])
+			.map_err(|_| DispatchError::Other("Failed to decode migration data"))?;
+
+		let new_account_count = pallet_vesting::Vesting::<Runtime>::iter().count();
+		let mut max_schedule_count_post_migration = 0;
+
+		assert_eq!(
+			new_account_count, old_account_count,
+			"Mismatch in vesting account count after migration: expected {}, got {}",
+			old_account_count, new_account_count
+		);
+
+		log::info!(
+			target: "runtime::migration",
+			"VestingMigrationTo6SecBlockTime::post_upgrade - Migration successful. \
+			 Account count before: {}, after: {}",
+			old_account_count,
+			new_account_count
+		);
+
+		// Verify each account has at least the expected number of schedules; additional schedules
+		// are allowed due to splitting.
+		for (account_id, expected_schedule_count) in schedules_per_account {
+			let new_schedule_count = pallet_vesting::Vesting::<Runtime>::get(&account_id)
+				.map(|schedules| schedules.len())
+				.unwrap_or(0);
+
+			// Update max schedule count after migration
+			if new_schedule_count > max_schedule_count_post_migration {
+				max_schedule_count_post_migration = new_schedule_count;
+			}
+
+			// Log any increase in schedule count due to migration adjustments
+			if new_schedule_count > expected_schedule_count as usize {
+				log::info!(
+					target: "runtime::migration",
+					"Post-migration: Account {:?} had {} schedules pre-migration, now has {} schedules due to splits",
+					account_id,
+					expected_schedule_count,
+					new_schedule_count
+				);
+			} else {
+				assert_eq!(
+                    new_schedule_count, expected_schedule_count as usize,
+                    "Account {:?} schedule count mismatch: expected {} schedules after migration, found {}",
+                    account_id, expected_schedule_count, new_schedule_count
+                );
+			}
+		}
+
+		// Log the maximum schedule count post-migration, even if it may have increased due to
+		// schedule splits.
+		log::info!(
+			target: "runtime::migration",
+			"VestingMigrationTo6SecBlockTime::post_upgrade - Max schedules per account pre-migration: {}, \
+			 max schedules per account post-migration: {}",
+			old_max_schedule_count,
+			max_schedule_count_post_migration
+		);
+
+		Ok(())
 	}
 }
 /// Adjusts vesting schedules for a new 6-second block time and handles various cases like schedule
