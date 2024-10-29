@@ -41,7 +41,6 @@ use xcm_executor::XcmExecutor;
 use xcm_simulator::AssetFilter;
 
 parameter_types! {
-	pub const RelayLocation: Location = Location::parent();
 	pub const RelayNetwork: NetworkId = NetworkId::Kusama;
 	pub RelayChainOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into();
 	// For the real deployment, it is recommended to set `RelayNetwork` according to the relay chain
