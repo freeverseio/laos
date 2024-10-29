@@ -13,6 +13,7 @@ import {
 	LAOS_NODE_URL,
 	ASSET_HUB_NODE_URL,
 	RELAYCHAIN_NODE_URL,
+	LAOS_PARA_ID,
 } from "./config";
 import BN from "bn.js";
 import { expect } from "chai";
@@ -23,7 +24,7 @@ import { KeyringPair } from "@polkadot/keyring/types";
 import { bnToU8a, stringToU8a } from "@polkadot/util";
 import { encodeAddress } from "@polkadot/util-crypto";
 import { AssetIdV3, DoubleEncodedCall, XcmOriginKind } from "@polkadot/types/interfaces";
-import { XcmVersionedXcm } from "@polkadot/types/lookup";
+import { StagingXcmV3MultiLocation, XcmVersionedXcm } from "@polkadot/types/lookup";
 
 require("events").EventEmitter.prototype._maxListeners = 100;
 
@@ -49,10 +50,17 @@ export async function customRequest(web3: Web3, method: string, params: any[]) {
 		);
 	});
 }
+export interface ExtendedAssetHubApi extends ApiPromise {
+	laosAssetId: StagingXcmV3MultiLocation;
+	relayAssetId: StagingXcmV3MultiLocation;
+}
 
 export function describeWithExistingNode(
 	title: string,
-	cb: (context: { web3: Web3; networks: { laos: ApiPromise; assetHub: ApiPromise; relaychain: ApiPromise } }) => void,
+	cb: (context: {
+		web3: Web3;
+		networks: { laos: ApiPromise; assetHub: ExtendedAssetHubApi; relaychain: ApiPromise };
+	}) => void,
 	providerLaosNodeUrl?: string,
 	providerAssetHubNodeUrl?: string,
 	providerRelaychainNodeUrl?: string
@@ -61,7 +69,7 @@ export function describeWithExistingNode(
 		let context: {
 			web3: Web3;
 			ethersjs: ethers.JsonRpcProvider;
-			networks: { laos: ApiPromise; assetHub: ApiPromise; relaychain: ApiPromise };
+			networks: { laos: ApiPromise; assetHub: ExtendedAssetHubApi; relaychain: ApiPromise };
 		} = {
 			web3: null,
 			ethersjs: null,
@@ -78,7 +86,21 @@ export function describeWithExistingNode(
 			context.networks.laos = await new ApiPromise({ provider: Provider }).isReady;
 
 			Provider = new HttpProvider(providerAssetHubNodeUrl || ASSET_HUB_NODE_URL);
-			context.networks.assetHub = await new ApiPromise({ provider: Provider }).isReady;
+
+			const apiAssetHub = (await ApiPromise.create({ provider: Provider })) as ExtendedAssetHubApi;
+
+			// Add custom properties
+			apiAssetHub.laosAssetId = apiAssetHub.createType(
+				"StagingXcmV3MultiLocation",
+				siblingLocation(LAOS_PARA_ID)
+			) as StagingXcmV3MultiLocation;
+
+			apiAssetHub.relayAssetId = apiAssetHub.createType(
+				"StagingXcmV3MultiLocation",
+				relayLocation()
+			) as StagingXcmV3MultiLocation;
+
+			context.networks.assetHub = apiAssetHub;
 
 			Provider = new HttpProvider(providerRelaychainNodeUrl || RELAYCHAIN_NODE_URL);
 			context.networks.relaychain = await new ApiPromise({ provider: Provider }).isReady;
