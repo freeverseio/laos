@@ -146,7 +146,6 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 	// TODO merge this step with the previous one, investigate why mint xcm has to be sent with originKind: SovereignAccount
 	// whereas create xcm has to be sent with originKind: Xcm
 	step("Mint LAOS foreign asset in AssetHub", async function () {
-		// TODO is not idempotent
 		// Build XCM instructions
 		const ferdie = new Keyring({ type: "sr25519" }).addFromUri("//Ferdie");
 		const ferdieMultiaddress = apiAssetHub.createType("MultiAddress", ferdie.address) as MultiAddress;
@@ -299,7 +298,6 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 			});
 	});
 
-	// TODO refacto a little bit this step
 	step("Teleport from LAOS to AssetHub", async function () {
 		const charlie = new Keyring({ type: "sr25519" }).addFromUri("//Charlie");
 

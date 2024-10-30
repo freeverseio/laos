@@ -19,7 +19,7 @@ import BN from "bn.js";
 import { expect } from "chai";
 import "@polkadot/api-augment";
 
-import { ApiPromise, Keyring, WsProvider } from "@polkadot/api";
+import { ApiPromise, HttpProvider, Keyring } from "@polkadot/api";
 import { KeyringPair } from "@polkadot/keyring/types";
 import { bnToU8a, stringToU8a } from "@polkadot/util";
 import { encodeAddress } from "@polkadot/util-crypto";
@@ -83,10 +83,10 @@ export function describeWithExistingNode(
 
 		before(async () => {
 			context.web3 = new Web3(providerLaosNodeUrl || LAOS_NODE_URL);
-			let Provider = new WsProvider(providerLaosNodeUrl || LAOS_NODE_URL);
+			let Provider = new HttpProvider(providerLaosNodeUrl || LAOS_NODE_URL);
 			context.networks.laos = await new ApiPromise({ provider: Provider }).isReady;
 
-			Provider = new WsProvider(providerAssetHubNodeUrl || ASSET_HUB_NODE_URL);
+			Provider = new HttpProvider(providerAssetHubNodeUrl || ASSET_HUB_NODE_URL);
 
 			const apiAssetHub = (await ApiPromise.create({ provider: Provider })) as ExtendedAssetHubApi;
 
@@ -103,15 +103,15 @@ export function describeWithExistingNode(
 
 			context.networks.assetHub = apiAssetHub;
 
-			Provider = new WsProvider(providerRelaychainNodeUrl || RELAYCHAIN_NODE_URL);
+			Provider = new HttpProvider(providerRelaychainNodeUrl || RELAYCHAIN_NODE_URL);
 			context.networks.relaychain = await new ApiPromise({ provider: Provider }).isReady;
 		});
 		cb(context);
-		after(async function () {
-			await context.networks.laos.disconnect();
-			await context.networks.assetHub.disconnect();
-			await context.networks.relaychain.disconnect();
-		});
+		// after(async function () {
+		// 	await context.networks.laos.disconnect();
+		// 	await context.networks.assetHub.disconnect();
+		// 	await context.networks.relaychain.disconnect();
+		// });
 	});
 }
 
@@ -429,7 +429,7 @@ const debugEvents = debug("events");
 
 /**
  * Waits for a specific event starting from the newest block, with a block-based timeout.
- * @param api - The ApiPromise instance connected to AssetHub.
+ * @param api - The ApiPromise instance.
  * @param filter - A function that filters events.
  * @param blockTimeout - The maximum number of blocks to wait before timing out.
  * @returns A promise that resolves to the matching event when found.
@@ -440,47 +440,60 @@ export const waitForEvent = async (
 	blockTimeout: number
 ): Promise<EventRecord> => {
 	return new Promise(async (resolve, reject) => {
-		let unsub: () => void;
-		let currentBlock: number;
-		let startBlock: number;
-		let endBlock: number;
+		try {
+			let eventFound: EventRecord | null = null;
+			let remainingBlocks = blockTimeout;
 
-		// Fetch the current block number to use as the starting point
-		const currentHeader = await api.rpc.chain.getHeader();
-		startBlock = currentHeader.number.toNumber();
-		endBlock = startBlock + blockTimeout;
+			// Fetch the starting block number
+			const currentHeader = await api.rpc.chain.getHeader();
+			let currentBlockNumber = currentHeader.number.toNumber();
 
-		debugEvents(
-			`[${api.runtimeVersion.specName.toString()}] Starting to watch for events from block ${startBlock} to ${endBlock}...`
-		);
+			debugEvents(
+				`[${api.runtimeVersion.specName.toString()}] Starting to watch for events from block ${currentBlockNumber} for up to ${blockTimeout} blocks...`
+			);
 
-		// Subscribe to new blocks
-		unsub = await api.rpc.chain.subscribeNewHeads(async (header) => {
-			try {
-				currentBlock = header.number.toNumber();
+			while (remainingBlocks > 0 && !eventFound) {
+				debugEvents(
+					`[${api.runtimeVersion.specName.toString()}] Checking events at block ${currentBlockNumber}...`
+				);
 
-				debugEvents(`[${api.runtimeVersion.specName.toString()}] Checking block ${currentBlock}...`);
+				// Fetch events at the current block
+				const blockHash = await api.rpc.chain.getBlockHash(currentBlockNumber);
+				const events = await api.query.system.events.at(blockHash);
 
-				if (currentBlock >= startBlock) {
-					const blockHash = header.hash;
-					const events = await api.query.system.events.at(blockHash);
-
-					const matchingEvent = events.find((eventRecord) => filter(eventRecord));
-
-					if (matchingEvent) {
-						debugEvents(`[${api.runtimeVersion.specName.toString()}] Event found at block ${currentBlock}`);
-						if (unsub) unsub();
-						resolve(matchingEvent);
-					} else if (currentBlock >= endBlock) {
-						// Block timeout reached without finding the event
-						if (unsub) unsub();
-						reject(new Error(`Timeout waiting for event after ${blockTimeout} blocks`));
+				// Check if any event matches the filter
+				events.forEach((eventRecord) => {
+					if (filter(eventRecord)) {
+						eventFound = eventRecord;
 					}
+				});
+
+				if (eventFound) {
+					debugEvents(
+						`[${api.runtimeVersion.specName.toString()}] Event found at block ${currentBlockNumber}`
+					);
+					resolve(eventFound);
+					return;
 				}
-			} catch (error) {
-				if (unsub) unsub();
-				reject(error);
+
+				// Wait for the next block
+				await awaitBlockChange(api);
+				remainingBlocks--;
+
+				// Update the current block number
+				currentBlockNumber++;
 			}
-		});
+
+			// If the loop completes without finding the event
+			reject(
+				new Error(
+					`Timeout waiting for event after ${blockTimeout} blocks starting from block ${
+						currentBlockNumber - blockTimeout
+					}`
+				)
+			);
+		} catch (error) {
+			reject(error);
+		}
 	});
 };
