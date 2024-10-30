@@ -591,11 +591,8 @@ mod tests {
 
 			// Alice transfers multiple vesting schedules to Bob
 			for _ in 0..half_max_schedules {
-				let _ = Vesting::vested_transfer(
-					RuntimeOrigin::signed(alice),
-					bob.clone(),
-					vesting_schedule.clone(),
-				);
+				let _ =
+					Vesting::vested_transfer(RuntimeOrigin::signed(alice), bob, vesting_schedule);
 			}
 
 			// Advance the block number to a point where vesting schedules may split during
