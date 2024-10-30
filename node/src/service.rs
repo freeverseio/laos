@@ -43,7 +43,9 @@ use cumulus_client_consensus_aura::collators::lookahead::{self as aura, Params a
 use fc_rpc::{StorageOverride, StorageOverrideHandler};
 use frame_benchmarking_cli::SUBSTRATE_REFERENCE_HARDWARE;
 use futures::FutureExt;
-use laos_runtime::RuntimeApi;
+use laos_runtime::{
+	configs::cumulus_parachain_system::RELAY_CHAIN_SLOT_DURATION_MILLIS, RuntimeApi,
+};
 use sc_client_api::Backend;
 use sc_consensus::ImportQueue;
 use sc_executor::{
@@ -352,7 +354,7 @@ async fn start_node_impl(
 			let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
 			let relay_chain_slot = Slot::from_timestamp(
 				timestamp.timestamp(),
-				SlotDuration::from_millis(6000_u64), // RELAY_CHAIN_SLOT_DURATION_MILLIS
+				SlotDuration::from_millis(RELAY_CHAIN_SLOT_DURATION_MILLIS.into()),
 			);
 
 			let state_proof_builder = cumulus_test_relay_sproof_builder::RelayStateSproofBuilder {
