@@ -509,7 +509,7 @@ mod tests {
 	/// Tests that migration does not exceed the allowed maximum number of schedules
 	/// (`MaxVestingSchedulesGet`).
 	#[test]
-	fn migrate_respects_max_schedule_limit() {
+	fn migrate_max_schedule_limit_with_all_splitting_lose_half_schedules() {
 		ExtBuilder::default().build().execute_with(|| {
 			let alice = setup_account(ALICE, 5000000000 * UNIT);
 			let bob = AccountId::from_str(BOB).unwrap();
@@ -532,7 +532,9 @@ mod tests {
 
 			// Check that the number of schedules does not exceed the maximum allowed
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(bob).unwrap();
-			assert!(schedules.len() <= MaxVestingSchedulesGet::<Runtime>::get() as usize);
+			// Here should be the double of the original schedules but half are skipped cause of
+			// boundary <--- DANGEROUS
+			assert!(schedules.len() == MaxVestingSchedulesGet::<Runtime>::get() as usize);
 		});
 	}
 
