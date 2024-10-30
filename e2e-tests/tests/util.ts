@@ -107,11 +107,6 @@ export function describeWithExistingNode(
 			context.networks.relaychain = await new ApiPromise({ provider: Provider }).isReady;
 		});
 		cb(context);
-		// after(async function () {
-		// 	await context.networks.laos.disconnect();
-		// 	await context.networks.assetHub.disconnect();
-		// 	await context.networks.relaychain.disconnect();
-		// });
 	});
 }
 
