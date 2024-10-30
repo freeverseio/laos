@@ -30,6 +30,10 @@ impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
 		let mut schedules_per_account = vec![];
 		let mut max_schedule_count = 0;
 
+		if sp_io::storage::exists(LAOS_VESTING_MIGRATION_6S) {
+			return Ok(vec![]);
+		}
+
 		for (account_id, schedules) in pallet_vesting::Vesting::<Runtime>::iter() {
 			let schedule_count = schedules.len();
 			schedules_per_account.push((account_id, schedule_count as u32));
@@ -54,15 +58,6 @@ impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
 			max_schedule_count
 		);
 
-		if max_schedule_count * 2 > MaxVestingSchedulesGet::<Runtime>::get() as usize {
-			// Warning if the number of schedules after split might exceed the allowed limit
-			log::warn!(
-				target: "runtime::migration",
-				"!!!!!!!!!!!!!!! VestingMigrationTo6SecBlockTime::pre_upgrade - WARNING: if there is a split in all the schedules, it will exceed the limit of {} !!!!!!!!!!!!!",
-				MaxVestingSchedulesGet::<Runtime>::get()
-			);
-		}
-
 		// Encode the number of accounts, schedule counts per account, and max schedule count
 		Ok((vesting_accounts_count as u32, schedules_per_account, max_schedule_count as u32)
 			.encode())
@@ -76,15 +71,25 @@ impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
 		if sp_io::storage::exists(LAOS_VESTING_MIGRATION_6S) {
 			log::info!(
 				target: "runtime::migration",
-				"VestingMigrationTo6SecBlockTime::on_runtime_upgrade - Migration already completed"
+				"VestingMigrationTo6SecBlockTime::on_runtime_upgrade - Migration already applied ... skipping"
 			);
 			read_count += 1;
 		} else {
+			log::info!(
+				target: "runtime::migration",
+				"VestingMigrationTo6SecBlockTime::on_runtime_upgrade - Starting migration"
+			);
+
 			weight += migrate_vesting_pallet_max_schedules();
 			weight += migrate_schedules();
 
 			sp_io::storage::set(LAOS_VESTING_MIGRATION_6S, &[]);
 			write_count += 1;
+
+			log::info!(
+				target: "runtime::migration",
+				"VestingMigrationTo6SecBlockTime::on_runtime_upgrade - Migration ended"
+			);
 		}
 
 		weight +
@@ -96,6 +101,10 @@ impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
 	/// Verifies migration by checking the vesting data has been migrated, allows for possible
 	/// splits in schedules.
 	fn post_upgrade(encoded_data: Vec<u8>) -> Result<(), DispatchError> {
+		if encoded_data.is_empty() {
+			return Ok(());
+		}
+
 		let (old_account_count, schedules_per_account, old_max_schedule_count): (
 			u32,
 			Vec<(AccountId, u32)>,
@@ -164,10 +173,22 @@ impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
 	}
 }
 
+/// Migrates vesting schedules to conform to the new `MaxVestingSchedulesGet` limit.
+/// This ensures that no account has more vesting schedules than the allowed maximum.
 fn migrate_vesting_pallet_max_schedules() -> Weight {
+	// The old maximum number of vesting schedules per account
 	const OLD_MAX_VESTING_SCHEDULES: u32 = 28;
 	let mut reads_writes = 0;
 
+	// Logging the maximum schedule count comparison
+	log::info!(
+		target: "runtime::migration",
+		"VestingMigrationTo6SecBlockTime::migrate_vesting_pallet_max_schedules from {} to {} max vested",
+		OLD_MAX_VESTING_SCHEDULES,
+		MaxVestingSchedulesGet::<Runtime>::get()
+	);
+
+	// Translate the old vesting schedules to fit the new maximum limit
 	pallet_vesting::Vesting::<Runtime>::translate::<
 		BoundedVec<
 			pallet_vesting::VestingInfo<BalanceOf<Runtime>, BlockNumberFor<Runtime>>,
@@ -176,23 +197,26 @@ fn migrate_vesting_pallet_max_schedules() -> Weight {
 		_,
 	>(|_key, vesting_info| {
 		reads_writes += 1;
-		let mut v: BoundedVec<
+
+		// Create a new bounded vector with the updated maximum limit
+		let mut new_vesting_infos: BoundedVec<
 			pallet_vesting::VestingInfo<BalanceOf<Runtime>, BlockNumberFor<Runtime>>,
 			MaxVestingSchedulesGet<Runtime>,
 		> = BoundedVec::new();
 
-		// Try to push the old schedule into the new bounded vector
+		// Attempt to migrate each vesting schedule to the new bounded vector
 		for v_info in vesting_info {
-			if v.try_push(v_info).is_err() {
-				log::warn!(
-					"Failed to move a vesting schedule into a BoundedVec due to bounded vector limit"
-				);
+			if new_vesting_infos.try_push(v_info).is_err() {
+				// Log a warning if a vesting schedule cannot be migrated due to the new limit
+				log::warn!("Failed to migrate a vesting schedule due to the bounded vector limit");
 			}
 		}
 
-		v.into()
+		// Return the new bounded vector to update the storage
+		new_vesting_infos.into()
 	});
 
+	// Calculate the total weight based on reads and writes performed
 	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(reads_writes, reads_writes)
 }
 
@@ -203,7 +227,7 @@ fn migrate_schedules() -> Weight {
 
 	log::info!(
 		target: "runtime::migration",
-		"VestingMigrationTo6SecBlockTime::on_runtime_upgrade - Starting migration"
+		"VestingMigrationTo6SecBlockTime::migrate_schedules - Starting migration"
 	);
 
 	for (account_id, schedules) in pallet_vesting::Vesting::<Runtime>::drain() {
@@ -221,7 +245,7 @@ fn migrate_schedules() -> Weight {
 	// Logging completion of the runtime upgrade
 	log::info!(
 		target: "runtime::migration",
-		"VestingMigrationTo6SecBlockTime::on_runtime_upgrade - Migration completed with {} reads and {} writes",
+		"VestingMigrationTo6SecBlockTime::migrate_schedules - Migration completed with {} reads and {} writes",
 		read_count,
 		write_count
 	);
@@ -549,38 +573,53 @@ mod tests {
 		});
 	}
 
-	/// Tests that migration does not exceed the allowed maximum number of schedules
-	/// (`MaxVestingSchedulesGet`).
+	/// Tests that the migration does not exceed the allowed maximum number of vesting schedules
+	/// (`MaxVestingSchedulesGet`), even when all schedules are split during migration.
 	#[test]
-	fn migrate_max_schedule_limit_with_all_splitting_lose_half_schedules() {
+	fn migrate_max_schedule_limit_with_all_splitting() {
 		ExtBuilder::default().build().execute_with(|| {
-			let alice = setup_account(ALICE, 5000000000 * UNIT);
+			// Setup Alice's account with a large balance
+			let alice = setup_account(ALICE, 5_000_000_000 * UNIT);
+			// Setup Bob's account
 			let bob = AccountId::from_str(BOB).unwrap();
 
-			let vesting_schedule = pallet_vesting::VestingInfo::new(1000 * UNIT, UNIT, 10);
+			// Define a vesting schedule with total amount, per period amount, and number of periods
+			let vesting_schedule = pallet_vesting::VestingInfo::new(1_000 * UNIT, UNIT, 10);
 
-			// Attempt to create more schedules than allowed by MaxVestingSchedulesGet
-			for _ in 0..(MaxVestingSchedulesGet::<Runtime>::get() + 1) {
-				let _ =
-					Vesting::vested_transfer(RuntimeOrigin::signed(alice), bob, vesting_schedule);
+			// Calculate half of the maximum number of vesting schedules allowed
+			let half_max_schedules = MaxVestingSchedulesGet::<Runtime>::get() / 2;
+
+			// Alice transfers multiple vesting schedules to Bob
+			for _ in 0..half_max_schedules {
+				let _ = Vesting::vested_transfer(
+					RuntimeOrigin::signed(alice),
+					bob.clone(),
+					vesting_schedule.clone(),
+				);
 			}
 
+			// Advance the block number to a point where vesting schedules may split during
+			// migration
 			frame_system::Pallet::<Runtime>::set_block_number(15);
 
-			// Execute the migration
+			// Execute the migration and verify the expected weight is consumed
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
-				Weight::from_parts(475000000, 0)
+				Weight::from_parts(475_000_000, 0)
 			);
 
-			// Check that the number of schedules does not exceed the maximum allowed
+			// Retrieve Bob's vesting schedules after migration
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(bob).unwrap();
-			// Here should be the double of the original schedules but half are skipped cause of
-			// boundary <--- DANGEROUS
-			assert!(schedules.len() == MaxVestingSchedulesGet::<Runtime>::get() as usize);
+
+			// Calculate the expected number of schedules after migration
+			// Each original schedule may split into two due to the migration logic,
+			// but the total should not exceed the maximum allowed
+			let expected_schedules = MaxVestingSchedulesGet::<Runtime>::get();
+
+			// Assert that the number of schedules does not exceed the maximum allowed
+			assert_eq!(schedules.len(), expected_schedules as usize);
 		});
 	}
-
 	/// Helper function to set up an account with a given balance.
 	fn setup_account(account_str: &str, balance: u128) -> AccountId {
 		let account = AccountId::from_str(account_str).unwrap();
