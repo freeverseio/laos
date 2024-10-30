@@ -6,7 +6,7 @@ use frame_support::{
 use frame_system::pallet_prelude::BlockNumberFor;
 use pallet_vesting::MaxVestingSchedulesGet;
 use parity_scale_codec::{Decode, Encode};
-use sp_core::Get;
+use sp_core::{ConstU32, Get};
 use sp_runtime::DispatchError;
 use sp_std::{vec, vec::Vec};
 
@@ -71,6 +71,7 @@ impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
 	fn on_runtime_upgrade() -> Weight {
 		let mut read_count = 0u64;
 		let mut write_count = 0u64;
+		let mut weight: Weight = Weight::zero();
 
 		if sp_io::storage::exists(LAOS_VESTING_MIGRATION_6S) {
 			log::info!(
@@ -79,39 +80,16 @@ impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
 			);
 			read_count += 1;
 		} else {
-			log::info!(
-				target: "runtime::migration",
-				"VestingMigrationTo6SecBlockTime::on_runtime_upgrade - Starting migration"
-			);
-
-			for (account_id, schedules) in pallet_vesting::Vesting::<Runtime>::drain() {
-				read_count += 1;
-
-				// Adjust vesting schedules for the new block time
-				let adjusted_schedules = adjust_schedule(
-					frame_system::Pallet::<Runtime>::block_number(),
-					schedules.to_vec(),
-				);
-
-				// Insert the adjusted schedules back into storage
-				pallet_vesting::Vesting::<Runtime>::insert(account_id, adjusted_schedules);
-				write_count += 1;
-			}
-
-			// Logging completion of the runtime upgrade
-			log::info!(
-				target: "runtime::migration",
-				"VestingMigrationTo6SecBlockTime::on_runtime_upgrade - Migration completed with {} reads and {} writes",
-				read_count,
-				write_count
-			);
+			weight += migrate_vesting_pallet_max_schedules();
+			weight += migrate_schedules();
 
 			sp_io::storage::set(LAOS_VESTING_MIGRATION_6S, &[]);
 			write_count += 1;
 		}
 
-		<Runtime as frame_system::Config>::DbWeight::get()
-			.reads_writes(read_count + 1, write_count + 1)
+		weight +
+			<Runtime as frame_system::Config>::DbWeight::get()
+				.reads_writes(read_count + 1, write_count + 1)
 	}
 
 	#[cfg(feature = "try-runtime")]
@@ -184,6 +162,71 @@ impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
 
 		Ok(())
 	}
+}
+
+fn migrate_vesting_pallet_max_schedules() -> Weight {
+	const OLD_MAX_VESTING_SCHEDULES: u32 = 28;
+	let mut reads_writes = 0;
+
+	pallet_vesting::Vesting::<Runtime>::translate::<
+		BoundedVec<
+			pallet_vesting::VestingInfo<BalanceOf<Runtime>, BlockNumberFor<Runtime>>,
+			ConstU32<OLD_MAX_VESTING_SCHEDULES>,
+		>,
+		_,
+	>(|_key, vesting_info| {
+		reads_writes += 1;
+		let mut v: BoundedVec<
+			pallet_vesting::VestingInfo<BalanceOf<Runtime>, BlockNumberFor<Runtime>>,
+			MaxVestingSchedulesGet<Runtime>,
+		> = BoundedVec::new();
+
+		// Try to push the old schedule into the new bounded vector
+		for v_info in vesting_info {
+			if v.try_push(v_info).is_err() {
+				log::warn!(
+					"Failed to move a vesting schedule into a BoundedVec due to bounded vector limit"
+				);
+			}
+		}
+
+		v.into()
+	});
+
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(reads_writes, reads_writes)
+}
+
+/// Migrates all vesting schedules to adjust for the new 6-second block time.
+fn migrate_schedules() -> Weight {
+	let mut read_count = 0u64;
+	let mut write_count = 0u64;
+
+	log::info!(
+		target: "runtime::migration",
+		"VestingMigrationTo6SecBlockTime::on_runtime_upgrade - Starting migration"
+	);
+
+	for (account_id, schedules) in pallet_vesting::Vesting::<Runtime>::drain() {
+		read_count += 1;
+
+		// Adjust vesting schedules for the new block time
+		let adjusted_schedules =
+			adjust_schedule(frame_system::Pallet::<Runtime>::block_number(), schedules.to_vec());
+
+		// Insert the adjusted schedules back into storage
+		pallet_vesting::Vesting::<Runtime>::insert(account_id, adjusted_schedules);
+		write_count += 1;
+	}
+
+	// Logging completion of the runtime upgrade
+	log::info!(
+		target: "runtime::migration",
+		"VestingMigrationTo6SecBlockTime::on_runtime_upgrade - Migration completed with {} reads and {} writes",
+		read_count,
+		write_count
+	);
+
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(read_count, write_count)
 }
 
 /// Adjusts vesting schedules for a new 6-second block time and handles various cases like schedule
@@ -334,7 +377,7 @@ mod tests {
 
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
-				Weight::from_parts(350000000, 0)
+				Weight::from_parts(475000000, 0)
 			);
 
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(bob).unwrap();
@@ -364,7 +407,7 @@ mod tests {
 
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
-				Weight::from_parts(350000000, 0)
+				Weight::from_parts(475000000, 0)
 			);
 
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(bob).unwrap();
@@ -393,7 +436,7 @@ mod tests {
 
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
-				Weight::from_parts(350000000, 0)
+				Weight::from_parts(475000000, 0)
 			);
 
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(bob).unwrap();
@@ -422,7 +465,7 @@ mod tests {
 
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
-				Weight::from_parts(350000000, 0)
+				Weight::from_parts(475000000, 0)
 			);
 
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(bob).unwrap();
@@ -453,7 +496,7 @@ mod tests {
 			frame_system::Pallet::<Runtime>::set_block_number(5000);
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
-				Weight::from_parts(350000000, 0)
+				Weight::from_parts(475000000, 0)
 			);
 
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(bob).unwrap();
@@ -479,7 +522,7 @@ mod tests {
 
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
-				Weight::from_parts(350000000, 0)
+				Weight::from_parts(475000000, 0)
 			);
 
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(bob).unwrap();
@@ -527,7 +570,7 @@ mod tests {
 			// Execute the migration
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
-				Weight::from_parts(350000000, 0)
+				Weight::from_parts(475000000, 0)
 			);
 
 			// Check that the number of schedules does not exceed the maximum allowed

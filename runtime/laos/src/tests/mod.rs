@@ -135,7 +135,7 @@ fn check_pallet_vesting_configuration() {
 		<Runtime as pallet_vesting::Config>::UnvestedFundsAllowedWithdrawReasons::get(),
 		WithdrawReasons::except(WithdrawReasons::TRANSFER | WithdrawReasons::RESERVE)
 	);
-	assert_eq!(<Runtime as pallet_vesting::Config>::MAX_VESTING_SCHEDULES, 28);
+	assert_eq!(<Runtime as pallet_vesting::Config>::MAX_VESTING_SCHEDULES, 56);
 }
 
 #[test]
