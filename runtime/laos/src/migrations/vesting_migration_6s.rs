@@ -13,6 +13,8 @@ use sp_std::{vec, vec::Vec};
 pub struct VestingMigrationTo6SecBlockTime;
 
 const LAOS_VESTING_MIGRATION_6S: &[u8] = b":laos:vesting_migration_6s:";
+// The old maximum number of vesting schedules per account
+const OLD_MAX_VESTING_SCHEDULES: u32 = 28;
 
 // Type alias for Balance to improve readability in function signatures and types
 type BalanceOf<T> = <<T as pallet_vesting::Config>::Currency as Currency<
@@ -176,8 +178,6 @@ impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
 /// Migrates vesting schedules to conform to the new `MaxVestingSchedulesGet` limit.
 /// This ensures that no account has more vesting schedules than the allowed maximum.
 fn migrate_vesting_pallet_max_schedules() -> Weight {
-	// The old maximum number of vesting schedules per account
-	const OLD_MAX_VESTING_SCHEDULES: u32 = 28;
 	let mut reads_writes = 0;
 
 	// Logging the maximum schedule count comparison
@@ -378,6 +378,14 @@ mod tests {
 
 	pub(crate) const ALICE: &str = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
 	pub(crate) const BOB: &str = "0x6c2b9c9b5007740e52d80dddb8e197b0c844f239";
+
+	/// Test new MAx is double of old max
+	#[test]
+	fn test_new_max_is_double_of_old_max() {
+		ExtBuilder::default().build().execute_with(|| {
+			assert_eq!(MaxVestingSchedulesGet::<Runtime>::get(), 2 * OLD_MAX_VESTING_SCHEDULES);
+		});
+	}
 
 	/// Tests that migration correctly updates vesting schedule
 	/// when `current_block` is at block 0 and the schedule requires full adjustment.
