@@ -94,9 +94,10 @@ impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
 			);
 		}
 
-		weight +
+		weight.saturating_add(
 			<Runtime as frame_system::Config>::DbWeight::get()
-				.reads_writes(read_count, write_count)
+				.reads_writes(read_count, write_count),
+		)
 	}
 
 	#[cfg(feature = "try-runtime")]
