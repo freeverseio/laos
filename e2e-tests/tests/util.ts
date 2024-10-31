@@ -14,17 +14,21 @@ import {
 	ASSET_HUB_NODE_URL,
 	RELAYCHAIN_NODE_URL,
 	LAOS_PARA_ID,
+	ASSET_HUB_PARA_ID,
+	substratePairs,
 } from "./config";
 import BN from "bn.js";
 import { expect } from "chai";
 import "@polkadot/api-augment";
 
-import { ApiPromise, HttpProvider, Keyring } from "@polkadot/api";
+import { ApiPromise, HttpProvider } from "@polkadot/api";
 import { KeyringPair } from "@polkadot/keyring/types";
 import { bnToU8a, stringToU8a } from "@polkadot/util";
 import { encodeAddress } from "@polkadot/util-crypto";
 import { AssetIdV3, DoubleEncodedCall, EventRecord, XcmOriginKind } from "@polkadot/types/interfaces";
-import { StagingXcmV3MultiLocation, XcmVersionedXcm } from "@polkadot/types/lookup";
+import { XcmVersionedXcm, XcmVersionedLocation } from "@polkadot/types/lookup";
+import { MultiAddress, AccountId } from "@polkadot/types/interfaces";
+
 import debug from "debug";
 
 require("events").EventEmitter.prototype._maxListeners = 100;
@@ -51,27 +55,50 @@ export async function customRequest(web3: Web3, method: string, params: any[]) {
 		);
 	});
 }
-export interface ExtendedAssetHubApi extends ApiPromise {
-	laosAssetId: StagingXcmV3MultiLocation;
-	relayAssetId: StagingXcmV3MultiLocation;
-}
+
+type AssetHubItems = {
+	accounts: {
+		alice: AccountId;
+		bob: AccountId;
+		charlie: AccountId;
+		dave: AccountId;
+		eve: AccountId;
+		ferdie: AccountId;
+	};
+	multiAddresses: {
+		alice: MultiAddress;
+		bob: MultiAddress;
+		charlie: MultiAddress;
+		dave: MultiAddress;
+		eve: MultiAddress;
+		ferdie: MultiAddress;
+		laosSA: MultiAddress;
+	};
+	laosSA: string;
+	laosLocation: XcmVersionedLocation;
+	relayChainLocation: XcmVersionedLocation;
+};
+
+type LaosItems = {
+	assetHubLocation: XcmVersionedLocation;
+	relayChainLocation: XcmVersionedLocation;
+};
+
+type describeContext = {
+	web3: Web3;
+	ethersjs: ethers.JsonRpcProvider;
+	networks: { laos: ApiPromise; assetHub: ApiPromise; relaychain: ApiPromise };
+};
 
 export function describeWithExistingNode(
 	title: string,
-	cb: (context: {
-		web3: Web3;
-		networks: { laos: ApiPromise; assetHub: ExtendedAssetHubApi; relaychain: ApiPromise };
-	}) => void,
+	cb: (context: describeContext, laosItems: LaosItems, assetHubItems: AssetHubItems) => void,
 	providerLaosNodeUrl?: string,
 	providerAssetHubNodeUrl?: string,
 	providerRelaychainNodeUrl?: string
 ) {
 	describe(title, () => {
-		let context: {
-			web3: Web3;
-			ethersjs: ethers.JsonRpcProvider;
-			networks: { laos: ApiPromise; assetHub: ExtendedAssetHubApi; relaychain: ApiPromise };
-		} = {
+		let context: describeContext = {
 			web3: null,
 			ethersjs: null,
 			networks: {
@@ -81,32 +108,71 @@ export function describeWithExistingNode(
 			},
 		};
 
+		let assetHubItems: AssetHubItems = {
+			accounts: { alice: null, bob: null, charlie: null, dave: null, eve: null, ferdie: null },
+			multiAddresses: {
+				alice: null,
+				bob: null,
+				charlie: null,
+				dave: null,
+				eve: null,
+				ferdie: null,
+				laosSA: null,
+			},
+			laosSA: sovereignAccountOf(LAOS_PARA_ID),
+			laosLocation: null,
+			relayChainLocation: null,
+		};
+
+		let laosItems: LaosItems = {
+			assetHubLocation: null,
+			relayChainLocation: null,
+		};
+
 		before(async () => {
 			context.web3 = new Web3(providerLaosNodeUrl || LAOS_NODE_URL);
 			let Provider = new HttpProvider(providerLaosNodeUrl || LAOS_NODE_URL);
-			context.networks.laos = await new ApiPromise({ provider: Provider }).isReady;
+			const apiLaos = await new ApiPromise({ provider: Provider }).isReady;
+			context.networks.laos = apiLaos;
 
 			Provider = new HttpProvider(providerAssetHubNodeUrl || ASSET_HUB_NODE_URL);
 
-			const apiAssetHub = (await ApiPromise.create({ provider: Provider })) as ExtendedAssetHubApi;
-
-			// Add custom properties
-			apiAssetHub.laosAssetId = apiAssetHub.createType(
-				"StagingXcmV3MultiLocation",
-				siblingLocation(LAOS_PARA_ID)
-			) as StagingXcmV3MultiLocation;
-
-			apiAssetHub.relayAssetId = apiAssetHub.createType(
-				"StagingXcmV3MultiLocation",
-				relayLocation()
-			) as StagingXcmV3MultiLocation;
+			const apiAssetHub = await ApiPromise.create({ provider: Provider });
 
 			context.networks.assetHub = apiAssetHub;
 
 			Provider = new HttpProvider(providerRelaychainNodeUrl || RELAYCHAIN_NODE_URL);
 			context.networks.relaychain = await new ApiPromise({ provider: Provider }).isReady;
+
+			assetHubItems.accounts.alice = apiAssetHub.createType("AccountId", substratePairs.alice.address);
+			assetHubItems.accounts.bob = apiAssetHub.createType("AccountId", substratePairs.bob.address);
+			assetHubItems.accounts.charlie = apiAssetHub.createType("AccountId", substratePairs.charlie.address);
+			assetHubItems.accounts.dave = apiAssetHub.createType("AccountId", substratePairs.dave.address);
+			assetHubItems.accounts.eve = apiAssetHub.createType("AccountId", substratePairs.eve.address);
+			assetHubItems.accounts.ferdie = apiAssetHub.createType("AccountId", substratePairs.ferdie.address);
+
+			assetHubItems.multiAddresses.alice = apiAssetHub.createType("MultiAddress", substratePairs.alice.address);
+			assetHubItems.multiAddresses.bob = apiAssetHub.createType("MultiAddress", substratePairs.bob.address);
+			assetHubItems.multiAddresses.charlie = apiAssetHub.createType(
+				"MultiAddress",
+				substratePairs.charlie.address
+			);
+			assetHubItems.multiAddresses.dave = apiAssetHub.createType("MultiAddress", substratePairs.dave.address);
+			assetHubItems.multiAddresses.eve = apiAssetHub.createType("MultiAddress", substratePairs.eve.address);
+			assetHubItems.multiAddresses.ferdie = apiAssetHub.createType("MultiAddress", substratePairs.ferdie.address);
+			assetHubItems.multiAddresses.laosSA = apiAssetHub.createType("MultiAddress", assetHubItems.laosSA);
+
+			assetHubItems.laosLocation = apiAssetHub.createType("XcmVersionedLocation", {
+				V3: siblingLocation(LAOS_PARA_ID),
+			});
+			assetHubItems.relayChainLocation = apiAssetHub.createType("XcmVersionedLocation", { V3: relayLocation() });
+
+			laosItems.assetHubLocation = apiLaos.createType("XcmVersionedLocation", {
+				V3: siblingLocation(ASSET_HUB_PARA_ID),
+			});
+			laosItems.relayChainLocation = apiLaos.createType("XcmVersionedLocation", { V3: relayLocation() });
 		});
-		cb(context);
+		cb(context, laosItems, assetHubItems);
 	});
 }
 
@@ -291,7 +357,7 @@ export const isChannelOpen = async (api: ApiPromise, sender: number, recipient: 
 export const sendOpenHrmpChannelTxs = async (api: ApiPromise, paraA: number, paraB: number) => {
 	const maxCapacity = 8;
 	const maxMessageSize = 1048576;
-	const sudo = new Keyring({ type: "sr25519" }).addFromUri("//Alice");
+	const sudo = substratePairs.alice;
 
 	const hrmpChannelCalls = [];
 

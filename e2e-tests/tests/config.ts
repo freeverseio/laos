@@ -5,6 +5,8 @@ import EvolutionCollection from "../build/contracts/EvolutionCollection.json";
 import EvolutionCollectionFactory from "../build/contracts/EvolutionCollectionFactory.json";
 import Vesting from "../build/contracts/Vesting.json";
 import ParachainStaking from "../build/contracts/ParachainStaking.json";
+import { Keyring } from "@polkadot/api";
+import { KeyringPair } from "@polkadot/keyring/types";
 
 // Node config
 export const RUNTIME_SPEC_NAME = "laos";
@@ -21,6 +23,24 @@ export const ASSET_HUB_PARA_ID = 1000;
 export const LAOS_PARA_ID = 2900;
 
 // Accounts
+type SubstratePairs_type = {
+	alice: KeyringPair;
+	bob: KeyringPair;
+	charlie: KeyringPair;
+	dave: KeyringPair;
+	eve: KeyringPair;
+	ferdie: KeyringPair;
+};
+
+export const substratePairs: SubstratePairs_type = {
+	alice: new Keyring({ type: "sr25519" }).addFromUri("//Alice"),
+	bob: new Keyring({ type: "sr25519" }).addFromUri("//Bob"),
+	charlie: new Keyring({ type: "sr25519" }).addFromUri("//Charlie"),
+	dave: new Keyring({ type: "sr25519" }).addFromUri("//Dave"),
+	eve: new Keyring({ type: "sr25519" }).addFromUri("//Eve"),
+	ferdie: new Keyring({ type: "sr25519" }).addFromUri("//Ferdie"),
+};
+
 export const CHECKING_ACCOUNT = "0x6d6F646c70792F78636D63680000000000000000";
 export const FAITH = "0xC0F0f4ab324C46e55D02D0033343B4Be8A55532d";
 export const FAITH_PRIVATE_KEY = "0xb9d2ea9a615f3165812e8d44de0d24da9bbd164b65c4f0573e1ce2c8dbd9c8df";
@@ -28,6 +48,18 @@ export const ALITH = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
 export const ALITH_PRIVATE_KEY = "0x5fb92d6e98884f76de468fa3f6278f8807c48bebc13595d45af5bdc4da702133";
 export const BALTATHAR = "0x3Cd0A705a2DC65e5b1E1205896BaA2be8A07c6e0";
 export const BALTATHAR_PRIVATE_KEY = "0x8075991ce870b93a8870eca0c0f91913d12f47948ca0fd25b49c6fa7cdbeee8b";
+
+type ethereumPairs_type = {
+	alith: KeyringPair;
+	baltathar: KeyringPair;
+	faith: KeyringPair;
+};
+
+export const ethereumPairs: ethereumPairs_type = {
+	alith: new Keyring({ type: "ethereum" }).addFromUri(ALITH_PRIVATE_KEY),
+	baltathar: new Keyring({ type: "ethereum" }).addFromUri(BALTATHAR_PRIVATE_KEY),
+	faith: new Keyring({ type: "ethereum" }).addFromUri(FAITH_PRIVATE_KEY),
+};
 
 // LAOS Evolution Contract
 export const EVOLUTION_COLLECTION_FACTORY_ABI = EvolutionCollectionFactory.abi as AbiItem[];
