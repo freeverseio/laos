@@ -80,8 +80,8 @@ impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
 				"VestingMigrationTo6SecBlockTime::on_runtime_upgrade - Starting migration"
 			);
 
-			weight += migrate_vesting_pallet_max_schedules();
-			weight += migrate_schedules();
+			weight = weight.saturating_add(migrate_vesting_pallet_max_schedules());
+			weight = weight.saturating_add(migrate_schedules());
 
 			sp_io::storage::set(LAOS_VESTING_MIGRATION_6S, &[]);
 			write_count += 1;
