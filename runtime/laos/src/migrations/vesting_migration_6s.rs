@@ -94,7 +94,7 @@ impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
 
 		weight +
 			<Runtime as frame_system::Config>::DbWeight::get()
-				.reads_writes(read_count + 1, write_count + 1)
+				.reads_writes(read_count, write_count)
 	}
 
 	#[cfg(feature = "try-runtime")]
@@ -206,10 +206,7 @@ fn migrate_vesting_pallet_max_schedules() -> Weight {
 
 		// Attempt to migrate each vesting schedule to the new bounded vector
 		for v_info in vesting_info {
-			if new_vesting_infos.try_push(v_info).is_err() {
-				// Log a warning if a vesting schedule cannot be migrated due to the new limit
-				log::warn!("Failed to migrate a vesting schedule due to the bounded vector limit");
-			}
+			new_vesting_infos.try_push(v_info).ok();
 		}
 
 		// Return the new bounded vector to update the storage
@@ -401,7 +398,7 @@ mod tests {
 
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
-				Weight::from_parts(475000000, 0)
+				Weight::from_parts(350000000, 0)
 			);
 
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(bob).unwrap();
@@ -431,7 +428,7 @@ mod tests {
 
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
-				Weight::from_parts(475000000, 0)
+				Weight::from_parts(350000000, 0)
 			);
 
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(bob).unwrap();
@@ -460,7 +457,7 @@ mod tests {
 
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
-				Weight::from_parts(475000000, 0)
+				Weight::from_parts(350000000, 0)
 			);
 
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(bob).unwrap();
@@ -489,7 +486,7 @@ mod tests {
 
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
-				Weight::from_parts(475000000, 0)
+				Weight::from_parts(350000000, 0)
 			);
 
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(bob).unwrap();
@@ -520,7 +517,7 @@ mod tests {
 			frame_system::Pallet::<Runtime>::set_block_number(5000);
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
-				Weight::from_parts(475000000, 0)
+				Weight::from_parts(350000000, 0)
 			);
 
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(bob).unwrap();
@@ -546,7 +543,7 @@ mod tests {
 
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
-				Weight::from_parts(475000000, 0)
+				Weight::from_parts(350000000, 0)
 			);
 
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(bob).unwrap();
@@ -566,7 +563,7 @@ mod tests {
 
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
-				Weight::from_parts(225000000, 0)
+				Weight::from_parts(100000000, 0)
 			);
 
 			assert!(pallet_vesting::Vesting::<Runtime>::get(bob).is_none());
@@ -602,7 +599,7 @@ mod tests {
 			// Execute the migration and verify the expected weight is consumed
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
-				Weight::from_parts(475_000_000, 0)
+				Weight::from_parts(350_000_000, 0)
 			);
 
 			// Retrieve Bob's vesting schedules after migration
