@@ -437,8 +437,10 @@ export const waitForEvent = async (
 			let remainingBlocks = blockTimeout;
 
 			// Fetch the starting block number
-			const currentHeader = await api.rpc.chain.getHeader();
-			let currentBlockNumber = currentHeader.number.toNumber();
+			// Fetch the starting finalized block number
+			const currentHeader = await api.rpc.chain.getFinalizedHead();
+			const finalizedHeader = await api.rpc.chain.getHeader(currentHeader);
+			let currentBlockNumber = finalizedHeader.number.toNumber();
 
 			debugEvents(
 				`[${api.runtimeVersion.specName.toString()}] Starting to watch for events from block ${currentBlockNumber} for up to ${blockTimeout} blocks...`
