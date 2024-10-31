@@ -13,7 +13,7 @@ $ wget -O zombienet https://github.com/paritytech/zombienet/releases/download/v1
 ```
 
 ### Run Zombienet
-Before spawning zombienet, set up the environment variables `ZOMBIENET_RELAYCHAIN_COMMAND` and `ZOMBIENET_LAOS_COMMAND` in a terminal session or in your shell configuration file (e.g. `~/.bashrc`, `~/.zsh.rc`):
+Before spawning zombienet, set up the environment variables `ZOMBIENET_RELAYCHAIN_COMMAND`, `ZOMBIENET_LAOS_COMMAND` and `ZOMBIENET_ASSETHUB_COMMAND` in a terminal session or in your shell configuration file (e.g. `~/.bashrc`, `~/.zsh.rc`):
 
 ```sh
 export ZOMBIENET_RELAYCHAIN_COMMAND=<path-to-polkadot-executable>
@@ -24,16 +24,6 @@ To run the relay chain locally, you need the `polkadot` binary. Either download 
 ```sh
 cargo build --release --locked
 ```
-
-#### Parchain-only
-This a local Rococo relay chain with one parachain: Laos.
-
-```sh
-$ zombienet spawn zombienet/native.toml
-```
-
-#### Parachain and AssetHub
-Use this configuration in case you need to test XCM. This a local Rococo relay chain with two parachains: Laos and AssetHub.
 
 To run AssetHub locally, you need the `polkadot-parachain` binary. Either download it from the [polkadot-sdk releases tab](https://github.com/paritytech/polkadot-sdk/releases), or clone the [polkadot-sdk repo](https://github.com/paritytech/polkadot-sdk/) and compile the project with the command:
 ```sh
@@ -47,7 +37,7 @@ export ZOMBIENET_ASSETHUB_COMMAND=<path-to-polkadot-parachain-executable>
 
 You're now ready to spawn the proper configuration of zombienet:
 ```sh
-$ zombienet spawn zombienet/xcm-native.toml
+$ zombienet spawn zombienet/native.toml
 ```
 
 #### CLI options
