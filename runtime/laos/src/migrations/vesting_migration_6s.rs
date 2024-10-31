@@ -178,7 +178,8 @@ impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
 /// Migrates vesting schedules to conform to the new `MaxVestingSchedulesGet` limit.
 /// This ensures that no account has more vesting schedules than the allowed maximum.
 fn migrate_vesting_pallet_max_schedules() -> Weight {
-	let mut reads_writes = 0;
+	let mut reads_count = 0;
+	let mut writes_count = 0;
 
 	// Logging the maximum schedule count comparison
 	log::info!(
@@ -196,7 +197,7 @@ fn migrate_vesting_pallet_max_schedules() -> Weight {
 		>,
 		_,
 	>(|_key, vesting_info| {
-		reads_writes += 1;
+		reads_count += 1;
 
 		// Create a new bounded vector with the updated maximum limit
 		let mut new_vesting_infos: BoundedVec<
@@ -209,12 +210,14 @@ fn migrate_vesting_pallet_max_schedules() -> Weight {
 			new_vesting_infos.try_push(v_info).ok();
 		}
 
+		writes_count += 1;
+
 		// Return the new bounded vector to update the storage
 		new_vesting_infos.into()
 	});
 
 	// Calculate the total weight based on reads and writes performed
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(reads_writes, reads_writes)
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(reads_count, writes_count)
 }
 
 /// Migrates all vesting schedules to adjust for the new 6-second block time.
