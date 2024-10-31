@@ -143,8 +143,6 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 		}
 	});
 
-	// TODO merge this step with the previous one, investigate why mint xcm has to be sent with originKind: SovereignAccount
-	// whereas create xcm has to be sent with originKind: Xcm
 	step("Mint LAOS foreign asset in AssetHub", async function () {
 		// Build XCM instructions
 		const ferdie = new Keyring({ type: "sr25519" }).addFromUri("//Ferdie");
@@ -173,11 +171,11 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 		const alithBalanceBefore = new BN((await apiLaos.query.system.account(alith.address)).data.free);
 		const laosBalanceBefore = new BN((await apiAssetHub.query.system.account(laosSiblingAccount)).data.free);
 		const sudoCall = apiLaos.tx.sudo.sudo(apiLaos.tx.polkadotXcm.send(destination, instruction));
-		await sudoCall
-			.signAndSend(alith, () => {})
-			.catch((error: any) => {
-				console.log("transaction failed", error);
-			});
+		try {
+			await sudoCall.signAndSend(alith);
+		} catch (error) {
+			console.log("transaction failed", error);
+		}
 
 		// Check if the foreign asset has been minted in Asset Hub
 		const event = await waitForEvent(
@@ -230,11 +228,11 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 			const laosBalanceBefore = new BN((await apiAssetHub.query.system.account(laosSiblingAccount)).data.free);
 			const alithBalanceBefore = new BN((await apiLaos.query.system.account(alith.address)).data.free);
 			const sudoCall = apiLaos.tx.sudo.sudo(apiLaos.tx.polkadotXcm.send(destination, instruction));
-			await sudoCall
-				.signAndSend(alith, () => {})
-				.catch((error: any) => {
-					console.log("transaction failed", error);
-				});
+			try {
+				await sudoCall.signAndSend(alith);
+			} catch (error) {
+				console.log("transaction failed", error);
+			}
 
 			// Check that pool has been created in Asset Hub
 			const event = await waitForEvent(
@@ -282,20 +280,21 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 			"Ferdie's LAOS balance should be greater than the amount to be sent to the pool"
 		);
 
-		await apiAssetHub.tx.assetConversion
-			.addLiquidity(
-				apiAssetHub.relayAssetId.toU8a(),
-				apiAssetHub.laosAssetId.toU8a(),
-				liquidityAmountDot,
-				liquidityAmountLaos,
-				liquidityAmountDot.sub(new BN(ONE_DOT.muln(10))),
-				liquidityAmountLaos.sub(new BN(ONE_LAOS.muln(10))),
-				ferdie.address
-			)
-			.signAndSend(ferdie, () => {})
-			.catch((error: any) => {
-				console.log("transaction failed", error);
-			});
+		try {
+			await apiAssetHub.tx.assetConversion
+				.addLiquidity(
+					apiAssetHub.relayAssetId.toU8a(),
+					apiAssetHub.laosAssetId.toU8a(),
+					liquidityAmountDot,
+					liquidityAmountLaos,
+					liquidityAmountDot.sub(new BN(ONE_DOT.muln(10))),
+					liquidityAmountLaos.sub(new BN(ONE_LAOS.muln(10))),
+					ferdie.address
+				)
+				.signAndSend(ferdie);
+		} catch (error) {
+			console.log("transaction failed", error);
+		}
 	});
 
 	step("Teleport from LAOS to AssetHub", async function () {
@@ -334,7 +333,6 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 				},
 			],
 		});
-		// TODO check this in production we should pay
 		const fee_asset_item = "0";
 		const weight_limit = "Unlimited";
 
@@ -352,9 +350,11 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 			weight_limit
 		);
 
-		call.signAndSend(alith).catch((error: any) => {
+		try {
+			await call.signAndSend(alith);
+		} catch (error) {
 			console.log("transaction failed", error);
-		});
+		}
 
 		// Check that LAOS has been sent in Asset Hub
 		const event = await waitForEvent(
@@ -391,7 +391,6 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 			V3: siblingLocation(LAOS_PARA_ID),
 		});
 
-		// We need to use AssetHub api otherwise we get an error as LAOS does not use AccountId32
 		let beneficiaryAddress = "0x0000000000000000000000000000000000000001";
 		const beneficiary = apiAssetHub.createType("XcmVersionedLocation", {
 			V3: {
@@ -420,7 +419,6 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 				},
 			],
 		});
-		// TODO check this in production we should pay
 		const fee_asset_item = "0";
 		const weight_limit = "Unlimited";
 
@@ -438,9 +436,11 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context) => {
 			fee_asset_item,
 			weight_limit
 		);
-		call.signAndSend(charlie).catch((error: any) => {
+		try {
+			await call.signAndSend(charlie);
+		} catch (error) {
 			console.log("transaction failed", error);
-		});
+		}
 
 		// Check that LAOS has been sent back in LAOS
 		const event = await waitForEvent(

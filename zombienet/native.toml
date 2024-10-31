@@ -52,16 +52,3 @@ chain = "asset-hub-rococo-local"
   ws_port = 9950
   command = "{{ZOMBIENET_ASSETHUB_COMMAND}}"
   args = ["--log=xcm=trace,pallet-assets=trace"]
-
-# See: https://github.com/paritytech/polkadot-sdk/pull/1616
-# [[hrmp_channels]]
-# sender = 2900
-# recipient = 1000
-# max_capacity = 8
-# max_message_size = 1048576 # 512
-
-# [[hrmp_channels]]
-# sender = 1000
-# recipient = 2900
-# max_capacity = 8
-# max_message_size = 1048576

@@ -242,12 +242,9 @@ export const awaitBlockChange = async (api: ApiPromise) => {
 	}
 };
 
-export const transferBalance = async (
-	api: ApiPromise,
-	origin: KeyringPair,
-	beneficiary: string,
-	amount: number | BN
-) => {
+export const transferBalance = async (api: ApiPromise, origin: KeyringPair, beneficiary: string, amount: BN) => {
+	let beforeBalance = await api.query.system.account(beneficiary);
+
 	try {
 		await api.tx.balances.transferKeepAlive(beneficiary, amount).signAndSend(origin);
 	} catch (error) {
@@ -256,7 +253,7 @@ export const transferBalance = async (
 
 	let balance = await api.query.system.account(beneficiary);
 
-	while (balance.data.free.toNumber() != amount) {
+	while (balance.data.free != beforeBalance.data.free.add(amount)) {
 		await awaitBlockChange(api);
 
 		balance = await api.query.system.account(beneficiary);
