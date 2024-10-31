@@ -10,7 +10,7 @@ import { KeyringPair } from "@polkadot/keyring/types";
 
 // Node config
 export const RUNTIME_SPEC_NAME = "laos";
-export const RUNTIME_SPEC_VERSION = 2293;
+export const RUNTIME_SPEC_VERSION = 2294;
 export const RUNTIME_IMPL_VERSION = 0;
 export const LAOS_NODE_URL = "http://127.0.0.1:9999";
 export const ASSET_HUB_NODE_URL = "http://127.0.0.1:9950";

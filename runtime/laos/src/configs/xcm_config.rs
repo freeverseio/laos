@@ -16,7 +16,7 @@
 
 use crate::{
 	types::ToAuthor, AccountId, AllPalletsWithSystem, Balances, ParachainInfo, PolkadotXcm,
-	Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin,
+	Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin, Vec,
 };
 use core::marker::PhantomData;
 use frame_support::{
@@ -42,11 +42,7 @@ use xcm_builder::{
 use xcm_executor::XcmExecutor;
 
 pub const ASSET_HUB_ID: u32 = 1000;
-#[cfg(not(feature = "paseo"))]
 pub const RELAY_NETWORK: NetworkId = NetworkId::Polkadot;
-#[cfg(feature = "paseo")]
-pub const RELAY_NETWORK: NetworkId =
-	NetworkId::ByGenesis(hex!("77afd6190f1554ad45fd0d31aee62aacc33c6db0ea801129acb813f913e0764f"));
 
 parameter_types! {
 	// Optional network identifier for the Relay Chain; set to `None` for default behavior.
@@ -172,7 +168,9 @@ impl xcm_executor::Config for XcmConfig {
 	type AssetTransactor = LocalAssetTransactor;
 	// Converts XCM origins to local dispatch origins.
 	type OriginConverter = XcmOriginToTransactDispatchOrigin;
-	type IsReserve = (); // no reserve trasfer are accepted
+	// No reserve transfer accepted
+	type IsReserve = ();
+	// This defines tuples of (Asset, Location) we trust as teleports (either from or to LAOS)
 	type IsTeleporter = TrustedTeleporters;
 	type UniversalLocation = UniversalLocation;
 	// Filters and allows XCM messages based on security policies.
@@ -221,6 +219,21 @@ pub type XcmRouter = xcm_builder::WithUniqueTopic<(
 	crate::XcmpQueue,
 )>;
 
+//Filter all teleports that aren't the native asset
+pub struct OnlyTeleportNative;
+impl Contains<(Location, Vec<Asset>)> for OnlyTeleportNative {
+	fn contains(t: &(Location, Vec<Asset>)) -> bool {
+		t.1.iter().all(|asset| {
+			log::trace!(target: "xcm::OnlyTeleportNative", "Asset to be teleported: {:?}", asset);
+			if let Asset { id: asset_id, fun: Fungible(_) } = asset {
+				asset_id.0 == HereLocation::get()
+			} else {
+				false
+			}
+		})
+	}
+}
+
 impl pallet_xcm::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	// Determines which origins are allowed to send XCM messages.
@@ -230,9 +243,10 @@ impl pallet_xcm::Config for Runtime {
 	type ExecuteXcmOrigin = EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
 	type XcmExecuteFilter = Nothing;
 	type XcmExecutor = XcmExecutor<XcmConfig>;
-	type XcmTeleportFilter = Everything;
-	// Allows all reserve asset transfers.
-	type XcmReserveTransferFilter = Everything;
+	// This filter wheter an origin may teleport out different assets.
+	type XcmTeleportFilter = OnlyTeleportNative;
+	// Deny all reserve asset transfers.
+	type XcmReserveTransferFilter = Nothing;
 	// Calculates the weight of XCM messages.
 	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
 	type UniversalLocation = UniversalLocation;
@@ -289,11 +303,36 @@ where
 mod tests {
 	use super::*;
 
+	parameter_types! {
+		pub SomeLocation: Location = Location::new(1, [Junction::Parachain(123)] );
+	}
+
 	#[test]
 	fn check_checking_account() {
 		assert_eq!(
 			CheckingAccount::get().to_string(),
 			"0x6d6F646c70792F78636D63680000000000000000"
 		);
+	}
+
+	#[test]
+	fn only_teleport_native_contains_only_native_asset() {
+		let assets: Vec<Asset> = vec![(HereLocation::get(), Fungible(1_000)).into()];
+
+		// The first parameter passed to contains may be any location as it's not used by the
+		// function. We use HereLocation for simplicity.
+		assert!(OnlyTeleportNative::contains(&(HereLocation::get(), assets)));
+	}
+
+	#[test]
+	fn only_teleport_native_contains_not_all_assets_are_native() {
+		let assets: Vec<Asset> = vec![
+			(HereLocation::get(), Fungible(1_000)).into(),
+			(SomeLocation::get(), Fungible(1_000)).into(),
+		];
+
+		// The first parameter passed to contains may be any location as it's not used by the
+		// function. We use HereLocation for simplicity.
+		assert!(!OnlyTeleportNative::contains(&(HereLocation::get(), assets)));
 	}
 }

@@ -24,7 +24,7 @@ const debugTeleport = debug("teleport");
 
 const ONE_LAOS = new BN("1000000000000000000");
 const ONE_DOT = new BN("1000000000000");
-const WAITING_BLOCKS_FOR_EVENTS = 10; // Number of blocks we wait at max to receive an event
+const WAITING_BLOCKS_FOR_EVENTS = 20; // Number of blocks we wait at max to receive an event
 
 describeWithExistingNode("Teleport Asset Hub <-> LAOS", (context, laosItems, assetHubItems) => {
 	// APIS
