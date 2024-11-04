@@ -8,7 +8,6 @@ use polkadot_runtime_common::{prod_or_fast, CurrencyToVote};
 parameter_types! {
 	pub const CandidacyBond: Balance = 1000 * UNIT;
 	pub TermDuration: BlockNumber = prod_or_fast!(28 * DAYS, 10 * MINUTES);
-	pub VotingLockPeriod: BlockNumber = prod_or_fast!(28 * DAYS, 10 * MINUTES);
 	pub const DesiredMembers: u32 = 7;
 	pub const DesiredRunnersUp: u32 = 20;
 	pub const MaxCandidates: u32 = 30;
