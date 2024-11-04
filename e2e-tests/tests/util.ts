@@ -6,6 +6,8 @@ import {
 	EVOLUTION_COLLECTION_FACTORY_CONTRACT_ADDRESS,
 	GAS_PRICE,
 	FAITH,
+	ALITH_PRIVATE_KEY,
+	BALTATHAR_PRIVATE_KEY,
 	FAITH_PRIVATE_KEY,
 	EVOLUTION_COLLECTION_FACTORY_ABI,
 	EVOLUTION_COLLECTION_ABI,
@@ -15,18 +17,19 @@ import {
 	RELAYCHAIN_NODE_URL,
 	LAOS_PARA_ID,
 	ASSET_HUB_PARA_ID,
-	substratePairs,
 } from "./config";
 import BN from "bn.js";
 import { expect } from "chai";
 import "@polkadot/api-augment";
 
 import { ApiPromise, HttpProvider } from "@polkadot/api";
-import { KeyringPair } from "@polkadot/keyring/types";
 import { bnToU8a, stringToU8a } from "@polkadot/util";
 import { encodeAddress } from "@polkadot/util-crypto";
 import { AssetIdV3, DoubleEncodedCall, EventRecord, XcmOriginKind } from "@polkadot/types/interfaces";
 import { XcmVersionedXcm, XcmVersionedLocation } from "@polkadot/types/lookup";
+import { Keyring } from "@polkadot/api";
+import { KeyringPair } from "@polkadot/keyring/types";
+
 import { MultiAddress, AccountId } from "@polkadot/types/interfaces";
 
 import debug from "debug";
@@ -84,6 +87,21 @@ type LaosItems = {
 	relayChainLocation: XcmVersionedLocation;
 };
 
+type substratePairs_type = {
+	alice: KeyringPair;
+	bob: KeyringPair;
+	charlie: KeyringPair;
+	dave: KeyringPair;
+	eve: KeyringPair;
+	ferdie: KeyringPair;
+};
+
+type ethereumPairs_type = {
+	alith: KeyringPair;
+	baltathar: KeyringPair;
+	faith: KeyringPair;
+};
+
 type describeContext = {
 	web3: Web3;
 	ethersjs: ethers.JsonRpcProvider;
@@ -92,7 +110,13 @@ type describeContext = {
 
 export function describeWithExistingNode(
 	title: string,
-	cb: (context: describeContext, laosItems: LaosItems, assetHubItems: AssetHubItems) => void,
+	cb: (
+		context: describeContext,
+		substratePairs: substratePairs_type,
+		ethereumPairs: ethereumPairs_type,
+		laosItems: LaosItems,
+		assetHubItems: AssetHubItems
+	) => void,
 	providerLaosNodeUrl?: string,
 	providerAssetHubNodeUrl?: string,
 	providerRelaychainNodeUrl?: string
@@ -128,7 +152,15 @@ export function describeWithExistingNode(
 			assetHubLocation: null,
 			relayChainLocation: null,
 		};
-
+		let substratePairs: substratePairs_type = {
+			alice: null,
+			bob: null,
+			charlie: null,
+			dave: null,
+			eve: null,
+			ferdie: null,
+		};
+		let ethereumPairs: ethereumPairs_type = { alith: null, baltathar: null, faith: null };
 		before(async () => {
 			context.web3 = new Web3(providerLaosNodeUrl || LAOS_NODE_URL);
 			let Provider = new HttpProvider(providerLaosNodeUrl || LAOS_NODE_URL);
@@ -144,23 +176,39 @@ export function describeWithExistingNode(
 			Provider = new HttpProvider(providerRelaychainNodeUrl || RELAYCHAIN_NODE_URL);
 			context.networks.relaychain = await new ApiPromise({ provider: Provider }).isReady;
 
-			assetHubItems.accounts.alice = apiAssetHub.createType("AccountId", substratePairs.alice.address);
-			assetHubItems.accounts.bob = apiAssetHub.createType("AccountId", substratePairs.bob.address);
-			assetHubItems.accounts.charlie = apiAssetHub.createType("AccountId", substratePairs.charlie.address);
-			assetHubItems.accounts.dave = apiAssetHub.createType("AccountId", substratePairs.dave.address);
-			assetHubItems.accounts.eve = apiAssetHub.createType("AccountId", substratePairs.eve.address);
-			assetHubItems.accounts.ferdie = apiAssetHub.createType("AccountId", substratePairs.ferdie.address);
+			substratePairs = {
+				alice: new Keyring({ type: "sr25519" }).addFromUri("//Alice"),
+				bob: new Keyring({ type: "sr25519" }).addFromUri("//Bob"),
+				charlie: new Keyring({ type: "sr25519" }).addFromUri("//Charlie"),
+				dave: new Keyring({ type: "sr25519" }).addFromUri("//Dave"),
+				eve: new Keyring({ type: "sr25519" }).addFromUri("//Eve"),
+				ferdie: new Keyring({ type: "sr25519" }).addFromUri("//Ferdie"),
+			};
 
-			assetHubItems.multiAddresses.alice = apiAssetHub.createType("MultiAddress", substratePairs.alice.address);
-			assetHubItems.multiAddresses.bob = apiAssetHub.createType("MultiAddress", substratePairs.bob.address);
-			assetHubItems.multiAddresses.charlie = apiAssetHub.createType(
-				"MultiAddress",
-				substratePairs.charlie.address
-			);
-			assetHubItems.multiAddresses.dave = apiAssetHub.createType("MultiAddress", substratePairs.dave.address);
-			assetHubItems.multiAddresses.eve = apiAssetHub.createType("MultiAddress", substratePairs.eve.address);
-			assetHubItems.multiAddresses.ferdie = apiAssetHub.createType("MultiAddress", substratePairs.ferdie.address);
-			assetHubItems.multiAddresses.laosSA = apiAssetHub.createType("MultiAddress", assetHubItems.laosSA);
+			ethereumPairs = {
+				alith: new Keyring({ type: "ethereum" }).addFromUri(ALITH_PRIVATE_KEY),
+				baltathar: new Keyring({ type: "ethereum" }).addFromUri(BALTATHAR_PRIVATE_KEY),
+				faith: new Keyring({ type: "ethereum" }).addFromUri(FAITH_PRIVATE_KEY),
+			};
+
+			assetHubItems.accounts = {
+				alice: apiAssetHub.createType("AccountId", substratePairs.alice.address),
+				bob: apiAssetHub.createType("AccountId", substratePairs.bob.address),
+				charlie: apiAssetHub.createType("AccountId", substratePairs.charlie.address),
+				dave: apiAssetHub.createType("AccountId", substratePairs.dave.address),
+				eve: apiAssetHub.createType("AccountId", substratePairs.eve.address),
+				ferdie: apiAssetHub.createType("AccountId", substratePairs.ferdie.address),
+			};
+
+			assetHubItems.multiAddresses = {
+				alice: apiAssetHub.createType("MultiAddress", substratePairs.alice.address),
+				bob: apiAssetHub.createType("MultiAddress", substratePairs.bob.address),
+				charlie: apiAssetHub.createType("MultiAddress", substratePairs.charlie.address),
+				dave: apiAssetHub.createType("MultiAddress", substratePairs.dave.address),
+				eve: apiAssetHub.createType("MultiAddress", substratePairs.eve.address),
+				ferdie: apiAssetHub.createType("MultiAddress", substratePairs.ferdie.address),
+				laosSA: apiAssetHub.createType("MultiAddress", assetHubItems.laosSA),
+			};
 
 			assetHubItems.laosLocation = apiAssetHub.createType("XcmVersionedLocation", {
 				V3: siblingLocation(LAOS_PARA_ID),
@@ -172,7 +220,7 @@ export function describeWithExistingNode(
 			});
 			laosItems.relayChainLocation = apiLaos.createType("XcmVersionedLocation", { V3: relayLocation() });
 		});
-		cb(context, laosItems, assetHubItems);
+		cb(context, substratePairs, ethereumPairs, laosItems, assetHubItems);
 	});
 }
 
@@ -310,15 +358,15 @@ export const awaitBlockChange = async (api: ApiPromise) => {
 
 export const transferBalance = async (api: ApiPromise, origin: KeyringPair, beneficiary: string, amount: BN) => {
 	let beforeBalance = await api.query.system.account(beneficiary);
-	
+
 	try {
 		await api.tx.balances.transferKeepAlive(beneficiary, amount).signAndSend(origin);
 	} catch (error) {
 		console.log("transaction failed: ", error);
 	}
-	
+
 	let balance = await api.query.system.account(beneficiary);
-	
+
 	while (balance.data.free.eq(beforeBalance.data.free.add(amount)) == false) {
 		await awaitBlockChange(api);
 
@@ -357,7 +405,7 @@ export const isChannelOpen = async (api: ApiPromise, sender: number, recipient: 
 export const sendOpenHrmpChannelTxs = async (api: ApiPromise, paraA: number, paraB: number) => {
 	const maxCapacity = 8;
 	const maxMessageSize = 1048576;
-	const sudo = substratePairs.alice;
+	const sudo = new Keyring({ type: "sr25519" }).addFromUri("//Alice");
 
 	const hrmpChannelCalls = [];
 
@@ -502,7 +550,6 @@ export const waitForEvent = async (
 			let eventFound: EventRecord | null = null;
 			let remainingBlocks = blockTimeout;
 
-			// Fetch the starting block number
 			// Fetch the starting finalized block number
 			const currentHeader = await api.rpc.chain.getFinalizedHead();
 			const finalizedHeader = await api.rpc.chain.getHeader(currentHeader);
