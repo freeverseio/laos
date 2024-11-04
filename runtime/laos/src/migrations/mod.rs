@@ -14,11 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
-mod vesting_migration_6s;
+mod async_backing;
 
 use crate::Runtime;
 
 pub type Migrations = (
 	cumulus_pallet_xcmp_queue::migration::v4::MigrationToV4<Runtime>,
-	vesting_migration_6s::VestingMigrationTo6SecBlockTime,
+	async_backing::Migration,
 );

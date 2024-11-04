@@ -10,7 +10,7 @@ use sp_core::{ConstU32, Get};
 use sp_runtime::DispatchError;
 use sp_std::{vec, vec::Vec};
 
-pub struct VestingMigrationTo6SecBlockTime;
+pub struct Migration;
 
 const LAOS_VESTING_MIGRATION_6S: &[u8] = b":laos:vesting_migration_6s:";
 // The old maximum number of vesting schedules per account
@@ -23,7 +23,7 @@ type BalanceOf<T> = <<T as pallet_vesting::Config>::Currency as Currency<
 
 type VestingSchedule = pallet_vesting::VestingInfo<BalanceOf<Runtime>, BlockNumberFor<Runtime>>;
 
-impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
+impl OnRuntimeUpgrade for Migration {
 	#[cfg(feature = "try-runtime")]
 	/// Logs the total number of accounts with vesting schedules, the count of schedules per
 	/// account, and the maximum schedule count per account before migration.
@@ -54,7 +54,7 @@ impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
 		// Logging summary information before migration
 		log::info!(
 			target: "runtime::migration",
-			"VestingMigrationTo6SecBlockTime::pre_upgrade - Found {} accounts with vesting schedules, \
+			"Migration::pre_upgrade - Found {} accounts with vesting schedules, \
 			 maximum schedules per account: {}",
 			vesting_accounts_count,
 			max_schedule_count
@@ -64,7 +64,7 @@ impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
 
 		log::info!(
 			target: "runtime::migration",
-			"VestingMigrationTo6SecBlockTime::pre_upgrade - Current blocks per round: {}",
+			"Migration::pre_upgrade - Current blocks per round: {}",
 			blocks_per_round
 		);
 
@@ -86,13 +86,13 @@ impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
 		if sp_io::storage::exists(LAOS_VESTING_MIGRATION_6S) {
 			log::info!(
 				target: "runtime::migration",
-				"VestingMigrationTo6SecBlockTime::on_runtime_upgrade - Migration already applied ... skipping"
+				"Migration::on_runtime_upgrade - Migration already applied ... skipping"
 			);
 			read_count += 1;
 		} else {
 			log::info!(
 				target: "runtime::migration",
-				"VestingMigrationTo6SecBlockTime::on_runtime_upgrade - Starting migration"
+				"Migration::on_runtime_upgrade - Starting migration"
 			);
 
 			weight = weight.saturating_add(migrate_vesting_pallet_max_schedules());
@@ -104,7 +104,7 @@ impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
 
 			log::info!(
 				target: "runtime::migration",
-				"VestingMigrationTo6SecBlockTime::on_runtime_upgrade - Migration ended"
+				"Migration::on_runtime_upgrade - Migration ended"
 			);
 		}
 
@@ -143,7 +143,7 @@ impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
 		// Logging successful migration
 		log::info!(
 			target: "runtime::migration",
-			"VestingMigrationTo6SecBlockTime::post_upgrade - Migration successful. \
+			"Migration::post_upgrade - Migration successful. \
 			 Account count before: {}, after: {}",
 			old_account_count,
 			new_account_count
@@ -181,7 +181,7 @@ impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
 		// Logging the maximum schedule count comparison
 		log::info!(
 			target: "runtime::migration",
-			"VestingMigrationTo6SecBlockTime::post_upgrade - Max schedules per account pre-migration: {}, \
+			"Migration::post_upgrade - Max schedules per account pre-migration: {}, \
 			 max schedules per account post-migration: {}",
 			old_max_schedule_count,
 			max_schedule_count_post_migration
@@ -191,7 +191,7 @@ impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
 		assert_eq!(old_blocks_per_round * 2, new_blocks_per_round);
 		log::info!(
 			target: "runtime::migration",
-			"VestingMigrationTo6SecBlockTime::post_upgrade - Blocks per round pre-migration: {}, \
+			"Migration::post_upgrade - Blocks per round pre-migration: {}, \
 			 blocks per round post-migration: {}",
 			old_blocks_per_round,
 			new_blocks_per_round
@@ -221,13 +221,13 @@ fn double_parachain_staking_blocks_per_round() -> Weight {
 	) {
 		log::warn!(
 			target: "runtime::migration",
-			"VestingMigrationTo6SecBlockTime::double_parachain_staking_blocks_per_round - Failed to set new round length: {:?}",
+			"Migration::double_parachain_staking_blocks_per_round - Failed to set new round length: {:?}",
 			e
 		);
 	} else {
 		log::info!(
 			target: "runtime::migration",
-			"VestingMigrationTo6SecBlockTime::double_parachain_staking_blocks_per_round - Round length doubled from {} to {}",
+			"Migration::double_parachain_staking_blocks_per_round - Round length doubled from {} to {}",
 			round_length,
 			new_round_length
 		);
@@ -246,7 +246,7 @@ fn migrate_vesting_pallet_max_schedules() -> Weight {
 	// Logging the maximum schedule count comparison
 	log::info!(
 		target: "runtime::migration",
-		"VestingMigrationTo6SecBlockTime::migrate_vesting_pallet_max_schedules from {} to {} max vested",
+		"Migration::migrate_vesting_pallet_max_schedules from {} to {} max vested",
 		OLD_MAX_VESTING_SCHEDULES,
 		MaxVestingSchedulesGet::<Runtime>::get()
 	);
@@ -289,7 +289,7 @@ fn migrate_schedules() -> Weight {
 
 	log::info!(
 		target: "runtime::migration",
-		"VestingMigrationTo6SecBlockTime::migrate_schedules - Starting migration"
+		"Migration::migrate_schedules - Starting migration"
 	);
 
 	for (account_id, schedules) in pallet_vesting::Vesting::<Runtime>::drain() {
@@ -307,7 +307,7 @@ fn migrate_schedules() -> Weight {
 	// Logging completion of the runtime upgrade
 	log::info!(
 		target: "runtime::migration",
-		"VestingMigrationTo6SecBlockTime::migrate_schedules - Migration completed with {} reads and {} writes",
+		"Migration::migrate_schedules - Migration completed with {} reads and {} writes",
 		read_count,
 		write_count
 	);
@@ -470,7 +470,7 @@ mod tests {
 			));
 
 			assert_eq!(
-				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
+				Migration::on_runtime_upgrade(),
 				Weight::from_parts(475000000, 0)
 			);
 
@@ -500,7 +500,7 @@ mod tests {
 			frame_system::Pallet::<Runtime>::set_block_number(5);
 
 			assert_eq!(
-				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
+				Migration::on_runtime_upgrade(),
 				Weight::from_parts(475000000, 0)
 			);
 
@@ -529,7 +529,7 @@ mod tests {
 			frame_system::Pallet::<Runtime>::set_block_number(10);
 
 			assert_eq!(
-				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
+				Migration::on_runtime_upgrade(),
 				Weight::from_parts(475000000, 0)
 			);
 
@@ -558,7 +558,7 @@ mod tests {
 			frame_system::Pallet::<Runtime>::set_block_number(15);
 
 			assert_eq!(
-				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
+				Migration::on_runtime_upgrade(),
 				Weight::from_parts(475000000, 0)
 			);
 
@@ -589,7 +589,7 @@ mod tests {
 
 			frame_system::Pallet::<Runtime>::set_block_number(5000);
 			assert_eq!(
-				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
+				Migration::on_runtime_upgrade(),
 				Weight::from_parts(475000000, 0)
 			);
 
@@ -615,7 +615,7 @@ mod tests {
 			assert_ok!(Vesting::vested_transfer(RuntimeOrigin::signed(alice), bob, schedule2));
 
 			assert_eq!(
-				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
+				Migration::on_runtime_upgrade(),
 				Weight::from_parts(475000000, 0)
 			);
 
@@ -635,7 +635,7 @@ mod tests {
 			assert!(pallet_vesting::Vesting::<Runtime>::get(bob).is_none());
 
 			assert_eq!(
-				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
+				Migration::on_runtime_upgrade(),
 				Weight::from_parts(225000000, 0)
 			);
 
@@ -671,7 +671,7 @@ mod tests {
 
 			// Execute the migration and verify the expected weight is consumed
 			assert_eq!(
-				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
+				Migration::on_runtime_upgrade(),
 				Weight::from_parts(475000000, 0)
 			);
 
@@ -705,7 +705,7 @@ mod tests {
 
 			// Execute the migration and verify the expected weight is consumed
 			assert_eq!(
-				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
+				Migration::on_runtime_upgrade(),
 				Weight::from_parts(225_000_000, 0)
 			);
 
