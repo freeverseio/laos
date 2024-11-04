@@ -1,4 +1,4 @@
-use crate::{AccountId, Runtime, Weight};
+use crate::{AccountId, Runtime, RuntimeOrigin, Weight};
 use frame_support::{
 	traits::{Currency, OnRuntimeUpgrade},
 	BoundedVec,
@@ -84,6 +84,7 @@ impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
 
 			weight = weight.saturating_add(migrate_vesting_pallet_max_schedules());
 			weight = weight.saturating_add(migrate_schedules());
+			weight = weight.saturating_add(double_parachain_staking_blocks_per_round());
 
 			sp_io::storage::set(LAOS_VESTING_MIGRATION_6S, &[]);
 			write_count += 1;
@@ -174,6 +175,29 @@ impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
 
 		Ok(())
 	}
+}
+
+/// The actual migration code that doubles the round length.
+fn double_parachain_staking_blocks_per_round() -> Weight {
+	// Get the current round length
+	let round_length = pallet_parachain_staking::Pallet::<Runtime>::round().length;
+
+	// Calculate the new round length
+	let new_round_length =
+		round_length.checked_mul(2).expect("Overflow when doubling round length");
+
+	// Set the new round length
+	if let Err(e) = pallet_parachain_staking::Pallet::<Runtime>::set_blocks_per_round(
+		RuntimeOrigin::root(),
+		new_round_length,
+	) {
+		log::error!("Failed to set new round length: {:?}", e);
+	} else {
+		log::info!("Successfully set new round length: {}", new_round_length);
+	}
+
+	// Return the weight consumed by this migration (estimate)
+	Weight::zero()
 }
 
 /// Migrates vesting schedules to conform to the new `MaxVestingSchedulesGet` limit.
@@ -631,5 +655,26 @@ mod tests {
 		let account = AccountId::from_str(account_str).unwrap();
 		assert_ok!(Balances::force_set_balance(RuntimeOrigin::root(), account, balance));
 		account
+	}
+
+	// Mock implementation and setup would go here.
+	// This is a placeholder to illustrate how tests might be structured.
+	#[test]
+	fn test_migration_doubles_round_length() {
+		ExtBuilder::default().build().execute_with(|| {
+			// Set initial round length
+			let initial_round_length = pallet_parachain_staking::Pallet::<Runtime>::round().length;
+			assert_eq!(initial_round_length, 10);
+
+			// Execute the migration and verify the expected weight is consumed
+			assert_eq!(
+				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
+				Weight::from_parts(100_000_000, 0)
+			);
+
+			// Verify the new round length
+			let new_round_length = pallet_parachain_staking::Pallet::<Runtime>::round().length;
+			assert_eq!(new_round_length, initial_round_length * 2);
+		});
 	}
 }
