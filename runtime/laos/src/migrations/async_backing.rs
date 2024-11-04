@@ -436,8 +436,8 @@ fn try_push_schedule(
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::{currency::UNIT, tests::ExtBuilder, AccountId, Balances, RuntimeOrigin, Vesting};
-	use frame_support::assert_ok;
+	use crate::{currency::UNIT, tests::ExtBuilder, AccountId, RuntimeOrigin};
+	use frame_support::{assert_ok, traits::fungible::InspectFreeze};
 	use sp_core::Get;
 	use std::str::FromStr;
 
@@ -463,16 +463,13 @@ mod tests {
 			assert_eq!(frame_system::Pallet::<Runtime>::block_number(), 0);
 
 			let vesting_schedule = pallet_vesting::VestingInfo::new(1000 * UNIT, 2 * UNIT, 10);
-			assert_ok!(Vesting::vested_transfer(
+			assert_ok!(pallet_vesting::Pallet::<Runtime>::vested_transfer(
 				RuntimeOrigin::signed(alice),
 				bob,
 				vesting_schedule
 			));
 
-			assert_eq!(
-				Migration::on_runtime_upgrade(),
-				Weight::from_parts(475000000, 0)
-			);
+			assert_eq!(Migration::on_runtime_upgrade(), Weight::from_parts(475000000, 0));
 
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(bob).unwrap();
 			assert_eq!(schedules.len(), 1);
@@ -491,7 +488,7 @@ mod tests {
 			let bob = setup_account(BOB, 0);
 
 			let vesting_schedule = pallet_vesting::VestingInfo::new(1000 * UNIT, 2 * UNIT, 10);
-			assert_ok!(Vesting::vested_transfer(
+			assert_ok!(pallet_vesting::Pallet::<Runtime>::vested_transfer(
 				RuntimeOrigin::signed(alice),
 				bob,
 				vesting_schedule
@@ -499,10 +496,7 @@ mod tests {
 
 			frame_system::Pallet::<Runtime>::set_block_number(5);
 
-			assert_eq!(
-				Migration::on_runtime_upgrade(),
-				Weight::from_parts(475000000, 0)
-			);
+			assert_eq!(Migration::on_runtime_upgrade(), Weight::from_parts(475000000, 0));
 
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(bob).unwrap();
 			assert_eq!(schedules.len(), 1);
@@ -520,7 +514,7 @@ mod tests {
 			let bob = setup_account(BOB, 0);
 
 			let vesting_schedule = pallet_vesting::VestingInfo::new(1000 * UNIT, 2 * UNIT, 10);
-			assert_ok!(Vesting::vested_transfer(
+			assert_ok!(pallet_vesting::Pallet::<Runtime>::vested_transfer(
 				RuntimeOrigin::signed(alice),
 				bob,
 				vesting_schedule
@@ -528,10 +522,7 @@ mod tests {
 
 			frame_system::Pallet::<Runtime>::set_block_number(10);
 
-			assert_eq!(
-				Migration::on_runtime_upgrade(),
-				Weight::from_parts(475000000, 0)
-			);
+			assert_eq!(Migration::on_runtime_upgrade(), Weight::from_parts(475000000, 0));
 
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(bob).unwrap();
 			assert_eq!(schedules.len(), 1);
@@ -549,7 +540,7 @@ mod tests {
 			let bob = setup_account(BOB, 0);
 
 			let vesting_schedule = pallet_vesting::VestingInfo::new(1000 * UNIT, 2 * UNIT, 10);
-			assert_ok!(Vesting::vested_transfer(
+			assert_ok!(pallet_vesting::Pallet::<Runtime>::vested_transfer(
 				RuntimeOrigin::signed(alice),
 				bob,
 				vesting_schedule
@@ -557,10 +548,7 @@ mod tests {
 
 			frame_system::Pallet::<Runtime>::set_block_number(15);
 
-			assert_eq!(
-				Migration::on_runtime_upgrade(),
-				Weight::from_parts(475000000, 0)
-			);
+			assert_eq!(Migration::on_runtime_upgrade(), Weight::from_parts(475000000, 0));
 
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(bob).unwrap();
 			assert_eq!(schedules.len(), 2);
@@ -581,17 +569,14 @@ mod tests {
 			let bob = setup_account(BOB, 0);
 
 			let vesting_schedule = pallet_vesting::VestingInfo::new(1000 * UNIT, 2 * UNIT, 10);
-			assert_ok!(Vesting::vested_transfer(
+			assert_ok!(pallet_vesting::Pallet::<Runtime>::vested_transfer(
 				RuntimeOrigin::signed(alice),
 				bob,
 				vesting_schedule
 			));
 
 			frame_system::Pallet::<Runtime>::set_block_number(5000);
-			assert_eq!(
-				Migration::on_runtime_upgrade(),
-				Weight::from_parts(475000000, 0)
-			);
+			assert_eq!(Migration::on_runtime_upgrade(), Weight::from_parts(475000000, 0));
 
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(bob).unwrap();
 			assert_eq!(schedules.len(), 1);
@@ -611,13 +596,18 @@ mod tests {
 			let schedule1 = pallet_vesting::VestingInfo::new(1000 * UNIT, UNIT, 10);
 			let schedule2 = pallet_vesting::VestingInfo::new(2000 * UNIT, 2 * UNIT, 15);
 
-			assert_ok!(Vesting::vested_transfer(RuntimeOrigin::signed(alice), bob, schedule1));
-			assert_ok!(Vesting::vested_transfer(RuntimeOrigin::signed(alice), bob, schedule2));
+			assert_ok!(pallet_vesting::Pallet::<Runtime>::vested_transfer(
+				RuntimeOrigin::signed(alice),
+				bob,
+				schedule1
+			));
+			assert_ok!(pallet_vesting::Pallet::<Runtime>::vested_transfer(
+				RuntimeOrigin::signed(alice),
+				bob,
+				schedule2
+			));
 
-			assert_eq!(
-				Migration::on_runtime_upgrade(),
-				Weight::from_parts(475000000, 0)
-			);
+			assert_eq!(Migration::on_runtime_upgrade(), Weight::from_parts(475000000, 0));
 
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(bob).unwrap();
 			assert_eq!(schedules.len(), 2);
@@ -634,10 +624,7 @@ mod tests {
 
 			assert!(pallet_vesting::Vesting::<Runtime>::get(bob).is_none());
 
-			assert_eq!(
-				Migration::on_runtime_upgrade(),
-				Weight::from_parts(225000000, 0)
-			);
+			assert_eq!(Migration::on_runtime_upgrade(), Weight::from_parts(225000000, 0));
 
 			assert!(pallet_vesting::Vesting::<Runtime>::get(bob).is_none());
 		});
@@ -661,8 +648,11 @@ mod tests {
 
 			// Alice transfers multiple vesting schedules to Bob
 			for _ in 0..half_max_schedules {
-				let _ =
-					Vesting::vested_transfer(RuntimeOrigin::signed(alice), bob, vesting_schedule);
+				let _ = pallet_vesting::Pallet::<Runtime>::vested_transfer(
+					RuntimeOrigin::signed(alice),
+					bob,
+					vesting_schedule,
+				);
 			}
 
 			// Advance the block number to a point where vesting schedules may split during
@@ -670,10 +660,7 @@ mod tests {
 			frame_system::Pallet::<Runtime>::set_block_number(15);
 
 			// Execute the migration and verify the expected weight is consumed
-			assert_eq!(
-				Migration::on_runtime_upgrade(),
-				Weight::from_parts(475000000, 0)
-			);
+			assert_eq!(Migration::on_runtime_upgrade(), Weight::from_parts(475000000, 0));
 
 			// Retrieve Bob's vesting schedules after migration
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(bob).unwrap();
@@ -687,15 +674,70 @@ mod tests {
 			assert_eq!(schedules.len(), expected_schedules as usize);
 		});
 	}
+
+	// check if the migration of a vesting that is in course and with already vested amount is
+	// correct
+	#[test]
+	fn migrate_vesting_in_course() {
+		ExtBuilder::default().build().execute_with(|| {
+			let alice = setup_account(ALICE, 10000 * UNIT);
+			let bob = setup_account(BOB, 0);
+
+			let vesting_schedule = pallet_vesting::VestingInfo::new(1000 * UNIT, 2 * UNIT, 10);
+			assert_ok!(pallet_vesting::Pallet::<Runtime>::vested_transfer(
+				RuntimeOrigin::signed(alice),
+				bob,
+				vesting_schedule
+			));
+
+			frame_system::Pallet::<Runtime>::set_block_number(14);
+
+			assert_ok!(pallet_vesting::Pallet::<Runtime>::vest(RuntimeOrigin::signed(bob)));
+
+			// check the balance of bob
+			assert_eq!(frame_system::Pallet::<Runtime>::account(&bob).data.free, 1000 * UNIT);
+			assert_eq!(frame_system::Pallet::<Runtime>::account(&bob).data.frozen, 992 * UNIT);
+
+			frame_system::Pallet::<Runtime>::set_block_number(15);
+
+			assert_eq!(Migration::on_runtime_upgrade(), Weight::from_parts(475000000, 0));
+
+			let schedules = pallet_vesting::Vesting::<Runtime>::get(bob).unwrap();
+			assert_eq!(schedules.len(), 2);
+			assert_eq!(schedules[0].starting_block(), 10);
+			assert_eq!(schedules[0].locked(), 10 * UNIT);
+			assert_eq!(schedules[0].per_block(), 2 * UNIT);
+			assert_eq!(schedules[1].starting_block(), 15);
+			assert_eq!(schedules[1].locked(), 990 * UNIT);
+			assert_eq!(schedules[1].per_block(), UNIT);
+
+			frame_system::Pallet::<Runtime>::set_block_number(16);
+
+			assert_ok!(pallet_vesting::Pallet::<Runtime>::vest(RuntimeOrigin::signed(bob)));
+			// check the balance of bob
+			assert_eq!(frame_system::Pallet::<Runtime>::account(&bob).data.free, 1000 * UNIT);
+			assert_eq!(frame_system::Pallet::<Runtime>::account(&bob).data.frozen, 989 * UNIT);
+
+			frame_system::Pallet::<Runtime>::set_block_number(1200);
+			assert_ok!(pallet_vesting::Pallet::<Runtime>::vest(RuntimeOrigin::signed(bob)));
+			// check the balance of bob
+			assert_eq!(frame_system::Pallet::<Runtime>::account(&bob).data.free, 1000 * UNIT);
+			assert_eq!(frame_system::Pallet::<Runtime>::account(&bob).data.frozen, 0);
+		});
+	}
+
 	/// Helper function to set up an account with a given balance.
 	fn setup_account(account_str: &str, balance: u128) -> AccountId {
 		let account = AccountId::from_str(account_str).unwrap();
-		assert_ok!(Balances::force_set_balance(RuntimeOrigin::root(), account, balance));
+		assert_ok!(pallet_balances::Pallet::<Runtime>::force_set_balance(
+			RuntimeOrigin::root(),
+			account,
+			balance
+		));
 		account
 	}
 
-	// Mock implementation and setup would go here.
-	// This is a placeholder to illustrate how tests might be structured.
+	/// Tests that the migration correctly doubles the round length.
 	#[test]
 	fn test_migration_doubles_round_length() {
 		ExtBuilder::default().build().execute_with(|| {
@@ -704,10 +746,7 @@ mod tests {
 			assert_eq!(initial_round_length, 10);
 
 			// Execute the migration and verify the expected weight is consumed
-			assert_eq!(
-				Migration::on_runtime_upgrade(),
-				Weight::from_parts(225_000_000, 0)
-			);
+			assert_eq!(Migration::on_runtime_upgrade(), Weight::from_parts(225_000_000, 0));
 
 			// Verify the new round length
 			let new_round_length = pallet_parachain_staking::Pallet::<Runtime>::round().length;

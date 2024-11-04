@@ -18,7 +18,5 @@ mod async_backing;
 
 use crate::Runtime;
 
-pub type Migrations = (
-	cumulus_pallet_xcmp_queue::migration::v4::MigrationToV4<Runtime>,
-	async_backing::Migration,
-);
+pub type Migrations =
+	(cumulus_pallet_xcmp_queue::migration::v4::MigrationToV4<Runtime>, async_backing::Migration);
