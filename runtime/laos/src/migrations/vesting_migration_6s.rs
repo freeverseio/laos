@@ -60,8 +60,21 @@ impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
 			max_schedule_count
 		);
 
+		let blocks_per_round = pallet_parachain_staking::Pallet::<Runtime>::round().length;
+
+		log::info!(
+			target: "runtime::migration",
+			"VestingMigrationTo6SecBlockTime::pre_upgrade - Current blocks per round: {}",
+			blocks_per_round
+		);
+
 		// Encode the number of accounts, schedule counts per account, and max schedule count
-		Ok((vesting_accounts_count as u32, schedules_per_account, max_schedule_count as u32)
+		Ok((
+			vesting_accounts_count as u32,
+			schedules_per_account,
+			max_schedule_count as u32,
+			blocks_per_round,
+		)
 			.encode())
 	}
 
@@ -109,11 +122,12 @@ impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
 			return Ok(());
 		}
 
-		let (old_account_count, schedules_per_account, old_max_schedule_count): (
-			u32,
-			Vec<(AccountId, u32)>,
-			u32,
-		) = Decode::decode(&mut &encoded_data[..])
+		let (
+			old_account_count,
+			schedules_per_account,
+			old_max_schedule_count,
+			old_blocks_per_round,
+		): (u32, Vec<(AccountId, u32)>, u32, u32) = Decode::decode(&mut &encoded_data[..])
 			.map_err(|_| DispatchError::Other("Failed to decode migration data"))?;
 
 		let new_account_count = pallet_vesting::Vesting::<Runtime>::iter().count();
@@ -173,6 +187,16 @@ impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
 			max_schedule_count_post_migration
 		);
 
+		let new_blocks_per_round = pallet_parachain_staking::Pallet::<Runtime>::round().length;
+		assert_eq!(old_blocks_per_round * 2, new_blocks_per_round);
+		log::info!(
+			target: "runtime::migration",
+			"VestingMigrationTo6SecBlockTime::post_upgrade - Blocks per round pre-migration: {}, \
+			 blocks per round post-migration: {}",
+			old_blocks_per_round,
+			new_blocks_per_round
+		);
+
 		Ok(())
 	}
 }
@@ -195,9 +219,18 @@ fn double_parachain_staking_blocks_per_round() -> Weight {
 		RuntimeOrigin::root(),
 		new_round_length,
 	) {
-		log::error!("Failed to set new round length: {:?}", e);
+		log::warn!(
+			target: "runtime::migration",
+			"VestingMigrationTo6SecBlockTime::double_parachain_staking_blocks_per_round - Failed to set new round length: {:?}",
+			e
+		);
 	} else {
-		log::info!("Successfully set new round length: {}", new_round_length);
+		log::info!(
+			target: "runtime::migration",
+			"VestingMigrationTo6SecBlockTime::double_parachain_staking_blocks_per_round - Round length doubled from {} to {}",
+			round_length,
+			new_round_length
+		);
 	}
 	writes_count += 1;
 
