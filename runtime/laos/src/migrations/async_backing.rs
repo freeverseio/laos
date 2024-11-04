@@ -437,7 +437,7 @@ fn try_push_schedule(
 mod tests {
 	use super::*;
 	use crate::{currency::UNIT, tests::ExtBuilder, AccountId, RuntimeOrigin};
-	use frame_support::{assert_ok, traits::fungible::InspectFreeze};
+	use frame_support::assert_ok;
 	use sp_core::Get;
 	use std::str::FromStr;
 
@@ -695,8 +695,8 @@ mod tests {
 			assert_ok!(pallet_vesting::Pallet::<Runtime>::vest(RuntimeOrigin::signed(bob)));
 
 			// check the balance of bob
-			assert_eq!(frame_system::Pallet::<Runtime>::account(&bob).data.free, 1000 * UNIT);
-			assert_eq!(frame_system::Pallet::<Runtime>::account(&bob).data.frozen, 992 * UNIT);
+			assert_eq!(frame_system::Pallet::<Runtime>::account(bob).data.free, 1000 * UNIT);
+			assert_eq!(frame_system::Pallet::<Runtime>::account(bob).data.frozen, 992 * UNIT);
 
 			frame_system::Pallet::<Runtime>::set_block_number(15);
 
@@ -715,14 +715,14 @@ mod tests {
 
 			assert_ok!(pallet_vesting::Pallet::<Runtime>::vest(RuntimeOrigin::signed(bob)));
 			// check the balance of bob
-			assert_eq!(frame_system::Pallet::<Runtime>::account(&bob).data.free, 1000 * UNIT);
-			assert_eq!(frame_system::Pallet::<Runtime>::account(&bob).data.frozen, 989 * UNIT);
+			assert_eq!(frame_system::Pallet::<Runtime>::account(bob).data.free, 1000 * UNIT);
+			assert_eq!(frame_system::Pallet::<Runtime>::account(bob).data.frozen, 989 * UNIT);
 
 			frame_system::Pallet::<Runtime>::set_block_number(1200);
 			assert_ok!(pallet_vesting::Pallet::<Runtime>::vest(RuntimeOrigin::signed(bob)));
 			// check the balance of bob
-			assert_eq!(frame_system::Pallet::<Runtime>::account(&bob).data.free, 1000 * UNIT);
-			assert_eq!(frame_system::Pallet::<Runtime>::account(&bob).data.frozen, 0);
+			assert_eq!(frame_system::Pallet::<Runtime>::account(bob).data.free, 1000 * UNIT);
+			assert_eq!(frame_system::Pallet::<Runtime>::account(bob).data.frozen, 0);
 		});
 	}
 
