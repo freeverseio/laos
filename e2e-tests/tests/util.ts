@@ -62,6 +62,7 @@ export function describeWithExistingNode(
 		web3: Web3;
 		networks: { laos: ApiPromise; assetHub: ExtendedAssetHubApi; relaychain: ApiPromise };
 	}) => void,
+	openPolkadotConnections: boolean = false,
 	providerLaosNodeUrl?: string,
 	providerAssetHubNodeUrl?: string,
 	providerRelaychainNodeUrl?: string
@@ -83,28 +84,30 @@ export function describeWithExistingNode(
 
 		before(async () => {
 			context.web3 = new Web3(providerLaosNodeUrl || LAOS_NODE_URL);
-			let Provider = new HttpProvider(providerLaosNodeUrl || LAOS_NODE_URL);
-			context.networks.laos = await new ApiPromise({ provider: Provider }).isReady;
+			if (openPolkadotConnections) {
 
-			Provider = new HttpProvider(providerAssetHubNodeUrl || ASSET_HUB_NODE_URL);
+				// Laos
+				let provider = new HttpProvider(providerLaosNodeUrl || LAOS_NODE_URL);
+				context.networks.laos = await new ApiPromise({ provider }).isReady;
 
-			const apiAssetHub = (await ApiPromise.create({ provider: Provider })) as ExtendedAssetHubApi;
+				// Aset Hub
+				provider = new HttpProvider(providerAssetHubNodeUrl || ASSET_HUB_NODE_URL);
+				const apiAssetHub = (await ApiPromise.create({ provider })) as ExtendedAssetHubApi;
 
-			// Add custom properties
-			apiAssetHub.laosAssetId = apiAssetHub.createType(
-				"StagingXcmV3MultiLocation",
-				siblingLocation(LAOS_PARA_ID)
-			) as StagingXcmV3MultiLocation;
+				apiAssetHub.laosAssetId = apiAssetHub.createType(
+					"StagingXcmV3MultiLocation",
+					siblingLocation(LAOS_PARA_ID)
+				) as StagingXcmV3MultiLocation;
+				apiAssetHub.relayAssetId = apiAssetHub.createType(
+					"StagingXcmV3MultiLocation",
+					relayLocation()
+				) as StagingXcmV3MultiLocation;
+				context.networks.assetHub = apiAssetHub;
 
-			apiAssetHub.relayAssetId = apiAssetHub.createType(
-				"StagingXcmV3MultiLocation",
-				relayLocation()
-			) as StagingXcmV3MultiLocation;
-
-			context.networks.assetHub = apiAssetHub;
-
-			Provider = new HttpProvider(providerRelaychainNodeUrl || RELAYCHAIN_NODE_URL);
-			context.networks.relaychain = await new ApiPromise({ provider: Provider }).isReady;
+				// Relaychain
+				provider = new HttpProvider(providerRelaychainNodeUrl || RELAYCHAIN_NODE_URL);
+				context.networks.relaychain = await new ApiPromise({ provider }).isReady;
+			}
 		});
 		cb(context);
 	});

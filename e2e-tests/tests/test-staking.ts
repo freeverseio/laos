@@ -62,4 +62,4 @@ describeWithExistingNode("Frontier RPC (Staking)", (context) => {
 		expect(result.status).to.be.eq(true);
 		expect(await contract.methods.isDelegator(BALTATHAR).call()).to.be.eq(true);
 	});
-});
+}, true);

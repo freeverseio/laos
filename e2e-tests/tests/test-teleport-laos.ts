@@ -64,7 +64,7 @@ describeWithExistingNode("Teleport Asset Hub <-> Laos", (context) => {
 		expect(await isChannelOpen(apiRelaychain, ASSET_HUB_PARA_ID, LAOS_PARA_ID)).to.be.true;
 	});
 
-	step("Create $LAOS asset in AssetHub", async function () {
+	step("Create $LAOS in AssetHub", async function () {
 		const laosForeignAssetExists = !(await apiAssetHub.query.foreignAssets.asset(apiAssetHub.laosAssetId)).isEmpty;
 
 		// NOTE: We only create the foreign asset if it hasn't been created yet, in this way we ensure tests are idempotent
@@ -136,14 +136,14 @@ describeWithExistingNode("Teleport Asset Hub <-> Laos", (context) => {
 
 			expect(
 				(await apiAssetHub.query.foreignAssets.asset(apiAssetHub.laosAssetId)).isEmpty,
-				"$LAOS asset has not been created"
+				"$LAOS has not been created"
 			).to.be.false;
 		} else {
-			debugTeleport("$LAOS asset already exists, skipping creation...");
+			debugTeleport("$LAOS already exists, skipping creation...");
 		}
 	});
 
-	step("Mint $LAOS asset in AssetHub", async function () {
+	step("Mint $LAOS in AssetHub", async function () {
 		// Build XCM instructions
 		const ferdie = new Keyring({ type: "sr25519" }).addFromUri("//Ferdie");
 		const ferdieMultiaddress = apiAssetHub.createType("MultiAddress", ferdie.address) as MultiAddress;
@@ -469,4 +469,4 @@ describeWithExistingNode("Teleport Asset Hub <-> Laos", (context) => {
 			"Alith's balance should increase by the amount received in the teleport"
 		);
 	});
-});
+}, true);
