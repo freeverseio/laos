@@ -179,8 +179,12 @@ impl OnRuntimeUpgrade for VestingMigrationTo6SecBlockTime {
 
 /// The actual migration code that doubles the round length.
 fn double_parachain_staking_blocks_per_round() -> Weight {
+	let mut reads_count = 0;
+	let mut writes_count = 0;
+
 	// Get the current round length
 	let round_length = pallet_parachain_staking::Pallet::<Runtime>::round().length;
+	read_count += 1;
 
 	// Calculate the new round length
 	let new_round_length =
@@ -195,9 +199,9 @@ fn double_parachain_staking_blocks_per_round() -> Weight {
 	} else {
 		log::info!("Successfully set new round length: {}", new_round_length);
 	}
+	write_count += 1;
 
-	// Return the weight consumed by this migration (estimate)
-	Weight::zero()
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(read_count, write_count)
 }
 
 /// Migrates vesting schedules to conform to the new `MaxVestingSchedulesGet` limit.
