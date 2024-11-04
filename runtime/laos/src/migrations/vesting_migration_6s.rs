@@ -184,7 +184,7 @@ fn double_parachain_staking_blocks_per_round() -> Weight {
 
 	// Get the current round length
 	let round_length = pallet_parachain_staking::Pallet::<Runtime>::round().length;
-	read_count += 1;
+	reads_count += 1;
 
 	// Calculate the new round length
 	let new_round_length =
@@ -199,9 +199,9 @@ fn double_parachain_staking_blocks_per_round() -> Weight {
 	} else {
 		log::info!("Successfully set new round length: {}", new_round_length);
 	}
-	write_count += 1;
+	writes_count += 1;
 
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(read_count, write_count)
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(reads_count, writes_count)
 }
 
 /// Migrates vesting schedules to conform to the new `MaxVestingSchedulesGet` limit.
@@ -438,7 +438,7 @@ mod tests {
 
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
-				Weight::from_parts(350000000, 0)
+				Weight::from_parts(475000000, 0)
 			);
 
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(bob).unwrap();
@@ -468,7 +468,7 @@ mod tests {
 
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
-				Weight::from_parts(350000000, 0)
+				Weight::from_parts(475000000, 0)
 			);
 
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(bob).unwrap();
@@ -497,7 +497,7 @@ mod tests {
 
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
-				Weight::from_parts(350000000, 0)
+				Weight::from_parts(475000000, 0)
 			);
 
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(bob).unwrap();
@@ -526,7 +526,7 @@ mod tests {
 
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
-				Weight::from_parts(350000000, 0)
+				Weight::from_parts(475000000, 0)
 			);
 
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(bob).unwrap();
@@ -557,7 +557,7 @@ mod tests {
 			frame_system::Pallet::<Runtime>::set_block_number(5000);
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
-				Weight::from_parts(350000000, 0)
+				Weight::from_parts(475000000, 0)
 			);
 
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(bob).unwrap();
@@ -583,7 +583,7 @@ mod tests {
 
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
-				Weight::from_parts(350000000, 0)
+				Weight::from_parts(475000000, 0)
 			);
 
 			let schedules = pallet_vesting::Vesting::<Runtime>::get(bob).unwrap();
@@ -603,7 +603,7 @@ mod tests {
 
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
-				Weight::from_parts(100000000, 0)
+				Weight::from_parts(225000000, 0)
 			);
 
 			assert!(pallet_vesting::Vesting::<Runtime>::get(bob).is_none());
@@ -639,7 +639,7 @@ mod tests {
 			// Execute the migration and verify the expected weight is consumed
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
-				Weight::from_parts(350_000_000, 0)
+				Weight::from_parts(475000000, 0)
 			);
 
 			// Retrieve Bob's vesting schedules after migration
@@ -673,7 +673,7 @@ mod tests {
 			// Execute the migration and verify the expected weight is consumed
 			assert_eq!(
 				VestingMigrationTo6SecBlockTime::on_runtime_upgrade(),
-				Weight::from_parts(100_000_000, 0)
+				Weight::from_parts(225_000_000, 0)
 			);
 
 			// Verify the new round length
