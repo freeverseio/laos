@@ -50,7 +50,7 @@ describeWithExistingNode("Frontier RPC (Vesting)", (context) => {
 		expect(result.status).to.be.eq(true);
 	});
 	step("when vesting exists do vestOther returns ok", async function () {
-		let nonce = await context.web3.eth.getTransactionCount(FAITH);
+		let nonce = await context.web3.eth.getTransactionCount(FAITH, 'pending');
 		contract.options.from = FAITH;
 		const estimatedGas = await contract.methods.vestOther(ALITH).estimateGas();
 		let result = await contract.methods.vestOther(ALITH).send({ from: FAITH, gas: estimatedGas, nonce: nonce++ });
