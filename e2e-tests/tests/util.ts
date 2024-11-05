@@ -1,4 +1,3 @@
-import { ethers } from "ethers";
 import Contract from "web3-eth-contract";
 import Web3 from "web3";
 import { JsonRpcResponse } from "web3-core-helpers";
@@ -18,20 +17,18 @@ import {
 	LAOS_PARA_ID,
 	ASSET_HUB_PARA_ID,
 } from "./config";
+import { CustomSuiteContext } from "./types";
 import BN from "bn.js";
 import { expect } from "chai";
-import { Suite } from "mocha";
 import "@polkadot/api-augment";
 
 import { ApiPromise, HttpProvider } from "@polkadot/api";
 import { bnToU8a, stringToU8a } from "@polkadot/util";
 import { encodeAddress } from "@polkadot/util-crypto";
 import { AssetIdV3, DoubleEncodedCall, EventRecord, XcmOriginKind } from "@polkadot/types/interfaces";
-import { XcmVersionedXcm, XcmVersionedLocation, StagingXcmV3MultiLocation } from "@polkadot/types/lookup";
+import { XcmVersionedXcm } from "@polkadot/types/lookup";
 import { Keyring } from "@polkadot/api";
 import { KeyringPair } from "@polkadot/keyring/types";
-
-import { MultiAddress, AccountId } from "@polkadot/types/interfaces";
 
 import debug from "debug";
 
@@ -58,65 +55,6 @@ export async function customRequest(web3: Web3, method: string, params: any[]) {
 			}
 		);
 	});
-}
-
-type assetHubItems = {
-	accounts: {
-		alice: AccountId;
-		bob: AccountId;
-		charlie: AccountId;
-		dave: AccountId;
-		eve: AccountId;
-		ferdie: AccountId;
-	};
-	multiAddresses: {
-		alice: MultiAddress;
-		bob: MultiAddress;
-		charlie: MultiAddress;
-		dave: MultiAddress;
-		eve: MultiAddress;
-		ferdie: MultiAddress;
-		laosSA: MultiAddress;
-	};
-	laosSA: string;
-	laosLocation: XcmVersionedLocation;
-	laosAsset: StagingXcmV3MultiLocation;
-	relayChainLocation: XcmVersionedLocation;
-	relayAsset: StagingXcmV3MultiLocation;
-};
-
-type laosItems = {
-	assetHubLocation: XcmVersionedLocation;
-	relayChainLocation: XcmVersionedLocation;
-};
-
-type substratePairs = {
-	alice: KeyringPair;
-	bob: KeyringPair;
-	charlie: KeyringPair;
-	dave: KeyringPair;
-	eve: KeyringPair;
-	ferdie: KeyringPair;
-};
-
-type ethereumPairs = {
-	alith: KeyringPair;
-	baltathar: KeyringPair;
-	faith: KeyringPair;
-};
-
-type describeContext = {
-	web3: Web3;
-	ethersjs: ethers.JsonRpcProvider;
-	networks: { laos: ApiPromise; assetHub: ApiPromise; relaychain: ApiPromise };
-};
-
-interface CustomSuiteContext extends Suite {
-	context: describeContext;
-	substratePairs: substratePairs;
-	ethereumPairs: ethereumPairs;
-	laosItems: laosItems;
-	assetHubItems: assetHubItems;
 }
 
 export function describeWithExistingNode(
