@@ -4,11 +4,10 @@ use super::collective::{
 };
 use crate::{
 	currency::UNIT, weights, AccountId, Balance, Balances, BlockNumber, OriginCaller, Preimage,
-	Runtime, RuntimeEvent, Scheduler, TechnicalCommitteeMembership, Treasury,
+	Runtime, RuntimeEvent, Scheduler, TechnicalCommitteeMembership, Treasury, DAYS, HOURS, MINUTES,
 };
 use frame_support::{parameter_types, traits::EitherOfDiverse};
 use frame_system::{EnsureRoot, EnsureSigned, EnsureSignedBy};
-use parachains_common::{DAYS, HOURS, MINUTES};
 use polkadot_runtime_common::prod_or_fast;
 
 parameter_types! {
@@ -148,7 +147,7 @@ mod tests {
 				);
 
 				// the same preimage can be re-proposed as the cooloff period is over
-				frame_system::Pallet::<Runtime>::set_block_number(50402);
+				frame_system::Pallet::<Runtime>::set_block_number(100804);
 				assert_ok!(pallet_democracy::Pallet::<Runtime>::external_propose(
 					OriginCaller::Council(pallet_collective::RawOrigin::Members(1, 1)).into(),
 					preimage
