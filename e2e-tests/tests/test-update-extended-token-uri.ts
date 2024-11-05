@@ -12,15 +12,15 @@ import {
 } from "./config";
 import { describeWithExistingNode } from "./util";
 
-describeWithExistingNode("Frontier RPC (Extend Token URI)", (context) => {
+describeWithExistingNode("Frontier RPC (Extend Token URI)", function () {
 	let contract: Contract;
 
 	before(async function () {
-		contract = new context.web3.eth.Contract(ASSET_METADATA_EXTENDER_ABI, ASSET_METADATA_EXTENDER_ADDRESS, {
+		contract = new this.context.web3.eth.Contract(ASSET_METADATA_EXTENDER_ABI, ASSET_METADATA_EXTENDER_ADDRESS, {
 			from: FAITH,
 			gasPrice: GAS_PRICE,
 		});
-		context.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
+		this.context.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
 	});
 
 	let uloc = `universal/location/1/${Date.now()}`;
@@ -33,7 +33,7 @@ describeWithExistingNode("Frontier RPC (Extend Token URI)", (context) => {
 	});
 
 	step("extend should return ok", async function () {
-		let nonce = await context.web3.eth.getTransactionCount(FAITH);
+		let nonce = await this.context.web3.eth.getTransactionCount(FAITH);
 		const estimatedGas = await contract.methods.extendULWithExternalURI(uloc, tokenURI).estimateGas();
 		extendResult = await contract.methods.extendULWithExternalURI(uloc, tokenURI).send({
 			from: FAITH,
@@ -57,7 +57,7 @@ describeWithExistingNode("Frontier RPC (Extend Token URI)", (context) => {
 		expect(Object.keys(extendResult.events).length).to.be.eq(1);
 		expect(extendResult.events.ExtendedULWithExternalURI.returnValues._claimer).to.be.eq(FAITH);
 		expect(extendResult.events.ExtendedULWithExternalURI.returnValues._universalLocationHash).to.be.eq(
-			context.web3.utils.soliditySha3(uloc)
+			this.context.web3.utils.soliditySha3(uloc)
 		);
 		expect(extendResult.events.ExtendedULWithExternalURI.returnValues._universalLocation).to.be.eq(uloc);
 		expect(extendResult.events.ExtendedULWithExternalURI.returnValues._tokenURI).to.be.eq(tokenURI);
@@ -68,20 +68,20 @@ describeWithExistingNode("Frontier RPC (Extend Token URI)", (context) => {
 			SELECTOR_LOG_EXTENDED_UL_WITH_EXTERNAL_URI
 		);
 		expect(extendResult.events.ExtendedULWithExternalURI.raw.topics[1]).to.be.eq(
-			context.web3.utils.padLeft(FAITH.toLowerCase(), 64)
+			this.context.web3.utils.padLeft(FAITH.toLowerCase(), 64)
 		);
 		expect(extendResult.events.ExtendedULWithExternalURI.raw.topics[2]).to.be.eq(
-			context.web3.utils.padLeft(context.web3.utils.soliditySha3(uloc), 64)
+			this.context.web3.utils.padLeft(this.context.web3.utils.soliditySha3(uloc), 64)
 		);
 
 		// event data
 		expect(extendResult.events.ExtendedULWithExternalURI.raw.data).to.be.eq(
-			context.web3.eth.abi.encodeParameters(["string", "string"], [uloc, tokenURI])
+			this.context.web3.eth.abi.encodeParameters(["string", "string"], [uloc, tokenURI])
 		);
 	});
 });
 
-describeWithExistingNode("Frontier RPC (Update Extended Token URI)", async (context) => {
+describeWithExistingNode("Frontier RPC (Update Extended Token URI)", async function () {
 	let contract: Contract;
 
 	let uloc = `universal/location/2/${Date.now()}`;
@@ -90,14 +90,14 @@ describeWithExistingNode("Frontier RPC (Update Extended Token URI)", async (cont
 	let updateExtensionResult: any;
 
 	before(async function () {
-		contract = new context.web3.eth.Contract(ASSET_METADATA_EXTENDER_ABI, ASSET_METADATA_EXTENDER_ADDRESS, {
+		contract = new this.context.web3.eth.Contract(ASSET_METADATA_EXTENDER_ABI, ASSET_METADATA_EXTENDER_ADDRESS, {
 			from: FAITH,
 			gasPrice: GAS_PRICE,
 		});
-		context.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
+		this.context.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
 
 		// we first create an extension to be updated later
-		let nonce = await context.web3.eth.getTransactionCount(FAITH);
+		let nonce = await this.context.web3.eth.getTransactionCount(FAITH);
 		const estimatedGas = await contract.methods.extendULWithExternalURI(uloc, tokenURI).estimateGas();
 		const createResult = await contract.methods.extendULWithExternalURI(uloc, tokenURI).send({
 			from: FAITH,
@@ -117,7 +117,7 @@ describeWithExistingNode("Frontier RPC (Update Extended Token URI)", async (cont
 	});
 
 	step("update extension should return ok", async function () {
-		let nonce = await context.web3.eth.getTransactionCount(FAITH);
+		let nonce = await this.context.web3.eth.getTransactionCount(FAITH);
 		const estimatedGas = await contract.methods.updateExtendedULWithExternalURI(uloc, newTokenURI).estimateGas();
 		updateExtensionResult = await contract.methods.updateExtendedULWithExternalURI(uloc, newTokenURI).send({
 			from: FAITH,
@@ -143,7 +143,7 @@ describeWithExistingNode("Frontier RPC (Update Extended Token URI)", async (cont
 		expect(updateExtensionResult.events.UpdatedExtendedULWithExternalURI.returnValues._claimer).to.be.eq(FAITH);
 		expect(
 			updateExtensionResult.events.UpdatedExtendedULWithExternalURI.returnValues._universalLocationHash
-		).to.be.eq(context.web3.utils.soliditySha3(uloc));
+		).to.be.eq(this.context.web3.utils.soliditySha3(uloc));
 		expect(updateExtensionResult.events.UpdatedExtendedULWithExternalURI.returnValues._universalLocation).to.be.eq(
 			uloc
 		);
@@ -157,15 +157,15 @@ describeWithExistingNode("Frontier RPC (Update Extended Token URI)", async (cont
 			SELECTOR_LOG_UPDATED_EXTENDED_UL_WITH_EXTERNAL_URI
 		);
 		expect(updateExtensionResult.events.UpdatedExtendedULWithExternalURI.raw.topics[1]).to.be.eq(
-			context.web3.utils.padLeft(FAITH.toLowerCase(), 64)
+			this.context.web3.utils.padLeft(FAITH.toLowerCase(), 64)
 		);
 		expect(updateExtensionResult.events.UpdatedExtendedULWithExternalURI.raw.topics[2]).to.be.eq(
-			context.web3.utils.padLeft(context.web3.utils.soliditySha3(uloc), 64)
+			this.context.web3.utils.padLeft(this.context.web3.utils.soliditySha3(uloc), 64)
 		);
 
 		// event data
 		expect(updateExtensionResult.events.UpdatedExtendedULWithExternalURI.raw.data).to.be.eq(
-			context.web3.eth.abi.encodeParameters(["string", "string"], [uloc, newTokenURI])
+			this.context.web3.eth.abi.encodeParameters(["string", "string"], [uloc, newTokenURI])
 		);
 	});
 });

@@ -12,15 +12,15 @@ import {
 } from "./config";
 import { describeWithExistingNode } from "./util";
 
-describeWithExistingNode("Frontier RPC (Vesting)", (context) => {
+describeWithExistingNode("Frontier RPC (Vesting)", function () {
 	let contract: Contract;
 
 	before(async function () {
-		contract = new context.web3.eth.Contract(VESTING_ABI, VESTING_CONTRACT_ADDRESS, {
+		contract = new this.context.web3.eth.Contract(VESTING_ABI, VESTING_CONTRACT_ADDRESS, {
 			gasPrice: GAS_PRICE,
 		});
-		context.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
-		context.web3.eth.accounts.wallet.add(ALITH_PRIVATE_KEY);
+		this.context.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
+		this.context.web3.eth.accounts.wallet.add(ALITH_PRIVATE_KEY);
 	});
 
 	it("when there is no vesting it returns empty list", async function () {
@@ -29,7 +29,7 @@ describeWithExistingNode("Frontier RPC (Vesting)", (context) => {
 	});
 	it("when there is no vesting do vest reverts", async function () {
 		try {
-			let nonce = await context.web3.eth.getTransactionCount(FAITH);
+			let nonce = await this.context.web3.eth.getTransactionCount(FAITH);
 			const estimatedGas = await contract.methods.vest().estimateGas();
 			contract.options.from = FAITH;
 			await contract.methods.vest().send({ from: FAITH, gas: estimatedGas, nonce: nonce++ });
@@ -46,14 +46,14 @@ describeWithExistingNode("Frontier RPC (Vesting)", (context) => {
 		]);
 	});
 	step("when vesting exists do vest returns ok", async function () {
-		let nonce = await context.web3.eth.getTransactionCount(ALITH);
+		let nonce = await this.context.web3.eth.getTransactionCount(ALITH);
 		contract.options.from = ALITH;
 		const estimatedGas = await contract.methods.vest().estimateGas();
 		let result = await contract.methods.vest().send({ from: ALITH, gas: estimatedGas, nonce: nonce++ });
 		expect(result.status).to.be.eq(true);
 	});
 	step("when vesting exists do vestOther returns ok", async function () {
-		let nonce = await context.web3.eth.getTransactionCount(FAITH);
+		let nonce = await this.context.web3.eth.getTransactionCount(FAITH);
 		contract.options.from = FAITH;
 		const estimatedGas = await contract.methods.vestOther(ALITH).estimateGas();
 		let result = await contract.methods.vestOther(ALITH).send({ from: FAITH, gas: estimatedGas, nonce: nonce++ });

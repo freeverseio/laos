@@ -27,7 +27,7 @@ import { ApiPromise, HttpProvider } from "@polkadot/api";
 import { bnToU8a, stringToU8a } from "@polkadot/util";
 import { encodeAddress } from "@polkadot/util-crypto";
 import { AssetIdV3, DoubleEncodedCall, EventRecord, XcmOriginKind } from "@polkadot/types/interfaces";
-import { XcmVersionedXcm, XcmVersionedLocation } from "@polkadot/types/lookup";
+import { XcmVersionedXcm, XcmVersionedLocation, StagingXcmV3MultiLocation } from "@polkadot/types/lookup";
 import { Keyring } from "@polkadot/api";
 import { KeyringPair } from "@polkadot/keyring/types";
 
@@ -80,7 +80,9 @@ type AssetHubItems = {
 	};
 	laosSA: string;
 	laosLocation: XcmVersionedLocation;
+	laosAsset: StagingXcmV3MultiLocation;
 	relayChainLocation: XcmVersionedLocation;
+	relayAsset: StagingXcmV3MultiLocation;
 };
 
 type LaosItems = {
@@ -166,6 +168,7 @@ export function describeWithExistingNode(
 				},
 				laosSA: sovereignAccountOf(LAOS_PARA_ID),
 				laosLocation: null,
+				laosAsset: null,
 				relayChainLocation: null,
 			};
 
@@ -185,6 +188,7 @@ export function describeWithExistingNode(
 				baltathar: new Keyring({ type: "ethereum" }).addFromUri(BALTATHAR_PRIVATE_KEY),
 				faith: new Keyring({ type: "ethereum" }).addFromUri(FAITH_PRIVATE_KEY),
 			};
+
 			if (openPolkadotConnections) {
 				// Laos
 				let provider = new HttpProvider(providerLaosNodeUrl || LAOS_NODE_URL);
@@ -221,9 +225,17 @@ export function describeWithExistingNode(
 				this.assetHubItems.laosLocation = apiAssetHub.createType("XcmVersionedLocation", {
 					V3: siblingLocation(LAOS_PARA_ID),
 				});
+
+				this.assetHubItems.laosAsset = apiAssetHub.createType(
+					"StagingXcmV3MultiLocation",
+					siblingLocation(LAOS_PARA_ID)
+				);
+
 				this.assetHubItems.relayChainLocation = apiAssetHub.createType("XcmVersionedLocation", {
 					V3: relayLocation(),
 				});
+
+				this.assetHubItems.relayAsset = apiAssetHub.createType("StagingXcmV3MultiLocation", relayLocation());
 
 				this.laosItems.assetHubLocation = apiLaos.createType("XcmVersionedLocation", {
 					V3: siblingLocation(ASSET_HUB_PARA_ID),

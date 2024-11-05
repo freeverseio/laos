@@ -10,11 +10,11 @@ import Contract from "web3-eth-contract";
 import BN from "bn.js";
 import { step } from "mocha-steps";
 
-describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
+describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", function () {
 	let collectionContract: Contract;
 
 	beforeEach(async function () {
-		collectionContract = await createCollection(context);
+		collectionContract = await createCollection(this.context);
 	});
 
 	step("when collection does not exist token uri should fail", async function () {
@@ -35,7 +35,7 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
 		const to = FAITH;
 		const tokenURI = "https://example.com";
 
-		let nonce = await context.web3.eth.getTransactionCount(FAITH);
+		let nonce = await this.context.web3.eth.getTransactionCount(FAITH);
 		const estimatedGas = await collectionContract.methods.mintWithExternalURI(to, slot, tokenURI).estimateGas();
 		const result = await collectionContract.methods
 			.mintWithExternalURI(to, slot, tokenURI)
@@ -82,12 +82,15 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
 		expect(result.events.MintedWithExternalURI.raw.topics.length).to.be.eq(2);
 		expect(result.events.MintedWithExternalURI.raw.topics[0]).to.be.eq(SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI);
 		expect(result.events.MintedWithExternalURI.raw.topics[1]).to.be.eq(
-			context.web3.utils.padLeft(FAITH.toLowerCase(), 64)
+			this.context.web3.utils.padLeft(FAITH.toLowerCase(), 64)
 		);
 
 		// event data
 		expect(result.events.MintedWithExternalURI.raw.data).to.be.eq(
-			context.web3.eth.abi.encodeParameters(["uint96", "uint256", "string"], [slot, tokenIdDecimal, tokenURI])
+			this.context.web3.eth.abi.encodeParameters(
+				["uint96", "uint256", "string"],
+				[slot, tokenIdDecimal, tokenURI]
+			)
 		);
 	});
 
@@ -154,16 +157,16 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
 
 		// event data
 		expect(evolvingResult.events.EvolvedWithExternalURI.raw.data).to.be.eq(
-			context.web3.eth.abi.encodeParameters(["string"], [newTokenURI])
+			this.context.web3.eth.abi.encodeParameters(["string"], [newTokenURI])
 		);
 	});
 });
 
-describeWithExistingNode("Frontier RPC (Transfer Ownership)", (context) => {
+describeWithExistingNode("Frontier RPC (Transfer Ownership)", function () {
 	let collectionContract: Contract;
 
 	before(async function () {
-		collectionContract = await createCollection(context);
+		collectionContract = await createCollection(this.context);
 	});
 
 	step("when is transferred owner should change and emit an event", async function () {
@@ -189,10 +192,10 @@ describeWithExistingNode("Frontier RPC (Transfer Ownership)", (context) => {
 			SELECTOR_LOG_OWNERSHIP_TRANSFERRED
 		);
 		expect(tranferringResult.events.OwnershipTransferred.raw.topics[1]).to.be.eq(
-			context.web3.utils.padLeft(FAITH.toLowerCase(), 64)
+			this.context.web3.utils.padLeft(FAITH.toLowerCase(), 64)
 		);
 		expect(tranferringResult.events.OwnershipTransferred.raw.topics[2]).to.be.eq(
-			context.web3.utils.padLeft(newOwner.toLowerCase(), 64)
+			this.context.web3.utils.padLeft(newOwner.toLowerCase(), 64)
 		);
 		// event data
 		expect(tranferringResult.events.OwnershipTransferred.raw.data).to.be.eq("0x");

@@ -57,9 +57,8 @@ describeWithExistingNode(
 		});
 
 		step("Create $LAOS in AssetHub", async function () {
-			const laosForeignAssetExists = !(
-				await apiAssetHub.query.foreignAssets.asset(this.assetHubItems.laosLocation)
-			).isEmpty;
+			const laosForeignAssetExists = !(await apiAssetHub.query.foreignAssets.asset(this.assetHubItems.laosAsset))
+				.isEmpty;
 
 			// NOTE: We only create the foreign asset if it hasn't been created yet, in this way we ensure tests are idempotent
 			if (!laosForeignAssetExists) {
@@ -74,7 +73,7 @@ describeWithExistingNode(
 
 				// Build XCM instruction
 				const createCall = apiAssetHub.tx.foreignAssets.create(
-					this.assetHubItems.laosLocation,
+					this.assetHubItems.laosAsset,
 					this.assetHubItems.multiAddresses.laosSA,
 					ONE_LAOS
 				);
@@ -120,7 +119,7 @@ describeWithExistingNode(
 
 				expect(event).to.not.be.null;
 				const [assetId, creator, owner] = event.event.data;
-				expect(assetId.toString()).to.equal(this.assetHubItems.laosLocation.toString());
+				expect(assetId.toString()).to.equal(this.assetHubItems.laosAsset.toString());
 				expect(creator.toString()).to.equal(this.assetHubItems.laosSA);
 				expect(owner.toString()).to.equal(this.assetHubItems.laosSA);
 
@@ -140,7 +139,7 @@ describeWithExistingNode(
 				);
 
 				expect(
-					(await apiAssetHub.query.foreignAssets.asset(this.assetHubItems.laosLocation)).isEmpty,
+					(await apiAssetHub.query.foreignAssets.asset(this.assetHubItems.laosAsset)).isEmpty,
 					"$LAOS foreign asset has not been created"
 				).to.be.false;
 			} else {
@@ -151,7 +150,7 @@ describeWithExistingNode(
 		step("Mint $LAOS in AssetHub", async function () {
 			// Build XCM instructions
 			const mintLaosCall = apiAssetHub.tx.foreignAssets.mint(
-				this.assetHubItems.laosLocation,
+				this.assetHubItems.laosAsset,
 				this.assetHubItems.multiAddresses.ferdie,
 				ONE_LAOS.muln(10000)
 			);
@@ -207,7 +206,7 @@ describeWithExistingNode(
 			const ferdieXLaosBalance = hexToBn(
 				(
 					await apiAssetHub.query.foreignAssets.account(
-						this.assetHubItems.laosLocation,
+						this.assetHubItems.laosAsset,
 						this.substratePairs.ferdie.address
 					)
 				).toJSON()["balance"]
@@ -219,16 +218,16 @@ describeWithExistingNode(
 			// NOTE: We only create the pool if it hasn't been created yet, in this way we ensure tests are idempotent
 			const poolExists = !(
 				await apiAssetHub.query.assetConversion.pools([
-					this.assetHubItems.relayChainLocation,
-					this.assetHubItems.laosLocation,
+					this.assetHubItems.relayAsset,
+					this.assetHubItems.laosAsset,
 				])
 			).isEmpty;
 
 			if (!poolExists) {
 				// Build XCM instruction to be included in xcm.send call
 				const createPoolCall = apiAssetHub.tx.assetConversion.createPool(
-					this.assetHubItems.relayChainLocation.toU8a(),
-					this.assetHubItems.laosLocation.toU8a()
+					this.assetHubItems.relayAsset.toU8a(),
+					this.assetHubItems.laosAsset.toU8a()
 				);
 
 				const createPoolEncodedCall = apiLaos.createType("DoubleEncodedCall", {
@@ -271,12 +270,12 @@ describeWithExistingNode(
 				expect(event).to.not.be.null;
 				const [creator, poolId] = event.event.data;
 				expect(creator.toString()).to.equal(this.assetHubItems.laosSA);
-				expect(poolId.toJSON()).to.deep.equal([relayLocation(), this.assetHubItems.laosSA]);
+				expect(poolId.toJSON()).to.deep.equal([relayLocation(), siblingLocation(LAOS_PARA_ID)]);
 				expect(
 					(
 						await apiAssetHub.query.assetConversion.pools([
-							this.assetHubItems.relayChainLocation,
-							this.assetHubItems.laosLocation,
+							this.assetHubItems.relayAsset,
+							this.assetHubItems.laosAsset,
 						])
 					).isEmpty
 				).to.be.false;
@@ -307,7 +306,7 @@ describeWithExistingNode(
 			const ferdieXLaosBalance = hexToBn(
 				(
 					await apiAssetHub.query.foreignAssets.account(
-						this.assetHubItems.laosLocation,
+						this.assetHubItems.laosAsset,
 						this.substratePairs.ferdie.address
 					)
 				).toJSON()["balance"]
@@ -324,8 +323,8 @@ describeWithExistingNode(
 			try {
 				await apiAssetHub.tx.assetConversion
 					.addLiquidity(
-						this.assetHubItems.relayChainLocation.toU8a(),
-						this.assetHubItems.laosLocation.toU8a(),
+						this.assetHubItems.relayAsset.toU8a(),
+						this.assetHubItems.laosAsset.toU8a(),
 						liquidityAmountDot,
 						liquidityAmountLaos,
 						liquidityAmountDot.sub(new BN(ONE_DOT.muln(10))),
@@ -372,7 +371,7 @@ describeWithExistingNode(
 			const charlieBalanceBefore = hexToBn(
 				(
 					await apiAssetHub.query.foreignAssets.account(
-						this.assetHubItems.laosLocation,
+						this.assetHubItems.laosAsset,
 						this.substratePairs.charlie.address
 					)
 				).toJSON()?.["balance"] ?? "0x0"
@@ -403,12 +402,12 @@ describeWithExistingNode(
 
 			expect(event).to.not.be.null;
 			const [assetId, owner, realAmountReceived] = event.event.data;
-			expect(assetId.toJSON()).to.deep.equal(this.assetHubItems.laosLocation.toJSON());
+			expect(assetId.toJSON()).to.deep.equal(this.assetHubItems.laosAsset.toJSON());
 			expect(owner.toString()).to.equal(this.substratePairs.charlie.address);
 			const charlieBalance = hexToBn(
 				(
 					await apiAssetHub.query.foreignAssets.account(
-						this.assetHubItems.laosLocation,
+						this.assetHubItems.laosAsset,
 						this.substratePairs.charlie.address
 					)
 				).toJSON()["balance"]
@@ -461,7 +460,7 @@ describeWithExistingNode(
 			const charlieBalanceBefore = hexToBn(
 				(
 					await apiAssetHub.query.foreignAssets.account(
-						this.assetHubItems.laosLocation,
+						this.assetHubItems.laosAsset,
 						this.substratePairs.charlie.address
 					)
 				).toJSON()["balance"]
@@ -497,7 +496,7 @@ describeWithExistingNode(
 			const charlieBalance = hexToBn(
 				(
 					await apiAssetHub.query.foreignAssets.account(
-						this.assetHubItems.laosLocation,
+						this.assetHubItems.laosAsset,
 						this.substratePairs.charlie.address
 					)
 				).toJSON()["balance"]
