@@ -130,7 +130,7 @@ export function describeWithExistingNode(
 	describe(title, function (this: CustomSuiteContext) {
 		before(async function () {
 			this.context = {
-				web3: null,
+				web3: new Web3(providerLaosNodeUrl || LAOS_NODE_URL),
 				ethersjs: null,
 				networks: {
 					laos: null,
@@ -138,17 +138,6 @@ export function describeWithExistingNode(
 					relaychain: null,
 				},
 			};
-
-			this.substratePairs = {
-				alice: null,
-				bob: null,
-				charlie: null,
-				dave: null,
-				eve: null,
-				ferdie: null,
-			};
-
-			this.ethereumPairs = { alith: null, baltathar: null, faith: null };
 
 			this.laosItems = {
 				assetHubLocation: null,
@@ -171,8 +160,6 @@ export function describeWithExistingNode(
 				laosAsset: null,
 				relayChainLocation: null,
 			};
-
-			this.context.web3 = new Web3(providerLaosNodeUrl || LAOS_NODE_URL);
 
 			this.substratePairs = {
 				alice: new Keyring({ type: "sr25519" }).addFromUri("//Alice"),
