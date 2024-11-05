@@ -60,7 +60,7 @@ export async function customRequest(web3: Web3, method: string, params: any[]) {
 	});
 }
 
-type AssetHubItems = {
+type assetHubItems = {
 	accounts: {
 		alice: AccountId;
 		bob: AccountId;
@@ -85,12 +85,12 @@ type AssetHubItems = {
 	relayAsset: StagingXcmV3MultiLocation;
 };
 
-type LaosItems = {
+type laosItems = {
 	assetHubLocation: XcmVersionedLocation;
 	relayChainLocation: XcmVersionedLocation;
 };
 
-type substratePairs_type = {
+type substratePairs = {
 	alice: KeyringPair;
 	bob: KeyringPair;
 	charlie: KeyringPair;
@@ -99,7 +99,7 @@ type substratePairs_type = {
 	ferdie: KeyringPair;
 };
 
-type ethereumPairs_type = {
+type ethereumPairs = {
 	alith: KeyringPair;
 	baltathar: KeyringPair;
 	faith: KeyringPair;
@@ -113,10 +113,10 @@ type describeContext = {
 
 interface CustomSuiteContext extends Suite {
 	context: describeContext;
-	substratePairs: substratePairs_type;
-	ethereumPairs: ethereumPairs_type;
-	laosItems: LaosItems;
-	assetHubItems: AssetHubItems;
+	substratePairs: substratePairs;
+	ethereumPairs: ethereumPairs;
+	laosItems: laosItems;
+	assetHubItems: assetHubItems;
 }
 
 export function describeWithExistingNode(
