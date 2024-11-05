@@ -68,7 +68,7 @@ impl OnRuntimeUpgrade for Migration {
 			blocks_per_round
 		);
 
-		// Encode the number of accounts, schedule counts per account, and max schedule count
+		// Encode the number of accounts, schedule counts per account, max schedule count, and blocks per round
 		Ok((
 			vesting_accounts_count as u32,
 			schedules_per_account,
