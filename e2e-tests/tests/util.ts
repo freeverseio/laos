@@ -85,7 +85,6 @@ export function describeWithExistingNode(
 		before(async () => {
 			context.web3 = new Web3(providerLaosNodeUrl || LAOS_NODE_URL);
 			if (openPolkadotConnections) {
-
 				// Laos
 				let provider = new HttpProvider(providerLaosNodeUrl || LAOS_NODE_URL);
 				context.networks.laos = await new ApiPromise({ provider }).isReady;
