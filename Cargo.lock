@@ -2033,6 +2033,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "cumulus-client-consensus-relay-chain"
+version = "0.7.0"
+source = "git+https://github.com/paritytech/polkadot-sdk?branch=release-polkadot-v1.11.0#8c8edacf8942298c3807a2e192860da9e7e4996a"
+dependencies = [
+ "async-trait",
+ "cumulus-client-consensus-common",
+ "cumulus-primitives-core",
+ "cumulus-relay-chain-interface",
+ "futures",
+ "parking_lot 0.12.3",
+ "sc-consensus",
+ "sp-api",
+ "sp-block-builder",
+ "sp-blockchain",
+ "sp-consensus",
+ "sp-core",
+ "sp-inherents",
+ "sp-runtime",
+ "substrate-prometheus-endpoint",
+ "tracing",
+]
+
+[[package]]
 name = "cumulus-client-network"
 version = "0.7.0"
 source = "git+https://github.com/paritytech/polkadot-sdk?branch=release-polkadot-v1.11.0#8c8edacf8942298c3807a2e192860da9e7e4996a"
@@ -5212,7 +5235,7 @@ dependencies = [
 
 [[package]]
 name = "laos"
-version = "0.22.94"
+version = "0.23.90"
 dependencies = [
  "clap",
  "cumulus-client-cli",
@@ -5220,9 +5243,12 @@ dependencies = [
  "cumulus-client-consensus-aura",
  "cumulus-client-consensus-common",
  "cumulus-client-consensus-proposer",
+ "cumulus-client-consensus-relay-chain",
  "cumulus-client-service",
  "cumulus-primitives-core",
+ "cumulus-primitives-parachain-inherent",
  "cumulus-relay-chain-interface",
+ "cumulus-test-relay-sproof-builder",
  "fc-api",
  "fc-cli",
  "fc-consensus",
@@ -5295,7 +5321,7 @@ dependencies = [
 
 [[package]]
 name = "laos-runtime"
-version = "0.22.94"
+version = "0.23.90"
 dependencies = [
  "assert-json-diff",
  "cumulus-pallet-aura-ext",
@@ -5303,6 +5329,7 @@ dependencies = [
  "cumulus-pallet-session-benchmarking",
  "cumulus-pallet-xcm",
  "cumulus-pallet-xcmp-queue",
+ "cumulus-primitives-aura",
  "cumulus-primitives-core",
  "cumulus-primitives-timestamp",
  "cumulus-primitives-utility",
