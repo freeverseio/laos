@@ -211,8 +211,17 @@ fn double_parachain_staking_blocks_per_round() -> Weight {
 	reads_count += 1;
 
 	// Calculate the new round length
-	let new_round_length =
-		round_length.checked_mul(2).expect("Overflow when doubling round length");
+	let new_round_length = match round_length.checked_mul(2) {
+		Some(value) => value,
+		None => {
+			log::warn!(
+				target: "runtime::migration",
+				"Migration::double_parachain_staking_blocks_per_round - Failed to double round length: overflow"
+			);
+			return <Runtime as frame_system::Config>::DbWeight::get()
+				.reads_writes(reads_count, writes_count);
+		},
+	};
 
 	// Set the new round length
 	if let Err(e) = pallet_parachain_staking::Pallet::<Runtime>::set_blocks_per_round(
