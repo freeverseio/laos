@@ -110,16 +110,17 @@ type describeContext = {
 };
 
 interface CustomSuiteContext extends Suite {
-    context: describeContext;
-    substratePairs: substratePairs_type;
-    ethereumPairs: ethereumPairs_type;
-    laosItems: LaosItems;
-    assetHubItems: AssetHubItems;
-};
+	context: describeContext;
+	substratePairs: substratePairs_type;
+	ethereumPairs: ethereumPairs_type;
+	laosItems: LaosItems;
+	assetHubItems: AssetHubItems;
+}
 
 export function describeWithExistingNode(
 	title: string,
 	cb: () => void,
+	openPolkadotConnections: boolean = false,
 	providerLaosNodeUrl?: string,
 	providerAssetHubNodeUrl?: string,
 	providerRelaychainNodeUrl?: string
@@ -163,25 +164,12 @@ export function describeWithExistingNode(
 					ferdie: null,
 					laosSA: null,
 				},
-        laosSA: sovereignAccountOf(LAOS_PARA_ID),
+				laosSA: sovereignAccountOf(LAOS_PARA_ID),
 				laosLocation: null,
 				relayChainLocation: null,
 			};
 
 			this.context.web3 = new Web3(providerLaosNodeUrl || LAOS_NODE_URL);
-
-			let Provider = new HttpProvider(providerLaosNodeUrl || LAOS_NODE_URL);
-			const apiLaos = await new ApiPromise({ provider: Provider }).isReady;
-			this.context.networks.laos = apiLaos;
-
-			Provider = new HttpProvider(providerAssetHubNodeUrl || ASSET_HUB_NODE_URL);
-
-			const apiAssetHub = await ApiPromise.create({ provider: Provider });
-
-			this.context.networks.assetHub = apiAssetHub;
-
-			Provider = new HttpProvider(providerRelaychainNodeUrl || RELAYCHAIN_NODE_URL);
-			this.context.networks.relaychain = await new ApiPromise({ provider: Provider }).isReady;
 
 			this.substratePairs = {
 				alice: new Keyring({ type: "sr25519" }).addFromUri("//Alice"),
@@ -197,39 +185,53 @@ export function describeWithExistingNode(
 				baltathar: new Keyring({ type: "ethereum" }).addFromUri(BALTATHAR_PRIVATE_KEY),
 				faith: new Keyring({ type: "ethereum" }).addFromUri(FAITH_PRIVATE_KEY),
 			};
+			if (openPolkadotConnections) {
+				// Laos
+				let provider = new HttpProvider(providerLaosNodeUrl || LAOS_NODE_URL);
+				const apiLaos = await new ApiPromise({ provider }).isReady;
+				this.context.networks.laos = apiLaos;
 
-			this.assetHubItems.accounts = {
-				alice: apiAssetHub.createType("AccountId", this.substratePairs.alice.address),
-				bob: apiAssetHub.createType("AccountId", this.substratePairs.bob.address),
-				charlie: apiAssetHub.createType("AccountId", this.substratePairs.charlie.address),
-				dave: apiAssetHub.createType("AccountId", this.substratePairs.dave.address),
-				eve: apiAssetHub.createType("AccountId", this.substratePairs.eve.address),
-				ferdie: apiAssetHub.createType("AccountId", this.substratePairs.ferdie.address),
-			};
+				provider = new HttpProvider(providerAssetHubNodeUrl || ASSET_HUB_NODE_URL);
+				const apiAssetHub = await ApiPromise.create({ provider: provider });
 
-			this.assetHubItems.multiAddresses = {
-				alice: apiAssetHub.createType("MultiAddress", this.substratePairs.alice.address),
-				bob: apiAssetHub.createType("MultiAddress", this.substratePairs.bob.address),
-				charlie: apiAssetHub.createType("MultiAddress", this.substratePairs.charlie.address),
-				dave: apiAssetHub.createType("MultiAddress", this.substratePairs.dave.address),
-				eve: apiAssetHub.createType("MultiAddress", this.substratePairs.eve.address),
-				ferdie: apiAssetHub.createType("MultiAddress", this.substratePairs.ferdie.address),
-				laosSA: apiAssetHub.createType("MultiAddress", this.assetHubItems.laosSA),
-			};
+				this.context.networks.assetHub = apiAssetHub;
 
-			this.assetHubItems.laosLocation = apiAssetHub.createType("XcmVersionedLocation", {
-				V3: siblingLocation(LAOS_PARA_ID),
-			});
-			this.assetHubItems.relayChainLocation = apiAssetHub.createType("XcmVersionedLocation", {
-				V3: relayLocation(),
-			});
+				provider = new HttpProvider(providerRelaychainNodeUrl || RELAYCHAIN_NODE_URL);
+				this.context.networks.relaychain = await new ApiPromise({ provider: provider }).isReady;
 
-			this.laosItems.assetHubLocation = apiLaos.createType("XcmVersionedLocation", {
-				V3: siblingLocation(ASSET_HUB_PARA_ID),
-			});
-			this.laosItems.relayChainLocation = apiLaos.createType("XcmVersionedLocation", { V3: relayLocation() });
+				this.assetHubItems.accounts = {
+					alice: apiAssetHub.createType("AccountId", this.substratePairs.alice.address),
+					bob: apiAssetHub.createType("AccountId", this.substratePairs.bob.address),
+					charlie: apiAssetHub.createType("AccountId", this.substratePairs.charlie.address),
+					dave: apiAssetHub.createType("AccountId", this.substratePairs.dave.address),
+					eve: apiAssetHub.createType("AccountId", this.substratePairs.eve.address),
+					ferdie: apiAssetHub.createType("AccountId", this.substratePairs.ferdie.address),
+				};
+
+				this.assetHubItems.multiAddresses = {
+					alice: apiAssetHub.createType("MultiAddress", this.substratePairs.alice.address),
+					bob: apiAssetHub.createType("MultiAddress", this.substratePairs.bob.address),
+					charlie: apiAssetHub.createType("MultiAddress", this.substratePairs.charlie.address),
+					dave: apiAssetHub.createType("MultiAddress", this.substratePairs.dave.address),
+					eve: apiAssetHub.createType("MultiAddress", this.substratePairs.eve.address),
+					ferdie: apiAssetHub.createType("MultiAddress", this.substratePairs.ferdie.address),
+					laosSA: apiAssetHub.createType("MultiAddress", this.assetHubItems.laosSA),
+				};
+
+				this.assetHubItems.laosLocation = apiAssetHub.createType("XcmVersionedLocation", {
+					V3: siblingLocation(LAOS_PARA_ID),
+				});
+				this.assetHubItems.relayChainLocation = apiAssetHub.createType("XcmVersionedLocation", {
+					V3: relayLocation(),
+				});
+
+				this.laosItems.assetHubLocation = apiLaos.createType("XcmVersionedLocation", {
+					V3: siblingLocation(ASSET_HUB_PARA_ID),
+				});
+				this.laosItems.relayChainLocation = apiLaos.createType("XcmVersionedLocation", { V3: relayLocation() });
+			}
 		});
-			cb();
+		cb();
 	});
 }
 

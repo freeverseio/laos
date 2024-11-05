@@ -36,7 +36,7 @@ describeWithExistingNode(
 
 		before(async function () {
 			// Initialize the APIs
-      apiAssetHub = this.context.networks.assetHub;
+			apiAssetHub = this.context.networks.assetHub;
 			apiLaos = this.context.networks.laos;
 			apiRelaychain = this.context.networks.relaychain;
 
@@ -56,15 +56,21 @@ describeWithExistingNode(
 			expect(await isChannelOpen(apiRelaychain, ASSET_HUB_PARA_ID, LAOS_PARA_ID)).to.be.true;
 		});
 
-		step("Create LAOS Foreign Asset in AssetHub", async function () {
-			const laosForeignAssetExists = !(await apiAssetHub.query.foreignAssets.asset(this.assetHubItems.laosLocation))
-				.isEmpty;
+		step("Create $LAOS in AssetHub", async function () {
+			const laosForeignAssetExists = !(
+				await apiAssetHub.query.foreignAssets.asset(this.assetHubItems.laosLocation)
+			).isEmpty;
 
 			// NOTE: We only create the foreign asset if it hasn't been created yet, in this way we ensure tests are idempotent
 			if (!laosForeignAssetExists) {
 				//Fund LAOS sovereigna account
 				debugTeleport("[ASSET_HUB] Funding LAOS sovereign account...");
-				await transferBalance(apiAssetHub, this.substratePairs.alice, this.assetHubItems.laosSA, ONE_DOT.muln(100));
+				await transferBalance(
+					apiAssetHub,
+					this.substratePairs.alice,
+					this.assetHubItems.laosSA,
+					ONE_DOT.muln(100)
+				);
 
 				// Build XCM instruction
 				const createCall = apiAssetHub.tx.foreignAssets.create(
@@ -124,7 +130,9 @@ describeWithExistingNode(
 				);
 				expect(alithBalanceBefore.eq(alithBalance), "Alith balance shouldn't change");
 
-				const laosBalance = new BN((await apiAssetHub.query.system.account(this.assetHubItems.laosSA as string)).data.free);
+				const laosBalance = new BN(
+					(await apiAssetHub.query.system.account(this.assetHubItems.laosSA as string)).data.free
+				);
 				const decreaseOfLaosBalance = laosBalanceBefore.sub(laosBalance);
 				expect(
 					decreaseOfLaosBalance.eq(ONE_DOT.add(apiAssetHub.consts.assets.assetDeposit)),
@@ -133,14 +141,14 @@ describeWithExistingNode(
 
 				expect(
 					(await apiAssetHub.query.foreignAssets.asset(this.assetHubItems.laosLocation)).isEmpty,
-					"LAOS foreign asset has not been created"
+					"$LAOS foreign asset has not been created"
 				).to.be.false;
 			} else {
-				debugTeleport("LAOS foreign asset already exists, skipping creation...");
+				debugTeleport("$LAOS foreign asset already exists, skipping creation...");
 			}
 		});
 
-		step("Mint LAOS foreign asset in AssetHub", async function () {
+		step("Mint $LAOS in AssetHub", async function () {
 			// Build XCM instructions
 			const mintLaosCall = apiAssetHub.tx.foreignAssets.mint(
 				this.assetHubItems.laosLocation,
@@ -165,8 +173,12 @@ describeWithExistingNode(
 			const alithBalanceBefore = new BN(
 				(await apiLaos.query.system.account(this.ethereumPairs.alith.address as string)).data.free
 			);
-			const laosBalanceBefore = new BN((await apiAssetHub.query.system.account(this.assetHubItems.laosSA as string)).data.free);
-			const sudoCall = apiLaos.tx.sudo.sudo(apiLaos.tx.polkadotXcm.send(this.laosItems.assetHubLocation, instruction));
+			const laosBalanceBefore = new BN(
+				(await apiAssetHub.query.system.account(this.assetHubItems.laosSA as string)).data.free
+			);
+			const sudoCall = apiLaos.tx.sudo.sudo(
+				apiLaos.tx.polkadotXcm.send(this.laosItems.assetHubLocation, instruction)
+			);
 			try {
 				await sudoCall.signAndSend(this.ethereumPairs.alith);
 			} catch (error) {
@@ -181,10 +193,14 @@ describeWithExistingNode(
 			);
 
 			expect(event).to.not.be.null;
-			const alithBalance = new BN((await apiLaos.query.system.account(this.ethereumPairs.alith.address as string)).data.free);
+			const alithBalance = new BN(
+				(await apiLaos.query.system.account(this.ethereumPairs.alith.address as string)).data.free
+			);
 			expect(alithBalanceBefore.eq(alithBalance), "Alith balance shouldn't change");
 
-			const laosBalance = new BN((await apiAssetHub.query.system.account(this.assetHubItems.laosSA as string)).data.free);
+			const laosBalance = new BN(
+				(await apiAssetHub.query.system.account(this.assetHubItems.laosSA as string)).data.free
+			);
 			const decreaseOfLaosBalance = laosBalanceBefore.sub(laosBalance);
 			expect(decreaseOfLaosBalance.eq(ONE_DOT), "Laos should decrease XCM withdrawn amount");
 
@@ -199,7 +215,7 @@ describeWithExistingNode(
 			expect(ferdieXLaosBalance.gte(new BN(0)), "Ferdie balance should be > 0");
 		});
 
-		step("Create LAOS/RelayToken pool in AssetHub", async function () {
+		step("Create $LAOS/$DOT pool in AssetHub", async function () {
 			// NOTE: We only create the pool if it hasn't been created yet, in this way we ensure tests are idempotent
 			const poolExists = !(
 				await apiAssetHub.query.assetConversion.pools([
@@ -270,7 +286,9 @@ describeWithExistingNode(
 				);
 				expect(alithBalanceBefore.eq(alithBalance), "Alith balance shouldn't change");
 
-				const laosBalance = new BN((await apiAssetHub.query.system.account(this.assetHubItems.laosSA as string)).data.free);
+				const laosBalance = new BN(
+					(await apiAssetHub.query.system.account(this.assetHubItems.laosSA as string)).data.free
+				);
 				const decreaseOfLaosBalance = laosBalanceBefore.sub(laosBalance);
 				expect(
 					decreaseOfLaosBalance.eq(ONE_DOT.add(apiAssetHub.consts.assets.assetAccountDeposit)),
@@ -296,11 +314,11 @@ describeWithExistingNode(
 			);
 			expect(
 				ferdieBalance.gte(liquidityAmountDot),
-				"Ferdie's DOT balance should be greater than the amount to be sent to the pool"
+				"Ferdie's $DOT balance should be greater than the amount to be sent to the pool"
 			);
 			expect(
 				ferdieXLaosBalance.gte(liquidityAmountLaos),
-				"Ferdie's LAOS balance should be greater than the amount to be sent to the pool"
+				"Ferdie's $LAOS balance should be greater than the amount to be sent to the pool"
 			);
 
 			try {
@@ -359,7 +377,8 @@ describeWithExistingNode(
 					)
 				).toJSON()?.["balance"] ?? "0x0"
 			);
-			const alithBalanceBefore = (await apiLaos.query.system.account(this.ethereumPairs.alith.address as string)).data.free;
+			const alithBalanceBefore = (await apiLaos.query.system.account(this.ethereumPairs.alith.address as string))
+				.data.free;
 
 			const call = apiLaos.tx.polkadotXcm.limitedTeleportAssets(
 				this.laosItems.assetHubLocation,
@@ -375,7 +394,7 @@ describeWithExistingNode(
 				console.log("transaction failed", error);
 			}
 
-			// Check that LAOS has been sent in Asset Hub
+			// Check that $LAOS has been sent in Asset Hub
 			const event = await waitForEvent(
 				apiAssetHub,
 				({ event }) => apiAssetHub.events.foreignAssets.Issued.is(event),
@@ -398,7 +417,8 @@ describeWithExistingNode(
 				charlieBalanceBefore.add(new BN(realAmountReceived.toString())).eq(charlieBalance),
 				"Charlie's balance should increase by the amount received"
 			);
-			const realAlithBalance = (await apiLaos.query.system.account(this.ethereumPairs.alith.address as string)).data.free;
+			const realAlithBalance = (await apiLaos.query.system.account(this.ethereumPairs.alith.address as string))
+				.data.free;
 			const alithBalance = alithBalanceBefore.sub(amount);
 			expect(
 				alithBalance.sub(realAlithBalance).lte(ONE_DOT),
@@ -406,7 +426,7 @@ describeWithExistingNode(
 			);
 		});
 
-		step("Teleport back from AssetHub to LAOS", async function () {
+		step("Teleport back from AssetHub to Laos", async function () {
 			let beneficiaryAddress = "0x0000000000000000000000000000000000000001";
 			const beneficiary = apiAssetHub.createType("XcmVersionedLocation", {
 				V3: {
@@ -492,5 +512,6 @@ describeWithExistingNode(
 				"Alith's balance should increase by the amount received in the teleport"
 			);
 		});
-	}
+	},
+	true
 );
