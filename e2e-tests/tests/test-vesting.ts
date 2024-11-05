@@ -43,13 +43,17 @@ describeWithExistingNode("Frontier RPC (Vesting)", (context) => {
 		expect(vesting).to.deep.eq([["700000000000000000000000000", "700000000000000000000000", "0"]]);
 	});
 	step("when vesting exists do vest returns ok", async function () {
+		let nonce = await context.web3.eth.getTransactionCount(ALITH);
+		contract.options.from = ALITH;
 		const estimatedGas = await contract.methods.vest().estimateGas();
-		let result = await contract.methods.vest().send({ from: ALITH, gas: estimatedGas });
+		let result = await contract.methods.vest().send({ from: ALITH, gas: estimatedGas, nonce: nonce++ });
 		expect(result.status).to.be.eq(true);
 	});
 	step("when vesting exists do vestOther returns ok", async function () {
+		let nonce = await context.web3.eth.getTransactionCount(FAITH);
+		contract.options.from = FAITH;
 		const estimatedGas = await contract.methods.vestOther(ALITH).estimateGas();
-		let result = await contract.methods.vestOther(ALITH).send({ from: FAITH, gas: estimatedGas });
+		let result = await contract.methods.vestOther(ALITH).send({ from: FAITH, gas: estimatedGas, nonce: nonce++ });
 		expect(result.status).to.be.eq(true);
 	});
 });
