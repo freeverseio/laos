@@ -178,6 +178,7 @@ describeWithExistingNode(
 			const sudoCall = apiLaos.tx.sudo.sudo(
 				apiLaos.tx.polkadotXcm.send(this.laosItems.assetHubLocation, instruction)
 			);
+
 			try {
 				await sudoCall.signAndSend(this.ethereumPairs.alith);
 			} catch (error) {
@@ -481,7 +482,7 @@ describeWithExistingNode(
 				console.log("transaction failed", error);
 			}
 
-			// Check that LAOS has been sent back in LAOS
+			// Check that $LAOS has been sent back to Laos
 			const event = await waitForEvent(
 				apiLaos,
 				({ event }) => {
