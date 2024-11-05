@@ -63,9 +63,10 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
 		const tokenURI = "https://example.com";
 
 		const estimatedGas = await collectionContract.methods.mintWithExternalURI(to, slot, tokenURI).estimateGas();
+		let nonce = await context.web3.eth.getTransactionCount(FAITH);
 		const result = await collectionContract.methods
 			.mintWithExternalURI(to, slot, tokenURI)
-			.send({ from: FAITH, gas: estimatedGas });
+			.send({ from: FAITH, gas: estimatedGas, nonce: nonce++ });
 		expect(result.status).to.be.eq(true);
 
 		expect(Object.keys(result.events).length).to.be.eq(1);
@@ -100,17 +101,19 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
 		const tokenIdDecimal = new BN(tokenId, 16, "be").toString(10);
 
 		var estimatedGas = await collectionContract.methods.mintWithExternalURI(to, slot, tokenURI).estimateGas();
+		let nonce = await context.web3.eth.getTransactionCount(FAITH);
 		const mintingResult = await collectionContract.methods
-			.mintWithExternalURI(to, slot, tokenURI)
-			.send({ from: FAITH, gas: estimatedGas });
+		.mintWithExternalURI(to, slot, tokenURI)
+		.send({ from: FAITH, gas: estimatedGas, nonce: nonce++ });
 		expect(mintingResult.status).to.be.eq(true);
-
+		
 		estimatedGas = await collectionContract.methods
-			.evolveWithExternalURI(tokenIdDecimal, newTokenURI)
-			.estimateGas();
+		.evolveWithExternalURI(tokenIdDecimal, newTokenURI)
+		.estimateGas();
+		nonce = await context.web3.eth.getTransactionCount(FAITH);
 		const evolvingResult = await collectionContract.methods
 			.evolveWithExternalURI(tokenIdDecimal, newTokenURI)
-			.send({ from: FAITH, gas: estimatedGas });
+			.send({ from: FAITH, gas: estimatedGas, nonce: nonce++ });
 		expect(evolvingResult.status).to.be.eq(true);
 
 		const got = await collectionContract.methods.tokenURI(tokenIdDecimal).call();
@@ -126,17 +129,19 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", (context) => {
 		const tokenIdDecimal = new BN(tokenId, 16, "be").toString(10);
 
 		var estimatedGas = await collectionContract.methods.mintWithExternalURI(to, slot, tokenURI).estimateGas();
+		let nonce = await context.web3.eth.getTransactionCount(FAITH);
 		const mintingResult = await collectionContract.methods
-			.mintWithExternalURI(to, slot, tokenURI)
-			.send({ from: FAITH, gas: estimatedGas });
+		.mintWithExternalURI(to, slot, tokenURI)
+		.send({ from: FAITH, gas: estimatedGas, nonce: nonce++ });
 		expect(mintingResult.status).to.be.eq(true);
-
+		
 		estimatedGas = await collectionContract.methods
-			.evolveWithExternalURI(tokenIdDecimal, newTokenURI)
-			.estimateGas();
+		.evolveWithExternalURI(tokenIdDecimal, newTokenURI)
+		.estimateGas();
+		nonce = await context.web3.eth.getTransactionCount(FAITH);
 		const evolvingResult = await collectionContract.methods
 			.evolveWithExternalURI(tokenIdDecimal, newTokenURI)
-			.send({ from: FAITH, gas: estimatedGas });
+			.send({ from: FAITH, gas: estimatedGas, nonce: nonce++ });
 		expect(evolvingResult.status).to.be.eq(true);
 
 		expect(Object.keys(evolvingResult.events).length).to.be.eq(1);
@@ -171,9 +176,10 @@ describeWithExistingNode("Frontier RPC (Transfer Ownership)", (context) => {
 
 		expect(await collectionContract.methods.owner().call()).to.be.eq(FAITH);
 		const estimatedGas = await collectionContract.methods.transferOwnership(newOwner).estimateGas();
+		let nonce = await context.web3.eth.getTransactionCount(FAITH);
 		const tranferringResult = await collectionContract.methods
 			.transferOwnership(newOwner)
-			.send({ from: FAITH, gas: estimatedGas });
+			.send({ from: FAITH, gas: estimatedGas, nonce: nonce++ });
 		expect(tranferringResult.status).to.be.eq(true);
 		expect(await collectionContract.methods.owner().call()).to.be.eq(newOwner);
 
@@ -199,7 +205,8 @@ describeWithExistingNode("Frontier RPC (Transfer Ownership)", (context) => {
 
 		try {
 			const estimatedGas = await collectionContract.methods.transferOwnership(FAITH).estimateGas();
-			await collectionContract.methods.transferOwnership(FAITH).send({ from: FAITH, gas: estimatedGas });
+			let nonce = await context.web3.eth.getTransactionCount(FAITH);
+			await collectionContract.methods.transferOwnership(FAITH).send({ from: FAITH, gas: estimatedGas, nonce: nonce++ });
 			expect.fail("Expected error was not thrown"); // Ensure an error is thrown
 		} catch (error) {
 			expect(error.message).to.eq(
