@@ -10,13 +10,13 @@ import {
 	EVOLUTION_COLLECTION_FACTORY_ABI,
 	EVOLUTION_COLLECTION_ABI,
 	MAX_U96,
-	LOCAL_NODE_URL,
+	LOCAL_NODE_IP,
 } from "./config";
 import BN from "bn.js";
 import { expect } from "chai";
 import "@polkadot/api-augment";
 
-import { ApiPromise, WsProvider } from "@polkadot/api";
+import { ApiPromise, HttpProvider, WsProvider } from "@polkadot/api";
 
 require("events").EventEmitter.prototype._maxListeners = 100;
 
@@ -65,12 +65,17 @@ export function describeWithExistingNode(
 				const wsProvider = new WsProvider(providerNodeUrl);
 				context.polkadot = await new ApiPromise({ provider: wsProvider }).isReady;
 			} else {
-				context.web3 = new Web3(LOCAL_NODE_URL);
-				const wsProvider = new WsProvider(LOCAL_NODE_URL);
+				context.web3 = new Web3("http://" + LOCAL_NODE_IP);
+				const wsProvider = new WsProvider("ws://" + LOCAL_NODE_IP);
 				context.polkadot = await new ApiPromise({ provider: wsProvider }).isReady;
 			}
 		});
+
 		cb(context);
+
+		after(() => {
+			context.polkadot.disconnect();
+		})
 	});
 }
 
@@ -186,3 +191,24 @@ export async function extractRevertReason(context: { web3: Web3 }, transactionHa
 		return context.web3.utils.hexToUtf8("0x" + reasonHex.slice(64)).trim(); // skip the padding and remove return carriage
 	}
 }
+
+// Generic function to send a transaction and wait for finalization
+export async function sendTxAndWaitForFinalization(tx, signer, options = {}) {
+  return new Promise((resolve, reject) => {
+    tx.signAndSend(signer, options, ({ status }) => {
+      console.log('Transaction status:', status.type);
+
+      if (status.isInBlock) {
+        console.log('Included at block hash', status.asInBlock.toHex());
+      } else if (status.isFinalized) {
+        console.log('Finalized block hash', status.asFinalized.toHex());
+		// resolve the promise when the transaction is finalized
+		resolve(status.asFinalized.toHex());
+      }
+    }).catch((error) => {
+      console.error('Error during transaction:', error);
+      reject(error); // Reject the promise on error
+    });
+  });
+}
+
