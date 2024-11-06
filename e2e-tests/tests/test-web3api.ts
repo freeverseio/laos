@@ -31,7 +31,11 @@ describeWithExistingNode("Frontier RPC (Web3Api)", (context) => {
 	});
 
 	step("pending state is returned correctly", async function () {
-		const result = await context.web3.eth.getStorageAt("0x0000000000000000000000000000000000000000", "0x0", "pending");
+		const result = await context.web3.eth.getStorageAt(
+			"0x0000000000000000000000000000000000000000",
+			"0x0",
+			"pending"
+		);
 		expect(result).to.be.eq("0x0000000000000000000000000000000000000000000000000000000000000000");
 	});
 });
