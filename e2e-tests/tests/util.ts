@@ -16,7 +16,7 @@ import BN from "bn.js";
 import { expect } from "chai";
 import "@polkadot/api-augment";
 
-import { ApiPromise, HttpProvider } from "@polkadot/api";
+import { ApiPromise, WsProvider } from "@polkadot/api";
 
 require("events").EventEmitter.prototype._maxListeners = 100;
 
@@ -62,11 +62,11 @@ export function describeWithExistingNode(
 		before(async () => {
 			if (providerNodeUrl) {
 				context.web3 = new Web3(providerNodeUrl);
-				const wsProvider = new HttpProvider(providerNodeUrl);
+				const wsProvider = new WsProvider(providerNodeUrl);
 				context.polkadot = await new ApiPromise({ provider: wsProvider }).isReady;
 			} else {
 				context.web3 = new Web3(LOCAL_NODE_URL);
-				const wsProvider = new HttpProvider(LOCAL_NODE_URL);
+				const wsProvider = new WsProvider(LOCAL_NODE_URL);
 				context.polkadot = await new ApiPromise({ provider: wsProvider }).isReady;
 			}
 		});
