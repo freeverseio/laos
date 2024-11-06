@@ -101,7 +101,7 @@ jobs:
 
       - name: Test
         run: |
-          SKIP_WASM_BUILD=1 cargo test
+          SKIP_WASM_BUILD=1 cargo test --locked
 
   try-runtime:
     runs-on:
@@ -122,4 +122,7 @@ jobs:
           chmod +x ./try-runtime
       - name: Try Runtime for Laos Sigma
         run: |
-          RUST_LOG=try-runtime ./try-runtime --runtime ./target/release/wbuild/laos-runtime/laos_runtime.wasm on-runtime-upgrade --disable-spec-version-check --checks=all live --uri ws://159.223.241.51:9944
+          RUST_LOG=try-runtime,info ./try-runtime --runtime ./target/release/wbuild/laos-runtime/laos_runtime.wasm on-runtime-upgrade --disable-spec-version-check --checks=all live --uri ws://159.223.241.51:9944
+      - name: Try Runtime for Laos
+        run: |
+          RUST_LOG=try-runtime,info ./try-runtime --runtime ./target/release/wbuild/laos-runtime/laos_runtime.wasm on-runtime-upgrade --disable-spec-version-check --checks=all live --uri wss://rpc.laos.laosfoundation.io

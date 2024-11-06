@@ -21,7 +21,7 @@ mod balances;
 mod base_fee;
 mod benchmark;
 mod collective;
-mod cumulus_parachain_system;
+pub mod cumulus_parachain_system;
 mod cumulus_xcmp_queue;
 mod democracy;
 mod election_phragmen;
@@ -57,4 +57,4 @@ parameter_types! {
 
 impl cumulus_pallet_aura_ext::Config for Runtime {}
 impl pallet_evm_chain_id::Config for Runtime {}
-impl staging_parachain_info::Config for Runtime {}
+impl parachain_info::Config for Runtime {}

@@ -1,7 +1,7 @@
 use super::collective::CouncilMajority;
 use crate::{
 	currency::UNIT, weights, AccountId, Balance, Balances, BlockNumber, Permill, Runtime,
-	RuntimeEvent, Treasury,
+	RuntimeEvent, Treasury, DAYS, MINUTES,
 };
 use frame_support::{
 	parameter_types,
@@ -12,7 +12,6 @@ use frame_support::{
 	PalletId,
 };
 use frame_system::EnsureRoot;
-use parachains_common::{DAYS, MINUTES};
 use polkadot_runtime_common::prod_or_fast;
 use sp_runtime::traits::IdentityLookup;
 
@@ -28,7 +27,7 @@ parameter_types! {
 	pub const SpendPeriod: BlockNumber = prod_or_fast!(7 * DAYS, 5 * MINUTES);
 	pub const MaxApprovals: u32 = 100;
 	pub const TreasuryId: PalletId = PalletId(*b"py/trsry");
-	pub const PayoutPeriod: BlockNumber = 5;
+	pub const PayoutPeriod: BlockNumber = 28 * DAYS;
 	pub TreasuryAccount: AccountId = Treasury::account_id();
 }
 

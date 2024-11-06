@@ -1,15 +1,13 @@
 use crate::{
 	currency::UNIT, weights, Balance, Balances, BlockNumber, Council, Runtime, RuntimeEvent,
-	Treasury,
+	Treasury, DAYS, MINUTES,
 };
 use frame_support::{parameter_types, traits::LockIdentifier};
-use parachains_common::{DAYS, MINUTES};
 use polkadot_runtime_common::{prod_or_fast, CurrencyToVote};
 
 parameter_types! {
 	pub const CandidacyBond: Balance = 1000 * UNIT;
 	pub TermDuration: BlockNumber = prod_or_fast!(28 * DAYS, 10 * MINUTES);
-	pub VotingLockPeriod: BlockNumber = prod_or_fast!(28 * DAYS, 10 * MINUTES);
 	pub const DesiredMembers: u32 = 7;
 	pub const DesiredRunnersUp: u32 = 20;
 	pub const MaxCandidates: u32 = 30;
@@ -43,6 +41,6 @@ impl pallet_elections_phragmen::Config for Runtime {
 	type TermDuration = TermDuration;
 	type VotingBondBase = VotingBondBase;
 	type VotingBondFactor = VotingBondFactor;
-	type KickedMember = ();
+	type KickedMember = Treasury;
 	type WeightInfo = weights::pallet_elections_phragmen::WeightInfo<Runtime>;
 }

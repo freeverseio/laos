@@ -54,7 +54,7 @@ substrate-prometheus-endpoint = { workspace = true }
 polkadot-cli = { workspace = true, features = ["rococo-native"] }
 polkadot-service = { workspace = true, features = ["rococo-native"] }
 polkadot-primitives = { workspace = true }
-staging-xcm = { workspace = true }
+xcm = { workspace = true }
 laos-primitives = { workspace = true }
 
 # Cumulus

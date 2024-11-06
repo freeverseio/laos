@@ -1,18 +1,23 @@
 use crate::{
 	weights, AccountId, OriginCaller, Preimage, Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin,
 };
-use frame_support::{parameter_types, traits::EqualPrivilegeOnly, weights::Weight};
+use frame_support::{
+	parameter_types,
+	traits::{ConstU32, EqualPrivilegeOnly},
+	weights::Weight,
+};
 use frame_system::EnsureRoot;
-use laos_primitives::RuntimeBlockWeights;
-pub use parachains_common::NORMAL_DISPATCH_RATIO;
+use laos_primitives::{RuntimeBlockWeights, NORMAL_DISPATCH_RATIO};
 
 parameter_types! {
-	pub const MaxScheduledPerBlock: u32 = 50;
 	pub MaximumSchedulerWeight: Weight = NORMAL_DISPATCH_RATIO * RuntimeBlockWeights::get().max_block;
 }
 
 impl pallet_scheduler::Config for Runtime {
-	type MaxScheduledPerBlock = MaxScheduledPerBlock;
+	#[cfg(feature = "runtime-benchmarks")]
+	type MaxScheduledPerBlock = ConstU32<512>;
+	#[cfg(not(feature = "runtime-benchmarks"))]
+	type MaxScheduledPerBlock = ConstU32<50>;
 	type MaximumWeight = MaximumSchedulerWeight;
 	type OriginPrivilegeCmp = EqualPrivilegeOnly;
 	type PalletsOrigin = OriginCaller;

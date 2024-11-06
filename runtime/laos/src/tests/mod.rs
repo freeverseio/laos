@@ -16,8 +16,10 @@
 
 //! Runtime tests
 
+mod metadata;
 mod precompile_tests;
 mod version_tests;
+
 use core::str::FromStr;
 use sp_runtime::BuildStorage;
 
@@ -103,13 +105,13 @@ fn test_block_and_gas_limit_constants() {
 
 	assert_ok!(system_block_weights.clone().validate());
 	// 0.5s of block time
-	assert_eq!(system_block_weights.max_block.ref_time(), 500_000_000_000);
+	assert_eq!(system_block_weights.max_block.ref_time(), 2_000_000_000_000);
 
 	// EVM constants
 	let block_gas_limit = <Runtime as pallet_evm::Config>::BlockGasLimit::get();
 
 	// 15M gas
-	assert_eq!(block_gas_limit, U256::from(15_000_000));
+	assert_eq!(block_gas_limit, U256::from(60_000_000));
 }
 
 #[test]
@@ -133,7 +135,7 @@ fn check_pallet_vesting_configuration() {
 		<Runtime as pallet_vesting::Config>::UnvestedFundsAllowedWithdrawReasons::get(),
 		WithdrawReasons::except(WithdrawReasons::TRANSFER | WithdrawReasons::RESERVE)
 	);
-	assert_eq!(<Runtime as pallet_vesting::Config>::MAX_VESTING_SCHEDULES, 28);
+	assert_eq!(<Runtime as pallet_vesting::Config>::MAX_VESTING_SCHEDULES, 56);
 }
 
 #[test]

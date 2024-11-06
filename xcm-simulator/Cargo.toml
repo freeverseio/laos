@@ -1,0 +1,80 @@
+[package]
+name = "laos-xcm-simulator"
+authors.workspace = true
+edition.workspace = true
+version = "7.0.0"
+
+[dependencies]
+parity-scale-codec = { workspace = true }
+scale-info = { workspace = true }
+log = { workspace = true }
+hex-literal = { workspace = true }
+
+frame-system = { workspace = true }
+frame-support = { workspace = true }
+pallet-balances = { workspace = true, features = ["insecure_zero_ed"] }
+pallet-message-queue = { workspace = true }
+pallet-uniques = { workspace = true }
+pallet-assets = { workspace = true }
+sp-std = { workspace = true }
+sp-core = { workspace = true }
+sp-runtime = { workspace = true }
+sp-io = { workspace = true }
+sp-tracing = { workspace = true }
+
+xcm = { workspace = true }
+xcm-simulator = { workspace = true }
+xcm-executor = { workspace = true }
+xcm-builder = { workspace = true }
+pallet-xcm = { workspace = true }
+polkadot-core-primitives = { workspace = true }
+polkadot-runtime-parachains = { workspace = true }
+polkadot-parachain-primitives = { workspace = true }
+laos-primitives = { workspace = true }
+parachain-info = { workspace = true }
+cumulus-pallet-xcm = { workspace = true }
+assets-common = { workspace = true }
+parachains-common = { workspace = true }
+
+
+[features]
+default = ["std"]
+std = [
+    "parachains-common/std",
+    "cumulus-pallet-xcm/std",
+	"parachain-info/std",
+	"laos-primitives/std",
+    "frame-system/std",
+    "frame-support/std",
+    "pallet-balances/std",
+    "pallet-message-queue/std",
+    "pallet-uniques/std",
+    "pallet-assets/std",
+    "sp-std/std",
+    "sp-core/std",
+    "sp-runtime/std",
+    "sp-io/std",
+    "sp-tracing/std",
+    "xcm/std",
+    "xcm-executor/std",
+    "xcm-builder/std",
+    "pallet-xcm/std",
+    "polkadot-core-primitives/std",
+    "polkadot-runtime-parachains/std",
+    "polkadot-parachain-primitives/std",
+    "assets-common/std" 
+]
+runtime-benchmarks = [
+	"frame-support/runtime-benchmarks",
+	"frame-system/runtime-benchmarks",
+	"pallet-balances/runtime-benchmarks",
+	"assets-common/runtime-benchmarks",
+	"pallet-message-queue/runtime-benchmarks",
+	"pallet-uniques/runtime-benchmarks",
+	"pallet-xcm/runtime-benchmarks",
+	"polkadot-parachain-primitives/runtime-benchmarks",
+	"polkadot-runtime-parachains/runtime-benchmarks",
+	"sp-runtime/runtime-benchmarks",
+	"xcm-builder/runtime-benchmarks",
+	"xcm-executor/runtime-benchmarks",
+]
