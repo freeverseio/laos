@@ -2,7 +2,7 @@ import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { step } from "mocha-steps";
 import Contract from "web3-eth-contract";
-import { VESTING_CONTRACT_ADDRESS, VESTING_ABI, ALITH, ALITH_PRIVATE_KEY, UNIT } from "./config";
+import { VESTING_CONTRACT_ADDRESS, VESTING_ABI, ALITH, ALITH_PRIVATE_KEY, UNIT, GAS_PRICE } from "./config";
 import { describeWithExistingNode, sendTxAndWaitForFinalization, waitForConfirmations, waitForBlocks } from "./util";
 import { Keyring } from "@polkadot/api";
 
@@ -15,7 +15,7 @@ describeWithExistingNode("Frontier RPC (Vesting)", (context) => {
 
 	before(async function () {
 		contract = new context.web3.eth.Contract(VESTING_ABI, VESTING_CONTRACT_ADDRESS, {
-			gasPrice: "20000000000", // default gas price in wei, 20 gwei in this case
+			gasPrice: GAS_PRICE,
 		});
 
 		const keyring = new Keyring({ type: "ethereum" });
