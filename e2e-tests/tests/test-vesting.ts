@@ -17,6 +17,7 @@ describeWithExistingNode("Frontier RPC (Vesting)", (context) => {
 		contract = new context.web3.eth.Contract(VESTING_ABI, VESTING_CONTRACT_ADDRESS, {
 			gasPrice: GAS_PRICE,
 		});
+		contract.defaultBlock = "safe";
 
 		const keyring = new Keyring({ type: "ethereum" });
 		alithPair = keyring.addFromUri(ALITH_PRIVATE_KEY);
@@ -35,6 +36,7 @@ describeWithExistingNode("Frontier RPC (Vesting)", (context) => {
 		const perBlock = UNIT;
 		const startingBlock = await polkadot.query.system.number();
 		const account = web3.eth.accounts.create();
+		console.log("Vesting account address: ", account.address);
 		web3.eth.accounts.wallet.add(account.privateKey); // Add account for signing transactions
 
 		// Step 1: Verify initial balance is zero
@@ -52,7 +54,7 @@ describeWithExistingNode("Frontier RPC (Vesting)", (context) => {
 			perBlock,
 			startingBlock,
 		});
-		await sendTxAndWaitForFinalization(vestingTx, alithPair);
+		await sendTxAndWaitForFinalization(polkadot, vestingTx, alithPair);
 
 		// Step 4: Check balance has increased since startingBlock
 		const initialBalance = await web3.eth.getBalance(account.address);

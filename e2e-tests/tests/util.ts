@@ -197,10 +197,27 @@ export async function extractRevertReason(context: { web3: Web3 }, transactionHa
 }
 
 // Generic function to send a transaction and wait for finalization
-export async function sendTxAndWaitForFinalization(tx, signer, options = {}) {
+export async function sendTxAndWaitForFinalization(api, tx, signer) {
 	return new Promise((resolve, reject) => {
-		tx.signAndSend(signer, options, ({ status, dispatchError }) => {
+		tx.signAndSend(signer, ({ status, dispatchError }) => {
 			console.log("Transaction status:", status.type);
+
+			if (dispatchError) {
+				if (dispatchError.isModule) {
+					// Retrieve the error details
+					const decoded = api.registry.findMetaError(dispatchError.asModule);
+					const { section, name, documentation } = decoded;
+
+					console.error(`Transaction failed with error: ${section}.${name}`);
+					console.error(`Error documentation: ${documentation.join(" ")}`);
+					reject(new Error(`${section}.${name}: ${documentation.join(" ")}`));
+				} else {
+					// Handle other types of dispatch errors
+					console.error(`Transaction failed with error: ${dispatchError.toString()}`);
+					reject(new Error(dispatchError.toString()));
+				}
+				return;
+			}
 
 			if (status.isInBlock) {
 				console.log("Included at block hash", status.asInBlock.toHex());
@@ -209,7 +226,8 @@ export async function sendTxAndWaitForFinalization(tx, signer, options = {}) {
 				// resolve the promise when the transaction is finalized
 				resolve(status.asFinalized.toHex());
 			} else if (status.isDropped || status.isInvalid || status.isUsurped) {
-				reject(dispatchError.toString()); // Reject the promise on error
+				console.error("Transaction failed with status:", status.type);
+				reject(new Error(`Transaction status indicates failure: ${status.type}`));
 			}
 		}).catch((error) => {
 			console.error("Error during transaction:", error);
