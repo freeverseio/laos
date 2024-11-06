@@ -5,6 +5,7 @@ import { JsonRpcResponse } from "web3-core-helpers";
 import {
 	EVOLUTION_COLLECTION_FACTORY_CONTRACT_ADDRESS,
 	GAS_PRICE,
+	ALITH_PRIVATE_KEY,
 	FAITH,
 	FAITH_PRIVATE_KEY,
 	EVOLUTION_COLLECTION_FACTORY_ABI,
@@ -69,6 +70,9 @@ export function describeWithExistingNode(
 				const wsProvider = new WsProvider("ws://" + LOCAL_NODE_IP);
 				context.polkadot = await new ApiPromise({ provider: wsProvider }).isReady;
 			}
+
+			context.web3.eth.accounts.wallet.add(ALITH_PRIVATE_KEY);
+			context.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
 		});
 
 		cb(context);
@@ -211,5 +215,61 @@ export async function sendTxAndWaitForFinalization(tx, signer, options = {}) {
 			console.error("Error during transaction:", error);
 			reject(error); // Reject the promise on error
 		});
+	});
+}
+
+export async function waitForConfirmations(web3, txHash, requiredConfirmations = 12, pollInterval = 1000) {
+	try {
+		let currentBlock = await web3.eth.getBlockNumber();
+		let receipt = null;
+
+		while (true) {
+			// Check for the transaction receipt
+			receipt = await web3.eth.getTransactionReceipt(txHash);
+
+			if (receipt && receipt.blockNumber) {
+				// Calculate the number of confirmations
+				const confirmations = currentBlock - receipt.blockNumber;
+
+				if (confirmations >= requiredConfirmations) {
+					console.log(`Transaction ${txHash} has ${confirmations} confirmations.`);
+					return receipt; // Transaction has the required confirmations
+				} else {
+					console.log(`Waiting for confirmations... (${confirmations}/${requiredConfirmations})`);
+				}
+			} else {
+				console.log("Transaction not yet mined. Retrying...");
+			}
+
+			// Wait for the next block
+			await new Promise((resolve) => setTimeout(resolve, pollInterval));
+			currentBlock = await web3.eth.getBlockNumber();
+		}
+	} catch (error) {
+		console.error(`Error waiting for confirmations of transaction ${txHash}:`, error);
+		throw error;
+	}
+}
+
+export async function waitForBlocks(api, n) {
+	return new Promise(async (resolve, reject) => {
+		console.log(`Waiting for ${n} blocks...`);
+		let blockCount = 0;
+
+		try {
+			// Await the subscription to get the unsubscribe function
+			const unsubscribe = await api.rpc.chain.subscribeNewHeads((lastHeader) => {
+				blockCount += 1;
+				console.log(`New block: #${lastHeader.number}, waiting for ${n - blockCount} more blocks...`);
+
+				if (blockCount >= n) {
+					unsubscribe(); // Stop listening for new blocks
+					resolve(true);
+				}
+			});
+		} catch (error) {
+			console.error(`Error while subscribing to new heads:`, error);
+			reject(error);
+		}
 	});
 }
