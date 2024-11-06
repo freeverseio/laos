@@ -30,7 +30,7 @@ describeWithExistingNode("Frontier RPC (Web3Api)", (context) => {
 		expect(balance.gt(new BN(0))).to.be.eq(true);
 	});
 
-	step("genesis balance is setup correctly", async function () {
+	step("pending state is returned correctly", async function () {
 		const balance = new BN(await context.web3.eth.getBalance(FAITH, "pending"));
 		expect(balance.gt(new BN(0))).to.be.eq(true);
 	});
