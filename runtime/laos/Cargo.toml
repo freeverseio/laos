@@ -135,7 +135,6 @@ std = [
 	"cumulus-pallet-parachain-system/std",
 	"cumulus-pallet-xcm/std",
 	"cumulus-pallet-xcmp-queue/std",
-	"cumulus-primitives-aura/std",
 	"pallet-message-queue/std",
 	"cumulus-primitives-core/std",
 	"cumulus-primitives-timestamp/std",

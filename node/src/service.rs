@@ -57,6 +57,7 @@ use sc_service::{Configuration, PartialComponents, TFullBackend, TFullClient, Ta
 use sc_telemetry::{Telemetry, TelemetryHandle, TelemetryWorker, TelemetryWorkerHandle};
 use sc_transaction_pool_api::OffchainTransactionPoolFactory;
 use sp_consensus_aura::{Slot, SlotDuration};
+use sp_core::U256;
 use sp_keystore::KeystorePtr;
 use substrate_prometheus_endpoint::Registry;
 
@@ -203,6 +204,7 @@ pub fn new_partial(
 		client.clone(),
 		parachain_block_import.clone(),
 		config,
+		eth_config,
 		telemetry.as_ref().map(|telemetry| telemetry.handle()),
 		&task_manager,
 	)?;
@@ -512,25 +514,21 @@ fn build_import_queue(
 	client: Arc<ParachainClient>,
 	block_import: ParachainBlockImport,
 	config: &Configuration,
+	eth_config: &EthConfiguration,
 	telemetry: Option<TelemetryHandle>,
 	task_manager: &TaskManager,
 ) -> Result<sc_consensus::DefaultImportQueue<Block>, sc_service::Error> {
-	let cidp_client = client.clone();
-	let create_inherent_data_providers = move |parent_hash, _| {
-		let cidp_client = cidp_client.clone();
-		async move {
-			let slot_duration =
-				sc_consensus_aura::standalone::slot_duration_at(&*cidp_client, parent_hash)?;
-			let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
-
-			let slot =
-						sp_consensus_aura::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
-							*timestamp,
-							slot_duration,
-						);
-
-			Ok((slot, timestamp))
-		}
+	let slot_duration = cumulus_client_consensus_aura::slot_duration(&*client)?;
+	let target_gas_price = eth_config.target_gas_price;
+	let create_inherent_data_providers = move |_, _| async move {
+		let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
+		let slot =
+			sp_consensus_aura::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
+				*timestamp,
+				slot_duration,
+			);
+		let dynamic_fee = fp_dynamic_fee::InherentDataProvider(U256::from(target_gas_price));
+		Ok((slot, timestamp, dynamic_fee))
 	};
 	Ok(cumulus_client_consensus_aura::equivocation_import_queue::fully_verifying_import_queue::<
 		sp_consensus_aura::sr25519::AuthorityPair,
