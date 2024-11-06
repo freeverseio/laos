@@ -35,52 +35,51 @@ describeWithExistingNode("Frontier RPC (Vesting)", (context) => {
 		const perBlock = UNIT;
 		const startingBlock = await polkadot.query.system.number();
 		const account = web3.eth.accounts.create();
-		web3.eth.accounts.wallet.add(account.privateKey); // Add the account to the wallet for transaction signing
+		web3.eth.accounts.wallet.add(account.privateKey); // Add account for signing transactions
 
-		// Step 1: Verify the new account's initial balance is zero
-		await expect(web3.eth.getBalance(account.address)).to.eventually.be.eq("0");
+		// Step 1: Verify initial balance is zero
+		await expect(web3.eth.getBalance(account.address)).to.eventually.equal("0");
 
-		// Step 2: Ensure no vesting schedule exists for the new account
-		let vestingSchedule = await expect(contract.methods.vesting(account.address).call()).to.be.fulfilled;
-		expect(vestingSchedule).to.deep.eq([]);
+		// Step 2: Confirm no existing vesting schedule
+		let vestingSchedule = await contract.methods.vesting(account.address).call();
+		expect(vestingSchedule).to.deep.equal([]);
 
-		await expect(waitForBlocks(polkadot, 1)).to.eventually.be.fulfilled;
+		await waitForBlocks(polkadot, 1);
 
-		// Step 3: Create a vesting schedule via a substrate transaction
+		// Step 3: Create vesting schedule via substrate transaction
 		const vestingTx = polkadot.tx.vesting.vestedTransfer(account.address, {
 			locked,
 			perBlock,
 			startingBlock,
 		});
+		await sendTxAndWaitForFinalization(vestingTx, alithPair);
 
-		await expect(sendTxAndWaitForFinalization(vestingTx, alithPair)).to.eventually.be.fulfilled;
-
-		// Step 4: Confirm the account balance has increased due to blocks mined since startingBlock
+		// Step 4: Check balance has increased since startingBlock
 		const initialBalance = await web3.eth.getBalance(account.address);
-		expect(Number(initialBalance) > 0 && Number(initialBalance) < Number(locked)).to.be.true;
+		expect(Number(initialBalance)).to.be.greaterThan(Number(0));
+		expect(Number(initialBalance)).to.be.lessThan(Number(locked));
 
-		// Step 5: Verify the vesting schedule has been created correctly
-		vestingSchedule = await expect(contract.methods.vesting(account.address).call()).to.eventually.be.fulfilled;
-		expect(vestingSchedule).to.deep.eq([[locked.toString(), perBlock.toString(), startingBlock.toString()]]);
+		// Step 5: Verify vesting schedule was created
+		vestingSchedule = await contract.methods.vesting(account.address).call();
+		expect(vestingSchedule).to.deep.equal([[locked.toString(), perBlock.toString(), startingBlock.toString()]]);
 
-		// Step 6: Execute the vesting using an external account (e.g., ALITH)
+		// Step 6: Execute vesting with an external account (ALITH)
 		let gas = await contract.methods.vestOther(account.address).estimateGas({ from: ALITH });
-		let tx = await expect(contract.methods.vestOther(account.address).send({ from: ALITH, gas })).to.eventually.be
-			.fulfilled;
-		await expect(waitForConfirmations(web3, tx.transactionHash, 3)).to.eventually.be.fulfilled;
+		let tx = await contract.methods.vestOther(account.address).send({ from: ALITH, gas });
+		await waitForConfirmations(web3, tx.transactionHash, 3);
 
-		// Step 7: Verify the account balance has increased after vesting execution by the external account
+		// Step 7: Confirm balance increase after external vesting
 		const balanceAfterVestOther = await web3.eth.getBalance(account.address);
-		expect(Number(balanceAfterVestOther) > Number(initialBalance)).to.be.true;
+		expect(Number(balanceAfterVestOther)).to.be.greaterThan(Number(initialBalance));
 
-		await expect(waitForBlocks(polkadot, 1)).to.eventually.be.fulfilled;
+		await waitForBlocks(polkadot, 1);
 
-		// Step 8: Execute vesting directly from the account itself
+		// Step 8: Execute vesting directly from the account
 		gas = await contract.methods.vest().estimateGas({ from: account.address });
-		tx = await expect(contract.methods.vest().send({ from: account.address, gas })).to.eventually.be.fulfilled;
-		await expect(waitForConfirmations(web3, tx.transactionHash, 3)).to.eventually.be.fulfilled;
+		tx = await contract.methods.vest().send({ from: account.address, gas });
+		await waitForConfirmations(web3, tx.transactionHash, 3);
 
-		// Step 9: Verify the balance has increased after the second vesting execution
+		// Step 9: Verify final balance increase after second vesting
 		const finalBalance = await web3.eth.getBalance(account.address);
 		expect(Number(finalBalance)).to.be.greaterThan(Number(balanceAfterVestOther));
 	});
