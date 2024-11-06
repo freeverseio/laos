@@ -27,7 +27,6 @@ use laos_runtime::{opaque::Block, types::TransactionConverter, Hash};
 use cumulus_client_collator::service::CollatorService;
 use cumulus_client_consensus_common::ParachainBlockImport as TParachainBlockImport;
 use cumulus_client_consensus_proposer::Proposer;
-use cumulus_client_consensus_relay_chain::Verifier as RelayChainVerifier;
 use cumulus_client_service::{
 	build_network, build_relay_chain_interface, prepare_node_config, start_relay_chain_tasks,
 	BuildNetworkParams, CollatorSybilResistance, DARecoveryProfile, ParachainHostFunctions,
@@ -38,7 +37,6 @@ use cumulus_primitives_core::{
 	ParaId,
 };
 use cumulus_relay_chain_interface::{OverseerHandle, RelayChainInterface};
-use cumulus_test_relay_sproof_builder::RelayStateSproofBuilder;
 
 // Substrate Imports
 use cumulus_client_consensus_aura::collators::lookahead::{self as aura, Params as AuraParams};
@@ -49,7 +47,7 @@ use laos_runtime::{
 	configs::cumulus_parachain_system::RELAY_CHAIN_SLOT_DURATION_MILLIS, RuntimeApi,
 };
 use sc_client_api::Backend;
-use sc_consensus::{import_queue::BasicQueue, ImportQueue};
+use sc_consensus::ImportQueue;
 use sc_executor::{
 	HeapAllocStrategy, NativeElseWasmExecutor, WasmExecutor, DEFAULT_HEAP_ALLOC_STRATEGY,
 };
@@ -59,7 +57,6 @@ use sc_service::{Configuration, PartialComponents, TFullBackend, TFullClient, Ta
 use sc_telemetry::{Telemetry, TelemetryHandle, TelemetryWorker, TelemetryWorkerHandle};
 use sc_transaction_pool_api::OffchainTransactionPoolFactory;
 use sp_consensus_aura::{Slot, SlotDuration};
-use sp_core::U256;
 use sp_keystore::KeystorePtr;
 use substrate_prometheus_endpoint::Registry;
 
@@ -206,7 +203,6 @@ pub fn new_partial(
 		client.clone(),
 		parachain_block_import.clone(),
 		config,
-		eth_config,
 		telemetry.as_ref().map(|telemetry| telemetry.handle()),
 		&task_manager,
 	)?;
@@ -516,12 +512,9 @@ fn build_import_queue(
 	client: Arc<ParachainClient>,
 	block_import: ParachainBlockImport,
 	config: &Configuration,
-	eth_config: &EthConfiguration,
 	telemetry: Option<TelemetryHandle>,
 	task_manager: &TaskManager,
 ) -> Result<sc_consensus::DefaultImportQueue<Block>, sc_service::Error> {
-	let slot_duration = cumulus_client_consensus_aura::slot_duration(&*client)?;
-	let target_gas_price = eth_config.target_gas_price;
 	let cidp_client = client.clone();
 	let create_inherent_data_providers = move |parent_hash, _| {
 		let cidp_client = cidp_client.clone();
