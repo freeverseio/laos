@@ -73,9 +73,9 @@ export function describeWithExistingNode(
 
 		cb(context);
 
-		after(() => {
+		after(async () => {
 			context.polkadot.disconnect();
-		})
+		});
 	});
 }
 
@@ -194,21 +194,22 @@ export async function extractRevertReason(context: { web3: Web3 }, transactionHa
 
 // Generic function to send a transaction and wait for finalization
 export async function sendTxAndWaitForFinalization(tx, signer, options = {}) {
-  return new Promise((resolve, reject) => {
-    tx.signAndSend(signer, options, ({ status }) => {
-      console.log('Transaction status:', status.type);
+	return new Promise((resolve, reject) => {
+		tx.signAndSend(signer, options, ({ status, dispatchError }) => {
+			console.log("Transaction status:", status.type);
 
-      if (status.isInBlock) {
-        console.log('Included at block hash', status.asInBlock.toHex());
-      } else if (status.isFinalized) {
-        console.log('Finalized block hash', status.asFinalized.toHex());
-		// resolve the promise when the transaction is finalized
-		resolve(status.asFinalized.toHex());
-      }
-    }).catch((error) => {
-      console.error('Error during transaction:', error);
-      reject(error); // Reject the promise on error
-    });
-  });
+			if (status.isInBlock) {
+				console.log("Included at block hash", status.asInBlock.toHex());
+			} else if (status.isFinalized) {
+				console.log("Finalized block hash", status.asFinalized.toHex());
+				// resolve the promise when the transaction is finalized
+				resolve(status.asFinalized.toHex());
+			} else if (status.isDropped || status.isInvalid || status.isUsurped) {
+				reject(dispatchError.toString()); // Reject the promise on error
+			}
+		}).catch((error) => {
+			console.error("Error during transaction:", error);
+			reject(error); // Reject the promise on error
+		});
+	});
 }
-
