@@ -1,4 +1,4 @@
-# The LAOS Chain
+ # The LAOS Chain
 
 LAOS is the Universal layer 1 for digital assets across all blockchains, introducing unique features such as bridgeless minting and evolution. 
 
