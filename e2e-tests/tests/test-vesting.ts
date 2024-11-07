@@ -34,7 +34,8 @@ describeWithExistingNode("Frontier RPC (Vesting)", (context) => {
 		const { polkadot, web3 } = context;
 		const locked = BigInt(1000) * UNIT;
 		const perBlock = UNIT;
-		const startingBlock = await polkadot.query.system.number();
+		const lastFinalizedBlock = await polkadot.query.system.number(); // TODO 
+		const startingBlock = lastFinalizedBlock;
 		const account = web3.eth.accounts.create();
 		console.log("Vesting account address: ", account.address);
 		web3.eth.accounts.wallet.add(account.privateKey); // Add account for signing transactions
@@ -46,9 +47,8 @@ describeWithExistingNode("Frontier RPC (Vesting)", (context) => {
 		let vestingSchedule = await contract.methods.vesting(account.address).call();
 		expect(vestingSchedule).to.deep.equal([]);
 
-		await waitForBlocks(polkadot, 1);
-
 		// Step 3: Create vesting schedule via substrate transaction
+		await waitForBlocks(polkadot, 1);
 		const vestingTx = polkadot.tx.vesting.vestedTransfer(account.address, {
 			locked,
 			perBlock,
@@ -66,9 +66,10 @@ describeWithExistingNode("Frontier RPC (Vesting)", (context) => {
 		expect(vestingSchedule).to.deep.equal([[locked.toString(), perBlock.toString(), startingBlock.toString()]]);
 
 		// Step 6: Execute vesting with an external account (ALITH)
+		await waitForBlocks(polkadot, 1);
 		let gas = await contract.methods.vestOther(account.address).estimateGas({ from: ALITH });
 		let tx = await contract.methods.vestOther(account.address).send({ from: ALITH, gas });
-		await waitForConfirmations(web3, tx.transactionHash, 3);
+		await waitForConfirmations(web3, tx.transactionHash, 7);
 
 		// Step 7: Confirm balance increase after external vesting
 		const balanceAfterVestOther = await web3.eth.getBalance(account.address);
@@ -79,7 +80,7 @@ describeWithExistingNode("Frontier RPC (Vesting)", (context) => {
 		// Step 8: Execute vesting directly from the account
 		gas = await contract.methods.vest().estimateGas({ from: account.address });
 		tx = await contract.methods.vest().send({ from: account.address, gas });
-		await waitForConfirmations(web3, tx.transactionHash, 3);
+		await waitForConfirmations(web3, tx.transactionHash, 7);
 
 		// Step 9: Verify final balance increase after second vesting
 		const finalBalance = await web3.eth.getBalance(account.address);
