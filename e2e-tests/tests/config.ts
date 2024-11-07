@@ -1,10 +1,10 @@
 import BN from "bn.js";
 import { AbiItem } from "web3-utils";
-import AssetMetadataExtender from "../build/contracts/AssetMetadataExtender.json";
-import EvolutionCollection from "../build/contracts/EvolutionCollection.json";
-import EvolutionCollectionFactory from "../build/contracts/EvolutionCollectionFactory.json";
-import Vesting from "../build/contracts/Vesting.json";
-import ParachainStaking from "../build/contracts/ParachainStaking.json";
+import AssetMetadataExtender from "../build/contracts/AssetMetadataExtender.sol/AssetMetadataExtender.json";
+import EvolutionCollection from "../build/contracts/EvolutionCollection.sol/EvolutionCollection.json";
+import EvolutionCollectionFactory from "../build/contracts/EvolutionCollectionFactory.sol/EvolutionCollectionFactory.json";
+import Vesting from "../build/contracts/Vesting.sol/Vesting.json";
+import ParachainStaking from "../build/contracts/ParachainStaking.sol/ParachainStaking.json";
 
 // Node config
 export const RUNTIME_SPEC_NAME = "laos";
