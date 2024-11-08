@@ -17,7 +17,7 @@ import BN from "bn.js";
 import { expect } from "chai";
 import "@polkadot/api-augment";
 
-import { ApiPromise, HttpProvider, WsProvider } from "@polkadot/api";
+import { ApiPromise, WsProvider } from "@polkadot/api";
 
 require("events").EventEmitter.prototype._maxListeners = 100;
 
