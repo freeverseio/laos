@@ -199,7 +199,7 @@ export async function extractRevertReason(context: { web3: Web3 }, transactionHa
 // Generic function to send a transaction and wait for finalization
 export async function sendTxAndWaitForFinalization(api, tx, signer) {
 	return new Promise((resolve, reject) => {
-		tx.signAndSend(signer, ({ status, dispatchError }) => {
+		tx.signAndSend(signer, ({ status, events, dispatchError }) => {
 			console.log("Transaction status:", status.type);
 
 			if (dispatchError) {
@@ -226,6 +226,25 @@ export async function sendTxAndWaitForFinalization(api, tx, signer) {
 				// resolve the promise when the transaction is finalized
 				resolve(status.asFinalized.toHex());
 			} else if (status.isDropped || status.isInvalid || status.isUsurped) {
+				events
+					// find/filter for failed events
+					.filter(({ event }) =>
+						api.events.system.ExtrinsicFailed.is(event)
+					)
+					// we know that data for system.ExtrinsicFailed is
+					// (DispatchError, DispatchInfo)
+					.forEach(({ event: { data: [error, info] } }) => {
+						if (error.isModule) {
+							// for module errors, we have the section indexed, lookup
+							const decoded = api.registry.findMetaError(error.asModule);
+							const { documentation, method, section } = decoded;
+
+							console.log(`${section}.${method}: ${documentation.join(' ')}`);
+						} else {
+							// Other, CannotLookup, BadOrigin, no extra info
+							console.log(error.toString());
+						}
+					});
 				console.error("Transaction failed with status:", status.type);
 				reject(new Error(`Transaction status indicates failure: ${status.type}`));
 			}
