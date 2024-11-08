@@ -255,7 +255,7 @@ export async function sendTxAndWaitForFinalization(api, tx, signer, maxRetries =
 			console.error(`Attempt ${attempt} failed: ${error.message}`);
 
 			if (attempt < maxRetries) {
-				await waitForBlocks(api, 1); // Wait for a new block before retrying
+				await waitForBlocks(api, 3); // Wait for a new block before retrying
 			} else {
 				console.error("Max retries reached. Transaction failed.");
 				throw new Error("Transaction failed after max retries");
