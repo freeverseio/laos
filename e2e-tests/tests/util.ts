@@ -199,40 +199,47 @@ export async function extractRevertReason(context: { web3: Web3 }, transactionHa
 // Generic function to send a transaction and wait for finalization
 export async function sendTxAndWaitForFinalization(api, tx, signer) {
 	return new Promise((resolve, reject) => {
-		tx.signAndSend(signer, ({ status, dispatchError }) => {
-			console.log("Transaction status:", status.type);
+		try {
+			tx.signAndSend(signer, ({ status, dispatchError, events }) => {
+				console.log("Transaction status:", status.type);
 
-			if (dispatchError) {
-				if (dispatchError.isModule) {
-					// Retrieve the error details
-					const decoded = api.registry.findMetaError(dispatchError.asModule);
-					const { section, name, documentation } = decoded;
-
-					console.error(`Transaction failed with error: ${section}.${name}`);
-					console.error(`Error documentation: ${documentation.join(" ")}`);
-					reject(new Error(`${section}.${name}: ${documentation.join(" ")}`));
-				} else {
-					// Handle other types of dispatch errors
-					console.error(`Transaction failed with error: ${dispatchError.toString()}`);
-					reject(new Error(dispatchError.toString()));
+				// Additional event info
+				if (events && events.length > 0) {
+					events.forEach(({ event: { method, section, data } }) => {
+						console.log(`Event: ${section}.${method} - Data: ${data.toString()}`);
+					});
 				}
-				return;
-			}
 
-			if (status.isInBlock) {
-				console.log("Included at block hash", status.asInBlock.toHex());
-			} else if (status.isFinalized) {
-				console.log("Finalized block hash", status.asFinalized.toHex());
-				// resolve the promise when the transaction is finalized
-				resolve(status.asFinalized.toHex());
-			} else if (status.isDropped || status.isInvalid || status.isUsurped) {
-				console.error("Transaction failed with status:", status.type);
-				reject(new Error(`Transaction status indicates failure: ${status.type}`));
-			}
-		}).catch((error) => {
-			console.error("Error during transaction:", error);
-			reject(error); // Reject the promise on error
-		});
+				if (dispatchError) {
+					console.error("Raw dispatch error:", dispatchError.toString());
+
+					if (dispatchError.isModule) {
+						const decoded = api.registry.findMetaError(dispatchError.asModule);
+						const { section, name, documentation } = decoded;
+						console.error(`Transaction failed with error: ${section}.${name}`);
+						console.error(`Error documentation: ${documentation.join(" ")}`);
+						reject(new Error(`${section}.${name}: ${documentation.join(" ")}`));
+					} else {
+						console.error(`Transaction failed with error: ${dispatchError.toString()}`);
+						reject(new Error(dispatchError.toString()));
+					}
+					return;
+				}
+
+				if (status.isInBlock) {
+					console.log("Included at block hash", status.asInBlock.toHex());
+				} else if (status.isFinalized) {
+					console.log("Finalized block hash", status.asFinalized.toHex());
+					resolve(status.asFinalized.toHex());
+				} else if (status.isDropped || status.isInvalid || status.isUsurped) {
+					console.error("Transaction failed with status:", status.type);
+					reject(new Error(`Transaction status indicates failure: ${status.type}`));
+				}
+			});
+		} catch (error) {
+			console.error("Error during transaction setup:", error);
+			reject(error);
+		}
 	});
 }
 
