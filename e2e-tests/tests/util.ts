@@ -197,7 +197,7 @@ export async function extractRevertReason(context: { web3: Web3 }, transactionHa
 }
 
 // Generic function to send a transaction and wait for finalization
-export async function sendTxAndWaitForFinalization(api, tx, signer) {
+async function sendTxAndWaitForFinalizationImpl(api, tx, signer) {
 	return new Promise((resolve, reject) => {
 		try {
 			tx.signAndSend(signer, ({ status, dispatchError, events }) => {
@@ -241,6 +241,27 @@ export async function sendTxAndWaitForFinalization(api, tx, signer) {
 			reject(error);
 		}
 	});
+}
+
+// Wrapper function to retry sendTxAndWaitForFinalization in case of failure
+export async function sendTxAndWaitForFinalization(api, tx, signer, maxRetries = 3, waitBlockInterval = 6000) {
+	for (let attempt = 1; attempt <= maxRetries; attempt++) {
+		try {
+			console.log(`Attempt ${attempt} to send transaction`);
+			const result = await sendTxAndWaitForFinalizationImpl(api, tx, signer);
+			console.log("Transaction succeeded");
+			return result;
+		} catch (error) {
+			console.error(`Attempt ${attempt} failed: ${error.message}`);
+
+			if (attempt < maxRetries) {
+				await waitForBlocks(api, 1); // Wait for a new block before retrying
+			} else {
+				console.error("Max retries reached. Transaction failed.");
+				throw new Error("Transaction failed after max retries");
+			}
+		}
+	}
 }
 
 export async function waitForConfirmations(web3, txHash, requiredConfirmations = 12, pollInterval = 1000) {
