@@ -18,6 +18,10 @@ import { expect } from "chai";
 import "@polkadot/api-augment";
 
 import { ApiPromise, WsProvider } from "@polkadot/api";
+import { SubmittableExtrinsic, ApiTypes } from "@polkadot/api/types";
+import { SubmittableResult } from "@polkadot/api/submittable";
+
+import { KeyringPair } from "@polkadot/keyring/types";
 
 require("events").EventEmitter.prototype._maxListeners = 100;
 
@@ -197,10 +201,22 @@ export async function extractRevertReason(context: { web3: Web3 }, transactionHa
 }
 
 // Generic function to send a transaction and wait for finalization
-async function sendTxAndWaitForFinalizationImpl(api, tx, signer) {
+export async function sendTxAndWaitForFinalization(
+	api: ApiPromise,
+	tx: SubmittableExtrinsic<ApiTypes>,
+	signer: KeyringPair,
+	N = 10
+) {
 	return new Promise((resolve, reject) => {
 		try {
-			tx.signAndSend(signer, ({ status, dispatchError, events }) => {
+			let blockCount = 0;
+			let unsubscribeAll;
+
+			const txHash = tx.hash.toHex();
+			console.log("Transaction hash:", txHash);
+
+			const onStatusChange = async (result: SubmittableResult) => {
+				const { status, events, dispatchError } = result;
 				console.log("Transaction status:", status.type);
 
 				// Additional event info
@@ -215,14 +231,15 @@ async function sendTxAndWaitForFinalizationImpl(api, tx, signer) {
 
 					if (dispatchError.isModule) {
 						const decoded = api.registry.findMetaError(dispatchError.asModule);
-						const { section, name, documentation } = decoded;
+						const { section, name, docs } = decoded;
 						console.error(`Transaction failed with error: ${section}.${name}`);
-						console.error(`Error documentation: ${documentation.join(" ")}`);
-						reject(new Error(`${section}.${name}: ${documentation.join(" ")}`));
+						console.error(`Error documentation: ${docs.join(" ")}`);
+						reject(new Error(`${section}.${name}: ${docs.join(" ")}`));
 					} else {
 						console.error(`Transaction failed with error: ${dispatchError.toString()}`);
 						reject(new Error(dispatchError.toString()));
 					}
+					unsubscribeAll && unsubscribeAll(); // TODO is needed?
 					return;
 				}
 
@@ -230,38 +247,53 @@ async function sendTxAndWaitForFinalizationImpl(api, tx, signer) {
 					console.log("Included at block hash", status.asInBlock.toHex());
 				} else if (status.isFinalized) {
 					console.log("Finalized block hash", status.asFinalized.toHex());
+					unsubscribeAll && unsubscribeAll();
 					resolve(status.asFinalized.toHex());
 				} else if (status.isDropped || status.isInvalid || status.isUsurped) {
 					console.error("Transaction failed with status:", status.type);
-					reject(new Error(`Transaction status indicates failure: ${status.type}`));
+					// Start waiting for N blocks and re-check transaction status
+					const extrinsicHash = result.txHash.toHuman();
+					console.log(`Transaction is invalid. Waiting for ${N} blocks while rechecking status...`);
+
+					// Subscribe to new finalized blocks to re-check transaction status
+					unsubscribeAll = await api.rpc.chain.subscribeFinalizedHeads(async (lastHeader) => {
+						blockCount++;
+						console.log(`Finalized Block #${lastHeader.number} received (${blockCount}/${N})`);
+
+						// Check if the transaction has been included in the block
+						const blockHash = lastHeader.hash;
+						const block = await api.rpc.chain.getBlock(blockHash);
+
+						let txIncluded = false;
+
+						for (const extrinsic of block.block.extrinsics) {
+							if (extrinsic.hash.toHex() === extrinsicHash) {
+								console.log(`Transaction included in block ${lastHeader.number}`);
+								txIncluded = true;
+								unsubscribeAll && unsubscribeAll();
+								resolve(blockHash.toHex());
+								break;
+							}
+						}
+
+						if (txIncluded) {
+							// Transaction has been included; resolve has been called
+							return;
+						} else if (blockCount >= N) {
+							console.log(`Waited for ${N} blocks after invalid status.`);
+							unsubscribeAll && unsubscribeAll(); // Unsubscribe from block headers
+							reject(new Error(`Transaction remained invalid after waiting for ${N} blocks.`));
+						}
+					});
 				}
-			});
+			};
+
+			tx.signAndSend(signer, onStatusChange);
 		} catch (error) {
 			console.error("Error during transaction setup:", error);
 			reject(error);
 		}
 	});
-}
-
-// Wrapper function to retry sendTxAndWaitForFinalization in case of failure
-export async function sendTxAndWaitForFinalization(api, tx, signer, maxRetries = 3, waitBlockInterval = 6000) {
-	for (let attempt = 1; attempt <= maxRetries; attempt++) {
-		try {
-			console.log(`Attempt ${attempt} to send transaction`);
-			const result = await sendTxAndWaitForFinalizationImpl(api, tx, signer);
-			console.log("Transaction succeeded");
-			return result;
-		} catch (error) {
-			console.error(`Attempt ${attempt} failed: ${error.message}`);
-
-			if (attempt < maxRetries) {
-				await waitForBlocks(api, 3); // Wait for a new block before retrying
-			} else {
-				console.error("Max retries reached. Transaction failed.");
-				throw new Error("Transaction failed after max retries");
-			}
-		}
-	}
 }
 
 export async function waitForConfirmations(web3, txHash, requiredConfirmations = 12, pollInterval = 1000) {

@@ -5,13 +5,14 @@ import Contract from "web3-eth-contract";
 import { VESTING_CONTRACT_ADDRESS, VESTING_ABI, ALITH, ALITH_PRIVATE_KEY, UNIT, GAS_PRICE } from "./config";
 import { describeWithExistingNode, sendTxAndWaitForFinalization, waitForConfirmations, waitForBlocks } from "./util";
 import { Keyring } from "@polkadot/api";
+import { KeyringPair } from "@polkadot/keyring/types";
 
 // Use chai-as-promised
 chai.use(chaiAsPromised);
 
 describeWithExistingNode("Frontier RPC (Vesting)", (context) => {
 	let contract: Contract;
-	let alithPair;
+	let alithPair: KeyringPair;
 
 	before(async function () {
 		contract = new context.web3.eth.Contract(VESTING_ABI, VESTING_CONTRACT_ADDRESS, {
