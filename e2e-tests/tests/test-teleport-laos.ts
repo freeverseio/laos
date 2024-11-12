@@ -8,7 +8,7 @@ import {
 	transferBalance,
 	isChannelOpen,
 	sendOpenHrmpChannelTxs,
-	awaitBlockChange,
+	waitForBlocks,
 	siblingLocation,
 	buildXcmInstruction,
 	relayLocation,
@@ -42,9 +42,9 @@ describeWithExistingNode(
 
 			debugTeleport("Waiting until all the relay chain, Asset Hub and LAOS produce blocks...");
 			await Promise.all([
-				awaitBlockChange(apiRelaychain),
-				awaitBlockChange(apiAssetHub),
-				awaitBlockChange(apiLaos),
+				waitForBlocks(apiRelaychain, 1),
+				waitForBlocks(apiAssetHub, 1),
+				waitForBlocks(apiLaos, 1),
 			]);
 
 			debugTeleport("[RELAY_CHAIN] Send transaction to open HRMP channels between AssetHub and LAOS..."); // See: https://github.com/paritytech/polkadot-sdk/pull/1616

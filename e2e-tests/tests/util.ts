@@ -11,9 +11,9 @@ import {
 	EVOLUTION_COLLECTION_FACTORY_ABI,
 	EVOLUTION_COLLECTION_ABI,
 	MAX_U96,
-	LAOS_NODE_URL,
-	ASSET_HUB_NODE_URL,
-	RELAYCHAIN_NODE_URL,
+	LAOS_NODE_IP,
+	ASSET_HUB_NODE_IP,
+	RELAYCHAIN_NODE_IP,
 	LAOS_PARA_ID,
 	ASSET_HUB_PARA_ID,
 } from "./config";
@@ -22,7 +22,9 @@ import BN from "bn.js";
 import { expect } from "chai";
 import "@polkadot/api-augment";
 
-import { ApiPromise, HttpProvider } from "@polkadot/api";
+import { ApiPromise, WsProvider } from "@polkadot/api";
+import { SubmittableExtrinsic, ApiTypes } from "@polkadot/api/types";
+import { SubmittableResult } from "@polkadot/api/submittable";
 import { bnToU8a, stringToU8a } from "@polkadot/util";
 import { encodeAddress } from "@polkadot/util-crypto";
 import { AssetIdV3, DoubleEncodedCall, EventRecord, XcmOriginKind } from "@polkadot/types/interfaces";
@@ -30,9 +32,11 @@ import { XcmVersionedXcm } from "@polkadot/types/lookup";
 import { Keyring } from "@polkadot/api";
 import { KeyringPair } from "@polkadot/keyring/types";
 
-import debug from "debug";
-
 require("events").EventEmitter.prototype._maxListeners = 100;
+
+import debug from "debug";
+const debugTx = debug("transaction");
+const debugBlock = debug("block");
 
 export async function customRequest(web3: Web3, method: string, params: any[]) {
 	return new Promise<JsonRpcResponse>((resolve, reject) => {
@@ -68,7 +72,7 @@ export function describeWithExistingNode(
 	describe(title, function (this: CustomSuiteContext) {
 		before(async function () {
 			this.context = {
-				web3: new Web3(providerLaosNodeUrl || LAOS_NODE_URL),
+				web3: new Web3(providerLaosNodeUrl || "http://" + LAOS_NODE_IP),
 				ethersjs: null,
 				networks: {
 					laos: null,
@@ -97,6 +101,7 @@ export function describeWithExistingNode(
 				laosLocation: null,
 				laosAsset: null,
 				relayChainLocation: null,
+				relayAsset: null,
 			};
 
 			this.substratePairs = {
@@ -113,19 +118,22 @@ export function describeWithExistingNode(
 				baltathar: new Keyring({ type: "ethereum" }).addFromUri(BALTATHAR_PRIVATE_KEY),
 				faith: new Keyring({ type: "ethereum" }).addFromUri(FAITH_PRIVATE_KEY),
 			};
+			this.context.web3.eth.accounts.wallet.add(ALITH_PRIVATE_KEY);
+			this.context.web3.eth.accounts.wallet.add(BALTATHAR_PRIVATE_KEY);
+			this.context.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
 
 			if (openPolkadotConnections) {
 				// Laos
-				let provider = new HttpProvider(providerLaosNodeUrl || LAOS_NODE_URL);
+				let provider = new WsProvider(providerLaosNodeUrl || "ws://" + LAOS_NODE_IP);
 				const apiLaos = await new ApiPromise({ provider }).isReady;
 				this.context.networks.laos = apiLaos;
 
-				provider = new HttpProvider(providerAssetHubNodeUrl || ASSET_HUB_NODE_URL);
+				provider = new WsProvider(providerAssetHubNodeUrl || "ws://" + ASSET_HUB_NODE_IP);
 				const apiAssetHub = await ApiPromise.create({ provider: provider });
 
 				this.context.networks.assetHub = apiAssetHub;
 
-				provider = new HttpProvider(providerRelaychainNodeUrl || RELAYCHAIN_NODE_URL);
+				provider = new WsProvider(providerRelaychainNodeUrl || "ws://" + RELAYCHAIN_NODE_IP);
 				this.context.networks.relaychain = await new ApiPromise({ provider: provider }).isReady;
 
 				this.assetHubItems.accounts = {
@@ -169,6 +177,12 @@ export function describeWithExistingNode(
 			}
 		});
 		cb();
+
+		after(async function () {
+			this.context.networks.laos && this.context.networks.laos.disconnect();
+			this.context.networks.assetHub && this.context.networks.assetHub.disconnect();
+			this.context.networks.relaychain && this.context.networks.relaychain.disconnect();
+		});
 	});
 }
 
@@ -285,24 +299,28 @@ export async function extractRevertReason(context: { web3: Web3 }, transactionHa
 	}
 }
 
-export const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+export async function waitForBlocks(api: ApiPromise, n: number) {
+	return new Promise(async (resolve, reject) => {
+		debugBlock(`Waiting for ${n} blocks...`);
+		let blockCount = 0;
 
-const debugBlocks = debug("blocks");
+		try {
+			// Await the subscription to get the unsubscribe function
+			const unsubscribe = await api.rpc.chain.subscribeFinalizedHeads((lastHeader) => {
+				blockCount += 1;
+				debugBlock(`New block: #${lastHeader.number}, waiting for ${n - blockCount} more blocks...`);
 
-export const awaitBlockChange = async (api: ApiPromise) => {
-	const currentBlock = await api.rpc.chain.getBlock();
-	let changedBlock = false;
-
-	while (!changedBlock) {
-		const newBlock = await api.rpc.chain.getBlock();
-		if (newBlock.block.header.number.toNumber() > currentBlock.block.header.number.toNumber()) {
-			changedBlock = true;
+				if (blockCount >= n) {
+					unsubscribe(); // Stop listening for new blocks
+					resolve(true);
+				}
+			});
+		} catch (error) {
+			console.error(`Error while subscribing to new heads:`, error);
+			reject(error);
 		}
-
-		debugBlocks(`[${api.runtimeVersion.specName.toString()}] Waiting for block change...`);
-		await delay(2000);
-	}
-};
+	});
+}
 
 export const transferBalance = async (api: ApiPromise, origin: KeyringPair, beneficiary: string, amount: BN) => {
 	let beforeBalance = await api.query.system.account(beneficiary);
@@ -316,7 +334,7 @@ export const transferBalance = async (api: ApiPromise, origin: KeyringPair, bene
 	let balance = await api.query.system.account(beneficiary);
 
 	while (balance.data.free.eq(beforeBalance.data.free.add(amount)) == false) {
-		await awaitBlockChange(api);
+		await waitForBlocks(api, 1);
 
 		balance = await api.query.system.account(beneficiary);
 	}
@@ -367,7 +385,7 @@ export const sendOpenHrmpChannelTxs = async (api: ApiPromise, paraA: number, par
 	}
 
 	while ((await isChannelOpen(api, paraA, paraB)) == false || (await isChannelOpen(api, paraB, paraA)) == false) {
-		await awaitBlockChange(api);
+		await waitForBlocks(api, 1);
 	}
 };
 
@@ -498,24 +516,13 @@ export const waitForEvent = async (
 			let eventFound: EventRecord | null = null;
 			let remainingBlocks = blockTimeout;
 
-			// Fetch the starting finalized block number
-			const currentHeader = await api.rpc.chain.getFinalizedHead();
-			const finalizedHeader = await api.rpc.chain.getHeader(currentHeader);
-			let currentBlockNumber = finalizedHeader.number.toNumber();
-
-			debugEvents(
-				`[${api.runtimeVersion.specName.toString()}] Starting to watch for events from block ${currentBlockNumber} for up to ${blockTimeout} blocks...`
-			);
-
-			while (remainingBlocks > 0 && !eventFound) {
-				debugEvents(
-					`[${api.runtimeVersion.specName.toString()}] Checking events at block ${currentBlockNumber}...`
-				);
-
+			const unsub = await api.rpc.chain.subscribeFinalizedHeads(async (header) => {
 				// Fetch events at the current block
-				const blockHash = await api.rpc.chain.getBlockHash(currentBlockNumber);
+				const blockHash = await api.rpc.chain.getBlockHash(header.number.toNumber());
 				const events = await api.query.system.events.at(blockHash);
-
+				debugEvents(
+					`[${api.runtimeVersion.specName.toString()}] Looking for events at block ${header.number.toNumber()}`
+				);
 				// Check if any event matches the filter
 				events.forEach((eventRecord) => {
 					if (filter(eventRecord)) {
@@ -525,30 +532,145 @@ export const waitForEvent = async (
 
 				if (eventFound) {
 					debugEvents(
-						`[${api.runtimeVersion.specName.toString()}] Event found at block ${currentBlockNumber}`
+						`[${api.runtimeVersion.specName.toString()}] Event found at block ${header.number.toNumber()}`
 					);
+					unsub();
 					resolve(eventFound);
 					return;
 				}
 
-				// Wait for the next block
-				await awaitBlockChange(api);
 				remainingBlocks--;
-
-				// Update the current block number
-				currentBlockNumber++;
-			}
-
-			// If the loop completes without finding the event
-			reject(
-				new Error(
-					`Timeout waiting for event after ${blockTimeout} blocks starting from block ${
-						currentBlockNumber - blockTimeout
-					}`
-				)
-			);
+				if (remainingBlocks === 0) {
+					// If the loop completes without finding the event
+					unsub();
+					reject(new Error(`Timeout waiting for event after ${blockTimeout} blocks`));
+				}
+			});
 		} catch (error) {
 			reject(error);
 		}
 	});
 };
+
+// Generic function to send a transaction and wait for finalization
+export async function sendTxAndWaitForFinalization(
+	api: ApiPromise,
+	tx: SubmittableExtrinsic<ApiTypes>,
+	signer: KeyringPair,
+	waitNBlocks = 10
+) {
+	return new Promise((resolve, reject) => {
+		try {
+			let blockCount = 0;
+
+			const onStatusChange = async (result: SubmittableResult) => {
+				const { status, events, dispatchError } = result;
+				debugTx("Status:", status.type);
+
+				// Additional event info
+				if (events && events.length > 0) {
+					events.forEach(({ event: { method, section, data } }) => {
+						debugTx(`Event: ${section}.${method} - Data: ${data.toString()}`);
+					});
+				}
+
+				if (dispatchError) {
+					debugTx("Raw dispatch error:", dispatchError.toString());
+
+					if (dispatchError.isModule) {
+						const decoded = api.registry.findMetaError(dispatchError.asModule);
+						const { section, name, docs } = decoded;
+						debugTx(`Transaction failed with error: ${section}.${name}`);
+						debugTx(`Error documentation: ${docs.join(" ")}`);
+						reject(new Error(`${section}.${name}: ${docs.join(" ")}`));
+					} else {
+						debugTx(`Transaction failed with error: ${dispatchError.toString()}`);
+						reject(new Error(dispatchError.toString()));
+					}
+					return;
+				}
+
+				if (status.isInBlock) {
+					debugTx("Included at block hash", status.asInBlock.toHex());
+				} else if (status.isFinalized) {
+					debugTx("Finalized block hash", status.asFinalized.toHex());
+					resolve(status.asFinalized.toHex());
+				} else if (status.isDropped || status.isInvalid || status.isUsurped) {
+					debugTx("Transaction failed with status:", status.type);
+					// Start waiting for N blocks and re-check transaction status
+					const extrinsicHash = result.txHash.toHuman();
+					debugTx(`Transaction is invalid. Waiting for ${waitNBlocks} blocks while rechecking status...`);
+
+					// Subscribe to new finalized blocks to re-check transaction status
+					const unsubscribeAll = await api.rpc.chain.subscribeFinalizedHeads(async (lastHeader) => {
+						blockCount++;
+						debugTx(`Finalized Block #${lastHeader.number} received (${blockCount}/${waitNBlocks})`);
+
+						// Check if the transaction has been included in the block
+						const blockHash = lastHeader.hash;
+						const block = await api.rpc.chain.getBlock(blockHash);
+
+						let txIncluded = false;
+
+						for (const extrinsic of block.block.extrinsics) {
+							if (extrinsic.hash.toHex() === extrinsicHash) {
+								debugTx(`Transaction included in block ${lastHeader.number}`);
+								txIncluded = true;
+								unsubscribeAll();
+								resolve(blockHash.toHex());
+								break;
+							}
+						}
+
+						if (txIncluded) {
+							// Transaction has been included; resolve has been called
+							return;
+						} else if (blockCount >= waitNBlocks) {
+							debugTx(`Waited for ${waitNBlocks} blocks after invalid status.`);
+							unsubscribeAll(); // Unsubscribe from block headers
+							reject(new Error(`Transaction remained invalid after waiting for ${waitNBlocks} blocks.`));
+						}
+					});
+				}
+			};
+
+			tx.signAndSend(signer, onStatusChange);
+		} catch (error) {
+			debugTx("Error during transaction setup:", error);
+			reject(error);
+		}
+	});
+}
+
+export async function waitForConfirmations(web3, txHash, requiredConfirmations = 12, pollInterval = 1000) {
+	try {
+		let currentBlock = await web3.eth.getBlockNumber();
+		let receipt = null;
+
+		while (true) {
+			// Check for the transaction receipt
+			receipt = await web3.eth.getTransactionReceipt(txHash);
+
+			if (receipt && receipt.blockNumber) {
+				// Calculate the number of confirmations
+				const confirmations = currentBlock - receipt.blockNumber;
+
+				if (confirmations >= requiredConfirmations) {
+					debugTx(`${txHash} has ${confirmations} confirmations.`);
+					return receipt; // Transaction has the required confirmations
+				} else {
+					debugTx(`Waiting for confirmations... (${confirmations}/${requiredConfirmations})`);
+				}
+			} else {
+				debugTx("Not yet mined. Retrying...");
+			}
+
+			// Wait for the next block
+			await new Promise((resolve) => setTimeout(resolve, pollInterval));
+			currentBlock = await web3.eth.getBlockNumber();
+		}
+	} catch (error) {
+		debugTx(`Error waiting for confirmations of transaction ${txHash}:`, error);
+		throw error;
+	}
+}
