@@ -214,7 +214,6 @@ export async function sendTxAndWaitForFinalization(
 	return new Promise((resolve, reject) => {
 		try {
 			let blockCount = 0;
-			let unsubTx: void => ();
 
 			const onStatusChange = async (result: SubmittableResult) => {
 				const { status, events, dispatchError } = result;
@@ -287,7 +286,7 @@ export async function sendTxAndWaitForFinalization(
 				}
 			};
 
-			const unsubTx = tx.signAndSend(signer, onStatusChange);
+			tx.signAndSend(signer, onStatusChange);
 		} catch (error) {
 			debugTx("Error during transaction setup:", error);
 			reject(error);
