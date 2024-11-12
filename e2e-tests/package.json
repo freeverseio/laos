@@ -32,6 +32,7 @@
 	},
 	"devDependencies": {
 		"@types/chai-as-promised": "^7.1.5",
+		"debug": "^4.3.7",
 		"prettier": "^2.8.8"
 	}
 }
