@@ -25,6 +25,10 @@ import { KeyringPair } from "@polkadot/keyring/types";
 
 require("events").EventEmitter.prototype._maxListeners = 100;
 
+import debug from "debug";
+const debugTx = debug("tx");
+const debugConfirmations = debug("confirmations");
+
 export async function customRequest(web3: Web3, method: string, params: any[]) {
 	return new Promise<JsonRpcResponse>((resolve, reject) => {
 		(web3.currentProvider as any).send(
