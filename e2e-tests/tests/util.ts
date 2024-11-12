@@ -222,7 +222,7 @@ export async function sendTxAndWaitForFinalization(
 				// Additional event info
 				if (events && events.length > 0) {
 					events.forEach(({ event: { method, section, data } }) => {
-						console.log(`Event: ${section}.${method} - Data: ${data.toString()}`);
+						debugTx(`Event: ${section}.${method} - Data: ${data.toString()}`);
 					});
 				}
 
