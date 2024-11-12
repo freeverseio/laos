@@ -5,20 +5,29 @@ import { JsonRpcResponse } from "web3-core-helpers";
 import {
 	EVOLUTION_COLLECTION_FACTORY_CONTRACT_ADDRESS,
 	GAS_PRICE,
+	ALITH_PRIVATE_KEY,
 	FAITH,
 	FAITH_PRIVATE_KEY,
 	EVOLUTION_COLLECTION_FACTORY_ABI,
 	EVOLUTION_COLLECTION_ABI,
 	MAX_U96,
-	LOCAL_NODE_URL,
+	LOCAL_NODE_IP,
 } from "./config";
 import BN from "bn.js";
 import { expect } from "chai";
 import "@polkadot/api-augment";
 
-import { ApiPromise, HttpProvider } from "@polkadot/api";
+import { ApiPromise, WsProvider } from "@polkadot/api";
+import { SubmittableExtrinsic, ApiTypes } from "@polkadot/api/types";
+import { SubmittableResult } from "@polkadot/api/submittable";
+
+import { KeyringPair } from "@polkadot/keyring/types";
 
 require("events").EventEmitter.prototype._maxListeners = 100;
+
+import debug from "debug";
+const debugTx = debug("transaction");
+const debugBlock = debug("block");
 
 export async function customRequest(web3: Web3, method: string, params: any[]) {
 	return new Promise<JsonRpcResponse>((resolve, reject) => {
@@ -62,15 +71,23 @@ export function describeWithExistingNode(
 		before(async () => {
 			if (providerNodeUrl) {
 				context.web3 = new Web3(providerNodeUrl);
-				const wsProvider = new HttpProvider(providerNodeUrl);
+				const wsProvider = new WsProvider(providerNodeUrl);
 				context.polkadot = await new ApiPromise({ provider: wsProvider }).isReady;
 			} else {
-				context.web3 = new Web3(LOCAL_NODE_URL);
-				const wsProvider = new HttpProvider(LOCAL_NODE_URL);
+				context.web3 = new Web3("http://" + LOCAL_NODE_IP);
+				const wsProvider = new WsProvider("ws://" + LOCAL_NODE_IP);
 				context.polkadot = await new ApiPromise({ provider: wsProvider }).isReady;
 			}
+
+			context.web3.eth.accounts.wallet.add(ALITH_PRIVATE_KEY);
+			context.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
 		});
+
 		cb(context);
+
+		after(async () => {
+			context.polkadot.disconnect();
+		});
 	});
 }
 
@@ -185,4 +202,150 @@ export async function extractRevertReason(context: { web3: Web3 }, transactionHa
 		const reasonHex = error.data.slice(2 + 8); // remove the 0x prefix and the first 8 bytes (function selector for Error(string))
 		return context.web3.utils.hexToUtf8("0x" + reasonHex.slice(64)).trim(); // skip the padding and remove return carriage
 	}
+}
+
+// Generic function to send a transaction and wait for finalization
+export async function sendTxAndWaitForFinalization(
+	api: ApiPromise,
+	tx: SubmittableExtrinsic<ApiTypes>,
+	signer: KeyringPair,
+	waitNBlocks = 10
+) {
+	return new Promise((resolve, reject) => {
+		try {
+			let blockCount = 0;
+
+			const onStatusChange = async (result: SubmittableResult) => {
+				const { status, events, dispatchError } = result;
+				debugTx("Status:", status.type);
+
+				// Additional event info
+				if (events && events.length > 0) {
+					events.forEach(({ event: { method, section, data } }) => {
+						debugTx(`Event: ${section}.${method} - Data: ${data.toString()}`);
+					});
+				}
+
+				if (dispatchError) {
+					debugTx("Raw dispatch error:", dispatchError.toString());
+
+					if (dispatchError.isModule) {
+						const decoded = api.registry.findMetaError(dispatchError.asModule);
+						const { section, name, docs } = decoded;
+						debugTx(`Transaction failed with error: ${section}.${name}`);
+						debugTx(`Error documentation: ${docs.join(" ")}`);
+						reject(new Error(`${section}.${name}: ${docs.join(" ")}`));
+					} else {
+						debugTx(`Transaction failed with error: ${dispatchError.toString()}`);
+						reject(new Error(dispatchError.toString()));
+					}
+					return;
+				}
+
+				if (status.isInBlock) {
+					debugTx("Included at block hash", status.asInBlock.toHex());
+				} else if (status.isFinalized) {
+					debugTx("Finalized block hash", status.asFinalized.toHex());
+					resolve(status.asFinalized.toHex());
+				} else if (status.isDropped || status.isInvalid || status.isUsurped) {
+					debugTx("Transaction failed with status:", status.type);
+					// Start waiting for N blocks and re-check transaction status
+					const extrinsicHash = result.txHash.toHuman();
+					debugTx(`Transaction is invalid. Waiting for ${waitNBlocks} blocks while rechecking status...`);
+
+					// Subscribe to new finalized blocks to re-check transaction status
+					const unsubscribeAll = await api.rpc.chain.subscribeFinalizedHeads(async (lastHeader) => {
+						blockCount++;
+						debugTx(`Finalized Block #${lastHeader.number} received (${blockCount}/${waitNBlocks})`);
+
+						// Check if the transaction has been included in the block
+						const blockHash = lastHeader.hash;
+						const block = await api.rpc.chain.getBlock(blockHash);
+
+						let txIncluded = false;
+
+						for (const extrinsic of block.block.extrinsics) {
+							if (extrinsic.hash.toHex() === extrinsicHash) {
+								debugTx(`Transaction included in block ${lastHeader.number}`);
+								txIncluded = true;
+								unsubscribeAll();
+								resolve(blockHash.toHex());
+								break;
+							}
+						}
+
+						if (txIncluded) {
+							// Transaction has been included; resolve has been called
+							return;
+						} else if (blockCount >= waitNBlocks) {
+							debugTx(`Waited for ${waitNBlocks} blocks after invalid status.`);
+							unsubscribeAll(); // Unsubscribe from block headers
+							reject(new Error(`Transaction remained invalid after waiting for ${waitNBlocks} blocks.`));
+						}
+					});
+				}
+			};
+
+			tx.signAndSend(signer, onStatusChange);
+		} catch (error) {
+			debugTx("Error during transaction setup:", error);
+			reject(error);
+		}
+	});
+}
+
+export async function waitForConfirmations(web3, txHash, requiredConfirmations = 12, pollInterval = 1000) {
+	try {
+		let currentBlock = await web3.eth.getBlockNumber();
+		let receipt = null;
+
+		while (true) {
+			// Check for the transaction receipt
+			receipt = await web3.eth.getTransactionReceipt(txHash);
+
+			if (receipt && receipt.blockNumber) {
+				// Calculate the number of confirmations
+				const confirmations = currentBlock - receipt.blockNumber;
+
+				if (confirmations >= requiredConfirmations) {
+					debugTx(`${txHash} has ${confirmations} confirmations.`);
+					return receipt; // Transaction has the required confirmations
+				} else {
+					debugTx(`Waiting for confirmations... (${confirmations}/${requiredConfirmations})`);
+				}
+			} else {
+				debugTx("Not yet mined. Retrying...");
+			}
+
+			// Wait for the next block
+			await new Promise((resolve) => setTimeout(resolve, pollInterval));
+			currentBlock = await web3.eth.getBlockNumber();
+		}
+	} catch (error) {
+		debugTx(`Error waiting for confirmations of transaction ${txHash}:`, error);
+		throw error;
+	}
+}
+
+export async function waitForBlocks(api, n) {
+	return new Promise(async (resolve, reject) => {
+		debugBlock(`Waiting for ${n} blocks...`);
+		let blockCount = 0;
+
+		try {
+			// Await the subscription to get the unsubscribe function
+			const unsubscribe = await api.rpc.chain.subscribeNewHeads((lastHeader) => {
+				blockCount += 1;
+				debugBlock(`New block: #${lastHeader.number}, waiting for ${n - blockCount} more blocks...`);
+
+				if (blockCount >= n) {
+					unsubscribe(); // Stop listening for new blocks
+					resolve(true);
+				}
+			});
+		} catch (error) {
+			console.error(`Error while subscribing to new heads:`, error);
+			reject(error);
+		}
+	});
 }
