@@ -210,7 +210,6 @@ export async function sendTxAndWaitForFinalization(
 	return new Promise((resolve, reject) => {
 		try {
 			let blockCount = 0;
-			let unsubscribeAll: () => void;
 
 			const onStatusChange = async (result: SubmittableResult) => {
 				const { status, events, dispatchError } = result;
@@ -236,7 +235,6 @@ export async function sendTxAndWaitForFinalization(
 						console.error(`Transaction failed with error: ${dispatchError.toString()}`);
 						reject(new Error(dispatchError.toString()));
 					}
-					unsubscribeAll && unsubscribeAll();
 					return;
 				}
 
@@ -244,7 +242,6 @@ export async function sendTxAndWaitForFinalization(
 					console.log("Included at block hash", status.asInBlock.toHex());
 				} else if (status.isFinalized) {
 					console.log("Finalized block hash", status.asFinalized.toHex());
-					unsubscribeAll && unsubscribeAll();
 					resolve(status.asFinalized.toHex());
 				} else if (status.isDropped || status.isInvalid || status.isUsurped) {
 					console.error("Transaction failed with status:", status.type);
@@ -253,7 +250,7 @@ export async function sendTxAndWaitForFinalization(
 					console.log(`Transaction is invalid. Waiting for ${waitNBlocks} blocks while rechecking status...`);
 
 					// Subscribe to new finalized blocks to re-check transaction status
-					unsubscribeAll = await api.rpc.chain.subscribeFinalizedHeads(async (lastHeader) => {
+					const unsubscribeAll = await api.rpc.chain.subscribeFinalizedHeads(async (lastHeader) => {
 						blockCount++;
 						console.log(`Finalized Block #${lastHeader.number} received (${blockCount}/${waitNBlocks})`);
 
