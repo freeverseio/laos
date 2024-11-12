@@ -264,7 +264,7 @@ export async function sendTxAndWaitForFinalization(
 							if (extrinsic.hash.toHex() === extrinsicHash) {
 								console.log(`Transaction included in block ${lastHeader.number}`);
 								txIncluded = true;
-								unsubscribeAll && unsubscribeAll();
+								unsubscribeAll();
 								resolve(blockHash.toHex());
 								break;
 							}
@@ -275,7 +275,7 @@ export async function sendTxAndWaitForFinalization(
 							return;
 						} else if (blockCount >= waitNBlocks) {
 							console.log(`Waited for ${waitNBlocks} blocks after invalid status.`);
-							unsubscribeAll && unsubscribeAll(); // Unsubscribe from block headers
+							unsubscribeAll(); // Unsubscribe from block headers
 							reject(new Error(`Transaction remained invalid after waiting for ${waitNBlocks} blocks.`));
 						}
 					});
