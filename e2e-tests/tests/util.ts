@@ -217,7 +217,7 @@ export async function sendTxAndWaitForFinalization(
 
 			const onStatusChange = async (result: SubmittableResult) => {
 				const { status, events, dispatchError } = result;
-				console.log("Transaction status:", status.type);
+				debugTx("Transaction status:", status.type);
 
 				// Additional event info
 				if (events && events.length > 0) {
