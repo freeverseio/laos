@@ -182,7 +182,9 @@ describeWithExistingNode("Frontier RPC (Transfer Ownership)", function () {
 		expect(Object.keys(tranferringResult.events).length).to.be.eq(1);
 
 		// data returned within the event
-		expect(tranferringResult.events.OwnershipTransferred.returnValues._previousOwner).to.be.eq(this.ethereumPairs.faith.address);
+		expect(tranferringResult.events.OwnershipTransferred.returnValues._previousOwner).to.be.eq(
+			this.ethereumPairs.faith.address
+		);
 		expect(tranferringResult.events.OwnershipTransferred.returnValues._newOwner).to.be.eq(newOwner);
 
 		// event topics
@@ -200,8 +202,12 @@ describeWithExistingNode("Frontier RPC (Transfer Ownership)", function () {
 		expect(tranferringResult.events.OwnershipTransferred.raw.data).to.be.eq("0x");
 
 		try {
-			const estimatedGas = await collectionContract.methods.transferOwnership(this.ethereumPairs.faith.address).estimateGas();
-			await collectionContract.methods.transferOwnership(this.ethereumPairs.faith.address).send({ from: this.ethereumPairs.faith.address, gas: estimatedGas });
+			const estimatedGas = await collectionContract.methods
+				.transferOwnership(this.ethereumPairs.faith.address)
+				.estimateGas();
+			await collectionContract.methods
+				.transferOwnership(this.ethereumPairs.faith.address)
+				.send({ from: this.ethereumPairs.faith.address, gas: estimatedGas });
 			expect.fail("Expected error was not thrown"); // Ensure an error is thrown
 		} catch (error) {
 			expect(error.message).to.eq(

@@ -26,7 +26,9 @@ describeWithExistingNode("Frontier RPC (Extend Token URI)", function () {
 
 	step("by default token uri is empty", async function () {
 		expect(await contract.methods.balanceOfUL(uloc).call()).to.be.eq("0");
-		expect(await contract.methods.hasExtensionByClaimer(uloc, this.ethereumPairs.faith.address).call()).to.be.eq(false);
+		expect(await contract.methods.hasExtensionByClaimer(uloc, this.ethereumPairs.faith.address).call()).to.be.eq(
+			false
+		);
 	});
 
 	step("extend should return ok", async function () {
@@ -43,16 +45,22 @@ describeWithExistingNode("Frontier RPC (Extend Token URI)", function () {
 
 	step("it creates an extension that I can query", async function () {
 		expect(await contract.methods.extensionOfULByIndex(uloc, 0).call()).to.be.eq(tokenURI);
-		expect(await contract.methods.extensionOfULByClaimer(uloc, this.ethereumPairs.faith.address).call()).to.be.eq(tokenURI);
+		expect(await contract.methods.extensionOfULByClaimer(uloc, this.ethereumPairs.faith.address).call()).to.be.eq(
+			tokenURI
+		);
 		expect(await contract.methods.claimerOfULByIndex(uloc, 0).call()).to.be.eq(this.ethereumPairs.faith.address);
 		expect(await contract.methods.balanceOfUL(uloc).call()).to.be.eq("1");
-		expect(await contract.methods.hasExtensionByClaimer(uloc, this.ethereumPairs.faith.address).call()).to.be.eq(true);
+		expect(await contract.methods.hasExtensionByClaimer(uloc, this.ethereumPairs.faith.address).call()).to.be.eq(
+			true
+		);
 	});
 
 	step("it emits an event", async function () {
 		// data returned within the event
 		expect(Object.keys(extendResult.events).length).to.be.eq(1);
-		expect(extendResult.events.ExtendedULWithExternalURI.returnValues._claimer).to.be.eq(this.ethereumPairs.faith.address);
+		expect(extendResult.events.ExtendedULWithExternalURI.returnValues._claimer).to.be.eq(
+			this.ethereumPairs.faith.address
+		);
 		expect(extendResult.events.ExtendedULWithExternalURI.returnValues._universalLocationHash).to.be.eq(
 			this.context.web3.utils.soliditySha3(uloc)
 		);
@@ -106,10 +114,14 @@ describeWithExistingNode("Frontier RPC (Update Extended Token URI)", async funct
 
 	step("check existing extension", async function () {
 		expect(await contract.methods.extensionOfULByIndex(uloc, 0).call()).to.be.eq(tokenURI);
-		expect(await contract.methods.extensionOfULByClaimer(uloc, this.ethereumPairs.faith.address).call()).to.be.eq(tokenURI);
+		expect(await contract.methods.extensionOfULByClaimer(uloc, this.ethereumPairs.faith.address).call()).to.be.eq(
+			tokenURI
+		);
 		expect(await contract.methods.claimerOfULByIndex(uloc, 0).call()).to.be.eq(this.ethereumPairs.faith.address);
 		expect(await contract.methods.balanceOfUL(uloc).call()).to.be.eq("1");
-		expect(await contract.methods.hasExtensionByClaimer(uloc, this.ethereumPairs.faith.address).call()).to.be.eq(true);
+		expect(await contract.methods.hasExtensionByClaimer(uloc, this.ethereumPairs.faith.address).call()).to.be.eq(
+			true
+		);
 	});
 
 	step("update extension should return ok", async function () {
@@ -126,17 +138,23 @@ describeWithExistingNode("Frontier RPC (Update Extended Token URI)", async funct
 
 	step("it updates just the extension data", async function () {
 		expect(await contract.methods.extensionOfULByIndex(uloc, 0).call()).to.be.eq(newTokenURI);
-		expect(await contract.methods.extensionOfULByClaimer(uloc, this.ethereumPairs.faith.address).call()).to.be.eq(newTokenURI);
+		expect(await contract.methods.extensionOfULByClaimer(uloc, this.ethereumPairs.faith.address).call()).to.be.eq(
+			newTokenURI
+		);
 		// the following might be the same as before updating
 		expect(await contract.methods.claimerOfULByIndex(uloc, 0).call()).to.be.eq(this.ethereumPairs.faith.address);
 		expect(await contract.methods.balanceOfUL(uloc).call()).to.be.eq("1");
-		expect(await contract.methods.hasExtensionByClaimer(uloc, this.ethereumPairs.faith.address).call()).to.be.eq(true);
+		expect(await contract.methods.hasExtensionByClaimer(uloc, this.ethereumPairs.faith.address).call()).to.be.eq(
+			true
+		);
 	});
 
 	step("it emits an event", async function () {
 		// data returned within the event
 		expect(Object.keys(updateExtensionResult.events).length).to.be.eq(1);
-		expect(updateExtensionResult.events.UpdatedExtendedULWithExternalURI.returnValues._claimer).to.be.eq(this.ethereumPairs.faith.address);
+		expect(updateExtensionResult.events.UpdatedExtendedULWithExternalURI.returnValues._claimer).to.be.eq(
+			this.ethereumPairs.faith.address
+		);
 		expect(
 			updateExtensionResult.events.UpdatedExtendedULWithExternalURI.returnValues._universalLocationHash
 		).to.be.eq(this.context.web3.utils.soliditySha3(uloc));

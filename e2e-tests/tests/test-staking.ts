@@ -1,9 +1,5 @@
 import { describeWithExistingNode } from "./util";
-import {
-	STAKING_ABI,
-	STAKING_CONTRACT_ADDRESS,
-	UNIT,
-} from "./config";
+import { STAKING_ABI, STAKING_CONTRACT_ADDRESS, UNIT } from "./config";
 import { expect } from "chai";
 import Contract from "web3-eth-contract";
 import { step } from "mocha-steps";
@@ -50,7 +46,9 @@ describeWithExistingNode(
 			expect(await contract.methods.isDelegator(this.ethereumPairs.baltathar.address).call()).to.be.eq(false);
 			let nonce = await this.context.web3.eth.getTransactionCount(this.ethereumPairs.baltathar.address);
 			const gasPrice = (await this.context.web3.eth.getGasPrice()) + 1; // if we don't add +1 tx never gets included in the block
-			const estimatedGas = await contract.methods.delegate(this.ethereumPairs.faith.address, BigInt(1000) * UNIT, 0, 0).estimateGas();
+			const estimatedGas = await contract.methods
+				.delegate(this.ethereumPairs.faith.address, BigInt(1000) * UNIT, 0, 0)
+				.estimateGas();
 			const result = await contract.methods
 				.delegate(this.ethereumPairs.faith.address, BigInt(1000) * UNIT, 0, 0)
 				.send({ from: this.ethereumPairs.baltathar.address, gas: estimatedGas, gasPrice, nonce: nonce++ });
