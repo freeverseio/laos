@@ -2,19 +2,13 @@ name: E2E Tests
 
 on:
   push:
-    branches:
-      - 'main'
-      - 'release/*'
   workflow_dispatch:
-  pull_request_review:
-    types: [submitted]
 
 jobs:
   e2e-tests:
     runs-on:
       group: laos
       labels: ubuntu-16-cores
-    if: ${{ github.event_name != 'pull_request_review' || github.event.review.state == 'approved' }}
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup
