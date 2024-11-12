@@ -205,15 +205,12 @@ export async function sendTxAndWaitForFinalization(
 	api: ApiPromise,
 	tx: SubmittableExtrinsic<ApiTypes>,
 	signer: KeyringPair,
-	N = 10
+	waitNBlocks = 10
 ) {
 	return new Promise((resolve, reject) => {
 		try {
 			let blockCount = 0;
-			let unsubscribeAll;
-
-			const txHash = tx.hash.toHex();
-			console.log("Transaction hash:", txHash);
+			let unsubscribeAll: () => void;
 
 			const onStatusChange = async (result: SubmittableResult) => {
 				const { status, events, dispatchError } = result;
@@ -239,7 +236,7 @@ export async function sendTxAndWaitForFinalization(
 						console.error(`Transaction failed with error: ${dispatchError.toString()}`);
 						reject(new Error(dispatchError.toString()));
 					}
-					unsubscribeAll && unsubscribeAll(); // TODO is needed?
+					unsubscribeAll && unsubscribeAll();
 					return;
 				}
 
@@ -253,12 +250,12 @@ export async function sendTxAndWaitForFinalization(
 					console.error("Transaction failed with status:", status.type);
 					// Start waiting for N blocks and re-check transaction status
 					const extrinsicHash = result.txHash.toHuman();
-					console.log(`Transaction is invalid. Waiting for ${N} blocks while rechecking status...`);
+					console.log(`Transaction is invalid. Waiting for ${waitNBlocks} blocks while rechecking status...`);
 
 					// Subscribe to new finalized blocks to re-check transaction status
 					unsubscribeAll = await api.rpc.chain.subscribeFinalizedHeads(async (lastHeader) => {
 						blockCount++;
-						console.log(`Finalized Block #${lastHeader.number} received (${blockCount}/${N})`);
+						console.log(`Finalized Block #${lastHeader.number} received (${blockCount}/${waitNBlocks})`);
 
 						// Check if the transaction has been included in the block
 						const blockHash = lastHeader.hash;
@@ -279,10 +276,10 @@ export async function sendTxAndWaitForFinalization(
 						if (txIncluded) {
 							// Transaction has been included; resolve has been called
 							return;
-						} else if (blockCount >= N) {
-							console.log(`Waited for ${N} blocks after invalid status.`);
+						} else if (blockCount >= waitNBlocks) {
+							console.log(`Waited for ${waitNBlocks} blocks after invalid status.`);
 							unsubscribeAll && unsubscribeAll(); // Unsubscribe from block headers
-							reject(new Error(`Transaction remained invalid after waiting for ${N} blocks.`));
+							reject(new Error(`Transaction remained invalid after waiting for ${waitNBlocks} blocks.`));
 						}
 					});
 				}
