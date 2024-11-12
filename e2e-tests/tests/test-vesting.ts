@@ -39,7 +39,6 @@ describeWithExistingNode("Frontier RPC (Vesting)", (context) => {
 		const finalizedBlock = await polkadot.rpc.chain.getBlock(finalizedHash);
 		const startingBlock = finalizedBlock.block.header.number;
 		const account = web3.eth.accounts.create();
-		console.log("Vesting account address: ", account.address);
 		web3.eth.accounts.wallet.add(account.privateKey); // Add account for signing transactions
 
 		// Step 1: Verify initial balance is zero
