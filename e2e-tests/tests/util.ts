@@ -26,8 +26,8 @@ import { KeyringPair } from "@polkadot/keyring/types";
 require("events").EventEmitter.prototype._maxListeners = 100;
 
 import debug from "debug";
-const debugTx = debug("tx");
-const debugConfirmations = debug("confirmations");
+const debugTx = debug("transaction");
+const debugBlock = debug("block");
 
 export async function customRequest(web3: Web3, method: string, params: any[]) {
 	return new Promise<JsonRpcResponse>((resolve, reject) => {
@@ -217,7 +217,7 @@ export async function sendTxAndWaitForFinalization(
 
 			const onStatusChange = async (result: SubmittableResult) => {
 				const { status, events, dispatchError } = result;
-				debugTx("Transaction status:", status.type);
+				debugTx("Status:", status.type);
 
 				// Additional event info
 				if (events && events.length > 0) {
@@ -308,13 +308,13 @@ export async function waitForConfirmations(web3, txHash, requiredConfirmations =
 				const confirmations = currentBlock - receipt.blockNumber;
 
 				if (confirmations >= requiredConfirmations) {
-					debugConfirmations(`Transaction ${txHash} has ${confirmations} confirmations.`);
+					debugTx(`${txHash} has ${confirmations} confirmations.`);
 					return receipt; // Transaction has the required confirmations
 				} else {
-					debugConfirmations(`Waiting for confirmations... (${confirmations}/${requiredConfirmations})`);
+					debugTx(`Waiting for confirmations... (${confirmations}/${requiredConfirmations})`);
 				}
 			} else {
-				debugConfirmations("Transaction not yet mined. Retrying...");
+				debugTx("Not yet mined. Retrying...");
 			}
 
 			// Wait for the next block
@@ -322,21 +322,21 @@ export async function waitForConfirmations(web3, txHash, requiredConfirmations =
 			currentBlock = await web3.eth.getBlockNumber();
 		}
 	} catch (error) {
-		debugConfirmations(`Error waiting for confirmations of transaction ${txHash}:`, error);
+		debugTx(`Error waiting for confirmations of transaction ${txHash}:`, error);
 		throw error;
 	}
 }
 
 export async function waitForBlocks(api, n) {
 	return new Promise(async (resolve, reject) => {
-		console.log(`Waiting for ${n} blocks...`);
+		debugBlock(`Waiting for ${n} blocks...`);
 		let blockCount = 0;
 
 		try {
 			// Await the subscription to get the unsubscribe function
 			const unsubscribe = await api.rpc.chain.subscribeNewHeads((lastHeader) => {
 				blockCount += 1;
-				console.log(`New block: #${lastHeader.number}, waiting for ${n - blockCount} more blocks...`);
+				debugBlock(`New block: #${lastHeader.number}, waiting for ${n - blockCount} more blocks...`);
 
 				if (blockCount >= n) {
 					unsubscribe(); // Stop listening for new blocks
