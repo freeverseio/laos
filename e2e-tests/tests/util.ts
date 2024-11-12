@@ -214,6 +214,7 @@ export async function sendTxAndWaitForFinalization(
 	return new Promise((resolve, reject) => {
 		try {
 			let blockCount = 0;
+			let unsubTx: void => ();
 
 			const onStatusChange = async (result: SubmittableResult) => {
 				const { status, events, dispatchError } = result;
@@ -227,36 +228,36 @@ export async function sendTxAndWaitForFinalization(
 				}
 
 				if (dispatchError) {
-					console.error("Raw dispatch error:", dispatchError.toString());
+					debugTx("Raw dispatch error:", dispatchError.toString());
 
 					if (dispatchError.isModule) {
 						const decoded = api.registry.findMetaError(dispatchError.asModule);
 						const { section, name, docs } = decoded;
-						console.error(`Transaction failed with error: ${section}.${name}`);
-						console.error(`Error documentation: ${docs.join(" ")}`);
+						debugTx(`Transaction failed with error: ${section}.${name}`);
+						debugTx(`Error documentation: ${docs.join(" ")}`);
 						reject(new Error(`${section}.${name}: ${docs.join(" ")}`));
 					} else {
-						console.error(`Transaction failed with error: ${dispatchError.toString()}`);
+						debugTx(`Transaction failed with error: ${dispatchError.toString()}`);
 						reject(new Error(dispatchError.toString()));
 					}
 					return;
 				}
 
 				if (status.isInBlock) {
-					console.log("Included at block hash", status.asInBlock.toHex());
+					debugTx("Included at block hash", status.asInBlock.toHex());
 				} else if (status.isFinalized) {
-					console.log("Finalized block hash", status.asFinalized.toHex());
+					debugTx("Finalized block hash", status.asFinalized.toHex());
 					resolve(status.asFinalized.toHex());
 				} else if (status.isDropped || status.isInvalid || status.isUsurped) {
-					console.error("Transaction failed with status:", status.type);
+					debugTx("Transaction failed with status:", status.type);
 					// Start waiting for N blocks and re-check transaction status
 					const extrinsicHash = result.txHash.toHuman();
-					console.log(`Transaction is invalid. Waiting for ${waitNBlocks} blocks while rechecking status...`);
+					debugTx(`Transaction is invalid. Waiting for ${waitNBlocks} blocks while rechecking status...`);
 
 					// Subscribe to new finalized blocks to re-check transaction status
 					const unsubscribeAll = await api.rpc.chain.subscribeFinalizedHeads(async (lastHeader) => {
 						blockCount++;
-						console.log(`Finalized Block #${lastHeader.number} received (${blockCount}/${waitNBlocks})`);
+						debugTx(`Finalized Block #${lastHeader.number} received (${blockCount}/${waitNBlocks})`);
 
 						// Check if the transaction has been included in the block
 						const blockHash = lastHeader.hash;
@@ -266,7 +267,7 @@ export async function sendTxAndWaitForFinalization(
 
 						for (const extrinsic of block.block.extrinsics) {
 							if (extrinsic.hash.toHex() === extrinsicHash) {
-								console.log(`Transaction included in block ${lastHeader.number}`);
+								debugTx(`Transaction included in block ${lastHeader.number}`);
 								txIncluded = true;
 								unsubscribeAll();
 								resolve(blockHash.toHex());
@@ -278,7 +279,7 @@ export async function sendTxAndWaitForFinalization(
 							// Transaction has been included; resolve has been called
 							return;
 						} else if (blockCount >= waitNBlocks) {
-							console.log(`Waited for ${waitNBlocks} blocks after invalid status.`);
+							debugTx(`Waited for ${waitNBlocks} blocks after invalid status.`);
 							unsubscribeAll(); // Unsubscribe from block headers
 							reject(new Error(`Transaction remained invalid after waiting for ${waitNBlocks} blocks.`));
 						}
@@ -286,9 +287,9 @@ export async function sendTxAndWaitForFinalization(
 				}
 			};
 
-			tx.signAndSend(signer, onStatusChange);
+			const unsubTx = tx.signAndSend(signer, onStatusChange);
 		} catch (error) {
-			console.error("Error during transaction setup:", error);
+			debugTx("Error during transaction setup:", error);
 			reject(error);
 		}
 	});
@@ -308,13 +309,13 @@ export async function waitForConfirmations(web3, txHash, requiredConfirmations =
 				const confirmations = currentBlock - receipt.blockNumber;
 
 				if (confirmations >= requiredConfirmations) {
-					console.log(`Transaction ${txHash} has ${confirmations} confirmations.`);
+					debugConfirmations(`Transaction ${txHash} has ${confirmations} confirmations.`);
 					return receipt; // Transaction has the required confirmations
 				} else {
-					console.log(`Waiting for confirmations... (${confirmations}/${requiredConfirmations})`);
+					debugConfirmations(`Waiting for confirmations... (${confirmations}/${requiredConfirmations})`);
 				}
 			} else {
-				console.log("Transaction not yet mined. Retrying...");
+				debugConfirmations("Transaction not yet mined. Retrying...");
 			}
 
 			// Wait for the next block
@@ -322,7 +323,7 @@ export async function waitForConfirmations(web3, txHash, requiredConfirmations =
 			currentBlock = await web3.eth.getBlockNumber();
 		}
 	} catch (error) {
-		console.error(`Error waiting for confirmations of transaction ${txHash}:`, error);
+		debugConfirmations(`Error waiting for confirmations of transaction ${txHash}:`, error);
 		throw error;
 	}
 }
