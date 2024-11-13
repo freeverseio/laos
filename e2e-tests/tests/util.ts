@@ -557,7 +557,7 @@ export async function sendTxAndWaitForFinalization(
 	api: ApiPromise,
 	tx: SubmittableExtrinsic<ApiTypes>,
 	signer: KeyringPair,
-	waitNBlocks = 10
+	waitNBlocks = 20
 ) {
 	return new Promise((resolve, reject) => {
 		try {
