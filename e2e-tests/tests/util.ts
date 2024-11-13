@@ -595,7 +595,7 @@ export async function sendTxAndWaitForFinalization(
 				} else if (status.isFinalized) {
 					debugTx("Finalized block hash", status.asFinalized.toHex());
 					resolve(status.asFinalized.toHex());
-				} else if (status.isDropped || status.isInvalid || status.isUsurped) {
+				} else {
 					debugTx("Transaction failed with status:", status.type);
 					// Start waiting for N blocks and re-check transaction status
 					const extrinsicHash = result.txHash.toHuman();
