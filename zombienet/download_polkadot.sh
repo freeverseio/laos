@@ -7,7 +7,7 @@ DOWNLOAD_DIR=${2:-"./tmp"}  # Default is tmp
 BASE_URL="https://github.com/paritytech/polkadot-sdk/releases/download/polkadot-$VERSION"
 
 # List of artifacts to download
-ARTIFACTS=("polkadot" "polkadot-execute-worker" "polkadot-prepare-worker")
+ARTIFACTS=("polkadot" "polkadot-execute-worker" "polkadot-prepare-worker" "polkadot-parachain")
 
 # Create the download directory if it doesn't exist
 mkdir -p "$DOWNLOAD_DIR"
@@ -42,3 +42,6 @@ echo "All downloads complete. Files are located in $DOWNLOAD_DIR"
 echo ""
 echo "To set the ZOMBIENET_RELAYCHAIN_COMMAND environment variable for the polkadot binary, run the following command:"
 echo "export ZOMBIENET_RELAYCHAIN_COMMAND=\"$DOWNLOAD_DIR/polkadot\""
+echo ""
+echo "To set the ZOMBIENET_ASSETHUB_COMMAND environment variable for the polkadot binary, run the following command:"
+echo "export ZOMBIENET_ASSETHUB_COMMAND=\"$DOWNLOAD_DIR/polkadot-parachain\""

@@ -1,18 +1,23 @@
-import { ethers } from "ethers";
 import Contract from "web3-eth-contract";
 import Web3 from "web3";
 import { JsonRpcResponse } from "web3-core-helpers";
 import {
 	EVOLUTION_COLLECTION_FACTORY_CONTRACT_ADDRESS,
 	GAS_PRICE,
-	ALITH_PRIVATE_KEY,
 	FAITH,
+	ALITH_PRIVATE_KEY,
+	BALTATHAR_PRIVATE_KEY,
 	FAITH_PRIVATE_KEY,
 	EVOLUTION_COLLECTION_FACTORY_ABI,
 	EVOLUTION_COLLECTION_ABI,
 	MAX_U96,
-	LOCAL_NODE_IP,
+	LAOS_NODE_IP,
+	ASSET_HUB_NODE_IP,
+	RELAYCHAIN_NODE_IP,
+	LAOS_PARA_ID,
+	ASSET_HUB_PARA_ID,
 } from "./config";
+import { CustomSuiteContext } from "./types";
 import BN from "bn.js";
 import { expect } from "chai";
 import "@polkadot/api-augment";
@@ -20,7 +25,11 @@ import "@polkadot/api-augment";
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { SubmittableExtrinsic, ApiTypes } from "@polkadot/api/types";
 import { SubmittableResult } from "@polkadot/api/submittable";
-
+import { bnToU8a, stringToU8a } from "@polkadot/util";
+import { encodeAddress } from "@polkadot/util-crypto";
+import { AssetIdV3, DoubleEncodedCall, EventRecord, XcmOriginKind } from "@polkadot/types/interfaces";
+import { XcmVersionedXcm } from "@polkadot/types/lookup";
+import { Keyring } from "@polkadot/api";
 import { KeyringPair } from "@polkadot/keyring/types";
 
 require("events").EventEmitter.prototype._maxListeners = 100;
@@ -54,39 +63,125 @@ export async function customRequest(web3: Web3, method: string, params: any[]) {
 
 export function describeWithExistingNode(
 	title: string,
-	cb: (context: { web3: Web3; polkadot: ApiPromise }) => void,
-	providerNodeUrl?: string
+	cb: () => void,
+	openPolkadotConnections: boolean = false,
+	providerLaosNodeUrl?: string,
+	providerAssetHubNodeUrl?: string,
+	providerRelaychainNodeUrl?: string
 ) {
-	describe(title, () => {
-		let context: {
-			web3: Web3;
-			ethersjs: ethers.JsonRpcProvider;
-			polkadot: ApiPromise;
-		} = {
-			web3: null,
-			ethersjs: null,
-			polkadot: undefined,
-		};
+	describe(title, function (this: CustomSuiteContext) {
+		before(async function () {
+			this.context = {
+				web3: new Web3(providerLaosNodeUrl || "http://" + LAOS_NODE_IP),
+				ethersjs: null,
+				networks: {
+					laos: null,
+					assetHub: null,
+					relaychain: null,
+				},
+			};
 
-		before(async () => {
-			if (providerNodeUrl) {
-				context.web3 = new Web3(providerNodeUrl);
-				const wsProvider = new WsProvider(providerNodeUrl);
-				context.polkadot = await new ApiPromise({ provider: wsProvider }).isReady;
-			} else {
-				context.web3 = new Web3("http://" + LOCAL_NODE_IP);
-				const wsProvider = new WsProvider("ws://" + LOCAL_NODE_IP);
-				context.polkadot = await new ApiPromise({ provider: wsProvider }).isReady;
+			this.laosItems = {
+				assetHubLocation: null,
+				relayChainLocation: null,
+			};
+
+			this.assetHubItems = {
+				accounts: { alice: null, bob: null, charlie: null, dave: null, eve: null, ferdie: null },
+				multiAddresses: {
+					alice: null,
+					bob: null,
+					charlie: null,
+					dave: null,
+					eve: null,
+					ferdie: null,
+					laosSA: null,
+				},
+				laosSA: sovereignAccountOf(LAOS_PARA_ID),
+				laosLocation: null,
+				laosAsset: null,
+				relayChainLocation: null,
+				relayAsset: null,
+			};
+
+			this.substratePairs = {
+				alice: new Keyring({ type: "sr25519" }).addFromUri("//Alice"),
+				bob: new Keyring({ type: "sr25519" }).addFromUri("//Bob"),
+				charlie: new Keyring({ type: "sr25519" }).addFromUri("//Charlie"),
+				dave: new Keyring({ type: "sr25519" }).addFromUri("//Dave"),
+				eve: new Keyring({ type: "sr25519" }).addFromUri("//Eve"),
+				ferdie: new Keyring({ type: "sr25519" }).addFromUri("//Ferdie"),
+			};
+
+			this.ethereumPairs = {
+				alith: new Keyring({ type: "ethereum" }).addFromUri(ALITH_PRIVATE_KEY),
+				baltathar: new Keyring({ type: "ethereum" }).addFromUri(BALTATHAR_PRIVATE_KEY),
+				faith: new Keyring({ type: "ethereum" }).addFromUri(FAITH_PRIVATE_KEY),
+			};
+			this.context.web3.eth.accounts.wallet.add(ALITH_PRIVATE_KEY);
+			this.context.web3.eth.accounts.wallet.add(BALTATHAR_PRIVATE_KEY);
+			this.context.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
+
+			if (openPolkadotConnections) {
+				// Laos
+				let provider = new WsProvider(providerLaosNodeUrl || "ws://" + LAOS_NODE_IP);
+				const apiLaos = await new ApiPromise({ provider }).isReady;
+				this.context.networks.laos = apiLaos;
+
+				provider = new WsProvider(providerAssetHubNodeUrl || "ws://" + ASSET_HUB_NODE_IP);
+				const apiAssetHub = await ApiPromise.create({ provider: provider });
+
+				this.context.networks.assetHub = apiAssetHub;
+
+				provider = new WsProvider(providerRelaychainNodeUrl || "ws://" + RELAYCHAIN_NODE_IP);
+				this.context.networks.relaychain = await new ApiPromise({ provider: provider }).isReady;
+
+				this.assetHubItems.accounts = {
+					alice: apiAssetHub.createType("AccountId", this.substratePairs.alice.address),
+					bob: apiAssetHub.createType("AccountId", this.substratePairs.bob.address),
+					charlie: apiAssetHub.createType("AccountId", this.substratePairs.charlie.address),
+					dave: apiAssetHub.createType("AccountId", this.substratePairs.dave.address),
+					eve: apiAssetHub.createType("AccountId", this.substratePairs.eve.address),
+					ferdie: apiAssetHub.createType("AccountId", this.substratePairs.ferdie.address),
+				};
+
+				this.assetHubItems.multiAddresses = {
+					alice: apiAssetHub.createType("MultiAddress", this.substratePairs.alice.address),
+					bob: apiAssetHub.createType("MultiAddress", this.substratePairs.bob.address),
+					charlie: apiAssetHub.createType("MultiAddress", this.substratePairs.charlie.address),
+					dave: apiAssetHub.createType("MultiAddress", this.substratePairs.dave.address),
+					eve: apiAssetHub.createType("MultiAddress", this.substratePairs.eve.address),
+					ferdie: apiAssetHub.createType("MultiAddress", this.substratePairs.ferdie.address),
+					laosSA: apiAssetHub.createType("MultiAddress", this.assetHubItems.laosSA),
+				};
+
+				this.assetHubItems.laosLocation = apiAssetHub.createType("XcmVersionedLocation", {
+					V3: siblingLocation(LAOS_PARA_ID),
+				});
+
+				this.assetHubItems.laosAsset = apiAssetHub.createType(
+					"StagingXcmV3MultiLocation",
+					siblingLocation(LAOS_PARA_ID)
+				);
+
+				this.assetHubItems.relayChainLocation = apiAssetHub.createType("XcmVersionedLocation", {
+					V3: relayLocation(),
+				});
+
+				this.assetHubItems.relayAsset = apiAssetHub.createType("StagingXcmV3MultiLocation", relayLocation());
+
+				this.laosItems.assetHubLocation = apiLaos.createType("XcmVersionedLocation", {
+					V3: siblingLocation(ASSET_HUB_PARA_ID),
+				});
+				this.laosItems.relayChainLocation = apiLaos.createType("XcmVersionedLocation", { V3: relayLocation() });
 			}
-
-			context.web3.eth.accounts.wallet.add(ALITH_PRIVATE_KEY);
-			context.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
 		});
+		cb();
 
-		cb(context);
-
-		after(async () => {
-			context.polkadot.disconnect();
+		after(async function () {
+			this.context.networks.laos && this.context.networks.laos.disconnect();
+			this.context.networks.assetHub && this.context.networks.assetHub.disconnect();
+			this.context.networks.relaychain && this.context.networks.relaychain.disconnect();
 		});
 	});
 }
@@ -204,12 +299,265 @@ export async function extractRevertReason(context: { web3: Web3 }, transactionHa
 	}
 }
 
+export async function waitForBlocks(api: ApiPromise, n: number) {
+	return new Promise(async (resolve, reject) => {
+		debugBlock(`Waiting for ${n} blocks...`);
+		let blockCount = 0;
+
+		try {
+			// Await the subscription to get the unsubscribe function
+			const unsubscribe = await api.rpc.chain.subscribeFinalizedHeads((lastHeader) => {
+				blockCount += 1;
+				debugBlock(`New block: #${lastHeader.number}, waiting for ${n - blockCount} more blocks...`);
+
+				if (blockCount >= n) {
+					unsubscribe(); // Stop listening for new blocks
+					resolve(true);
+				}
+			});
+		} catch (error) {
+			console.error(`Error while subscribing to new heads:`, error);
+			reject(error);
+		}
+	});
+}
+
+export const transferBalance = async (api: ApiPromise, origin: KeyringPair, beneficiary: string, amount: BN) => {
+	let beforeBalance = await api.query.system.account(beneficiary);
+
+	try {
+		await api.tx.balances.transferKeepAlive(beneficiary, amount).signAndSend(origin);
+	} catch (error) {
+		console.log("transaction failed: ", error);
+	}
+
+	let balance = await api.query.system.account(beneficiary);
+
+	while (balance.data.free.eq(beforeBalance.data.free.add(amount)) == false) {
+		await waitForBlocks(api, 1);
+
+		balance = await api.query.system.account(beneficiary);
+	}
+};
+
+const concatUint8Arrays = (...arrays: Uint8Array[]): Uint8Array => {
+	let totalLength = arrays.reduce((acc, curr) => acc + curr.length, 0);
+	let result = new Uint8Array(totalLength);
+	let offset = 0;
+	for (let arr of arrays) {
+		result.set(arr, offset);
+		offset += arr.length;
+	}
+	return result;
+};
+
+export const sovereignAccountOf = (paraId: number): string => {
+	let type = "sibl";
+	let typeEncoded = stringToU8a(type);
+	let paraIdEncoded = bnToU8a(paraId, { bitLength: 16 });
+	let zeroPadding = new Uint8Array(32 - typeEncoded.length - paraIdEncoded.length).fill(0);
+	let address = concatUint8Arrays(typeEncoded, paraIdEncoded, zeroPadding);
+	return encodeAddress(address);
+};
+
+export const isChannelOpen = async (api: ApiPromise, sender: number, recipient: number) => {
+	const channel = await api.query.hrmp.hrmpChannels({
+		sender,
+		recipient,
+	});
+	return !channel.isEmpty;
+};
+
+export const sendOpenHrmpChannelTxs = async (api: ApiPromise, paraA: number, paraB: number) => {
+	const maxCapacity = 8;
+	const maxMessageSize = 1048576;
+	const sudo = new Keyring({ type: "sr25519" }).addFromUri("//Alice");
+
+	const hrmpChannelCalls = [];
+
+	hrmpChannelCalls.push(api.tx.hrmp.forceOpenHrmpChannel(paraA, paraB, maxCapacity, maxMessageSize));
+	hrmpChannelCalls.push(api.tx.hrmp.forceOpenHrmpChannel(paraB, paraA, maxCapacity, maxMessageSize));
+
+	try {
+		await api.tx.sudo.sudo(api.tx.utility.batchAll(hrmpChannelCalls)).signAndSend(sudo);
+	} catch (error) {
+		console.log(`Open HRMP channels transactions between parachains ${paraA} and ${paraB} failed: `, error);
+	}
+
+	while ((await isChannelOpen(api, paraA, paraB)) == false || (await isChannelOpen(api, paraB, paraA)) == false) {
+		await waitForBlocks(api, 1);
+	}
+};
+
+export const siblingLocation = (id: number) => ({
+	parents: 1,
+	interior: {
+		x1: { parachain: id },
+	},
+});
+
+export const relayLocation = () => ({
+	parents: 1,
+	interior: {
+		here: null,
+	},
+});
+
+export const hereLocation = () => ({
+	parents: 0,
+	interior: {
+		here: null,
+	},
+});
+
+interface XcmInstructionParams {
+	api: ApiPromise;
+	calls: DoubleEncodedCall[];
+	refTime: BN;
+	proofSize: BN;
+	amount: BN;
+	originKind: XcmOriginKind;
+}
+
+/**
+ * Builds an XCM (Cross-Consensus Message) instruction.
+ *
+ * This function constructs an XCM instruction using the provided parameters. The instruction
+ * includes a series of operations such as withdrawing assets, buying execution, and performing
+ * transactions.
+ *
+ * @param {Object} params - The parameters for building the XCM instruction.
+ * @param {ApiPromise} params.api - The Polkadot API instance.
+ * @param {DoubleEncodedCall[]} params.calls - An array of double-encoded calls to be included in the XCM instruction.
+ * @param {BN} params.refTime - The reference time for the weight limit.
+ * @param {BN} params.proofSize - The proof size for the weight limit.
+ * @param {BN} params.amount - The amount of the asset to be used in the XCM instruction.
+ * @param {XcmOriginKind} params.originKind - The origin kind for the XCM instruction.
+ *
+ * @returns {XcmVersionedXcm} - The constructed XCM instruction.
+ *
+ * @example
+ * const instruction = buildXcmInstruction({
+ *   api,
+ *   calls: [encodedCall1, encodedCall2],
+ *   refTime: new BN(1000000),
+ *   proofSize: new BN(1000),
+ *   amount: new BN(1000000000),
+ *   originKind: api.createType('XcmOriginKind', 'Native'),
+ * });
+ */
+export const buildXcmInstruction = ({
+	api,
+	calls,
+	refTime,
+	proofSize,
+	amount,
+	originKind,
+}: XcmInstructionParams): XcmVersionedXcm => {
+	const relayToken = api.createType("AssetIdV3", {
+		Concrete: relayLocation(),
+	}) as AssetIdV3;
+
+	const transacts = calls.map((call) => ({
+		Transact: {
+			originKind,
+			requireWeightAtMost: api.createType("WeightV2", {
+				refTime,
+				proofSize,
+			}),
+			call,
+		},
+	}));
+
+	return api.createType("XcmVersionedXcm", {
+		V3: [
+			{
+				WithdrawAsset: [
+					api.createType("MultiAssetV3", {
+						id: relayToken,
+						fun: api.createType("FungibilityV3", {
+							Fungible: amount,
+						}),
+					}),
+				],
+			},
+			{
+				BuyExecution: {
+					fees: api.createType("MultiAssetV3", {
+						id: relayToken,
+						fun: api.createType("FungibilityV3", {
+							Fungible: amount,
+						}),
+					}),
+					weight_limit: "Unlimited",
+				},
+			},
+			...transacts,
+		],
+	});
+};
+
+const debugEvents = debug("events");
+
+/**
+ * Waits for a specific event starting from the newest block, with a block-based timeout.
+ * @param api - The ApiPromise instance.
+ * @param filter - A function that filters events.
+ * @param blockTimeout - The maximum number of blocks to wait before timing out.
+ * @returns A promise that resolves to the matching event when found.
+ */
+export const waitForEvent = async (
+	api: ApiPromise,
+	filter: (event: EventRecord) => boolean,
+	blockTimeout: number
+): Promise<EventRecord> => {
+	return new Promise(async (resolve, reject) => {
+		try {
+			let eventFound: EventRecord | null = null;
+			let remainingBlocks = blockTimeout;
+
+			const unsub = await api.rpc.chain.subscribeFinalizedHeads(async (header) => {
+				// Fetch events at the current block
+				const blockHash = await api.rpc.chain.getBlockHash(header.number.toNumber());
+				const events = await api.query.system.events.at(blockHash);
+				debugEvents(
+					`[${api.runtimeVersion.specName.toString()}] Looking for events at block ${header.number.toNumber()}`
+				);
+				// Check if any event matches the filter
+				events.forEach((eventRecord) => {
+					if (filter(eventRecord)) {
+						eventFound = eventRecord;
+					}
+				});
+
+				if (eventFound) {
+					debugEvents(
+						`[${api.runtimeVersion.specName.toString()}] Event found at block ${header.number.toNumber()}`
+					);
+					unsub();
+					resolve(eventFound);
+					return;
+				}
+
+				remainingBlocks--;
+				if (remainingBlocks === 0) {
+					// If the loop completes without finding the event
+					unsub();
+					reject(new Error(`Timeout waiting for event after ${blockTimeout} blocks`));
+				}
+			});
+		} catch (error) {
+			reject(error);
+		}
+	});
+};
+
 // Generic function to send a transaction and wait for finalization
 export async function sendTxAndWaitForFinalization(
 	api: ApiPromise,
 	tx: SubmittableExtrinsic<ApiTypes>,
 	signer: KeyringPair,
-	waitNBlocks = 10
+	waitNBlocks = 20
 ) {
 	return new Promise((resolve, reject) => {
 		try {
@@ -247,7 +595,14 @@ export async function sendTxAndWaitForFinalization(
 				} else if (status.isFinalized) {
 					debugTx("Finalized block hash", status.asFinalized.toHex());
 					resolve(status.asFinalized.toHex());
-				} else if (status.isDropped || status.isInvalid || status.isUsurped) {
+				} else if (
+					status.isDropped ||
+					status.isInvalid ||
+					status.isUsurped ||
+					status.isFuture ||
+					status.isRetracted ||
+					status.isFinalityTimeout
+				) {
 					debugTx("Transaction failed with status:", status.type);
 					// Start waiting for N blocks and re-check transaction status
 					const extrinsicHash = result.txHash.toHuman();
@@ -325,27 +680,4 @@ export async function waitForConfirmations(web3, txHash, requiredConfirmations =
 		debugTx(`Error waiting for confirmations of transaction ${txHash}:`, error);
 		throw error;
 	}
-}
-
-export async function waitForBlocks(api, n) {
-	return new Promise(async (resolve, reject) => {
-		debugBlock(`Waiting for ${n} blocks...`);
-		let blockCount = 0;
-
-		try {
-			// Await the subscription to get the unsubscribe function
-			const unsubscribe = await api.rpc.chain.subscribeNewHeads((lastHeader) => {
-				blockCount += 1;
-				debugBlock(`New block: #${lastHeader.number}, waiting for ${n - blockCount} more blocks...`);
-
-				if (blockCount >= n) {
-					unsubscribe(); // Stop listening for new blocks
-					resolve(true);
-				}
-			});
-		} catch (error) {
-			console.error(`Error while subscribing to new heads:`, error);
-			reject(error);
-		}
-	});
 }
