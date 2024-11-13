@@ -87,10 +87,7 @@ impl Contains<RuntimeCall> for BaseCallFilter {
 	fn contains(c: &RuntimeCall) -> bool {
 		use pallet_vesting::Call::*;
 
-		match c {
-			RuntimeCall::Vesting(vested_transfer { .. }) => false,
-			_ => true,
-		}
+		!matches!(c, RuntimeCall::Vesting(vested_transfer { .. }))
 	}
 }
 
