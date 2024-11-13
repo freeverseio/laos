@@ -18,7 +18,7 @@ use crate::{
 	weights::RocksDbWeight, AccountId, Balance, Block, PalletInfo, Runtime, RuntimeCall,
 	RuntimeEvent, RuntimeOrigin, RuntimeTask, RuntimeVersion, VERSION,
 };
-use frame_support::{parameter_types, traits::Everything};
+use frame_support::{parameter_types, traits::Contains};
 use sp_runtime::traits::{BlakeTwo256, IdentityLookup};
 
 parameter_types! {
@@ -63,7 +63,7 @@ impl frame_system::Config for Runtime {
 	/// The weight of database operations that the runtime can invoke.
 	type DbWeight = RocksDbWeight;
 	/// The basic call filter to use in dispatchable.
-	type BaseCallFilter = Everything;
+	type BaseCallFilter = BaseCallFilter;
 	/// Weight information for the extrinsics of this pallet.
 	type SystemWeightInfo = ();
 	/// Block & extrinsics weights: base values and limits.
@@ -80,6 +80,15 @@ impl frame_system::Config for Runtime {
 	type PreInherents = ();
 	type PostInherents = ();
 	type PostTransactions = ();
+}
+
+pub struct BaseCallFilter;
+impl Contains<RuntimeCall> for BaseCallFilter {
+	fn contains(c: &RuntimeCall) -> bool {
+		use pallet_vesting::Call::*;
+
+		!matches!(c, RuntimeCall::Vesting(vested_transfer { .. }))
+	}
 }
 
 // tests
@@ -173,7 +182,7 @@ mod tests {
 	}
 
 	#[test]
-	fn vested_transfer_should_be_allowed() {
+	fn vested_transfer_should_not_be_allowed() {
 		let alice = AccountId::from_str(ALICE).unwrap();
 
 		ExtBuilder::default()
@@ -192,7 +201,11 @@ mod tests {
 					target: to_account,
 					schedule: vesting_schedule,
 				});
-				assert_ok!(call.dispatch(RuntimeOrigin::signed(alice)));
+
+				assert_err!(
+					call.dispatch(RuntimeOrigin::signed(alice)),
+					frame_system::Error::<Runtime>::CallFiltered
+				);
 			});
 	}
 
