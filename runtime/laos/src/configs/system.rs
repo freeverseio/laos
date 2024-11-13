@@ -88,7 +88,6 @@ impl Contains<RuntimeCall> for BaseCallFilter {
 		use pallet_vesting::Call::*;
 
 		match c {
-			// New candidates are not allowed.
 			RuntimeCall::Vesting(vested_transfer { .. }) => false,
 			_ => true,
 		}
