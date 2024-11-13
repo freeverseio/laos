@@ -186,7 +186,7 @@ mod tests {
 	}
 
 	#[test]
-	fn vested_transfer_should_be_allowed() {
+	fn vested_transfer_should_not_be_allowed() {
 		let alice = AccountId::from_str(ALICE).unwrap();
 
 		ExtBuilder::default()
@@ -205,7 +205,11 @@ mod tests {
 					target: to_account,
 					schedule: vesting_schedule,
 				});
-				assert_ok!(call.dispatch(RuntimeOrigin::signed(alice)));
+
+				assert_err!(
+					call.dispatch(RuntimeOrigin::signed(alice)),
+					frame_system::Error::<Runtime>::CallFiltered
+				);
 			});
 	}
 
