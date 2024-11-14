@@ -9,4 +9,6 @@ cp -r ../pallets/precompiles-benchmark/src/precompiles/vesting/contracts/*.sol c
 cp -r ../precompiles/parachain-staking/*.sol contracts
 
 hardhat compile
-rm -rf contracts
+
+# Remove all files in the contracts directory except for Storage.sol
+find contracts -type f ! -name 'Storage.sol' -exec rm -f {} +
