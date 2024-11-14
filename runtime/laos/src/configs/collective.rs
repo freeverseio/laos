@@ -10,7 +10,7 @@ use sp_runtime::Perbill;
 
 parameter_types! {
 	pub const MotionDuration: BlockNumber = prod_or_fast!(7 * DAYS, 5 * MINUTES);
-	pub const MaxProposals: u32 = 7;
+	pub const MaxProposals: u32 = 20;
 	pub const MaxMembers: u32 = 20;
 	pub MaxProposalWeight: Weight = Perbill::from_percent(50) * RuntimeBlockWeights::get().max_block;
 }
