@@ -54,5 +54,6 @@ jobs:
 
       - name: Run e2e tests
         run: |
-          npm run build && npm run test && npm run test-deploy
+          npm run build && npm run test
+          npm run test-deploy
         working-directory: ./e2e-tests
