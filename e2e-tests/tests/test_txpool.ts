@@ -7,10 +7,10 @@ import { customRequest, describeWithExistingNode } from "./util";
 describeWithExistingNode("Frontier RPC (TxPoolApi)", function () {
 	const TEST_CONTRACT_BYTECODE = "0x608060405234801561";
 
-	let nonce: number;
+	let nonce;
 	let pendingTx;
-	let futureTx: any;
-	async function sendTransaction(context: any, nonce: number) {
+	let futureTx;
+	async function sendTransaction(context, nonce) {
 		const tx = await context.web3.eth.accounts.signTransaction(
 			{
 				from: ALITH,
