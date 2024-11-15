@@ -32,7 +32,7 @@ impl OnRuntimeUpgrade for Migration {
 		use parity_scale_codec::Encode;
 
 		let vesting_accounts_count = pallet_vesting::Vesting::<Runtime>::iter().count();
-		let mut schedules_per_account = vec![];
+		let mut schedules_per_account = sp_std::vec![];
 		let mut max_schedule_count = 0;
 
 		if sp_io::storage::exists(LAOS_VESTING_MIGRATION_6S) {
