@@ -28,18 +28,6 @@ force_decorator = "generic-evm"
   command = "{{ZOMBIENET_LAOS_COMMAND}}"
   validator = true
   args = ["--log=xcm=trace"]
-  
-  [[parachains.collators]]
-  name = "laos1"
-  command = "{{ZOMBIENET_LAOS_COMMAND}}"
-  validator = true
-  args = ["--log=xcm=trace"]
-
-    [[parachains.collators]]
-  name = "laos2"
-  command = "{{ZOMBIENET_LAOS_COMMAND}}"
-  validator = true
-  args = ["--log=xcm=trace"]
 
 [[parachains]]
 id = 1000
