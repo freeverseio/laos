@@ -1,8 +1,9 @@
 use crate::{
 	currency::UNIT, weights, Balance, Balances, BlockNumber, Council, Runtime, RuntimeEvent,
-	Treasury, DAYS, MINUTES,
+	Treasury,
 };
 use frame_support::{parameter_types, traits::LockIdentifier};
+use parachains_common::{DAYS, MINUTES};
 use polkadot_runtime_common::{prod_or_fast, CurrencyToVote};
 
 parameter_types! {
