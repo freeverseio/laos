@@ -1,14 +1,15 @@
-use crate::{AccountId, Runtime, RuntimeOrigin, Weight};
+use crate::{Runtime, RuntimeOrigin, Weight};
 use frame_support::{
 	traits::{Currency, OnRuntimeUpgrade},
 	BoundedVec,
 };
 use frame_system::pallet_prelude::BlockNumberFor;
 use pallet_vesting::MaxVestingSchedulesGet;
-use parity_scale_codec::{Decode, Encode};
 use sp_core::{ConstU32, Get};
+use sp_std::vec::Vec;
+
+#[cfg(feature = "try-runtime")]
 use sp_runtime::DispatchError;
-use sp_std::{vec, vec::Vec};
 
 pub struct Migration;
 
@@ -28,12 +29,14 @@ impl OnRuntimeUpgrade for Migration {
 	/// Logs the total number of accounts with vesting schedules, the count of schedules per
 	/// account, and the maximum schedule count per account before migration.
 	fn pre_upgrade() -> Result<Vec<u8>, DispatchError> {
+		use parity_scale_codec::Encode;
+
 		let vesting_accounts_count = pallet_vesting::Vesting::<Runtime>::iter().count();
-		let mut schedules_per_account = vec![];
+		let mut schedules_per_account = sp_std::vec![];
 		let mut max_schedule_count = 0;
 
 		if sp_io::storage::exists(LAOS_VESTING_MIGRATION_6S) {
-			return Ok(vec![]);
+			return Ok(sp_std::vec![]);
 		}
 
 		for (account_id, schedules) in pallet_vesting::Vesting::<Runtime>::iter() {
@@ -119,6 +122,9 @@ impl OnRuntimeUpgrade for Migration {
 	/// Verifies migration by checking the vesting data has been migrated, allows for possible
 	/// splits in schedules.
 	fn post_upgrade(encoded_data: Vec<u8>) -> Result<(), DispatchError> {
+		use crate::AccountId;
+		use parity_scale_codec::Decode;
+
 		if encoded_data.is_empty() {
 			return Ok(());
 		}
