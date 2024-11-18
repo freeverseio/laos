@@ -20,7 +20,7 @@ use cumulus_client_service::storage_proof_size::HostFunctions as ReclaimHostFunc
 use cumulus_primitives_core::ParaId;
 use fc_db::kv::frontier_database_dir;
 use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
-use laos_runtime::{RuntimeApi, Block};
+use laos_runtime::{Block, RuntimeApi};
 use log::info;
 use polkadot_service::RococoChainSpec;
 use sc_cli::{
