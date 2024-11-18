@@ -7,7 +7,8 @@ use frame_support::{
 	weights::Weight,
 };
 use frame_system::EnsureRoot;
-use laos_primitives::{RuntimeBlockWeights, NORMAL_DISPATCH_RATIO};
+use laos_primitives::RuntimeBlockWeights;
+pub use parachains_common::NORMAL_DISPATCH_RATIO;
 
 parameter_types! {
 	pub MaximumSchedulerWeight: Weight = NORMAL_DISPATCH_RATIO * RuntimeBlockWeights::get().max_block;

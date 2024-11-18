@@ -25,7 +25,7 @@ parameter_types! {
 }
 
 impl pallet_vesting::Config for Runtime {
-	const MAX_VESTING_SCHEDULES: u32 = 56;
+	const MAX_VESTING_SCHEDULES: u32 = 28;
 
 	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
