@@ -20,7 +20,7 @@ use cumulus_client_service::storage_proof_size::HostFunctions as ReclaimHostFunc
 use cumulus_primitives_core::ParaId;
 use fc_db::kv::frontier_database_dir;
 use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
-use laos_runtime::Block;
+use laos_runtime::{RuntimeApi, Block};
 use log::info;
 use polkadot_service::RococoChainSpec;
 use sc_cli::{
@@ -354,17 +354,22 @@ pub fn run() -> Result<()> {
 				info!("Parachain Account: {}", parachain_account);
 				info!("Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
 
-				crate::service::start_parachain_node(
-					config,
-					polkadot_config,
-					eth_cfg,
-					collator_options,
-					id,
-					hwbench,
-				)
-				.await
-				.map(|r| r.0)
-				.map_err(Into::into)
+				if config.chain_spec.id().ends_with("-d") {
+					return crate::service::start_dev_node::<RuntimeApi>(config, id, &eth_cfg)
+						.map_err(Into::into);
+				} else {
+					crate::service::start_parachain_node(
+						config,
+						polkadot_config,
+						eth_cfg,
+						collator_options,
+						id,
+						hwbench,
+					)
+					.await
+					.map(|r| r.0)
+					.map_err(Into::into)
+				}
 			})
 		},
 	}
