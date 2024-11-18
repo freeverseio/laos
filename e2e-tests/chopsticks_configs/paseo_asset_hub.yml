@@ -10,11 +10,15 @@ import-storage:
         - providers: 1
           data:
             free: 1000000000000000
+      - - - 14Gjs1TD93gnwEBfDMHoCgsuf1s2TVKUP6Z1qKmAZnZ8cW5q # Charlie
+        - providers: 1
+          data:
+            free: 1000000000000000
       - - - 1egYCubF1U5CGWiXjQnsXduiJYP49KTs8eX1jn1JrTqCYyQ # Ferdie
         - providers: 1
           data:
             free: 1000000000000000
-      # - - - 13cKp89GsioY4M7hTBH5XmUsw7cFG3FTdSQvCU9q9xcgAHt9 # LAOS SA
-      #   - providers: 1
-      #     data:
-      #       free: 1000000000000000
+      - - - 13cKp89GsioY4M7hTBH5XmUsw7cFG3FTdSQvCU9q9xcgAHt9 # LAOS SA
+        - providers: 1
+          data:
+            free: 1000000000000000

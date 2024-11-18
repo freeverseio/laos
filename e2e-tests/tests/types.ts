@@ -2,7 +2,7 @@ import { Suite } from "mocha";
 import { MultiAddress, AccountId } from "@polkadot/types/interfaces";
 import { XcmVersionedLocation, StagingXcmV3MultiLocation } from "@polkadot/types/lookup";
 import { KeyringPair } from "@polkadot/keyring/types";
-import { ApiPromise } from "@polkadot/api";
+import { ApiPromise, WsProvider } from "@polkadot/api";
 import { ethers } from "ethers";
 import Web3 from "web3";
 
@@ -54,6 +54,7 @@ type ethereumPairs = {
 type describeContext = {
 	web3: Web3;
 	ethersjs: ethers.JsonRpcProvider;
+	providers: { laos: WsProvider; assetHub: WsProvider; relaychain: WsProvider };
 	networks: { laos: ApiPromise; assetHub: ApiPromise; relaychain: ApiPromise };
 };
 

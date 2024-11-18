@@ -13,6 +13,9 @@ export const LAOS_NODE_IP = "127.0.0.1:8001";
 export const ASSET_HUB_NODE_IP = "127.0.0.1:8000";
 export const RELAYCHAIN_NODE_IP = "127.0.0.1:8002";
 
+// Chain address prefixes
+export const POLKADOT_PREFIX = 0;
+
 // Chain config
 export const CHAIN_ID = 667;
 export const GAS_PRICE = "0x3B9ACA00";

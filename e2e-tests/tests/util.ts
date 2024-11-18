@@ -16,6 +16,7 @@ import {
 	RELAYCHAIN_NODE_IP,
 	LAOS_PARA_ID,
 	ASSET_HUB_PARA_ID,
+POLKADOT_PREFIX
 } from "./config";
 import { CustomSuiteContext } from "./types";
 import BN from "bn.js";
@@ -74,6 +75,11 @@ export function describeWithExistingNode(
 			this.context = {
 				web3: new Web3(providerLaosNodeUrl || "http://" + LAOS_NODE_IP),
 				ethersjs: null,
+				providers: {
+					laos: null,
+					assetHub: null,
+					relaychain: null,
+				},
 				networks: {
 					laos: null,
 					assetHub: null,
@@ -104,19 +110,23 @@ export function describeWithExistingNode(
 				relayAsset: null,
 			};
 
+      let keyring = new Keyring({ type: "sr25519", ss58Format: POLKADOT_PREFIX });
+
 			this.substratePairs = {
-				alice: new Keyring({ type: "sr25519" }).addFromUri("//Alice"),
-				bob: new Keyring({ type: "sr25519" }).addFromUri("//Bob"),
-				charlie: new Keyring({ type: "sr25519" }).addFromUri("//Charlie"),
-				dave: new Keyring({ type: "sr25519" }).addFromUri("//Dave"),
-				eve: new Keyring({ type: "sr25519" }).addFromUri("//Eve"),
-				ferdie: new Keyring({ type: "sr25519" }).addFromUri("//Ferdie"),
+				alice: keyring.addFromUri("//Alice"),
+				bob: keyring.addFromUri("//Bob"),
+				charlie: keyring.addFromUri("//Charlie"),
+				dave: keyring.addFromUri("//Dave"),
+				eve: keyring.addFromUri("//Eve"),
+				ferdie: keyring.addFromUri("//Ferdie"),
 			};
 
+      keyring = new Keyring({ type: "ethereum" });
+
 			this.ethereumPairs = {
-				alith: new Keyring({ type: "ethereum" }).addFromUri(ALITH_PRIVATE_KEY),
-				baltathar: new Keyring({ type: "ethereum" }).addFromUri(BALTATHAR_PRIVATE_KEY),
-				faith: new Keyring({ type: "ethereum" }).addFromUri(FAITH_PRIVATE_KEY),
+				alith: keyring.addFromUri(ALITH_PRIVATE_KEY),
+				baltathar: keyring.addFromUri(BALTATHAR_PRIVATE_KEY),
+				faith: keyring.addFromUri(FAITH_PRIVATE_KEY),
 			};
 			this.context.web3.eth.accounts.wallet.add(ALITH_PRIVATE_KEY);
 			this.context.web3.eth.accounts.wallet.add(BALTATHAR_PRIVATE_KEY);
@@ -126,14 +136,17 @@ export function describeWithExistingNode(
 				// Laos
 				let provider = new WsProvider(providerLaosNodeUrl || "ws://" + LAOS_NODE_IP);
 				const apiLaos = await new ApiPromise({ provider }).isReady;
+				this.context.providers.laos = provider;
 				this.context.networks.laos = apiLaos;
 
 				provider = new WsProvider(providerAssetHubNodeUrl || "ws://" + ASSET_HUB_NODE_IP);
 				const apiAssetHub = await ApiPromise.create({ provider: provider });
 
+				this.context.providers.assetHub = provider;
 				this.context.networks.assetHub = apiAssetHub;
 
 				provider = new WsProvider(providerRelaychainNodeUrl || "ws://" + RELAYCHAIN_NODE_IP);
+				this.context.providers.relaychain = provider;
 				this.context.networks.relaychain = await new ApiPromise({ provider: provider }).isReady;
 
 				this.assetHubItems.accounts = {
@@ -498,6 +511,11 @@ export const buildXcmInstruction = ({
 };
 
 const debugEvents = debug("events");
+
+//export const find_event = async function (api: ApiPromise, filter: (event: EventRecord) => boolean){
+//  let block = await api.rpc.chain.getBlockHash();
+//
+//}
 
 /**
  * Waits for a specific event starting from the newest block, with a block-based timeout.
