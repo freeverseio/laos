@@ -23,7 +23,7 @@ import debug from "debug";
 const debugTeleport = debug("teleport");
 
 const ONE_LAOS = new BN("1000000000000000000");
-const ONE_DOT = new BN("1000000000000");
+const ONE_DOT = new BN("10000000000");
 const WAITING_BLOCKS_FOR_EVENTS = 20; // Number of blocks we wait at max to receive an event
 
 describeWithExistingNode(
