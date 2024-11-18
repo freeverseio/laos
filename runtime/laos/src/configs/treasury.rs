@@ -1,7 +1,7 @@
 use super::collective::CouncilMajority;
 use crate::{
 	currency::UNIT, weights, AccountId, Balance, Balances, BlockNumber, Permill, Runtime,
-	RuntimeEvent, Treasury, DAYS, MINUTES,
+	RuntimeEvent, Treasury,
 };
 use frame_support::{
 	parameter_types,
@@ -12,6 +12,7 @@ use frame_support::{
 	PalletId,
 };
 use frame_system::EnsureRoot;
+use parachains_common::{DAYS, MINUTES};
 use polkadot_runtime_common::prod_or_fast;
 use sp_runtime::traits::IdentityLookup;
 
