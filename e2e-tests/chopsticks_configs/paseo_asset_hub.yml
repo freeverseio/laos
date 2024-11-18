@@ -1,6 +1,5 @@
 endpoint: wss://asset-hub-paseo-rpc.dwellir.com
 mock-signature-host: true
-runtime-log-level: 5
 db: ./db.sqlite
 
 import-storage:
