@@ -13,6 +13,7 @@
 	"author": "",
 	"license": "ISC",
 	"dependencies": {
+		"@acala-network/chopsticks": "^1.0.1",
 		"@polkadot/api": "^14.2.3",
 		"@polkadot/api-augment": "^14.2.3",
 		"@polkadot/types": "^14.2.2",
