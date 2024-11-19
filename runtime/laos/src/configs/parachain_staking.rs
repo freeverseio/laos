@@ -25,9 +25,6 @@ use pallet_session::{SessionManager, ShouldEndSession};
 use sp_consensus_slots::Slot;
 use sp_staking::SessionIndex;
 
-const SECONDS_PER_YEAR: u32 = 31_557_600;
-const SECONDS_PER_BLOCK: u32 = MILLISECS_PER_BLOCK as u32 / 1000;
-
 // Define runtime constants used across the parachain staking configuration.
 parameter_types! {
 	pub const MinCandidateStk: u128 = 20_000 * UNIT; // Minimum stake to be a staking candidate.
@@ -45,7 +42,8 @@ parameter_types! {
 	pub const MaxDelegationsPerDelegator: u32 = 100; // Max delegations per delegator.
 	pub const MinDelegation: u128 = 500 * UNIT; // Minimum stake to be a delegator.
 	pub const MaxCandidates: u32 = 200; // Max candidates allowed.
-	pub const SlotsPerYear: u32 = SECONDS_PER_YEAR / SECONDS_PER_BLOCK; // Number of slots per year.
+	pub const SlotDuration: u64 = MILLISECS_PER_BLOCK;
+	pub const BlockTime: u64 = MILLISECS_PER_BLOCK;
 }
 
 // Implementing the configuration trait for the parachain staking pallet.
@@ -75,7 +73,8 @@ impl StakingConfig for Runtime {
 	type OnNewRound = (); // Placeholder for future implementation.
 	type SlotProvider = StakingRoundSlotProvider;
 	type MaxCandidates = MaxCandidates;
-	type SlotsPerYear = SlotsPerYear;
+	type SlotDuration = SlotDuration;
+	type BlockTime = BlockTime;
 	type WeightInfo = weights::pallet_parachain_staking::WeightInfo<Runtime>;
 }
 
@@ -173,7 +172,7 @@ impl frame_support::traits::EstimateNextSessionRotation<BlockNumber> for Paracha
 mod tests {
 	use super::{MinCandidateStk, MinDelegation, MinSelectedCandidates};
 	use crate::{
-		configs::parachain_staking::{MinBlocksPerRound, ParachainStakingAdapter, SlotsPerYear},
+		configs::parachain_staking::{MinBlocksPerRound, ParachainStakingAdapter},
 		tests::ExtBuilder,
 		Balances, ParachainStaking, RuntimeOrigin, System,
 	};
@@ -339,10 +338,5 @@ mod tests {
 			let (next_session, _) = ParachainStakingAdapter::estimate_next_session_rotation(1);
 			assert_eq!(next_session, Some(MinBlocksPerRound::get()));
 		});
-	}
-
-	#[test]
-	fn test_slot_per_year() {
-		assert_eq!(SlotsPerYear::get(), 31_557_600 / 12);
 	}
 }
