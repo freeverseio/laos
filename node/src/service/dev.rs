@@ -6,6 +6,8 @@ use laos_primitives::{AccountId, Balance, Nonce};
 use sc_client_api::Backend;
 use sc_service::Arc;
 use sp_core::H256;
+use sc_network::NotificationMetrics;
+use futures::{future, StreamExt};
 
 type HostFunctions = sp_io::SubstrateHostFunctions;
 
@@ -81,22 +83,23 @@ where
 		sc_network::NetworkWorker<_, _>,
 	> = sc_network::config::FullNetworkConfiguration::new(&config.network);
 
-	// // Build the network components including the network service, RPC channels, and
-	// synchronization service. let (network, system_rpc_tx, tx_handler_controller, start_network,
-	// sync_service) =     sc_service::build_network(sc_service::BuildNetworkParams {
-	//         config: &config,
-	//         net_config,
-	//         client: client.clone(),
-	//         transaction_pool: transaction_pool.clone(),
-	//         spawn_handle: task_manager.spawn_handle(),
-	//         import_queue,
-	//         block_announce_validator_builder: None,
-	//         warp_sync_params: None,
-	//         block_relay: None,
-	//         metrics: NotificationMetrics::new(None),
-	//     })?;
+	// Build the network components including the network service, RPC channels, and
+	// synchronization service. 
+    let (network, system_rpc_tx, tx_handler_controller, start_network,
+	sync_service) =     sc_service::build_network(sc_service::BuildNetworkParams {
+	        config: &config,
+	        net_config,
+	        client: client.clone(),
+	        transaction_pool: transaction_pool.clone(),
+	        spawn_handle: task_manager.spawn_handle(),
+	        import_queue,
+	        block_announce_validator_builder: None,
+	        warp_sync_params: None,
+	        block_relay: None,
+	        metrics: NotificationMetrics::new(None),
+	    })?;
 
-	// // If offchain workers are enabled in the configuration, spawn the offchain workers task.
+	// If offchain workers are enabled in the configuration, spawn the offchain workers task.
 	// if config.offchain_worker.enabled {
 	//     task_manager.spawn_handle().spawn(
 	//         "offchain-workers-runner",
@@ -120,25 +123,25 @@ where
 	//     );
 	// }
 
-	// // Wrap the frontier backend in an Arc for shared ownership.
-	// let frontier_backend = Arc::new(frontier_backend);
-	// // Get the force authoring flag from the configuration.
-	// let force_authoring = config.force_authoring;
-	// // Set backoff authoring blocks to None (no backoff).
-	// let backoff_authoring_blocks = None::<()>;
-	// // Get the slot duration for Aura consensus from the client runtime API.
-	// let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
+	// Wrap the frontier backend in an Arc for shared ownership.
+	let frontier_backend = Arc::new(frontier_backend);
+	// Get the force authoring flag from the configuration.
+	let force_authoring = config.force_authoring;
+	// Set backoff authoring blocks to None (no backoff).
+	let backoff_authoring_blocks = None::<()>;
+	// Get the slot duration for Aura consensus from the client runtime API.
+	let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
 
-	// // Create a proposer factory for block production.
-	// let proposer_factory = sc_basic_authorship::ProposerFactory::new(
-	//     task_manager.spawn_handle(),
-	//     client.clone(),
-	//     transaction_pool.clone(),
-	//     None,
-	//     None,
-	// );
+	// Create a proposer factory for block production.
+	let proposer_factory = sc_basic_authorship::ProposerFactory::new(
+	    task_manager.spawn_handle(),
+	    client.clone(),
+	    transaction_pool.clone(),
+	    None,
+	    None,
+	);
 	// // Clone the client to use in the create_inherent_data_providers closure.
-	// let client_for_cidp = client.clone();
+	let client_for_cidp = client.clone();
 
 	// // If the node is configured as an authority (validator), start the Aura consensus.
 	// if config.role.is_authority() {
