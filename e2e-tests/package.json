@@ -7,7 +7,8 @@
 		"fmt-check": "prettier ./tests --check",
 		"fmt": "prettier ./tests --write",
 		"build": "./compile_contracts.sh",
-		"test": "DEBUG=transaction mocha -r ts-node/register -t 900000 'tests/**/*.ts'",
+		"test": "DEBUG=transaction mocha -r ts-node/register -t 900000 'tests/**/*.ts' --exclude 'tests/test-invalid-tx.ts'",
+		"test-invalid-tx": "DEBUG=transaction mocha -r ts-node/register -t 300000 'tests/test-invalid-tx.ts'",
 		"test-sql": "FRONTIER_BACKEND_TYPE='sql' mocha -r ts-node/register 'tests/**/*.ts'"
 	},
 	"author": "",
