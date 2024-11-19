@@ -1,37 +1,26 @@
-import chai, { expect } from "chai";
+import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { step } from "mocha-steps";
-import Contract from "web3-eth-contract";
-import { VESTING_CONTRACT_ADDRESS, VESTING_ABI, UNIT, GAS_PRICE } from "./config";
-import { describeWithExistingNode, sendTxAndWaitForFinalization, waitForConfirmations, waitForBlocks, waitForEvent } from "./util";
+import { describeWithExistingNode, sendTxAndWaitForFinalization, waitForEventChopsticks } from "./util";
 
 // Use chai-as-promised
 chai.use(chaiAsPromised);
 
 describeWithExistingNode(
-    "Frontier RPC (Vesting)",
+    "Valid tx",
     function () {
+        const newBlockMethod = "dev_newBlock"
 
         step("should create valid tx when new round starts", async function () {
+            await this.context.providers.laos.send(newBlockMethod, [{ count: 3 }]);
+            const roundLength = 10;
+            const event = await waitForEventChopsticks(this.context.networks.laos, ({ event }) => {
+                return this.context.networks.laos.events.parachainStaking.NewRound.is(event);
+            }, this.context.providers.laos, roundLength);
             
-            // avanzar un bloque
-            let event;
-            while (event == null) {
-
-                await this.context.providers.laos.send("dev_newBlock", [{ count: 1 }]);
-                event = await waitForEvent(
-                    this.context.networks.laos,
-                    ({ event }) => {
-                        return this.context.networks.laos.events.parachainStaking.NewRound.is(event);
-                    },
-                    1
-                );
-            }
-            console.log(event.toHuman())
-
-            // expect(event).to.not.be.null;
-            // ver si es un new round
-
+            await this.context.providers.laos.send(newBlockMethod, [{ count: roundLength - 1 }]);
+            const remarkTx = this.context.networks.laos.tx.system.remark("Hello, world!");
+            await sendTxAndWaitForFinalization(this.context.networks.laos, remarkTx, this.ethereumPairs.alith);
         });
 
     },

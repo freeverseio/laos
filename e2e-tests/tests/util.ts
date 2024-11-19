@@ -568,6 +568,7 @@ export const waitForEvent = async (
 export const waitForEventChopsticks = async (
 	api: ApiPromise,
 	filter: (event: EventRecord) => boolean,
+	provider: WsProvider,
 	blockTimeout: number
 ): Promise<EventRecord> => {
 	return new Promise(async (resolve, reject) => {
@@ -575,14 +576,10 @@ export const waitForEventChopsticks = async (
 			let eventFound: EventRecord | null = null;
 			let remainingBlocks = blockTimeout;
 
-			const unsub = await api.rpc.chain.subscribeFinalizedHeads(async (header) => {
-				// Fetch events at the current block
-				const blockHash = await api.rpc.chain.getBlockHash(header.number.toNumber());
+			while (eventFound == null) {
+				const blockHash = await api.rpc.chain.getBlockHash();
 				const events = await api.query.system.events.at(blockHash);
-				debugEvents(
-					`[${api.runtimeVersion.specName.toString()}] Looking for events at block ${header.number.toNumber()}`
-				);
-				// Check if any event matches the filter
+
 				events.forEach((eventRecord) => {
 					if (filter(eventRecord)) {
 						eventFound = eventRecord;
@@ -591,9 +588,8 @@ export const waitForEventChopsticks = async (
 
 				if (eventFound) {
 					debugEvents(
-						`[${api.runtimeVersion.specName.toString()}] Event found at block ${header.number.toNumber()}`
+						`[${api.runtimeVersion.specName.toString()}] Event found at block ${blockHash}`
 					);
-					unsub();
 					resolve(eventFound);
 					return;
 				}
@@ -601,10 +597,11 @@ export const waitForEventChopsticks = async (
 				remainingBlocks--;
 				if (remainingBlocks === 0) {
 					// If the loop completes without finding the event
-					unsub();
 					reject(new Error(`Timeout waiting for event after ${blockTimeout} blocks`));
 				}
-			});
+
+                await provider.send("dev_newBlock", [{ count: 1 }]);
+            }
 		} catch (error) {
 			reject(error);
 		}
@@ -656,7 +653,6 @@ export async function sendTxAndWaitForFinalization(
 					resolve(status.asFinalized.toHex());
 				} else if (
 					status.isDropped ||
-					status.isInvalid ||
 					status.isUsurped ||
 					status.isFuture ||
 					status.isRetracted ||
@@ -697,6 +693,9 @@ export async function sendTxAndWaitForFinalization(
 							reject(new Error(`Transaction remained invalid after waiting for ${waitNBlocks} blocks.`));
 						}
 					});
+				} else if (status.isInvalid) {
+					debugTx("Transaction is invalid");
+					reject(new Error("Transaction is invalid"));
 				}
 			};
 
