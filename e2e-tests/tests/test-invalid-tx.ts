@@ -19,7 +19,7 @@ describeWithExistingNode(
             }, this.context.providers.laos, roundLength);
             
             await this.context.providers.laos.send(newBlockMethod, [{ count: roundLength - 1 }]);
-            const remarkTx = this.context.networks.laos.tx.system.remark("Hello, world!");
+            const remarkTx = this.context.networks.laos.tx.system.remarkWithEvent("Hello, world!");
             await sendTxAndWaitForFinalization(this.context.networks.laos, remarkTx, this.ethereumPairs.alith);
         });
 
