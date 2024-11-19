@@ -110,7 +110,7 @@ export function describeWithExistingNode(
 				relayAsset: null,
 			};
 
-      let keyring = new Keyring({ type: "sr25519", ss58Format: POLKADOT_PREFIX });
+      let keyring = new Keyring({ type: "sr25519" });
 
 			this.substratePairs = {
 				alice: keyring.addFromUri("//Alice"),
@@ -512,11 +512,6 @@ export const buildXcmInstruction = ({
 
 const debugEvents = debug("events");
 
-//export const find_event = async function (api: ApiPromise, filter: (event: EventRecord) => boolean){
-//  let block = await api.rpc.chain.getBlockHash();
-//
-//}
-
 /**
  * Waits for a specific event starting from the newest block, with a block-based timeout.
  * @param api - The ApiPromise instance.
@@ -525,6 +520,52 @@ const debugEvents = debug("events");
  * @returns A promise that resolves to the matching event when found.
  */
 export const waitForEvent = async (
+	api: ApiPromise,
+	filter: (event: EventRecord) => boolean,
+	blockTimeout: number
+): Promise<EventRecord> => {
+	return new Promise(async (resolve, reject) => {
+		try {
+			let eventFound: EventRecord | null = null;
+			let remainingBlocks = blockTimeout;
+
+			const unsub = await api.rpc.chain.subscribeFinalizedHeads(async (header) => {
+				// Fetch events at the current block
+				const blockHash = await api.rpc.chain.getBlockHash(header.number.toNumber());
+				const events = await api.query.system.events.at(blockHash);
+				debugEvents(
+					`[${api.runtimeVersion.specName.toString()}] Looking for events at block ${header.number.toNumber()}`
+				);
+				// Check if any event matches the filter
+				events.forEach((eventRecord) => {
+					if (filter(eventRecord)) {
+						eventFound = eventRecord;
+					}
+				});
+
+				if (eventFound) {
+					debugEvents(
+						`[${api.runtimeVersion.specName.toString()}] Event found at block ${header.number.toNumber()}`
+					);
+					unsub();
+					resolve(eventFound);
+					return;
+				}
+
+				remainingBlocks--;
+				if (remainingBlocks === 0) {
+					// If the loop completes without finding the event
+					unsub();
+					reject(new Error(`Timeout waiting for event after ${blockTimeout} blocks`));
+				}
+			});
+		} catch (error) {
+			reject(error);
+		}
+	});
+};
+
+export const waitForEventChopsticks = async (
 	api: ApiPromise,
 	filter: (event: EventRecord) => boolean,
 	blockTimeout: number

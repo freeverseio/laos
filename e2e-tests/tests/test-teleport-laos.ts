@@ -213,8 +213,6 @@ describeWithExistingNode(
 				).toJSON()["balance"]
 			);
 			expect(ferdieXLaosBalance.gte(new BN(0)), "Ferdie balance should be > 0");
-
-			await this.context.providers.assetHub.send("dev_newBlock", [{ count: 10 }]);
 		});
 
 		step("Create $LAOS/$DOT pool in AssetHub", async function () {
@@ -426,8 +424,6 @@ describeWithExistingNode(
 				alithBalance.sub(realAlithBalance).lte(ONE_DOT),
 				"Alith's balance should decrease by the amount teleported, disregarding fees"
 			);
-
-			await this.context.providers.assetHub.send("dev_newBlock", [{ count: 10 }]);
 		});
 
 		step("Teleport back from AssetHub to Laos", async function () {

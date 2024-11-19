@@ -2,6 +2,7 @@ endpoint: wss://rpc.laosmercury.gorengine.com
 wasm-override: ../target/release/wbuild/laos-runtime/laos_runtime.compact.compressed.wasm
 db: ./db.sqlite
 runtime-log-level: 5
+port: 9999
 
 import-storage:
   Sudo:

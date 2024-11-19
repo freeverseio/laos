@@ -9,9 +9,9 @@ import ParachainStaking from "../build/contracts/ParachainStaking.json";
 export const RUNTIME_SPEC_NAME = "laos";
 export const RUNTIME_SPEC_VERSION = 2390;
 export const RUNTIME_IMPL_VERSION = 0;
-export const LAOS_NODE_IP = "127.0.0.1:8001";
-export const ASSET_HUB_NODE_IP = "127.0.0.1:8000";
-export const RELAYCHAIN_NODE_IP = "127.0.0.1:8002";
+export const LAOS_NODE_IP = "127.0.0.1:9999";
+export const ASSET_HUB_NODE_IP = "127.0.0.1:9950";
+export const RELAYCHAIN_NODE_IP = "127.0.0.1:9944";
 
 // Chain address prefixes
 export const POLKADOT_PREFIX = 0;
@@ -20,7 +20,7 @@ export const POLKADOT_PREFIX = 0;
 export const CHAIN_ID = 667;
 export const GAS_PRICE = "0x3B9ACA00";
 export const ASSET_HUB_PARA_ID = 1000;
-export const LAOS_PARA_ID = 4023;
+export const LAOS_PARA_ID = 2900;
 
 export const CHECKING_ACCOUNT = "0x6d6F646c70792F78636D63680000000000000000";
 export const FAITH = "0xC0F0f4ab324C46e55D02D0033343B4Be8A55532d";
