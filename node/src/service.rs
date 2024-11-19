@@ -37,6 +37,7 @@ use cumulus_primitives_core::{
 	ParaId,
 };
 use cumulus_relay_chain_interface::{OverseerHandle, RelayChainInterface};
+use sc_network::NotificationMetrics;
 
 // Substrate Imports
 use cumulus_client_consensus_aura::collators::lookahead::{self as aura, Params as AuraParams};
@@ -652,28 +653,20 @@ where
 		sp_consensus_aura::AuraApi<Block, sp_consensus_aura::sr25519::AuthorityId>,
 {
 	// return error
-	Err(sc_service::Error::Other("Not implemented".into()))
+
+	let sc_service::PartialComponents {
+		client,
+		backend,
+		mut task_manager,
+		import_queue,
+		keystore_container,
+		select_chain,
+		transaction_pool,
+		other:
+			(frontier_backend, filter_pool, fee_history_cache, fee_history_cache_limit, _block_import),
+	} = new_partial(&config, &eth_rpc_config)?;
 
 	/*
-		let sc_service::PartialComponents {
-			client,
-			backend,
-			mut task_manager,
-			import_queue,
-			keystore_container,
-			select_chain,
-			transaction_pool,
-			other:
-				(
-					frontier_backend,
-					filter_pool,
-					fee_history_cache,
-					fee_history_cache_limit,
-					_block_import,
-					_telemetry,
-					_telemetry_worker_handle,
-				),
-		} = new_partial::<RuntimeApi>(&config, eth_rpc_config)?;
 		let net_config = sc_network::config::FullNetworkConfiguration::new(&config.network);
 		let (network, system_rpc_tx, tx_handler_controller, start_network, sync_service) =
 			sc_service::build_network(sc_service::BuildNetworkParams {
@@ -686,7 +679,9 @@ where
 				block_announce_validator_builder: None,
 				warp_sync_params: None,
 				block_relay: None,
+				metrics: NotificationMetrics::new(None),
 			})?;
+
 
 		if config.offchain_worker.enabled {
 			task_manager.spawn_handle().spawn(
@@ -953,6 +948,6 @@ where
 
 		start_network.start_network();
 
-		Ok(task_manager)
 	*/
+	Ok(task_manager)
 }
