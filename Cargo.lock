@@ -7992,7 +7992,6 @@ dependencies = [
  "sp-runtime",
  "sp-std 14.0.0 (git+https://github.com/paritytech/polkadot-sdk?branch=release-polkadot-v1.11.0)",
  "substrate-fixed",
- "test-utils",
 ]
 
 [[package]]

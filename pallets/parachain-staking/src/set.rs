@@ -1,20 +1,20 @@
-// Copyright 2023-2024 Freeverse.io
-// This file is part of LAOS.
+// Copyright 2019-2022 PureStake Inc.
+// This file is part of Moonbeam.
 
-// LAOS is free software: you can redistribute it and/or modify
+// Moonbeam is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 
-// LAOS is distributed in the hope that it will be useful,
+// Moonbeam is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
 // You should have received a copy of the GNU General Public License
-// along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
+// along with Moonbeam.  If not, see <http://www.gnu.org/licenses/>.
 
-/* TODO: use orml_utilities::OrderedSet without leaking substrate v2.0 dependencies */
+/* TODO: use orml_utilities::OrderedSet without leaking substrate v2.0 dependencies*/
 
 use frame_support::traits::Get;
 use parity_scale_codec::{Decode, Encode};
@@ -57,7 +57,7 @@ impl<T: Ord> OrderedSet<T> {
 			Err(loc) => {
 				self.0.insert(loc, value);
 				true
-			},
+			}
 		}
 	}
 
@@ -68,7 +68,7 @@ impl<T: Ord> OrderedSet<T> {
 			Ok(loc) => {
 				self.0.remove(loc);
 				true
-			},
+			}
 			Err(_) => false,
 		}
 	}
@@ -140,7 +140,7 @@ impl<T: Ord, S: Get<u32>> BoundedOrderedSet<T, S> {
 			Ok(loc) => {
 				self.0.remove(loc);
 				true
-			},
+			}
 			Err(_) => false,
 		}
 	}
