@@ -354,9 +354,10 @@ pub fn run() -> Result<()> {
 				info!("Parachain Account: {}", parachain_account);
 				info!("Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
 
-				if config.chain_spec.id().ends_with("-d") {
-					return crate::service::start_dev_node::<RuntimeApi>(config, id, &eth_cfg)
-						.map_err(Into::into);
+				if config.chain_spec.id() == "dev" {
+					info!("Starting Dev Node");
+					crate::service::start_dev_node::<RuntimeApi>(config, id, eth_cfg)
+						.map_err(Into::into)
 				} else {
 					crate::service::start_parachain_node(
 						config,
