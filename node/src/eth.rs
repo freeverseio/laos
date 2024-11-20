@@ -37,7 +37,9 @@ use fc_mapping_sync::{kv::MappingSyncWorker, SyncStrategy};
 use fc_rpc::{EthTask, StorageOverride};
 pub use fc_rpc_core::types::{FeeHistoryCache, FeeHistoryCacheLimit, FilterPool};
 // Local
-use laos_runtime::opaque::Block;
+use fc_rpc::StorageOverrideHandler;
+use laos_runtime::{opaque::Block, Hash};
+use std::path::Path;
 
 pub fn db_config_dir(config: &Configuration) -> PathBuf {
 	config.base_path.config_dir(config.chain_spec.id())
@@ -229,4 +231,49 @@ pub async fn spawn_frontier_tasks<RuntimeApi, Executor>(
 		Some("frontier"),
 		EthTask::fee_history_task(client, overrides, fee_history_cache, fee_history_cache_limit),
 	);
+}
+
+/// Create a Frontier backend.
+pub(crate) fn create_backend<B, BE, Client>(
+	client: Arc<Client>,
+	config: &sc_service::Configuration,
+	eth_rpc_config: EthConfiguration,
+) -> Result<fc_db::Backend<B, Client>, String>
+where
+	B: 'static + sp_runtime::traits::Block<Hash = Hash>,
+	BE: 'static + sc_client_api::backend::Backend<B>,
+	Client: 'static
+		+ sp_api::ProvideRuntimeApi<B>
+		+ sp_blockchain::HeaderBackend<B>
+		+ sc_client_api::backend::StorageProvider<B, BE>,
+	Client::Api: fp_rpc::EthereumRuntimeRPCApi<B>,
+{
+	let db_config_dir = db_config_dir(config);
+	let overrides = Arc::new(StorageOverrideHandler::new(client.clone()));
+	match eth_rpc_config.frontier_backend_type {
+		crate::eth::BackendType::KeyValue => Ok(fc_db::Backend::<B, Client>::KeyValue(Arc::new(
+			fc_db::kv::Backend::open(Arc::clone(&client), &config.database, &db_config_dir)?,
+		))),
+		crate::eth::BackendType::Sql => {
+			let db_path = db_config_dir.join("sql");
+			std::fs::create_dir_all(&db_path).expect("failed creating sql db directory");
+			let backend = futures::executor::block_on(fc_db::sql::Backend::new(
+				fc_db::sql::BackendConfig::Sqlite(fc_db::sql::SqliteBackendConfig {
+					path: Path::new("sqlite:///")
+						.join(db_path)
+						.join("frontier.db3")
+						.to_str()
+						.unwrap(),
+					create_if_missing: true,
+					thread_count: eth_rpc_config.frontier_sql_backend_thread_count,
+					cache_size: eth_rpc_config.frontier_sql_backend_cache_size,
+				}),
+				eth_rpc_config.frontier_sql_backend_pool_size,
+				std::num::NonZeroU32::new(eth_rpc_config.frontier_sql_backend_num_ops_timeout),
+				overrides,
+			))
+			.unwrap_or_else(|err| panic!("failed creating sql backend: {:?}", err));
+			Ok(fc_db::Backend::<B, Client>::Sql(Arc::new(backend)))
+		},
+	}
 }
