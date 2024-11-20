@@ -22,7 +22,6 @@ use fc_db::kv::frontier_database_dir;
 use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
 use laos_runtime::Block;
 use log::info;
-use polkadot_service::RococoChainSpec;
 use sc_cli::{
 	ChainSpec, CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams,
 	NetworkParams, Result, SharedParams, SubstrateCli,
@@ -101,51 +100,6 @@ impl SubstrateCli for Cli {
 
 	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
 		load_spec(id)
-	}
-}
-
-impl SubstrateCli for RelayChainCli {
-	fn impl_name() -> String {
-		"LAOS Parachain Node".into()
-	}
-
-	fn impl_version() -> String {
-		env!("SUBSTRATE_CLI_IMPL_VERSION").into()
-	}
-
-	fn description() -> String {
-		format!(
-			"LAOS Parachain Node\n\nThe command-line arguments provided first will be \
-		passed to the parachain node, while the arguments provided after -- will be passed \
-		to the relay chain node.\n\n\
-		{} <parachain-args> -- <relay-chain-args>",
-			Self::executable_name()
-		)
-	}
-
-	fn author() -> String {
-		env!("CARGO_PKG_AUTHORS").into()
-	}
-
-	fn support_url() -> String {
-		"https://github.com/freeverseio/laos/issues/new".into()
-	}
-
-	fn copyright_start_year() -> i32 {
-		2020
-	}
-
-	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
-		match id {
-			"paseo" => Ok(Box::new(RococoChainSpec::from_json_bytes(
-				&include_bytes!("../../specs/paseo.raw.json")[..],
-			)?)),
-			"rococo_freeverse" => Ok(Box::new(RococoChainSpec::from_json_bytes(
-				&include_bytes!("../../specs/rococo-freeverse-chainspec.raw.json")[..],
-			)?)),
-			_ => polkadot_cli::Cli::from_iter([RelayChainCli::executable_name()].iter())
-				.load_spec(id),
-		}
 	}
 }
 
