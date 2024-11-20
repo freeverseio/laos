@@ -15,6 +15,6 @@ impl pallet_membership::Config<TechnicalCommitteeMembership> for Runtime {
 	type PrimeOrigin = EitherOfDiverse<EnsureRoot<AccountId>, CouncilMajority>;
 	type MembershipInitialized = TechnicalCommittee;
 	type MembershipChanged = TechnicalCommittee;
-	type MaxMembers = super::collective::MaxMembers;
+	type MaxMembers = super::collective::MaxMembersTechnicalCommittee;
 	type WeightInfo = weights::pallet_membership::WeightInfo<Runtime>;
 }

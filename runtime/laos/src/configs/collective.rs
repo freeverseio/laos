@@ -1,17 +1,16 @@
-use crate::{
-	weights, AccountId, BlockNumber, Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin, DAYS,
-	MINUTES,
-};
+use crate::{weights, AccountId, BlockNumber, Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin};
 use frame_support::{pallet_prelude::Weight, parameter_types};
 use frame_system::EnsureRoot;
 use laos_primitives::RuntimeBlockWeights;
+use parachains_common::{DAYS, MINUTES};
 use polkadot_runtime_common::prod_or_fast;
 use sp_runtime::Perbill;
 
 parameter_types! {
 	pub const MotionDuration: BlockNumber = prod_or_fast!(7 * DAYS, 5 * MINUTES);
-	pub const MaxProposals: u32 = 7;
-	pub const MaxMembers: u32 = 20;
+	pub const MaxProposals: u32 = 20;
+	pub const MaxMembersCouncil: u32 = 7;
+	pub const MaxMembersTechnicalCommittee: u32 = 5;
 	pub MaxProposalWeight: Weight = Perbill::from_percent(50) * RuntimeBlockWeights::get().max_block;
 }
 
@@ -31,7 +30,7 @@ pub type AllOfTechnicalCommittee =
 pub type CouncilCollective = pallet_collective::Instance1;
 impl pallet_collective::Config<CouncilCollective> for Runtime {
 	type DefaultVote = pallet_collective::MoreThanMajorityThenPrimeDefaultVote;
-	type MaxMembers = MaxMembers;
+	type MaxMembers = MaxMembersCouncil;
 	type MaxProposalWeight = MaxProposalWeight;
 	type MaxProposals = MaxProposals;
 	type MotionDuration = MotionDuration;
@@ -45,7 +44,7 @@ impl pallet_collective::Config<CouncilCollective> for Runtime {
 pub type TechnicalCommittee = pallet_collective::Instance2;
 impl pallet_collective::Config<TechnicalCommittee> for Runtime {
 	type DefaultVote = pallet_collective::MoreThanMajorityThenPrimeDefaultVote;
-	type MaxMembers = MaxMembers;
+	type MaxMembers = MaxMembersTechnicalCommittee;
 	type MaxProposalWeight = MaxProposalWeight;
 	type MaxProposals = MaxProposals;
 	type MotionDuration = MotionDuration;

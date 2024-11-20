@@ -343,6 +343,6 @@ mod tests {
 
 	#[test]
 	fn test_slot_per_year() {
-		assert_eq!(SlotsPerYear::get(), 31_557_600 / 6);
+		assert_eq!(SlotsPerYear::get(), 31_557_600 / 12);
 	}
 }
