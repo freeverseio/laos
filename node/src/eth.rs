@@ -251,10 +251,10 @@ where
 	let db_config_dir = db_config_dir(config);
 	let overrides = Arc::new(StorageOverrideHandler::new(client.clone()));
 	match eth_rpc_config.frontier_backend_type {
-		crate::eth::BackendType::KeyValue => Ok(fc_db::Backend::<B, Client>::KeyValue(Arc::new(
+		BackendType::KeyValue => Ok(fc_db::Backend::<B, Client>::KeyValue(Arc::new(
 			fc_db::kv::Backend::open(Arc::clone(&client), &config.database, &db_config_dir)?,
 		))),
-		crate::eth::BackendType::Sql => {
+		BackendType::Sql => {
 			let db_path = db_config_dir.join("sql");
 			std::fs::create_dir_all(&db_path).expect("failed creating sql db directory");
 			let backend = futures::executor::block_on(fc_db::sql::Backend::new(
