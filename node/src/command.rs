@@ -23,8 +23,8 @@ use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
 use laos_runtime::Block;
 use log::info;
 use sc_cli::{
-	ChainSpec, CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams,
-	NetworkParams, Result, SharedParams, SubstrateCli,
+	ChainSpec, CliConfiguration, ImportParams, KeystoreParams, NetworkParams, Result, SharedParams,
+	SubstrateCli,
 };
 use sc_service::{
 	config::{BasePath, PrometheusConfig},
@@ -321,20 +321,6 @@ pub fn run() -> Result<()> {
 				.map_err(Into::into)
 			})
 		},
-	}
-}
-
-impl DefaultConfigurationValues for RelayChainCli {
-	fn p2p_listen_port() -> u16 {
-		30334
-	}
-
-	fn rpc_listen_port() -> u16 {
-		9945
-	}
-
-	fn prometheus_listen_port() -> u16 {
-		9616
 	}
 }
 

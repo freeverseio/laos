@@ -1,5 +1,5 @@
 use polkadot_service::RococoChainSpec;
-use sc_cli::SubstrateCli;
+use sc_cli::{DefaultConfigurationValues, SubstrateCli};
 use std::path::PathBuf;
 
 /// Represents the command-line interface for the relay chain node.
@@ -112,5 +112,19 @@ impl SubstrateCli for RelayChainCli {
 			_ => polkadot_cli::Cli::from_iter([RelayChainCli::executable_name()].iter())
 				.load_spec(id),
 		}
+	}
+}
+
+impl DefaultConfigurationValues for RelayChainCli {
+	fn p2p_listen_port() -> u16 {
+		30334
+	}
+
+	fn rpc_listen_port() -> u16 {
+		9945
+	}
+
+	fn prometheus_listen_port() -> u16 {
+		9616
 	}
 }
