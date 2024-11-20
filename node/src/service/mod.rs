@@ -157,7 +157,7 @@ pub fn new_partial(
 	);
 
 	let overrides = Arc::new(StorageOverrideHandler::new(client.clone()));
-	// TODO This is copied from frontier. It should be imported instead after https://github.com/paritytech/frontier/issues/333 is solved
+	
 	let frontier_backend = crate::eth::create_backend(client.clone(), config, eth_config.clone())?;
 
 	let frontier_block_import = FrontierBlockImport::new(client.clone(), client.clone());
