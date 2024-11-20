@@ -56,7 +56,7 @@ use substrate_prometheus_endpoint::Registry;
 // Frontier
 use crate::eth::{
 	db_config_dir, new_frontier_partial, spawn_frontier_tasks, BackendType, EthConfiguration,
-	FrontierBlockImport as TFrontierBlockImport, FrontierPartialComponents,
+	FrontierBackend, FrontierBlockImport as TFrontierBlockImport, FrontierPartialComponents,
 };
 
 /// Native executor type.
@@ -84,6 +84,22 @@ type ParachainBlockImport = TParachainBlockImport<Block, FrontierBlockImport, Pa
 
 type FrontierBlockImport = TFrontierBlockImport<Block, Arc<ParachainClient>, ParachainClient>;
 
+/// Assembly of PartialComponents (enough to run chain ops subcommands)
+pub type Service = PartialComponents<
+	ParachainClient,
+	ParachainBackend,
+	(),
+	sc_consensus::DefaultImportQueue<Block>,
+	sc_transaction_pool::FullPool<Block, ParachainClient>,
+	(
+		ParachainBlockImport,
+		Option<Telemetry>,
+		Option<TelemetryWorkerHandle>,
+		FrontierBackend<ParachainClient>,
+		Arc<dyn StorageOverride<Block>>,
+	),
+>;
+
 /// Starts a `ServiceBuilder` for a full service.
 ///
 /// Use this macro if you don't actually need the full service, but just the builder in order to
@@ -92,23 +108,7 @@ type FrontierBlockImport = TFrontierBlockImport<Block, Arc<ParachainClient>, Par
 pub fn new_partial(
 	config: &Configuration,
 	eth_config: &EthConfiguration,
-) -> Result<
-	PartialComponents<
-		ParachainClient,
-		ParachainBackend,
-		(),
-		sc_consensus::DefaultImportQueue<Block>,
-		sc_transaction_pool::FullPool<Block, ParachainClient>,
-		(
-			ParachainBlockImport,
-			Option<Telemetry>,
-			Option<TelemetryWorkerHandle>,
-			fc_db::Backend<Block, ParachainClient>,
-			Arc<dyn StorageOverride<Block>>,
-		),
-	>,
-	sc_service::Error,
-> {
+) -> Result<Service, sc_service::Error> {
 	let telemetry = config
 		.telemetry_endpoints
 		.clone()
