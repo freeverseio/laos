@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
+use crate::eth::EthConfiguration;
 use cumulus_client_service::storage_proof_size::HostFunctions as ReclaimHostFunctions;
 use cumulus_primitives_core::ParaId;
 use fc_db::kv::frontier_database_dir;
@@ -199,55 +200,55 @@ pub fn run() -> Result<()> {
 				cmd.run(client, frontier_backend)
 			})
 		},
-		None => {
-			let runner = cli.create_runner(&cli.run.normalize())?;
-			let collator_options = cli.run.collator_options();
-
-			runner.run_node_until_exit(|config| async move {
-				let hwbench = (!cli.no_hardware_benchmarks)
-					.then_some(config.database.path().map(|database_path| {
-						let _ = std::fs::create_dir_all(database_path);
-						sc_sysinfo::gather_hwbench(Some(database_path))
-					}))
-					.flatten();
-
-				let para_id = chain_spec::Extensions::try_get(&*config.chain_spec)
-					.map(|e| e.para_id)
-					.ok_or("Could not find parachain ID in chain-spec.")?;
-
-				let polkadot_cli = RelayChainCli::new(
-					&config,
-					[RelayChainCli::executable_name()].iter().chain(cli.relay_chain_args.iter()),
-				);
-
-				let id = ParaId::from(para_id);
-
-				let parachain_account =
-					AccountIdConversion::<polkadot_primitives::AccountId>::into_account_truncating(
-						&id,
-					);
-
-				let tokio_handle = config.tokio_handle.clone();
-				let polkadot_config =
-					SubstrateCli::create_configuration(&polkadot_cli, &polkadot_cli, tokio_handle)
-						.map_err(|err| format!("Relay chain argument error: {}", err))?;
-
-				info!("Parachain id: {:?}", id);
-				info!("Parachain Account: {}", parachain_account);
-				info!("Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
-
-				crate::service::start_parachain_node(
-					config,
-					polkadot_config,
-					eth_cfg,
-					collator_options,
-					id,
-					hwbench,
-				)
-				.await
-				.map(|r| r.0)
-				.map_err(Into::into)
-			})
-		},
+		None => start_node(cli, eth_cfg),
 	}
+}
+
+fn start_node(cli: Cli, eth_cfg: EthConfiguration) -> Result<()> {
+	let runner = cli.create_runner(&cli.run.normalize())?;
+	let collator_options = cli.run.collator_options();
+
+	runner.run_node_until_exit(|config| async move {
+		let hwbench = (!cli.no_hardware_benchmarks)
+			.then_some(config.database.path().map(|database_path| {
+				let _ = std::fs::create_dir_all(database_path);
+				sc_sysinfo::gather_hwbench(Some(database_path))
+			}))
+			.flatten();
+
+		let para_id = chain_spec::Extensions::try_get(&*config.chain_spec)
+			.map(|e| e.para_id)
+			.ok_or("Could not find parachain ID in chain-spec.")?;
+
+		let polkadot_cli = RelayChainCli::new(
+			&config,
+			[RelayChainCli::executable_name()].iter().chain(cli.relay_chain_args.iter()),
+		);
+
+		let id = ParaId::from(para_id);
+
+		let parachain_account =
+			AccountIdConversion::<polkadot_primitives::AccountId>::into_account_truncating(&id);
+
+		let tokio_handle = config.tokio_handle.clone();
+		let polkadot_config =
+			SubstrateCli::create_configuration(&polkadot_cli, &polkadot_cli, tokio_handle)
+				.map_err(|err| format!("Relay chain argument error: {}", err))?;
+
+		info!("Parachain id: {:?}", id);
+		info!("Parachain Account: {}", parachain_account);
+		info!("Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
+
+		crate::service::start_parachain_node(
+			config,
+			polkadot_config,
+			eth_cfg,
+			collator_options,
+			id,
+			hwbench,
+		)
+		.await
+		.map(|r| r.0)
+		.map_err(Into::into)
+	})
 }
