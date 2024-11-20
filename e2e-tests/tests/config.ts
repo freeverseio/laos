@@ -5,18 +5,21 @@ import EvolutionCollection from "../build/contracts/EvolutionCollection.json";
 import EvolutionCollectionFactory from "../build/contracts/EvolutionCollectionFactory.json";
 import Vesting from "../build/contracts/Vesting.json";
 import ParachainStaking from "../build/contracts/ParachainStaking.json";
-
 // Node config
 export const RUNTIME_SPEC_NAME = "laos";
-export const RUNTIME_SPEC_VERSION = 2294;
+export const RUNTIME_SPEC_VERSION = 2390;
 export const RUNTIME_IMPL_VERSION = 0;
-export const LOCAL_NODE_URL = "http://127.0.0.1:9999";
+export const LAOS_NODE_IP = "127.0.0.1:9999";
+export const ASSET_HUB_NODE_IP = "127.0.0.1:9950";
+export const RELAYCHAIN_NODE_IP = "127.0.0.1:9944";
 
 // Chain config
 export const CHAIN_ID = 667;
 export const GAS_PRICE = "0x3B9ACA00";
+export const ASSET_HUB_PARA_ID = 1000;
+export const LAOS_PARA_ID = 2900;
 
-// Accounts
+export const CHECKING_ACCOUNT = "0x6d6F646c70792F78636D63680000000000000000";
 export const FAITH = "0xC0F0f4ab324C46e55D02D0033343B4Be8A55532d";
 export const FAITH_PRIVATE_KEY = "0xb9d2ea9a615f3165812e8d44de0d24da9bbd164b65c4f0573e1ce2c8dbd9c8df";
 export const ALITH = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
