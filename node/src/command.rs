@@ -204,41 +204,56 @@ pub fn run() -> Result<()> {
 	}
 }
 
+// Entry point for starting a parachain node
 fn start_node(cli: Cli, eth_cfg: EthConfiguration) -> Result<()> {
+	// Create a runner for the CLI configuration, normalizing the run options
 	let runner = cli.create_runner(&cli.run.normalize())?;
+	// Extract collator-specific options from the CLI configuration
 	let collator_options = cli.run.collator_options();
 
+	// Run the node until exit, defining asynchronous logic for its configuration
 	runner.run_node_until_exit(|config| async move {
+		// Optionally perform hardware benchmarking unless explicitly disabled in CLI
 		let hwbench = (!cli.no_hardware_benchmarks)
 			.then_some(config.database.path().map(|database_path| {
+				// Ensure the database directory exists
 				let _ = std::fs::create_dir_all(database_path);
+				// Gather hardware benchmark data and save it to the database directory
 				sc_sysinfo::gather_hwbench(Some(database_path))
 			}))
 			.flatten();
 
+		// Retrieve the parachain ID from the chain specification
 		let para_id = chain_spec::Extensions::try_get(&*config.chain_spec)
 			.map(|e| e.para_id)
 			.ok_or("Could not find parachain ID in chain-spec.")?;
 
+		// Create a Relay Chain CLI instance to manage relay chain arguments and configuration
 		let polkadot_cli = RelayChainCli::new(
 			&config,
 			[RelayChainCli::executable_name()].iter().chain(cli.relay_chain_args.iter()),
 		);
 
+		// Convert the parachain ID into a ParaId instance
 		let id = ParaId::from(para_id);
 
+		// Derive the parachain account from the parachain ID
 		let parachain_account =
 			AccountIdConversion::<polkadot_primitives::AccountId>::into_account_truncating(&id);
 
+		// Clone the Tokio runtime handle to pass to configurations
 		let tokio_handle = config.tokio_handle.clone();
+		// Create the relay chain configuration using the Substrate CLI
 		let polkadot_config =
 			SubstrateCli::create_configuration(&polkadot_cli, &polkadot_cli, tokio_handle)
 				.map_err(|err| format!("Relay chain argument error: {}", err))?;
 
+		// Log relevant parachain information for debugging and tracking
 		info!("Parachain id: {:?}", id);
 		info!("Parachain Account: {}", parachain_account);
 		info!("Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
 
+		// Start the parachain node with the specified configurations
 		crate::service::start_parachain_node(
 			config,
 			polkadot_config,
@@ -248,7 +263,7 @@ fn start_node(cli: Cli, eth_cfg: EthConfiguration) -> Result<()> {
 			hwbench,
 		)
 		.await
-		.map(|r| r.0)
-		.map_err(Into::into)
+		.map(|r| r.0) // Map the successful result
+		.map_err(Into::into) // Convert errors into a compatible format
 	})
 }
