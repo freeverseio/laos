@@ -24,6 +24,7 @@ use cumulus_client_cli::CollatorOptions;
 use laos_runtime::{opaque::Block, types::TransactionConverter, Hash};
 
 // Cumulus Imports
+use crate::eth::{db_config_dir, BackendType};
 use cumulus_client_collator::service::CollatorService;
 use cumulus_client_consensus_common::ParachainBlockImport as TParachainBlockImport;
 use cumulus_client_consensus_proposer::Proposer;
@@ -34,6 +35,7 @@ use cumulus_client_service::{
 };
 use cumulus_primitives_core::{relay_chain::CollatorPair, ParaId};
 use cumulus_relay_chain_interface::{OverseerHandle, RelayChainInterface};
+use std::path::Path;
 
 // Substrate Imports
 use fc_rpc::{StorageOverride, StorageOverrideHandler};
@@ -158,7 +160,36 @@ pub fn new_partial(
 
 	let overrides = Arc::new(StorageOverrideHandler::new(client.clone()));
 
-	let frontier_backend = crate::eth::create_backend(client.clone(), config, eth_config.clone())?;
+	// TODO This is copied from frontier. It should be imported instead after https://github.com/paritytech/frontier/issues/333 is solved
+	// TODO extract this into a function
+	let frontier_backend = match eth_config.frontier_backend_type {
+		BackendType::KeyValue => fc_db::Backend::KeyValue(Arc::new(fc_db::kv::Backend::open(
+			Arc::clone(&client),
+			&config.database,
+			&db_config_dir(config),
+		)?)),
+		BackendType::Sql => {
+			let db_path = db_config_dir(config).join("sql");
+			std::fs::create_dir_all(&db_path).expect("failed creating sql db directory");
+			let backend = futures::executor::block_on(fc_db::sql::Backend::new(
+				fc_db::sql::BackendConfig::Sqlite(fc_db::sql::SqliteBackendConfig {
+					path: Path::new("sqlite:///")
+						.join(db_path)
+						.join("frontier.db3")
+						.to_str()
+						.unwrap(),
+					create_if_missing: true,
+					thread_count: eth_config.frontier_sql_backend_thread_count,
+					cache_size: eth_config.frontier_sql_backend_cache_size,
+				}),
+				eth_config.frontier_sql_backend_pool_size,
+				std::num::NonZeroU32::new(eth_config.frontier_sql_backend_num_ops_timeout),
+				overrides.clone(),
+			))
+			.unwrap_or_else(|err| panic!("failed creating sql backend: {:?}", err));
+			fc_db::Backend::Sql(Arc::new(backend))
+		},
+	};
 
 	let frontier_block_import = FrontierBlockImport::new(client.clone(), client.clone());
 
