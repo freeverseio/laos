@@ -10,6 +10,8 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
+// You should have received a copy of the GNU General Public License
+// along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 use std::path::PathBuf;
 
@@ -55,12 +57,6 @@ pub enum Subcommand {
 	/// The pallet benchmarking moved to the `pallet` sub-command.
 	#[command(subcommand)]
 	Benchmark(frame_benchmarking_cli::BenchmarkCmd),
-
-	/// Try-runtime has migrated to a standalone
-	/// [CLI](<https://github.com/paritytech/try-runtime-cli>). The subcommand exists as a stub and
-	/// deprecation notice. It will be removed entirely some time after January
-	/// 2024.
-	TryRuntime,
 }
 
 impl Subcommand {
@@ -107,25 +103,12 @@ impl ExtendedBuildSpecCmd {
 	}
 }
 
-const AFTER_HELP_EXAMPLE: &str = color_print::cstr!(
-	r#"<bold><underline>Examples:</></>
-   <bold>parachain-template-node build-spec --disable-default-bootnode > plain-parachain-chainspec.json</>
-           Export a chainspec for a local testnet in json format.
-   <bold>parachain-template-node --chain plain-parachain-chainspec.json --tmp -- --chain paseo-local</>
-           Launch a full node with chain specification loaded from plain-parachain-chainspec.json.
-   <bold>parachain-template-node</>
-           Launch a full node with default parachain <italic>local-testnet</> and relay chain <italic>paseo-local</>.
-   <bold>parachain-template-node --collator</>
-           Launch a collator with default parachain <italic>local-testnet</> and relay chain <italic>paseo-local</>.
- "#
-);
 #[derive(Debug, clap::Parser)]
 #[command(
 	propagate_version = true,
 	args_conflicts_with_subcommands = true,
 	subcommand_negates_reqs = true
 )]
-#[clap(after_help = AFTER_HELP_EXAMPLE)]
 pub struct Cli {
 	#[command(subcommand)]
 	pub subcommand: Option<Subcommand>,
