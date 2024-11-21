@@ -105,7 +105,7 @@ fn test_block_and_gas_limit_constants() {
 
 	assert_ok!(system_block_weights.clone().validate());
 	// 0.5s of block time
-	assert_eq!(system_block_weights.max_block.ref_time(), 500000000000);
+	assert_eq!(system_block_weights.max_block.ref_time(), 500_000_000_000);
 
 	// EVM constants
 	let block_gas_limit = <Runtime as pallet_evm::Config>::BlockGasLimit::get();
