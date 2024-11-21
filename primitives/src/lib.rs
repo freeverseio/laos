@@ -24,12 +24,13 @@ use frame_system::limits;
 pub use parachains_common::NORMAL_DISPATCH_RATIO;
 use sp_core::Hasher as HasherT;
 use sp_runtime::traits::{BlakeTwo256, IdentifyAccount, Verify};
+pub use parachains_common::MAXIMUM_BLOCK_WEIGHT;
 
-/// We allow for 2 seconds of compute with a 6 second average block.
-pub const MAXIMUM_BLOCK_WEIGHT: Weight = Weight::from_parts(
-	WEIGHT_REF_TIME_PER_SECOND.saturating_mul(2),
-	cumulus_primitives_core::relay_chain::MAX_POV_SIZE as u64,
-);
+// /// We allow for 2 seconds of compute with a 6 second average block.
+// pub const MAXIMUM_BLOCK_WEIGHT: Weight = Weight::from_parts(
+// 	WEIGHT_REF_TIME_PER_SECOND.saturating_mul(2),
+// 	cumulus_primitives_core::relay_chain::MAX_POV_SIZE as u64,
+// );
 
 /// Authority ID used in parachain.
 pub type AuraId = sp_consensus_aura::sr25519::AuthorityId;

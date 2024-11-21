@@ -20,7 +20,7 @@ use sp_core::ConstU64;
 
 parameter_types! {
 	pub const MaxAuthorities : u32 = 100_000;
-	pub const AllowMultipleBlocksPerSlot: bool = true;
+	pub const AllowMultipleBlocksPerSlot: bool = false;
 }
 
 impl pallet_aura::Config for Runtime {
