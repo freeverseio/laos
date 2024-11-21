@@ -28,7 +28,6 @@ use sp_runtime::traits::AccountIdConversion;
 use crate::{
 	chain_spec,
 	cli::{Cli, ExtendedBuildSpecCmd, RelayChainCli, Subcommand},
-	contracts::ContractsPath,
 	service::new_partial,
 };
 

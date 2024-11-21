@@ -18,7 +18,7 @@ use std::path::PathBuf;
 use sc_cli::{ChainSpec, Result};
 use sc_network::config::NetworkConfiguration;
 
-use crate::{contracts::ContractsPath, eth::EthConfiguration};
+use crate::eth::EthConfiguration;
 
 /// Sub-commands supported by the collator.
 #[derive(Debug, clap::Subcommand)]
@@ -57,20 +57,6 @@ pub enum Subcommand {
 	/// The pallet benchmarking moved to the `pallet` sub-command.
 	#[command(subcommand)]
 	Benchmark(frame_benchmarking_cli::BenchmarkCmd),
-}
-
-impl Subcommand {
-	pub fn contract_directory(&self) -> ContractsPath {
-		match self {
-			Self::BuildSpec(cmd) =>
-				match (cmd.no_predeployed_contracts, cmd.predeployed_contracts.clone()) {
-					(true, _) => ContractsPath::None,
-					(false, None) => ContractsPath::Default,
-					(false, Some(path)) => ContractsPath::Some(path),
-				},
-			_ => ContractsPath::None,
-		}
-	}
 }
 
 #[derive(Debug, Clone, clap::Parser)]
