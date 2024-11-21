@@ -18,12 +18,15 @@ use crate::eth::EthConfiguration;
 use cumulus_client_service::storage_proof_size::HostFunctions as ReclaimHostFunctions;
 use cumulus_primitives_core::ParaId;
 use fc_db::kv::frontier_database_dir;
+use fc_rpc::StorageOverrideHandler;
 use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
 use laos_runtime::Block;
 use log::info;
 use sc_cli::{Result, SubstrateCli};
+use sc_network::NotificationMetrics;
 use sc_service::{DatabaseSource, PartialComponents};
 use sp_runtime::traits::AccountIdConversion;
+use std::sync::Arc;
 
 use crate::{
 	chain_spec,
@@ -200,70 +203,169 @@ pub fn run() -> Result<()> {
 				cmd.run(client, frontier_backend)
 			})
 		},
-		None => start_node(cli, eth_cfg),
+		None => {
+			let runner = cli.create_runner(&cli.run.normalize())?;
+			let collator_options = cli.run.collator_options();
+
+			runner.run_node_until_exit(|config| async move {
+				let hwbench = (!cli.no_hardware_benchmarks)
+					.then_some(config.database.path().map(|database_path| {
+						let _ = std::fs::create_dir_all(database_path);
+						sc_sysinfo::gather_hwbench(Some(database_path))
+					}))
+					.flatten();
+
+				let para_id = chain_spec::Extensions::try_get(&*config.chain_spec)
+					.map(|e| e.para_id)
+					.ok_or("Could not find parachain ID in chain-spec.")?;
+
+				let id = ParaId::from(para_id);
+
+				if config.chain_spec.id() == "dev" {
+					info!("Starting Dev Node");
+					return start_dev_node(config, id, eth_cfg).map_err(Into::into);
+				}
+
+				let polkadot_cli = RelayChainCli::new(
+					&config,
+					[RelayChainCli::executable_name()].iter().chain(cli.relay_chain_args.iter()),
+				);
+
+				let parachain_account =
+					AccountIdConversion::<polkadot_primitives::AccountId>::into_account_truncating(
+						&id,
+					);
+
+				let tokio_handle = config.tokio_handle.clone();
+				let polkadot_config =
+					SubstrateCli::create_configuration(&polkadot_cli, &polkadot_cli, tokio_handle)
+						.map_err(|err| format!("Relay chain argument error: {}", err))?;
+
+				info!("Parachain id: {:?}", id);
+				info!("Parachain Account: {}", parachain_account);
+				info!("Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
+
+				crate::service::start_parachain_node(
+					config,
+					polkadot_config,
+					eth_cfg,
+					collator_options,
+					id,
+					hwbench,
+				)
+				.await
+				.map(|r| r.0)
+				.map_err(Into::into) // Convert errors into a compatible format
+			})
+		},
 	}
 }
 
-// Entry point for starting a parachain node
-fn start_node(cli: Cli, eth_cfg: EthConfiguration) -> Result<()> {
-	// Create a runner for the CLI configuration, normalizing the run options
-	let runner = cli.create_runner(&cli.run.normalize())?;
-	// Extract collator-specific options from the CLI configuration
-	let collator_options = cli.run.collator_options();
+fn start_dev_node(
+	mut config: sc_service::Configuration,
+	para_id: ParaId,
+	eth_config: EthConfiguration,
+) -> Result<sc_service::TaskManager> {
+	let PartialComponents {
+		client,
+		backend,
+		task_manager,
+		import_queue,
+		keystore_container,
+		transaction_pool,
+		other: (block_import, telemetry, telemetry_worker_handle, frontier_backend, overrides),
+		..
+	} = new_partial(&config, &eth_config)?;
 
-	// Run the node until exit, defining asynchronous logic for its configuration
-	runner.run_node_until_exit(|config| async move {
-		// Optionally perform hardware benchmarking unless explicitly disabled in CLI
-		let hwbench = (!cli.no_hardware_benchmarks)
-			.then_some(config.database.path().map(|database_path| {
-				// Ensure the database directory exists
-				let _ = std::fs::create_dir_all(database_path);
-				// Gather hardware benchmark data and save it to the database directory
-				sc_sysinfo::gather_hwbench(Some(database_path))
-			}))
-			.flatten();
-
-		// Retrieve the parachain ID from the chain specification
-		let para_id = chain_spec::Extensions::try_get(&*config.chain_spec)
-			.map(|e| e.para_id)
-			.ok_or("Could not find parachain ID in chain-spec.")?;
-
-		// Create a Relay Chain CLI instance to manage relay chain arguments and configuration
-		let polkadot_cli = RelayChainCli::new(
-			&config,
-			[RelayChainCli::executable_name()].iter().chain(cli.relay_chain_args.iter()),
+	let net_config =
+		sc_network::config::FullNetworkConfiguration::<_, _, sc_network::NetworkWorker<_, _>>::new(
+			&config.network,
 		);
 
-		// Convert the parachain ID into a ParaId instance
-		let id = ParaId::from(para_id);
+	let (network, system_rpc_tx, tx_handler_controller, start_network, sync_service) =
+		sc_service::build_network(sc_service::BuildNetworkParams {
+			config: &config,
+			client: client.clone(),
+			transaction_pool: transaction_pool.clone(),
+			net_config,
+			spawn_handle: task_manager.spawn_handle(),
+			import_queue,
+			block_announce_validator_builder: None,
+			warp_sync_params: None,
+			block_relay: None,
+			metrics: NotificationMetrics::new(None),
+		})?;
 
-		// Derive the parachain account from the parachain ID
-		let parachain_account =
-			AccountIdConversion::<polkadot_primitives::AccountId>::into_account_truncating(&id);
+	let frontier_backend = Arc::new(frontier_backend);
+	let force_authoring = config.force_authoring;
+	let backoff_authoring_blocks = None::<()>;
+	let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
 
-		// Clone the Tokio runtime handle to pass to configurations
-		let tokio_handle = config.tokio_handle.clone();
-		// Create the relay chain configuration using the Substrate CLI
-		let polkadot_config =
-			SubstrateCli::create_configuration(&polkadot_cli, &polkadot_cli, tokio_handle)
-				.map_err(|err| format!("Relay chain argument error: {}", err))?;
+	let proposer_factory = sc_basic_authorship::ProposerFactory::new(
+		task_manager.spawn_handle(),
+		client.clone(),
+		transaction_pool.clone(),
+		None,
+		None,
+	);
 
-		// Log relevant parachain information for debugging and tracking
-		info!("Parachain id: {:?}", id);
-		info!("Parachain Account: {}", parachain_account);
-		info!("Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
+	let client_for_cidp = client.clone();
 
-		// Start the parachain node with the specified configurations
-		crate::service::start_parachain_node(
-			config,
-			polkadot_config,
-			eth_cfg,
-			collator_options,
-			id,
-			hwbench,
-		)
-		.await
-		.map(|r| r.0) // Map the successful result
-		.map_err(Into::into) // Convert errors into a compatible format
-	})
+	let prometheus_registry = config.prometheus_registry().cloned();
+	let overrides = Arc::new(StorageOverrideHandler::new(client.clone()));
+	let block_data_cache = Arc::new(fc_rpc::EthBlockDataCacheTask::new(
+		task_manager.spawn_handle(),
+		overrides.clone(),
+		eth_config.eth_log_block_cache,
+		eth_config.eth_statuses_cache,
+		prometheus_registry.clone(),
+	));
+
+	let pubsub_notification_sinks: fc_mapping_sync::EthereumBlockNotificationSinks<
+		fc_mapping_sync::EthereumBlockNotification<Block>,
+	> = Default::default();
+	let pubsub_notification_sinks = Arc::new(pubsub_notification_sinks);
+	// for ethereum-compatibility rpc.
+	config.rpc_id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
+
+	let rpc_extensions_builder = {
+		let client = client.clone();
+		let transaction_pool = transaction_pool.clone();
+		let pubsub_notification_sinks = pubsub_notification_sinks.clone();
+
+		Box::new(move |deny_unsafe, subscription_task_executor| {
+			let deps = crate::rpc::FullDeps {
+				client: client.clone(),
+				pool: transaction_pool.clone(),
+				deny_unsafe,
+				eth: eth_rpc_params.clone(),
+			};
+
+			crate::rpc::create_full(
+				deps,
+				subscription_task_executor,
+				pubsub_notification_sinks.clone(),
+			)
+			.map_err(Into::into)
+		})
+	};
+
+	sc_service::spawn_tasks(sc_service::SpawnTasksParams {
+		rpc_builder: Box::new(rpc_extensions_builder),
+		client,
+		transaction_pool,
+		task_manager: &mut task_manager,
+		config,
+		keystore: keystore_container.keystore(),
+		backend,
+		network,
+		sync_service,
+		system_rpc_tx,
+		tx_handler_controller,
+		telemetry: None,
+	})?;
+
+	start_network.start_network();
+
+	Ok(task_manager)
 }
