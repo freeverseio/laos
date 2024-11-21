@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
-use laos_primitives::AuraId;
+use laos_runtime::AuraId;
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use serde::{Deserialize, Serialize};
 use sp_core::{Pair, Public};

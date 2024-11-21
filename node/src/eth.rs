@@ -1,19 +1,3 @@
-// Copyright 2023-2024 Freeverse.io
-// This file is part of LAOS.
-
-// LAOS is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-
-// LAOS is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// You should have received a copy of the GNU General Public License
-// along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
-
 use std::{
 	collections::BTreeMap,
 	path::PathBuf,
@@ -21,30 +5,33 @@ use std::{
 	time::Duration,
 };
 
+// Local
+use fc_rpc::EthTask;
+pub use fc_rpc_core::types::{FeeHistoryCache, FeeHistoryCacheLimit, FilterPool};
+pub use fc_storage::{StorageOverride, StorageOverrideHandler};
 use futures::{future, prelude::*};
+use laos_runtime::opaque::Block;
 // Substrate
 use sc_client_api::BlockchainEvents;
-#[allow(deprecated)]
-use sc_executor::{NativeElseWasmExecutor, NativeExecutionDispatch};
-
+use sc_executor::{HostFunctions, WasmExecutor};
 use sc_network_sync::SyncingService;
-use sc_service::{
-	error::Error as ServiceError, Configuration, TFullBackend, TFullClient, TaskManager,
-};
+use sc_service::{error::Error as ServiceError, Configuration, TaskManager};
 use sp_api::ConstructRuntimeApi;
-// Frontier
-pub use fc_consensus::FrontierBlockImport;
-use fc_mapping_sync::{kv::MappingSyncWorker, SyncStrategy};
-use fc_rpc::{EthTask, StorageOverride};
-pub use fc_rpc_core::types::{FeeHistoryCache, FeeHistoryCacheLimit, FilterPool};
-// Local
-use laos_runtime::opaque::Block;
+
+/// Full backend.
+pub type FullBackend = sc_service::TFullBackend<Block>;
+/// Full client.
+pub type FullClient<RuntimeApi, Executor> =
+	sc_service::TFullClient<Block, RuntimeApi, WasmExecutor<Executor>>;
+
+/// Frontier DB backend type.
+pub type FrontierBackend<C> = fc_db::Backend<Block, C>;
 
 pub fn db_config_dir(config: &Configuration) -> PathBuf {
 	config.base_path.config_dir(config.chain_spec.id())
 }
 
-/// Avalailable frontier backend types.
+/// Available frontier backend types.
 #[derive(Debug, Copy, Clone, Default, clap::ValueEnum)]
 pub enum BackendType {
 	/// Either RocksDb or ParityDb as per inherited from the global backend settings.
@@ -126,30 +113,25 @@ pub fn new_frontier_partial(
 /// A set of APIs that ethereum-compatible runtimes must implement.
 pub trait EthCompatRuntimeApiCollection:
 	sp_api::ApiExt<Block>
-	+ fp_rpc::EthereumRuntimeRPCApi<Block>
 	+ fp_rpc::ConvertTransactionRuntimeApi<Block>
+	+ fp_rpc::EthereumRuntimeRPCApi<Block>
 {
 }
 
 impl<Api> EthCompatRuntimeApiCollection for Api where
 	Api: sp_api::ApiExt<Block>
-		+ fp_rpc::EthereumRuntimeRPCApi<Block>
 		+ fp_rpc::ConvertTransactionRuntimeApi<Block>
+		+ fp_rpc::EthereumRuntimeRPCApi<Block>
 {
 }
 
-#[allow(clippy::too_many_arguments)]
-#[allow(deprecated)]
 pub async fn spawn_frontier_tasks<RuntimeApi, Executor>(
 	task_manager: &TaskManager,
-	client: Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
-	backend: Arc<TFullBackend<Block>>,
-	frontier_backend: fc_db::Backend<
-		Block,
-		TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>,
-	>,
+	client: Arc<FullClient<RuntimeApi, Executor>>,
+	backend: Arc<FullBackend>,
+	frontier_backend: Arc<FrontierBackend<FullClient<RuntimeApi, Executor>>>,
 	filter_pool: Option<FilterPool>,
-	overrides: Arc<dyn StorageOverride<Block>>,
+	storage_override: Arc<dyn StorageOverride<Block>>,
 	fee_history_cache: FeeHistoryCache,
 	fee_history_cache_limit: FeeHistoryCacheLimit,
 	sync: Arc<SyncingService<Block>>,
@@ -159,31 +141,27 @@ pub async fn spawn_frontier_tasks<RuntimeApi, Executor>(
 		>,
 	>,
 ) where
-	RuntimeApi: ConstructRuntimeApi<
-		Block,
-		TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>,
-	>,
+	RuntimeApi: ConstructRuntimeApi<Block, FullClient<RuntimeApi, Executor>>,
 	RuntimeApi: Send + Sync + 'static,
 	RuntimeApi::RuntimeApi: EthCompatRuntimeApiCollection,
-	Executor: NativeExecutionDispatch + 'static,
+	Executor: HostFunctions + 'static,
 {
 	// Spawn main mapping sync worker background task.
-
-	match frontier_backend {
+	match &*frontier_backend {
 		fc_db::Backend::KeyValue(b) => {
 			task_manager.spawn_essential_handle().spawn(
 				"frontier-mapping-sync-worker",
 				Some("frontier"),
-				MappingSyncWorker::new(
+				fc_mapping_sync::kv::MappingSyncWorker::new(
 					client.import_notification_stream(),
 					Duration::new(6, 0),
 					client.clone(),
 					backend,
-					overrides.clone(),
-					b,
+					storage_override.clone(),
+					b.clone(),
 					3,
-					0,
-					SyncStrategy::Parachain,
+					0u32,
+					fc_mapping_sync::SyncStrategy::Normal,
 					sync,
 					pubsub_notification_sinks,
 				)
@@ -197,10 +175,10 @@ pub async fn spawn_frontier_tasks<RuntimeApi, Executor>(
 				fc_mapping_sync::sql::SyncWorker::run(
 					client.clone(),
 					backend,
-					b,
+					b.clone(),
 					client.import_notification_stream(),
 					fc_mapping_sync::sql::SyncWorkerConfig {
-						read_notification_timeout: Duration::from_secs(10),
+						read_notification_timeout: Duration::from_secs(30),
 						check_indexed_blocks_interval: Duration::from_secs(60),
 					},
 					fc_mapping_sync::SyncStrategy::Parachain,
@@ -226,6 +204,11 @@ pub async fn spawn_frontier_tasks<RuntimeApi, Executor>(
 	task_manager.spawn_essential_handle().spawn(
 		"frontier-fee-history",
 		Some("frontier"),
-		EthTask::fee_history_task(client, overrides, fee_history_cache, fee_history_cache_limit),
+		EthTask::fee_history_task(
+			client,
+			storage_override,
+			fee_history_cache,
+			fee_history_cache_limit,
+		),
 	);
 }

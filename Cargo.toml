@@ -36,6 +36,7 @@ serde_json = { version = "1.0.104", default-features = true }
 rustc-hex = { version = "2.1", default-features = false }
 frame-metadata = "16.0.0"
 assert-json-diff = "2.0.2"
+color-print = "0.3.4"
 
 # Wasm builder
 substrate-wasm-builder = { git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2407" }
@@ -172,6 +173,7 @@ fc-rpc-core = { git = "https://github.com/paritytech/frontier", branch = "stable
 fc-mapping-sync = { git = "https://github.com/paritytech/frontier", branch = "stable2407" }
 fc-db = { git = "https://github.com/paritytech/frontier", branch = "stable2407" }
 fc-consensus = { git = "https://github.com/paritytech/frontier", branch = "stable2407" }
+fc-storage = { git = "https://github.com/paritytech/frontier", branch = "stable2407" }
 fp-dynamic-fee = { git = "https://github.com/paritytech/frontier", branch = "stable2407" }
 
 # Cumulus

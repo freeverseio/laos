@@ -1334,6 +1334,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "color-print"
+version = "0.3.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3aa954171903797d5623e047d9ab69d91b493657917bdfb8c2c80ecaf9cdb6f4"
+dependencies = [
+ "color-print-proc-macro",
+]
+
+[[package]]
+name = "color-print-proc-macro"
+version = "0.3.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "692186b5ebe54007e45a59aea47ece9eb4108e141326c304cdc91699a7118a22"
+dependencies = [
+ "nom",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.79",
+]
+
+[[package]]
 name = "colorchoice"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3058,24 +3079,6 @@ dependencies = [
  "fp-storage",
  "parity-scale-codec",
  "sp-core",
- "sp-runtime",
-]
-
-[[package]]
-name = "fc-cli"
-version = "1.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=stable2407#2e219e17a526125da003e64ef22ec037917083fa"
-dependencies = [
- "clap",
- "ethereum-types",
- "fc-db",
- "fp-rpc",
- "fp-storage",
- "sc-cli",
- "serde",
- "serde_json",
- "sp-api",
- "sp-blockchain",
  "sp-runtime",
 ]
 
@@ -5046,6 +5049,7 @@ name = "laos"
 version = "0.23.90"
 dependencies = [
  "clap",
+ "color-print",
  "cumulus-client-cli",
  "cumulus-client-collator",
  "cumulus-client-consensus-aura",
@@ -5055,27 +5059,27 @@ dependencies = [
  "cumulus-primitives-core",
  "cumulus-relay-chain-interface",
  "fc-api",
- "fc-cli",
  "fc-consensus",
  "fc-db",
  "fc-mapping-sync",
  "fc-rpc",
  "fc-rpc-core",
+ "fc-storage",
  "fp-dynamic-fee",
  "fp-evm",
  "fp-rpc",
+ "frame-benchmarking",
  "frame-benchmarking-cli",
  "futures",
+ "hex",
  "hex-literal",
  "jsonrpsee",
- "laos-primitives",
  "laos-runtime",
  "log",
  "pallet-transaction-payment-rpc",
  "parity-scale-codec",
  "polkadot-cli",
  "polkadot-primitives",
- "polkadot-service",
  "sc-basic-authorship",
  "sc-chain-spec",
  "sc-cli",
@@ -5101,6 +5105,7 @@ dependencies = [
  "sp-consensus-aura",
  "sp-core",
  "sp-inherents",
+ "sp-io",
  "sp-keystore",
  "sp-runtime",
  "sp-timestamp",
@@ -9533,10 +9538,8 @@ version = "17.0.1"
 source = "git+https://github.com/paritytech/polkadot-sdk?branch=stable2407#47155f85a877e8c26b2249e31cdb4deb485b4067"
 dependencies = [
  "async-trait",
- "bitvec",
  "frame-benchmarking",
  "frame-benchmarking-cli",
- "frame-metadata-hash-extension",
  "frame-support",
  "frame-system",
  "frame-system-rpc-runtime-api",
@@ -9590,7 +9593,6 @@ dependencies = [
  "polkadot-runtime-parachains",
  "polkadot-statement-distribution",
  "rococo-runtime",
- "rococo-runtime-constants",
  "sc-authority-discovery",
  "sc-basic-authorship",
  "sc-block-builder",

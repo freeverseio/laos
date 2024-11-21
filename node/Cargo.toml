@@ -6,19 +6,22 @@ version = { workspace = true }
 build = "build.rs"
 
 [dependencies]
-clap = { workspace = true, features = ["derive"] }
+clap = { workspace = true }
 futures = { workspace = true }
-log = { workspace = true }
-parity-scale-codec = { workspace = true, features = ["derive"] }
-serde = { workspace = true, features = ["derive"] }
-jsonrpsee = { workspace = true, features = ["server"] }
+hex = { workspace = true }
 hex-literal = { workspace = true }
-serde_json = { workspace = true, default-features = true }
+jsonrpsee = { workspace = true, features = [ "server" ] }
+log = { workspace = true }
+parity-scale-codec = { workspace = true }
+serde = { workspace = true, features = [ "derive" ] }
+# serde_derive = { workspace = true }
+serde_json = { workspace = true }
 
 # Local
 laos-runtime = { workspace = true, features = ["std"] }
 
 # Substrate
+frame-benchmarking = { workspace = true }
 frame-benchmarking-cli = { workspace = true }
 pallet-transaction-payment-rpc = { workspace = true }
 sc-basic-authorship = { workspace = true }
@@ -44,6 +47,7 @@ sp-blockchain = { workspace = true }
 sp-consensus-aura = { workspace = true }
 sp-core = { workspace = true }
 sp-inherents = { workspace = true }
+sp-io = { workspace = true }
 sp-keystore = { workspace = true }
 sp-runtime = { workspace = true }
 sp-timestamp = { workspace = true }
@@ -51,13 +55,12 @@ substrate-frame-rpc-system = { workspace = true }
 substrate-prometheus-endpoint = { workspace = true }
 
 # Polkadot
-polkadot-cli = { workspace = true, features = ["rococo-native"] }
-polkadot-service = { workspace = true, features = ["rococo-native"] }
+polkadot-cli = { workspace = true }
 polkadot-primitives = { workspace = true }
 xcm = { workspace = true }
-laos-primitives = { workspace = true }
 
 # Cumulus
+color-print = { workspace = true } 
 cumulus-client-cli = { workspace = true }
 cumulus-client-collator = { workspace = true }
 cumulus-client-consensus-aura = { workspace = true }
@@ -65,40 +68,40 @@ cumulus-client-consensus-common = { workspace = true }
 cumulus-client-consensus-proposer = { workspace = true }
 cumulus-client-service = { workspace = true }
 cumulus-primitives-core = { workspace = true }
+# cumulus-primitives-parachain-inherent = { workspace = true }
 cumulus-relay-chain-interface = { workspace = true }
 
 # Frontier
 fc-api = { workspace = true }
-fc-cli = { workspace = true }
-fc-rpc = { workspace = true, features = [ "rpc-binary-search-estimate", "txpool" ] }
-fc-rpc-core = { workspace = true }
-fc-mapping-sync = { workspace = true, features = ["sql"] }
-fc-db = { workspace = true }
 fc-consensus = { workspace = true }
-fp-rpc = { workspace = true, default-features = false }
+fc-db = { workspace = true, features = [ "rocksdb" ] }
+fc-mapping-sync = { workspace = true, features = [ "sql" ] }
+fc-rpc = { workspace = true }
+fc-rpc-core = { workspace = true }
+fc-storage = { workspace = true }
+fp-dynamic-fee = { workspace = true, features = [ "std" ] }
 fp-evm = { workspace = true }
-fp-dynamic-fee = { workspace = true }
+fp-rpc = { workspace = true }
 
 [build-dependencies]
 substrate-build-script-utils = { workspace = true }
 
 [features]
-default = [
-	"txpool"
-]
-txpool = ["fc-rpc/txpool"]
+default = []
+async-backing = []
 runtime-benchmarks = [
 	"laos-runtime/runtime-benchmarks",
-	"polkadot-cli/runtime-benchmarks",
-	"polkadot-service/runtime-benchmarks",
-	"sp-runtime/runtime-benchmarks",
-	"sc-service/runtime-benchmarks",
-	"polkadot-primitives/runtime-benchmarks",
 	"frame-benchmarking-cli/runtime-benchmarks",
+	"frame-benchmarking/runtime-benchmarks",
+	"polkadot-cli/runtime-benchmarks",
+	"polkadot-primitives/runtime-benchmarks",
+	"sc-service/runtime-benchmarks",
+	"sp-runtime/runtime-benchmarks",
 ]
 try-runtime = [
 	"laos-runtime/try-runtime",
 	"polkadot-cli/try-runtime",
-	"polkadot-service/try-runtime",
 	"sp-runtime/try-runtime",
 ]
+txpool = [ "fc-rpc/txpool" ]
+
