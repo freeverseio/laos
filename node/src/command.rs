@@ -62,7 +62,7 @@ fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 
 impl SubstrateCli for Cli {
 	fn impl_name() -> String {
-		"Parachain Collator Template".into()
+		"LAOS Parachain Node".into()
 	}
 
 	fn impl_version() -> String {
@@ -71,9 +71,10 @@ impl SubstrateCli for Cli {
 
 	fn description() -> String {
 		format!(
-			"Parachain Collator Template\n\nThe command-line arguments provided first will be \
-             passed to the parachain node, while the arguments provided after -- will be passed \
-             to the relay chain node.\n\n{} <parachain-args> -- <relay-chain-args>",
+			"LAOS Parachain Node\n\nThe command-line arguments provided first will be \
+		passed to the parachain node, while the arguments provided after -- will be passed \
+		to the relay chain node.\n\n\
+		{} <parachain-args> -- <relay-chain-args>",
 			Self::executable_name()
 		)
 	}
@@ -87,13 +88,11 @@ impl SubstrateCli for Cli {
 	}
 
 	fn copyright_start_year() -> i32 {
-		2020
+		2023
 	}
 
 	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
-		load_spec(
-			id,
-		)
+		load_spec(id)
 	}
 }
 
@@ -108,9 +107,10 @@ impl SubstrateCli for RelayChainCli {
 
 	fn description() -> String {
 		format!(
-			"Parachain Collator Template\n\nThe command-line arguments provided first will be \
-             passed to the parachain node, while the arguments provided after -- will be passed \
-             to the relay chain node.\n\n{} <parachain-args> -- <relay-chain-args>",
+			"LAOS Parachain Node\n\nThe command-line arguments provided first will be \
+		passed to the parachain node, while the arguments provided after -- will be passed \
+		to the relay chain node.\n\n\
+		{} <parachain-args> -- <relay-chain-args>",
 			Self::executable_name()
 		)
 	}
@@ -229,12 +229,11 @@ pub fn run() -> Result<()> {
 					cmd.run(partials.client)
 				}),
 				#[cfg(not(feature = "runtime-benchmarks"))]
-				BenchmarkCmd::Storage(_) =>
-					Err(sc_cli::Error::Input(
-						"Compile with --features=runtime-benchmarks \
+				BenchmarkCmd::Storage(_) => Err(sc_cli::Error::Input(
+					"Compile with --features=runtime-benchmarks \
 						to enable storage benchmarks."
-							.into(),
-					)),
+						.into(),
+				)),
 				#[cfg(feature = "runtime-benchmarks")]
 				BenchmarkCmd::Storage(cmd) => runner.sync_run(|config| {
 					let partials = new_partial(&config, &cli.eth)?;
@@ -250,7 +249,6 @@ pub fn run() -> Result<()> {
 				_ => Err("Benchmarking sub-command unsupported".into()),
 			}
 		},
-		Some(Subcommand::TryRuntime) => Err("The `try-runtime` subcommand has been migrated to a standalone CLI (https://github.com/paritytech/try-runtime-cli). It is no longer being maintained here and will be removed entirely some time after January 2024. Please remove this subcommand from your runtime and use the standalone CLI.".into()),
 		None => {
 			let runner = cli.create_runner(&cli.run.normalize())?;
 			let collator_options = cli.run.collator_options();
@@ -291,7 +289,7 @@ pub fn run() -> Result<()> {
 					config,
 					polkadot_config,
 					collator_options,
-                    &cli.eth,
+					&cli.eth,
 					id,
 					hwbench,
 				)
