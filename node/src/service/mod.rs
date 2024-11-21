@@ -56,7 +56,7 @@ use substrate_prometheus_endpoint::Registry;
 // Frontier
 use crate::eth::{
 	db_config_dir, new_frontier_partial, spawn_frontier_tasks, BackendType, EthConfiguration,
-	FrontierBlockImport as TFrontierBlockImport, FrontierPartialComponents,
+	FrontierBackend, FrontierBlockImport as TFrontierBlockImport, FrontierPartialComponents,
 };
 
 /// Native executor type.
@@ -84,31 +84,30 @@ type ParachainBlockImport = TParachainBlockImport<Block, FrontierBlockImport, Pa
 
 type FrontierBlockImport = TFrontierBlockImport<Block, Arc<ParachainClient>, ParachainClient>;
 
+/// Assembly of PartialComponents (enough to run chain ops subcommands)
+pub type Service = PartialComponents<
+	ParachainClient,
+	ParachainBackend,
+	(),
+	sc_consensus::DefaultImportQueue<Block>,
+	sc_transaction_pool::FullPool<Block, ParachainClient>,
+	(
+		ParachainBlockImport,
+		Option<Telemetry>,
+		Option<TelemetryWorkerHandle>,
+		FrontierBackend<ParachainClient>,
+		Arc<dyn StorageOverride<Block>>,
+	),
+>;
+
 /// Starts a `ServiceBuilder` for a full service.
 ///
 /// Use this macro if you don't actually need the full service, but just the builder in order to
 /// be able to perform chain operations.
-#[allow(clippy::type_complexity)]
 pub fn new_partial(
 	config: &Configuration,
 	eth_config: &EthConfiguration,
-) -> Result<
-	PartialComponents<
-		ParachainClient,
-		ParachainBackend,
-		(),
-		sc_consensus::DefaultImportQueue<Block>,
-		sc_transaction_pool::FullPool<Block, ParachainClient>,
-		(
-			ParachainBlockImport,
-			Option<Telemetry>,
-			Option<TelemetryWorkerHandle>,
-			fc_db::Backend<Block, ParachainClient>,
-			Arc<dyn StorageOverride<Block>>,
-		),
-	>,
-	sc_service::Error,
-> {
+) -> Result<Service, sc_service::Error> {
 	let telemetry = config
 		.telemetry_endpoints
 		.clone()
@@ -159,6 +158,7 @@ pub fn new_partial(
 
 	let overrides = Arc::new(StorageOverrideHandler::new(client.clone()));
 	// TODO This is copied from frontier. It should be imported instead after https://github.com/paritytech/frontier/issues/333 is solved
+	// TODO extract this into a function
 	let frontier_backend = match eth_config.frontier_backend_type {
 		BackendType::KeyValue => fc_db::Backend::KeyValue(Arc::new(fc_db::kv::Backend::open(
 			Arc::clone(&client),
