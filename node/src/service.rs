@@ -358,6 +358,7 @@ async fn start_node_impl(
 				cumulus_test_relay_sproof_builder::RelayStateSproofBuilder::default();
 			state_proof_builder.para_id = para_id;
 			state_proof_builder.current_slot = relay_chain_slot;
+			log::info!("current_slot: {:?}", state_proof_builder.current_slot);
 			state_proof_builder.included_para_head = Some(polkadot_primitives::HeadData(vec![]));
 			let (relay_parent_storage_root, relay_chain_state) =
 				state_proof_builder.into_state_root_and_proof();
