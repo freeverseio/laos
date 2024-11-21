@@ -17,14 +17,13 @@
 //! Service and ServiceFactory implementation. Specialized wrapper over substrate service.
 
 // std
-use std::{sync::Arc, time::Duration};
+use std::{path::Path, sync::Arc, time::Duration};
 
 use cumulus_client_cli::CollatorOptions;
 // Local Runtime Types
 use laos_runtime::{opaque::Block, types::TransactionConverter, Hash};
 
 // Cumulus Imports
-use crate::eth::{db_config_dir, BackendType};
 use cumulus_client_collator::service::CollatorService;
 use cumulus_client_consensus_common::ParachainBlockImport as TParachainBlockImport;
 use cumulus_client_consensus_proposer::Proposer;
@@ -35,7 +34,6 @@ use cumulus_client_service::{
 };
 use cumulus_primitives_core::{relay_chain::CollatorPair, ParaId};
 use cumulus_relay_chain_interface::{OverseerHandle, RelayChainInterface};
-use std::path::Path;
 
 // Substrate Imports
 use fc_rpc::{StorageOverride, StorageOverrideHandler};
@@ -57,8 +55,8 @@ use sp_keystore::KeystorePtr;
 use substrate_prometheus_endpoint::Registry;
 // Frontier
 use crate::eth::{
-	new_frontier_partial, spawn_frontier_tasks, EthConfiguration, FrontierBackend,
-	FrontierBlockImport as TFrontierBlockImport, FrontierPartialComponents,
+	db_config_dir, new_frontier_partial, spawn_frontier_tasks, BackendType, EthConfiguration,
+	FrontierBackend, FrontierBlockImport as TFrontierBlockImport, FrontierPartialComponents,
 };
 
 /// Native executor type.
