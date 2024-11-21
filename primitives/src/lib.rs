@@ -19,18 +19,11 @@
 #![warn(missing_docs)]
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use frame_support::weights::{constants::WEIGHT_REF_TIME_PER_SECOND, IdentityFee, Weight};
+use frame_support::weights::IdentityFee;
 use frame_system::limits;
-pub use parachains_common::NORMAL_DISPATCH_RATIO;
+pub use parachains_common::{MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO};
 use sp_core::Hasher as HasherT;
 use sp_runtime::traits::{BlakeTwo256, IdentifyAccount, Verify};
-pub use parachains_common::MAXIMUM_BLOCK_WEIGHT;
-
-// /// We allow for 2 seconds of compute with a 6 second average block.
-// pub const MAXIMUM_BLOCK_WEIGHT: Weight = Weight::from_parts(
-// 	WEIGHT_REF_TIME_PER_SECOND.saturating_mul(2),
-// 	cumulus_primitives_core::relay_chain::MAX_POV_SIZE as u64,
-// );
 
 /// Authority ID used in parachain.
 pub type AuraId = sp_consensus_aura::sr25519::AuthorityId;
@@ -85,7 +78,7 @@ mod tests {
 		let weights = RuntimeBlockWeights::get();
 
 		assert_eq!(weights.base_block, Weight::from_parts(453383000, 0));
-		assert_eq!(weights.max_block, Weight::from_parts(2000000000000, 5242880));
+		assert_eq!(weights.max_block, Weight::from_parts(500000000000, 5242880));
 
 		let normal = weights.per_class.get(DispatchClass::Normal);
 		assert_eq!(normal.base_extrinsic, Weight::from_parts(107074000, 0));
