@@ -29,4 +29,9 @@ describeWithExistingNode("Frontier RPC (Web3Api)", function () {
 		const balance = new BN(await this.context.web3.eth.getBalance(this.ethereumPairs.faith.address));
 		expect(balance.gt(new BN(0))).to.be.eq(true);
 	});
+
+	step("pending state is returned correctly", async function () {
+		const balance = new BN(await this.context.web3.eth.getBalance(this.ethereumPairs.faith.address, "pending"));
+		expect(balance.gt(new BN(0))).to.be.eq(true);
+	});
 });
