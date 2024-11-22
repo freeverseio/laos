@@ -34,19 +34,19 @@ use cumulus_client_service::{
 };
 use cumulus_primitives_core::{
 	relay_chain::{CollatorPair, ValidationCode},
-	ParaId,
+	ParaId, PersistedValidationData,
 };
+use cumulus_primitives_parachain_inherent::ParachainInherentData;
 use cumulus_relay_chain_interface::{OverseerHandle, RelayChainInterface};
-
 // Substrate Imports
 use cumulus_client_consensus_aura::collators::lookahead::{self as aura, Params as AuraParams};
-use cumulus_primitives_parachain_inherent::ParachainInherentData;
-use cumulus_relay_chain_interface::PersistedValidationData;
 use cumulus_test_relay_sproof_builder::RelayStateSproofBuilder;
 use fc_rpc::{StorageOverride, StorageOverrideHandler};
 use frame_benchmarking_cli::SUBSTRATE_REFERENCE_HARDWARE;
 use futures::FutureExt;
-use laos_runtime::RuntimeApi;
+use laos_runtime::{
+	configs::cumulus_parachain_system::RELAY_CHAIN_SLOT_DURATION_MILLIS, RuntimeApi,
+};
 use sc_client_api::Backend;
 use sc_consensus::ImportQueue;
 use sc_executor::{
@@ -57,9 +57,12 @@ use sc_network_sync::SyncingService;
 use sc_service::{Configuration, PartialComponents, TFullBackend, TFullClient, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryHandle, TelemetryWorker, TelemetryWorkerHandle};
 use sc_transaction_pool_api::OffchainTransactionPoolFactory;
+use sp_consensus_aura::{Slot, SlotDuration};
 use sp_core::U256;
 use sp_keystore::KeystorePtr;
 use substrate_prometheus_endpoint::Registry;
+
+use laos_runtime::MILLISECS_PER_BLOCK;
 
 // Frontier
 use crate::eth::{
@@ -349,28 +352,38 @@ async fn start_node_impl(
 		fee_history_cache_limit,
 		execute_gas_limit_multiplier: eth_config.execute_gas_limit_multiplier,
 		forced_parent_hashes: None,
-		pending_create_inherent_data_providers: move |_, _| async move {
-			let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
-			// Create a dummy parachain inherent data provider which is required to pass
-			// the checks by the para chain system. We use dummy values because in the 'pending
-			// context' neither do we have access to the real values nor do we need them.
-			let (relay_parent_storage_root, relay_chain_state) =
-				RelayStateSproofBuilder::default().into_state_root_and_proof();
-			let vfp = PersistedValidationData {
-				// This is a hack to make
-				// `cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases` happy. Relay
-				// parent number can't be bigger than u32::MAX.
-				relay_parent_number: u32::MAX,
-				relay_parent_storage_root,
+		pending_create_inherent_data_providers: move |_, ()| async move {
+			// Timestamp should be in the future so the new slot is calculated correctly
+			let additional_duration = Duration::from_millis(MILLISECS_PER_BLOCK); // SLOT_DURATION
+			let new_timestamp = sp_timestamp::InherentDataProvider::from_system_time().timestamp() +
+				additional_duration.as_millis() as u64;
+			let timestamp_provider = sp_timestamp::InherentDataProvider::new(new_timestamp);
+
+			// Patch from https://github.com/darwinia-network/darwinia/pull/1608
+			let relay_chain_slot = Slot::from_timestamp(
+				timestamp_provider.timestamp(),
+				SlotDuration::from_millis(RELAY_CHAIN_SLOT_DURATION_MILLIS as u64),
+			);
+
+			let state_proof_builder = RelayStateSproofBuilder {
+				para_id,
+				current_slot: relay_chain_slot,
+				included_para_head: Some(polkadot_primitives::HeadData(vec![])),
 				..Default::default()
 			};
+			let (relay_parent_storage_root, relay_chain_state) =
+				state_proof_builder.into_state_root_and_proof();
 			let parachain_inherent_data = ParachainInherentData {
-				validation_data: vfp,
+				validation_data: PersistedValidationData {
+					relay_parent_number: u32::MAX,
+					relay_parent_storage_root,
+					..Default::default()
+				},
 				relay_chain_state,
 				downward_messages: Default::default(),
 				horizontal_messages: Default::default(),
 			};
-			Ok((timestamp, parachain_inherent_data))
+			Ok((timestamp_provider, parachain_inherent_data))
 		},
 	};
 

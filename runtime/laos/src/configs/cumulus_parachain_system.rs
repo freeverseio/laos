@@ -52,7 +52,7 @@ const UNINCLUDED_SEGMENT_CAPACITY: u32 = 1;
 /// number of blocks authored per slot.
 const BLOCK_PROCESSING_VELOCITY: u32 = 1;
 /// Relay chain slot duration, in milliseconds.
-const RELAY_CHAIN_SLOT_DURATION_MILLIS: u32 = 6000;
+pub const RELAY_CHAIN_SLOT_DURATION_MILLIS: u32 = 6000;
 
 pub type ConsensusHook = cumulus_pallet_aura_ext::FixedVelocityConsensusHook<
 	Runtime,
