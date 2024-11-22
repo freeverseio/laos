@@ -4,11 +4,10 @@ use super::collective::{
 };
 use crate::{
 	currency::UNIT, weights, AccountId, Balance, Balances, BlockNumber, OriginCaller, Preimage,
-	Runtime, RuntimeEvent, Scheduler, TechnicalCommitteeMembership, Treasury,
+	Runtime, RuntimeEvent, Scheduler, TechnicalCommitteeMembership, Treasury, DAYS, HOURS, MINUTES,
 };
 use frame_support::{parameter_types, traits::EitherOfDiverse};
 use frame_system::{EnsureRoot, EnsureSigned, EnsureSignedBy};
-use parachains_common::{DAYS, HOURS, MINUTES};
 use polkadot_runtime_common::prod_or_fast;
 
 parameter_types! {

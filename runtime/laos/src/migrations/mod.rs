@@ -16,4 +16,4 @@
 
 use crate::Runtime;
 
-pub type Migrations = (cumulus_pallet_xcmp_queue::migration::v4::MigrationToV4<Runtime>,);
+pub type Migrations = cumulus_pallet_xcmp_queue::migration::v4::MigrationToV4<Runtime>;
