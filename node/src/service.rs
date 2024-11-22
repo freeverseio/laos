@@ -353,7 +353,7 @@ async fn start_node_impl(
 			let additional_duration = Duration::from_millis(MILLISECS_PER_BLOCK); // SLOT_DURATION
 			let new_timestamp = sp_timestamp::InherentDataProvider::from_system_time().timestamp() +
 				additional_duration.as_millis() as u64;
-			let timestamp_provider = sp_timestamp::InherentDataProvider::new(new_timestamp.into());
+			let timestamp_provider = sp_timestamp::InherentDataProvider::new(new_timestamp);
 
 			// Patch from https://github.com/darwinia-network/darwinia/pull/1608
 			let relay_chain_slot = Slot::from_timestamp(
@@ -361,10 +361,12 @@ async fn start_node_impl(
 				SlotDuration::from_millis(RELAY_CHAIN_SLOT_DURATION_MILLIS as u64),
 			);
 
-			let mut state_proof_builder = RelayStateSproofBuilder::default();
-			state_proof_builder.para_id = para_id;
-			state_proof_builder.current_slot = relay_chain_slot;
-			state_proof_builder.included_para_head = Some(polkadot_primitives::HeadData(vec![]));
+			let state_proof_builder = RelayStateSproofBuilder {
+				para_id,
+				current_slot: relay_chain_slot,
+				included_para_head: Some(polkadot_primitives::HeadData(vec![])),
+				..Default::default()
+			};
 			let (relay_parent_storage_root, relay_chain_state) =
 				state_proof_builder.into_state_root_and_proof();
 			let parachain_inherent_data = ParachainInherentData {
