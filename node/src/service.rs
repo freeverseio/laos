@@ -32,10 +32,17 @@ use cumulus_client_service::{
 	BuildNetworkParams, CollatorSybilResistance, DARecoveryProfile, ParachainHostFunctions,
 	StartRelayChainTasksParams,
 };
-use cumulus_primitives_core::{relay_chain::CollatorPair, ParaId};
+use cumulus_primitives_core::{
+	relay_chain::{CollatorPair, ValidationCode},
+	ParaId,
+};
 use cumulus_relay_chain_interface::{OverseerHandle, RelayChainInterface};
 
 // Substrate Imports
+use cumulus_client_consensus_aura::collators::lookahead::{self as aura, Params as AuraParams};
+use cumulus_primitives_parachain_inherent::ParachainInherentData;
+use cumulus_relay_chain_interface::PersistedValidationData;
+use cumulus_test_relay_sproof_builder::RelayStateSproofBuilder;
 use fc_rpc::{StorageOverride, StorageOverrideHandler};
 use frame_benchmarking_cli::SUBSTRATE_REFERENCE_HARDWARE;
 use futures::FutureExt;
@@ -53,6 +60,7 @@ use sc_transaction_pool_api::OffchainTransactionPoolFactory;
 use sp_core::U256;
 use sp_keystore::KeystorePtr;
 use substrate_prometheus_endpoint::Registry;
+
 // Frontier
 use crate::eth::{
 	db_config_dir, new_frontier_partial, spawn_frontier_tasks, BackendType, EthConfiguration,
@@ -310,8 +318,6 @@ async fn start_node_impl(
 		fc_mapping_sync::EthereumBlockNotification<Block>,
 	> = Default::default();
 	let pubsub_notification_sinks = Arc::new(pubsub_notification_sinks);
-	let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
-	let target_gas_price = eth_config.target_gas_price;
 
 	// for ethereum-compatibility rpc.
 	parachain_config.rpc_id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
@@ -343,16 +349,28 @@ async fn start_node_impl(
 		fee_history_cache_limit,
 		execute_gas_limit_multiplier: eth_config.execute_gas_limit_multiplier,
 		forced_parent_hashes: None,
-		pending_create_inherent_data_providers: move |_, ()| async move {
-			let current = sp_timestamp::InherentDataProvider::from_system_time();
-			let next_slot = current.timestamp().as_millis() + slot_duration.as_millis();
-			let timestamp = sp_timestamp::InherentDataProvider::new(next_slot.into());
-			let slot = sp_consensus_aura::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
-				*timestamp,
-				slot_duration,
-			);
-			let dynamic_fee = fp_dynamic_fee::InherentDataProvider(U256::from(target_gas_price));
-			Ok((slot, timestamp, dynamic_fee))
+		pending_create_inherent_data_providers: move |_, _| async move {
+			let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
+			// Create a dummy parachain inherent data provider which is required to pass
+			// the checks by the para chain system. We use dummy values because in the 'pending
+			// context' neither do we have access to the real values nor do we need them.
+			let (relay_parent_storage_root, relay_chain_state) =
+				RelayStateSproofBuilder::default().into_state_root_and_proof();
+			let vfp = PersistedValidationData {
+				// This is a hack to make
+				// `cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases` happy. Relay
+				// parent number can't be bigger than u32::MAX.
+				relay_parent_number: u32::MAX,
+				relay_parent_storage_root,
+				..Default::default()
+			};
+			let parachain_inherent_data = ParachainInherentData {
+				validation_data: vfp,
+				relay_chain_state,
+				downward_messages: Default::default(),
+				horizontal_messages: Default::default(),
+			};
+			Ok((timestamp, parachain_inherent_data))
 		},
 	};
 
@@ -396,7 +414,7 @@ async fn start_node_impl(
 	spawn_frontier_tasks(
 		&task_manager,
 		client.clone(),
-		backend,
+		backend.clone(),
 		frontier_backend,
 		filter_pool,
 		overrides,
@@ -463,6 +481,7 @@ async fn start_node_impl(
 	if validator {
 		start_consensus(
 			client.clone(),
+			backend.clone(),
 			block_import,
 			prometheus_registry.as_ref(),
 			telemetry.as_ref().map(|t| t.handle()),
@@ -524,6 +543,7 @@ fn build_import_queue(
 #[allow(clippy::too_many_arguments)]
 fn start_consensus(
 	client: Arc<ParachainClient>,
+	backend: Arc<ParachainBackend>,
 	block_import: ParachainBlockImport,
 	prometheus_registry: Option<&Registry>,
 	telemetry: Option<TelemetryHandle>,
@@ -538,10 +558,6 @@ fn start_consensus(
 	overseer_handle: OverseerHandle,
 	announce_block: Arc<dyn Fn(Hash, Option<Vec<u8>>) + Send + Sync>,
 ) -> Result<(), sc_service::Error> {
-	use cumulus_client_consensus_aura::collators::basic::{
-		self as basic_aura, Params as BasicAuraParams,
-	};
-
 	// NOTE: because we use Aura here explicitly, we can use `CollatorSybilResistance::Resistant`
 	// when starting the network.
 
@@ -562,11 +578,15 @@ fn start_consensus(
 		client.clone(),
 	);
 
-	let params = BasicAuraParams {
+	let params = AuraParams {
 		create_inherent_data_providers: move |_, ()| async move { Ok(()) },
 		block_import,
-		para_client: client,
+		para_client: client.clone(),
+		para_backend: backend.clone(),
 		relay_client: relay_chain_interface,
+		code_hash_provider: move |block_hash| {
+			client.code_at(block_hash).ok().map(|c| ValidationCode::from(c).hash())
+		},
 		sync_oracle,
 		keystore,
 		collator_key,
@@ -576,12 +596,12 @@ fn start_consensus(
 		proposer,
 		collator_service,
 		// Very limited proposal time.
-		authoring_duration: Duration::from_millis(500),
-		collation_request_receiver: None,
+		authoring_duration: Duration::from_millis(1500),
+		reinitialize: false,
 	};
 
 	let fut =
-		basic_aura::run::<Block, sp_consensus_aura::sr25519::AuthorityPair, _, _, _, _, _, _, _>(
+		aura::run::<Block, sp_consensus_aura::sr25519::AuthorityPair, _, _, _, _, _, _, _, _, _>(
 			params,
 		);
 	task_manager.spawn_essential_handle().spawn("aura", None, fut);
