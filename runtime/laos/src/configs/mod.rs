@@ -21,7 +21,7 @@ mod balances;
 mod base_fee;
 mod benchmark;
 mod collective;
-mod cumulus_parachain_system;
+pub mod cumulus_parachain_system;
 mod cumulus_xcmp_queue;
 mod democracy;
 mod election_phragmen;

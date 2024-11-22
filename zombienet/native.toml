@@ -25,6 +25,7 @@ force_decorator = "generic-evm"
   ws_port = 9999
   command = "{{ZOMBIENET_LAOS_COMMAND}}"
   validator = true
+  # args = ["-lruntime=trace"]
 
   [[parachains.collators]]
   name = "laos-1"

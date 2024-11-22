@@ -41,6 +41,7 @@ use cumulus_test_relay_sproof_builder::RelayStateSproofBuilder;
 use fc_rpc::{StorageOverride, StorageOverrideHandler};
 use frame_benchmarking_cli::SUBSTRATE_REFERENCE_HARDWARE;
 use futures::FutureExt;
+use laos_runtime::configs::cumulus_parachain_system::RELAY_CHAIN_SLOT_DURATION_MILLIS;
 use sc_client_api::Backend;
 use sc_consensus::ImportQueue;
 use sc_executor::{
@@ -51,10 +52,12 @@ use sc_network_sync::SyncingService;
 use sc_service::{Configuration, PartialComponents, TFullBackend, TFullClient, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryHandle, TelemetryWorker, TelemetryWorkerHandle};
 use sc_transaction_pool_api::OffchainTransactionPoolFactory;
+use sp_consensus_aura::{Slot, SlotDuration};
 use sp_core::U256;
 use sp_keystore::KeystorePtr;
 use substrate_prometheus_endpoint::Registry;
-use sp_consensus_aura::{Slot, SlotDuration};
+
+use laos_runtime::MILLISECS_PER_BLOCK;
 
 // Frontier
 use crate::eth::{
@@ -313,8 +316,6 @@ async fn start_node_impl(
 		fc_mapping_sync::EthereumBlockNotification<Block>,
 	> = Default::default();
 	let pubsub_notification_sinks = Arc::new(pubsub_notification_sinks);
-	let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
-	let target_gas_price = eth_config.target_gas_price;
 
 	// for ethereum-compatibility rpc.
 	parachain_config.rpc_id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
@@ -347,32 +348,35 @@ async fn start_node_impl(
 		execute_gas_limit_multiplier: eth_config.execute_gas_limit_multiplier,
 		forced_parent_hashes: None,
 		pending_create_inherent_data_providers: move |_, ()| async move {
+			// Timestamp should be in the future so the new slot is calculated correctly
+			let additional_duration = Duration::from_millis(MILLISECS_PER_BLOCK); // SLOT_DURATION
+			let new_timestamp = sp_timestamp::InherentDataProvider::from_system_time().timestamp() +
+				additional_duration.as_millis() as u64;
+			let timestamp_provider = sp_timestamp::InherentDataProvider::new(new_timestamp.into());
+
 			// Patch from https://github.com/darwinia-network/darwinia/pull/1608
-			let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
 			let relay_chain_slot = Slot::from_timestamp(
-				timestamp.timestamp(),
-				SlotDuration::from_millis(6000 as u64), // RELAY_CHAIN_SLOT_DURATION_MILLIS
+				timestamp_provider.timestamp(),
+				SlotDuration::from_millis(RELAY_CHAIN_SLOT_DURATION_MILLIS as u64),
 			);
 
-			let mut state_proof_builder =
-				cumulus_test_relay_sproof_builder::RelayStateSproofBuilder::default();
+			let mut state_proof_builder = RelayStateSproofBuilder::default();
 			state_proof_builder.para_id = para_id;
 			state_proof_builder.current_slot = relay_chain_slot;
 			state_proof_builder.included_para_head = Some(polkadot_primitives::HeadData(vec![]));
 			let (relay_parent_storage_root, relay_chain_state) =
 				state_proof_builder.into_state_root_and_proof();
-			let parachain_inherent_data =
-				cumulus_primitives_parachain_inherent::ParachainInherentData {
-					validation_data: cumulus_primitives_core::PersistedValidationData {
-						relay_parent_number: u32::MAX,
-						relay_parent_storage_root,
-						..Default::default()
-					},
-					relay_chain_state,
-					downward_messages: Default::default(),
-					horizontal_messages: Default::default(),
-				};
-			Ok((timestamp, parachain_inherent_data))
+			let parachain_inherent_data = ParachainInherentData {
+				validation_data: PersistedValidationData {
+					relay_parent_number: u32::MAX,
+					relay_parent_storage_root,
+					..Default::default()
+				},
+				relay_chain_state,
+				downward_messages: Default::default(),
+				horizontal_messages: Default::default(),
+			};
+			Ok((timestamp_provider, parachain_inherent_data))
 		},
 	};
 
