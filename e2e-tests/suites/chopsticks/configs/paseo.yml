@@ -1,7 +1,7 @@
 endpoint: wss://paseo-rpc.dwellir.com
 mock-signature-host: true
 db: ./db.sqlite
-port: 9944
+port: 9943
 
 import-storage:
   Sudo:

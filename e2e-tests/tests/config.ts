@@ -5,14 +5,18 @@ import EvolutionCollection from "../build/contracts/EvolutionCollection.sol/Evol
 import EvolutionCollectionFactory from "../build/contracts/EvolutionCollectionFactory.sol/EvolutionCollectionFactory.json";
 import Vesting from "../build/contracts/Vesting.sol/Vesting.json";
 import ParachainStaking from "../build/contracts/ParachainStaking.sol/ParachainStaking.json";
+import { config } from 'dotenv';
+
+// Load environment variables from .env file
+config();
 
 // Node config
 export const RUNTIME_SPEC_NAME = "laos";
 export const RUNTIME_SPEC_VERSION = 2390;
 export const RUNTIME_IMPL_VERSION = 0;
-export const LAOS_NODE_IP = "127.0.0.1:9999";
-export const ASSET_HUB_NODE_IP = "127.0.0.1:9950";
-export const RELAYCHAIN_NODE_IP = "127.0.0.1:9944";
+export const LAOS_NODE_IP = process.env.LAOS_NODE_IP || "127.0.0.1:9999";
+export const ASSET_HUB_NODE_IP = process.env.ASSET_HUB_NODE_IP || "127.0.0.1:9950";
+export const RELAYCHAIN_NODE_IP = process.env.RELAYCHAIN_NODE_IP || "127.0.0.1:9944";
 
 // Chain address prefixes
 export const POLKADOT_PREFIX = 0;

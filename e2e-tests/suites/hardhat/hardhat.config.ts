@@ -5,7 +5,7 @@ const config: HardhatUserConfig = {
   solidity: "0.8.3",
   paths: {
     artifacts: "build",
-    tests: "hardhat-tests", // WIP this is not working
+    root: "../../../e2e-tests",
   },
   mocha: {
     timeout: 20000,

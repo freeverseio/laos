@@ -8,8 +8,8 @@
 		"fmt": "prettier ./tests --write",
 		"build": "./compile_contracts.sh",
 		"test": "DEBUG=transaction mocha -r ts-node/register -t 900000 'tests/**/*.ts' --exclude 'tests/test-invalid-tx.ts'",
-		"test-invalid-tx": "DEBUG=transaction mocha -r ts-node/register -t 300000 'tests/test-invalid-tx.ts'",
-		"test-deploy": "hardhat test --network zombienet hardhat-tests/deploy.ts",
+		"test-invalid-tx": "source suites/chopsticks/.env DEBUG=transaction mocha -r ts-node/register -t 300000 'tests/test-invalid-tx.ts'",
+		"test-deploy": "hardhat test --config suites/hardhat/hardhat.config.ts --network zombienet suites/hardhat/deploy.ts",
 		"test-sql": "FRONTIER_BACKEND_TYPE='sql' mocha -r ts-node/register 'tests/**/*.ts'"
 	},
 	"author": "",
@@ -24,6 +24,7 @@
 		"@types/mocha": "^10.0.1",
 		"chai": "^4.3.7",
 		"chai-as-promised": "^7.1.1",
+		"dotenv": "^16.4.5",
 		"ethers": "^6.3.0",
 		"mocha": "^10.2.0",
 		"mocha-steps": "^1.3.0",
@@ -36,8 +37,8 @@
 	"devDependencies": {
 		"@nomicfoundation/hardhat-toolbox": "^5.0.0",
 		"@types/chai-as-promised": "^7.1.5",
-		"hardhat": "^2.22.15",
 		"debug": "^4.3.7",
+		"hardhat": "^2.22.15",
 		"prettier": "^2.8.8"
 	}
 }
