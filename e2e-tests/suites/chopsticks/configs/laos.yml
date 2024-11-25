@@ -1,4 +1,4 @@
-genesis: /home/carla/dev/fv/laos/localraw.json
+genesis: /home/carla/dev/fv/laos/specs/local.raw.json
 wasm-override: ../target/release/wbuild/laos-runtime/laos_runtime.compact.compressed.wasm
 db: ./db.sqlite
 runtime-log-level: 5
