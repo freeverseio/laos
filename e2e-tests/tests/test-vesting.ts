@@ -3,7 +3,7 @@ import chaiAsPromised from "chai-as-promised";
 import { step } from "mocha-steps";
 import Contract from "web3-eth-contract";
 import { VESTING_CONTRACT_ADDRESS, VESTING_ABI, UNIT, GAS_PRICE } from "./config";
-import { describeWithExistingNode, sendTxAndWaitForFinalization, waitForConfirmations, waitForBlocks } from "./util";
+import { describeWithExistingNode, sendTxAndWaitForFinalization, waitFinalizedEthereumTx, waitForBlocks } from "./util";
 
 // Use chai-as-promised
 chai.use(chaiAsPromised);
@@ -73,7 +73,7 @@ describeWithExistingNode(
 			let tx = await contract.methods
 				.vestOther(account.address)
 				.send({ from: this.ethereumPairs.alith.address, gas });
-			await waitForConfirmations(web3, tx.transactionHash, 7);
+			await waitFinalizedEthereumTx(web3, laos, tx.transactionHash);
 
 			// Step 7: Confirm balance increase after external vesting
 			const balanceAfterVestOther = await web3.eth.getBalance(account.address);
@@ -84,7 +84,7 @@ describeWithExistingNode(
 			// Step 8: Execute vesting directly from the account
 			gas = await contract.methods.vest().estimateGas({ from: account.address });
 			tx = await contract.methods.vest().send({ from: account.address, gas });
-			await waitForConfirmations(web3, tx.transactionHash, 7);
+			await waitFinalizedEthereumTx(web3, laos, tx.transactionHash);
 
 			// Step 9: Verify final balance increase after second vesting
 			const finalBalance = await web3.eth.getBalance(account.address);

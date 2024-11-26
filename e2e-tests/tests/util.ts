@@ -35,6 +35,7 @@ import { KeyringPair } from "@polkadot/keyring/types";
 require("events").EventEmitter.prototype._maxListeners = 100;
 
 import debug from "debug";
+import { recovery } from "@polkadot/types/interfaces/definitions";
 const debugTx = debug("transaction");
 const debugBlock = debug("block");
 
@@ -95,7 +96,6 @@ export function describeWithExistingNode(
 			this.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
 
 			if (openPolkadotConnections) {
-				// Laos
 				let provider = new WsProvider(providerLaosNodeUrl || "ws://" + LAOS_NODE_IP);
 				const apiLaos = await new ApiPromise({ provider }).isReady;
 
@@ -573,32 +573,20 @@ export async function sendTxAndWaitForFinalization(
 	});
 }
 
-export async function waitForConfirmations(web3, txHash, requiredConfirmations = 12, pollInterval = 1000) {
+export async function waitFinalizedEthereumTx(web3: Web3, api: ApiPromise, txHash: string) {
 	try {
-		let currentBlock = await web3.eth.getBlockNumber();
-		let receipt = null;
-
 		while (true) {
-			// Check for the transaction receipt
-			receipt = await web3.eth.getTransactionReceipt(txHash);
-
+			const receipt = await web3.eth.getTransactionReceipt(txHash);
 			if (receipt && receipt.blockNumber) {
-				// Calculate the number of confirmations
-				const confirmations = currentBlock - receipt.blockNumber;
-
-				if (confirmations >= requiredConfirmations) {
-					debugTx(`${txHash} has ${confirmations} confirmations.`);
-					return receipt; // Transaction has the required confirmations
-				} else {
-					debugTx(`Waiting for confirmations... (${confirmations}/${requiredConfirmations})`);
+				const finalizedBlock = (
+					await api.rpc.chain.getBlock(await api.rpc.chain.getFinalizedHead())
+				).block.header.number.toNumber();
+				if (finalizedBlock >= receipt.blockNumber) {
+					return;
 				}
-			} else {
-				debugTx("Not yet mined. Retrying...");
 			}
-
-			// Wait for the next block
-			await new Promise((resolve) => setTimeout(resolve, pollInterval));
-			currentBlock = await web3.eth.getBlockNumber();
+			// Polling to avoid querying the block numbers so frequently cause they aren't produced that fast
+			setTimeout(() => {}, 2000);
 		}
 	} catch (error) {
 		debugTx(`Error waiting for confirmations of transaction ${txHash}:`, error);
