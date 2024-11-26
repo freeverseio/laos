@@ -23,7 +23,7 @@ import { expect } from "chai";
 import "@polkadot/api-augment";
 
 import { ApiPromise, WsProvider } from "@polkadot/api";
-import { SubmittableExtrinsic, ApiTypes } from "@polkadot/api/types";
+import { SubmittableExtrinsic } from "@polkadot/api/types";
 import { SubmittableResult } from "@polkadot/api/submittable";
 import { bnToU8a, stringToU8a } from "@polkadot/util";
 import { encodeAddress } from "@polkadot/util-crypto";
@@ -555,24 +555,14 @@ export const waitForEvent = async (
 // Generic function to send a transaction and wait for finalization
 export async function sendTxAndWaitForFinalization(
 	api: ApiPromise,
-	tx: SubmittableExtrinsic<ApiTypes>,
-	signer: KeyringPair,
-	waitNBlocks = 20
+	tx: SubmittableExtrinsic<"promise">,
+	signer: KeyringPair
 ) {
-	return new Promise((resolve, reject) => {
+	return new Promise(async (resolve, reject) => {
 		try {
-			let blockCount = 0;
-
-			const onStatusChange = async (result: SubmittableResult) => {
-				const { status, events, dispatchError } = result;
-				debugTx("Status:", status.type);
-
-				// Additional event info
-				if (events && events.length > 0) {
-					events.forEach(({ event: { method, section, data } }) => {
-						debugTx(`Event: ${section}.${method} - Data: ${data.toString()}`);
-					});
-				}
+			const unsub = await tx.signAndSend(signer, (result: SubmittableResult) => {
+				const { status, dispatchError } = result;
+				debugTx("Tx status: ", status.type);
 
 				if (dispatchError) {
 					debugTx("Raw dispatch error:", dispatchError.toString());
@@ -591,57 +581,16 @@ export async function sendTxAndWaitForFinalization(
 				}
 
 				if (status.isInBlock) {
-					debugTx("Included at block hash", status.asInBlock.toHex());
+					debugTx("Tx included at block hash: ", status.asInBlock.toHex());
 				} else if (status.isFinalized) {
-					debugTx("Finalized block hash", status.asFinalized.toHex());
+					debugTx("Tx finalized at block hash: ", status.asFinalized.toHex());
+					unsub();
 					resolve(status.asFinalized.toHex());
-				} else if (
-					status.isDropped ||
-					status.isInvalid ||
-					status.isUsurped ||
-					status.isFuture ||
-					status.isRetracted ||
-					status.isFinalityTimeout
-				) {
-					debugTx("Transaction failed with status:", status.type);
-					// Start waiting for N blocks and re-check transaction status
-					const extrinsicHash = result.txHash.toHuman();
-					debugTx(`Transaction is invalid. Waiting for ${waitNBlocks} blocks while rechecking status...`);
-
-					// Subscribe to new finalized blocks to re-check transaction status
-					const unsubscribeAll = await api.rpc.chain.subscribeFinalizedHeads(async (lastHeader) => {
-						blockCount++;
-						debugTx(`Finalized Block #${lastHeader.number} received (${blockCount}/${waitNBlocks})`);
-
-						// Check if the transaction has been included in the block
-						const blockHash = lastHeader.hash;
-						const block = await api.rpc.chain.getBlock(blockHash);
-
-						let txIncluded = false;
-
-						for (const extrinsic of block.block.extrinsics) {
-							if (extrinsic.hash.toHex() === extrinsicHash) {
-								debugTx(`Transaction included in block ${lastHeader.number}`);
-								txIncluded = true;
-								unsubscribeAll();
-								resolve(blockHash.toHex());
-								break;
-							}
-						}
-
-						if (txIncluded) {
-							// Transaction has been included; resolve has been called
-							return;
-						} else if (blockCount >= waitNBlocks) {
-							debugTx(`Waited for ${waitNBlocks} blocks after invalid status.`);
-							unsubscribeAll(); // Unsubscribe from block headers
-							reject(new Error(`Transaction remained invalid after waiting for ${waitNBlocks} blocks.`));
-						}
-					});
+				} else if (status.isInvalid || status.isDropped || status.isUsurped || status.isFinalityTimeout) {
+					unsub();
+					reject(new Error("Tx won't be included in chain"));
 				}
-			};
-
-			tx.signAndSend(signer, onStatusChange);
+			});
 		} catch (error) {
 			debugTx("Error during transaction setup:", error);
 			reject(error);
