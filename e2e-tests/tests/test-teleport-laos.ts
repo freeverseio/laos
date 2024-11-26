@@ -13,7 +13,10 @@ import {
 	buildXcmInstruction,
 	relayLocation,
 	hereLocation,
-	waitForEvent,
+	getFinalizedBlockNumber,
+	checkEventInBlock,
+	checkEventAfterXcm,
+	sendTxAndWaitForFinalization,
 } from "./util";
 import { ApiPromise } from "@polkadot/api";
 import { DoubleEncodedCall } from "@polkadot/types/interfaces";
@@ -24,7 +27,6 @@ const debugTeleport = debug("teleport");
 
 const ONE_LAOS = new BN("1000000000000000000");
 const ONE_DOT = new BN("1000000000000");
-const WAITING_BLOCKS_FOR_EVENTS = 20; // Number of blocks we wait at max to receive an event
 
 describeWithExistingNode(
 	"Teleport Asset Hub <-> LAOS",
@@ -104,17 +106,14 @@ describeWithExistingNode(
 					apiLaos.tx.polkadotXcm.send(this.laosItems.assetHubLocation, instruction)
 				);
 
-				try {
-					await sudoCall.signAndSend(this.ethereumPairs.alith);
-				} catch (error) {
-					console.log("transaction failed", error);
-				}
+        const assetHubBestBlockBeforeSending = await getFinalizedBlockNumber(apiAssetHub);
+				await sendTxAndWaitForFinalization(apiLaos, sudoCall, this.ethereumPairs.alith);
 
 				// Check if the foreign asset has been created in Asset Hub
-				const event = await waitForEvent(
+				const event = await checkEventAfterXcm(
 					apiAssetHub,
 					({ event }) => apiAssetHub.events.foreignAssets.Created.is(event),
-					WAITING_BLOCKS_FOR_EVENTS
+					assetHubBestBlockBeforeSending
 				);
 
 				expect(event).to.not.be.null;
@@ -179,17 +178,14 @@ describeWithExistingNode(
 				apiLaos.tx.polkadotXcm.send(this.laosItems.assetHubLocation, instruction)
 			);
 
-			try {
-				await sudoCall.signAndSend(this.ethereumPairs.alith);
-			} catch (error) {
-				console.log("transaction failed", error);
-			}
+			const assetHubBestBlockBeforeSending = await getFinalizedBlockNumber(apiAssetHub);
+			await sendTxAndWaitForFinalization(apiLaos, sudoCall, this.ethereumPairs.alith);
 
 			// Check if the foreign asset has been minted in Asset Hub
-			const event = await waitForEvent(
+			const event = await checkEventAfterXcm(
 				apiAssetHub,
 				({ event }) => apiAssetHub.events.foreignAssets.Issued.is(event),
-				WAITING_BLOCKS_FOR_EVENTS
+				assetHubBestBlockBeforeSending
 			);
 
 			expect(event).to.not.be.null;
@@ -255,17 +251,14 @@ describeWithExistingNode(
 					apiLaos.tx.polkadotXcm.send(this.laosItems.assetHubLocation, instruction)
 				);
 
-				try {
-					await sudoCall.signAndSend(this.ethereumPairs.alith);
-				} catch (error) {
-					console.log("transaction failed", error);
-				}
+        const assetHubBestBlockBeforeSending = await getFinalizedBlockNumber(apiAssetHub);
+				await sendTxAndWaitForFinalization(apiLaos, sudoCall, this.ethereumPairs.alith);
 
 				// Check that pool has been created in Asset Hub
-				const event = await waitForEvent(
+				const event = await checkEventAfterXcm(
 					apiAssetHub,
 					({ event }) => apiAssetHub.events.assetConversion.PoolCreated.is(event),
-					WAITING_BLOCKS_FOR_EVENTS
+					assetHubBestBlockBeforeSending
 				);
 
 				expect(event).to.not.be.null;
@@ -321,21 +314,17 @@ describeWithExistingNode(
 				"Ferdie's $LAOS balance should be greater than the amount to be sent to the pool"
 			);
 
-			try {
-				await apiAssetHub.tx.assetConversion
-					.addLiquidity(
-						this.assetHubItems.relayAsset.toU8a(),
-						this.assetHubItems.laosAsset.toU8a(),
-						liquidityAmountDot,
-						liquidityAmountLaos,
-						liquidityAmountDot.sub(new BN(ONE_DOT.muln(10))),
-						liquidityAmountLaos.sub(new BN(ONE_LAOS.muln(10))),
-						this.substratePairs.ferdie.address
-					)
-					.signAndSend(this.substratePairs.ferdie);
-			} catch (error) {
-				console.log("transaction failed", error);
-			}
+			const call = apiAssetHub.tx.assetConversion.addLiquidity(
+				this.assetHubItems.relayAsset.toU8a(),
+				this.assetHubItems.laosAsset.toU8a(),
+				liquidityAmountDot,
+				liquidityAmountLaos,
+				liquidityAmountDot.sub(new BN(ONE_DOT.muln(10))),
+				liquidityAmountLaos.sub(new BN(ONE_LAOS.muln(10))),
+				this.substratePairs.ferdie.address
+			);
+
+			await sendTxAndWaitForFinalization(apiAssetHub, call, this.substratePairs.ferdie);
 		});
 
 		step("Teleport from LAOS to AssetHub", async function () {
@@ -388,17 +377,14 @@ describeWithExistingNode(
 				weight_limit
 			);
 
-			try {
-				await call.signAndSend(this.ethereumPairs.alith);
-			} catch (error) {
-				console.log("transaction failed", error);
-			}
+      const assetHubBestBlockBeforeSending = await getFinalizedBlockNumber(apiAssetHub);
+			await sendTxAndWaitForFinalization(apiLaos, call, this.ethereumPairs.alith);
 
 			// Check that $LAOS has been sent in Asset Hub
-			const event = await waitForEvent(
+			const event = await checkEventAfterXcm(
 				apiAssetHub,
 				({ event }) => apiAssetHub.events.foreignAssets.Issued.is(event),
-				WAITING_BLOCKS_FOR_EVENTS
+				assetHubBestBlockBeforeSending
 			);
 
 			expect(event).to.not.be.null;
@@ -476,19 +462,15 @@ describeWithExistingNode(
 				weight_limit
 			);
 
-			try {
-				await call.signAndSend(this.substratePairs.charlie);
-			} catch (error) {
-				console.log("transaction failed", error);
-			}
-
+      const laosBestBlockBeforeSending = await getFinalizedBlockNumber(apiLaos);
+			await sendTxAndWaitForFinalization(apiAssetHub, call, this.substratePairs.charlie);
 			// Check that $LAOS has been sent back to Laos
-			const event = await waitForEvent(
+			const event = await checkEventAfterXcm(
 				apiLaos,
 				({ event }) => {
 					return apiLaos.events.balances.Minted.is(event) && event.data[0].toString() !== CHECKING_ACCOUNT;
 				},
-				WAITING_BLOCKS_FOR_EVENTS
+				laosBestBlockBeforeSending
 			);
 
 			expect(event).to.not.be.null;

@@ -472,67 +472,120 @@ export const buildXcmInstruction = ({
 	});
 };
 
-const debugEvents = debug("events");
+export async function getFinalizedBlockNumber(api: ApiPromise): Promise<BN> {
+	return new Promise(async (resolve) => {
+		resolve(
+			new BN(
+				(await api.rpc.chain.getBlock(await api.rpc.chain.getFinalizedHead())).block.header.number.toNumber()
+			)
+		);
+	});
+}
 
 /**
- * Waits for a specific event starting from the newest block, with a block-based timeout.
+ * Checks that a specific event is included in a specific block.
  * @param api - The ApiPromise instance.
  * @param filter - A function that filters events.
- * @param blockTimeout - The maximum number of blocks to wait before timing out.
- * @returns A promise that resolves to the matching event when found.
+ * @param blockHash - The hash corresponding to the block where we would like to find the event.
+ * @returns A promise that resolves in the event found in the block if found and reject otherwise.
  */
-export const waitForEvent = async (
+export async function checkEventInBlock(
 	api: ApiPromise,
 	filter: (event: EventRecord) => boolean,
-	blockTimeout: number
-): Promise<EventRecord> => {
+	blockHash: string
+): Promise<EventRecord> {
 	return new Promise(async (resolve, reject) => {
-		try {
-			let eventFound: EventRecord | null = null;
-			let remainingBlocks = blockTimeout;
-
-			const unsub = await api.rpc.chain.subscribeFinalizedHeads(async (header) => {
-				// Fetch events at the current block
-				const blockHash = await api.rpc.chain.getBlockHash(header.number.toNumber());
-				const events = await api.query.system.events.at(blockHash);
-				debugEvents(
-					`[${api.runtimeVersion.specName.toString()}] Looking for events at block ${header.number.toNumber()}`
-				);
-				// Check if any event matches the filter
-				events.forEach((eventRecord) => {
-					if (filter(eventRecord)) {
-						eventFound = eventRecord;
-					}
-				});
-
-				if (eventFound) {
-					debugEvents(
-						`[${api.runtimeVersion.specName.toString()}] Event found at block ${header.number.toNumber()}`
-					);
-					unsub();
-					resolve(eventFound);
-					return;
-				}
-
-				remainingBlocks--;
-				if (remainingBlocks === 0) {
-					// If the loop completes without finding the event
-					unsub();
-					reject(new Error(`Timeout waiting for event after ${blockTimeout} blocks`));
-				}
-			});
-		} catch (error) {
-			reject(error);
+		let event: EventRecord | null = null;
+    const apiAt = await api.at(blockHash);
+		const events = await apiAt.query.system.events();
+		events.forEach((eventRecord) => {
+			if (filter(eventRecord)) {
+				event = eventRecord;
+			}
+		});
+		if (event) {
+			resolve(event);
+		} else {
+			reject(new Error(`Event not found in block ${blockHash}`));
 		}
 	});
-};
+}
+
+/**
+ * Checks that a specific event has been emitted after a XCM transaction.
+ * @param api - The ApiPromise instance corresponding to the receiver chain.
+ * @param filter - A function that filters events.
+ * @param statingBlock - The best finalized block before the XCM transaction was sent by the origin chain. This value ensures the event isn't lost in a block before the best finalized when this is called and the best finalized when the XCM was sent.
+ * @returns A promise that resolves in the event if it's found in a block after startingBlock and rejects if a XCM not processed event has been emitted.
+ */
+export async function checkEventAfterXcm(
+	api: ApiPromise,
+	filter: (event: EventRecord) => boolean,
+	startingBlock: BN
+): Promise<EventRecord> {
+	// Check whether the event has been emitted in a specific block. If not found, resolves to null.
+	const findEventAfterXcmAtBlock = async (blockNumber: BN): Promise<EventRecord | null> => {
+		return new Promise(async (resolve, reject) => {
+			let event: EventRecord | null = null;
+			let processed = false;
+			const blockHash = await api.rpc.chain.getBlockHash(blockNumber);
+			const apiAt = await api.at(blockHash);
+			const events = await apiAt.query.system.events();
+			events.forEach((eventRec: EventRecord) => {
+				// Ensure XCM message has been properly executed
+				if (api.events.messageQueue.Processed.is(eventRec.event)) {
+					//data[3] corresponds to data.success in this event; not accessible by TS with data.success
+					if (!eventRec.event.data[3]) {
+						reject(new Error("XCM message couldn't be processed"));
+					} else {
+						processed = true;
+					}
+				}
+				// Ensure the expected event has been emitted
+				else if (filter(eventRec)) {
+					event = eventRec;
+				}
+			});
+
+			if (event && processed) {
+				resolve(event);
+			} else {
+				resolve(null);
+			}
+		});
+	};
+
+	// A promise race as we track two block ranges
+	return Promise.race<EventRecord>([
+		// This promise tracks blocks between startingBlock and the best finalized block
+		new Promise<EventRecord>(async (resolve) => {
+			const bestFinalizedBlock = await getFinalizedBlockNumber(api);
+			for (let block = startingBlock; block.lte(bestFinalizedBlock); block = block.add(new BN(1))) {
+				const event = await findEventAfterXcmAtBlock(block);
+				if (event) {
+					resolve(event);
+				}
+			}
+		}),
+		// This promise tracks new finalized blocks as soon as they arrive
+		new Promise<EventRecord>(async (resolve) => {
+			const unsub = await api.rpc.chain.subscribeFinalizedHeads(async (lastHeader) => {
+				const event = await findEventAfterXcmAtBlock(new BN(lastHeader.number.toNumber()));
+				if (event) {
+					unsub();
+					resolve(event);
+				}
+			});
+		}),
+	]);
+}
 
 // Generic function to send a transaction and wait for finalization
 export async function sendTxAndWaitForFinalization(
 	api: ApiPromise,
 	tx: SubmittableExtrinsic<"promise">,
 	signer: KeyringPair
-) {
+): Promise<string> {
 	return new Promise(async (resolve, reject) => {
 		try {
 			const unsub = await tx.signAndSend(signer, (result: SubmittableResult) => {
