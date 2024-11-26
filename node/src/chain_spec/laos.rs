@@ -100,7 +100,7 @@ fn create_test_genesis_config() -> serde_json::Value {
 		},
 		sudo: laos_runtime::SudoConfig { key: Some(predefined_accounts::ALITH.into()) },
 		parachain_staking: laos_runtime::ParachainStakingConfig {
-			blocks_per_round: 5,
+			blocks_per_round: 500,
 			rewards_account: Some(predefined_accounts::BALTATHAR.into()),
 			inflation_config: laos_runtime::InflationInfo {
 				// staking expectations
