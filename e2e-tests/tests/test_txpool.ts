@@ -10,8 +10,8 @@ describeWithExistingNode("Frontier RPC (TxPoolApi)", function () {
 	let nonce;
 	let pendingTx;
 	let futureTx;
-	async function sendTransaction(context, nonce) {
-		const tx = await context.web3.eth.accounts.signTransaction(
+	async function sendTransaction(web3, nonce) {
+		const tx = await web3.eth.accounts.signTransaction(
 			{
 				from: ALITH,
 				data: TEST_CONTRACT_BYTECODE,
@@ -22,20 +22,20 @@ describeWithExistingNode("Frontier RPC (TxPoolApi)", function () {
 			},
 			ALITH_PRIVATE_KEY
 		);
-		await customRequest(context.web3, "eth_sendRawTransaction", [tx.rawTransaction]);
+		await customRequest(web3, "eth_sendRawTransaction", [tx.rawTransaction]);
 		return tx;
 	}
 
 	before(async function () {
-		nonce = await this.context.web3.eth.getTransactionCount(ALITH);
+		nonce = await this.web3.eth.getTransactionCount(ALITH);
 	});
 
 	step("txpool_status should return correct result", async function () {
-		let txpoolStatusBefore = await customRequest(this.context.web3, "txpool_status", []);
+		let txpoolStatusBefore = await customRequest(this.web3, "txpool_status", []);
 
 		pendingTx = await sendTransaction(this.context, nonce);
 		futureTx = await sendTransaction(this.context, nonce + 1000);
-		let txpoolStatusAfter = await customRequest(this.context.web3, "txpool_status", []);
+		let txpoolStatusAfter = await customRequest(this.web3, "txpool_status", []);
 
 		expect(parseInt(txpoolStatusAfter.result.pending, 16)).to.be.equal(
 			parseInt(txpoolStatusBefore.result.pending, 16) + 1
@@ -46,7 +46,7 @@ describeWithExistingNode("Frontier RPC (TxPoolApi)", function () {
 	});
 
 	step("txpool_content should return correct result", async function () {
-		let txpoolContent = await customRequest(this.context.web3, "txpool_content", []);
+		let txpoolContent = await customRequest(this.web3, "txpool_content", []);
 
 		let genesisAccount = ALITH.toLowerCase();
 		let futureNonce = `0x${(nonce + 1000).toString(16)}`;
@@ -56,7 +56,7 @@ describeWithExistingNode("Frontier RPC (TxPoolApi)", function () {
 	});
 
 	step("txpool_inspect should return correct result", async function () {
-		let txpoolInspect = await customRequest(this.context.web3, "txpool_inspect", []);
+		let txpoolInspect = await customRequest(this.web3, "txpool_inspect", []);
 		let genesisAccount = ALITH.toLowerCase();
 
 		let currentNonce = `0x${nonce.toString(16)}`;

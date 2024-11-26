@@ -51,14 +51,11 @@ type ethereumPairs = {
 	faith: KeyringPair;
 };
 
-type describeContext = {
-	web3: Web3;
-	ethersjs: ethers.JsonRpcProvider;
-	networks: { laos: ApiPromise; assetHub: ApiPromise; relaychain: ApiPromise };
-};
+type chains = { laos: ApiPromise; assetHub: ApiPromise; relaychain: ApiPromise };
 
 export interface CustomSuiteContext extends Suite {
-	context: describeContext;
+	web3: Web3;
+	chains: chains;
 	substratePairs: substratePairs;
 	ethereumPairs: ethereumPairs;
 	laosItems: laosItems;

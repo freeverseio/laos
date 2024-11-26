@@ -34,7 +34,7 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", function () {
 		const to = this.ethereumPairs.faith.address;
 		const tokenURI = "https://example.com";
 
-		let nonce = await this.context.web3.eth.getTransactionCount(this.ethereumPairs.faith.address);
+		let nonce = await this.web3.eth.getTransactionCount(this.ethereumPairs.faith.address);
 		const estimatedGas = await collectionContract.methods.mintWithExternalURI(to, slot, tokenURI).estimateGas();
 		const result = await collectionContract.methods
 			.mintWithExternalURI(to, slot, tokenURI)
@@ -81,15 +81,12 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", function () {
 		expect(result.events.MintedWithExternalURI.raw.topics.length).to.be.eq(2);
 		expect(result.events.MintedWithExternalURI.raw.topics[0]).to.be.eq(SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI);
 		expect(result.events.MintedWithExternalURI.raw.topics[1]).to.be.eq(
-			this.context.web3.utils.padLeft(this.ethereumPairs.faith.address.toLowerCase(), 64)
+			this.web3.utils.padLeft(this.ethereumPairs.faith.address.toLowerCase(), 64)
 		);
 
 		// event data
 		expect(result.events.MintedWithExternalURI.raw.data).to.be.eq(
-			this.context.web3.eth.abi.encodeParameters(
-				["uint96", "uint256", "string"],
-				[slot, tokenIdDecimal, tokenURI]
-			)
+			this.web3.eth.abi.encodeParameters(["uint96", "uint256", "string"], [slot, tokenIdDecimal, tokenURI])
 		);
 	});
 
@@ -156,7 +153,7 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", function () {
 
 		// event data
 		expect(evolvingResult.events.EvolvedWithExternalURI.raw.data).to.be.eq(
-			this.context.web3.eth.abi.encodeParameters(["string"], [newTokenURI])
+			this.web3.eth.abi.encodeParameters(["string"], [newTokenURI])
 		);
 	});
 });
@@ -193,10 +190,10 @@ describeWithExistingNode("Frontier RPC (Transfer Ownership)", function () {
 			SELECTOR_LOG_OWNERSHIP_TRANSFERRED
 		);
 		expect(tranferringResult.events.OwnershipTransferred.raw.topics[1]).to.be.eq(
-			this.context.web3.utils.padLeft(this.ethereumPairs.faith.address.toLowerCase(), 64)
+			this.web3.utils.padLeft(this.ethereumPairs.faith.address.toLowerCase(), 64)
 		);
 		expect(tranferringResult.events.OwnershipTransferred.raw.topics[2]).to.be.eq(
-			this.context.web3.utils.padLeft(newOwner.toLowerCase(), 64)
+			this.web3.utils.padLeft(newOwner.toLowerCase(), 64)
 		);
 		// event data
 		expect(tranferringResult.events.OwnershipTransferred.raw.data).to.be.eq("0x");

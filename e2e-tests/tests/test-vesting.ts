@@ -14,14 +14,14 @@ describeWithExistingNode(
 		let contract: Contract;
 
 		before(async function () {
-			contract = new this.context.web3.eth.Contract(VESTING_ABI, VESTING_CONTRACT_ADDRESS, {
+			contract = new this.web3.eth.Contract(VESTING_ABI, VESTING_CONTRACT_ADDRESS, {
 				gasPrice: GAS_PRICE,
 			});
 			contract.defaultBlock = "safe";
 		});
 
 		step("should revert when vesting is not enabled", async function () {
-			const newAccount = this.context.web3.eth.accounts.create();
+			const newAccount = this.web3.eth.accounts.create();
 			await expect(contract.methods.vest().call({ from: newAccount.address })).to.be.rejectedWith(
 				"Returned error: VM Exception while processing transaction: revert NotVesting"
 			);
@@ -29,9 +29,9 @@ describeWithExistingNode(
 
 		step("create and execute vesting", async function () {
 			const {
-				networks: { laos },
 				web3,
-			} = this.context;
+				chains: { laos },
+			} = this;
 			const locked = BigInt(1000) * UNIT;
 			const perBlock = UNIT;
 			const finalizedHash = await laos.rpc.chain.getFinalizedHead();

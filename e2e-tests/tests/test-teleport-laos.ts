@@ -36,9 +36,9 @@ describeWithExistingNode(
 
 		before(async function () {
 			// Initialize the APIs
-			apiAssetHub = this.context.networks.assetHub;
-			apiLaos = this.context.networks.laos;
-			apiRelaychain = this.context.networks.relaychain;
+			apiAssetHub = this.chains.assetHub;
+			apiLaos = this.chains.laos;
+			apiRelaychain = this.chains.relaychain;
 
 			debugTeleport("Waiting until all the relay chain, Asset Hub and LAOS produce blocks...");
 			await Promise.all([
