@@ -4,8 +4,16 @@ import Web3 from "web3";
 import { sovereignAccountOf } from "@utils/xcm";
 import { siblingParachainLocation, relayChainLocation } from "@utils/xcm";
 import { CustomSuiteContext } from "@utils/types";
-import { LAOS_NODE_IP, ASSET_HUB_NODE_IP, RELAYCHAIN_NODE_IP, ALITH_PRIVATE_KEY, BALTATHAR_PRIVATE_KEY, FAITH_PRIVATE_KEY, LAOS_PARA_ID, ASSET_HUB_PARA_ID} from "@utils/constants";
-
+import {
+	LAOS_NODE_IP,
+	ASSET_HUB_NODE_IP,
+	RELAYCHAIN_NODE_IP,
+	ALITH_PRIVATE_KEY,
+	BALTATHAR_PRIVATE_KEY,
+	FAITH_PRIVATE_KEY,
+	LAOS_PARA_ID,
+	ASSET_HUB_PARA_ID,
+} from "@utils/constants";
 
 export function describeWithExistingNode(
 	title: string,

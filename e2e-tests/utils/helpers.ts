@@ -2,7 +2,13 @@ import { JsonRpcResponse } from "web3-core-helpers";
 import Contract from "web3-eth-contract";
 import Web3 from "web3";
 import BN from "bn.js";
-import { MAX_U96, GAS_PRICE, EVOLUTION_COLLECTION_FACTORY_ABI, EVOLUTION_COLLECTION_FACTORY_CONTRACT_ADDRESS, EVOLUTION_COLLECTION_ABI } from "@utils/constants";
+import {
+	MAX_U96,
+	GAS_PRICE,
+	EVOLUTION_COLLECTION_FACTORY_ABI,
+	EVOLUTION_COLLECTION_FACTORY_CONTRACT_ADDRESS,
+	EVOLUTION_COLLECTION_ABI,
+} from "@utils/constants";
 
 import { expect } from "chai";
 
@@ -25,9 +31,9 @@ export function concatUint8Arrays(...arrays: Uint8Array[]): Uint8Array {
 /**
  * Builds and sends a custom RPC request
  * @param web3 the web3 instance
- * @param method the RPC method 
+ * @param method the RPC method
  * @param params potential data for the RPC method
- * @returns 
+ * @returns
  */
 export async function customRequest(web3: Web3, method: string, params: any[]) {
 	return new Promise<JsonRpcResponse>((resolve, reject) => {

@@ -11,7 +11,6 @@ import {
 import { createCollection } from "@utils/helpers";
 import { describeWithExistingNode } from "@utils/setups";
 
-
 describeWithExistingNode("Frontier RPC (Create Collection)", function () {
 	let contract: Contract;
 	// This is the contract that is created in the test

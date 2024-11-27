@@ -66,4 +66,3 @@ export const STAKING_ABI = ParachainStaking.abi as AbiItem[];
 // Other
 export const MAX_U96 = new BN("79228162514264337593543950336"); // 2^96 - 1
 export const REVERT_BYTECODE = "0x60006000fd";
-

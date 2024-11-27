@@ -50,7 +50,7 @@ describeWithExistingNode(
 				.delegate(this.ethereumPairs.faith.address, ONE_LAOS.muln(1000), 0, 0)
 				.estimateGas();
 			const result = await contract.methods
-				.delegate(this.ethereumPairs.faith.address,ONE_LAOS.muln(1000), 0, 0)
+				.delegate(this.ethereumPairs.faith.address, ONE_LAOS.muln(1000), 0, 0)
 				.send({ from: this.ethereumPairs.baltathar.address, gas: estimatedGas, gasPrice, nonce: nonce++ });
 			expect(result.status).to.be.eq(true);
 			expect(await contract.methods.isDelegator(this.ethereumPairs.baltathar.address).call()).to.be.eq(true);

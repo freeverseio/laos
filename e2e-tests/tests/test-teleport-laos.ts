@@ -2,7 +2,7 @@ import BN from "bn.js";
 import { expect } from "chai";
 import { step } from "mocha-steps";
 
-import { ASSET_HUB_PARA_ID,  LAOS_PARA_ID, ONE_DOT, ONE_LAOS } from "@utils/constants";
+import { ASSET_HUB_PARA_ID, LAOS_PARA_ID, ONE_DOT, ONE_LAOS } from "@utils/constants";
 import { describeWithExistingNode } from "@utils/setups";
 import {
 	siblingParachainLocation,
@@ -19,7 +19,6 @@ import { hexToBn, u8aToHex } from "@polkadot/util";
 import debug from "debug";
 
 const debugTeleport = debug("teleport");
-
 
 describeWithExistingNode(
 	"Teleport Asset Hub <-> LAOS",
@@ -405,8 +404,9 @@ describeWithExistingNode(
 					)
 				).toJSON()?.["balance"] ?? 0
 			);
-			const beneficiaryBalanceBefore = (await this.chains.laos.query.system.account(this.ethereumPairs.baltathar.address)).data
-				.free;
+			const beneficiaryBalanceBefore = (
+				await this.chains.laos.query.system.account(this.ethereumPairs.baltathar.address)
+			).data.free;
 
 			const call = this.chains.assetHub.tx.polkadotXcm.limitedTeleportAssets(
 				this.assetHubItems.laosLocation,
@@ -450,7 +450,9 @@ describeWithExistingNode(
 				charlieBalanceBefore.sub(amount).eq(charlieBalance),
 				"Charlie's balance should decrease by the amount teleported"
 			);
-			const beneficiaryBalance = (await this.chains.laos.query.system.account(this.ethereumPairs.baltathar.address)).data.free;
+			const beneficiaryBalance = (
+				await this.chains.laos.query.system.account(this.ethereumPairs.baltathar.address)
+			).data.free;
 			expect(
 				beneficiaryBalanceBefore.add(new BN(realAmountReceived.toString())).eq(beneficiaryBalance),
 				"Alith's balance should increase by the amount received in the teleport"
