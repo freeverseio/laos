@@ -3,7 +3,9 @@ import chaiAsPromised from "chai-as-promised";
 import { step } from "mocha-steps";
 import Contract from "web3-eth-contract";
 import { VESTING_CONTRACT_ADDRESS, VESTING_ABI, UNIT, GAS_PRICE } from "./config";
-import { describeWithExistingNode, sendTxAndWaitForFinalization, waitFinalizedEthereumTx, waitForBlocks } from "./util";
+import { describeWithExistingNode, waitFinalizedEthereumTx } from "./util";
+import { sendTxAndWaitForFinalization } from "@utils/transactions";
+import { waitForBlocks } from "@utils/blocks";
 
 // Use chai-as-promised
 chai.use(chaiAsPromised);
