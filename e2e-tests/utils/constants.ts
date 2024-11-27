@@ -6,27 +6,32 @@ import EvolutionCollectionFactory from "../build/contracts/EvolutionCollectionFa
 import Vesting from "../build/contracts/Vesting.sol/Vesting.json";
 import ParachainStaking from "../build/contracts/ParachainStaking.sol/ParachainStaking.json";
 
-// Node config
+// Runtime specs
 export const RUNTIME_SPEC_NAME = "laos";
 export const RUNTIME_SPEC_VERSION = 2390;
 export const RUNTIME_IMPL_VERSION = 0;
+
+// Nodes endpoints
 export const LAOS_NODE_IP = "127.0.0.1:9999";
 export const ASSET_HUB_NODE_IP = "127.0.0.1:9950";
 export const RELAYCHAIN_NODE_IP = "127.0.0.1:9944";
 
-// Chain config
+// Ethereum chain constants
 export const CHAIN_ID = 667;
 export const GAS_PRICE = "0x3B9ACA00";
+
+// Parachain IDs
 export const ASSET_HUB_PARA_ID = 1000;
 export const LAOS_PARA_ID = 2900;
 
-export const CHECKING_ACCOUNT = "0x6d6F646c70792F78636D63680000000000000000";
-export const FAITH = "0xC0F0f4ab324C46e55D02D0033343B4Be8A55532d";
-export const FAITH_PRIVATE_KEY = "0xb9d2ea9a615f3165812e8d44de0d24da9bbd164b65c4f0573e1ce2c8dbd9c8df";
-export const ALITH = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
+// Monetary units
+export const ONE_LAOS = new BN("1000000000000000000");
+export const ONE_DOT = new BN("1000000000000");
+
+// Ethereum private keys
 export const ALITH_PRIVATE_KEY = "0x5fb92d6e98884f76de468fa3f6278f8807c48bebc13595d45af5bdc4da702133";
-export const BALTATHAR = "0x3Cd0A705a2DC65e5b1E1205896BaA2be8A07c6e0";
 export const BALTATHAR_PRIVATE_KEY = "0x8075991ce870b93a8870eca0c0f91913d12f47948ca0fd25b49c6fa7cdbeee8b";
+export const FAITH_PRIVATE_KEY = "0xb9d2ea9a615f3165812e8d44de0d24da9bbd164b65c4f0573e1ce2c8dbd9c8df";
 
 // LAOS Evolution Contract
 export const EVOLUTION_COLLECTION_FACTORY_ABI = EvolutionCollectionFactory.abi as AbiItem[];
@@ -58,7 +63,7 @@ export const VESTING_ABI = Vesting.abi as AbiItem[];
 export const STAKING_CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000800";
 export const STAKING_ABI = ParachainStaking.abi as AbiItem[];
 
-// Constants
+// Other
 export const MAX_U96 = new BN("79228162514264337593543950336"); // 2^96 - 1
 export const REVERT_BYTECODE = "0x60006000fd";
-export const UNIT = BigInt(Math.pow(10, 18));
+

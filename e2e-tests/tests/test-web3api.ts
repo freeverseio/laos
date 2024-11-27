@@ -2,8 +2,8 @@ import BN from "bn.js";
 import { assert, expect } from "chai";
 import { step } from "mocha-steps";
 
-import { CHAIN_ID, RUNTIME_IMPL_VERSION, RUNTIME_SPEC_NAME, RUNTIME_SPEC_VERSION } from "./config";
-import { describeWithExistingNode } from "./util";
+import { CHAIN_ID, RUNTIME_IMPL_VERSION, RUNTIME_SPEC_NAME, RUNTIME_SPEC_VERSION } from "@utils/constants";
+import { describeWithExistingNode } from "@utils/setups";
 import { customRequest } from "@utils/helpers";
 
 describeWithExistingNode("Frontier RPC (Web3Api)", function () {

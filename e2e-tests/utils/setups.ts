@@ -1,33 +1,11 @@
-import Contract from "web3-eth-contract";
-import Web3 from "web3";
-import {
-	EVOLUTION_COLLECTION_FACTORY_CONTRACT_ADDRESS,
-	GAS_PRICE,
-	FAITH,
-	ALITH_PRIVATE_KEY,
-	BALTATHAR_PRIVATE_KEY,
-	FAITH_PRIVATE_KEY,
-	EVOLUTION_COLLECTION_FACTORY_ABI,
-	EVOLUTION_COLLECTION_ABI,
-	MAX_U96,
-	LAOS_NODE_IP,
-	ASSET_HUB_NODE_IP,
-	RELAYCHAIN_NODE_IP,
-	LAOS_PARA_ID,
-	ASSET_HUB_PARA_ID,
-} from "./config";
-import { CustomSuiteContext } from "./types";
-import BN from "bn.js";
-import { expect } from "chai";
-import "@polkadot/api-augment";
-
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { Keyring } from "@polkadot/api";
+import Web3 from "web3";
 import { sovereignAccountOf } from "@utils/xcm";
 import { siblingParachainLocation, relayChainLocation } from "@utils/xcm";
+import { CustomSuiteContext } from "@utils/types";
+import { LAOS_NODE_IP, ASSET_HUB_NODE_IP, RELAYCHAIN_NODE_IP, ALITH_PRIVATE_KEY, BALTATHAR_PRIVATE_KEY, FAITH_PRIVATE_KEY, LAOS_PARA_ID, ASSET_HUB_PARA_ID} from "@utils/constants";
 
-import debug from "debug";
-const debugTx = debug("transaction");
 
 export function describeWithExistingNode(
 	title: string,
@@ -58,6 +36,7 @@ export function describeWithExistingNode(
 				baltathar: keyring.addFromUri(BALTATHAR_PRIVATE_KEY),
 				faith: keyring.addFromUri(FAITH_PRIVATE_KEY),
 			};
+
 			this.web3.eth.accounts.wallet.add(ALITH_PRIVATE_KEY);
 			this.web3.eth.accounts.wallet.add(BALTATHAR_PRIVATE_KEY);
 			this.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
@@ -129,84 +108,4 @@ export function describeWithExistingNode(
 			}
 		});
 	});
-}
-
-export async function createCollection(web3: Web3): Promise<Contract> {
-	const contract = new web3.eth.Contract(
-		EVOLUTION_COLLECTION_FACTORY_ABI,
-		EVOLUTION_COLLECTION_FACTORY_CONTRACT_ADDRESS,
-		{
-			from: FAITH,
-			gasPrice: GAS_PRICE,
-		}
-	);
-
-	let nonce = await web3.eth.getTransactionCount(FAITH);
-	web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
-	const estimatedGas = await contract.methods.createCollection(FAITH).estimateGas();
-	const result = await contract.methods.createCollection(FAITH).send({
-		from: FAITH,
-		gas: estimatedGas,
-		gasPrice: GAS_PRICE,
-		nonce: nonce++,
-	});
-	expect(result.status).to.be.eq(true);
-	expect(web3.utils.isAddress(result.events.NewCollection.returnValues._collectionAddress)).to.be.eq(true);
-
-	const collectionContract = new web3.eth.Contract(
-		EVOLUTION_COLLECTION_ABI,
-		result.events.NewCollection.returnValues._collectionAddress,
-		{
-			from: FAITH,
-			gasPrice: GAS_PRICE,
-		}
-	);
-
-	return collectionContract;
-}
-
-/**
- * Converts a slot and owner address to a token ID.
- * @param slot The slot number.
- * @param owner The owner address.
- * @returns The token ID, or null if the slot is larger than 96 bits or the owner address is not 20 bytes.
- */
-export function slotAndOwnerToTokenId(slot: string, owner: string): string | null {
-	const slotBN: BN = new BN(slot);
-	const ownerBytes: Uint8Array = Uint8Array.from(Buffer.from(owner.slice(2), "hex")); // Remove the '0x' prefix and convert hex to bytes
-
-	if (slotBN.gt(MAX_U96) || ownerBytes.length != 20) {
-		return null;
-	}
-
-	// Convert slot to big-endian byte array
-	const slotBytes = slotBN.toArray("be", 16); // 16 bytes (128 bits)
-
-	// We also use the last 12 bytes of the slot, since the first 4 bytes are always 0
-	let bytes = new Uint8Array(32);
-	bytes.set(slotBytes.slice(-12), 0); // slice from the right to ensure we get the least significant bytes
-	bytes.set(ownerBytes, 12);
-
-	return Buffer.from(bytes).toString("hex"); // Convert Uint8Array to hexadecimal string
-}
-
-export async function waitFinalizedEthereumTx(web3: Web3, api: ApiPromise, txHash: string) {
-	try {
-		while (true) {
-			const receipt = await web3.eth.getTransactionReceipt(txHash);
-			if (receipt && receipt.blockNumber) {
-				const finalizedBlock = (
-					await api.rpc.chain.getBlock(await api.rpc.chain.getFinalizedHead())
-				).block.header.number.toNumber();
-				if (finalizedBlock >= receipt.blockNumber) {
-					return;
-				}
-			}
-			// Polling to avoid querying the block numbers so frequently cause they aren't produced that fast
-			setTimeout(() => {}, 2000);
-		}
-	} catch (error) {
-		debugTx(`Error waiting for confirmations of transaction ${txHash}:`, error);
-		throw error;
-	}
 }

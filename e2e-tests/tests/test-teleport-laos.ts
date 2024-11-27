@@ -2,8 +2,8 @@ import BN from "bn.js";
 import { expect } from "chai";
 import { step } from "mocha-steps";
 
-import { ASSET_HUB_PARA_ID, CHECKING_ACCOUNT, LAOS_PARA_ID } from "./config";
-import { describeWithExistingNode } from "./util";
+import { ASSET_HUB_PARA_ID,  LAOS_PARA_ID, ONE_DOT, ONE_LAOS } from "@utils/constants";
+import { describeWithExistingNode } from "@utils/setups";
 import {
 	siblingParachainLocation,
 	relayChainLocation,
@@ -20,8 +20,6 @@ import debug from "debug";
 
 const debugTeleport = debug("teleport");
 
-const ONE_LAOS = new BN("1000000000000000000");
-const ONE_DOT = new BN("1000000000000");
 
 describeWithExistingNode(
 	"Teleport Asset Hub <-> LAOS",
@@ -361,15 +359,14 @@ describeWithExistingNode(
 			const realAlithBalance = (
 				await this.chains.laos.query.system.account(this.ethereumPairs.alith.address as string)
 			).data.free;
-			const alithBalance = alithBalanceBefore.sub(amount);
+			const supposedAlithBalance = alithBalanceBefore.sub(amount);
 			expect(
-				alithBalance.sub(realAlithBalance).lte(ONE_DOT),
+				supposedAlithBalance.sub(realAlithBalance).lte(ONE_DOT),
 				"Alith's balance should decrease by the amount teleported, disregarding fees"
 			);
 		});
 
 		step("Teleport back from AssetHub to Laos", async function () {
-			let beneficiaryAddress = this.ethereumPairs.baltathar.address;
 			const beneficiary = this.chains.assetHub.createType("XcmVersionedLocation", {
 				V3: {
 					parents: "0",
@@ -377,7 +374,7 @@ describeWithExistingNode(
 						X1: {
 							AccountKey20: {
 								// network: 'Any',
-								key: beneficiaryAddress,
+								key: this.ethereumPairs.baltathar.address,
 							},
 						},
 					},
@@ -408,7 +405,7 @@ describeWithExistingNode(
 					)
 				).toJSON()?.["balance"] ?? 0
 			);
-			const beneficiaryBalanceBefore = (await this.chains.laos.query.system.account(beneficiaryAddress)).data
+			const beneficiaryBalanceBefore = (await this.chains.laos.query.system.account(this.ethereumPairs.baltathar.address)).data
 				.free;
 
 			const call = this.chains.assetHub.tx.polkadotXcm.limitedTeleportAssets(
@@ -432,7 +429,7 @@ describeWithExistingNode(
 				({ event }) => {
 					return (
 						this.chains.laos.events.balances.Minted.is(event) &&
-						event.data[0].toString() !== CHECKING_ACCOUNT
+						event.data[0].toString() == this.ethereumPairs.baltathar.address
 					);
 				},
 				laosBestBlockBeforeSending
@@ -440,7 +437,7 @@ describeWithExistingNode(
 
 			expect(event).to.not.be.null;
 			const [receiver, realAmountReceived] = event.event.data;
-			expect(receiver.toString()).to.equal(beneficiaryAddress);
+			expect(receiver.toString()).to.equal(this.ethereumPairs.baltathar.address);
 			const charlieBalance = hexToBn(
 				(
 					await this.chains.assetHub.query.foreignAssets.account(
@@ -453,7 +450,7 @@ describeWithExistingNode(
 				charlieBalanceBefore.sub(amount).eq(charlieBalance),
 				"Charlie's balance should decrease by the amount teleported"
 			);
-			const beneficiaryBalance = (await this.chains.laos.query.system.account(beneficiaryAddress)).data.free;
+			const beneficiaryBalance = (await this.chains.laos.query.system.account(this.ethereumPairs.baltathar.address)).data.free;
 			expect(
 				beneficiaryBalanceBefore.add(new BN(realAmountReceived.toString())).eq(beneficiaryBalance),
 				"Alith's balance should increase by the amount received in the teleport"

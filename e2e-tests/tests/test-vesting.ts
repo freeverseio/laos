@@ -2,9 +2,9 @@ import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { step } from "mocha-steps";
 import Contract from "web3-eth-contract";
-import { VESTING_CONTRACT_ADDRESS, VESTING_ABI, UNIT, GAS_PRICE } from "./config";
-import { describeWithExistingNode, waitFinalizedEthereumTx } from "./util";
-import { sendTxAndWaitForFinalization } from "@utils/transactions";
+import { VESTING_CONTRACT_ADDRESS, VESTING_ABI, ONE_LAOS, GAS_PRICE } from "@utils/constants";
+import { describeWithExistingNode } from "@utils/setups";
+import { sendTxAndWaitForFinalization, waitFinalizedEthereumTx } from "@utils/transactions";
 import { waitForBlocks } from "@utils/blocks";
 
 // Use chai-as-promised
@@ -34,8 +34,8 @@ describeWithExistingNode(
 				web3,
 				chains: { laos },
 			} = this;
-			const locked = BigInt(1000) * UNIT;
-			const perBlock = UNIT;
+			const locked = ONE_LAOS.muln(1000);
+			const perBlock = ONE_LAOS;
 			const finalizedHash = await laos.rpc.chain.getFinalizedHead();
 			const finalizedBlock = await laos.rpc.chain.getBlock(finalizedHash);
 			const startingBlock = finalizedBlock.block.header.number;

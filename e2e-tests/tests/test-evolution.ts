@@ -1,9 +1,10 @@
-import { createCollection, describeWithExistingNode, slotAndOwnerToTokenId } from "./util";
 import {
 	SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI,
 	SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI,
 	SELECTOR_LOG_OWNERSHIP_TRANSFERRED,
-} from "./config";
+} from "@utils/constants";
+import { describeWithExistingNode } from "@utils/setups";
+import { createCollection, slotAndOwnerToTokenId } from "@utils/helpers";
 import { expect } from "chai";
 import Contract from "web3-eth-contract";
 import BN from "bn.js";
@@ -13,7 +14,7 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", function () {
 	let collectionContract: Contract;
 
 	beforeEach(async function () {
-		collectionContract = await createCollection(this.web3);
+		collectionContract = await createCollection(this.web3, this.ethereumPairs.faith.address);
 	});
 
 	step("when collection does not exist token uri should fail", async function () {
@@ -162,7 +163,7 @@ describeWithExistingNode("Frontier RPC (Transfer Ownership)", function () {
 	let collectionContract: Contract;
 
 	before(async function () {
-		collectionContract = await createCollection(this.web3);
+		collectionContract = await createCollection(this.web3, this.ethereumPairs.faith.address);
 	});
 
 	step("when is transferred owner should change and emit an event", async function () {

@@ -2,6 +2,7 @@ import { ApiPromise } from "@polkadot/api";
 import { SubmittableExtrinsic } from "@polkadot/api/types";
 import { SubmittableResult } from "@polkadot/api/submittable";
 import { KeyringPair } from "@polkadot/keyring/types";
+import Web3 from "web3";
 import { checkEventInBlock } from "@utils/blocks";
 
 import debug from "debug";
@@ -98,4 +99,31 @@ export async function sendTxAndWaitForFinalizationRococo(
 	return apiAssetHub
 		? sendTxAndWaitForFinalization(apiAssetHub, tx, signer)
 		: sendTxAndWaitForFinalization(apiRelay, tx, signer);
+}
+
+/**
+ * Wait til a transaction sent by a EVM contract is included in a finalized block
+ * @param {Web3} web3 - The web3.js provider
+ * @param {ApiPromise} api - The ApiPromise used to interact with the chain
+ * @param {string} txHash - The transaction hash
+ */
+export async function waitFinalizedEthereumTx(web3: Web3, api: ApiPromise, txHash: string) {
+	try {
+		while (true) {
+			const receipt = await web3.eth.getTransactionReceipt(txHash);
+			if (receipt && receipt.blockNumber) {
+				const finalizedBlock = (
+					await api.rpc.chain.getBlock(await api.rpc.chain.getFinalizedHead())
+				).block.header.number.toNumber();
+				if (finalizedBlock >= receipt.blockNumber) {
+					return;
+				}
+			}
+			// Polling to avoid querying the block numbers so frequently cause they aren't produced that fast
+			setTimeout(() => {}, 2000);
+		}
+	} catch (error) {
+		debugTx(`Error waiting for confirmations of transaction ${txHash}:`, error);
+		throw error;
+	}
 }

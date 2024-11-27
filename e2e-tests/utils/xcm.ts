@@ -9,6 +9,7 @@ import BN from "bn.js";
 import { concatUint8Arrays } from "@utils/helpers";
 import { sendTxAndWaitForFinalizationRococo } from "@utils/transactions";
 import { getFinalizedBlockNumber, waitForBlocks } from "@utils/blocks";
+import "@polkadot/api-augment";
 
 /**
  * Computes the sibling account of a sibling parachain in a Substrate chain

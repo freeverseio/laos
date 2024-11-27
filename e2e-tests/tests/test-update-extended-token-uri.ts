@@ -7,8 +7,8 @@ import {
 	GAS_PRICE,
 	SELECTOR_LOG_UPDATED_EXTENDED_UL_WITH_EXTERNAL_URI,
 	SELECTOR_LOG_EXTENDED_UL_WITH_EXTERNAL_URI,
-} from "./config";
-import { describeWithExistingNode } from "./util";
+} from "@utils/constants";
+import { describeWithExistingNode } from "@utils/setups";
 
 describeWithExistingNode("Frontier RPC (Extend Token URI)", function () {
 	let contract: Contract;

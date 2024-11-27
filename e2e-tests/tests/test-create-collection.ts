@@ -7,8 +7,10 @@ import {
 	GAS_PRICE,
 	REVERT_BYTECODE,
 	SELECTOR_LOG_NEW_COLLECTION,
-} from "./config";
-import { createCollection, describeWithExistingNode } from "./util";
+} from "@utils/constants";
+import { createCollection } from "@utils/helpers";
+import { describeWithExistingNode } from "@utils/setups";
+
 
 describeWithExistingNode("Frontier RPC (Create Collection)", function () {
 	let contract: Contract;
@@ -29,7 +31,7 @@ describeWithExistingNode("Frontier RPC (Create Collection)", function () {
 	});
 
 	step("when collection is created, it should return owner", async function () {
-		const collectionContract = await createCollection(this.web3);
+		const collectionContract = await createCollection(this.web3, this.ethereumPairs.faith.address);
 		testCollectionContract = collectionContract;
 
 		const owner = await collectionContract.methods.owner().call();
