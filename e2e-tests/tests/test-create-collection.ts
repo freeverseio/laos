@@ -29,7 +29,7 @@ describeWithExistingNode("Frontier RPC (Create Collection)", function () {
 	});
 
 	step("when collection is created, it should return owner", async function () {
-		const collectionContract = await createCollection(this.context);
+		const collectionContract = await createCollection(this.web3);
 		testCollectionContract = collectionContract;
 
 		const owner = await collectionContract.methods.owner().call();

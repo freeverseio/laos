@@ -30,7 +30,6 @@ import { siblingParachainLocation, relayChainLocation } from "@utils/xcm";
 
 import debug from "debug";
 const debugTx = debug("transaction");
-const debugBlock = debug("block");
 
 export async function customRequest(web3: Web3, method: string, params: any[]) {
 	return new Promise<JsonRpcResponse>((resolve, reject) => {
@@ -157,8 +156,8 @@ export function describeWithExistingNode(
 	});
 }
 
-export async function createCollection(context: { web3: Web3 }): Promise<Contract> {
-	const contract = new context.web3.eth.Contract(
+export async function createCollection(web3: Web3): Promise<Contract> {
+	const contract = new web3.eth.Contract(
 		EVOLUTION_COLLECTION_FACTORY_ABI,
 		EVOLUTION_COLLECTION_FACTORY_CONTRACT_ADDRESS,
 		{
@@ -167,8 +166,8 @@ export async function createCollection(context: { web3: Web3 }): Promise<Contrac
 		}
 	);
 
-	let nonce = await context.web3.eth.getTransactionCount(FAITH);
-	context.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
+	let nonce = await web3.eth.getTransactionCount(FAITH);
+	web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
 	const estimatedGas = await contract.methods.createCollection(FAITH).estimateGas();
 	const result = await contract.methods.createCollection(FAITH).send({
 		from: FAITH,
@@ -177,9 +176,9 @@ export async function createCollection(context: { web3: Web3 }): Promise<Contrac
 		nonce: nonce++,
 	});
 	expect(result.status).to.be.eq(true);
-	expect(context.web3.utils.isAddress(result.events.NewCollection.returnValues._collectionAddress)).to.be.eq(true);
+	expect(web3.utils.isAddress(result.events.NewCollection.returnValues._collectionAddress)).to.be.eq(true);
 
-	const collectionContract = new context.web3.eth.Contract(
+	const collectionContract = new web3.eth.Contract(
 		EVOLUTION_COLLECTION_ABI,
 		result.events.NewCollection.returnValues._collectionAddress,
 		{
@@ -214,89 +213,6 @@ export function slotAndOwnerToTokenId(slot: string, owner: string): string | nul
 	bytes.set(ownerBytes, 12);
 
 	return Buffer.from(bytes).toString("hex"); // Convert Uint8Array to hexadecimal string
-}
-
-/**
- * Converts an Ethereum-like address into a `CollectionId` represented as a `BN` (big number).
- *
- * This function takes a hexadecimal string representation of an address and attempts to
- * convert it into a `CollectionId`. The address is expected to be in a specific format:
- *  - The first 11 bytes should be zeros.
- *  - The 12th byte should be `1`, indicating the version.
- *  - The last 8 bytes represent the `CollectionId`.
- *
- * If the address does not meet these criteria, the function returns `null`.
- *
- * @param address The Ethereum-like address in hexadecimal string format.
- * @returns The `CollectionId` as a `BN` if the address is valid, or `null` otherwise.
- */
-export function addressToCollectionId(address: string): BN | null {
-	const addressBytes: Uint8Array = Uint8Array.from(Buffer.from(address.slice(2), "hex")); // Remove the '0x' prefix and convert hex to bytes
-
-	// Check if the address length is 20 bytes
-	if (addressBytes.length !== 20) {
-		return null;
-	}
-
-	// Check if the first 11 bytes are zeros
-	for (let i = 0; i < 11; i++) {
-		if (addressBytes[i] !== 0) {
-			return null;
-		}
-	}
-
-	// Check if the 12th byte is 1 (version byte)
-	if (addressBytes[11] !== 1) {
-		return null;
-	}
-
-	// Extract the last 8 bytes and convert them to a BigInt
-	const collectionIdBytes = addressBytes.slice(12, 20);
-	let collectionId = new BN(0);
-	for (let i = 0; i < collectionIdBytes.length; i++) {
-		collectionId = collectionId.shln(8).add(new BN(collectionIdBytes[i]));
-	}
-
-	return collectionId;
-}
-
-export async function extractRevertReason(context: { web3: Web3 }, transactionHash: string) {
-	try {
-		let tx = await context.web3.eth.getTransaction(transactionHash);
-		await context.web3.eth.call({ to: tx.to, data: tx.input, gas: tx.gas });
-	} catch (error) {
-		const reasonHex = error.data.slice(2 + 8); // remove the 0x prefix and the first 8 bytes (function selector for Error(string))
-		return context.web3.utils.hexToUtf8("0x" + reasonHex.slice(64)).trim(); // skip the padding and remove return carriage
-	}
-}
-
-/**
- * Checks that a specific event is included in a specific block.
- * @param {ApiPromise} api - The ApiPromise to interact with the chain.
- * @param {(event: EventRecord) => boolean} filter - A function that filters events.
- * @param {string} blockHash - The hash corresponding to the block where we would like to find the event.
- * @returns {Promise<EventRecord>} - A promise that resolves in the event found in the block if found and reject otherwise.
- */
-export async function checkEventInBlock(
-	api: ApiPromise,
-	filter: (event: EventRecord) => boolean,
-	blockHash: string
-): Promise<EventRecord> {
-	return new Promise(async (resolve, reject) => {
-		let event: EventRecord | null = null;
-		const apiAt = await api.at(blockHash);
-		const events = await apiAt.query.system.events();
-		events.forEach((eventRecord) => {
-			if (filter(eventRecord)) {
-				event = eventRecord;
-			}
-		});
-		if (event) {
-			resolve(event);
-		} else {
-			reject(new Error(`Event not found in block ${blockHash}`));
-		}
-	});
 }
 
 export async function waitFinalizedEthereumTx(web3: Web3, api: ApiPromise, txHash: string) {

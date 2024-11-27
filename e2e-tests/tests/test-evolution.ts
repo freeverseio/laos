@@ -13,7 +13,7 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", function () {
 	let collectionContract: Contract;
 
 	beforeEach(async function () {
-		collectionContract = await createCollection(this.context);
+		collectionContract = await createCollection(this.web3);
 	});
 
 	step("when collection does not exist token uri should fail", async function () {
@@ -162,7 +162,7 @@ describeWithExistingNode("Frontier RPC (Transfer Ownership)", function () {
 	let collectionContract: Contract;
 
 	before(async function () {
-		collectionContract = await createCollection(this.context);
+		collectionContract = await createCollection(this.web3);
 	});
 
 	step("when is transferred owner should change and emit an event", async function () {
