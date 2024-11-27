@@ -3,7 +3,8 @@ import { assert, expect } from "chai";
 import { step } from "mocha-steps";
 
 import { CHAIN_ID, RUNTIME_IMPL_VERSION, RUNTIME_SPEC_NAME, RUNTIME_SPEC_VERSION } from "./config";
-import { customRequest, describeWithExistingNode } from "./util";
+import { describeWithExistingNode } from "./util";
+import { customRequest } from "@utils/helpers";
 
 describeWithExistingNode("Frontier RPC (Web3Api)", function () {
 	step("should get client version", async function () {

@@ -2,7 +2,8 @@ import { expect } from "chai";
 import { step } from "mocha-steps";
 
 import { ALITH, ALITH_PRIVATE_KEY } from "./config";
-import { customRequest, describeWithExistingNode } from "./util";
+import { describeWithExistingNode } from "./util";
+import { customRequest } from "@utils/helpers";
 
 describeWithExistingNode("Frontier RPC (TxPoolApi)", function () {
 	const TEST_CONTRACT_BYTECODE = "0x608060405234801561";
