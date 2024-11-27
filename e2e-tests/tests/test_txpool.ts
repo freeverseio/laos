@@ -33,8 +33,8 @@ describeWithExistingNode("Frontier RPC (TxPoolApi)", function () {
 	step("txpool_status should return correct result", async function () {
 		let txpoolStatusBefore = await customRequest(this.web3, "txpool_status", []);
 
-		pendingTx = await sendTransaction(this.context, nonce);
-		futureTx = await sendTransaction(this.context, nonce + 1000);
+		pendingTx = await sendTransaction(this.web3, nonce);
+		futureTx = await sendTransaction(this.web3, nonce + 1000);
 		let txpoolStatusAfter = await customRequest(this.web3, "txpool_status", []);
 
 		expect(parseInt(txpoolStatusAfter.result.pending, 16)).to.be.equal(

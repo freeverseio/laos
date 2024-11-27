@@ -63,9 +63,11 @@ export async function sendTxAndWaitForFinalization(
  * Sends a tx in assetHub chain and waits for its finality.
  *
  * NOTE:
- *  - This line of pallet session: https://github.com/paritytech/polkadot-sdk/blob/master/substrate/frame/session/src/lib.rs#L563 blocks the execution of any tx in new session blocks deeming them as invalid (tracked in https://github.com/paritytech/polkadot-sdk/issues/184). When a new session starts in the relay chain, tx sent to Asset Hub or the relay chain are rejected, so sendTxAndWaitForFinalization may have unexpected behavior and reject valid tx. Use this function when sending tx to the relay chain or Asset Hub to "dodge" the new session blocks.
+ *  This line https://github.com/paritytech/polkadot-sdk/blob/master/substrate/frame/session/src/lib.rs#L563 causes invalid transactions (txs)
+ *  in "session.newSession" blocks (issue https://github.com/paritytech/polkadot-sdk/issues/184). When session.newSession is emitted in Rococo,
+ *  txs sent to Rococo or AssetHub are rejected, causing sendTxAndWaitForFinalization to fail. Use this function to "dodge" session.newSession blocks.
  *
- * @param {ApiPromise} apiRelay - The ApiPromise to interact with the relay chain.
+ * @param {ApiPromise} apiRelay - The ApiPromise to interact with Rococo.
  * @param {SubmittableExtrinsic<"promise">} tx - The tx to submit.
  * @param {KeyringPair} signer - The KeyRingPair used to sign the tx.
  * @param {ApiPromise} [apiAssetHub] - The ApiPromise to interact with AssetHub if needed.
