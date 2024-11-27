@@ -23,19 +23,12 @@ import { expect } from "chai";
 import "@polkadot/api-augment";
 
 import { ApiPromise, WsProvider } from "@polkadot/api";
-import { SubmittableExtrinsic } from "@polkadot/api/types";
-import { SubmittableResult } from "@polkadot/api/submittable";
-import { bnToU8a, stringToU8a } from "@polkadot/util";
-import { encodeAddress } from "@polkadot/util-crypto";
-import { AssetIdV3, DoubleEncodedCall, EventRecord, XcmOriginKind } from "@polkadot/types/interfaces";
-import { XcmVersionedXcm } from "@polkadot/types/lookup";
+import { EventRecord } from "@polkadot/types/interfaces";
 import { Keyring } from "@polkadot/api";
-import { KeyringPair } from "@polkadot/keyring/types";
-
-require("events").EventEmitter.prototype._maxListeners = 100;
+import { sovereignAccountOf } from "@utils/xcm";
+import { siblingParachainLocation, relayChainLocation } from "@utils/xcm";
 
 import debug from "debug";
-import { recovery } from "@polkadot/types/interfaces/definitions";
 const debugTx = debug("transaction");
 const debugBlock = debug("block");
 
@@ -127,13 +120,16 @@ export function describeWithExistingNode(
 						ferdie: apiAssetHub.createType("MultiAddress", this.substratePairs.ferdie.address),
 					},
 					laosLocation: apiAssetHub.createType("XcmVersionedLocation", {
-						V3: siblingLocation(LAOS_PARA_ID),
+						V3: siblingParachainLocation(LAOS_PARA_ID),
 					}),
-					laosAsset: apiAssetHub.createType("StagingXcmV3MultiLocation", siblingLocation(LAOS_PARA_ID)),
+					laosAsset: apiAssetHub.createType(
+						"StagingXcmV3MultiLocation",
+						siblingParachainLocation(LAOS_PARA_ID)
+					),
 					relayChainLocation: apiAssetHub.createType("XcmVersionedLocation", {
-						V3: relayLocation(),
+						V3: relayChainLocation(),
 					}),
-					relayAsset: apiAssetHub.createType("StagingXcmV3MultiLocation", relayLocation()),
+					relayAsset: apiAssetHub.createType("StagingXcmV3MultiLocation", relayChainLocation()),
 				};
 
 				(this.assetHubItems.multiAddresses.laosSA = apiAssetHub.createType(
@@ -142,9 +138,9 @@ export function describeWithExistingNode(
 				)),
 					(this.laosItems = {
 						assetHubLocation: apiLaos.createType("XcmVersionedLocation", {
-							V3: siblingLocation(ASSET_HUB_PARA_ID),
+							V3: siblingParachainLocation(ASSET_HUB_PARA_ID),
 						}),
-						relayChainLocation: apiLaos.createType("XcmVersionedLocation", { V3: relayLocation() }),
+						relayChainLocation: apiLaos.createType("XcmVersionedLocation", { V3: relayChainLocation() }),
 					});
 			}
 		});
@@ -274,220 +270,12 @@ export async function extractRevertReason(context: { web3: Web3 }, transactionHa
 	}
 }
 
-export async function waitForBlocks(api: ApiPromise, n: number) {
-	return new Promise(async (resolve, reject) => {
-		debugBlock(`Waiting for ${n} blocks...`);
-		let blockCount = 0;
-
-		try {
-			// Await the subscription to get the unsubscribe function
-			const unsubscribe = await api.rpc.chain.subscribeFinalizedHeads((lastHeader) => {
-				blockCount += 1;
-				debugBlock(`New block: #${lastHeader.number}, waiting for ${n - blockCount} more blocks...`);
-
-				if (blockCount >= n) {
-					unsubscribe(); // Stop listening for new blocks
-					resolve(true);
-				}
-			});
-		} catch (error) {
-			console.error(`Error while subscribing to new heads:`, error);
-			reject(error);
-		}
-	});
-}
-
-export const transferBalance = async (api: ApiPromise, origin: KeyringPair, beneficiary: string, amount: BN) => {
-	let beforeBalance = await api.query.system.account(beneficiary);
-
-	try {
-		await api.tx.balances.transferKeepAlive(beneficiary, amount).signAndSend(origin);
-	} catch (error) {
-		console.log("transaction failed: ", error);
-	}
-
-	let balance = await api.query.system.account(beneficiary);
-
-	while (balance.data.free.eq(beforeBalance.data.free.add(amount)) == false) {
-		await waitForBlocks(api, 1);
-
-		balance = await api.query.system.account(beneficiary);
-	}
-};
-
-const concatUint8Arrays = (...arrays: Uint8Array[]): Uint8Array => {
-	let totalLength = arrays.reduce((acc, curr) => acc + curr.length, 0);
-	let result = new Uint8Array(totalLength);
-	let offset = 0;
-	for (let arr of arrays) {
-		result.set(arr, offset);
-		offset += arr.length;
-	}
-	return result;
-};
-
-export const sovereignAccountOf = (paraId: number): string => {
-	let type = "sibl";
-	let typeEncoded = stringToU8a(type);
-	let paraIdEncoded = bnToU8a(paraId, { bitLength: 16 });
-	let zeroPadding = new Uint8Array(32 - typeEncoded.length - paraIdEncoded.length).fill(0);
-	let address = concatUint8Arrays(typeEncoded, paraIdEncoded, zeroPadding);
-	return encodeAddress(address);
-};
-
-export const isChannelOpen = async (api: ApiPromise, sender: number, recipient: number) => {
-	const channel = await api.query.hrmp.hrmpChannels({
-		sender,
-		recipient,
-	});
-	return !channel.isEmpty;
-};
-
-export const sendOpenHrmpChannelTxs = async (api: ApiPromise, paraA: number, paraB: number) => {
-	const maxCapacity = 8;
-	const maxMessageSize = 1048576;
-	const sudo = new Keyring({ type: "sr25519" }).addFromUri("//Alice");
-
-	const hrmpChannelCalls = [];
-
-	hrmpChannelCalls.push(api.tx.hrmp.forceOpenHrmpChannel(paraA, paraB, maxCapacity, maxMessageSize));
-	hrmpChannelCalls.push(api.tx.hrmp.forceOpenHrmpChannel(paraB, paraA, maxCapacity, maxMessageSize));
-
-	try {
-		await api.tx.sudo.sudo(api.tx.utility.batchAll(hrmpChannelCalls)).signAndSend(sudo);
-	} catch (error) {
-		console.log(`Open HRMP channels transactions between parachains ${paraA} and ${paraB} failed: `, error);
-	}
-
-	while ((await isChannelOpen(api, paraA, paraB)) == false || (await isChannelOpen(api, paraB, paraA)) == false) {
-		await waitForBlocks(api, 1);
-	}
-};
-
-export const siblingLocation = (id: number) => ({
-	parents: 1,
-	interior: {
-		x1: { parachain: id },
-	},
-});
-
-export const relayLocation = () => ({
-	parents: 1,
-	interior: {
-		here: null,
-	},
-});
-
-export const hereLocation = () => ({
-	parents: 0,
-	interior: {
-		here: null,
-	},
-});
-
-interface XcmInstructionParams {
-	api: ApiPromise;
-	calls: DoubleEncodedCall[];
-	refTime: BN;
-	proofSize: BN;
-	amount: BN;
-	originKind: XcmOriginKind;
-}
-
-/**
- * Builds an XCM (Cross-Consensus Message) instruction.
- *
- * This function constructs an XCM instruction using the provided parameters. The instruction
- * includes a series of operations such as withdrawing assets, buying execution, and performing
- * transactions.
- *
- * @param {Object} params - The parameters for building the XCM instruction.
- * @param {ApiPromise} params.api - The Polkadot API instance.
- * @param {DoubleEncodedCall[]} params.calls - An array of double-encoded calls to be included in the XCM instruction.
- * @param {BN} params.refTime - The reference time for the weight limit.
- * @param {BN} params.proofSize - The proof size for the weight limit.
- * @param {BN} params.amount - The amount of the asset to be used in the XCM instruction.
- * @param {XcmOriginKind} params.originKind - The origin kind for the XCM instruction.
- *
- * @returns {XcmVersionedXcm} - The constructed XCM instruction.
- *
- * @example
- * const instruction = buildXcmInstruction({
- *   api,
- *   calls: [encodedCall1, encodedCall2],
- *   refTime: new BN(1000000),
- *   proofSize: new BN(1000),
- *   amount: new BN(1000000000),
- *   originKind: api.createType('XcmOriginKind', 'Native'),
- * });
- */
-export const buildXcmInstruction = ({
-	api,
-	calls,
-	refTime,
-	proofSize,
-	amount,
-	originKind,
-}: XcmInstructionParams): XcmVersionedXcm => {
-	const relayToken = api.createType("AssetIdV3", {
-		Concrete: relayLocation(),
-	}) as AssetIdV3;
-
-	const transacts = calls.map((call) => ({
-		Transact: {
-			originKind,
-			requireWeightAtMost: api.createType("WeightV2", {
-				refTime,
-				proofSize,
-			}),
-			call,
-		},
-	}));
-
-	return api.createType("XcmVersionedXcm", {
-		V3: [
-			{
-				WithdrawAsset: [
-					api.createType("MultiAssetV3", {
-						id: relayToken,
-						fun: api.createType("FungibilityV3", {
-							Fungible: amount,
-						}),
-					}),
-				],
-			},
-			{
-				BuyExecution: {
-					fees: api.createType("MultiAssetV3", {
-						id: relayToken,
-						fun: api.createType("FungibilityV3", {
-							Fungible: amount,
-						}),
-					}),
-					weight_limit: "Unlimited",
-				},
-			},
-			...transacts,
-		],
-	});
-};
-
-export async function getFinalizedBlockNumber(api: ApiPromise): Promise<BN> {
-	return new Promise(async (resolve) => {
-		resolve(
-			new BN(
-				(await api.rpc.chain.getBlock(await api.rpc.chain.getFinalizedHead())).block.header.number.toNumber()
-			)
-		);
-	});
-}
-
 /**
  * Checks that a specific event is included in a specific block.
- * @param api - The ApiPromise instance.
- * @param filter - A function that filters events.
- * @param blockHash - The hash corresponding to the block where we would like to find the event.
- * @returns A promise that resolves in the event found in the block if found and reject otherwise.
+ * @param {ApiPromise} api - The ApiPromise to interact with the chain.
+ * @param {(event: EventRecord) => boolean} filter - A function that filters events.
+ * @param {string} blockHash - The hash corresponding to the block where we would like to find the event.
+ * @returns {Promise<EventRecord>} - A promise that resolves in the event found in the block if found and reject otherwise.
  */
 export async function checkEventInBlock(
 	api: ApiPromise,
@@ -496,7 +284,7 @@ export async function checkEventInBlock(
 ): Promise<EventRecord> {
 	return new Promise(async (resolve, reject) => {
 		let event: EventRecord | null = null;
-    const apiAt = await api.at(blockHash);
+		const apiAt = await api.at(blockHash);
 		const events = await apiAt.query.system.events();
 		events.forEach((eventRecord) => {
 			if (filter(eventRecord)) {
@@ -507,121 +295,6 @@ export async function checkEventInBlock(
 			resolve(event);
 		} else {
 			reject(new Error(`Event not found in block ${blockHash}`));
-		}
-	});
-}
-
-/**
- * Checks that a specific event has been emitted after a XCM transaction.
- * @param api - The ApiPromise instance corresponding to the receiver chain.
- * @param filter - A function that filters events.
- * @param statingBlock - The best finalized block before the XCM transaction was sent by the origin chain. This value ensures the event isn't lost in a block before the best finalized when this is called and the best finalized when the XCM was sent.
- * @returns A promise that resolves in the event if it's found in a block after startingBlock and rejects if a XCM not processed event has been emitted.
- */
-export async function checkEventAfterXcm(
-	api: ApiPromise,
-	filter: (event: EventRecord) => boolean,
-	startingBlock: BN
-): Promise<EventRecord> {
-	// Check whether the event has been emitted in a specific block. If not found, resolves to null.
-	const findEventAfterXcmAtBlock = async (blockNumber: BN): Promise<EventRecord | null> => {
-		return new Promise(async (resolve, reject) => {
-			let event: EventRecord | null = null;
-			let processed = false;
-			const blockHash = await api.rpc.chain.getBlockHash(blockNumber);
-			const apiAt = await api.at(blockHash);
-			const events = await apiAt.query.system.events();
-			events.forEach((eventRec: EventRecord) => {
-				// Ensure XCM message has been properly executed
-				if (api.events.messageQueue.Processed.is(eventRec.event)) {
-					//data[3] corresponds to data.success in this event; not accessible by TS with data.success
-					if (!eventRec.event.data[3]) {
-						reject(new Error("XCM message couldn't be processed"));
-					} else {
-						processed = true;
-					}
-				}
-				// Ensure the expected event has been emitted
-				else if (filter(eventRec)) {
-					event = eventRec;
-				}
-			});
-
-			if (event && processed) {
-				resolve(event);
-			} else {
-				resolve(null);
-			}
-		});
-	};
-
-	// A promise race as we track two block ranges
-	return Promise.race<EventRecord>([
-		// This promise tracks blocks between startingBlock and the best finalized block
-		new Promise<EventRecord>(async (resolve) => {
-			const bestFinalizedBlock = await getFinalizedBlockNumber(api);
-			for (let block = startingBlock; block.lte(bestFinalizedBlock); block = block.add(new BN(1))) {
-				const event = await findEventAfterXcmAtBlock(block);
-				if (event) {
-					resolve(event);
-				}
-			}
-		}),
-		// This promise tracks new finalized blocks as soon as they arrive
-		new Promise<EventRecord>(async (resolve) => {
-			const unsub = await api.rpc.chain.subscribeFinalizedHeads(async (lastHeader) => {
-				const event = await findEventAfterXcmAtBlock(new BN(lastHeader.number.toNumber()));
-				if (event) {
-					unsub();
-					resolve(event);
-				}
-			});
-		}),
-	]);
-}
-
-// Generic function to send a transaction and wait for finalization
-export async function sendTxAndWaitForFinalization(
-	api: ApiPromise,
-	tx: SubmittableExtrinsic<"promise">,
-	signer: KeyringPair
-): Promise<string> {
-	return new Promise(async (resolve, reject) => {
-		try {
-			const unsub = await tx.signAndSend(signer, (result: SubmittableResult) => {
-				const { status, dispatchError } = result;
-				debugTx("Tx status: ", status.type);
-
-				if (dispatchError) {
-					debugTx("Raw dispatch error:", dispatchError.toString());
-
-					if (dispatchError.isModule) {
-						const decoded = api.registry.findMetaError(dispatchError.asModule);
-						const { section, name, docs } = decoded;
-						debugTx(`Transaction failed with error: ${section}.${name}`);
-						debugTx(`Error documentation: ${docs.join(" ")}`);
-						reject(new Error(`${section}.${name}: ${docs.join(" ")}`));
-					} else {
-						debugTx(`Transaction failed with error: ${dispatchError.toString()}`);
-						reject(new Error(dispatchError.toString()));
-					}
-					return;
-				}
-
-				if (status.isInBlock) {
-					debugTx("Tx included at block hash: ", status.asInBlock.toHex());
-				} else if (status.isFinalized) {
-					debugTx("Tx finalized at block hash: ", status.asFinalized.toHex());
-					unsub();
-					resolve(status.asFinalized.toHex());
-				} else if (status.isInvalid || status.isDropped || status.isUsurped || status.isFinalityTimeout) {
-					unsub();
-					reject(new Error("Tx won't be included in chain"));
-				}
-			});
-		} catch (error) {
-			debugTx("Error during transaction setup:", error);
-			reject(error);
 		}
 	});
 }

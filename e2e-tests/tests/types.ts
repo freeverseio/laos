@@ -3,7 +3,6 @@ import { MultiAddress, AccountId } from "@polkadot/types/interfaces";
 import { XcmVersionedLocation, StagingXcmV3MultiLocation } from "@polkadot/types/lookup";
 import { KeyringPair } from "@polkadot/keyring/types";
 import { ApiPromise } from "@polkadot/api";
-import { ethers } from "ethers";
 import Web3 from "web3";
 
 type assetHubItems = {

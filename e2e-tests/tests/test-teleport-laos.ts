@@ -3,22 +3,17 @@ import { expect } from "chai";
 import { step } from "mocha-steps";
 
 import { ASSET_HUB_PARA_ID, CHECKING_ACCOUNT, LAOS_PARA_ID } from "./config";
+import { describeWithExistingNode } from "./util";
 import {
-	describeWithExistingNode,
-	transferBalance,
-	isChannelOpen,
-	sendOpenHrmpChannelTxs,
-	waitForBlocks,
-	siblingLocation,
-	buildXcmInstruction,
-	relayLocation,
+	siblingParachainLocation,
+	relayChainLocation,
 	hereLocation,
-	getFinalizedBlockNumber,
-	checkEventInBlock,
 	checkEventAfterXcm,
-	sendTxAndWaitForFinalization,
-} from "./util";
-import { ApiPromise } from "@polkadot/api";
+	buildXcmInstruction,
+	openHrmpChannels,
+} from "@utils/xcm";
+import { sendTxAndWaitForFinalization, sendTxAndWaitForFinalizationRococo } from "@utils/transactions";
+import { getFinalizedBlockNumber, checkEventInBlock } from "@utils/blocks";
 import { DoubleEncodedCall } from "@polkadot/types/interfaces";
 import { hexToBn, u8aToHex } from "@polkadot/util";
 import debug from "debug";
@@ -31,88 +26,80 @@ const ONE_DOT = new BN("1000000000000");
 describeWithExistingNode(
 	"Teleport Asset Hub <-> LAOS",
 	function () {
-		// APIS
-		let apiAssetHub: ApiPromise;
-		let apiLaos: ApiPromise;
-		let apiRelaychain: ApiPromise;
-
-		before(async function () {
-			// Initialize the APIs
-			apiAssetHub = this.chains.assetHub;
-			apiLaos = this.chains.laos;
-			apiRelaychain = this.chains.relaychain;
-
-			debugTeleport("Waiting until all the relay chain, Asset Hub and LAOS produce blocks...");
-			await Promise.all([
-				waitForBlocks(apiRelaychain, 1),
-				waitForBlocks(apiAssetHub, 1),
-				waitForBlocks(apiLaos, 1),
-			]);
-
-			debugTeleport("[RELAY_CHAIN] Send transaction to open HRMP channels between AssetHub and LAOS..."); // See: https://github.com/paritytech/polkadot-sdk/pull/1616
-			await sendOpenHrmpChannelTxs(apiRelaychain, LAOS_PARA_ID, ASSET_HUB_PARA_ID);
-		});
-
-		step("HRMP channels between AssetHub and LAOS are open", async function () {
-			expect(await isChannelOpen(apiRelaychain, LAOS_PARA_ID, ASSET_HUB_PARA_ID)).to.be.true;
-			expect(await isChannelOpen(apiRelaychain, ASSET_HUB_PARA_ID, LAOS_PARA_ID)).to.be.true;
+		step("Open HRMP channels between AssetHub and LAOS", async function () {
+			await openHrmpChannels(this.chains.relaychain, LAOS_PARA_ID, ASSET_HUB_PARA_ID);
+			expect(
+				(
+					await this.chains.relaychain.query.hrmp.hrmpChannels({
+						sender: LAOS_PARA_ID,
+						recipient: ASSET_HUB_PARA_ID,
+					})
+				).isEmpty
+			).to.be.false;
+			expect(
+				(
+					await this.chains.relaychain.query.hrmp.hrmpChannels({
+						sender: ASSET_HUB_PARA_ID,
+						recipient: LAOS_PARA_ID,
+					})
+				).isEmpty
+			).to.be.false;
 		});
 
 		step("Create $LAOS in AssetHub", async function () {
-			const laosForeignAssetExists = !(await apiAssetHub.query.foreignAssets.asset(this.assetHubItems.laosAsset))
-				.isEmpty;
+			const laosForeignAssetExists = !(
+				await this.chains.assetHub.query.foreignAssets.asset(this.assetHubItems.laosAsset)
+			).isEmpty;
 
 			// NOTE: We only create the foreign asset if it hasn't been created yet, in this way we ensure tests are idempotent
 			if (!laosForeignAssetExists) {
-				//Fund LAOS sovereigna account
-				debugTeleport("[ASSET_HUB] Funding LAOS sovereign account...");
-				await transferBalance(
-					apiAssetHub,
-					this.substratePairs.alice,
+				// Transfer some funds from alice to the LAOS SA in Asset Hub to ensure it can pay for fees.
+				let transferBalanceTx = this.chains.assetHub.tx.balances.transferKeepAlive(
 					this.assetHubItems.laosSA,
 					ONE_DOT.muln(100)
 				);
+				await sendTxAndWaitForFinalizationRococo(
+					this.chains.relaychain,
+					transferBalanceTx,
+					this.substratePairs.alice,
+					this.chains.assetHub
+				);
 
 				// Build XCM instruction
-				const createCall = apiAssetHub.tx.foreignAssets.create(
+				const createCall = this.chains.assetHub.tx.foreignAssets.create(
 					this.assetHubItems.laosAsset,
 					this.assetHubItems.multiAddresses.laosSA,
 					ONE_LAOS
 				);
 
-				const createEncodedCall = apiLaos.createType("DoubleEncodedCall", {
+				const createEncodedCall = this.chains.laos.createType("DoubleEncodedCall", {
 					encoded: u8aToHex(createCall.method.toU8a()),
 				}) as DoubleEncodedCall;
 
-				const instruction = buildXcmInstruction({
-					api: apiLaos,
-					calls: [createEncodedCall],
-					refTime: new BN(1000000000),
-					proofSize: new BN(5000),
-					amount: ONE_DOT,
-					originKind: apiLaos.createType("XcmOriginKind", "Xcm"),
-				});
-
-				// Get balances before teleporting.
-				const alithBalanceBefore = new BN(
-					(await apiLaos.query.system.account(this.ethereumPairs.alith.address as string)).data.free
-				);
-				const laosBalanceBefore = new BN(
-					(await apiAssetHub.query.system.account(this.assetHubItems.laosSA as string)).data.free
+				const instruction = buildXcmInstruction(
+					this.chains.laos,
+					relayChainLocation(),
+					[createEncodedCall],
+					new BN(1000000000),
+					new BN(5000),
+					ONE_DOT,
+					this.chains.laos.createType("XcmOriginKind", "Xcm")
 				);
 
-				// Send the XCM instruction from LAOS too Asset Hub
-				const sudoCall = apiLaos.tx.sudo.sudo(
-					apiLaos.tx.polkadotXcm.send(this.laosItems.assetHubLocation, instruction)
+				const call = this.chains.laos.tx.sudo.sudo(
+					this.chains.laos.tx.polkadotXcm.send(this.laosItems.assetHubLocation, instruction)
 				);
 
-        const assetHubBestBlockBeforeSending = await getFinalizedBlockNumber(apiAssetHub);
-				await sendTxAndWaitForFinalization(apiLaos, sudoCall, this.ethereumPairs.alith);
+				// Get assetHub best finalized block before sending the XCM.
+				const assetHubBestBlockBeforeSending = await getFinalizedBlockNumber(this.chains.assetHub);
 
-				// Check if the foreign asset has been created in Asset Hub
+				// Send the XCM and wait til the tx is included in a finalized block in LAOS.
+				await sendTxAndWaitForFinalization(this.chains.laos, call, this.ethereumPairs.alith);
+
+				// Check that the foreign asset created event has been emitted in AssetHub.
 				const event = await checkEventAfterXcm(
-					apiAssetHub,
-					({ event }) => apiAssetHub.events.foreignAssets.Created.is(event),
+					this.chains.assetHub,
+					({ event }) => this.chains.assetHub.events.foreignAssets.Created.is(event),
 					assetHubBestBlockBeforeSending
 				);
 
@@ -122,23 +109,9 @@ describeWithExistingNode(
 				expect(creator.toString()).to.equal(this.assetHubItems.laosSA);
 				expect(owner.toString()).to.equal(this.assetHubItems.laosSA);
 
-				// Check that balances are correct.
-				const alithBalance = new BN(
-					(await apiLaos.query.system.account(this.ethereumPairs.alith.address as string)).data.free
-				);
-				expect(alithBalanceBefore.eq(alithBalance), "Alith balance shouldn't change");
-
-				const laosBalance = new BN(
-					(await apiAssetHub.query.system.account(this.assetHubItems.laosSA as string)).data.free
-				);
-				const decreaseOfLaosBalance = laosBalanceBefore.sub(laosBalance);
+				// Check that the asset exists in asset hub.
 				expect(
-					decreaseOfLaosBalance.eq(ONE_DOT.add(apiAssetHub.consts.assets.assetDeposit)),
-					"Laos balance should decrease by the XCM withdrawn amount plus the asset deposit"
-				);
-
-				expect(
-					(await apiAssetHub.query.foreignAssets.asset(this.assetHubItems.laosAsset)).isEmpty,
+					(await this.chains.assetHub.query.foreignAssets.asset(this.assetHubItems.laosAsset)).isEmpty,
 					"$LAOS foreign asset has not been created"
 				).to.be.false;
 			} else {
@@ -147,74 +120,71 @@ describeWithExistingNode(
 		});
 
 		step("Mint $LAOS in AssetHub", async function () {
+			const MINTED_AMOUNT = ONE_LAOS.muln(10000);
 			// Build XCM instructions
-			const mintLaosCall = apiAssetHub.tx.foreignAssets.mint(
+			const mintLaosCall = this.chains.assetHub.tx.foreignAssets.mint(
 				this.assetHubItems.laosAsset,
 				this.assetHubItems.multiAddresses.ferdie,
-				ONE_LAOS.muln(10000)
+				MINTED_AMOUNT
 			);
 
-			const mintLaosEncodedCall = apiLaos.createType("DoubleEncodedCall", {
+			const mintLaosEncodedCall = this.chains.laos.createType("DoubleEncodedCall", {
 				encoded: u8aToHex(mintLaosCall.method.toU8a()),
 			}) as DoubleEncodedCall;
 
-			const instruction = buildXcmInstruction({
-				api: apiLaos,
-				calls: [mintLaosEncodedCall],
-				refTime: new BN(2000000000),
-				proofSize: new BN(7000),
-				amount: ONE_DOT,
-				originKind: apiLaos.createType("XcmOriginKind", "SovereignAccount"),
-			});
-
-			// Send the XCM instruction from Laos to Asset Hub
-			const alithBalanceBefore = new BN(
-				(await apiLaos.query.system.account(this.ethereumPairs.alith.address as string)).data.free
-			);
-			const laosBalanceBefore = new BN(
-				(await apiAssetHub.query.system.account(this.assetHubItems.laosSA as string)).data.free
-			);
-			const sudoCall = apiLaos.tx.sudo.sudo(
-				apiLaos.tx.polkadotXcm.send(this.laosItems.assetHubLocation, instruction)
+			const instruction = buildXcmInstruction(
+				this.chains.laos,
+				relayChainLocation(),
+				[mintLaosEncodedCall],
+				new BN(2000000000),
+				new BN(7000),
+				ONE_DOT,
+				this.chains.laos.createType("XcmOriginKind", "SovereignAccount")
 			);
 
-			const assetHubBestBlockBeforeSending = await getFinalizedBlockNumber(apiAssetHub);
-			await sendTxAndWaitForFinalization(apiLaos, sudoCall, this.ethereumPairs.alith);
+			// Ferdie's balance before the minting
+			const ferdieLaosBalanceBefore = hexToBn(
+				(
+					await this.chains.assetHub.query.foreignAssets.account(
+						this.assetHubItems.laosAsset,
+						this.substratePairs.ferdie.address
+					)
+				).toJSON()?.["balance"] ?? 0
+			);
 
-			// Check if the foreign asset has been minted in Asset Hub
+			const call = this.chains.laos.tx.sudo.sudo(
+				this.chains.laos.tx.polkadotXcm.send(this.laosItems.assetHubLocation, instruction)
+			);
+
+			const assetHubBestBlockBeforeSending = await getFinalizedBlockNumber(this.chains.assetHub);
+
+			await sendTxAndWaitForFinalization(this.chains.laos, call, this.ethereumPairs.alith);
+
+			// Check that the foreign asset minted event happened in AH.
 			const event = await checkEventAfterXcm(
-				apiAssetHub,
-				({ event }) => apiAssetHub.events.foreignAssets.Issued.is(event),
+				this.chains.assetHub,
+				({ event }) => this.chains.assetHub.events.foreignAssets.Issued.is(event),
 				assetHubBestBlockBeforeSending
 			);
 
 			expect(event).to.not.be.null;
-			const alithBalance = new BN(
-				(await apiLaos.query.system.account(this.ethereumPairs.alith.address as string)).data.free
-			);
-			expect(alithBalanceBefore.eq(alithBalance), "Alith balance shouldn't change");
 
-			const laosBalance = new BN(
-				(await apiAssetHub.query.system.account(this.assetHubItems.laosSA as string)).data.free
-			);
-			const decreaseOfLaosBalance = laosBalanceBefore.sub(laosBalance);
-			expect(decreaseOfLaosBalance.eq(ONE_DOT), "Laos should decrease XCM withdrawn amount");
-
-			const ferdieXLaosBalance = hexToBn(
+			// Check that Ferdie's balance has been correctly updated.
+			const ferdieLaosBalance = hexToBn(
 				(
-					await apiAssetHub.query.foreignAssets.account(
+					await this.chains.assetHub.query.foreignAssets.account(
 						this.assetHubItems.laosAsset,
 						this.substratePairs.ferdie.address
 					)
 				).toJSON()["balance"]
 			);
-			expect(ferdieXLaosBalance.gte(new BN(0)), "Ferdie balance should be > 0");
+			expect(ferdieLaosBalance.sub(ferdieLaosBalanceBefore).eq(MINTED_AMOUNT), "Ferdie balance should be > 0");
 		});
 
 		step("Create $LAOS/$DOT pool in AssetHub", async function () {
 			// NOTE: We only create the pool if it hasn't been created yet, in this way we ensure tests are idempotent
 			const poolExists = !(
-				await apiAssetHub.query.assetConversion.pools([
+				await this.chains.assetHub.query.assetConversion.pools([
 					this.assetHubItems.relayAsset,
 					this.assetHubItems.laosAsset,
 				])
@@ -222,113 +192,97 @@ describeWithExistingNode(
 
 			if (!poolExists) {
 				// Build XCM instruction to be included in xcm.send call
-				const createPoolCall = apiAssetHub.tx.assetConversion.createPool(
+				const createPoolCall = this.chains.assetHub.tx.assetConversion.createPool(
 					this.assetHubItems.relayAsset.toU8a(),
 					this.assetHubItems.laosAsset.toU8a()
 				);
 
-				const createPoolEncodedCall = apiLaos.createType("DoubleEncodedCall", {
-					encoded: u8aToHex(createPoolCall.method.toU8a()),
-				}) as DoubleEncodedCall;
-
-				const instruction = buildXcmInstruction({
-					api: apiLaos,
-					calls: [createPoolEncodedCall],
-					refTime: new BN(2000000000),
-					proofSize: new BN(7000),
-					amount: ONE_DOT,
-					originKind: apiLaos.createType("XcmOriginKind", "SovereignAccount"),
-				});
-
-				// Send the XCM instruction from Laos to Asset Hub
-				const laosBalanceBefore = new BN(
-					(await apiAssetHub.query.system.account(this.assetHubItems.laosSA as string)).data.free
-				);
-				const alithBalanceBefore = new BN(
-					(await apiLaos.query.system.account(this.ethereumPairs.alith.address as string)).data.free
-				);
-				const sudoCall = apiLaos.tx.sudo.sudo(
-					apiLaos.tx.polkadotXcm.send(this.laosItems.assetHubLocation, instruction)
+				let finalizedBlock = await sendTxAndWaitForFinalizationRococo(
+					this.chains.relaychain,
+					createPoolCall,
+					this.substratePairs.alice,
+					this.chains.assetHub
 				);
 
-        const assetHubBestBlockBeforeSending = await getFinalizedBlockNumber(apiAssetHub);
-				await sendTxAndWaitForFinalization(apiLaos, sudoCall, this.ethereumPairs.alith);
-
-				// Check that pool has been created in Asset Hub
-				const event = await checkEventAfterXcm(
-					apiAssetHub,
-					({ event }) => apiAssetHub.events.assetConversion.PoolCreated.is(event),
-					assetHubBestBlockBeforeSending
+				// Check that pool creation event has been emitted.
+				let event = await checkEventInBlock(
+					this.chains.assetHub,
+					({ event }) => this.chains.assetHub.events.assetConversion.PoolCreated.is(event),
+					finalizedBlock
 				);
 
 				expect(event).to.not.be.null;
 				const [creator, poolId] = event.event.data;
-				expect(creator.toString()).to.equal(this.assetHubItems.laosSA);
-				expect(poolId.toJSON()).to.deep.equal([relayLocation(), siblingLocation(LAOS_PARA_ID)]);
+				expect(creator.toString()).to.equal(this.substratePairs.alice.address);
+				expect(poolId.toJSON()).to.deep.equal([relayChainLocation(), siblingParachainLocation(LAOS_PARA_ID)]);
 				expect(
 					(
-						await apiAssetHub.query.assetConversion.pools([
+						await this.chains.assetHub.query.assetConversion.pools([
 							this.assetHubItems.relayAsset,
 							this.assetHubItems.laosAsset,
 						])
 					).isEmpty
 				).to.be.false;
 
-				const alithBalance = new BN(
-					(await apiLaos.query.system.account(this.ethereumPairs.alith.address as string)).data.free
+				// Add liquidity to the pool
+				const liquidityAmountLaos = new BN(ONE_LAOS.muln(1000));
+				const liquidityAmountDot = new BN(ONE_DOT.muln(1000));
+				const ferdieBalance = new BN(
+					(
+						await this.chains.assetHub.query.system.account(this.substratePairs.ferdie.address as string)
+					).data.free
 				);
-				expect(alithBalanceBefore.eq(alithBalance), "Alith balance shouldn't change");
-
-				const laosBalance = new BN(
-					(await apiAssetHub.query.system.account(this.assetHubItems.laosSA as string)).data.free
+				const ferdieLaosBalance = hexToBn(
+					(
+						await this.chains.assetHub.query.foreignAssets.account(
+							this.assetHubItems.laosAsset,
+							this.substratePairs.ferdie.address
+						)
+					).toJSON()?.["balance"] ?? 0
 				);
-				const decreaseOfLaosBalance = laosBalanceBefore.sub(laosBalance);
 				expect(
-					decreaseOfLaosBalance.eq(ONE_DOT.add(apiAssetHub.consts.assets.assetAccountDeposit)),
-					"Laos should decrease by the XCM withdrawn amount plus the asset account deposit"
+					ferdieBalance.gte(liquidityAmountDot),
+					"Ferdie's $DOT balance should be greater than the amount to be sent to the pool"
 				);
-			} else {
-				debugTeleport("Pool already exists, skipping creation...");
+				expect(
+					ferdieLaosBalance.gte(liquidityAmountLaos),
+					"Ferdie's $LAOS balance should be greater than the amount to be sent to the pool"
+				);
+
+				const call = this.chains.assetHub.tx.assetConversion.addLiquidity(
+					this.assetHubItems.relayAsset.toU8a(),
+					this.assetHubItems.laosAsset.toU8a(),
+					liquidityAmountDot,
+					liquidityAmountLaos,
+					liquidityAmountDot.sub(new BN(ONE_DOT.muln(10))),
+					liquidityAmountLaos.sub(new BN(ONE_LAOS.muln(10))),
+					this.substratePairs.ferdie.address
+				);
+
+				finalizedBlock = await sendTxAndWaitForFinalizationRococo(
+					this.chains.relaychain,
+					call,
+					this.substratePairs.ferdie,
+					this.chains.assetHub
+				);
+				event = await checkEventInBlock(
+					this.chains.assetHub,
+					({ event }) => this.chains.assetHub.events.assetConversion.LiquidityAdded.is(event),
+					finalizedBlock
+				);
+
+				expect(event).to.not.be.null;
+				const [who, mintTo, poolID, amount1Provided, amount2Provided] = event.event.data;
+				expect(who.toString()).to.equal(this.substratePairs.ferdie.address);
+				expect(mintTo.toString()).to.equal(this.substratePairs.ferdie.address);
+				expect(poolId.toJSON()).to.deep.equal([relayChainLocation(), siblingParachainLocation(LAOS_PARA_ID)]);
+				expect(new BN(amount1Provided.toString()).eq(liquidityAmountDot)).to.be.true;
+				expect(new BN(amount2Provided.toString()).eq(liquidityAmountLaos)).to.be.true;
 			}
-
-			// Add liquidity to the pool
-			const liquidityAmountLaos = new BN(ONE_LAOS.muln(1000));
-			const liquidityAmountDot = new BN(ONE_DOT.muln(1000));
-			const ferdieBalance = new BN(
-				(await apiAssetHub.query.system.account(this.substratePairs.ferdie.address as string)).data.free
-			);
-			const ferdieXLaosBalance = hexToBn(
-				(
-					await apiAssetHub.query.foreignAssets.account(
-						this.assetHubItems.laosAsset,
-						this.substratePairs.ferdie.address
-					)
-				).toJSON()["balance"]
-			);
-			expect(
-				ferdieBalance.gte(liquidityAmountDot),
-				"Ferdie's $DOT balance should be greater than the amount to be sent to the pool"
-			);
-			expect(
-				ferdieXLaosBalance.gte(liquidityAmountLaos),
-				"Ferdie's $LAOS balance should be greater than the amount to be sent to the pool"
-			);
-
-			const call = apiAssetHub.tx.assetConversion.addLiquidity(
-				this.assetHubItems.relayAsset.toU8a(),
-				this.assetHubItems.laosAsset.toU8a(),
-				liquidityAmountDot,
-				liquidityAmountLaos,
-				liquidityAmountDot.sub(new BN(ONE_DOT.muln(10))),
-				liquidityAmountLaos.sub(new BN(ONE_LAOS.muln(10))),
-				this.substratePairs.ferdie.address
-			);
-
-			await sendTxAndWaitForFinalization(apiAssetHub, call, this.substratePairs.ferdie);
 		});
 
 		step("Teleport from LAOS to AssetHub", async function () {
-			const beneficiary = apiLaos.createType("XcmVersionedLocation", {
+			const beneficiary = this.chains.laos.createType("XcmVersionedLocation", {
 				V3: {
 					parents: "0",
 					interior: {
@@ -343,7 +297,7 @@ describeWithExistingNode(
 			});
 
 			const amount = ONE_LAOS.muln(5);
-			const assets = apiLaos.createType("XcmVersionedAssets", {
+			const assets = this.chains.laos.createType("XcmVersionedAssets", {
 				V3: [
 					{
 						id: {
@@ -360,16 +314,17 @@ describeWithExistingNode(
 
 			const charlieBalanceBefore = hexToBn(
 				(
-					await apiAssetHub.query.foreignAssets.account(
+					await this.chains.assetHub.query.foreignAssets.account(
 						this.assetHubItems.laosAsset,
 						this.substratePairs.charlie.address
 					)
-				).toJSON()?.["balance"] ?? "0x0"
+				).toJSON()?.["balance"] ?? 0
 			);
-			const alithBalanceBefore = (await apiLaos.query.system.account(this.ethereumPairs.alith.address as string))
-				.data.free;
+			const alithBalanceBefore = (
+				await this.chains.laos.query.system.account(this.ethereumPairs.alith.address as string)
+			).data.free;
 
-			const call = apiLaos.tx.polkadotXcm.limitedTeleportAssets(
+			const call = this.chains.laos.tx.polkadotXcm.limitedTeleportAssets(
 				this.laosItems.assetHubLocation,
 				beneficiary,
 				assets,
@@ -377,13 +332,13 @@ describeWithExistingNode(
 				weight_limit
 			);
 
-      const assetHubBestBlockBeforeSending = await getFinalizedBlockNumber(apiAssetHub);
-			await sendTxAndWaitForFinalization(apiLaos, call, this.ethereumPairs.alith);
+			const assetHubBestBlockBeforeSending = await getFinalizedBlockNumber(this.chains.assetHub);
+			await sendTxAndWaitForFinalization(this.chains.laos, call, this.ethereumPairs.alith);
 
 			// Check that $LAOS has been sent in Asset Hub
 			const event = await checkEventAfterXcm(
-				apiAssetHub,
-				({ event }) => apiAssetHub.events.foreignAssets.Issued.is(event),
+				this.chains.assetHub,
+				({ event }) => this.chains.assetHub.events.foreignAssets.Issued.is(event),
 				assetHubBestBlockBeforeSending
 			);
 
@@ -393,7 +348,7 @@ describeWithExistingNode(
 			expect(owner.toString()).to.equal(this.substratePairs.charlie.address);
 			const charlieBalance = hexToBn(
 				(
-					await apiAssetHub.query.foreignAssets.account(
+					await this.chains.assetHub.query.foreignAssets.account(
 						this.assetHubItems.laosAsset,
 						this.substratePairs.charlie.address
 					)
@@ -403,8 +358,9 @@ describeWithExistingNode(
 				charlieBalanceBefore.add(new BN(realAmountReceived.toString())).eq(charlieBalance),
 				"Charlie's balance should increase by the amount received"
 			);
-			const realAlithBalance = (await apiLaos.query.system.account(this.ethereumPairs.alith.address as string))
-				.data.free;
+			const realAlithBalance = (
+				await this.chains.laos.query.system.account(this.ethereumPairs.alith.address as string)
+			).data.free;
 			const alithBalance = alithBalanceBefore.sub(amount);
 			expect(
 				alithBalance.sub(realAlithBalance).lte(ONE_DOT),
@@ -413,8 +369,8 @@ describeWithExistingNode(
 		});
 
 		step("Teleport back from AssetHub to Laos", async function () {
-			let beneficiaryAddress = "0x0000000000000000000000000000000000000001";
-			const beneficiary = apiAssetHub.createType("XcmVersionedLocation", {
+			let beneficiaryAddress = this.ethereumPairs.baltathar.address;
+			const beneficiary = this.chains.assetHub.createType("XcmVersionedLocation", {
 				V3: {
 					parents: "0",
 					interior: {
@@ -429,11 +385,11 @@ describeWithExistingNode(
 			});
 
 			const amount = ONE_LAOS.muln(1);
-			const assets = apiAssetHub.createType("XcmVersionedAssets", {
+			const assets = this.chains.assetHub.createType("XcmVersionedAssets", {
 				V3: [
 					{
 						id: {
-							Concrete: siblingLocation(LAOS_PARA_ID),
+							Concrete: siblingParachainLocation(LAOS_PARA_ID),
 						},
 						fun: {
 							Fungible: amount,
@@ -446,15 +402,16 @@ describeWithExistingNode(
 
 			const charlieBalanceBefore = hexToBn(
 				(
-					await apiAssetHub.query.foreignAssets.account(
+					await this.chains.assetHub.query.foreignAssets.account(
 						this.assetHubItems.laosAsset,
 						this.substratePairs.charlie.address
 					)
-				).toJSON()["balance"]
+				).toJSON()?.["balance"] ?? 0
 			);
-			const beneficiaryBalanceBefore = (await apiLaos.query.system.account(beneficiaryAddress)).data.free;
+			const beneficiaryBalanceBefore = (await this.chains.laos.query.system.account(beneficiaryAddress)).data
+				.free;
 
-			const call = apiAssetHub.tx.polkadotXcm.limitedTeleportAssets(
+			const call = this.chains.assetHub.tx.polkadotXcm.limitedTeleportAssets(
 				this.assetHubItems.laosLocation,
 				beneficiary,
 				assets,
@@ -462,13 +419,21 @@ describeWithExistingNode(
 				weight_limit
 			);
 
-      const laosBestBlockBeforeSending = await getFinalizedBlockNumber(apiLaos);
-			await sendTxAndWaitForFinalization(apiAssetHub, call, this.substratePairs.charlie);
+			const laosBestBlockBeforeSending = await getFinalizedBlockNumber(this.chains.laos);
+			await sendTxAndWaitForFinalizationRococo(
+				this.chains.relaychain,
+				call,
+				this.substratePairs.charlie,
+				this.chains.assetHub
+			);
 			// Check that $LAOS has been sent back to Laos
 			const event = await checkEventAfterXcm(
-				apiLaos,
+				this.chains.laos,
 				({ event }) => {
-					return apiLaos.events.balances.Minted.is(event) && event.data[0].toString() !== CHECKING_ACCOUNT;
+					return (
+						this.chains.laos.events.balances.Minted.is(event) &&
+						event.data[0].toString() !== CHECKING_ACCOUNT
+					);
 				},
 				laosBestBlockBeforeSending
 			);
@@ -478,7 +443,7 @@ describeWithExistingNode(
 			expect(receiver.toString()).to.equal(beneficiaryAddress);
 			const charlieBalance = hexToBn(
 				(
-					await apiAssetHub.query.foreignAssets.account(
+					await this.chains.assetHub.query.foreignAssets.account(
 						this.assetHubItems.laosAsset,
 						this.substratePairs.charlie.address
 					)
@@ -488,7 +453,7 @@ describeWithExistingNode(
 				charlieBalanceBefore.sub(amount).eq(charlieBalance),
 				"Charlie's balance should decrease by the amount teleported"
 			);
-			const beneficiaryBalance = (await apiLaos.query.system.account(beneficiaryAddress)).data.free;
+			const beneficiaryBalance = (await this.chains.laos.query.system.account(beneficiaryAddress)).data.free;
 			expect(
 				beneficiaryBalanceBefore.add(new BN(realAmountReceived.toString())).eq(beneficiaryBalance),
 				"Alith's balance should increase by the amount received in the teleport"
