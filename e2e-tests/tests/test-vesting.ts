@@ -5,7 +5,6 @@ import Contract from "web3-eth-contract";
 import { VESTING_CONTRACT_ADDRESS, VESTING_ABI, ONE_LAOS, GAS_PRICE } from "@utils/constants";
 import { describeWithExistingNode } from "@utils/setups";
 import { sendTxAndWaitForFinalization, waitFinalizedEthereumTx } from "@utils/transactions";
-import { waitForBlocks } from "@utils/blocks";
 
 // Use chai-as-promised
 chai.use(chaiAsPromised);
@@ -30,36 +29,31 @@ describeWithExistingNode(
 		});
 
 		step("create and execute vesting", async function () {
-			const {
-				web3,
-				chains: { laos },
-			} = this;
 			const locked = ONE_LAOS.muln(1000);
 			const perBlock = ONE_LAOS;
-			const finalizedHash = await laos.rpc.chain.getFinalizedHead();
-			const finalizedBlock = await laos.rpc.chain.getBlock(finalizedHash);
+			const finalizedHash = await this.chains.laos.rpc.chain.getFinalizedHead();
+			const finalizedBlock = await this.chains.laos.rpc.chain.getBlock(finalizedHash);
 			const startingBlock = finalizedBlock.block.header.number;
-			const account = web3.eth.accounts.create();
-			web3.eth.accounts.wallet.add(account.privateKey); // Add account for signing transactions
+			const account = this.web3.eth.accounts.create();
+			this.web3.eth.accounts.wallet.add(account.privateKey); // Add account for signing transactions
 
 			// Step 1: Verify initial balance is zero
-			await expect(web3.eth.getBalance(account.address)).to.eventually.equal("0");
+			await expect(this.web3.eth.getBalance(account.address)).to.eventually.equal("0");
 
 			// Step 2: Confirm no existing vesting schedule
 			let vestingSchedule = await contract.methods.vesting(account.address).call();
 			expect(vestingSchedule).to.deep.equal([]);
 
 			// Step 3: Create vesting schedule via substrate transaction
-			await waitForBlocks(laos, 1);
-			const vestingTx = laos.tx.vesting.vestedTransfer(account.address, {
+			const vestingTx = this.chains.laos.tx.vesting.vestedTransfer(account.address, {
 				locked,
 				perBlock,
 				startingBlock,
 			});
-			await sendTxAndWaitForFinalization(laos, vestingTx, this.ethereumPairs.alith);
+			await sendTxAndWaitForFinalization(this.chains.laos, vestingTx, this.ethereumPairs.alith);
 
 			// Step 4: Check balance has increased since startingBlock
-			const initialBalance = await web3.eth.getBalance(account.address);
+			const initialBalance = await this.web3.eth.getBalance(account.address);
 			expect(Number(initialBalance)).to.be.greaterThan(Number(0));
 			expect(Number(initialBalance)).to.be.lessThan(Number(locked));
 
@@ -68,28 +62,25 @@ describeWithExistingNode(
 			expect(vestingSchedule).to.deep.equal([[locked.toString(), perBlock.toString(), startingBlock.toString()]]);
 
 			// Step 6: Execute vesting with an external account (ALITH)
-			await waitForBlocks(laos, 1);
 			let gas = await contract.methods
 				.vestOther(account.address)
 				.estimateGas({ from: this.ethereumPairs.alith.address });
 			let tx = await contract.methods
 				.vestOther(account.address)
 				.send({ from: this.ethereumPairs.alith.address, gas });
-			await waitFinalizedEthereumTx(web3, laos, tx.transactionHash);
+			await waitFinalizedEthereumTx(this.web3, this.chains.laos, tx.transactionHash);
 
 			// Step 7: Confirm balance increase after external vesting
-			const balanceAfterVestOther = await web3.eth.getBalance(account.address);
+			const balanceAfterVestOther = await this.web3.eth.getBalance(account.address);
 			expect(Number(balanceAfterVestOther)).to.be.greaterThan(Number(initialBalance));
-
-			await waitForBlocks(laos, 1);
 
 			// Step 8: Execute vesting directly from the account
 			gas = await contract.methods.vest().estimateGas({ from: account.address });
 			tx = await contract.methods.vest().send({ from: account.address, gas });
-			await waitFinalizedEthereumTx(web3, laos, tx.transactionHash);
+			await waitFinalizedEthereumTx(this.web3, this.chains.laos, tx.transactionHash);
 
 			// Step 9: Verify final balance increase after second vesting
-			const finalBalance = await web3.eth.getBalance(account.address);
+			const finalBalance = await this.web3.eth.getBalance(account.address);
 			expect(Number(finalBalance)).to.be.greaterThan(Number(balanceAfterVestOther));
 		});
 	},
