@@ -16,7 +16,7 @@ import {
 } from "@utils/constants";
 
 /**
- * Sets up a mocha describe environment with pre-configured utils for testing available through the 'this' variable. 
+ * Sets up a mocha describe environment with pre-configured utils for testing available through the 'this' variable.
  * See utils/types.ts -> CustomSuiteContext to explore all the available options
  *
  * @param {string} title - The title of the test
