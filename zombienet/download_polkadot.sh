@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Default version and download directory
-VERSION=${1:-"stable2407-3"}
+VERSION=${1:-"stable2407-4"}
 DOWNLOAD_DIR=${2:-"./tmp"}  # Default is the current directory
 
 BASE_URL="https://github.com/paritytech/polkadot-sdk/releases/download/polkadot-$VERSION"
