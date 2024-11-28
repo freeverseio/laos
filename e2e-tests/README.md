@@ -19,5 +19,5 @@ npm install
 ## Run the tests
 
 ```bash
-npm run build && npm run test
+npm run build && npm run test && npm run test-deploy
 ```
