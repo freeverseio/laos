@@ -25,7 +25,7 @@ use polkadot_runtime_common::xcm_sender::NoPriceForMessageDelivery;
 
 parameter_types! {
 	pub const MaxActiveOutboundChannels: u32 = 128;
-	pub const MaxPageSize: u32 = 1 << 16;
+	pub const MaxPageSize: u32 = 103 * 1024;
 }
 
 impl cumulus_pallet_xcmp_queue::Config for Runtime {
