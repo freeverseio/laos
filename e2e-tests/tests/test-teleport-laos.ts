@@ -270,7 +270,7 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", function () {
 			const [who, mintTo, poolID, amount1Provided, amount2Provided] = event.event.data;
 			expect(who.toString()).to.equal(this.substratePairs.ferdie.address);
 			expect(mintTo.toString()).to.equal(this.substratePairs.ferdie.address);
-			expect(poolId.toJSON()).to.deep.equal([relayChainLocation(), siblingParachainLocation(LAOS_PARA_ID)]);
+			expect(poolID.toJSON()).to.deep.equal([relayChainLocation(), siblingParachainLocation(LAOS_PARA_ID)]);
 			expect(new BN(amount1Provided.toString()).eq(liquidityAmountDot)).to.be.true;
 			expect(new BN(amount2Provided.toString()).eq(liquidityAmountLaos)).to.be.true;
 		}
