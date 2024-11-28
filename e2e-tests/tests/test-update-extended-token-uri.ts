@@ -9,6 +9,7 @@ import {
 	SELECTOR_LOG_EXTENDED_UL_WITH_EXTERNAL_URI,
 } from "@utils/constants";
 import { describeWithExistingNode } from "@utils/setups";
+import { waitFinalizedEthereumTx } from "@utils/transactions";
 
 describeWithExistingNode("Frontier RPC (Extend Token URI)", function () {
 	let contract: Contract;
@@ -32,14 +33,14 @@ describeWithExistingNode("Frontier RPC (Extend Token URI)", function () {
 	});
 
 	step("extend should return ok", async function () {
-		let nonce = await this.web3.eth.getTransactionCount(this.ethereumPairs.faith.address);
 		const estimatedGas = await contract.methods.extendULWithExternalURI(uloc, tokenURI).estimateGas();
 		extendResult = await contract.methods.extendULWithExternalURI(uloc, tokenURI).send({
 			from: this.ethereumPairs.faith.address,
 			gas: estimatedGas,
 			gasPrice: GAS_PRICE,
-			nonce: nonce++,
 		});
+
+    await waitFinalizedEthereumTx(this.web3, this.chains.laos, extendResult.transactionHash);
 		expect(extendResult.status).to.be.eq(true);
 	});
 
@@ -101,14 +102,14 @@ describeWithExistingNode("Frontier RPC (Update Extended Token URI)", async funct
 		});
 
 		// we first create an extension to be updated later
-		let nonce = await this.web3.eth.getTransactionCount(this.ethereumPairs.faith.address);
 		const estimatedGas = await contract.methods.extendULWithExternalURI(uloc, tokenURI).estimateGas();
 		const createResult = await contract.methods.extendULWithExternalURI(uloc, tokenURI).send({
 			from: this.ethereumPairs.faith.address,
 			gas: estimatedGas,
 			gasPrice: GAS_PRICE,
-			nonce: nonce++,
 		});
+
+    await waitFinalizedEthereumTx(this.web3, this.chains.laos, createResult.transactionHash);
 		expect(createResult.status).to.be.eq(true);
 	});
 
@@ -125,14 +126,14 @@ describeWithExistingNode("Frontier RPC (Update Extended Token URI)", async funct
 	});
 
 	step("update extension should return ok", async function () {
-		let nonce = await this.web3.eth.getTransactionCount(this.ethereumPairs.faith.address);
 		const estimatedGas = await contract.methods.updateExtendedULWithExternalURI(uloc, newTokenURI).estimateGas();
 		updateExtensionResult = await contract.methods.updateExtendedULWithExternalURI(uloc, newTokenURI).send({
 			from: this.ethereumPairs.faith.address,
 			gas: estimatedGas,
 			gasPrice: GAS_PRICE,
-			nonce: nonce++,
 		});
+
+    await waitFinalizedEthereumTx(this.web3, this.chains.laos, updateExtensionResult.transactionHash);
 		expect(updateExtensionResult.status).to.be.eq(true);
 	});
 
