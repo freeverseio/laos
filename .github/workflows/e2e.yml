@@ -93,7 +93,7 @@ jobs:
           npx @acala-network/chopsticks xcm \ 
           -r chopsticks-configs/paseo.yml \
           -p chopsticks-configs/laos.yml \
-          -p chopsticks-configs/paseeo-ah.yml
+          -p chopsticks-configs/paseo-ah.yml
         working-directory: ./e2e-tests
 
       - name: Wait for chopsticks
