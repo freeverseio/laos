@@ -14,38 +14,30 @@ jobs:
       - uses: ./.github/actions/setup
       - uses: ./.github/actions/cache
         with:
-          cache-key: build
+          cache-key: build_and_push
 
-      - name: Build laos
+      - name: Build
         run: |
           cargo build --release --locked
 
-      - name: Install npm dependencies
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-
-        run: |
-          npm install
-        working-directory: ./e2e-tests
-
   zombienet-tests:
-    needs: build
-    runs-on:
-      group: laos
-      labels: ubuntu-16-cores
-    steps:
+      needs: build
+      runs-on:
+        group: laos
+        labels: ubuntu-16-cores
+
+      steps: 
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup
       - uses: ./.github/actions/cache
         with:
-          cache-key: build 
+          cache-key: build_and_push
 
       - name: Download polkadot
         run: |
           chmod +x ./zombienet/download_polkadot.sh
           ./zombienet/download_polkadot.sh
-
+     
       - name: Copy zombienet binary
         run: |
           wget https://github.com/paritytech/zombienet/releases/download/v1.3.106/zombienet-linux-x64
@@ -62,6 +54,16 @@ jobs:
         run: |
           timeout 36 sh -c 'until nc -z $0 $1; do echo -n .; sleep 1; done' localhost 9999
 
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: |
+          npm install
+        working-directory: ./e2e-tests
+
       - name: Run e2e tests
         run: |
           npm run build && npm run test-zombienet
@@ -72,12 +74,18 @@ jobs:
     runs-on:
       group: laos
       labels: ubuntu-16-cores
-    steps:
+
+    steps: 
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup
       - uses: ./.github/actions/cache
         with:
-          cache-key: build
+          cache-key: build_and_push
+
+      - name: Install dependencies
+        run: |
+          npm install
+        working-directory: ./e2e-tests
 
       - name: Run chopsticks
         run: |
@@ -90,9 +98,9 @@ jobs:
 
       - name: Wait for chopsticks
         run: |
-          timeout 36 sh -c 'until nc -z $0 $1; do echo -n .; sleep 1; done' localhost 8000
-
+          timeout 36 sh -c 'until nc -z $0 $1; do echo -n .; sleep 1; done' localhost 8000 
+      
       - name: Run e2e-tests
         run: |
           npm run test-chopsticks
-       working-directory: ./e2e-tests
+        working-directory: ./e2e-tests
