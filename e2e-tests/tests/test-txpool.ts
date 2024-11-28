@@ -4,7 +4,7 @@ import { step } from "mocha-steps";
 import { ALITH_PRIVATE_KEY } from "@utils/constants";
 import { describeWithExistingNode } from "@utils/setups";
 import { customRequest } from "@utils/helpers";
-import Web3 from "web3.js";
+import Web3 from "web3";
 
 describeWithExistingNode("Frontier RPC (TxPoolApi)", function () {
 	const TEST_CONTRACT_BYTECODE = "0x608060405234801561";
