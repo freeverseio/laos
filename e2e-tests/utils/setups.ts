@@ -13,6 +13,10 @@ import {
 	FAITH_PRIVATE_KEY,
 	LAOS_PARA_ID,
 	ASSET_HUB_PARA_ID,
+	XCM_LAOS_NODE_IP,
+	XCM_ASSET_HUB_NODE_IP,
+	XCM_RELAYCHAIN_NODE_IP,
+	POLKADOT_PREFIX,
 } from "@utils/constants";
 
 /**
@@ -65,6 +69,71 @@ export function describeWithExistingNode(
 			const apiAssetHub = await ApiPromise.create({ provider: provider });
 
 			provider = new WsProvider(providerRelaychainNodeUrl || "ws://" + RELAYCHAIN_NODE_IP);
+			const apiRelay = await new ApiPromise({ provider: provider }).isReady;
+
+			this.chains = { laos: apiLaos, assetHub: apiAssetHub, relaychain: apiRelay };
+		});
+
+		cb();
+
+		after(async function () {
+			this.chains.laos.disconnect();
+			this.chains.assetHub.disconnect();
+			this.chains.relaychain.disconnect();
+		});
+	});
+}
+
+/**
+ * Sets up a mocha describe environment with pre-configured utils for testing available through the 'this' variable.
+ * See utils/types.ts -> CustomSuiteContext to explore all the available options
+ *
+ * @param {string} title - The title of the test
+ * @param {() => void} cb - The test itself
+ * @param {string} [providerLaosNodeUrl] - An optional URL to connect with the LAOS node
+ * @param {string} [providerAssetHubNodeUrl] - An optional URL to connect with the Asset Hub node
+ * @param {string} [providerRelaychainNodeUrl] - An optional URL to connect with the Relay chain node
+ */
+export function describeWithExistingNodeXcm(
+	title: string,
+	cb: () => void,
+	providerLaosNodeUrl?: string,
+	providerAssetHubNodeUrl?: string,
+	providerRelaychainNodeUrl?: string
+) {
+	describe(title, function (this: CustomSuiteContext) {
+		before(async function () {
+			this.web3 = new Web3(providerLaosNodeUrl || "http://" + XCM_LAOS_NODE_IP);
+
+			let keyring = new Keyring({ type: "sr25519", ss58Format: POLKADOT_PREFIX });
+			this.substratePairs = {
+				alice: keyring.addFromUri("//Alice"),
+				bob: keyring.addFromUri("//Bob"),
+				charlie: keyring.addFromUri("//Charlie"),
+				dave: keyring.addFromUri("//Dave"),
+				eve: keyring.addFromUri("//Eve"),
+				ferdie: keyring.addFromUri("//Ferdie"),
+			};
+
+			keyring = new Keyring({ type: "ethereum" });
+
+			this.ethereumPairs = {
+				alith: keyring.addFromUri(ALITH_PRIVATE_KEY),
+				baltathar: keyring.addFromUri(BALTATHAR_PRIVATE_KEY),
+				faith: keyring.addFromUri(FAITH_PRIVATE_KEY),
+			};
+
+			this.web3.eth.accounts.wallet.add(ALITH_PRIVATE_KEY);
+			this.web3.eth.accounts.wallet.add(BALTATHAR_PRIVATE_KEY);
+			this.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
+
+			let provider = new WsProvider(providerLaosNodeUrl || "ws://" + XCM_LAOS_NODE_IP);
+			const apiLaos = await new ApiPromise({ provider }).isReady;
+
+			provider = new WsProvider(providerAssetHubNodeUrl || "ws://" + XCM_ASSET_HUB_NODE_IP);
+			const apiAssetHub = await ApiPromise.create({ provider: provider });
+
+			provider = new WsProvider(providerRelaychainNodeUrl || "ws://" + XCM_RELAYCHAIN_NODE_IP);
 			const apiRelay = await new ApiPromise({ provider: provider }).isReady;
 
 			this.chains = { laos: apiLaos, assetHub: apiAssetHub, relaychain: apiRelay };

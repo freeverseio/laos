@@ -16,6 +16,11 @@ export const LAOS_NODE_IP = "127.0.0.1:9999";
 export const ASSET_HUB_NODE_IP = "127.0.0.1:9950";
 export const RELAYCHAIN_NODE_IP = "127.0.0.1:9944";
 
+// XCM nodes endpoints
+export const XCM_LAOS_NODE_IP = "127.0.0.1:8000";
+export const XCM_ASSET_HUB_NODE_IP = "127.0.0.1:8001";
+export const XCM_RELAYCHAIN_NODE_IP = "127.0.0.1:8002";
+
 // Ethereum chain constants
 export const CHAIN_ID = 667;
 export const GAS_PRICE = "0x3B9ACA00";
@@ -23,6 +28,9 @@ export const GAS_PRICE = "0x3B9ACA00";
 // Parachain IDs
 export const ASSET_HUB_PARA_ID = 1000;
 export const LAOS_PARA_ID = 2900;
+
+// Chain prefix
+export const POLKADOT_PREFIX = 0;
 
 // Monetary units
 export const ONE_LAOS = new BN("1000000000000000000");

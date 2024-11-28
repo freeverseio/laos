@@ -61,47 +61,6 @@ export async function sendTxAndWaitForFinalization(
 }
 
 /**
- * Sends a tx in assetHub chain and waits for its finality.
- *
- * NOTE:
- *  This line https://github.com/paritytech/polkadot-sdk/blob/master/substrate/frame/session/src/lib.rs#L563 causes invalid transactions (txs)
- *  in "session.newSession" blocks (issue https://github.com/paritytech/polkadot-sdk/issues/184). When session.newSession is emitted in Rococo,
- *  txs sent to Rococo or AssetHub are rejected, causing sendTxAndWaitForFinalization to fail. Use this function to "dodge" session.newSession blocks.
- *
- * @param {ApiPromise} apiRelay - The ApiPromise to interact with Rococo.
- * @param {SubmittableExtrinsic<"promise">} tx - The tx to submit.
- * @param {KeyringPair} signer - The KeyRingPair used to sign the tx.
- * @param {ApiPromise} [apiAssetHub] - The ApiPromise to interact with AssetHub if needed.
- * @returns {Promise<string>} - A promise that resolves in the hash of the finalized block where the tx was included; rejects if the tx isn't valid or the execution resulted in a dispatch error.
- */
-export async function sendTxAndWaitForFinalizationRococo(
-	apiRelay: ApiPromise,
-	tx: SubmittableExtrinsic<"promise">,
-	signer: KeyringPair,
-	apiAssetHub?: ApiPromise
-): Promise<string> {
-	const eventPromise = new Promise<void>(async (resolve) => {
-		const unsub = await apiRelay.rpc.chain.subscribeFinalizedHeads(async (lastHeader) => {
-			const event = await checkEventInBlock(
-				apiRelay,
-				({ event }) => apiRelay.events.session.NewSession.is(event),
-				lastHeader.hash.toString(),
-				false
-			);
-			if (event) {
-				unsub();
-				resolve();
-			}
-		});
-	});
-
-	await eventPromise;
-	return apiAssetHub
-		? sendTxAndWaitForFinalization(apiAssetHub, tx, signer)
-		: sendTxAndWaitForFinalization(apiRelay, tx, signer);
-}
-
-/**
  * Wait til a transaction sent by a EVM contract is included in a finalized block
  * @param {Web3} web3 - The web3.js provider
  * @param {ApiPromise} api - The ApiPromise used to interact with the chain

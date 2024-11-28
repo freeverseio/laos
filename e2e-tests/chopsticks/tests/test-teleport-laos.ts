@@ -2,17 +2,16 @@ import BN from "bn.js";
 import { expect } from "chai";
 import { step } from "mocha-steps";
 
-import { ASSET_HUB_PARA_ID, LAOS_PARA_ID, ONE_DOT, ONE_LAOS } from "@utils/constants";
-import { describeWithExistingNode } from "@utils/setups";
+import { LAOS_PARA_ID, ONE_DOT, ONE_LAOS } from "@utils/constants";
+import { describeWithExistingNodeXcm } from "@utils/setups";
 import {
 	siblingParachainLocation,
 	relayChainLocation,
 	hereLocation,
 	checkEventAfterXcm,
 	buildXcmInstruction,
-	openHrmpChannels,
 } from "@utils/xcm";
-import { sendTxAndWaitForFinalization, sendTxAndWaitForFinalizationRococo } from "@utils/transactions";
+import { sendTxAndWaitForFinalization } from "@utils/transactions";
 import { getFinalizedBlockNumber, checkEventInBlock } from "@utils/blocks";
 import { DoubleEncodedCall } from "@polkadot/types/interfaces";
 import { hexToBn, u8aToHex } from "@polkadot/util";
@@ -20,27 +19,7 @@ import debug from "debug";
 
 const debugTeleport = debug("teleport");
 
-describeWithExistingNode("Teleport Asset Hub <-> LAOS", function () {
-	step("Open HRMP channels between AssetHub and LAOS", async function () {
-		await openHrmpChannels(this.chains.relaychain, LAOS_PARA_ID, ASSET_HUB_PARA_ID);
-		expect(
-			(
-				await this.chains.relaychain.query.hrmp.hrmpChannels({
-					sender: LAOS_PARA_ID,
-					recipient: ASSET_HUB_PARA_ID,
-				})
-			).isEmpty
-		).to.be.false;
-		expect(
-			(
-				await this.chains.relaychain.query.hrmp.hrmpChannels({
-					sender: ASSET_HUB_PARA_ID,
-					recipient: LAOS_PARA_ID,
-				})
-			).isEmpty
-		).to.be.false;
-	});
-
+describeWithExistingNodeXcm("Teleport Asset Hub <-> LAOS", function () {
 	step("Create $LAOS in AssetHub", async function () {
 		const laosForeignAssetExists = !(
 			await this.chains.assetHub.query.foreignAssets.asset(this.assetHubItems.laosAsset)
@@ -53,12 +32,7 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", function () {
 				this.assetHubItems.laosSA,
 				ONE_DOT.muln(100)
 			);
-			await sendTxAndWaitForFinalizationRococo(
-				this.chains.relaychain,
-				transferBalanceTx,
-				this.substratePairs.alice,
-				this.chains.assetHub
-			);
+			await sendTxAndWaitForFinalization(this.chains.assetHub, transferBalanceTx, this.substratePairs.alice);
 
 			// Build XCM instruction
 			const createCall = this.chains.assetHub.tx.foreignAssets.create(
@@ -174,6 +148,7 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", function () {
 			).toJSON()["balance"]
 		);
 		expect(ferdieLaosBalance.sub(ferdieLaosBalanceBefore).eq(MINTED_AMOUNT), "Ferdie balance should be > 0");
+		await this.providers.assetHub.send("dev_newBlock", [{ count: 10 }]);
 	});
 
 	step("Create $LAOS/$DOT pool in AssetHub", async function () {
@@ -192,11 +167,10 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", function () {
 				this.assetHubItems.laosAsset.toU8a()
 			);
 
-			let finalizedBlock = await sendTxAndWaitForFinalizationRococo(
-				this.chains.relaychain,
+			let finalizedBlock = await sendTxAndWaitForFinalization(
+				this.chains.assetHub,
 				createPoolCall,
-				this.substratePairs.alice,
-				this.chains.assetHub
+				this.substratePairs.alice
 			);
 
 			// Check that pool creation event has been emitted.
@@ -254,12 +228,7 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", function () {
 				this.substratePairs.ferdie.address
 			);
 
-			finalizedBlock = await sendTxAndWaitForFinalizationRococo(
-				this.chains.relaychain,
-				call,
-				this.substratePairs.ferdie,
-				this.chains.assetHub
-			);
+			finalizedBlock = await sendTxAndWaitForFinalization(this.chains.assetHub, call, this.substratePairs.ferdie);
 			event = await checkEventInBlock(
 				this.chains.assetHub,
 				({ event }) => this.chains.assetHub.events.assetConversion.LiquidityAdded.is(event),
@@ -273,6 +242,7 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", function () {
 			expect(poolID.toJSON()).to.deep.equal([relayChainLocation(), siblingParachainLocation(LAOS_PARA_ID)]);
 			expect(new BN(amount1Provided.toString()).eq(liquidityAmountDot)).to.be.true;
 			expect(new BN(amount2Provided.toString()).eq(liquidityAmountLaos)).to.be.true;
+			await this.providers.assetHub.send("dev_newBlock", [{ count: 10 }]);
 		}
 	});
 
@@ -415,12 +385,7 @@ describeWithExistingNode("Teleport Asset Hub <-> LAOS", function () {
 		);
 
 		const laosBestBlockBeforeSending = await getFinalizedBlockNumber(this.chains.laos);
-		await sendTxAndWaitForFinalizationRococo(
-			this.chains.relaychain,
-			call,
-			this.substratePairs.charlie,
-			this.chains.assetHub
-		);
+		await sendTxAndWaitForFinalization(this.chains.assetHub, call, this.substratePairs.charlie);
 		// Check that $LAOS has been sent back to Laos
 		const event = await checkEventAfterXcm(
 			this.chains.laos,

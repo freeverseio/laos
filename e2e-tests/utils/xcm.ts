@@ -7,7 +7,6 @@ import { EventRecord } from "@polkadot/types/interfaces";
 import { XcmVersionedXcm } from "@polkadot/types/lookup";
 import BN from "bn.js";
 import { concatUint8Arrays } from "@utils/helpers";
-import { sendTxAndWaitForFinalizationRococo } from "@utils/transactions";
 import { getFinalizedBlockNumber, waitForBlocks } from "@utils/blocks";
 import "@polkadot/api-augment";
 
@@ -24,39 +23,6 @@ export function sovereignAccountOf(paraId: number): string {
 	let address = concatUint8Arrays(typeEncoded, paraIdEncoded, zeroPadding);
 	return encodeAddress(address);
 }
-
-/**
- * Opens a bidirectional HRMP channel between two parachains if it doesn't exist.
- * @param {ApiPromise} api - The ApiPromise to interact with the relay chain.
- * @param {number} paraA - The ID of the first parachain.
- * @param {number} paraB - The ID of the second parachain.
- */
-export const openHrmpChannels = async (api: ApiPromise, paraA: number, paraB: number) => {
-	if (
-		(await api.query.hrmp.hrmpChannels({ sender: paraA, recipient: paraB })).isEmpty ||
-		(await api.query.hrmp.hrmpChannels({ sender: paraB, recipient: paraA })).isEmpty
-	) {
-		const maxCapacity = 8;
-		const maxMessageSize = 1048576;
-		const sudo = new Keyring({ type: "sr25519" }).addFromUri("//Alice");
-
-		const hrmpChannelCalls = [];
-
-		hrmpChannelCalls.push(api.tx.hrmp.forceOpenHrmpChannel(paraA, paraB, maxCapacity, maxMessageSize));
-		hrmpChannelCalls.push(api.tx.hrmp.forceOpenHrmpChannel(paraB, paraA, maxCapacity, maxMessageSize));
-
-		let tx = api.tx.sudo.sudo(api.tx.utility.batchAll(hrmpChannelCalls));
-		await sendTxAndWaitForFinalizationRococo(api, tx, sudo);
-
-		// Even if the tx is finalized, the channels may not be immediately opened, as the parachains must proccess them.
-		while (
-			(await api.query.hrmp.hrmpChannels({ sender: paraA, recipient: paraB })).isEmpty ||
-			(await api.query.hrmp.hrmpChannels({ sender: paraB, recipient: paraA })).isEmpty
-		) {
-			await waitForBlocks(api, 1);
-		}
-	}
-};
 
 /**
  * @param {number} id - The ID of the sibling parachain

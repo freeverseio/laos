@@ -50,7 +50,9 @@ type ethereumPairs = {
 	faith: KeyringPair;
 };
 
-type chains = { laos: ApiPromise; assetHub: ApiPromise; relaychain: ApiPromise };
+type chains = { laos: ApiPromise; relaychain: ApiPromise };
+
+type xcmChains = { laos: ApiPromise; assetHub: ApiPromise; relaychain: ApiPromise };
 
 export interface CustomSuiteContext extends Suite {
 	web3: Web3;
@@ -58,5 +60,13 @@ export interface CustomSuiteContext extends Suite {
 	substratePairs: substratePairs;
 	ethereumPairs: ethereumPairs;
 	laosItems: laosItems;
-	assetHubItems: assetHubItems;
+}
+
+export interface XcmSuiteContext extends Suite {
+	web3: Web3;
+	chains: xcmChains;
+	substratePairs: substratePairs;
+	ethereumPairs: ethereumPairs;
+	laosItems: laosItems;
+	assetHubItems: assetHubItems; // TODO add providers
 }
