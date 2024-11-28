@@ -3,7 +3,7 @@ import { Keyring } from "@polkadot/api";
 import Web3 from "web3";
 import { sovereignAccountOf } from "@utils/xcm";
 import { siblingParachainLocation, relayChainLocation } from "@utils/xcm";
-import { CustomSuiteContext } from "@utils/types";
+import { CustomSuiteContext, XcmSuiteContext } from "@utils/types";
 import {
 	LAOS_NODE_IP,
 	ASSET_HUB_NODE_IP,
@@ -101,7 +101,7 @@ export function describeWithExistingNodeXcm(
 	providerAssetHubNodeUrl?: string,
 	providerRelaychainNodeUrl?: string
 ) {
-	describe(title, function (this: CustomSuiteContext) {
+	describe(title, function (this: XcmSuiteContext) {
 		before(async function () {
 			this.web3 = new Web3(providerLaosNodeUrl || "http://" + XCM_LAOS_NODE_IP);
 
@@ -129,14 +129,18 @@ export function describeWithExistingNodeXcm(
 
 			let provider = new WsProvider(providerLaosNodeUrl || "ws://" + XCM_LAOS_NODE_IP);
 			const apiLaos = await new ApiPromise({ provider }).isReady;
+			const laosProvider = provider;
 
 			provider = new WsProvider(providerAssetHubNodeUrl || "ws://" + XCM_ASSET_HUB_NODE_IP);
 			const apiAssetHub = await ApiPromise.create({ provider: provider });
+			const assetHubProvider = provider;
 
 			provider = new WsProvider(providerRelaychainNodeUrl || "ws://" + XCM_RELAYCHAIN_NODE_IP);
 			const apiRelay = await new ApiPromise({ provider: provider }).isReady;
+			const relayProvider = provider;
 
 			this.chains = { laos: apiLaos, assetHub: apiAssetHub, relaychain: apiRelay };
+			this.providers = { laos: laosProvider, assetHub: assetHubProvider, relaychain: relayProvider };
 
 			this.assetHubItems = {
 				accounts: {

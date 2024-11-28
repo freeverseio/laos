@@ -16,6 +16,7 @@ import "@polkadot/api-augment";
  * @returns {string} - The address of the sibling parachain.
  */
 export function sovereignAccountOf(paraId: number): string {
+	// TODO take into account the prefix
 	let type = "sibl";
 	let typeEncoded = stringToU8a(type);
 	let paraIdEncoded = bnToU8a(paraId, { bitLength: 16 });

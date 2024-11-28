@@ -34,7 +34,7 @@ export const POLKADOT_PREFIX = 0;
 
 // Monetary units
 export const ONE_LAOS = new BN("1000000000000000000");
-export const ONE_DOT = new BN("1000000000000");
+export const ONE_DOT = new BN("10000000000");
 
 // Ethereum private keys
 export const ALITH_PRIVATE_KEY = "0x5fb92d6e98884f76de468fa3f6278f8807c48bebc13595d45af5bdc4da702133";

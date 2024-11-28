@@ -227,6 +227,7 @@ describeWithExistingNodeXcm("Teleport Asset Hub <-> LAOS", function () {
 				liquidityAmountLaos.sub(new BN(ONE_LAOS.muln(10))),
 				this.substratePairs.ferdie.address
 			);
+			// TODO check no underflow as ONE_DOT now equates to 10^10
 
 			finalizedBlock = await sendTxAndWaitForFinalization(this.chains.assetHub, call, this.substratePairs.ferdie);
 			event = await checkEventInBlock(
