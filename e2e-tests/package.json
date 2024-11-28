@@ -7,13 +7,14 @@
 		"fmt-check": "prettier ./ --check",
 		"fmt": "prettier ./ --write",
 		"build": "./compile_contracts.sh",
-		"test": "mocha -r ts-node/register -r tsconfig-paths/register -t 900000 'tests/**/*.ts'",
+		"test": "mocha -r ts-node/register -r tsconfig-paths/register -t 900000 'zombienet-tests/**/*.ts'",
 		"test-deploy": "hardhat test --network zombienet hardhat-tests/deploy.ts",
 		"test-sql": "FRONTIER_BACKEND_TYPE='sql' mocha -r ts-node/register 'tests/**/*.ts'"
 	},
 	"author": "",
 	"license": "ISC",
 	"dependencies": {
+		"@acala-network/chopsticks": "^1.0.1",
 		"@polkadot/api": "^14.2.3",
 		"@polkadot/api-augment": "^14.2.3",
 		"@polkadot/types": "^14.2.2",
