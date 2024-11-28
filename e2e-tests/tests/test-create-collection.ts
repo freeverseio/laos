@@ -10,6 +10,7 @@ import {
 } from "@utils/constants";
 import { createCollection } from "@utils/helpers";
 import { describeWithExistingNode } from "@utils/setups";
+import { waitFinalizedEthereumTx } from "@utils/transactions";
 
 describeWithExistingNode("Frontier RPC (Create Collection)", function () {
 	let contract: Contract;
@@ -48,6 +49,8 @@ describeWithExistingNode("Frontier RPC (Create Collection)", function () {
 			gas: estimatedGas,
 			gasPrice: GAS_PRICE,
 		});
+
+		await waitFinalizedEthereumTx(this.web3, this.chains.laos, result.transactionHash);
 		expect(result.status).to.be.eq(true);
 
 		expect(Object.keys(result.events).length).to.be.eq(1);

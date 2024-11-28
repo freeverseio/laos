@@ -4,14 +4,15 @@ import { step } from "mocha-steps";
 import { ALITH_PRIVATE_KEY } from "@utils/constants";
 import { describeWithExistingNode } from "@utils/setups";
 import { customRequest } from "@utils/helpers";
+import Web3 from "web3.js";
 
 describeWithExistingNode("Frontier RPC (TxPoolApi)", function () {
 	const TEST_CONTRACT_BYTECODE = "0x608060405234801561";
 
-	let nonce;
+	let nonce: number;
 	let pendingTx;
 	let futureTx;
-	async function sendTransaction(web3, nonce, senderAddress: string) {
+	async function sendTransaction(web3: Web3, nonce: number, senderAddress: string) {
 		const tx = await web3.eth.accounts.signTransaction(
 			{
 				from: senderAddress,
