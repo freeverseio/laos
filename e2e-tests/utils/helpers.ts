@@ -91,7 +91,7 @@ export function slotAndOwnerToTokenId(slot: string, owner: string): string | nul
  * @param {string} senderAddress - The ethereum address creating the collection
  * @returns {Promise<Contract>} - The collection contract.
  */
-export async function createCollection(web3: Web3, api: ApiPromise,senderAddress: string): Promise<Contract> {
+export async function createCollection(web3: Web3, api: ApiPromise, senderAddress: string): Promise<Contract> {
 	const contract = new web3.eth.Contract(
 		EVOLUTION_COLLECTION_FACTORY_ABI,
 		EVOLUTION_COLLECTION_FACTORY_CONTRACT_ADDRESS,
@@ -107,8 +107,8 @@ export async function createCollection(web3: Web3, api: ApiPromise,senderAddress
 		gas: estimatedGas,
 		gasPrice: GAS_PRICE,
 	});
-  
-  await waitFinalizedEthereumTx(web3, api, result.transactionHash);
+
+	await waitFinalizedEthereumTx(web3, api, result.transactionHash);
 
 	expect(result.status).to.be.eq(true);
 	expect(web3.utils.isAddress(result.events.NewCollection.returnValues._collectionAddress)).to.be.eq(true);

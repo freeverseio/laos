@@ -40,7 +40,7 @@ describeWithExistingNode("Frontier RPC (Extend Token URI)", function () {
 			gasPrice: GAS_PRICE,
 		});
 
-    await waitFinalizedEthereumTx(this.web3, this.chains.laos, extendResult.transactionHash);
+		await waitFinalizedEthereumTx(this.web3, this.chains.laos, extendResult.transactionHash);
 		expect(extendResult.status).to.be.eq(true);
 	});
 
@@ -109,7 +109,7 @@ describeWithExistingNode("Frontier RPC (Update Extended Token URI)", async funct
 			gasPrice: GAS_PRICE,
 		});
 
-    await waitFinalizedEthereumTx(this.web3, this.chains.laos, createResult.transactionHash);
+		await waitFinalizedEthereumTx(this.web3, this.chains.laos, createResult.transactionHash);
 		expect(createResult.status).to.be.eq(true);
 	});
 
@@ -133,7 +133,7 @@ describeWithExistingNode("Frontier RPC (Update Extended Token URI)", async funct
 			gasPrice: GAS_PRICE,
 		});
 
-    await waitFinalizedEthereumTx(this.web3, this.chains.laos, updateExtensionResult.transactionHash);
+		await waitFinalizedEthereumTx(this.web3, this.chains.laos, updateExtensionResult.transactionHash);
 		expect(updateExtensionResult.status).to.be.eq(true);
 	});
 

@@ -18,7 +18,6 @@ import {
 export function describeWithExistingNode(
 	title: string,
 	cb: () => void,
-	openPolkadotConnections: boolean = false,
 	providerLaosNodeUrl?: string,
 	providerAssetHubNodeUrl?: string,
 	providerRelaychainNodeUrl?: string
@@ -49,71 +48,64 @@ export function describeWithExistingNode(
 			this.web3.eth.accounts.wallet.add(BALTATHAR_PRIVATE_KEY);
 			this.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
 
-			if (openPolkadotConnections) {
-				let provider = new WsProvider(providerLaosNodeUrl || "ws://" + LAOS_NODE_IP);
-				const apiLaos = await new ApiPromise({ provider }).isReady;
+			let provider = new WsProvider(providerLaosNodeUrl || "ws://" + LAOS_NODE_IP);
+			const apiLaos = await new ApiPromise({ provider }).isReady;
 
-				provider = new WsProvider(providerAssetHubNodeUrl || "ws://" + ASSET_HUB_NODE_IP);
-				const apiAssetHub = await ApiPromise.create({ provider: provider });
+			provider = new WsProvider(providerAssetHubNodeUrl || "ws://" + ASSET_HUB_NODE_IP);
+			const apiAssetHub = await ApiPromise.create({ provider: provider });
 
-				provider = new WsProvider(providerRelaychainNodeUrl || "ws://" + RELAYCHAIN_NODE_IP);
-				const apiRelay = await new ApiPromise({ provider: provider }).isReady;
+			provider = new WsProvider(providerRelaychainNodeUrl || "ws://" + RELAYCHAIN_NODE_IP);
+			const apiRelay = await new ApiPromise({ provider: provider }).isReady;
 
-				this.chains = { laos: apiLaos, assetHub: apiAssetHub, relaychain: apiRelay };
+			this.chains = { laos: apiLaos, assetHub: apiAssetHub, relaychain: apiRelay };
 
-				this.assetHubItems = {
-					accounts: {
-						alice: apiAssetHub.createType("AccountId", this.substratePairs.alice.address),
-						bob: apiAssetHub.createType("AccountId", this.substratePairs.bob.address),
-						charlie: apiAssetHub.createType("AccountId", this.substratePairs.charlie.address),
-						dave: apiAssetHub.createType("AccountId", this.substratePairs.dave.address),
-						eve: apiAssetHub.createType("AccountId", this.substratePairs.eve.address),
-						ferdie: apiAssetHub.createType("AccountId", this.substratePairs.ferdie.address),
-					},
-					laosSA: sovereignAccountOf(LAOS_PARA_ID),
+			this.assetHubItems = {
+				accounts: {
+					alice: apiAssetHub.createType("AccountId", this.substratePairs.alice.address),
+					bob: apiAssetHub.createType("AccountId", this.substratePairs.bob.address),
+					charlie: apiAssetHub.createType("AccountId", this.substratePairs.charlie.address),
+					dave: apiAssetHub.createType("AccountId", this.substratePairs.dave.address),
+					eve: apiAssetHub.createType("AccountId", this.substratePairs.eve.address),
+					ferdie: apiAssetHub.createType("AccountId", this.substratePairs.ferdie.address),
+				},
+				laosSA: sovereignAccountOf(LAOS_PARA_ID),
 
-					multiAddresses: {
-						alice: apiAssetHub.createType("MultiAddress", this.substratePairs.alice.address),
-						bob: apiAssetHub.createType("MultiAddress", this.substratePairs.bob.address),
-						charlie: apiAssetHub.createType("MultiAddress", this.substratePairs.charlie.address),
-						dave: apiAssetHub.createType("MultiAddress", this.substratePairs.dave.address),
-						eve: apiAssetHub.createType("MultiAddress", this.substratePairs.eve.address),
-						ferdie: apiAssetHub.createType("MultiAddress", this.substratePairs.ferdie.address),
-					},
-					laosLocation: apiAssetHub.createType("XcmVersionedLocation", {
-						V3: siblingParachainLocation(LAOS_PARA_ID),
+				multiAddresses: {
+					alice: apiAssetHub.createType("MultiAddress", this.substratePairs.alice.address),
+					bob: apiAssetHub.createType("MultiAddress", this.substratePairs.bob.address),
+					charlie: apiAssetHub.createType("MultiAddress", this.substratePairs.charlie.address),
+					dave: apiAssetHub.createType("MultiAddress", this.substratePairs.dave.address),
+					eve: apiAssetHub.createType("MultiAddress", this.substratePairs.eve.address),
+					ferdie: apiAssetHub.createType("MultiAddress", this.substratePairs.ferdie.address),
+				},
+				laosLocation: apiAssetHub.createType("XcmVersionedLocation", {
+					V3: siblingParachainLocation(LAOS_PARA_ID),
+				}),
+				laosAsset: apiAssetHub.createType("StagingXcmV3MultiLocation", siblingParachainLocation(LAOS_PARA_ID)),
+				relayChainLocation: apiAssetHub.createType("XcmVersionedLocation", {
+					V3: relayChainLocation(),
+				}),
+				relayAsset: apiAssetHub.createType("StagingXcmV3MultiLocation", relayChainLocation()),
+			};
+
+			(this.assetHubItems.multiAddresses.laosSA = apiAssetHub.createType(
+				"MultiAddress",
+				this.assetHubItems.laosSA
+			)),
+				(this.laosItems = {
+					assetHubLocation: apiLaos.createType("XcmVersionedLocation", {
+						V3: siblingParachainLocation(ASSET_HUB_PARA_ID),
 					}),
-					laosAsset: apiAssetHub.createType(
-						"StagingXcmV3MultiLocation",
-						siblingParachainLocation(LAOS_PARA_ID)
-					),
-					relayChainLocation: apiAssetHub.createType("XcmVersionedLocation", {
-						V3: relayChainLocation(),
-					}),
-					relayAsset: apiAssetHub.createType("StagingXcmV3MultiLocation", relayChainLocation()),
-				};
-
-				(this.assetHubItems.multiAddresses.laosSA = apiAssetHub.createType(
-					"MultiAddress",
-					this.assetHubItems.laosSA
-				)),
-					(this.laosItems = {
-						assetHubLocation: apiLaos.createType("XcmVersionedLocation", {
-							V3: siblingParachainLocation(ASSET_HUB_PARA_ID),
-						}),
-						relayChainLocation: apiLaos.createType("XcmVersionedLocation", { V3: relayChainLocation() }),
-					});
-			}
+					relayChainLocation: apiLaos.createType("XcmVersionedLocation", { V3: relayChainLocation() }),
+				});
 		});
 
 		cb();
 
 		after(async function () {
-			if (openPolkadotConnections) {
-				this.chains.laos.disconnect();
-				this.chains.assetHub.disconnect();
-				this.chains.relaychain.disconnect();
-			}
+			this.chains.laos.disconnect();
+			this.chains.assetHub.disconnect();
+			this.chains.relaychain.disconnect();
 		});
 	});
 }
