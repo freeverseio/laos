@@ -148,7 +148,6 @@ describeWithExistingNodeXcm("Teleport Asset Hub <-> LAOS", function () {
 			).toJSON()["balance"]
 		);
 		expect(ferdieLaosBalance.sub(ferdieLaosBalanceBefore).eq(MINTED_AMOUNT), "Ferdie balance should be > 0");
-		await this.providers.assetHub.send("dev_newBlock", [{ count: 10 }]);
 	});
 
 	step("Create $LAOS/$DOT pool in AssetHub", async function () {
@@ -167,14 +166,14 @@ describeWithExistingNodeXcm("Teleport Asset Hub <-> LAOS", function () {
 				this.assetHubItems.laosAsset.toU8a()
 			);
 
-			let finalizedBlock = await sendTxAndWaitForFinalization(
+			const finalizedBlock = await sendTxAndWaitForFinalization(
 				this.chains.assetHub,
 				createPoolCall,
 				this.substratePairs.alice
 			);
 
 			// Check that pool creation event has been emitted.
-			let event = await checkEventInBlock(
+			const event = await checkEventInBlock(
 				this.chains.assetHub,
 				({ event }) => this.chains.assetHub.events.assetConversion.PoolCreated.is(event),
 				finalizedBlock
@@ -192,59 +191,61 @@ describeWithExistingNodeXcm("Teleport Asset Hub <-> LAOS", function () {
 					])
 				).isEmpty
 			).to.be.false;
-
-			// Add liquidity to the pool
-			const liquidityAmountLaos = new BN(ONE_LAOS.muln(1000));
-			const liquidityAmountDot = new BN(ONE_DOT.muln(1000));
-			const ferdieBalance = new BN(
-				(
-					await this.chains.assetHub.query.system.account(this.substratePairs.ferdie.address as string)
-				).data.free
-			);
-			const ferdieLaosBalance = hexToBn(
-				(
-					await this.chains.assetHub.query.foreignAssets.account(
-						this.assetHubItems.laosAsset,
-						this.substratePairs.ferdie.address
-					)
-				).toJSON()?.["balance"] ?? 0
-			);
-			expect(
-				ferdieBalance.gte(liquidityAmountDot),
-				"Ferdie's $DOT balance should be greater than the amount to be sent to the pool"
-			);
-			expect(
-				ferdieLaosBalance.gte(liquidityAmountLaos),
-				"Ferdie's $LAOS balance should be greater than the amount to be sent to the pool"
-			);
-
-			const call = this.chains.assetHub.tx.assetConversion.addLiquidity(
-				this.assetHubItems.relayAsset.toU8a(),
-				this.assetHubItems.laosAsset.toU8a(),
-				liquidityAmountDot,
-				liquidityAmountLaos,
-				liquidityAmountDot.sub(new BN(ONE_DOT.muln(10))),
-				liquidityAmountLaos.sub(new BN(ONE_LAOS.muln(10))),
-				this.substratePairs.ferdie.address
-			);
-			// TODO check no underflow as ONE_DOT now equates to 10^10
-
-			finalizedBlock = await sendTxAndWaitForFinalization(this.chains.assetHub, call, this.substratePairs.ferdie);
-			event = await checkEventInBlock(
-				this.chains.assetHub,
-				({ event }) => this.chains.assetHub.events.assetConversion.LiquidityAdded.is(event),
-				finalizedBlock
-			);
-
-			expect(event).to.not.be.null;
-			const [who, mintTo, poolID, amount1Provided, amount2Provided] = event.event.data;
-			expect(who.toString()).to.equal(this.substratePairs.ferdie.address);
-			expect(mintTo.toString()).to.equal(this.substratePairs.ferdie.address);
-			expect(poolID.toJSON()).to.deep.equal([relayChainLocation(), siblingParachainLocation(LAOS_PARA_ID)]);
-			expect(new BN(amount1Provided.toString()).eq(liquidityAmountDot)).to.be.true;
-			expect(new BN(amount2Provided.toString()).eq(liquidityAmountLaos)).to.be.true;
-			await this.providers.assetHub.send("dev_newBlock", [{ count: 10 }]);
 		}
+	});
+
+	step("Add liquidity to $LAOS/$DOT pool", async function () {
+		// Add liquidity to the pool
+		const liquidityAmountLaos = new BN(ONE_LAOS.muln(1000));
+		const liquidityAmountDot = new BN(ONE_DOT.muln(1000));
+		const ferdieBalance = new BN(
+			(await this.chains.assetHub.query.system.account(this.substratePairs.ferdie.address as string)).data.free
+		);
+		const ferdieLaosBalance = hexToBn(
+			(
+				await this.chains.assetHub.query.foreignAssets.account(
+					this.assetHubItems.laosAsset,
+					this.substratePairs.ferdie.address
+				)
+			).toJSON()?.["balance"] ?? 0
+		);
+		expect(
+			ferdieBalance.gte(liquidityAmountDot),
+			"Ferdie's $DOT balance should be greater than the amount to be sent to the pool"
+		);
+		expect(
+			ferdieLaosBalance.gte(liquidityAmountLaos),
+			"Ferdie's $LAOS balance should be greater than the amount to be sent to the pool"
+		);
+
+		const call = this.chains.assetHub.tx.assetConversion.addLiquidity(
+			this.assetHubItems.relayAsset.toU8a(),
+			this.assetHubItems.laosAsset.toU8a(),
+			liquidityAmountDot,
+			liquidityAmountLaos,
+			liquidityAmountDot.sub(new BN(ONE_DOT.muln(10))),
+			liquidityAmountLaos.sub(new BN(ONE_LAOS.muln(10))),
+			this.substratePairs.ferdie.address
+		);
+
+		const finalizedBlock = await sendTxAndWaitForFinalization(
+			this.chains.assetHub,
+			call,
+			this.substratePairs.ferdie
+		);
+		const event = await checkEventInBlock(
+			this.chains.assetHub,
+			({ event }) => this.chains.assetHub.events.assetConversion.LiquidityAdded.is(event),
+			finalizedBlock
+		);
+
+		expect(event).to.not.be.null;
+		const [who, mintTo, poolID, amount1Provided, amount2Provided] = event.event.data;
+		expect(who.toString()).to.equal(this.substratePairs.ferdie.address);
+		expect(mintTo.toString()).to.equal(this.substratePairs.ferdie.address);
+		expect(poolID.toJSON()).to.deep.equal([relayChainLocation(), siblingParachainLocation(LAOS_PARA_ID)]);
+		expect(new BN(amount1Provided.toString()).eq(liquidityAmountDot)).to.be.true;
+		expect(new BN(amount2Provided.toString()).eq(liquidityAmountLaos)).to.be.true;
 	});
 
 	step("Teleport from LAOS to AssetHub", async function () {

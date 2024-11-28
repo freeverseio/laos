@@ -51,29 +51,3 @@ export async function checkEventInBlock(
 		}
 	});
 }
-
-/**
- * Force a chain to wait a determined amount of blocks
- * @param {ApiPromise} api - The ApiPromise to interact with the chain
- * @param {number} blocks - The number of blocks to wait
- */
-export async function waitForBlocks(api: ApiPromise, blocks: number) {
-	return new Promise(async (resolve, reject) => {
-		let blockCount = 0;
-
-		try {
-			// Await the subscription to get the unsubscribe function
-			const unsubscribe = await api.rpc.chain.subscribeFinalizedHeads((_lastHeader) => {
-				blockCount += 1;
-
-				if (blockCount >= blocks) {
-					unsubscribe(); // Stop listening for new blocks
-					resolve(true);
-				}
-			});
-		} catch (error) {
-			console.error(`Error while subscribing to new heads:`, error);
-			reject(error);
-		}
-	});
-}

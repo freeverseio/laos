@@ -52,9 +52,7 @@ type ethereumPairs = {
 
 type chains = { laos: ApiPromise; relaychain: ApiPromise };
 
-type xcmChains = { laos: ApiPromise; assetHub: ApiPromise; relaychain: ApiPromise };
-
-type providers = { laos: WsProvider; assetHub: WsProvider; relaychain: WsProvider };
+type xcmChains = chains & { assetHub: ApiPromise };
 
 export interface CustomSuiteContext extends Suite {
 	web3: Web3;
@@ -65,11 +63,9 @@ export interface CustomSuiteContext extends Suite {
 }
 
 export interface XcmSuiteContext extends Suite {
-	web3: Web3;
 	chains: xcmChains;
 	substratePairs: substratePairs;
 	ethereumPairs: ethereumPairs;
 	laosItems: laosItems;
 	assetHubItems: assetHubItems;
-	providers: providers;
 }

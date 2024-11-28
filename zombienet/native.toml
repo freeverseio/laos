@@ -40,14 +40,3 @@ force_decorator = "generic-evm"
   validator = true
   args = ["--log=xcm=trace"]
 
-[[parachains]]
-id = 1000
-cumulus_based = true
-chain = "asset-hub-rococo-local"
-
-  [[parachains.collators]]
-  name = "asset-hub"
-  validator = true
-  ws_port = 9950
-  command = "{{ZOMBIENET_ASSETHUB_COMMAND}}"
-  args = ["--log=xcm=trace,pallet-assets=trace"]

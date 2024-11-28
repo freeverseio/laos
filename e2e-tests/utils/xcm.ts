@@ -1,14 +1,14 @@
 import { bnToU8a, stringToU8a } from "@polkadot/util";
 import { encodeAddress } from "@polkadot/util-crypto";
 import { ApiPromise } from "@polkadot/api";
-import { Keyring } from "@polkadot/api";
 import { AssetIdV3, DoubleEncodedCall, XcmOriginKind } from "@polkadot/types/interfaces";
 import { EventRecord } from "@polkadot/types/interfaces";
 import { XcmVersionedXcm } from "@polkadot/types/lookup";
 import BN from "bn.js";
 import { concatUint8Arrays } from "@utils/helpers";
-import { getFinalizedBlockNumber, waitForBlocks } from "@utils/blocks";
+import { getFinalizedBlockNumber } from "@utils/blocks";
 import "@polkadot/api-augment";
+import { POLKADOT_PREFIX } from "@utils/constants";
 
 /**
  * Computes the sibling account of a sibling parachain in a Substrate chain
@@ -16,13 +16,12 @@ import "@polkadot/api-augment";
  * @returns {string} - The address of the sibling parachain.
  */
 export function sovereignAccountOf(paraId: number): string {
-	// TODO take into account the prefix
 	let type = "sibl";
 	let typeEncoded = stringToU8a(type);
 	let paraIdEncoded = bnToU8a(paraId, { bitLength: 16 });
 	let zeroPadding = new Uint8Array(32 - typeEncoded.length - paraIdEncoded.length).fill(0);
 	let address = concatUint8Arrays(typeEncoded, paraIdEncoded, zeroPadding);
-	return encodeAddress(address);
+	return encodeAddress(address, POLKADOT_PREFIX);
 }
 
 /**

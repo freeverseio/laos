@@ -13,7 +13,6 @@ export const RUNTIME_IMPL_VERSION = 0;
 
 // Nodes endpoints
 export const LAOS_NODE_IP = "127.0.0.1:9999";
-export const ASSET_HUB_NODE_IP = "127.0.0.1:9950";
 export const RELAYCHAIN_NODE_IP = "127.0.0.1:9944";
 
 // XCM nodes endpoints
