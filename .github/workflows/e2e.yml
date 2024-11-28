@@ -90,7 +90,7 @@ jobs:
       - name: Run chopsticks
         run: |
           export LAOS_RUNTIME_WASM=../target/release/wbuild/laos-runtime/laos_runtime.compact.compressed.LAOS_RUNTIME_WASM
-          npx @acala-network/chopsticks xcm \ 
+          npx @acala-network/chopsticks xcm \
           -r chopsticks-configs/paseo.yml \
           -p chopsticks-configs/laos.yml \
           -p chopsticks-configs/paseo-ah.yml
