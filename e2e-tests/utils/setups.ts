@@ -15,6 +15,16 @@ import {
 	ASSET_HUB_PARA_ID,
 } from "@utils/constants";
 
+/**
+ * Sets up a mocha describe environment with pre-configured utils for testing available through the 'this' variable. 
+ * See utils/types.ts -> CustomSuiteContext to explore all the available options
+ *
+ * @param {string} title - The title of the test
+ * @param {() => void} cb - The test itself
+ * @param {string} [providerLaosNodeUrl] - An optional URL to connect with the LAOS node
+ * @param {string} [providerAssetHubNodeUrl] - An optional URL to connect with the Asset Hub node
+ * @param {string} [providerRelaychainNodeUrl] - An optional URL to connect with the Relay chain node
+ */
 export function describeWithExistingNode(
 	title: string,
 	cb: () => void,
