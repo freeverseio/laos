@@ -20,11 +20,6 @@ jobs:
         run: |
           cargo build --release --locked
 
-      - name: Download polkadot
-        run: |
-          chmod +x ./zombienet/download_polkadot.sh
-          ./zombienet/download_polkadot.sh
-  
   zombienet-tests:
       needs: build
       runs-on:
@@ -37,7 +32,12 @@ jobs:
       - uses: ./.github/actions/cache
         with:
           cache-key: build_and_push
-      
+
+      - name: Download polkadot
+        run: |
+          chmod +x ./zombienet/download_polkadot.sh
+          ./zombienet/download_polkadot.sh
+     
       - name: Copy zombienet binary
         run: |
           wget https://github.com/paritytech/zombienet/releases/download/v1.3.106/zombienet-linux-x64
