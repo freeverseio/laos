@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  e2e-tests:
+  build:
     runs-on:
       group: laos
       labels: ubuntu-16-cores
@@ -24,7 +24,20 @@ jobs:
         run: |
           chmod +x ./zombienet/download_polkadot.sh
           ./zombienet/download_polkadot.sh
+  
+  zombienet-tests:
+      needs: build
+      runs-on:
+        group: laos
+        labels: ubuntu-16-cores
 
+      steps: 
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/cache
+        with:
+          cache-key: build_and_push
+      
       - name: Copy zombienet binary
         run: |
           wget https://github.com/paritytech/zombienet/releases/download/v1.3.106/zombienet-linux-x64
@@ -34,7 +47,6 @@ jobs:
         run: |
           export ZOMBIENET_RELAYCHAIN_COMMAND=./tmp/polkadot
           export ZOMBIENET_LAOS_COMMAND=./target/release/laos
-          export ZOMBIENET_ASSETHUB_COMMAND=./tmp/polkadot-parachain
           ./zombienet-linux-x64 spawn ./zombienet/native.toml &
           echo "Zombienet started"
 
@@ -55,4 +67,40 @@ jobs:
       - name: Run e2e tests
         run: |
           npm run build && npm run test-zombienet
+        working-directory: ./e2e-tests
+
+  chopsticks-tests:
+    needs: build
+    runs-on:
+      group: laos
+      labels: ubuntu-16-cores
+
+    steps: 
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/cache
+        with:
+          cache-key: build_and_push
+
+      - name: Install dependencies
+        run: |
+          npm install
+        working-directory: ./e2e-tests
+
+      - name: Run chopsticks
+        run: |
+          export LAOS_RUNTIME_WASM=../target/release/wbuild/laos-runtime/laos_runtime.compact.compressed.LAOS_RUNTIME_WASM
+          npx @acala-network/chopsticks xcm \ 
+          -r chopsticks-configs/paseo.yml \
+          -p chopsticks-configs/laos.yml \
+          -p chopsticks-configs/paseeo-ah.yml
+        working-directory: ./e2e-tests
+
+      - name: Wait for chopsticks
+        run: |
+          timeout 36 sh -c 'until nc -z $0 $1; do echo -n .; sleep 1; done' localhost 8000 
+      
+      - name: Run e2e-tests
+        run: |
+          npm run test-chopsticks
         working-directory: ./e2e-tests
