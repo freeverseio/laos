@@ -36,12 +36,12 @@ describeWithExistingNode(
 				.estimateGas();
 
 			const gasPrice = (await this.web3.eth.getGasPrice()) + 1; // if we don't add +1 tx never gets included in the block
-
+      
 			const result = await contract.methods
 				.joinCandidates(ONE_LAOS.muln(20000), candidateCount)
 				.send({ from: this.ethereumPairs.faith.address, gas: estimatedGas, gasPrice });
 
-			await waitFinalizedEthereumTx(this.web3, this.chains.laos, result);
+			await waitFinalizedEthereumTx(this.web3, this.chains.laos, result.transactionHash);
 
 			expect(result.status).to.be.eq(true);
 			expect(await contract.methods.isCandidate(this.ethereumPairs.faith.address).call()).to.be.eq(true);
@@ -59,7 +59,7 @@ describeWithExistingNode(
 				.delegate(this.ethereumPairs.faith.address, ONE_LAOS.muln(1000), 0, 0)
 				.send({ from: this.ethereumPairs.baltathar.address, gas: estimatedGas, gasPrice });
 
-			await waitFinalizedEthereumTx(this.web3, this.chains.laos, result);
+			await waitFinalizedEthereumTx(this.web3, this.chains.laos, result.transactionHash);
 
 			expect(result.status).to.be.eq(true);
 			expect(await contract.methods.isDelegator(this.ethereumPairs.baltathar.address).call()).to.be.eq(true);

@@ -1,5 +1,6 @@
 import { JsonRpcResponse } from "web3-core-helpers";
 import Contract from "web3-eth-contract";
+import { ApiPromise } from "@polkadot/api";
 import Web3 from "web3";
 import BN from "bn.js";
 import {
@@ -9,7 +10,7 @@ import {
 	EVOLUTION_COLLECTION_FACTORY_CONTRACT_ADDRESS,
 	EVOLUTION_COLLECTION_ABI,
 } from "@utils/constants";
-
+import { waitFinalizedEthereumTx } from "@utils/transactions";
 import { expect } from "chai";
 
 /**
@@ -86,10 +87,11 @@ export function slotAndOwnerToTokenId(slot: string, owner: string): string | nul
 /**
  * Creates a collection using the evolution collection factory contract
  * @param {Web3} web3 - The Web3.js provider
+ * @param {ApiPromise} api - The ApiPromise to interact with the underlying Substrate chain
  * @param {string} senderAddress - The ethereum address creating the collection
  * @returns {Promise<Contract>} - The collection contract.
  */
-export async function createCollection(web3: Web3, senderAddress: string): Promise<Contract> {
+export async function createCollection(web3: Web3, api: ApiPromise,senderAddress: string): Promise<Contract> {
 	const contract = new web3.eth.Contract(
 		EVOLUTION_COLLECTION_FACTORY_ABI,
 		EVOLUTION_COLLECTION_FACTORY_CONTRACT_ADDRESS,
@@ -99,14 +101,15 @@ export async function createCollection(web3: Web3, senderAddress: string): Promi
 		}
 	);
 
-	let nonce = await web3.eth.getTransactionCount(senderAddress);
 	const estimatedGas = await contract.methods.createCollection(senderAddress).estimateGas();
 	const result = await contract.methods.createCollection(senderAddress).send({
 		from: senderAddress,
 		gas: estimatedGas,
 		gasPrice: GAS_PRICE,
-		nonce: nonce++,
 	});
+  
+  await waitFinalizedEthereumTx(web3, api, result.transactionHash);
+
 	expect(result.status).to.be.eq(true);
 	expect(web3.utils.isAddress(result.events.NewCollection.returnValues._collectionAddress)).to.be.eq(true);
 

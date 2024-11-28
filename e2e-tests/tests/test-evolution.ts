@@ -14,7 +14,7 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", function () {
 	let collectionContract: Contract;
 
 	beforeEach(async function () {
-		collectionContract = await createCollection(this.web3, this.ethereumPairs.faith.address);
+		collectionContract = await createCollection(this.web3, this.chains.laos, this.ethereumPairs.faith.address);
 	});
 
 	step("when collection does not exist token uri should fail", async function () {
@@ -35,11 +35,10 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", function () {
 		const to = this.ethereumPairs.faith.address;
 		const tokenURI = "https://example.com";
 
-		let nonce = await this.web3.eth.getTransactionCount(this.ethereumPairs.faith.address);
 		const estimatedGas = await collectionContract.methods.mintWithExternalURI(to, slot, tokenURI).estimateGas();
 		const result = await collectionContract.methods
 			.mintWithExternalURI(to, slot, tokenURI)
-			.send({ from: this.ethereumPairs.faith.address, gas: estimatedGas, nonce: nonce++ });
+			.send({ from: this.ethereumPairs.faith.address, gas: estimatedGas });
 		expect(result.status).to.be.eq(true);
 
 		const tokenId = result.events.MintedWithExternalURI.returnValues._tokenId;
@@ -163,7 +162,7 @@ describeWithExistingNode("Frontier RPC (Transfer Ownership)", function () {
 	let collectionContract: Contract;
 
 	before(async function () {
-		collectionContract = await createCollection(this.web3, this.ethereumPairs.faith.address);
+		collectionContract = await createCollection(this.web3, this.chains.laos, this.ethereumPairs.faith.address);
 	});
 
 	step("when is transferred owner should change and emit an event", async function () {
