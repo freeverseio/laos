@@ -7,9 +7,9 @@
 		"fmt-check": "prettier ./ --check",
 		"fmt": "prettier ./ --write",
 		"build": "./compile_contracts.sh",
-		"test-zombienet": "mocha -r ts-node/register -r tsconfig-paths/register -t 900000 'zombienet-tests/**/*.ts' --exclude 'zombienet-tests/deploy_contract_using_hardhat.ts' && hardhat test --network zombienet zombienet-tests/deploy_contract_using_hardhat.ts",
-		"test-chopsticks": "mocha -r ts-node/register -r tsconfig-paths/register -t 900000 'chopsticks-tests/**/*.ts'",
-		"test-sql": "FRONTIER_BACKEND_TYPE='sql' mocha -r ts-node/register 'tests/**/*.ts'"
+		"test": "mocha -r ts-node/register -r tsconfig-paths/register -t 900000 'tests/frontier/*.ts'",
+		"test-deploy": "hardhat test --network zombienet tests/deploy/*.ts",
+		"test-xcm": "mocha -r ts-node/register -r tsconfig-paths/register -t 900000 'tests/xcm/*.ts'"
 	},
 	"author": "",
 	"license": "ISC",

@@ -9,14 +9,14 @@ jobs:
     runs-on:
       group: laos
       labels: ubuntu-16-cores
-    
+
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup
       - uses: ./.github/actions/cache
         with:
           cache-key: build_and_push
-      
+
       - name: Build
         run: |
           cargo build --release --locked
@@ -58,8 +58,8 @@ jobs:
           npm run fmt-check
         working-directory: ./e2e-tests
 
-  
-  zombienet-tests:
+
+  tests:
       needs: [build, lint]
       runs-on:
         group: laos
@@ -85,7 +85,7 @@ jobs:
         run: |
           chmod +x ./zombienet/download_polkadot.sh
           ./zombienet/download_polkadot.sh
-     
+
       - name: Copy zombienet binary
         run: |
           wget https://github.com/paritytech/zombienet/releases/download/v1.3.106/zombienet-linux-x64
@@ -112,12 +112,17 @@ jobs:
           npm install
         working-directory: ./e2e-tests
 
-      - name: Run e2e tests
+      - name: Run deploy tests
         run: |
-          npm run build && npm run test-zombienet
+          npm run build && npm run test-deploy
         working-directory: ./e2e-tests
 
-  chopsticks-tests:
+      - name: Run frontier tests
+        run: |
+          npm run test
+        working-directory: ./e2e-tests
+
+  xcm-tests:
     needs: [build, lint]
     runs-on:
       group: laos
@@ -148,17 +153,17 @@ jobs:
       - name: Run chopsticks
         run: |
           npx @acala-network/chopsticks xcm \
-          -r chopsticks-configs/paseo.yml \
-          -p chopsticks-configs/laos.yml \
-          -p chopsticks-configs/paseo-ah.yml &
+            -r chopsticks-configs/paseo.yml \
+            -p chopsticks-configs/laos.yml \
+            -p chopsticks-configs/paseo-ah.yml &
           echo "Chopsticks started"
         working-directory: ./e2e-tests
 
       - name: Wait for chopsticks
         run: |
           timeout 36 sh -c 'until nc -z $0 $1; do echo -n .; sleep 1; done' localhost 8000 
-      
+
       - name: Run e2e-tests
         run: |
-          npm run build && npm run test-chopsticks
+          npm run build && npm run test-xcm
         working-directory: ./e2e-tests
