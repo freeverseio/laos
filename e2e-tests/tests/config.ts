@@ -8,7 +8,7 @@ import ParachainStaking from "../build/contracts/ParachainStaking.sol/ParachainS
 
 // Node config
 export const RUNTIME_SPEC_NAME = "laos";
-export const RUNTIME_SPEC_VERSION = 2391;
+export const RUNTIME_SPEC_VERSION = 2392;
 export const RUNTIME_IMPL_VERSION = 0;
 export const LAOS_NODE_IP = "127.0.0.1:9999";
 export const ASSET_HUB_NODE_IP = "127.0.0.1:9950";
