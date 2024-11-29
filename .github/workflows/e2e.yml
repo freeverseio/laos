@@ -72,6 +72,10 @@ jobs:
           name: laos-binary
           path: ./target/release
 
+      - name: Give executable permissions to LAOS binary
+        run: |
+          chmod +x ./target/release/laos
+
       - name: Download polkadot
         run: |
           chmod +x ./zombienet/download_polkadot.sh
