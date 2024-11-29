@@ -1,5 +1,5 @@
 endpoint: wss://rpc.laosvenus.gorengine.com
-wasm-override: ${LAOS_RUNTIME_WASM}
+wasm-override: ../target/release/wbuild/laos-runtime/laos_runtime.compact.compressed.wasm
 db: ./db.sqlite
 runtime-log-level: 5
 port: 8000
