@@ -18,10 +18,15 @@ use crate::{weights, AccountId, MessageQueue, ParachainSystem, Runtime, RuntimeE
 
 use super::xcm_config::XcmOriginToTransactDispatchOrigin;
 use cumulus_primitives_core::{AggregateMessageOrigin, ParaId};
-use frame_support::traits::TransformOrigin;
+use frame_support::{parameter_types, traits::TransformOrigin};
 use frame_system::EnsureRoot;
 use parachains_common::message_queue::ParaIdToSibling;
 use polkadot_runtime_common::xcm_sender::NoPriceForMessageDelivery;
+
+parameter_types! {
+	pub const MaxActiveOutboundChannels: u32 = 128;
+	pub const MaxPageSize: u32 = 103 * 1024;
+}
 
 impl cumulus_pallet_xcmp_queue::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
@@ -34,4 +39,6 @@ impl cumulus_pallet_xcmp_queue::Config for Runtime {
 	type ControllerOriginConverter = XcmOriginToTransactDispatchOrigin;
 	type PriceForSiblingDelivery = NoPriceForMessageDelivery<ParaId>;
 	type WeightInfo = weights::cumulus_pallet_xcmp_queue::WeightInfo<Runtime>;
+	type MaxActiveOutboundChannels = MaxActiveOutboundChannels;
+	type MaxPageSize = MaxPageSize;
 }
