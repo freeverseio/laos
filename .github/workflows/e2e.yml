@@ -160,5 +160,5 @@ jobs:
       
       - name: Run e2e-tests
         run: |
-          npm run test-chopsticks
+          npm run build && npm run test-chopsticks
         working-directory: ./e2e-tests
