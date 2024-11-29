@@ -8,7 +8,7 @@ cp -r ../pallets/asset-metadata-extender/src/precompiles/asset_metadata_extender
 cp -r ../pallets/precompiles-benchmark/src/precompiles/vesting/contracts/*.sol contracts
 cp -r ../precompiles/parachain-staking/*.sol contracts
 
-npx hardhat compile
+hardhat compile
 
 # Remove all files in the contracts directory except for Storage.sol
 find contracts -type f ! -name 'Storage.sol' -exec rm -f {} +

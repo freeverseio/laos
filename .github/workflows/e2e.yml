@@ -33,11 +33,10 @@ jobs:
           name: laos-runtime
           path: ./target/release/wbuild/laos-runtime/laos_runtime.compact.compressed.wasm
 
-  npm-install:
+  lint:
     runs-on:
       group: laos
       labels: ubuntu-16-cores
-
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/cache-npm
@@ -53,17 +52,6 @@ jobs:
         run: |
           npm install
         working-directory: ./e2e-tests
-
-  lint:
-    needs: npm-install
-    runs-on:
-      group: laos
-      labels: ubuntu-16-cores
-    steps:
-      - uses: actions/checkout@v3
-      - uses: ./.github/actions/cache-npm
-        with:
-          cache-key: npm
 
       - name: Run lint
         run: |
@@ -114,6 +102,16 @@ jobs:
         run: |
           timeout 36 sh -c 'until nc -z $0 $1; do echo -n .; sleep 1; done' localhost 9999
 
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install npm-dependencies
+        run: |
+          npm install
+        working-directory: ./e2e-tests
+
       - name: Run e2e tests
         run: |
           npm run build && npm run test-zombienet
@@ -136,6 +134,16 @@ jobs:
         with:
           name: laos-runtime
           path: ./target/release/wbuild/laos-runtime
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install npm-dependencies
+        run: |
+          npm install
+        working-directory: ./e2e-tests
 
       - name: Run chopsticks
         run: |

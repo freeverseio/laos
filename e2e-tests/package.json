@@ -4,11 +4,11 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
-		"fmt-check": "npx prettier ./ --check",
-		"fmt": "npx prettier ./ --write",
+		"fmt-check": "prettier ./ --check",
+		"fmt": "prettier ./ --write",
 		"build": "./compile_contracts.sh",
-		"test-zombienet": "npx mocha -r ts-node/register -r tsconfig-paths/register -t 900000 'zombienet-tests/**/*.ts' --exclude 'zombienet-tests/deploy_contract_using_hardhat.ts' && npx hardhat test --network zombienet zombienet-tests/deploy_contract_using_hardhat.ts",
-		"test-chopsticks": "npx mocha -r ts-node/register -r tsconfig-paths/register -t 900000 'chopsticks-tests/**/*.ts'",
+		"test-zombienet": "mocha -r ts-node/register -r tsconfig-paths/register -t 900000 'zombienet-tests/**/*.ts' --exclude 'zombienet-tests/deploy_contract_using_hardhat.ts' && hardhat test --network zombienet zombienet-tests/deploy_contract_using_hardhat.ts",
+		"test-chopsticks": "mocha -r ts-node/register -r tsconfig-paths/register -t 900000 'chopsticks-tests/**/*.ts'",
 		"test-sql": "FRONTIER_BACKEND_TYPE='sql' mocha -r ts-node/register 'tests/**/*.ts'"
 	},
 	"author": "",
