@@ -112,14 +112,14 @@ jobs:
           npm install
         working-directory: ./e2e-tests
 
-      - name: Run deploy tests
-        run: |
-          npm run build && npm run test-deploy
-        working-directory: ./e2e-tests
-
       - name: Run frontier tests
         run: |
-          npm run test
+          npm run build && npm run test
+        working-directory: ./e2e-tests
+
+      - name: Run deploy tests
+        run: |
+          npm run test-deploy
         working-directory: ./e2e-tests
 
   xcm-tests:
