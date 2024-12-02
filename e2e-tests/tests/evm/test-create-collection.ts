@@ -7,8 +7,10 @@ import {
 	GAS_PRICE,
 	REVERT_BYTECODE,
 	SELECTOR_LOG_NEW_COLLECTION,
-} from "./config";
-import { createCollection, describeWithExistingNode } from "./util";
+} from "@utils/constants";
+import { createCollection } from "@utils/helpers";
+import { describeWithExistingNode } from "@utils/setups";
+import { waitFinalizedEthereumTx } from "@utils/transactions";
 
 describeWithExistingNode("Frontier RPC (Create Collection)", function () {
 	let contract: Contract;
@@ -18,7 +20,7 @@ describeWithExistingNode("Frontier RPC (Create Collection)", function () {
 	let testCollectionAddress: string;
 
 	before(async function () {
-		contract = new this.context.web3.eth.Contract(
+		contract = new this.web3.eth.Contract(
 			EVOLUTION_COLLECTION_FACTORY_ABI,
 			EVOLUTION_COLLECTION_FACTORY_CONTRACT_ADDRESS,
 			{
@@ -29,7 +31,11 @@ describeWithExistingNode("Frontier RPC (Create Collection)", function () {
 	});
 
 	step("when collection is created, it should return owner", async function () {
-		const collectionContract = await createCollection(this.context);
+		const collectionContract = await createCollection(
+			this.web3,
+			this.chains.laos,
+			this.ethereumPairs.faith.address
+		);
 		testCollectionContract = collectionContract;
 
 		const owner = await collectionContract.methods.owner().call();
@@ -43,12 +49,12 @@ describeWithExistingNode("Frontier RPC (Create Collection)", function () {
 			gas: estimatedGas,
 			gasPrice: GAS_PRICE,
 		});
+
+		await waitFinalizedEthereumTx(this.web3, this.chains.laos, result.transactionHash);
 		expect(result.status).to.be.eq(true);
 
 		expect(Object.keys(result.events).length).to.be.eq(1);
-		expect(this.context.web3.utils.isAddress(result.events.NewCollection.returnValues._collectionAddress)).to.be.eq(
-			true
-		);
+		expect(this.web3.utils.isAddress(result.events.NewCollection.returnValues._collectionAddress)).to.be.eq(true);
 		testCollectionAddress = result.events.NewCollection.returnValues._collectionAddress;
 		expect(result.events.NewCollection.returnValues._owner).to.be.eq(this.ethereumPairs.faith.address);
 
@@ -56,22 +62,20 @@ describeWithExistingNode("Frontier RPC (Create Collection)", function () {
 		expect(result.events.NewCollection.raw.topics.length).to.be.eq(2);
 		expect(result.events.NewCollection.raw.topics[0]).to.be.eq(SELECTOR_LOG_NEW_COLLECTION);
 		expect(result.events.NewCollection.raw.topics[1]).to.be.eq(
-			this.context.web3.utils.padLeft(this.ethereumPairs.faith.address.toLowerCase(), 64)
+			this.web3.utils.padLeft(this.ethereumPairs.faith.address.toLowerCase(), 64)
 		);
 
 		// event data
 		expect(result.events.NewCollection.raw.data.toLowerCase()).to.be.eq(
-			this.context.web3.utils
-				.padLeft(result.events.NewCollection.returnValues._collectionAddress, 64)
-				.toLowerCase()
+			this.web3.utils.padLeft(result.events.NewCollection.returnValues._collectionAddress, 64).toLowerCase()
 		);
 	});
 
 	step("when collection is created, bytecode is inserted in the storage", async function () {
-		expect(await this.context.web3.eth.getCode(testCollectionContract.options.address)).to.be.eq(REVERT_BYTECODE);
-		expect(await this.context.web3.eth.getCode(testCollectionAddress)).to.be.eq(REVERT_BYTECODE);
+		expect(await this.web3.eth.getCode(testCollectionContract.options.address)).to.be.eq(REVERT_BYTECODE);
+		expect(await this.web3.eth.getCode(testCollectionAddress)).to.be.eq(REVERT_BYTECODE);
 
 		// non-contract address doesn't have any code
-		expect(await this.context.web3.eth.getCode(this.ethereumPairs.faith.address)).to.be.eq("0x");
+		expect(await this.web3.eth.getCode(this.ethereumPairs.faith.address)).to.be.eq("0x");
 	});
 });
