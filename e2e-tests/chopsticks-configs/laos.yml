@@ -13,5 +13,3 @@ import-storage:
               - providers: 1
                 data:
                     free: "100000000000000000000000"
-    ParachainInfo:
-        ParachainId: 2900

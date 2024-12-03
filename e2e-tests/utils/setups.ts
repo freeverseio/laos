@@ -115,16 +115,17 @@ export function describeWithExistingNodeXcm(
 				faith: keyring.addFromUri(FAITH_PRIVATE_KEY),
 			};
 
-			let provider = new WsProvider(providerLaosNodeUrl || "ws://" + XCM_LAOS_NODE_IP);
-			const apiLaos = await new ApiPromise({ provider }).isReady;
+			const laosProvider = new WsProvider(providerLaosNodeUrl || "ws://" + XCM_LAOS_NODE_IP);
+			const apiLaos = await new ApiPromise({ provider: laosProvider }).isReady;
 
-			provider = new WsProvider(providerAssetHubNodeUrl || "ws://" + XCM_ASSET_HUB_NODE_IP);
-			const apiAssetHub = await ApiPromise.create({ provider: provider });
+			const assetHubProvider = new WsProvider(providerAssetHubNodeUrl || "ws://" + XCM_ASSET_HUB_NODE_IP);
+			const apiAssetHub = await ApiPromise.create({ provider: assetHubProvider });
 
 			const relayChainProvider = new WsProvider(providerRelaychainNodeUrl || "ws://" + XCM_RELAYCHAIN_NODE_IP);
 			const apiRelay = await new ApiPromise({ provider: relayChainProvider }).isReady;
 
 			this.chains = { laos: apiLaos, assetHub: apiAssetHub, relaychain: apiRelay };
+			this.providers = { laos: laosProvider, assetHub: assetHubProvider, relaychain: relayChainProvider };
 
 			this.assetHubItems = {
 				accounts: {
