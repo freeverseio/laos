@@ -125,7 +125,6 @@ export function describeWithExistingNodeXcm(
 			const apiRelay = await new ApiPromise({ provider: relayChainProvider }).isReady;
 
 			this.chains = { laos: apiLaos, assetHub: apiAssetHub, relaychain: apiRelay };
-			this.providers = { laos: laosProvider, assetHub: assetHubProvider, relaychain: relayChainProvider };
 
 			this.assetHubItems = {
 				accounts: {

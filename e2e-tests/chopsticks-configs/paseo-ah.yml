@@ -2,6 +2,7 @@ endpoint: wss://asset-hub-paseo-rpc.dwellir.com
 mock-signature-host: true
 db: ./db.sqlite
 port: 8001
+block: 820000 # Block prior $LAOS/$DOT pool creation
 
 import-storage:
     System:

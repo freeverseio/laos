@@ -2,7 +2,7 @@ import { Suite } from "mocha";
 import { MultiAddress, AccountId } from "@polkadot/types/interfaces";
 import { XcmVersionedLocation, StagingXcmV3MultiLocation } from "@polkadot/types/lookup";
 import { KeyringPair } from "@polkadot/keyring/types";
-import { ApiPromise, WsProvider } from "@polkadot/api";
+import { ApiPromise } from "@polkadot/api";
 import Web3 from "web3";
 
 type assetHubItems = {
@@ -54,8 +54,6 @@ type chains = { laos: ApiPromise; relaychain: ApiPromise };
 
 type xcmChains = chains & { assetHub: ApiPromise };
 
-type providers = { laos: WsProvider; assetHub: WsProvider; relaychain: WsProvider };
-
 export interface CustomSuiteContext extends Suite {
 	web3: Web3;
 	chains: chains;
@@ -70,5 +68,4 @@ export interface XcmSuiteContext extends Suite {
 	ethereumPairs: ethereumPairs;
 	laosItems: laosItems;
 	assetHubItems: assetHubItems;
-	providers: providers;
 }
