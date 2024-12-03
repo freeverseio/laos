@@ -115,11 +115,11 @@ export function describeWithExistingNodeXcm(
 				faith: keyring.addFromUri(FAITH_PRIVATE_KEY),
 			};
 
-			let provider = new WsProvider(providerLaosNodeUrl || "ws://" + XCM_LAOS_NODE_IP);
-			const apiLaos = await new ApiPromise({ provider }).isReady;
+			const laosProvider = new WsProvider(providerLaosNodeUrl || "ws://" + XCM_LAOS_NODE_IP);
+			const apiLaos = await new ApiPromise({ provider: laosProvider }).isReady;
 
-			provider = new WsProvider(providerAssetHubNodeUrl || "ws://" + XCM_ASSET_HUB_NODE_IP);
-			const apiAssetHub = await ApiPromise.create({ provider: provider });
+			const assetHubProvider = new WsProvider(providerAssetHubNodeUrl || "ws://" + XCM_ASSET_HUB_NODE_IP);
+			const apiAssetHub = await ApiPromise.create({ provider: assetHubProvider });
 
 			const relayChainProvider = new WsProvider(providerRelaychainNodeUrl || "ws://" + XCM_RELAYCHAIN_NODE_IP);
 			const apiRelay = await new ApiPromise({ provider: relayChainProvider }).isReady;
@@ -165,34 +165,6 @@ export function describeWithExistingNodeXcm(
 				}),
 				relayChainLocation: apiLaos.createType("XcmVersionedLocation", { V3: relayChainLocation() }),
 			};
-
-			// This line https://github.com/paritytech/polkadot-sdk/blob/master/substrate/frame/session/src/lib.rs#L563 causes
-			// invalid transactions (txs) in "session.newSession" blocks (issue https://github.com/paritytech/polkadot-sdk/issues/184).
-			// When session.newSession is emitted in Paseo, txs sent to Paseo or AssetHub are rejected, causing
-			// sendTxAndWaitForFinalization to fail.
-
-			const currentEpochStart = (await apiRelay.query.babe.epochStart())[1].toNumber();
-			const currentBlock = (await getFinalizedBlockNumber(apiRelay)).toNumber();
-			const epochDuration = apiRelay.consts.babe.epochDuration.toNumber();
-
-			// If the session has been consumed over the 90%, we wait til the new session to avoid undeterministic results due toNumber
-			// the issue described above
-			if (currentBlock - currentEpochStart > (epochDuration * 9) / 10) {
-				while (true) {
-					const bestBlock = await apiRelay.rpc.chain.getBlockHash();
-					const event = await checkEventInBlock(
-						apiRelay,
-						({ event }) => apiRelay.events.session.NewSession.is(event),
-						bestBlock.toString(),
-						false
-					);
-					if (event) {
-						break;
-					}
-
-					await relayChainProvider.send("dev_newBlock", [{ count: 1 }]);
-				}
-			}
 		});
 
 		cb();

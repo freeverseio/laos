@@ -26,7 +26,7 @@ export const GAS_PRICE = "0x3B9ACA00";
 
 // Parachain IDs
 export const ASSET_HUB_PARA_ID = 1000;
-export const LAOS_PARA_ID = 2900;
+export const LAOS_PARA_ID = 4547;
 
 // Chain prefix
 export const POLKADOT_PREFIX = 0;
