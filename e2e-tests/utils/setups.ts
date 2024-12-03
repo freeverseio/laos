@@ -165,34 +165,6 @@ export function describeWithExistingNodeXcm(
 				}),
 				relayChainLocation: apiLaos.createType("XcmVersionedLocation", { V3: relayChainLocation() }),
 			};
-
-			// This line https://github.com/paritytech/polkadot-sdk/blob/master/substrate/frame/session/src/lib.rs#L563 causes
-			// invalid transactions (txs) in "session.newSession" blocks (issue https://github.com/paritytech/polkadot-sdk/issues/184).
-			// When session.newSession is emitted in Paseo, txs sent to Paseo or AssetHub are rejected, causing
-			// sendTxAndWaitForFinalization to fail.
-
-			const currentEpochStart = (await apiRelay.query.babe.epochStart())[1].toNumber();
-			const currentBlock = (await getFinalizedBlockNumber(apiRelay)).toNumber();
-			const epochDuration = apiRelay.consts.babe.epochDuration.toNumber();
-
-			// If the session has been consumed over the 90%, we wait til the new session to avoid undeterministic results due toNumber
-			// the issue described above
-			if (currentBlock - currentEpochStart > (epochDuration * 9) / 10) {
-				while (true) {
-					const bestBlock = await apiRelay.rpc.chain.getBlockHash();
-					const event = await checkEventInBlock(
-						apiRelay,
-						({ event }) => apiRelay.events.session.NewSession.is(event),
-						bestBlock.toString(),
-						false
-					);
-					if (event) {
-						break;
-					}
-
-					await relayChainProvider.send("dev_newBlock", [{ count: 1 }]);
-				}
-			}
 		});
 
 		cb();
