@@ -1,6 +1,6 @@
-endpoint: 
-  - wss://rpc.laos.laosfoundation.io
-  - wss://laos-rpc.dwellir.com
+endpoint:
+    - wss://rpc.laos.laosfoundation.io
+    - wss://laos-rpc.dwellir.com
 wasm-override: ../target/release/wbuild/laos-runtime/laos_runtime.compact.compressed.wasm
 db: ./db.sqlite
 runtime-log-level: 5

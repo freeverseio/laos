@@ -1,6 +1,6 @@
-endpoint: 
-  - wss://asset-hub-polkadot-rpc.dwellir.com
-  - wss://polkadot-asset-hub-rpc.polkadot.io
+endpoint:
+    - wss://asset-hub-polkadot-rpc.dwellir.com
+    - wss://polkadot-asset-hub-rpc.polkadot.io
 mock-signature-host: true
 db: ./db.sqlite
 port: 8001
