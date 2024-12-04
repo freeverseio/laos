@@ -1,4 +1,4 @@
-endpoint: wss://rpc.laosvenus.gorengine.com
+endpoint: wss://laos-rpc.dwellir.com
 wasm-override: ../target/release/wbuild/laos-runtime/laos_runtime.compact.compressed.wasm
 db: ./db.sqlite
 runtime-log-level: 5

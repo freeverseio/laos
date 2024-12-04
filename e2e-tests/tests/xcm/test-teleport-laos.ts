@@ -12,25 +12,26 @@ import { hexToBn } from "@polkadot/util";
 describeWithExistingNodeXcm("Teleport Asset Hub <-> LAOS", function () {
 	step("Teleport from LAOS to AssetHub", async function () {
 		const beneficiary = this.chains.laos.createType("XcmVersionedLocation", {
-			V3: {
+			V4: {
 				parents: "0",
 				interior: {
-					X1: {
-						AccountId32: {
-							id: this.assetHubItems.accounts.charlie.toHex(),
+					X1: [
+						{
+							AccountId32: {
+								id: this.assetHubItems.accounts.charlie.toHex(),
+							},
 						},
-					},
+					],
 				},
 			},
 		});
 
 		const amount = ONE_LAOS.muln(5);
 		const assets = this.chains.laos.createType("XcmVersionedAssets", {
-			V3: [
+			V4: [
 				{
-					id: {
-						Concrete: hereLocation(),
-					},
+					id: hereLocation(),
+
 					fun: {
 						Fungible: amount,
 					},
@@ -98,26 +99,25 @@ describeWithExistingNodeXcm("Teleport Asset Hub <-> LAOS", function () {
 
 	step("Teleport back from AssetHub to Laos", async function () {
 		const beneficiary = this.chains.assetHub.createType("XcmVersionedLocation", {
-			V3: {
+			V4: {
 				parents: "0",
 				interior: {
-					X1: {
-						AccountKey20: {
-							// network: 'Any',
-							key: this.ethereumPairs.baltathar.address,
+					X1: [
+						{
+							AccountKey20: {
+								key: this.ethereumPairs.baltathar.address,
+							},
 						},
-					},
+					],
 				},
 			},
 		});
 
 		const amount = ONE_LAOS.muln(1);
 		const assets = this.chains.assetHub.createType("XcmVersionedAssets", {
-			V3: [
+			V4: [
 				{
-					id: {
-						Concrete: siblingParachainLocation(LAOS_PARA_ID),
-					},
+					id: siblingParachainLocation(LAOS_PARA_ID),
 					fun: {
 						Fungible: amount,
 					},

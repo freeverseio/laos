@@ -30,7 +30,7 @@ export function siblingParachainLocation(id: number): Object {
 	return {
 		parents: 1,
 		interior: {
-			x1: { parachain: id },
+			x1: [{ parachain: id }],
 		},
 	};
 }
