@@ -2,7 +2,6 @@ endpoint: wss://asset-hub-paseo-rpc.dwellir.com
 mock-signature-host: true
 db: ./db.sqlite
 port: 8001
-block: 820000 # Block prior $LAOS/$DOT pool creation
 
 import-storage:
     System:
@@ -19,7 +18,93 @@ import-storage:
               - providers: 1
                 data:
                     free: 1000000000000000
-            - - - 13cKp89GsioY4M7hTBH5XmUsw7cFG3FTdSQvCU9q9xcgAHt9 # LAOS SA
+            - - - 13cKp89KHGj9J1txkUM4Doie9To8qNcQxczo3tZa3yFTvkpD # LAOS SA
               - providers: 1
                 data:
                     free: 1000000000000000
+            - - - 1CSnjwHd1PMvcDyskXQHWAHJyzpiigXpqLXNPbtsEPVawin # LAOS/PAS pool
+              - providers: 1
+                data:
+                    free: 1000000000000000
+    ForeignAssets:
+      Asset:
+        [
+          [
+            [
+              {
+                Parents: 1,
+                Interior: {
+                  X1: {
+                    Parachain: 4547
+                  }
+                }
+              }
+            ],
+            {
+              Owner: 13cKp89KHGj9J1txkUM4Doie9To8qNcQxczo3tZa3yFTvkpD,
+              Issuer: 13cKp89KHGj9J1txkUM4Doie9To8qNcQxczo3tZa3yFTvkpD,
+              Admin: 13cKp89KHGj9J1txkUM4Doie9To8qNcQxczo3tZa3yFTvkpD,
+              Freezer: 13cKp89KHGj9J1txkUM4Doie9To8qNcQxczo3tZa3yFTvkpD,
+              Supply: "10004000000000000000000",
+              Deposit: 2019000000,
+              MinBalance: "100000000000000000", # 0.1 LAOS
+              IsSufficient: false,
+              Accounts: 3,
+              Sufficients: 0,
+              Approvals: 0,
+              Status: Live,
+            }
+          ]
+        ]
+      Account:
+        [
+          [
+            [
+              {
+                Parents: 1,
+                Interior: {
+                  X1: {
+                    Parachain: 4547,
+                  }
+                }
+              },
+              1CSnjwHd1PMvcDyskXQHWAHJyzpiigXpqLXNPbtsEPVawin
+            ],
+            {
+              Balance: "1000000000000000000000", # 1k LAOS
+              Status: Liquid,
+              Reason: {
+                DepositFrom: [
+                  15oF4uVJwmo4TdGW7VfQxNLavjCXviqxT9S1MgbjMNHr6Sp5,
+                  "2001600000"
+                ]
+              },
+              Extra: null
+            }
+          ]
+        ]
+    AssetConversion:
+      Pools:
+        [
+          [
+            [
+              [
+                {
+                  Parents: 1,
+                  Interior: Here
+                },
+                {
+                  Parents: 1,
+                  Interior: {
+                    X1: {
+                      Parachain: 4547
+                    }
+                  }
+                }
+              ]
+            ],
+            {
+              LpToken: 2
+            }
+          ]
+        ]

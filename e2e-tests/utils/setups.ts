@@ -2,7 +2,6 @@ import { ApiPromise, WsProvider } from "@polkadot/api";
 import { Keyring } from "@polkadot/api";
 import Web3 from "web3";
 import { sovereignAccountOf, siblingParachainLocation, relayChainLocation } from "@utils/xcm";
-import { checkEventInBlock, getFinalizedBlockNumber } from "@utils/blocks";
 import { CustomSuiteContext, XcmSuiteContext } from "@utils/types";
 import {
 	LAOS_NODE_IP,

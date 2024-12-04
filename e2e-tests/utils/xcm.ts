@@ -1,9 +1,7 @@
 import { bnToU8a, stringToU8a } from "@polkadot/util";
 import { encodeAddress } from "@polkadot/util-crypto";
 import { ApiPromise } from "@polkadot/api";
-import { AssetIdV3, DoubleEncodedCall, XcmOriginKind } from "@polkadot/types/interfaces";
 import { EventRecord } from "@polkadot/types/interfaces";
-import { XcmVersionedXcm } from "@polkadot/types/lookup";
 import BN from "bn.js";
 import { concatUint8Arrays } from "@utils/helpers";
 import { getFinalizedBlockNumber } from "@utils/blocks";
@@ -59,85 +57,6 @@ export function hereLocation(): Object {
 			here: null,
 		},
 	};
-}
-
-/**
- * Builds an XCM (Cross-Consensus Message) instruction.
- *
- * This function constructs an XCM instruction using the provided parameters. The instruction
- * includes a series of operations such as withdrawing assets, buying execution, and performing
- * transactions.
- *
- * @param {ApiPromise} api - The Polkadot API instance.
- * @param {Object} buyExecutionAssetLocation - The location relative to the asset used to buy execution.
- * @param {DoubleEncodedCall[]} calls - An array of double-encoded calls to be included in the XCM instruction.
- * @param {BN} refTime - The reference time for the weight limit.
- * @param {BN} proofSize - The proof size for the weight limit.
- * @param {BN} amount - The amount of the asset to be used in the XCM instruction.
- * @param {XcmOriginKind} originKind - The origin kind for the XCM instruction.
- *
- * @returns {XcmVersionedXcm} - The constructed XCM instruction.
- *
- * @example
- * const instruction = buildXcmInstruction({
- *   api,
- *   calls: [encodedCall1, encodedCall2],
- *   refTime: new BN(1000000),
- *   proofSize: new BN(1000),
- *   amount: new BN(1000000000),
- *   originKind: api.createType('XcmOriginKind', 'Native'),
- * });
- */
-export function buildXcmInstruction(
-	api: ApiPromise,
-	buyExecutionAssetLocation: Object,
-	calls: DoubleEncodedCall[],
-	refTime: BN,
-	proofSize: BN,
-	amount: BN,
-	originKind: XcmOriginKind
-): XcmVersionedXcm {
-	const buyExecutionAsset = api.createType("AssetIdV3", {
-		Concrete: buyExecutionAssetLocation,
-	}) as AssetIdV3;
-
-	const transacts = calls.map((call) => ({
-		Transact: {
-			originKind,
-			requireWeightAtMost: api.createType("WeightV2", {
-				refTime,
-				proofSize,
-			}),
-			call,
-		},
-	}));
-
-	return api.createType("XcmVersionedXcm", {
-		V3: [
-			{
-				WithdrawAsset: [
-					api.createType("MultiAssetV3", {
-						id: buyExecutionAsset,
-						fun: api.createType("FungibilityV3", {
-							Fungible: amount,
-						}),
-					}),
-				],
-			},
-			{
-				BuyExecution: {
-					fees: api.createType("MultiAssetV3", {
-						id: buyExecutionAsset,
-						fun: api.createType("FungibilityV3", {
-							Fungible: amount,
-						}),
-					}),
-					weight_limit: "Unlimited",
-				},
-			},
-			...transacts,
-		],
-	});
 }
 
 /**
