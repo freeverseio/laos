@@ -17,7 +17,6 @@ describeWithExistingNodeXcm("Teleport Asset Hub <-> LAOS", function () {
 				interior: {
 					X1: {
 						AccountId32: {
-							// network: 'Any',
 							id: this.assetHubItems.accounts.charlie.toHex(),
 						},
 					},
