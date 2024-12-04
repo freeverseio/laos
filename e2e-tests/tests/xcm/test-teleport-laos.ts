@@ -4,11 +4,7 @@ import { step } from "mocha-steps";
 
 import { LAOS_PARA_ID, ONE_DOT, ONE_LAOS } from "@utils/constants";
 import { describeWithExistingNodeXcm } from "@utils/setups";
-import {
-	siblingParachainLocation,
-	hereLocation,
-	checkEventAfterXcm,
-} from "@utils/xcm";
+import { siblingParachainLocation, hereLocation, checkEventAfterXcm } from "@utils/xcm";
 import { sendTxAndWaitForFinalization } from "@utils/transactions";
 import { getFinalizedBlockNumber } from "@utils/blocks";
 import { hexToBn } from "@polkadot/util";
