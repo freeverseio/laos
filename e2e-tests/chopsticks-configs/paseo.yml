@@ -2,7 +2,6 @@ endpoint: wss://paseo-rpc.dwellir.com
 mock-signature-host: true
 db: ./db.sqlite
 port: 8002
-block: 4100385 # Block right after new session to avoid invalid tx
 
 import-storage:
     Sudo:

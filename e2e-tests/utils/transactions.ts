@@ -3,7 +3,6 @@ import { SubmittableExtrinsic } from "@polkadot/api/types";
 import { SubmittableResult } from "@polkadot/api/submittable";
 import { KeyringPair } from "@polkadot/keyring/types";
 import Web3 from "web3";
-import { checkEventInBlock } from "@utils/blocks";
 
 import debug from "debug";
 const debugTx = debug("transaction");

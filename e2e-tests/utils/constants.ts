@@ -13,12 +13,10 @@ export const RUNTIME_IMPL_VERSION = 0;
 
 // Nodes endpoints
 export const LAOS_NODE_IP = "127.0.0.1:9999";
-export const RELAYCHAIN_NODE_IP = "127.0.0.1:9944";
 
 // XCM nodes endpoints
 export const XCM_LAOS_NODE_IP = "127.0.0.1:8000";
 export const XCM_ASSET_HUB_NODE_IP = "127.0.0.1:8001";
-export const XCM_RELAYCHAIN_NODE_IP = "127.0.0.1:8002";
 
 // Ethereum chain constants
 export const CHAIN_ID = 667;

@@ -50,7 +50,7 @@ type ethereumPairs = {
 	faith: KeyringPair;
 };
 
-type chains = { laos: ApiPromise; relaychain: ApiPromise };
+type chains = { laos: ApiPromise };
 
 type xcmChains = chains & { assetHub: ApiPromise };
 
