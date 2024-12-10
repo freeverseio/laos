@@ -73,12 +73,12 @@ impl pallet_utility::Config for Test {
 }
 
 thread_local! {
-	pub static PAID: RefCell<BTreeMap<(u128, u32), u64>> = RefCell::new(BTreeMap::new());
-	pub static STATUS: RefCell<BTreeMap<u64, PaymentStatus>> = RefCell::new(BTreeMap::new());
-	pub static LAST_ID: RefCell<u64> = RefCell::new(0u64);
+	pub static PAID: RefCell<BTreeMap<(u128, u32), u64>> = const {RefCell::new(BTreeMap::new())};
+	pub static STATUS: RefCell<BTreeMap<u64, PaymentStatus>> = const {RefCell::new(BTreeMap::new())};
+	pub static LAST_ID: RefCell<u64> = const {RefCell::new(0u64)};
 
 	#[cfg(feature = "runtime-benchmarks")]
-	pub static TEST_SPEND_ORIGIN_TRY_SUCCESFUL_ORIGIN_ERR: RefCell<bool> = RefCell::new(false);
+	pub static TEST_SPEND_ORIGIN_TRY_SUCCESFUL_ORIGIN_ERR: RefCell<bool> = const {RefCell::new(false)};
 }
 
 /// paid balance for a given account and asset ids
@@ -162,7 +162,7 @@ pub struct MulBy<N>(PhantomData<N>);
 impl<N: Get<u64>> ConversionFromAssetBalance<u64, u32, u64> for MulBy<N> {
 	type Error = ();
 	fn from_asset_balance(balance: u64, _asset_id: u32) -> Result<u64, Self::Error> {
-		return balance.checked_mul(N::get()).ok_or(())
+		balance.checked_mul(N::get()).ok_or(())
 	}
 	#[cfg(feature = "runtime-benchmarks")]
 	fn ensure_successful(_: u32) {}
@@ -361,7 +361,7 @@ fn treasury_account_doesnt_get_deleted() {
 	ExtBuilder::default().build().execute_with(|| {
 		Balances::make_free_balance_be(&Treasury::account_id(), 101);
 		assert_eq!(Treasury::pot(), 100);
-		let treasury_balance = Balances::free_balance(&Treasury::account_id());
+		let treasury_balance = Balances::free_balance(Treasury::account_id());
 
 		assert_ok!(Treasury::spend_local(RuntimeOrigin::signed(14), treasury_balance, 3));
 

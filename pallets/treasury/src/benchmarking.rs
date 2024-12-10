@@ -100,6 +100,7 @@ fn assert_last_event<T: Config<I>, I: 'static>(generic_event: <T as Config<I>>::
 }
 
 // Create the arguments for the `spend` dispatchable.
+#[allow(clippy::type_complexity)]
 fn create_spend_arguments<T: Config<I>, I: 'static>(
 	seed: u32,
 ) -> (T::AssetKind, AssetBalanceOf<T, I>, T::Beneficiary, BeneficiaryLookupOf<T, I>) {

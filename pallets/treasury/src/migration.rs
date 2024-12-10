@@ -88,8 +88,8 @@ pub mod cleanup_proposals {
 			// calculate and return migration weights
 			let approvals_read = 1;
 			T::DbWeight::get().reads_writes(
-				proposals_processed as u64 + approvals_read,
-				proposals_processed as u64,
+				proposals_processed + approvals_read,
+				proposals_processed,
 			) + UnreserveWeight::get() * proposals_processed
 		}
 
