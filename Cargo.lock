@@ -5163,6 +5163,7 @@ dependencies = [
  "pallet-authorship",
  "pallet-balances",
  "pallet-base-fee",
+ "pallet-bounties",
  "pallet-collective",
  "pallet-democracy",
  "pallet-elections-phragmen",
