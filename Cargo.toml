@@ -233,6 +233,7 @@ pallet-asset-metadata-extender = { path = "./pallets/asset-metadata-extender", d
 pallet-parachain-staking = { path = "./pallets/parachain-staking", default-features = false }
 pallet-evm-precompile-parachain-staking = { path = "./precompiles/parachain-staking", default-features = false }
 pallet-precompiles-benchmark = { path = "./pallets/precompiles-benchmark", default-features = false}
+pallet-treasury-funding = { path = "./pallets/treasury-funding", default-features = false}
 
 # Primitives
 laos-primitives = { path = "./primitives", default-features = false }
