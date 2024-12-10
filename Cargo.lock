@@ -8196,6 +8196,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "pallet-treasury",
+ "pallet-vesting",
  "parity-scale-codec",
  "scale-info",
  "sp-core",
