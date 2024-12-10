@@ -17,8 +17,8 @@
 use crate::{ParachainSystem, Runtime};
 
 use frame_support::{parameter_types, weights::Weight};
-use pallet_treasury::migration::cleanup_proposals::Migration as TreasuryMigration;
 use pallet_balances::WeightInfo;
+use pallet_treasury::migration::cleanup_proposals::Migration as TreasuryMigration;
 
 parameter_types! {
 	/// Weight for balance unreservations
