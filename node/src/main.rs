@@ -25,7 +25,7 @@ mod cli;
 mod command;
 mod eth;
 mod rpc;
-
+mod custom_tx_pool;
 fn main() -> sc_cli::Result<()> {
 	command::run()
 }
