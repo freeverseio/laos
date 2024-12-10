@@ -6,6 +6,7 @@ pub mod weights;
 
 #[frame_support::pallet]
 pub mod pallet {
+	use crate::weights::WeightInfo;
 	use frame_support::{
 		dispatch::DispatchResultWithPostInfo,
 		pallet_prelude::*,
@@ -18,10 +19,13 @@ pub mod pallet {
 	pub trait Config:
 		frame_system::Config + pallet_treasury::Config + pallet_vesting::Config
 	{
+		/// The overarching event type.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
-		type WeightInfo: crate::weights::WeightInfo;
 
-		// address of where the funds are
+		/// Weight information for extrinsics.
+		type WeightInfo: WeightInfo;
+
+		/// The vault account where initial funds are held.
 		#[pallet::constant]
 		type VaultAccountId: Get<Self::AccountId>;
 	}
@@ -30,38 +34,42 @@ pub mod pallet {
 	pub struct Pallet<T>(_);
 
 	#[pallet::event]
-	#[pallet::generate_deposit(pub(super) fn deposit_event)]
-	pub enum Event<T: Config> {
-		SomethingStored { who: T::AccountId },
-	}
-
-	#[pallet::error]
-	pub enum Error<T> {
-		NoneValue,
-		StorageOverflow,
-	}
+	pub enum Event<T: Config> {}
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
+		/// Vest all funds to the vault account and then transfer all free balance
+		/// from the vault to the treasury account.
+		///
+		/// This extrinsic:
+		/// - Requires a signed origin.
+		/// - Vests all funds to the vault account.
+		/// - Moves all free balance from the vault to the treasury.
+		///
+		/// Weight: Defined by `T::WeightInfo::fund_treasury()`.
 		#[pallet::call_index(0)]
-		#[pallet::weight(Weight::from_parts(10_000, 0) + T::DbWeight::get().writes(1))]
+		#[pallet::weight(<T as Config>::WeightInfo::fund_treasury())]
 		pub fn fund_treasury(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
 
+			// Get the configured vault account.
 			let vault_account = T::VaultAccountId::get();
 
-			// Vest all to the Vault AccountId
+			// Vest all tokens to the vault account:
+			// `vest_other` requires a signed origin and a lookup for the beneficiary.
 			pallet_vesting::Pallet::<T>::vest_other(
 				frame_system::RawOrigin::Signed(who.clone()).into(),
 				T::Lookup::unlookup(vault_account.clone()),
 			)?;
 
-			// Retrieve the treasury account
+			// Retrieve the treasury account from the treasury pallet.
 			let treasury_account = pallet_treasury::Pallet::<T>::account_id();
 
-			// Transfer all transferable funds from the vault to the treasury
+			// Determine the vault's current free balance.
 			let vault_balance =
 				<T as pallet_vesting::Config>::Currency::free_balance(&vault_account);
+
+			// If there are funds in the vault, transfer them all to the treasury.
 			if vault_balance > Zero::zero() {
 				<T as pallet_vesting::Config>::Currency::transfer(
 					&vault_account,
@@ -71,7 +79,6 @@ pub mod pallet {
 				)?;
 			}
 
-			Self::deposit_event(Event::SomethingStored { who });
 			Ok(().into())
 		}
 	}
