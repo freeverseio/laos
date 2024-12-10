@@ -2,11 +2,9 @@ import { ApiPromise, WsProvider } from "@polkadot/api";
 import { Keyring } from "@polkadot/api";
 import Web3 from "web3";
 import { sovereignAccountOf, siblingParachainLocation, relayChainLocation } from "@utils/xcm";
-import { checkEventInBlock, getFinalizedBlockNumber } from "@utils/blocks";
 import { CustomSuiteContext, XcmSuiteContext } from "@utils/types";
 import {
 	LAOS_NODE_IP,
-	RELAYCHAIN_NODE_IP,
 	ALITH_PRIVATE_KEY,
 	BALTATHAR_PRIVATE_KEY,
 	FAITH_PRIVATE_KEY,
@@ -14,7 +12,6 @@ import {
 	ASSET_HUB_PARA_ID,
 	XCM_LAOS_NODE_IP,
 	XCM_ASSET_HUB_NODE_IP,
-	XCM_RELAYCHAIN_NODE_IP,
 	POLKADOT_PREFIX,
 } from "@utils/constants";
 
@@ -25,14 +22,8 @@ import {
  * @param {string} title - The title of the test
  * @param {() => void} cb - The test itself
  * @param {string} [providerLaosNodeUrl] - An optional URL to connect with the LAOS node
- * @param {string} [providerRelaychainNodeUrl] - An optional URL to connect with the Relay chain node
  */
-export function describeWithExistingNode(
-	title: string,
-	cb: () => void,
-	providerLaosNodeUrl?: string,
-	providerRelaychainNodeUrl?: string
-) {
+export function describeWithExistingNode(title: string, cb: () => void, providerLaosNodeUrl?: string) {
 	describe(title, function (this: CustomSuiteContext) {
 		before(async function () {
 			this.web3 = new Web3(providerLaosNodeUrl || "http://" + LAOS_NODE_IP);
@@ -62,17 +53,13 @@ export function describeWithExistingNode(
 			let provider = new WsProvider(providerLaosNodeUrl || "ws://" + LAOS_NODE_IP);
 			const apiLaos = await new ApiPromise({ provider }).isReady;
 
-			provider = new WsProvider(providerRelaychainNodeUrl || "ws://" + RELAYCHAIN_NODE_IP);
-			const apiRelay = await new ApiPromise({ provider: provider }).isReady;
-
-			this.chains = { laos: apiLaos, relaychain: apiRelay };
+			this.chains = { laos: apiLaos };
 		});
 
 		cb();
 
 		after(async function () {
 			this.chains.laos.disconnect();
-			this.chains.relaychain.disconnect();
 		});
 	});
 }
@@ -85,14 +72,12 @@ export function describeWithExistingNode(
  * @param {() => void} cb - The test itself
  * @param {string} [providerLaosNodeUrl] - An optional URL to connect with the LAOS node
  * @param {string} [providerAssetHubNodeUrl] - An optional URL to connect with the Asset Hub node
- * @param {string} [providerRelaychainNodeUrl] - An optional URL to connect with the Relay chain node
  */
 export function describeWithExistingNodeXcm(
 	title: string,
 	cb: () => void,
 	providerLaosNodeUrl?: string,
-	providerAssetHubNodeUrl?: string,
-	providerRelaychainNodeUrl?: string
+	providerAssetHubNodeUrl?: string
 ) {
 	describe(title, function (this: XcmSuiteContext) {
 		before(async function () {
@@ -121,10 +106,7 @@ export function describeWithExistingNodeXcm(
 			const assetHubProvider = new WsProvider(providerAssetHubNodeUrl || "ws://" + XCM_ASSET_HUB_NODE_IP);
 			const apiAssetHub = await ApiPromise.create({ provider: assetHubProvider });
 
-			const relayChainProvider = new WsProvider(providerRelaychainNodeUrl || "ws://" + XCM_RELAYCHAIN_NODE_IP);
-			const apiRelay = await new ApiPromise({ provider: relayChainProvider }).isReady;
-
-			this.chains = { laos: apiLaos, assetHub: apiAssetHub, relaychain: apiRelay };
+			this.chains = { laos: apiLaos, assetHub: apiAssetHub };
 
 			this.assetHubItems = {
 				accounts: {
@@ -172,7 +154,6 @@ export function describeWithExistingNodeXcm(
 		after(async function () {
 			this.chains.laos.disconnect();
 			this.chains.assetHub.disconnect();
-			this.chains.relaychain.disconnect();
 		});
 	});
 }
