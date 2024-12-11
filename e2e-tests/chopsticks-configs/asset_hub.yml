@@ -1,4 +1,6 @@
-endpoint: wss://asset-hub-paseo-rpc.dwellir.com
+endpoint:
+    - wss://asset-hub-polkadot-rpc.dwellir.com
+    - wss://polkadot-asset-hub-rpc.polkadot.io
 mock-signature-host: true
 db: ./db.sqlite
 port: 8001
@@ -18,26 +20,27 @@ import-storage:
               - providers: 1
                 data:
                     free: 1000000000000000
-            - - - 13cKp89KHGj9J1txkUM4Doie9To8qNcQxczo3tZa3yFTvkpD # LAOS SA
+            - - - 13cKp88ncyoXqGfJDkYFy4o1CDyf69WibaK6vqUbz4bqBUwY # LAOS SA
               - providers: 1
                 data:
                     free: 1000000000000000
-            - - - 1CSnjwHd1PMvcDyskXQHWAHJyzpiigXpqLXNPbtsEPVawin # LAOS/PAS pool
+            - - - 16KCArLiMjC2U8ZVxjSCL7HDKnkn4EdACqez4KFJrLLMrkqv # $LAOS/$DOT pool
               - providers: 1
                 data:
                     free: 1000000000000000
     ForeignAssets:
+        # $LAOS asset exists in Asset Hub
         Asset: [
                 [
-                    [{ Parents: 1, Interior: { X1: { Parachain: 4547 } } }],
+                    [{ Parents: 1, Interior: { X1: [{ Parachain: 3370 }] } }],
                     {
-                        Owner: 13cKp89KHGj9J1txkUM4Doie9To8qNcQxczo3tZa3yFTvkpD,
-                        Issuer: 13cKp89KHGj9J1txkUM4Doie9To8qNcQxczo3tZa3yFTvkpD,
-                        Admin: 13cKp89KHGj9J1txkUM4Doie9To8qNcQxczo3tZa3yFTvkpD,
-                        Freezer: 13cKp89KHGj9J1txkUM4Doie9To8qNcQxczo3tZa3yFTvkpD,
+                        Owner: 13cKp88ncyoXqGfJDkYFy4o1CDyf69WibaK6vqUbz4bqBUwY,
+                        Issuer: 13cKp88ncyoXqGfJDkYFy4o1CDyf69WibaK6vqUbz4bqBUwY,
+                        Admin: 13cKp88ncyoXqGfJDkYFy4o1CDyf69WibaK6vqUbz4bqBUwY,
+                        Freezer: 13cKp88ncyoXqGfJDkYFy4o1CDyf69WibaK6vqUbz4bqBUwY,
                         Supply: "10004000000000000000000",
                         Deposit: 2019000000,
-                        MinBalance: "100000000000000000", # 0.1 LAOS
+                        MinBalance: "100000000000000000", # 0.1 $LAOS
                         IsSufficient: false,
                         Accounts: 3,
                         Sufficients: 0,
@@ -46,14 +49,15 @@ import-storage:
                     },
                 ],
             ]
+        # $LAOS/$DOT pool has $LAOS balance
         Account: [
                 [
                     [
-                        { Parents: 1, Interior: { X1: { Parachain: 4547 } } },
-                        1CSnjwHd1PMvcDyskXQHWAHJyzpiigXpqLXNPbtsEPVawin,
+                        { Parents: 1, Interior: { X1: [{ Parachain: 3370 }] } },
+                        16KCArLiMjC2U8ZVxjSCL7HDKnkn4EdACqez4KFJrLLMrkqv,
                     ],
                     {
-                        Balance: "1000000000000000000000", # 1k LAOS
+                        Balance: "1000000000000000000000", # 1k $LAOS
                         Status: Liquid,
                         Reason: { DepositFrom: [15oF4uVJwmo4TdGW7VfQxNLavjCXviqxT9S1MgbjMNHr6Sp5, "2001600000"] },
                         Extra: null,
@@ -61,10 +65,11 @@ import-storage:
                 ],
             ]
     AssetConversion:
+        # $LAOS/$DOT pool exists
         Pools:
             [
                 [
-                    [[{ Parents: 1, Interior: Here }, { Parents: 1, Interior: { X1: { Parachain: 4547 } } }]],
+                    [[{ Parents: 1, Interior: Here }, { Parents: 1, Interior: { X1: [{ Parachain: 3370 }] } }]],
                     { LpToken: 2 },
                 ],
             ]

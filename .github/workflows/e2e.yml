@@ -153,9 +153,9 @@ jobs:
       - name: Run chopsticks
         run: |
           npx @acala-network/chopsticks xcm \
-            -r chopsticks-configs/paseo.yml \
+            -r polkadot \
             -p chopsticks-configs/laos.yml \
-            -p chopsticks-configs/paseo-ah.yml &
+            -p chopsticks-configs/asset_hub.yml &
           echo "Chopsticks started"
         working-directory: ./e2e-tests
 
