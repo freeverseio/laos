@@ -1,4 +1,5 @@
 import BN from "bn.js";
+import path from "path";
 import { AbiItem } from "web3-utils";
 import AssetMetadataExtender from "../build/contracts/AssetMetadataExtender.sol/AssetMetadataExtender.json";
 import EvolutionCollection from "../build/contracts/EvolutionCollection.sol/EvolutionCollection.json";
@@ -71,3 +72,6 @@ export const STAKING_ABI = ParachainStaking.abi as AbiItem[];
 // Other
 export const MAX_U96 = new BN("79228162514264337593543950336"); // 2^96 - 1
 export const REVERT_BYTECODE = "0x60006000fd";
+
+// Paths
+export const TARGET_PATH = path.resolve(__dirname, "../../target");
