@@ -38,7 +38,11 @@ pub mod pallet {
 	pub struct Pallet<T>(_);
 
 	#[pallet::event]
-	pub enum Event<T: Config> {}
+	#[pallet::generate_deposit(pub(super) fn deposit_event)]
+	pub enum Event<T: Config> {
+		/// Event emitted when the treasury is funded.
+		TreasuryFundingExecuted,
+	}
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
@@ -100,6 +104,9 @@ pub mod pallet {
 					vault_balance,
 					ExistenceRequirement::AllowDeath,
 				)?;
+
+				// Emit an event to notify the funding.
+				Self::deposit_event(Event::TreasuryFundingExecuted);
 			}
 
 			Ok(())
