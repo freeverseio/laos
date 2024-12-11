@@ -128,13 +128,13 @@ export function describeWithExistingNodeXcm(
 					ferdie: apiAssetHub.createType("MultiAddress", this.substratePairs.ferdie.address),
 				},
 				laosLocation: apiAssetHub.createType("XcmVersionedLocation", {
-					V3: siblingParachainLocation(LAOS_PARA_ID),
+					V4: siblingParachainLocation(LAOS_PARA_ID),
 				}),
-				laosAsset: apiAssetHub.createType("StagingXcmV3MultiLocation", siblingParachainLocation(LAOS_PARA_ID)),
+				laosAsset: apiAssetHub.createType("StagingXcmV4Location", siblingParachainLocation(LAOS_PARA_ID)),
 				relayChainLocation: apiAssetHub.createType("XcmVersionedLocation", {
-					V3: relayChainLocation(),
+					V4: relayChainLocation(),
 				}),
-				relayAsset: apiAssetHub.createType("StagingXcmV3MultiLocation", relayChainLocation()),
+				relayAsset: apiAssetHub.createType("StagingXcmV4Location", relayChainLocation()),
 			};
 
 			this.assetHubItems.multiAddresses.laosSA = apiAssetHub.createType(
@@ -143,9 +143,9 @@ export function describeWithExistingNodeXcm(
 			);
 			this.laosItems = {
 				assetHubLocation: apiLaos.createType("XcmVersionedLocation", {
-					V3: siblingParachainLocation(ASSET_HUB_PARA_ID),
+					V4: siblingParachainLocation(ASSET_HUB_PARA_ID),
 				}),
-				relayChainLocation: apiLaos.createType("XcmVersionedLocation", { V3: relayChainLocation() }),
+				relayChainLocation: apiLaos.createType("XcmVersionedLocation", { V4: relayChainLocation() }),
 			};
 		});
 
