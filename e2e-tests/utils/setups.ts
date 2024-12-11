@@ -53,7 +53,8 @@ export function describeWithExistingNode(title: string, cb: () => void, provider
 			let provider = new WsProvider(providerLaosNodeUrl || "ws://" + LAOS_NODE_IP);
 			const apiLaos = await new ApiPromise({ provider }).isReady;
 
-			this.chains = { laos: apiLaos };
+      this.chains = { laos: apiLaos };
+      this.wsProvider = provider;
 		});
 
 		cb();
