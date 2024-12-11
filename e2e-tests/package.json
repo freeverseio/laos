@@ -8,7 +8,7 @@
 		"fmt": "prettier ./ --write",
 		"build": "./compile_contracts.sh",
 		"test-evm": "mocha -r ts-node/register -r tsconfig-paths/register -t 900000 'tests/evm/*.ts'",
-		"test-deploy": "hardhat test --network zombienet 'tests/deploy/*.ts'",
+		"test-deploy": "hardhat test --network zombienet tests/deploy/*.ts",
 		"test-xcm": "mocha -r ts-node/register -r tsconfig-paths/register -t 900000 'tests/xcm/*.ts'",
 		"test-upgrade-chain": "mocha -r ts-node/register -r tsconfig-paths/register -t 900000 'tests/upgrade-chain/*.ts'"
 	},
