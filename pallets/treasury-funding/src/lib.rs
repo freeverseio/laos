@@ -46,6 +46,7 @@ pub mod pallet {
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
+		/// Periodically checks and funds the treasury if conditions are met.
 		fn on_initialize(block_number: BlockNumberFor<T>) -> Weight {
 			let step = T::OperationStep::get();
 			if block_number % step.into() == Zero::zero() {
@@ -79,6 +80,7 @@ pub mod pallet {
 	}
 
 	impl<T: Config> Pallet<T> {
+		/// Internal function to handle the logic of funding the treasury.
 		fn fund_treasury_internal() -> DispatchResult {
 			// Retrieve the vault account.
 			let vault_account = T::VaultAccountId::get();
