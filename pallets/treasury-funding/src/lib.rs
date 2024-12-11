@@ -57,11 +57,14 @@ pub mod pallet {
 			// Retrieve the vault account.
 			let vault_account = Self::account_id();
 
-			// Vest all funds of the vault account.
-			pallet_vesting::Pallet::<T>::vest_other(
-				origin,
-				T::Lookup::unlookup(vault_account.clone()),
-			)?;
+			// check if any vesting is scheduled for the vault account.
+			if let Some(_) = pallet_vesting::Pallet::<T>::vesting(vault_account.clone()) {
+				// Vest all funds of the vault account.
+				pallet_vesting::Pallet::<T>::vest_other(
+					origin,
+					T::Lookup::unlookup(vault_account.clone()),
+				)?;
+			}
 
 			// Get the treasury account.
 			let treasury_account = pallet_treasury::Pallet::<T>::account_id();
