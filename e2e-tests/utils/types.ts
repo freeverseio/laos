@@ -60,7 +60,7 @@ export interface CustomSuiteContext extends Suite {
 	substratePairs: substratePairs;
 	ethereumPairs: ethereumPairs;
 	laosItems: laosItems;
-  wsProvider: WsProvider;
+	wsProvider: WsProvider;
 }
 
 export interface XcmSuiteContext extends Suite {
