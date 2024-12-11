@@ -5,12 +5,13 @@ import { sovereignAccountOf, siblingParachainLocation, relayChainLocation } from
 import { CustomSuiteContext, XcmSuiteContext } from "@utils/types";
 import {
 	LAOS_NODE_IP,
-	ASSET_HUB_NODE_IP,
 	ALITH_PRIVATE_KEY,
 	BALTATHAR_PRIVATE_KEY,
 	FAITH_PRIVATE_KEY,
 	LAOS_PARA_ID,
 	ASSET_HUB_PARA_ID,
+	XCM_LAOS_NODE_IP,
+	XCM_ASSET_HUB_NODE_IP,
 	POLKADOT_PREFIX,
 } from "@utils/constants";
 
@@ -64,7 +65,7 @@ export function describeWithExistingNode(title: string, cb: () => void, provider
 }
 
 /**
- * Sets up a mocha describe environment with pre-configured utils for testing XCM available through the 'this' variable.
+ * Sets up a mocha describe environment with pre-configured utils for testing available through the 'this' variable.
  * See utils/types.ts -> CustomSuiteContext to explore all the available options
  *
  * @param {string} title - The title of the test
@@ -99,10 +100,10 @@ export function describeWithExistingNodeXcm(
 				faith: keyring.addFromUri(FAITH_PRIVATE_KEY),
 			};
 
-			const laosProvider = new WsProvider(providerLaosNodeUrl || "ws://" + LAOS_NODE_IP);
+			const laosProvider = new WsProvider(providerLaosNodeUrl || "ws://" + XCM_LAOS_NODE_IP);
 			const apiLaos = await new ApiPromise({ provider: laosProvider }).isReady;
 
-			const assetHubProvider = new WsProvider(providerAssetHubNodeUrl || "ws://" + ASSET_HUB_NODE_IP);
+			const assetHubProvider = new WsProvider(providerAssetHubNodeUrl || "ws://" + XCM_ASSET_HUB_NODE_IP);
 			const apiAssetHub = await ApiPromise.create({ provider: assetHubProvider });
 
 			this.chains = { laos: apiLaos, assetHub: apiAssetHub };
