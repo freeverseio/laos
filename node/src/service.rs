@@ -572,7 +572,8 @@ fn start_consensus(
 	// when starting the network.
 
 	// NOTE: temporary workaround taken from here: https://github.com/frequency-chain/frequency/pull/2196
-	let custom_transaction_pool = 	std::sync::Arc::new(crate::custom_tx_pool::CustomPool::new(transaction_pool));
+	let custom_transaction_pool =
+		std::sync::Arc::new(crate::custom_tx_pool::CustomPool::new(transaction_pool));
 
 	let proposer_factory = sc_basic_authorship::ProposerFactory::with_proof_recording(
 		task_manager.spawn_handle(),
