@@ -74,16 +74,8 @@ export function describeWithExistingNode(title: string, cb: () => void, provider
  *
  * @param {string} title - The title of the test
  * @param {() => void} cb - The test itself
- * @param {string} [providerLaosNodeIP] - An optional IP to connect with the LAOS node. By default, it's connected to chopsticks
- * @param {string} [providerAssetHubNodeIP] - An optional IP to connect with the Asset Hub node. By default, it's connected
- * to chopsticks.
  */
-export function describeWithExistingNodeXcm(
-	title: string,
-	cb: () => void,
-	providerLaosNodeIP?: string,
-	providerAssetHubNodeIP?: string
-) {
+export function describeWithExistingNodeXcm(title: string, cb: () => void) {
 	describe(title, function (this: XcmSuiteContext) {
 		before(async function () {
 			// In Xcm tests we use chopsticks and fork Paseo, which uses prefixed addresses.
@@ -105,14 +97,10 @@ export function describeWithExistingNodeXcm(
 				faith: keyring.addFromUri(FAITH_PRIVATE_KEY),
 			};
 
-			const laosProvider = new WsProvider(
-				providerLaosNodeIP ? `ws://${providerLaosNodeIP}` : `ws://${CHOPSTICKS_LAOS_NODE_IP}`
-			);
+			const laosProvider = new WsProvider(`ws://${CHOPSTICKS_LAOS_NODE_IP}`);
 			const apiLaos = await new ApiPromise({ provider: laosProvider }).isReady;
 
-			const assetHubProvider = new WsProvider(
-				providerAssetHubNodeIP ? `ws://${providerAssetHubNodeIP}` : `ws://${CHOPSTICKS_ASSET_HUB_NODE_IP}`
-			);
+			const assetHubProvider = new WsProvider(`ws://${CHOPSTICKS_ASSET_HUB_NODE_IP}`);
 			const apiAssetHub = await ApiPromise.create({ provider: assetHubProvider });
 
 			this.chains = { laos: apiLaos, assetHub: apiAssetHub };
