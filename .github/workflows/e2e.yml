@@ -59,7 +59,7 @@ jobs:
         working-directory: ./e2e-tests
 
 
-  tests:
+  evm-tests:
       needs: [build, lint]
       runs-on:
         group: laos
@@ -117,7 +117,7 @@ jobs:
           npm run build && npm run test-evm
         working-directory: ./e2e-tests
 
-      - name: Run deploy tests
+      - name: Run contract deploy test
         run: |
           npm run test-deploy
         working-directory: ./e2e-tests
@@ -166,4 +166,47 @@ jobs:
       - name: Run xcm tests
         run: |
           npm run build && npm run test-xcm
+        working-directory: ./e2e-tests
+
+  upgrade-chain-test:
+    needs: [build, lint]
+    runs-on:
+      group: laos
+      labels: ubuntu-16-cores
+
+    steps: 
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/cache-npm
+        with:
+          cache-key: npm
+
+      - name: Download LAOS runtime
+        uses: actions/download-artifact@v3
+        with:
+          name: laos-runtime
+          path: ./target/release/wbuild/laos-runtime
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install npm-dependencies
+        run: |
+          npm install
+        working-directory: ./e2e-tests
+
+      - name: Run chopsticks
+        run: |
+          npx @acala-network/chopsticks -c laos --port 8000 &
+          echo "Chopsticks started"
+        working-directory: ./e2e-tests
+
+      - name: Wait for chopsticks
+        run: |
+          timeout 36 sh -c 'until nc -z $0 $1; do echo -n .; sleep 1; done' localhost 8000 
+
+      - name: Run xcm tests
+        run: |
+          npm run build && npm run test-upgrade-chain
         working-directory: ./e2e-tests
