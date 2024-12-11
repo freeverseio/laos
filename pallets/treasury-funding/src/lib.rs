@@ -28,6 +28,10 @@ pub mod pallet {
 		/// Vault account where initial funds are held.
 		#[pallet::constant]
 		type VaultAccountId: Get<Self::AccountId>;
+
+		/// Configuration attribute for the operation step.
+		#[pallet::constant]
+		type OperationStep: Get<u32>;
 	}
 
 	#[pallet::pallet]
@@ -35,6 +39,19 @@ pub mod pallet {
 
 	#[pallet::event]
 	pub enum Event<T: Config> {}
+
+	#[pallet::hooks]
+	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
+		fn on_initialize(block_number: BlockNumberFor<T>) -> Weight {
+			let step = T::OperationStep::get();
+			if block_number % step.into() == Zero::zero() {
+				if let Err(e) = Self::fund_treasury_internal() {
+					log::warn!("Failed to execute fund_treasury_internal: {:?}", e);
+				}
+			}
+			<T as Config>::WeightInfo::fund_treasury()
+		}
+	}
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
@@ -49,14 +66,22 @@ pub mod pallet {
 		#[pallet::call_index(0)]
 		#[pallet::weight(<T as Config>::WeightInfo::fund_treasury())]
 		pub fn fund_treasury(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
-			let who = ensure_signed(origin)?;
+			let _who = ensure_signed(origin)?;
 
+			Self::fund_treasury_internal()?;
+
+			Ok(().into())
+		}
+	}
+
+	impl<T: Config> Pallet<T> {
+		fn fund_treasury_internal() -> DispatchResult {
 			// Retrieve the vault account.
 			let vault_account = T::VaultAccountId::get();
 
 			// Vest all funds to the vault account.
 			pallet_vesting::Pallet::<T>::vest_other(
-				frame_system::RawOrigin::Signed(who.clone()).into(),
+				frame_system::RawOrigin::Root.into(),
 				T::Lookup::unlookup(vault_account.clone()),
 			)?;
 
@@ -77,7 +102,7 @@ pub mod pallet {
 				)?;
 			}
 
-			Ok(().into())
+			Ok(())
 		}
 	}
 }

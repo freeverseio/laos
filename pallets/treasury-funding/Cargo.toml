@@ -11,6 +11,7 @@ publish = false
 targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
+log = { workspace = true }
 parity-scale-codec = { features = [
 	"derive",
 ], workspace = true }

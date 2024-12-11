@@ -8195,6 +8195,7 @@ dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
+ "log",
  "pallet-treasury",
  "pallet-vesting",
  "parity-scale-codec",
