@@ -11458,7 +11458,7 @@
                       "name": "TreasuryFundingExecuted",
                       "index": 0,
                       "docs": [
-                        "Event emitted when the treasury is funded."
+                        "Emitted when the treasury is successfully funded."
                       ]
                     }
                   ]
@@ -25569,12 +25569,13 @@
                       "docs": [
                         "Transfers all free balance from the vault to the treasury after vesting funds.",
                         "",
-                        "- **Signed origin** required.",
-                        "- **Actions performed**:",
-                        "  1. Vests all funds in the vault account.",
-                        "  2. Transfers the vault's free balance to the treasury.",
+                        "**Requirements:**",
+                        "- The origin must be signed.",
+                        "- Performs the following actions:",
+                        "  1. Vest all funds of the vault account.",
+                        "  2. Transfer the vault's free balance to the treasury account.",
                         "",
-                        "Weight: Determined by `T::WeightInfo::fund_treasury()`."
+                        "**Weight:** Based on `T::WeightInfo::fund_treasury()`."
                       ]
                     }
                   ]
@@ -43722,7 +43723,7 @@
                 110
               ],
               "docs": [
-                " Identifier from which the internal Pot is generated."
+                " A unique identifier used to generate the internal Pot account."
               ]
             }
           ],

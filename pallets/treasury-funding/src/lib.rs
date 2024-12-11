@@ -18,24 +18,24 @@ pub mod pallet {
 		+ pallet_vesting::Config
 		+ pallet_balances::Config
 	{
-		/// Event type for the runtime.
+		/// Specifies the type for runtime events.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
-		/// Weight information for extrinsics.
+		/// Provides weight information for extrinsics in this pallet.
 		type WeightInfo: WeightInfo;
 
-		/// Identifier from which the internal Pot is generated.
+		/// A unique identifier used to generate the internal Pot account.
 		#[pallet::constant]
 		type PalletId: Get<PalletId>;
 	}
 
 	#[pallet::pallet]
-	pub struct Pallet<T>(_);
+	pub struct Pallet<T>(PhantomData<T>);
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		/// Event emitted when the treasury is funded.
+		/// Emitted when the treasury is successfully funded.
 		TreasuryFundingExecuted,
 	}
 
@@ -43,32 +43,35 @@ pub mod pallet {
 	impl<T: Config> Pallet<T> {
 		/// Transfers all free balance from the vault to the treasury after vesting funds.
 		///
-		/// - **Signed origin** required.
-		/// - **Actions performed**:
-		///   1. Vests all funds in the vault account.
-		///   2. Transfers the vault's free balance to the treasury.
+		/// **Requirements:**
+		/// - The origin must be signed.
+		/// - Performs the following actions:
+		///   1. Vest all funds of the vault account.
+		///   2. Transfer the vault's free balance to the treasury account.
 		///
-		/// Weight: Determined by `T::WeightInfo::fund_treasury()`.
+		/// **Weight:** Based on `T::WeightInfo::fund_treasury()`.
 		#[pallet::call_index(0)]
 		#[pallet::weight(<T as Config>::WeightInfo::fund_treasury())]
 		pub fn fund_treasury(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
+			// Ensure the caller is a signed origin.
 			let _who = ensure_signed(origin.clone())?;
 
-			// Retrieve the vault account.
+			// Retrieve the vault account associated with this pallet.
 			let vault_account = Self::account_id();
 
-			// check if any vesting is scheduled for the vault account.
+			// Check if any vesting schedule exists for the vault account.
 			if let Some(_) = pallet_vesting::Pallet::<T>::vesting(vault_account.clone()) {
-				// Vest all funds of the vault account.
+				// Vest all funds in the vault account.
 				pallet_vesting::Pallet::<T>::vest_other(
 					origin,
 					T::Lookup::unlookup(vault_account.clone()),
 				)?;
 			}
 
-			// Get the treasury account.
+			// Retrieve the treasury account associated with this pallet.
 			let treasury_account = pallet_treasury::Pallet::<T>::account_id();
 
+			// Transfer all free balance from the vault to the treasury without keeping the vault alive.
 			let keep_alive = false;
 			pallet_balances::Pallet::<T>::transfer_all(
 				frame_system::RawOrigin::Signed(vault_account.clone()).into(),
@@ -76,6 +79,7 @@ pub mod pallet {
 				keep_alive,
 			)?;
 
+			// Emit an event indicating the treasury funding was successful.
 			Self::deposit_event(Event::TreasuryFundingExecuted);
 
 			Ok(().into())
@@ -83,6 +87,7 @@ pub mod pallet {
 	}
 
 	impl<T: Config> Pallet<T> {
+		/// Returns the account ID associated with this pallet.
 		pub fn account_id() -> T::AccountId {
 			<T as Config>::PalletId::get().into_account_truncating()
 		}
