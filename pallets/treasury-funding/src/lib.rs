@@ -7,17 +7,19 @@ pub mod weights;
 #[frame_support::pallet]
 pub mod pallet {
 	use crate::weights::WeightInfo;
-	use frame_support::{
-		dispatch::DispatchResultWithPostInfo,
-		pallet_prelude::*,
-		traits::{Currency, ExistenceRequirement},
-	};
+	use frame_support::{dispatch::DispatchResultWithPostInfo, pallet_prelude::*};
 	use frame_system::pallet_prelude::*;
-	use sp_runtime::traits::{StaticLookup, Zero};
+	use sp_runtime::{
+		traits::{StaticLookup, Zero},
+		Saturating,
+	};
 
 	#[pallet::config]
 	pub trait Config:
-		frame_system::Config + pallet_treasury::Config + pallet_vesting::Config
+		frame_system::Config
+		+ pallet_treasury::Config
+		+ pallet_vesting::Config
+		+ pallet_balances::Config
 	{
 		/// Event type for the runtime.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
@@ -32,6 +34,10 @@ pub mod pallet {
 		/// Configuration attribute for the operation step.
 		#[pallet::constant]
 		type OperationStep: Get<u32>;
+
+		/// minimum amount to pay fees
+		#[pallet::constant]
+		type MinAmountForFees: Get<Self::Balance>;
 	}
 
 	#[pallet::pallet]
@@ -85,31 +91,25 @@ pub mod pallet {
 			// Retrieve the vault account.
 			let vault_account = T::VaultAccountId::get();
 
-			// Vest all funds to the vault account.
-			pallet_vesting::Pallet::<T>::vest_other(
-				frame_system::RawOrigin::Root.into(),
-				T::Lookup::unlookup(vault_account.clone()),
+			// Vest all funds of the vault account.
+			pallet_vesting::Pallet::<T>::vest(
+				frame_system::RawOrigin::Signed(vault_account.clone()).into(),
 			)?;
 
 			// Get the treasury account.
 			let treasury_account = pallet_treasury::Pallet::<T>::account_id();
 
-			// Get the vault's current free balance.
-			let vault_balance =
-				<T as pallet_vesting::Config>::Currency::free_balance(&vault_account);
+			// Transfer all free balance from the vault to the treasury.
+			let transferable_balance =
+				pallet_balances::Pallet::<T>::usable_balance_for_fees(&vault_account);
 
-			// Transfer all funds to the treasury if balance is positive.
-			if vault_balance > Zero::zero() {
-				<T as pallet_vesting::Config>::Currency::transfer(
-					&vault_account,
-					&treasury_account,
-					vault_balance,
-					ExistenceRequirement::AllowDeath,
-				)?;
+			pallet_balances::Pallet::<T>::transfer_keep_alive(
+				frame_system::RawOrigin::Signed(vault_account.clone()).into(),
+				T::Lookup::unlookup(treasury_account.clone()),
+				transferable_balance.saturating_sub(T::MinAmountForFees::get()),
+			)?;
 
-				// Emit an event to notify the funding.
-				Self::deposit_event(Event::TreasuryFundingExecuted);
-			}
+			Self::deposit_event(Event::TreasuryFundingExecuted);
 
 			Ok(())
 		}

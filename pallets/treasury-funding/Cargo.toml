@@ -24,6 +24,7 @@ frame-system.workspace = true
 sp-runtime.workspace = true
 pallet-treasury.workspace = true
 pallet-vesting.workspace = true
+pallet-balances.workspace = true
 
 [dev-dependencies]
 sp-core = { workspace = true, default-features = true }
@@ -47,7 +48,8 @@ std = [
 
 	"sp-runtime/std",
 	"pallet-treasury/std",
-	"pallet-vesting/std"
+	"pallet-vesting/std",
+	"pallet-balances/std"
 ]
 try-runtime = [
 	"frame-support/try-runtime",
