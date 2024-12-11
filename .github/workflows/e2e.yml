@@ -159,7 +159,7 @@ jobs:
         run: |
           npx @acala-network/chopsticks xcm \
             -r polkadot \
-            -p laos --port 8000 \
+            -p laos \
             -p chopsticks-configs/asset_hub.yml &
           echo "Chopsticks started"
         working-directory: ./e2e-tests

@@ -13,6 +13,7 @@ describeWithExistingNode(
 				TARGET_PATH,
 				"release/wbuild/laos-runtime/laos_runtime.compact.compressed.wasm"
 			);
+
 			if (!existsSync(runtime_path)) {
 				throw new Error(`Unable to find LAOS wasm at ${runtime_path}`);
 			}
