@@ -5,7 +5,7 @@ import { sovereignAccountOf, siblingParachainLocation, relayChainLocation } from
 import { CustomSuiteContext, XcmSuiteContext } from "@utils/types";
 import {
 	LAOS_NODE_IP,
-  ASSET_HUB_NODE_IP,
+	ASSET_HUB_NODE_IP,
 	ALITH_PRIVATE_KEY,
 	BALTATHAR_PRIVATE_KEY,
 	FAITH_PRIVATE_KEY,
