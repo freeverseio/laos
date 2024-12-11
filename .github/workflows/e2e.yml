@@ -115,7 +115,7 @@ jobs:
       - name: Npm build
         run: |
           npm run build
-        working-directory: ./e2e.yml
+        working-directory: ./e2e-tests
 
       - name: Run evm tests
         run: |
@@ -171,7 +171,7 @@ jobs:
       - name: Npm build
         run: |
           npm run build
-        working-directory: ./e2e.yml
+        working-directory: ./e2e-tests
 
       - name: Run upgrade chain test
         run: |
