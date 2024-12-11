@@ -7,12 +7,9 @@ pub mod weights;
 #[frame_support::pallet]
 pub mod pallet {
 	use crate::weights::WeightInfo;
-	use frame_support::{dispatch::DispatchResultWithPostInfo, pallet_prelude::*};
+	use frame_support::{dispatch::DispatchResultWithPostInfo, pallet_prelude::*, PalletId};
 	use frame_system::pallet_prelude::*;
-	use sp_runtime::{
-		traits::{StaticLookup, Zero},
-		Saturating,
-	};
+	use sp_runtime::traits::{AccountIdConversion, StaticLookup};
 
 	#[pallet::config]
 	pub trait Config:
@@ -27,17 +24,9 @@ pub mod pallet {
 		/// Weight information for extrinsics.
 		type WeightInfo: WeightInfo;
 
-		/// Vault account where initial funds are held.
+		/// Identifier from which the internal Pot is generated.
 		#[pallet::constant]
-		type VaultAccountId: Get<Self::AccountId>;
-
-		/// Configuration attribute for the operation step.
-		#[pallet::constant]
-		type OperationStep: Get<u32>;
-
-		/// minimum amount to pay fees
-		#[pallet::constant]
-		type MinAmountForFees: Get<Self::Balance>;
+		type PalletId: Get<PalletId>;
 	}
 
 	#[pallet::pallet]
@@ -48,20 +37,6 @@ pub mod pallet {
 	pub enum Event<T: Config> {
 		/// Event emitted when the treasury is funded.
 		TreasuryFundingExecuted,
-	}
-
-	#[pallet::hooks]
-	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
-		/// Periodically checks and funds the treasury if conditions are met.
-		fn on_initialize(block_number: BlockNumberFor<T>) -> Weight {
-			let step = T::OperationStep::get();
-			if block_number % step.into() == Zero::zero() {
-				if let Err(e) = Self::fund_treasury_internal() {
-					log::warn!("Failed to execute fund_treasury_internal: {:?}", e);
-				}
-			}
-			<T as Config>::WeightInfo::fund_treasury()
-		}
 	}
 
 	#[pallet::call]
@@ -77,41 +52,36 @@ pub mod pallet {
 		#[pallet::call_index(0)]
 		#[pallet::weight(<T as Config>::WeightInfo::fund_treasury())]
 		pub fn fund_treasury(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
-			let _who = ensure_signed(origin)?;
+			let _who = ensure_signed(origin.clone())?;
 
-			Self::fund_treasury_internal()?;
+			// Retrieve the vault account.
+			let vault_account = Self::account_id();
+
+			// Vest all funds of the vault account.
+			pallet_vesting::Pallet::<T>::vest_other(
+				origin,
+				T::Lookup::unlookup(vault_account.clone()),
+			)?;
+
+			// Get the treasury account.
+			let treasury_account = pallet_treasury::Pallet::<T>::account_id();
+
+			let keep_alive = false;
+			pallet_balances::Pallet::<T>::transfer_all(
+				frame_system::RawOrigin::Signed(vault_account.clone()).into(),
+				T::Lookup::unlookup(treasury_account.clone()),
+				keep_alive,
+			)?;
+
+			Self::deposit_event(Event::TreasuryFundingExecuted);
 
 			Ok(().into())
 		}
 	}
 
 	impl<T: Config> Pallet<T> {
-		/// Internal function to handle the logic of funding the treasury.
-		fn fund_treasury_internal() -> DispatchResult {
-			// Retrieve the vault account.
-			let vault_account = T::VaultAccountId::get();
-
-			// Vest all funds of the vault account.
-			pallet_vesting::Pallet::<T>::vest(
-				frame_system::RawOrigin::Signed(vault_account.clone()).into(),
-			)?;
-
-			// Get the treasury account.
-			let treasury_account = pallet_treasury::Pallet::<T>::account_id();
-
-			// Transfer all free balance from the vault to the treasury.
-			let transferable_balance =
-				pallet_balances::Pallet::<T>::usable_balance_for_fees(&vault_account);
-
-			pallet_balances::Pallet::<T>::transfer_keep_alive(
-				frame_system::RawOrigin::Signed(vault_account.clone()).into(),
-				T::Lookup::unlookup(treasury_account.clone()),
-				transferable_balance.saturating_sub(T::MinAmountForFees::get()),
-			)?;
-
-			Self::deposit_event(Event::TreasuryFundingExecuted);
-
-			Ok(())
+		pub fn account_id() -> T::AccountId {
+			<T as Config>::PalletId::get().into_account_truncating()
 		}
 	}
 }

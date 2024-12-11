@@ -1,17 +1,28 @@
-use crate::{currency::UNIT, AccountId, Balance, Runtime, RuntimeEvent};
-use frame_support::parameter_types;
-use hex_literal::hex;
+use crate::{currency::UNIT, Balance, Runtime, RuntimeEvent};
+use frame_support::{parameter_types, PalletId};
 
 parameter_types! {
-	pub TreasuryFundingVault: AccountId = hex!("9d531e3e6b0415cd79839f1fafced4822b14c23d").into();
 	pub Step: u32 = 10;
 	pub MinAmountForFees: Balance = UNIT;
+	pub const TreasuryFundingPalletId: PalletId = PalletId(*b"py/trsfn");
 }
 
 impl pallet_treasury_funding::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
+	type PalletId = TreasuryFundingPalletId;
 	type WeightInfo = ();
-	type VaultAccountId = TreasuryFundingVault;
-	type OperationStep = Step;
-	type MinAmountForFees = MinAmountForFees;
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn check_trasury_funding_address() {
+		assert_eq!(
+			pallet_treasury_funding::Pallet::<Runtime>::account_id().to_string(),
+			"0x6D6F646C70792f747273666E0000000000000000"
+		);
+	}
+}
+
