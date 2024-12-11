@@ -8,7 +8,7 @@ import ParachainStaking from "../build/contracts/ParachainStaking.sol/ParachainS
 
 // Runtime specs
 export const RUNTIME_SPEC_NAME = "laos";
-export const RUNTIME_SPEC_VERSION = 2400;
+export const RUNTIME_SPEC_VERSION = 2401;
 export const RUNTIME_IMPL_VERSION = 0;
 
 // Nodes endpoints
