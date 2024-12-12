@@ -71,7 +71,8 @@ pub mod pallet {
 			// Retrieve the treasury account associated with this pallet.
 			let treasury_account = pallet_treasury::Pallet::<T>::account_id();
 
-			// Transfer all free balance from the vault to the treasury without keeping the vault alive.
+			// Transfer all free balance from the vault to the treasury without keeping the vault
+			// alive.
 			let keep_alive = false;
 			pallet_balances::Pallet::<T>::transfer_all(
 				frame_system::RawOrigin::Signed(vault_account.clone()).into(),
@@ -93,3 +94,6 @@ pub mod pallet {
 		}
 	}
 }
+
+#[cfg(test)]
+mod mock;
