@@ -3,8 +3,8 @@
 
 use super::*;
 use frame_benchmarking::v2::*;
+use frame_support::assert_ok;
 use sp_runtime::traits::StaticLookup;
- use frame_support::assert_ok;
 
 #[benchmarks]
 mod benchmarks {
@@ -27,7 +27,6 @@ mod benchmarks {
 		let treasury_account = pallet_treasury::Pallet::<T>::account_id();
 		let treasury_amount = pallet_balances::Pallet::<T>::free_balance(&treasury_account);
 		assert_eq!(treasury_amount, 10000000000000000000000000_u128.saturated_into());
-
 
 		assert_ok!(pallet_vesting::Pallet::<T>::vested_transfer(
 			RawOrigin::Signed(vault_account.clone()).into(),

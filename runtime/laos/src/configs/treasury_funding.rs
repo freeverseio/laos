@@ -1,4 +1,4 @@
-use crate::{currency::UNIT, Balance, Runtime, RuntimeEvent};
+use crate::{currency::UNIT, weights, Balance, Runtime, RuntimeEvent};
 use frame_support::{parameter_types, PalletId};
 
 parameter_types! {
@@ -10,7 +10,7 @@ parameter_types! {
 impl pallet_treasury_funding::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type PalletId = TreasuryFundingPalletId;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_treasury_funding::WeightInfo<Runtime>;
 }
 
 #[cfg(test)]
