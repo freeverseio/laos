@@ -23,9 +23,9 @@ mod chain_spec;
 mod service;
 mod cli;
 mod command;
+mod custom_tx_pool;
 mod eth;
 mod rpc;
-
 fn main() -> sc_cli::Result<()> {
 	command::run()
 }
