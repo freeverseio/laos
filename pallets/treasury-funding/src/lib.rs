@@ -60,7 +60,7 @@ pub mod pallet {
 			let vault_account = Self::account_id();
 
 			// Check if any vesting schedule exists for the vault account.
-			if let Some(_) = pallet_vesting::Pallet::<T>::vesting(vault_account.clone()) {
+			if pallet_vesting::Pallet::<T>::vesting(vault_account.clone()).is_some() {
 				// Vest all funds in the vault account.
 				pallet_vesting::Pallet::<T>::vest_other(
 					origin,
