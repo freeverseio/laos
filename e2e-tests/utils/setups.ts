@@ -2,19 +2,16 @@ import { ApiPromise, WsProvider } from "@polkadot/api";
 import { Keyring } from "@polkadot/api";
 import Web3 from "web3";
 import { sovereignAccountOf, siblingParachainLocation, relayChainLocation } from "@utils/xcm";
-import { checkEventInBlock, getFinalizedBlockNumber } from "@utils/blocks";
 import { CustomSuiteContext, XcmSuiteContext } from "@utils/types";
 import {
-	LAOS_NODE_IP,
-	RELAYCHAIN_NODE_IP,
+	ZOMBIE_LAOS_NODE_IP,
+	CHOPSTICKS_LAOS_NODE_IP,
+	CHOPSTICKS_ASSET_HUB_NODE_IP,
 	ALITH_PRIVATE_KEY,
 	BALTATHAR_PRIVATE_KEY,
 	FAITH_PRIVATE_KEY,
 	LAOS_PARA_ID,
 	ASSET_HUB_PARA_ID,
-	XCM_LAOS_NODE_IP,
-	XCM_ASSET_HUB_NODE_IP,
-	XCM_RELAYCHAIN_NODE_IP,
 	POLKADOT_PREFIX,
 } from "@utils/constants";
 
@@ -24,18 +21,13 @@ import {
  *
  * @param {string} title - The title of the test
  * @param {() => void} cb - The test itself
- * @param {string} [providerLaosNodeUrl] - An optional URL to connect with the LAOS node
- * @param {string} [providerRelaychainNodeUrl] - An optional URL to connect with the Relay chain node
+ * @param {string} [providerLaosNodeIP] - An optional IP to connect with the LAOS node. By default, it's connected to
+ * zombienet.
  */
-export function describeWithExistingNode(
-	title: string,
-	cb: () => void,
-	providerLaosNodeUrl?: string,
-	providerRelaychainNodeUrl?: string
-) {
+export function describeWithExistingNode(title: string, cb: () => void, providerLaosNodeIP?: string) {
 	describe(title, function (this: CustomSuiteContext) {
 		before(async function () {
-			this.web3 = new Web3(providerLaosNodeUrl || "http://" + LAOS_NODE_IP);
+			this.web3 = new Web3(providerLaosNodeIP ? `http://${providerLaosNodeIP}` : `http://${ZOMBIE_LAOS_NODE_IP}`);
 
 			let keyring = new Keyring({ type: "sr25519" });
 			this.substratePairs = {
@@ -59,20 +51,19 @@ export function describeWithExistingNode(
 			this.web3.eth.accounts.wallet.add(BALTATHAR_PRIVATE_KEY);
 			this.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
 
-			let provider = new WsProvider(providerLaosNodeUrl || "ws://" + LAOS_NODE_IP);
+			let provider = new WsProvider(
+				providerLaosNodeIP ? `ws://${providerLaosNodeIP}` : `ws://${ZOMBIE_LAOS_NODE_IP}`
+			);
 			const apiLaos = await new ApiPromise({ provider }).isReady;
 
-			provider = new WsProvider(providerRelaychainNodeUrl || "ws://" + RELAYCHAIN_NODE_IP);
-			const apiRelay = await new ApiPromise({ provider: provider }).isReady;
-
-			this.chains = { laos: apiLaos, relaychain: apiRelay };
+			this.chains = { laos: apiLaos };
+			this.wsProvider = provider;
 		});
 
 		cb();
 
 		after(async function () {
 			this.chains.laos.disconnect();
-			this.chains.relaychain.disconnect();
 		});
 	});
 }
@@ -83,17 +74,8 @@ export function describeWithExistingNode(
  *
  * @param {string} title - The title of the test
  * @param {() => void} cb - The test itself
- * @param {string} [providerLaosNodeUrl] - An optional URL to connect with the LAOS node
- * @param {string} [providerAssetHubNodeUrl] - An optional URL to connect with the Asset Hub node
- * @param {string} [providerRelaychainNodeUrl] - An optional URL to connect with the Relay chain node
  */
-export function describeWithExistingNodeXcm(
-	title: string,
-	cb: () => void,
-	providerLaosNodeUrl?: string,
-	providerAssetHubNodeUrl?: string,
-	providerRelaychainNodeUrl?: string
-) {
+export function describeWithExistingNodeXcm(title: string, cb: () => void) {
 	describe(title, function (this: XcmSuiteContext) {
 		before(async function () {
 			// In Xcm tests we use chopsticks and fork Paseo, which uses prefixed addresses.
@@ -115,16 +97,13 @@ export function describeWithExistingNodeXcm(
 				faith: keyring.addFromUri(FAITH_PRIVATE_KEY),
 			};
 
-			const laosProvider = new WsProvider(providerLaosNodeUrl || "ws://" + XCM_LAOS_NODE_IP);
+			const laosProvider = new WsProvider(`ws://${CHOPSTICKS_LAOS_NODE_IP}`);
 			const apiLaos = await new ApiPromise({ provider: laosProvider }).isReady;
 
-			const assetHubProvider = new WsProvider(providerAssetHubNodeUrl || "ws://" + XCM_ASSET_HUB_NODE_IP);
+			const assetHubProvider = new WsProvider(`ws://${CHOPSTICKS_ASSET_HUB_NODE_IP}`);
 			const apiAssetHub = await ApiPromise.create({ provider: assetHubProvider });
 
-			const relayChainProvider = new WsProvider(providerRelaychainNodeUrl || "ws://" + XCM_RELAYCHAIN_NODE_IP);
-			const apiRelay = await new ApiPromise({ provider: relayChainProvider }).isReady;
-
-			this.chains = { laos: apiLaos, assetHub: apiAssetHub, relaychain: apiRelay };
+			this.chains = { laos: apiLaos, assetHub: apiAssetHub };
 
 			this.assetHubItems = {
 				accounts: {
@@ -146,13 +125,13 @@ export function describeWithExistingNodeXcm(
 					ferdie: apiAssetHub.createType("MultiAddress", this.substratePairs.ferdie.address),
 				},
 				laosLocation: apiAssetHub.createType("XcmVersionedLocation", {
-					V3: siblingParachainLocation(LAOS_PARA_ID),
+					V4: siblingParachainLocation(LAOS_PARA_ID),
 				}),
-				laosAsset: apiAssetHub.createType("StagingXcmV3MultiLocation", siblingParachainLocation(LAOS_PARA_ID)),
+				laosAsset: apiAssetHub.createType("StagingXcmV4Location", siblingParachainLocation(LAOS_PARA_ID)),
 				relayChainLocation: apiAssetHub.createType("XcmVersionedLocation", {
-					V3: relayChainLocation(),
+					V4: relayChainLocation(),
 				}),
-				relayAsset: apiAssetHub.createType("StagingXcmV3MultiLocation", relayChainLocation()),
+				relayAsset: apiAssetHub.createType("StagingXcmV4Location", relayChainLocation()),
 			};
 
 			this.assetHubItems.multiAddresses.laosSA = apiAssetHub.createType(
@@ -161,9 +140,9 @@ export function describeWithExistingNodeXcm(
 			);
 			this.laosItems = {
 				assetHubLocation: apiLaos.createType("XcmVersionedLocation", {
-					V3: siblingParachainLocation(ASSET_HUB_PARA_ID),
+					V4: siblingParachainLocation(ASSET_HUB_PARA_ID),
 				}),
-				relayChainLocation: apiLaos.createType("XcmVersionedLocation", { V3: relayChainLocation() }),
+				relayChainLocation: apiLaos.createType("XcmVersionedLocation", { V4: relayChainLocation() }),
 			};
 		});
 
@@ -172,7 +151,6 @@ export function describeWithExistingNodeXcm(
 		after(async function () {
 			this.chains.laos.disconnect();
 			this.chains.assetHub.disconnect();
-			this.chains.relaychain.disconnect();
 		});
 	});
 }

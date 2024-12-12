@@ -1,4 +1,5 @@
 import BN from "bn.js";
+import path from "path";
 import { AbiItem } from "web3-utils";
 import AssetMetadataExtender from "../build/contracts/AssetMetadataExtender.sol/AssetMetadataExtender.json";
 import EvolutionCollection from "../build/contracts/EvolutionCollection.sol/EvolutionCollection.json";
@@ -12,13 +13,11 @@ export const RUNTIME_SPEC_VERSION = 2400;
 export const RUNTIME_IMPL_VERSION = 0;
 
 // Nodes endpoints
-export const LAOS_NODE_IP = "127.0.0.1:9999";
-export const RELAYCHAIN_NODE_IP = "127.0.0.1:9944";
+export const ZOMBIE_LAOS_NODE_IP = "127.0.0.1:9999";
 
 // XCM nodes endpoints
-export const XCM_LAOS_NODE_IP = "127.0.0.1:8000";
-export const XCM_ASSET_HUB_NODE_IP = "127.0.0.1:8001";
-export const XCM_RELAYCHAIN_NODE_IP = "127.0.0.1:8002";
+export const CHOPSTICKS_LAOS_NODE_IP = "127.0.0.1:8000";
+export const CHOPSTICKS_ASSET_HUB_NODE_IP = "127.0.0.1:8001";
 
 // Ethereum chain constants
 export const CHAIN_ID = 667;
@@ -26,7 +25,7 @@ export const GAS_PRICE = "0x3B9ACA00";
 
 // Parachain IDs
 export const ASSET_HUB_PARA_ID = 1000;
-export const LAOS_PARA_ID = 4547;
+export const LAOS_PARA_ID = 3370;
 
 // Chain prefix
 export const POLKADOT_PREFIX = 0;
@@ -73,3 +72,6 @@ export const STAKING_ABI = ParachainStaking.abi as AbiItem[];
 // Other
 export const MAX_U96 = new BN("79228162514264337593543950336"); // 2^96 - 1
 export const REVERT_BYTECODE = "0x60006000fd";
+
+// Paths
+export const TARGET_PATH = path.resolve(__dirname, "../../target");
