@@ -36,16 +36,16 @@ impl<T: frame_system::Config> pallet_treasury_funding::WeightInfo for WeightInfo
 	/// Proof: `Balances::Locks` (`max_values`: None, `max_size`: Some(1287), added: 3762, mode: `MaxEncodedLen`)
 	/// Storage: `Balances::Freezes` (r:1 w:0)
 	/// Proof: `Balances::Freezes` (`max_values`: None, `max_size`: Some(887), added: 3362, mode: `MaxEncodedLen`)
-	/// Storage: `System::Account` (r:2 w:1)
+	/// Storage: `System::Account` (r:2 w:2)
 	/// Proof: `System::Account` (`max_values`: None, `max_size`: Some(116), added: 2591, mode: `MaxEncodedLen`)
 	fn fund_treasury() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `499`
 		//  Estimated: `6172`
-		// Minimum execution time: 62_639_000 picoseconds.
-		Weight::from_parts(64_462_000, 0)
+		// Minimum execution time: 82_036_000 picoseconds.
+		Weight::from_parts(83_699_000, 0)
 			.saturating_add(Weight::from_parts(0, 6172))
 			.saturating_add(T::DbWeight::get().reads(5))
-			.saturating_add(T::DbWeight::get().writes(3))
+			.saturating_add(T::DbWeight::get().writes(4))
 	}
 }
