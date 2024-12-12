@@ -571,7 +571,8 @@ fn start_consensus(
 	// NOTE: because we use Aura here explicitly, we can use `CollatorSybilResistance::Resistant`
 	// when starting the network.
 
-	// NOTE: temporary workaround taken from here: https://github.com/frequency-chain/frequency/pull/2196
+	// TODO: Remove the custom tx pool when paritytech/polkadot-sdk#4639 is included in a stable release.
+	// This is a temporary workaround taken from here: https://github.com/frequency-chain/frequency/pull/2196.
 	let custom_transaction_pool =
 		std::sync::Arc::new(crate::custom_tx_pool::CustomPool::new(transaction_pool));
 
