@@ -6,7 +6,7 @@ use frame_support::{
 	parameter_types,
 	traits::{
 		tokens::{PayFromAccount, UnityAssetBalanceConversion},
-		EitherOfDiverse,
+		EitherOf, EitherOfDiverse,
 	},
 	PalletId,
 };
@@ -15,12 +15,8 @@ use parachains_common::{DAYS, MINUTES};
 use polkadot_runtime_common::prod_or_fast;
 use sp_runtime::traits::IdentityLookup;
 
-#[cfg(feature = "runtime-benchmarks")]
 parameter_types! {
 	pub const MaxBalance: Balance = Balance::MAX;
-}
-
-parameter_types! {
 	pub const Burn: Permill = Permill::zero();
 	pub const SpendPeriod: BlockNumber = prod_or_fast!(7 * DAYS, 5 * MINUTES);
 	pub const MaxApprovals: u32 = 100;
@@ -30,6 +26,10 @@ parameter_types! {
 }
 
 type RejectOrigin = EitherOfDiverse<EnsureRoot<AccountId>, CouncilMajority>;
+type SpendOrigin = EitherOf<
+	frame_system::EnsureWithSuccess<frame_system::EnsureRoot<AccountId>, AccountId, MaxBalance>,
+	frame_system::EnsureWithSuccess<CouncilMajority, AccountId, MaxBalance>,
+>;
 
 impl pallet_treasury::Config for Runtime {
 	type AssetKind = ();
@@ -47,12 +47,7 @@ impl pallet_treasury::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type SpendFunds = ();
 	type SpendPeriod = SpendPeriod;
-	// Disabled, no spending allowed.
-	#[cfg(not(feature = "runtime-benchmarks"))]
-	type SpendOrigin = frame_support::traits::NeverEnsureOrigin<Balance>;
-	#[cfg(feature = "runtime-benchmarks")]
-	type SpendOrigin =
-		frame_system::EnsureWithSuccess<frame_system::EnsureRoot<AccountId>, AccountId, MaxBalance>;
+	type SpendOrigin = SpendOrigin;
 	type WeightInfo = weights::pallet_treasury::WeightInfo<Runtime>;
 	#[cfg(feature = "runtime-benchmarks")]
 	type BenchmarkHelper = TreasuryBenchmarkHelper;
