@@ -86,6 +86,7 @@ impl pallet_treasury::Config for Test {
 	#[cfg(feature = "runtime-benchmarks")]
 	type BenchmarkHelper = ();
 }
+
 parameter_types! {
 	pub const MinVestedTransfer: u64 = 1;
 	pub UnvestedFundsAllowedWithdrawReasons: WithdrawReasons =
