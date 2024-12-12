@@ -4,14 +4,14 @@ import Web3 from "web3";
 import { sovereignAccountOf, siblingParachainLocation, relayChainLocation } from "@utils/xcm";
 import { CustomSuiteContext, XcmSuiteContext } from "@utils/types";
 import {
-	LAOS_NODE_IP,
+	ZOMBIE_LAOS_NODE_IP,
+	CHOPSTICKS_LAOS_NODE_IP,
+	CHOPSTICKS_ASSET_HUB_NODE_IP,
 	ALITH_PRIVATE_KEY,
 	BALTATHAR_PRIVATE_KEY,
 	FAITH_PRIVATE_KEY,
 	LAOS_PARA_ID,
 	ASSET_HUB_PARA_ID,
-	XCM_LAOS_NODE_IP,
-	XCM_ASSET_HUB_NODE_IP,
 	POLKADOT_PREFIX,
 } from "@utils/constants";
 
@@ -21,12 +21,13 @@ import {
  *
  * @param {string} title - The title of the test
  * @param {() => void} cb - The test itself
- * @param {string} [providerLaosNodeUrl] - An optional URL to connect with the LAOS node
+ * @param {string} [providerLaosNodeIP] - An optional IP to connect with the LAOS node. By default, it's connected to
+ * zombienet.
  */
-export function describeWithExistingNode(title: string, cb: () => void, providerLaosNodeUrl?: string) {
+export function describeWithExistingNode(title: string, cb: () => void, providerLaosNodeIP?: string) {
 	describe(title, function (this: CustomSuiteContext) {
 		before(async function () {
-			this.web3 = new Web3(providerLaosNodeUrl || "http://" + LAOS_NODE_IP);
+			this.web3 = new Web3(providerLaosNodeIP ? `http://${providerLaosNodeIP}` : `http://${ZOMBIE_LAOS_NODE_IP}`);
 
 			let keyring = new Keyring({ type: "sr25519" });
 			this.substratePairs = {
@@ -50,10 +51,13 @@ export function describeWithExistingNode(title: string, cb: () => void, provider
 			this.web3.eth.accounts.wallet.add(BALTATHAR_PRIVATE_KEY);
 			this.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
 
-			let provider = new WsProvider(providerLaosNodeUrl || "ws://" + LAOS_NODE_IP);
+			let provider = new WsProvider(
+				providerLaosNodeIP ? `ws://${providerLaosNodeIP}` : `ws://${ZOMBIE_LAOS_NODE_IP}`
+			);
 			const apiLaos = await new ApiPromise({ provider }).isReady;
 
 			this.chains = { laos: apiLaos };
+			this.wsProvider = provider;
 		});
 
 		cb();
@@ -70,15 +74,8 @@ export function describeWithExistingNode(title: string, cb: () => void, provider
  *
  * @param {string} title - The title of the test
  * @param {() => void} cb - The test itself
- * @param {string} [providerLaosNodeUrl] - An optional URL to connect with the LAOS node
- * @param {string} [providerAssetHubNodeUrl] - An optional URL to connect with the Asset Hub node
  */
-export function describeWithExistingNodeXcm(
-	title: string,
-	cb: () => void,
-	providerLaosNodeUrl?: string,
-	providerAssetHubNodeUrl?: string
-) {
+export function describeWithExistingNodeXcm(title: string, cb: () => void) {
 	describe(title, function (this: XcmSuiteContext) {
 		before(async function () {
 			// In Xcm tests we use chopsticks and fork Paseo, which uses prefixed addresses.
@@ -100,10 +97,10 @@ export function describeWithExistingNodeXcm(
 				faith: keyring.addFromUri(FAITH_PRIVATE_KEY),
 			};
 
-			const laosProvider = new WsProvider(providerLaosNodeUrl || "ws://" + XCM_LAOS_NODE_IP);
+			const laosProvider = new WsProvider(`ws://${CHOPSTICKS_LAOS_NODE_IP}`);
 			const apiLaos = await new ApiPromise({ provider: laosProvider }).isReady;
 
-			const assetHubProvider = new WsProvider(providerAssetHubNodeUrl || "ws://" + XCM_ASSET_HUB_NODE_IP);
+			const assetHubProvider = new WsProvider(`ws://${CHOPSTICKS_ASSET_HUB_NODE_IP}`);
 			const apiAssetHub = await ApiPromise.create({ provider: assetHubProvider });
 
 			this.chains = { laos: apiLaos, assetHub: apiAssetHub };
