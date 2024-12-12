@@ -21,7 +21,7 @@ mod benchmarks {
 		let vault_account = Pallet::<T>::account_id();
 
 		let amount = 10000000000000000000000000_u128;
-		let per_block = 1_u32;
+		let per_block = 10000000000000000000000_u128;
 		let starting_block = 0_u32;
 
 		let treasury_account = pallet_treasury::Pallet::<T>::account_id();
@@ -33,7 +33,7 @@ mod benchmarks {
 			T::Lookup::unlookup(vault_account.clone()),
 			pallet_vesting::VestingInfo::new(
 				amount.saturated_into(),
-				per_block.into(),
+				per_block.saturated_into(),
 				starting_block.into(),
 			),
 		));
