@@ -39,6 +39,7 @@ mod benchmarks {
 		));
 
 		frame_system::Pallet::<T>::set_block_number(1001_u32.into());
+		assert_eq!(frame_system::Pallet::<T>::block_number(), 1001_u32.into());
 
 		#[extrinsic_call]
 		fund_treasury(RawOrigin::Signed(caller));
