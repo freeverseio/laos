@@ -2,58 +2,58 @@ use crate::mock::*;
 use frame_support::assert_ok;
 
 #[test]
-fn test_fund_treasury_no_vesting() {
+fn test_fund_treasury_without_vesting() {
 	new_test_ext().execute_with(|| {
 		let vault_account = TreasuryFunding::account_id();
 		let treasury_account = Treasury::account_id();
 
-		// Fund the vault account with some balance.
+		// Step 1: Fund the vault account with an initial balance.
 		let initial_balance = 1_000;
 		let _ = Balances::force_set_balance(RuntimeOrigin::root(), vault_account, initial_balance);
 
-		// Check initial balances.
+		// Step 2: Verify the initial balances of the vault and treasury accounts.
 		assert_eq!(Balances::free_balance(&vault_account), initial_balance);
 		assert_eq!(Balances::free_balance(&treasury_account), 0);
 
-		// Call the fund_treasury function.
+		// Step 3: Call the fund_treasury function to transfer funds.
 		assert_ok!(TreasuryFunding::fund_treasury(RuntimeOrigin::signed(vault_account.clone())));
 
-		// Check final balances.
+		// Step 4: Verify the final balances after the transfer.
 		assert_eq!(Balances::free_balance(&vault_account), 0);
 		assert_eq!(Balances::free_balance(&treasury_account), initial_balance);
 	});
 }
 
 #[test]
-fn test_fund_treasury_in_middle_of_vesting() {
+fn test_fund_treasury_during_active_vesting() {
 	new_test_ext().execute_with(|| {
 		let vault_account = TreasuryFunding::account_id();
 		let treasury_account = Treasury::account_id();
 
-		// Fund the vault account with some balance.
+		// Step 1: Fund the vault account with an initial balance.
 		let initial_balance = 1_000;
 		let _ = Balances::force_set_balance(RuntimeOrigin::root(), vault_account, initial_balance);
 
-		// Create a vesting schedule for the vault account.
+		// Step 2: Create a vesting schedule for the vault account.
 		Vesting::vested_transfer(
 			RuntimeOrigin::signed(vault_account.clone()),
 			vault_account.clone(),
 			pallet_vesting::VestingInfo::new(1_000, 1, 0),
-		)
-		.unwrap();
+		).unwrap();
 
+		// Step 3: Simulate the passage of time (to block 500).
 		System::set_block_number(500);
 
-		// Check initial balances and vesting schedule.
+		// Step 4: Verify the initial balances and vesting schedule.
 		assert_eq!(Balances::free_balance(&vault_account), initial_balance);
 		assert!(Vesting::vesting(vault_account.clone()).is_some());
 
-		// Call the fund_treasury function.
+		// Step 5: Call the fund_treasury function during active vesting.
 		assert_ok!(TreasuryFunding::fund_treasury(RuntimeOrigin::signed(vault_account.clone())));
 
-		// Check final balances and ensure vesting is handled.
-		assert_eq!(Balances::free_balance(&vault_account), 500);
-		assert_eq!(Balances::free_balance(&treasury_account), 500);
+		// Step 6: Verify the final balances after the transfer and vesting handling.
+		assert_eq!(Balances::free_balance(&vault_account), 500); // Remaining vested balance.
+		assert_eq!(Balances::free_balance(&treasury_account), 500); // Transferred amount.
 	});
 }
 
@@ -63,29 +63,29 @@ fn test_fund_treasury_with_expired_vesting() {
 		let vault_account = TreasuryFunding::account_id();
 		let treasury_account = Treasury::account_id();
 
-		// Fund the vault account with some balance.
+		// Step 1: Fund the vault account with an initial balance.
 		let initial_balance = 1_000;
 		let _ = Balances::force_set_balance(RuntimeOrigin::root(), vault_account, initial_balance);
 
-		// Create a vesting schedule for the vault account.
+		// Step 2: Create a vesting schedule for the vault account.
 		Vesting::vested_transfer(
 			RuntimeOrigin::signed(vault_account.clone()),
 			vault_account.clone(),
 			pallet_vesting::VestingInfo::new(1_000, 1, 0),
-		)
-		.unwrap();
+		).unwrap();
 
+		// Step 3: Simulate the passage of time (to block 1,001, beyond vesting expiry).
 		System::set_block_number(1_001);
 
-		// Check initial balances and vesting schedule.
+		// Step 4: Verify the initial balances and expired vesting schedule.
 		assert_eq!(Balances::free_balance(&vault_account), initial_balance);
 		assert!(Vesting::vesting(vault_account.clone()).is_some());
 
-		// Call the fund_treasury function.
+		// Step 5: Call the fund_treasury function after vesting expiry.
 		assert_ok!(TreasuryFunding::fund_treasury(RuntimeOrigin::signed(vault_account.clone())));
 
-		// Check final balances and ensure vesting is handled.
-		assert_eq!(Balances::free_balance(&vault_account), 0);
-		assert_eq!(Balances::free_balance(&treasury_account), initial_balance);
+		// Step 6: Verify the final balances after the transfer.
+		assert_eq!(Balances::free_balance(&vault_account), 0); // All funds transferred.
+		assert_eq!(Balances::free_balance(&treasury_account), initial_balance); // Full amount received by treasury.
 	});
 }
