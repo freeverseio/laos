@@ -44,7 +44,10 @@ mod benchmarks {
 		fund_treasury(RawOrigin::Signed(caller));
 
 		// check treasury account balance
-		assert_eq!(pallet_balances::Pallet::<T>::free_balance(&treasury_account), treasury_amount);
+		assert_eq!(
+			pallet_balances::Pallet::<T>::free_balance(&treasury_account),
+			treasury_amount + amount.saturated_into()
+		);
 	}
 
 	impl_benchmark_test_suite!(Template, crate::mock::new_test_ext(), crate::mock::Test);
