@@ -1,3 +1,36 @@
+// Copyright 2023-2024 Freeverse.io
+// This file is part of LAOS.
+
+// LAOS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// LAOS is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
+
+//! # Funding Treasury Pallet
+//!
+//! - [`Config`]
+//! - [`Call`]
+//!
+//! ## Overview
+//!
+//! The Funding Treasury pallet provides a way to fund the treasury by transferring available funds
+//! from a (maybe) pre-vested vault account. Everyone may use this pallet to transfer all the available funds  //! from the vault account. This way, a vest schedule can be defined over some funds that have to the 
+//! sent to the treasury.
+//!
+//! ### Dispatchable Functions
+//!
+//! The  Funding Treasury pallet provides a single dispatchable function
+//!
+//! - `fund_treasury`: Vest all funds of the vault account and transfer them to the treasury.
+
 #![cfg_attr(not(feature = "std"), no_std)]
 
 pub use pallet::*;
