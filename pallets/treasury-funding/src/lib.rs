@@ -70,7 +70,7 @@ pub mod pallet {
 				)?;
 			}
 
-			// Retrieve the treasury account associated with this pallet.
+			// Retrieve the sovereign account of pallet treasury.
 			let treasury_account = pallet_treasury::Pallet::<T>::account_id();
 
 			// Transfer all free balance from the vault to the treasury without keeping the vault
