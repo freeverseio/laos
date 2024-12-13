@@ -152,6 +152,7 @@ std = [
 	"pallet-democracy/std",
 	"pallet-sudo/std",
 	"pallet-treasury/std",
+	"pallet-treasury-funding/std",
 	"pallet-collective/std",
 	"pallet-membership/std",
 	"pallet-preimage/std",

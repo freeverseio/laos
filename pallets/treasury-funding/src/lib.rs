@@ -22,8 +22,9 @@
 //! ## Overview
 //!
 //! The Funding Treasury pallet provides a way to fund the treasury by transferring available funds
-//! from a (maybe) pre-vested vault account. Everyone may use this pallet to transfer all the available funds  //! from the vault account. This way, a vest schedule can be defined over some funds that have to the 
-//! sent to the treasury.
+//! from a (maybe) pre-vested vault account. Everyone may use this pallet to transfer all the
+//! available funds  //! from the vault account. This way, a vest schedule can be defined over some
+//! funds that have to the sent to the treasury.
 //!
 //! ### Dispatchable Functions
 //!
