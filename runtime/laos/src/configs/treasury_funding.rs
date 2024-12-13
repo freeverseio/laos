@@ -14,12 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
-use crate::{currency::UNIT, weights, Balance, Runtime, RuntimeEvent};
+use crate::{weights, Runtime, RuntimeEvent};
 use frame_support::{parameter_types, PalletId};
 
 parameter_types! {
-	pub Step: u32 = 10;
-	pub MinAmountForFees: Balance = UNIT;
 	pub const TreasuryFundingPalletId: PalletId = PalletId(*b"ls/trsfn");
 }
 
