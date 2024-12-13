@@ -26,7 +26,7 @@ describeWithExistingNode(
 			// The runtime version in LAOS is at smaller than the development version
 			expect(
 				liveSpecVersion < RUNTIME_SPEC_VERSION,
-				"developed runtime version equals live chain version"
+				"developed runtime version is not greater than the live chain version"
 			).to.be.true;
 
 			const tx = this.chains.laos.tx.sudo.sudo(this.chains.laos.tx.system.setCode(`0x${wasmFile}`));
