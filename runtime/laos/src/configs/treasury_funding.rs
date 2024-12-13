@@ -14,9 +14,28 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
-use hex_literal::hex;
+use crate::{weights, Runtime, RuntimeEvent};
+use frame_support::{parameter_types, PalletId};
 
-pub const ALITH: [u8; 20] = hex!("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac");
-pub const BALTATHAR: [u8; 20] = hex!("3Cd0A705a2DC65e5b1E1205896BaA2be8A07c6e0");
-pub const FAITH: [u8; 20] = hex!("C0F0f4ab324C46e55D02D0033343B4Be8A55532d");
-pub const TREASURY: [u8; 20] = hex!("6d6f646C70792f74727372790000000000000000");
+parameter_types! {
+	pub const TreasuryFundingPalletId: PalletId = PalletId(*b"ls/trsfn");
+}
+
+impl pallet_treasury_funding::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type PalletId = TreasuryFundingPalletId;
+	type WeightInfo = weights::pallet_treasury_funding::WeightInfo<Runtime>;
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn check_trasury_funding_address() {
+		assert_eq!(
+			pallet_treasury_funding::Pallet::<Runtime>::account_id().to_string(),
+			"0x6d6f646C6c732F747273666e0000000000000000"
+		);
+	}
+}

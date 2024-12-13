@@ -234,6 +234,7 @@ pallet-parachain-staking = { path = "./pallets/parachain-staking", default-featu
 pallet-evm-precompile-parachain-staking = { path = "./precompiles/parachain-staking", default-features = false }
 pallet-precompiles-benchmark = { path = "./pallets/precompiles-benchmark", default-features = false}
 pallet-treasury = { path = "./pallets/treasury", default-features = false }
+pallet-treasury-funding = { path = "./pallets/treasury-funding", default-features = false }
 
 # Primitives
 laos-primitives = { path = "./primitives", default-features = false }
