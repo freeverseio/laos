@@ -84,12 +84,11 @@ fn test_fund_treasury_with_expired_vesting() {
 		let _ = Balances::force_set_balance(RuntimeOrigin::root(), vault_account, initial_balance);
 
 		// Step 2: Create a vesting schedule for the vault account.
-		Vesting::vested_transfer(
+		assert_ok!(Vesting::vested_transfer(
 			RuntimeOrigin::signed(vault_account),
 			vault_account,
 			pallet_vesting::VestingInfo::new(1_000, 1, 0),
-		)
-		.unwrap();
+		));
 
 		// Step 3: Simulate the passage of time (to block 1,001, beyond vesting expiry).
 		System::set_block_number(1_001);
