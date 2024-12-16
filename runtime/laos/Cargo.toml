@@ -51,6 +51,7 @@ pallet-vesting = { workspace = true }
 pallet-proxy = { workspace = true }
 pallet-utility = { workspace = true }
 pallet-bounties = { workspace = true }
+pallet-treasury-funding = { workspace = true }
 sp-api = { workspace = true }
 sp-io = { workspace = true }
 sp-block-builder = { workspace = true }
@@ -152,6 +153,7 @@ std = [
 	"pallet-democracy/std",
 	"pallet-sudo/std",
 	"pallet-treasury/std",
+	"pallet-treasury-funding/std",
 	"pallet-collective/std",
 	"pallet-membership/std",
 	"pallet-preimage/std",
@@ -233,6 +235,7 @@ runtime-benchmarks = [
 	"pallet-democracy/runtime-benchmarks",
 	"pallet-treasury/runtime-benchmarks",
 	"pallet-bounties/runtime-benchmarks",
+	"pallet-treasury-funding/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"pallet-elections-phragmen/runtime-benchmarks",
 	"pallet-xcm/runtime-benchmarks",
@@ -284,6 +287,7 @@ try-runtime = [
 	"pallet-elections-phragmen/try-runtime",
 	"pallet-timestamp/try-runtime",
 	"pallet-treasury/try-runtime",
+	"pallet-treasury-funding/try-runtime",
 	"pallet-transaction-payment/try-runtime",
 	"pallet-xcm/try-runtime",
 	"parachain-info/try-runtime",

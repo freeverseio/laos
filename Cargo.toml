@@ -4,7 +4,7 @@ repository = "https://github.com/freeverseio/laos.git"
 homepage = "https://www.laosfoundation.io"
 authors = ["Freeverse"]
 edition = "2021"
-version = "0.24.0"
+version = "0.24.92"
 
 [workspace]
 resolver = "2"
@@ -234,6 +234,7 @@ pallet-asset-metadata-extender = { path = "./pallets/asset-metadata-extender", d
 pallet-parachain-staking = { path = "./pallets/parachain-staking", default-features = false }
 pallet-evm-precompile-parachain-staking = { path = "./precompiles/parachain-staking", default-features = false }
 pallet-precompiles-benchmark = { path = "./pallets/precompiles-benchmark", default-features = false}
+pallet-treasury-funding = { path = "./pallets/treasury-funding", default-features = false }
 
 # Primitives
 laos-primitives = { path = "./primitives", default-features = false }

@@ -14,18 +14,28 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
-//! Substrate Parachain Node Template CLI
+use crate::{weights, Runtime, RuntimeEvent};
+use frame_support::{parameter_types, PalletId};
 
-#![warn(missing_docs)]
+parameter_types! {
+	pub const TreasuryFundingPalletId: PalletId = PalletId(*b"ls/trsfn");
+}
 
-mod chain_spec;
-#[macro_use]
-mod service;
-mod cli;
-mod command;
-mod custom_tx_pool;
-mod eth;
-mod rpc;
-fn main() -> sc_cli::Result<()> {
-	command::run()
+impl pallet_treasury_funding::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type PalletId = TreasuryFundingPalletId;
+	type WeightInfo = weights::pallet_treasury_funding::WeightInfo<Runtime>;
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn check_trasury_funding_address() {
+		assert_eq!(
+			pallet_treasury_funding::Pallet::<Runtime>::account_id().to_string(),
+			"0x6d6f646C6c732F747273666e0000000000000000"
+		);
+	}
 }

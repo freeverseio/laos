@@ -5043,7 +5043,7 @@ dependencies = [
 
 [[package]]
 name = "laos"
-version = "0.24.0"
+version = "0.24.92"
 dependencies = [
  "clap",
  "cumulus-client-cli",
@@ -5066,6 +5066,7 @@ dependencies = [
  "fp-dynamic-fee",
  "fp-evm",
  "fp-rpc",
+ "frame-benchmarking",
  "frame-benchmarking-cli",
  "futures",
  "hex-literal",
@@ -5103,6 +5104,7 @@ dependencies = [
  "sp-consensus-aura",
  "sp-core",
  "sp-inherents",
+ "sp-io",
  "sp-keystore",
  "sp-runtime",
  "sp-timestamp",
@@ -5128,7 +5130,7 @@ dependencies = [
 
 [[package]]
 name = "laos-runtime"
-version = "0.24.0"
+version = "0.24.92"
 dependencies = [
  "assert-json-diff",
  "cumulus-pallet-aura-ext",
@@ -5191,6 +5193,7 @@ dependencies = [
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
  "pallet-treasury",
+ "pallet-treasury-funding",
  "pallet-utility",
  "pallet-vesting",
  "pallet-xcm",
@@ -8185,6 +8188,24 @@ dependencies = [
  "scale-info",
  "serde",
  "sp-core",
+ "sp-runtime",
+]
+
+[[package]]
+name = "pallet-treasury-funding"
+version = "0.1.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "pallet-balances",
+ "pallet-treasury",
+ "pallet-vesting",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
  "sp-runtime",
 ]
 

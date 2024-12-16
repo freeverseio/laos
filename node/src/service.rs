@@ -29,8 +29,7 @@ use cumulus_client_consensus_common::ParachainBlockImport as TParachainBlockImpo
 use cumulus_client_consensus_proposer::Proposer;
 use cumulus_client_service::{
 	build_network, build_relay_chain_interface, prepare_node_config, start_relay_chain_tasks,
-	BuildNetworkParams, CollatorSybilResistance, DARecoveryProfile, ParachainHostFunctions,
-	StartRelayChainTasksParams,
+	BuildNetworkParams, CollatorSybilResistance, DARecoveryProfile, StartRelayChainTasksParams,
 };
 use cumulus_primitives_core::{relay_chain::CollatorPair, ParaId, PersistedValidationData};
 use cumulus_primitives_parachain_inherent::ParachainInherentData;
@@ -45,10 +44,7 @@ use laos_runtime::{
 };
 use sc_client_api::Backend;
 use sc_consensus::ImportQueue;
-#[allow(deprecated)]
-use sc_executor::{
-	HeapAllocStrategy, NativeElseWasmExecutor, WasmExecutor, DEFAULT_HEAP_ALLOC_STRATEGY,
-};
+use sc_executor::{HeapAllocStrategy, WasmExecutor, DEFAULT_HEAP_ALLOC_STRATEGY};
 use sc_network::NetworkBlock;
 use sc_service::{Configuration, PartialComponents, TFullBackend, TFullClient, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryHandle, TelemetryWorker, TelemetryWorkerHandle};
@@ -66,23 +62,18 @@ use crate::eth::{
 	FrontierBlockImport as TFrontierBlockImport, FrontierPartialComponents,
 };
 
-/// Native executor type.
-pub struct ParachainNativeExecutor;
+#[cfg(not(feature = "runtime-benchmarks"))]
+pub type HostFunctions =
+	(sp_io::SubstrateHostFunctions, cumulus_client_service::storage_proof_size::HostFunctions);
 
-impl sc_executor::NativeExecutionDispatch for ParachainNativeExecutor {
-	type ExtendHostFunctions = ParachainHostFunctions;
+#[cfg(feature = "runtime-benchmarks")]
+pub type HostFunctions = (
+	sp_io::SubstrateHostFunctions,
+	cumulus_client_service::storage_proof_size::HostFunctions,
+	frame_benchmarking::benchmarking::HostFunctions,
+);
 
-	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
-		laos_runtime::api::dispatch(method, data)
-	}
-
-	fn native_version() -> sc_executor::NativeVersion {
-		laos_runtime::native_version()
-	}
-}
-
-#[allow(deprecated)]
-type ParachainExecutor = NativeElseWasmExecutor<ParachainNativeExecutor>;
+pub type ParachainExecutor = WasmExecutor<HostFunctions>;
 
 type ParachainClient = TFullClient<Block, RuntimeApi, ParachainExecutor>;
 
@@ -131,16 +122,13 @@ pub fn new_partial(
 	let heap_pages = config
 		.default_heap_pages
 		.map_or(DEFAULT_HEAP_ALLOC_STRATEGY, |h| HeapAllocStrategy::Static { extra_pages: h as _ });
-
-	let wasm = WasmExecutor::builder()
+	let executor = ParachainExecutor::builder()
 		.with_execution_method(config.wasm_method)
 		.with_onchain_heap_alloc_strategy(heap_pages)
 		.with_offchain_heap_alloc_strategy(heap_pages)
 		.with_max_runtime_instances(config.max_runtime_instances)
 		.with_runtime_cache_size(config.runtime_cache_size)
 		.build();
-
-	let executor = ParachainExecutor::new_with_wasm_executor(wasm);
 
 	let (client, backend, keystore_container, task_manager) =
 		sc_service::new_full_parts::<Block, RuntimeApi, _>(
@@ -571,10 +559,15 @@ fn start_consensus(
 	// NOTE: because we use Aura here explicitly, we can use `CollatorSybilResistance::Resistant`
 	// when starting the network.
 
+	// TODO: Remove the custom tx pool when paritytech/polkadot-sdk#4639 is included in a stable
+	// release. This is a temporary workaround taken from here: https://github.com/frequency-chain/frequency/pull/2196.
+	let custom_transaction_pool =
+		std::sync::Arc::new(crate::custom_tx_pool::CustomPool::new(transaction_pool));
+
 	let proposer_factory = sc_basic_authorship::ProposerFactory::with_proof_recording(
 		task_manager.spawn_handle(),
 		client.clone(),
-		transaction_pool,
+		custom_transaction_pool,
 		prometheus_registry,
 		telemetry.clone(),
 	);

@@ -42,6 +42,7 @@ pub mod system;
 mod timestamp;
 mod transaction_payment;
 mod treasury;
+mod treasury_funding;
 mod utility;
 mod vesting;
 pub(crate) mod xcm_config;

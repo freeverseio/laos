@@ -59,7 +59,7 @@ jobs:
         working-directory: ./e2e-tests
 
 
-  tests:
+  zombie-tests:
       needs: [build, lint]
       runs-on:
         group: laos
@@ -112,17 +112,22 @@ jobs:
           npm install
         working-directory: ./e2e-tests
 
-      - name: Run evm tests
+      - name: Npm build
         run: |
-          npm run build && npm run test-evm
+          npm run build
         working-directory: ./e2e-tests
 
-      - name: Run deploy tests
+      - name: Run evm tests
+        run: |
+          npm run test-evm
+        working-directory: ./e2e-tests
+
+      - name: Run contract deploy test
         run: |
           npm run test-deploy
         working-directory: ./e2e-tests
 
-  xcm-tests:
+  chopsticks-tests:
     needs: [build, lint]
     runs-on:
       group: laos
@@ -153,9 +158,9 @@ jobs:
       - name: Run chopsticks
         run: |
           npx @acala-network/chopsticks xcm \
-            -r chopsticks-configs/paseo.yml \
-            -p chopsticks-configs/laos.yml \
-            -p chopsticks-configs/paseo-ah.yml &
+            -r polkadot \
+            -p laos \
+            -p chopsticks-configs/asset_hub.yml &
           echo "Chopsticks started"
         working-directory: ./e2e-tests
 
@@ -163,7 +168,18 @@ jobs:
         run: |
           timeout 36 sh -c 'until nc -z $0 $1; do echo -n .; sleep 1; done' localhost 8000 
 
+      - name: Npm build
+        run: |
+          npm run build
+        working-directory: ./e2e-tests
+
+      - name: Run upgrade chain test
+        run: |
+          npm run test-upgrade-chain
+        working-directory: ./e2e-tests
+
       - name: Run xcm tests
         run: |
-          npm run build && npm run test-xcm
+          npm run test-xcm
         working-directory: ./e2e-tests
+
