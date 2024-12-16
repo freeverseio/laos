@@ -1,6 +1,7 @@
 use super::collective::CouncilMajority;
 use crate::{
-	weights, AccountId, Balance, Balances, BlockNumber, Permill, Runtime, RuntimeEvent, Treasury,
+	weights, AccountId, Balance, Balances, BlockNumber, Bounties, Permill, Runtime, RuntimeEvent,
+	Treasury,
 };
 use frame_support::{
 	parameter_types,
@@ -45,7 +46,7 @@ impl pallet_treasury::Config for Runtime {
 	type PayoutPeriod = PayoutPeriod;
 	type RejectOrigin = RejectOrigin;
 	type RuntimeEvent = RuntimeEvent;
-	type SpendFunds = ();
+	type SpendFunds = Bounties;
 	type SpendPeriod = SpendPeriod;
 	type SpendOrigin = SpendOrigin;
 	type WeightInfo = weights::pallet_treasury::WeightInfo<Runtime>;
