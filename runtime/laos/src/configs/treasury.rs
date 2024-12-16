@@ -7,7 +7,7 @@ use frame_support::{
 	parameter_types,
 	traits::{
 		tokens::{PayFromAccount, UnityAssetBalanceConversion},
-		EitherOf, EitherOfDiverse,
+		EitherOfDiverse,
 	},
 	PalletId,
 };
@@ -27,10 +27,8 @@ parameter_types! {
 }
 
 type RejectOrigin = EitherOfDiverse<EnsureRoot<AccountId>, CouncilMajority>;
-type SpendOrigin = EitherOf<
-	frame_system::EnsureWithSuccess<frame_system::EnsureRoot<AccountId>, AccountId, MaxBalance>,
-	frame_system::EnsureWithSuccess<CouncilMajority, AccountId, MaxBalance>,
->;
+type SpendOrigin =
+	frame_system::EnsureWithSuccess<frame_system::EnsureRoot<AccountId>, AccountId, MaxBalance>;
 
 impl pallet_treasury::Config for Runtime {
 	type AssetKind = ();
