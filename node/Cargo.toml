@@ -19,6 +19,7 @@ serde_json = { workspace = true, default-features = true }
 laos-runtime = { workspace = true, features = ["std"] }
 
 # Substrate
+frame-benchmarking ={ workspace = true }
 frame-benchmarking-cli = { workspace = true }
 pallet-transaction-payment-rpc = { workspace = true }
 sc-basic-authorship = { workspace = true }
@@ -98,6 +99,7 @@ runtime-benchmarks = [
 	"sc-service/runtime-benchmarks",
 	"polkadot-primitives/runtime-benchmarks",
 	"frame-benchmarking-cli/runtime-benchmarks",
+	"frame-benchmarking/runtime-benchmarks"
 ]
 try-runtime = [
 	"laos-runtime/try-runtime",

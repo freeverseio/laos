@@ -5066,6 +5066,7 @@ dependencies = [
  "fp-dynamic-fee",
  "fp-evm",
  "fp-rpc",
+ "frame-benchmarking",
  "frame-benchmarking-cli",
  "futures",
  "hex-literal",
