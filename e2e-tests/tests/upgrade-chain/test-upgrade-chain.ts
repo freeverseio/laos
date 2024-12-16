@@ -23,25 +23,22 @@ describeWithExistingNode(
 
 			const liveSpecVersion = this.chains.laos.consts.system.version.specVersion.toNumber();
 
-			// The runtime version in LAOS is at most the latest in the repo
+			// The runtime version in LAOS is at smaller than the development version
 			expect(
-				liveSpecVersion <= RUNTIME_SPEC_VERSION,
-				"live runtime version is greater than developed version"
+				liveSpecVersion < RUNTIME_SPEC_VERSION,
+				"developed runtime version is not greater than the live chain version"
 			).to.be.true;
 
-			// Upgrade only if the live spec version isn't the latest in the repo
-			if (liveSpecVersion !== RUNTIME_SPEC_VERSION) {
-				const tx = this.chains.laos.tx.sudo.sudo(this.chains.laos.tx.system.setCode(`0x${wasmFile}`));
+			const tx = this.chains.laos.tx.sudo.sudo(this.chains.laos.tx.system.setCode(`0x${wasmFile}`));
 
-				await sendTxAndWaitForFinalization(this.chains.laos, tx, this.ethereumPairs.alith);
+			await sendTxAndWaitForFinalization(this.chains.laos, tx, this.ethereumPairs.alith);
 
-				// Advance a block so the upgrade takes place
-				await this.wsProvider.send("dev_newBlock", [{ count: 1 }]);
+			// Advance some blocks so the upgrade takes place
+			await this.wsProvider.send("dev_newBlock", [{ count: 5 }]);
 
-				const liveSpecVersion = this.chains.laos.consts.system.version.specVersion.toNumber();
+			const updatedSpecVersion = this.chains.laos.consts.system.version.specVersion.toNumber();
 
-				expect(liveSpecVersion === RUNTIME_SPEC_VERSION, "Runtime version wasn't upgraded").to.be.true;
-			}
+			expect(updatedSpecVersion === RUNTIME_SPEC_VERSION, "Runtime version wasn't upgraded").to.be.true;
 		});
 	},
 	// Override LAOS node ip as this test is run with chopsticks

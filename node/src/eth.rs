@@ -24,8 +24,6 @@ use std::{
 use futures::{future, prelude::*};
 // Substrate
 use sc_client_api::BlockchainEvents;
-#[allow(deprecated)]
-use sc_executor::{NativeElseWasmExecutor, NativeExecutionDispatch};
 
 use sc_network_sync::SyncingService;
 use sc_service::{
@@ -39,6 +37,8 @@ use fc_rpc::{EthTask, StorageOverride};
 pub use fc_rpc_core::types::{FeeHistoryCache, FeeHistoryCacheLimit, FilterPool};
 // Local
 use laos_runtime::opaque::Block;
+
+use crate::service::ParachainExecutor;
 
 pub fn db_config_dir(config: &Configuration) -> PathBuf {
 	config.base_path.config_dir(config.chain_spec.id())
@@ -139,15 +139,11 @@ impl<Api> EthCompatRuntimeApiCollection for Api where
 }
 
 #[allow(clippy::too_many_arguments)]
-#[allow(deprecated)]
-pub async fn spawn_frontier_tasks<RuntimeApi, Executor>(
+pub async fn spawn_frontier_tasks<RuntimeApi>(
 	task_manager: &TaskManager,
-	client: Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
+	client: Arc<TFullClient<Block, RuntimeApi, ParachainExecutor>>,
 	backend: Arc<TFullBackend<Block>>,
-	frontier_backend: fc_db::Backend<
-		Block,
-		TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>,
-	>,
+	frontier_backend: fc_db::Backend<Block, TFullClient<Block, RuntimeApi, ParachainExecutor>>,
 	filter_pool: Option<FilterPool>,
 	overrides: Arc<dyn StorageOverride<Block>>,
 	fee_history_cache: FeeHistoryCache,
@@ -159,13 +155,9 @@ pub async fn spawn_frontier_tasks<RuntimeApi, Executor>(
 		>,
 	>,
 ) where
-	RuntimeApi: ConstructRuntimeApi<
-		Block,
-		TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>,
-	>,
+	RuntimeApi: ConstructRuntimeApi<Block, TFullClient<Block, RuntimeApi, ParachainExecutor>>,
 	RuntimeApi: Send + Sync + 'static,
 	RuntimeApi::RuntimeApi: EthCompatRuntimeApiCollection,
-	Executor: NativeExecutionDispatch + 'static,
 {
 	// Spawn main mapping sync worker background task.
 
