@@ -4,7 +4,7 @@ repository = "https://github.com/freeverseio/laos.git"
 homepage = "https://www.laosfoundation.io"
 authors = ["Freeverse"]
 edition = "2021"
-version = "0.24.92"
+version = "0.24.93"
 
 [workspace]
 resolver = "2"
