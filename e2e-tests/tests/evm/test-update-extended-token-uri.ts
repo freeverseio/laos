@@ -7,14 +7,15 @@ import {
 	GAS_PRICE,
 	SELECTOR_LOG_UPDATED_EXTENDED_UL_WITH_EXTERNAL_URI,
 	SELECTOR_LOG_EXTENDED_UL_WITH_EXTERNAL_URI,
-} from "./config";
-import { describeWithExistingNode } from "./util";
+} from "@utils/constants";
+import { describeWithExistingNode } from "@utils/setups";
+import { waitFinalizedEthereumTx } from "@utils/transactions";
 
 describeWithExistingNode("Frontier RPC (Extend Token URI)", function () {
 	let contract: Contract;
 
 	before(async function () {
-		contract = new this.context.web3.eth.Contract(ASSET_METADATA_EXTENDER_ABI, ASSET_METADATA_EXTENDER_ADDRESS, {
+		contract = new this.web3.eth.Contract(ASSET_METADATA_EXTENDER_ABI, ASSET_METADATA_EXTENDER_ADDRESS, {
 			from: this.ethereumPairs.faith.address,
 			gasPrice: GAS_PRICE,
 		});
@@ -32,14 +33,14 @@ describeWithExistingNode("Frontier RPC (Extend Token URI)", function () {
 	});
 
 	step("extend should return ok", async function () {
-		let nonce = await this.context.web3.eth.getTransactionCount(this.ethereumPairs.faith.address);
 		const estimatedGas = await contract.methods.extendULWithExternalURI(uloc, tokenURI).estimateGas();
 		extendResult = await contract.methods.extendULWithExternalURI(uloc, tokenURI).send({
 			from: this.ethereumPairs.faith.address,
 			gas: estimatedGas,
 			gasPrice: GAS_PRICE,
-			nonce: nonce++,
 		});
+
+		await waitFinalizedEthereumTx(this.web3, this.chains.laos, extendResult.transactionHash);
 		expect(extendResult.status).to.be.eq(true);
 	});
 
@@ -62,7 +63,7 @@ describeWithExistingNode("Frontier RPC (Extend Token URI)", function () {
 			this.ethereumPairs.faith.address
 		);
 		expect(extendResult.events.ExtendedULWithExternalURI.returnValues._universalLocationHash).to.be.eq(
-			this.context.web3.utils.soliditySha3(uloc)
+			this.web3.utils.soliditySha3(uloc)
 		);
 		expect(extendResult.events.ExtendedULWithExternalURI.returnValues._universalLocation).to.be.eq(uloc);
 		expect(extendResult.events.ExtendedULWithExternalURI.returnValues._tokenURI).to.be.eq(tokenURI);
@@ -73,15 +74,15 @@ describeWithExistingNode("Frontier RPC (Extend Token URI)", function () {
 			SELECTOR_LOG_EXTENDED_UL_WITH_EXTERNAL_URI
 		);
 		expect(extendResult.events.ExtendedULWithExternalURI.raw.topics[1]).to.be.eq(
-			this.context.web3.utils.padLeft(this.ethereumPairs.faith.address.toLowerCase(), 64)
+			this.web3.utils.padLeft(this.ethereumPairs.faith.address.toLowerCase(), 64)
 		);
 		expect(extendResult.events.ExtendedULWithExternalURI.raw.topics[2]).to.be.eq(
-			this.context.web3.utils.padLeft(this.context.web3.utils.soliditySha3(uloc), 64)
+			this.web3.utils.padLeft(this.web3.utils.soliditySha3(uloc), 64)
 		);
 
 		// event data
 		expect(extendResult.events.ExtendedULWithExternalURI.raw.data).to.be.eq(
-			this.context.web3.eth.abi.encodeParameters(["string", "string"], [uloc, tokenURI])
+			this.web3.eth.abi.encodeParameters(["string", "string"], [uloc, tokenURI])
 		);
 	});
 });
@@ -95,20 +96,20 @@ describeWithExistingNode("Frontier RPC (Update Extended Token URI)", async funct
 	let updateExtensionResult: any;
 
 	before(async function () {
-		contract = new this.context.web3.eth.Contract(ASSET_METADATA_EXTENDER_ABI, ASSET_METADATA_EXTENDER_ADDRESS, {
+		contract = new this.web3.eth.Contract(ASSET_METADATA_EXTENDER_ABI, ASSET_METADATA_EXTENDER_ADDRESS, {
 			from: this.ethereumPairs.faith.address,
 			gasPrice: GAS_PRICE,
 		});
 
 		// we first create an extension to be updated later
-		let nonce = await this.context.web3.eth.getTransactionCount(this.ethereumPairs.faith.address);
 		const estimatedGas = await contract.methods.extendULWithExternalURI(uloc, tokenURI).estimateGas();
 		const createResult = await contract.methods.extendULWithExternalURI(uloc, tokenURI).send({
 			from: this.ethereumPairs.faith.address,
 			gas: estimatedGas,
 			gasPrice: GAS_PRICE,
-			nonce: nonce++,
 		});
+
+		await waitFinalizedEthereumTx(this.web3, this.chains.laos, createResult.transactionHash);
 		expect(createResult.status).to.be.eq(true);
 	});
 
@@ -125,14 +126,14 @@ describeWithExistingNode("Frontier RPC (Update Extended Token URI)", async funct
 	});
 
 	step("update extension should return ok", async function () {
-		let nonce = await this.context.web3.eth.getTransactionCount(this.ethereumPairs.faith.address);
 		const estimatedGas = await contract.methods.updateExtendedULWithExternalURI(uloc, newTokenURI).estimateGas();
 		updateExtensionResult = await contract.methods.updateExtendedULWithExternalURI(uloc, newTokenURI).send({
 			from: this.ethereumPairs.faith.address,
 			gas: estimatedGas,
 			gasPrice: GAS_PRICE,
-			nonce: nonce++,
 		});
+
+		await waitFinalizedEthereumTx(this.web3, this.chains.laos, updateExtensionResult.transactionHash);
 		expect(updateExtensionResult.status).to.be.eq(true);
 	});
 
@@ -157,7 +158,7 @@ describeWithExistingNode("Frontier RPC (Update Extended Token URI)", async funct
 		);
 		expect(
 			updateExtensionResult.events.UpdatedExtendedULWithExternalURI.returnValues._universalLocationHash
-		).to.be.eq(this.context.web3.utils.soliditySha3(uloc));
+		).to.be.eq(this.web3.utils.soliditySha3(uloc));
 		expect(updateExtensionResult.events.UpdatedExtendedULWithExternalURI.returnValues._universalLocation).to.be.eq(
 			uloc
 		);
@@ -171,15 +172,15 @@ describeWithExistingNode("Frontier RPC (Update Extended Token URI)", async funct
 			SELECTOR_LOG_UPDATED_EXTENDED_UL_WITH_EXTERNAL_URI
 		);
 		expect(updateExtensionResult.events.UpdatedExtendedULWithExternalURI.raw.topics[1]).to.be.eq(
-			this.context.web3.utils.padLeft(this.ethereumPairs.faith.address.toLowerCase(), 64)
+			this.web3.utils.padLeft(this.ethereumPairs.faith.address.toLowerCase(), 64)
 		);
 		expect(updateExtensionResult.events.UpdatedExtendedULWithExternalURI.raw.topics[2]).to.be.eq(
-			this.context.web3.utils.padLeft(this.context.web3.utils.soliditySha3(uloc), 64)
+			this.web3.utils.padLeft(this.web3.utils.soliditySha3(uloc), 64)
 		);
 
 		// event data
 		expect(updateExtensionResult.events.UpdatedExtendedULWithExternalURI.raw.data).to.be.eq(
-			this.context.web3.eth.abi.encodeParameters(["string", "string"], [uloc, newTokenURI])
+			this.web3.eth.abi.encodeParameters(["string", "string"], [uloc, newTokenURI])
 		);
 	});
 });

@@ -5,10 +5,11 @@ on:
   workflow_dispatch:
 
 jobs:
-  e2e-tests:
+  build:
     runs-on:
       group: laos
       labels: ubuntu-16-cores
+
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup
@@ -19,6 +20,66 @@ jobs:
       - name: Build
         run: |
           cargo build --release --locked
+
+      - name: Save LAOS binary
+        uses: actions/upload-artifact@v3
+        with: 
+          name: laos-binary
+          path: ./target/release/laos
+
+      - name: Save LAOS runtime
+        uses: actions/upload-artifact@v3
+        with:
+          name: laos-runtime
+          path: ./target/release/wbuild/laos-runtime/laos_runtime.compact.compressed.wasm
+
+  lint:
+    runs-on:
+      group: laos
+      labels: ubuntu-16-cores
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/cache-npm
+        with:
+          cache-key: npm
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install npm-dependencies
+        run: |
+          npm install
+        working-directory: ./e2e-tests
+
+      - name: Run lint
+        run: |
+          npm run fmt-check
+        working-directory: ./e2e-tests
+
+
+  zombie-tests:
+      needs: [build, lint]
+      runs-on:
+        group: laos
+        labels: ubuntu-16-cores
+
+      steps: 
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/cache-npm
+        with:
+          cache-key: npm 
+
+      - name: Download LAOS binary
+        uses: actions/download-artifact@v3
+        with:
+          name: laos-binary
+          path: ./target/release
+
+      - name: Give executable permissions to LAOS binary
+        run: |
+          chmod +x ./target/release/laos
 
       - name: Download polkadot
         run: |
@@ -34,7 +95,6 @@ jobs:
         run: |
           export ZOMBIENET_RELAYCHAIN_COMMAND=./tmp/polkadot
           export ZOMBIENET_LAOS_COMMAND=./target/release/laos
-          export ZOMBIENET_ASSETHUB_COMMAND=./tmp/polkadot-parachain
           ./zombienet-linux-x64 spawn ./zombienet/native.toml &
           echo "Zombienet started"
 
@@ -47,12 +107,79 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install dependencies
+      - name: Install npm-dependencies
         run: |
           npm install
         working-directory: ./e2e-tests
 
-      - name: Run e2e tests
+      - name: Npm build
         run: |
-          npm run build && npm run test
+          npm run build
         working-directory: ./e2e-tests
+
+      - name: Run evm tests
+        run: |
+          npm run test-evm
+        working-directory: ./e2e-tests
+
+      - name: Run contract deploy test
+        run: |
+          npm run test-deploy
+        working-directory: ./e2e-tests
+
+  chopsticks-tests:
+    needs: [build, lint]
+    runs-on:
+      group: laos
+      labels: ubuntu-16-cores
+
+    steps: 
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/cache-npm
+        with:
+          cache-key: npm
+
+      - name: Download LAOS runtime
+        uses: actions/download-artifact@v3
+        with:
+          name: laos-runtime
+          path: ./target/release/wbuild/laos-runtime
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install npm-dependencies
+        run: |
+          npm install
+        working-directory: ./e2e-tests
+
+      - name: Run chopsticks
+        run: |
+          npx @acala-network/chopsticks xcm \
+            -r polkadot \
+            -p laos \
+            -p chopsticks-configs/asset_hub.yml &
+          echo "Chopsticks started"
+        working-directory: ./e2e-tests
+
+      - name: Wait for chopsticks
+        run: |
+          timeout 36 sh -c 'until nc -z $0 $1; do echo -n .; sleep 1; done' localhost 8000 
+
+      - name: Npm build
+        run: |
+          npm run build
+        working-directory: ./e2e-tests
+
+      - name: Run upgrade chain test
+        run: |
+          npm run test-upgrade-chain
+        working-directory: ./e2e-tests
+
+      - name: Run xcm tests
+        run: |
+          npm run test-xcm
+        working-directory: ./e2e-tests
+

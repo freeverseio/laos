@@ -5046,7 +5046,7 @@ dependencies = [
 
 [[package]]
 name = "laos"
-version = "0.23.90"
+version = "0.24.91"
 dependencies = [
  "clap",
  "color-print",
@@ -5057,7 +5057,9 @@ dependencies = [
  "cumulus-client-consensus-proposer",
  "cumulus-client-service",
  "cumulus-primitives-core",
+ "cumulus-primitives-parachain-inherent",
  "cumulus-relay-chain-interface",
+ "cumulus-test-relay-sproof-builder",
  "fc-api",
  "fc-consensus",
  "fc-db",
@@ -5131,7 +5133,7 @@ dependencies = [
 
 [[package]]
 name = "laos-runtime"
-version = "0.23.90"
+version = "0.24.91"
 dependencies = [
  "assert-json-diff",
  "cumulus-pallet-aura-ext",
@@ -5192,7 +5194,8 @@ dependencies = [
  "pallet-timestamp",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
- "pallet-treasury",
+ "pallet-treasury 36.0.1",
+ "pallet-treasury-funding",
  "pallet-utility",
  "pallet-vesting",
  "pallet-xcm",
@@ -7202,7 +7205,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "log",
- "pallet-treasury",
+ "pallet-treasury 36.0.1 (git+https://github.com/paritytech/polkadot-sdk?branch=stable2407)",
  "parity-scale-codec",
  "scale-info",
  "sp-core",
@@ -7238,7 +7241,7 @@ dependencies = [
  "frame-system",
  "log",
  "pallet-bounties",
- "pallet-treasury",
+ "pallet-treasury 36.0.1 (git+https://github.com/paritytech/polkadot-sdk?branch=stable2407)",
  "parity-scale-codec",
  "scale-info",
  "sp-core",
@@ -8120,7 +8123,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "log",
- "pallet-treasury",
+ "pallet-treasury 36.0.1 (git+https://github.com/paritytech/polkadot-sdk?branch=stable2407)",
  "parity-scale-codec",
  "scale-info",
  "serde",
@@ -8175,6 +8178,26 @@ dependencies = [
 [[package]]
 name = "pallet-treasury"
 version = "36.0.1"
+dependencies = [
+ "docify",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "impl-trait-for-tuples",
+ "log",
+ "pallet-balances",
+ "pallet-utility",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+]
+
+[[package]]
+name = "pallet-treasury"
+version = "36.0.1"
 source = "git+https://github.com/paritytech/polkadot-sdk?branch=stable2407#47155f85a877e8c26b2249e31cdb4deb485b4067"
 dependencies = [
  "docify",
@@ -8187,6 +8210,24 @@ dependencies = [
  "scale-info",
  "serde",
  "sp-core",
+ "sp-runtime",
+]
+
+[[package]]
+name = "pallet-treasury-funding"
+version = "0.1.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "pallet-balances",
+ "pallet-treasury 36.0.1",
+ "pallet-vesting",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
  "sp-runtime",
 ]
 
@@ -9449,7 +9490,7 @@ dependencies = [
  "pallet-staking-reward-fn",
  "pallet-timestamp",
  "pallet-transaction-payment",
- "pallet-treasury",
+ "pallet-treasury 36.0.1 (git+https://github.com/paritytech/polkadot-sdk?branch=stable2407)",
  "pallet-vesting",
  "parity-scale-codec",
  "polkadot-primitives",
@@ -10730,7 +10771,7 @@ dependencies = [
  "pallet-tips",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
- "pallet-treasury",
+ "pallet-treasury 36.0.1 (git+https://github.com/paritytech/polkadot-sdk?branch=stable2407)",
  "pallet-utility",
  "pallet-vesting",
  "pallet-whitelist",
@@ -15551,7 +15592,7 @@ dependencies = [
  "pallet-timestamp",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
- "pallet-treasury",
+ "pallet-treasury 36.0.1 (git+https://github.com/paritytech/polkadot-sdk?branch=stable2407)",
  "pallet-utility",
  "pallet-vesting",
  "pallet-whitelist",

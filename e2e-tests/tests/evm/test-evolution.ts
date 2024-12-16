@@ -1,9 +1,11 @@
-import { createCollection, describeWithExistingNode, slotAndOwnerToTokenId } from "./util";
 import {
 	SELECTOR_LOG_EVOLVED_WITH_EXTERNAL_TOKEN_URI,
 	SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI,
 	SELECTOR_LOG_OWNERSHIP_TRANSFERRED,
-} from "./config";
+} from "@utils/constants";
+import { describeWithExistingNode } from "@utils/setups";
+import { createCollection, slotAndOwnerToTokenId } from "@utils/helpers";
+import { waitFinalizedEthereumTx } from "@utils/transactions";
 import { expect } from "chai";
 import Contract from "web3-eth-contract";
 import BN from "bn.js";
@@ -13,7 +15,7 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", function () {
 	let collectionContract: Contract;
 
 	beforeEach(async function () {
-		collectionContract = await createCollection(this.context);
+		collectionContract = await createCollection(this.web3, this.chains.laos, this.ethereumPairs.faith.address);
 	});
 
 	step("when collection does not exist token uri should fail", async function () {
@@ -34,11 +36,12 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", function () {
 		const to = this.ethereumPairs.faith.address;
 		const tokenURI = "https://example.com";
 
-		let nonce = await this.context.web3.eth.getTransactionCount(this.ethereumPairs.faith.address);
 		const estimatedGas = await collectionContract.methods.mintWithExternalURI(to, slot, tokenURI).estimateGas();
 		const result = await collectionContract.methods
 			.mintWithExternalURI(to, slot, tokenURI)
-			.send({ from: this.ethereumPairs.faith.address, gas: estimatedGas, nonce: nonce++ });
+			.send({ from: this.ethereumPairs.faith.address, gas: estimatedGas });
+
+		await waitFinalizedEthereumTx(this.web3, this.chains.laos, result.transactionHash);
 		expect(result.status).to.be.eq(true);
 
 		const tokenId = result.events.MintedWithExternalURI.returnValues._tokenId;
@@ -65,6 +68,8 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", function () {
 		const result = await collectionContract.methods
 			.mintWithExternalURI(to, slot, tokenURI)
 			.send({ from: this.ethereumPairs.faith.address, gas: estimatedGas });
+
+		await waitFinalizedEthereumTx(this.web3, this.chains.laos, result.transactionHash);
 		expect(result.status).to.be.eq(true);
 
 		expect(Object.keys(result.events).length).to.be.eq(1);
@@ -81,15 +86,12 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", function () {
 		expect(result.events.MintedWithExternalURI.raw.topics.length).to.be.eq(2);
 		expect(result.events.MintedWithExternalURI.raw.topics[0]).to.be.eq(SELECTOR_LOG_MINTED_WITH_EXTERNAL_TOKEN_URI);
 		expect(result.events.MintedWithExternalURI.raw.topics[1]).to.be.eq(
-			this.context.web3.utils.padLeft(this.ethereumPairs.faith.address.toLowerCase(), 64)
+			this.web3.utils.padLeft(this.ethereumPairs.faith.address.toLowerCase(), 64)
 		);
 
 		// event data
 		expect(result.events.MintedWithExternalURI.raw.data).to.be.eq(
-			this.context.web3.eth.abi.encodeParameters(
-				["uint96", "uint256", "string"],
-				[slot, tokenIdDecimal, tokenURI]
-			)
+			this.web3.eth.abi.encodeParameters(["uint96", "uint256", "string"], [slot, tokenIdDecimal, tokenURI])
 		);
 	});
 
@@ -105,6 +107,9 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", function () {
 		const mintingResult = await collectionContract.methods
 			.mintWithExternalURI(to, slot, tokenURI)
 			.send({ from: this.ethereumPairs.faith.address, gas: estimatedGas });
+
+		await waitFinalizedEthereumTx(this.web3, this.chains.laos, mintingResult.transactionHash);
+
 		expect(mintingResult.status).to.be.eq(true);
 
 		estimatedGas = await collectionContract.methods
@@ -113,6 +118,8 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", function () {
 		const evolvingResult = await collectionContract.methods
 			.evolveWithExternalURI(tokenIdDecimal, newTokenURI)
 			.send({ from: this.ethereumPairs.faith.address, gas: estimatedGas });
+
+		await waitFinalizedEthereumTx(this.web3, this.chains.laos, evolvingResult.transactionHash);
 		expect(evolvingResult.status).to.be.eq(true);
 
 		const got = await collectionContract.methods.tokenURI(tokenIdDecimal).call();
@@ -131,6 +138,8 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", function () {
 		const mintingResult = await collectionContract.methods
 			.mintWithExternalURI(to, slot, tokenURI)
 			.send({ from: this.ethereumPairs.faith.address, gas: estimatedGas });
+
+		await waitFinalizedEthereumTx(this.web3, this.chains.laos, mintingResult.transactionHash);
 		expect(mintingResult.status).to.be.eq(true);
 
 		estimatedGas = await collectionContract.methods
@@ -139,6 +148,8 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", function () {
 		const evolvingResult = await collectionContract.methods
 			.evolveWithExternalURI(tokenIdDecimal, newTokenURI)
 			.send({ from: this.ethereumPairs.faith.address, gas: estimatedGas });
+
+		await waitFinalizedEthereumTx(this.web3, this.chains.laos, evolvingResult.transactionHash);
 		expect(evolvingResult.status).to.be.eq(true);
 
 		expect(Object.keys(evolvingResult.events).length).to.be.eq(1);
@@ -156,7 +167,7 @@ describeWithExistingNode("Frontier RPC (Mint and Evolve Assets)", function () {
 
 		// event data
 		expect(evolvingResult.events.EvolvedWithExternalURI.raw.data).to.be.eq(
-			this.context.web3.eth.abi.encodeParameters(["string"], [newTokenURI])
+			this.web3.eth.abi.encodeParameters(["string"], [newTokenURI])
 		);
 	});
 });
@@ -165,7 +176,7 @@ describeWithExistingNode("Frontier RPC (Transfer Ownership)", function () {
 	let collectionContract: Contract;
 
 	before(async function () {
-		collectionContract = await createCollection(this.context);
+		collectionContract = await createCollection(this.web3, this.chains.laos, this.ethereumPairs.faith.address);
 	});
 
 	step("when is transferred owner should change and emit an event", async function () {
@@ -176,6 +187,8 @@ describeWithExistingNode("Frontier RPC (Transfer Ownership)", function () {
 		const tranferringResult = await collectionContract.methods
 			.transferOwnership(newOwner)
 			.send({ from: this.ethereumPairs.faith.address, gas: estimatedGas });
+
+		await waitFinalizedEthereumTx(this.web3, this.chains.laos, tranferringResult.transactionHash);
 		expect(tranferringResult.status).to.be.eq(true);
 		expect(await collectionContract.methods.owner().call()).to.be.eq(newOwner);
 
@@ -193,10 +206,10 @@ describeWithExistingNode("Frontier RPC (Transfer Ownership)", function () {
 			SELECTOR_LOG_OWNERSHIP_TRANSFERRED
 		);
 		expect(tranferringResult.events.OwnershipTransferred.raw.topics[1]).to.be.eq(
-			this.context.web3.utils.padLeft(this.ethereumPairs.faith.address.toLowerCase(), 64)
+			this.web3.utils.padLeft(this.ethereumPairs.faith.address.toLowerCase(), 64)
 		);
 		expect(tranferringResult.events.OwnershipTransferred.raw.topics[2]).to.be.eq(
-			this.context.web3.utils.padLeft(newOwner.toLowerCase(), 64)
+			this.web3.utils.padLeft(newOwner.toLowerCase(), 64)
 		);
 		// event data
 		expect(tranferringResult.events.OwnershipTransferred.raw.data).to.be.eq("0x");

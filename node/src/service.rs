@@ -507,10 +507,15 @@ fn start_consensus(
 	#[cfg(feature = "async-backing")]
 	use cumulus_client_consensus_aura::collators::lookahead::{self as aura, Params};
 
+	// TODO: Remove the custom tx pool when paritytech/polkadot-sdk#4639 is included in a stable
+	// release. This is a temporary workaround taken from here: https://github.com/frequency-chain/frequency/pull/2196.
+	let custom_transaction_pool =
+		std::sync::Arc::new(crate::custom_tx_pool::CustomPool::new(transaction_pool));
+
 	let proposer_factory = sc_basic_authorship::ProposerFactory::with_proof_recording(
 		task_manager.spawn_handle(),
 		client.clone(),
-		transaction_pool,
+		custom_transaction_pool,
 		prometheus_registry,
 		telemetry.clone(),
 	);

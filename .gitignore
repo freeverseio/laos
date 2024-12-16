@@ -23,3 +23,8 @@ frontier-test-tmp
 build/
 
 tmp/
+
+# chopsticks db
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal

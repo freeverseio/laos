@@ -27,28 +27,17 @@ force_decorator = "generic-evm"
   ws_port = 9999
   command = "{{ZOMBIENET_LAOS_COMMAND}}"
   validator = true
-  args = ["--log=xcm=trace"]
-  
+  args = ["--log=xcm=trace,aura=trace,txpool=trace,basic-authorship=trace"]
+
   [[parachains.collators]]
   name = "laos1"
   command = "{{ZOMBIENET_LAOS_COMMAND}}"
   validator = true
-  args = ["--log=xcm=trace"]
+  args = ["--log=xcm=trace,aura=trace,txpool=trace,basic-authorship=trace"]
 
     [[parachains.collators]]
   name = "laos2"
   command = "{{ZOMBIENET_LAOS_COMMAND}}"
   validator = true
-  args = ["--log=xcm=trace"]
+  args = ["--log=xcm=trace,aura=trace,txpool=trace,basic-authorship=trace"]
 
-[[parachains]]
-id = 1000
-cumulus_based = true
-chain = "asset-hub-rococo-local"
-
-  [[parachains.collators]]
-  name = "asset-hub"
-  validator = true
-  ws_port = 9950
-  command = "{{ZOMBIENET_ASSETHUB_COMMAND}}"
-  args = ["--log=xcm=trace,pallet-assets=trace"]

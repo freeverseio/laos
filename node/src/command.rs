@@ -39,8 +39,8 @@ fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 		"laos-sigma" => Box::new(chain_spec::laos::ChainSpec::from_json_bytes(
 			&include_bytes!("../../specs/laos-sigma.raw.json")[..],
 		)?),
-		"laos-mercury" => Box::new(chain_spec::laos::ChainSpec::from_json_bytes(
-			&include_bytes!("../../specs/laos-mercury.raw.json")[..],
+		"laos-venus" => Box::new(chain_spec::laos::ChainSpec::from_json_bytes(
+			&include_bytes!("../../specs/laos-venus.raw.json")[..],
 		)?),
 		"dev" => Box::new(chain_spec::laos::development_config()),
 		"local" => Box::new(chain_spec::laos::local_testnet_config()),
