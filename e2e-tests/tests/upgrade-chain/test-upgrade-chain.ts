@@ -42,11 +42,14 @@ describeWithExistingNode(
 
 			// If LAOS cannot be upgraded cause the cooldown is active (last upgrade's cooldown hasn't beeen completed)
 			// we check that the upgrade is rejected. Otherwise, the upgrade goes on
-			if (
-				upgradeCooldowns
-					.entries()
-					.some(([_index, [paraID, _blockNumber]]) => paraID.toNumber() === LAOS_PARA_ID)
-			) {
+			let upgradeForbidden = false;
+			upgradeCooldowns.entries().forEach((entrie) => {
+				const paraID = entrie[1][0];
+				if (paraID.toNumber() === LAOS_PARA_ID) {
+					upgradeForbidden = true;
+				}
+			});
+			if (upgradeForbidden) {
 				const finalizedBlock = await sendTxAndWaitForFinalization(
 					this.chains.laos,
 					tx,
