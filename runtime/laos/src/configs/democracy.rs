@@ -76,7 +76,7 @@ impl pallet_democracy::Config for Runtime {
 	type SubmitOrigin = EnsureSigned<AccountId>;
 	// Any single technical committee member may veto a coming council proposal, however they can
 	// only do it once and it lasts only for the cool-off period.
-	type VetoOrigin = pallet_collective::EnsureMember<AccountId, TechnicalCommittee>;
+	type VetoOrigin = (); // pallet_collective::EnsureMember<AccountId, TechnicalCommittee>;
 	type VoteLockingPeriod = EnactmentPeriod;
 	/// How often (in blocks) to check for new votes.
 	type VotingPeriod = VotingPeriod;
