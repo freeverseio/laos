@@ -100,38 +100,6 @@ mod tests {
 	// TODO
 	#[ignore]
 	#[test]
-	fn veto_origin_check() {
-		let alice = AccountId::from_str(ALICE).unwrap();
-
-		ExtBuilder::default()
-			.with_balances(vec![(alice, 1000 * UNIT)])
-			.build()
-			.execute_with(|| {
-				// it's an error to try to create a veto origin with an account that is not a member
-				// of the technical committee
-				<Runtime as pallet_democracy::Config>::VetoOrigin::try_origin(
-					RuntimeOrigin::signed(alice),
-				)
-				.err()
-				.unwrap();
-
-				// add alice to technical committee
-				pallet_membership::Pallet::<Runtime, pallet_membership::Instance2>::add_member(
-					RuntimeOrigin::root(),
-					alice,
-				)
-				.unwrap();
-
-				// now it's ok to create a veto origin with alice
-				assert_ok!(<Runtime as pallet_democracy::Config>::VetoOrigin::try_origin(
-					RuntimeOrigin::signed(alice)
-				));
-			});
-	}
-
-	// TODO
-	#[ignore]
-	#[test]
 	fn can_veto_proposal() {
 		let alice = AccountId::from_str(ALICE).unwrap();
 		let bob = AccountId::from_str(BOB).unwrap();
