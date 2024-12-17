@@ -91,7 +91,41 @@ mod tests {
 		AccountId, RuntimeCall, RuntimeOrigin,
 	};
 	use core::str::FromStr;
-	use frame_support::{assert_noop, assert_ok, error::BadOrigin, traits::StorePreimage};
+	use frame_support::{
+		assert_noop, assert_ok,
+		error::BadOrigin,
+		traits::{EnsureOrigin, StorePreimage},
+	};
+
+	#[test]
+	fn veto_origin_check() {
+		let alice = AccountId::from_str(ALICE).unwrap();
+
+		ExtBuilder::default()
+			.with_balances(vec![(alice, 1000 * UNIT)])
+			.build()
+			.execute_with(|| {
+				// it's an error to try to create a veto origin with an account that is not a member
+				// of the technical committee
+				<Runtime as pallet_democracy::Config>::VetoOrigin::try_origin(
+					RuntimeOrigin::signed(alice),
+				)
+				.err()
+				.unwrap();
+
+				// add alice to technical committee
+				pallet_membership::Pallet::<Runtime, pallet_membership::Instance2>::add_member(
+					RuntimeOrigin::root(),
+					alice,
+				)
+				.unwrap();
+
+				// now it's ok to create a veto origin with alice
+				assert_ok!(<Runtime as pallet_democracy::Config>::VetoOrigin::try_origin(
+					RuntimeOrigin::signed(alice)
+				));
+			});
+	}
 
 	#[test]
 	fn can_veto_proposal() {
