@@ -4,7 +4,7 @@
 //! THIS FILE WAS AUTO-GENERATED USING THE SUBSTRATE BENCHMARK CLI VERSION 42.0.1
 //! DATE: 2024-12-17, STEPS: `50`, REPEAT: `20`, LOW RANGE: `[]`, HIGH RANGE: `[]`
 //! WORST CASE MAP SIZE: `1000000`
-//! HOSTNAME: `giove`, CPU: `AMD Ryzen 7 5700G with Radeon Graphics`
+//! HOSTNAME: `titan`, CPU: `12th Gen Intel(R) Core(TM) i7-1260P`
 //! WASM-EXECUTION: `Compiled`, CHAIN: `Some("dev")`, DB CACHE: 1024
 
 // Executed Command:
@@ -35,18 +35,18 @@ impl<T: frame_system::Config> pallet_utility::WeightInfo for WeightInfo<T> {
 		// Proof Size summary in bytes:
 		//  Measured:  `0`
 		//  Estimated: `0`
-		// Minimum execution time: 6_565_000 picoseconds.
-		Weight::from_parts(21_662_880, 0)
+		// Minimum execution time: 3_221_000 picoseconds.
+		Weight::from_parts(24_821_614, 0)
 			.saturating_add(Weight::from_parts(0, 0))
-			// Standard Error: 1_357
-			.saturating_add(Weight::from_parts(3_040_184, 0).saturating_mul(c.into()))
+			// Standard Error: 1_960
+			.saturating_add(Weight::from_parts(2_520_610, 0).saturating_mul(c.into()))
 	}
 	fn as_derivative() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `0`
 		//  Estimated: `0`
-		// Minimum execution time: 6_146_000 picoseconds.
-		Weight::from_parts(6_635_000, 0)
+		// Minimum execution time: 3_618_000 picoseconds.
+		Weight::from_parts(3_758_000, 0)
 			.saturating_add(Weight::from_parts(0, 0))
 	}
 	/// The range of component `c` is `[0, 1000]`.
@@ -54,18 +54,18 @@ impl<T: frame_system::Config> pallet_utility::WeightInfo for WeightInfo<T> {
 		// Proof Size summary in bytes:
 		//  Measured:  `0`
 		//  Estimated: `0`
-		// Minimum execution time: 6_076_000 picoseconds.
-		Weight::from_parts(10_152_020, 0)
+		// Minimum execution time: 3_354_000 picoseconds.
+		Weight::from_parts(14_452_021, 0)
 			.saturating_add(Weight::from_parts(0, 0))
-			// Standard Error: 1_544
-			.saturating_add(Weight::from_parts(3_405_579, 0).saturating_mul(c.into()))
+			// Standard Error: 2_094
+			.saturating_add(Weight::from_parts(2_720_377, 0).saturating_mul(c.into()))
 	}
 	fn dispatch_as() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `0`
 		//  Estimated: `0`
-		// Minimum execution time: 8_102_000 picoseconds.
-		Weight::from_parts(8_660_000, 0)
+		// Minimum execution time: 4_753_000 picoseconds.
+		Weight::from_parts(5_026_000, 0)
 			.saturating_add(Weight::from_parts(0, 0))
 	}
 	/// The range of component `c` is `[0, 1000]`.
@@ -73,10 +73,10 @@ impl<T: frame_system::Config> pallet_utility::WeightInfo for WeightInfo<T> {
 		// Proof Size summary in bytes:
 		//  Measured:  `0`
 		//  Estimated: `0`
-		// Minimum execution time: 6_146_000 picoseconds.
-		Weight::from_parts(14_124_768, 0)
+		// Minimum execution time: 3_316_000 picoseconds.
+		Weight::from_parts(939_101, 0)
 			.saturating_add(Weight::from_parts(0, 0))
-			// Standard Error: 1_212
-			.saturating_add(Weight::from_parts(3_040_736, 0).saturating_mul(c.into()))
+			// Standard Error: 3_575
+			.saturating_add(Weight::from_parts(2_489_051, 0).saturating_mul(c.into()))
 	}
 }

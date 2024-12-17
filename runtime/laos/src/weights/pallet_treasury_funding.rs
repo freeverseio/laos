@@ -4,7 +4,7 @@
 //! THIS FILE WAS AUTO-GENERATED USING THE SUBSTRATE BENCHMARK CLI VERSION 42.0.1
 //! DATE: 2024-12-17, STEPS: `50`, REPEAT: `20`, LOW RANGE: `[]`, HIGH RANGE: `[]`
 //! WORST CASE MAP SIZE: `1000000`
-//! HOSTNAME: `giove`, CPU: `AMD Ryzen 7 5700G with Radeon Graphics`
+//! HOSTNAME: `titan`, CPU: `12th Gen Intel(R) Core(TM) i7-1260P`
 //! WASM-EXECUTION: `Compiled`, CHAIN: `Some("dev")`, DB CACHE: 1024
 
 // Executed Command:
@@ -42,8 +42,8 @@ impl<T: frame_system::Config> pallet_treasury_funding::WeightInfo for WeightInfo
 		// Proof Size summary in bytes:
 		//  Measured:  `499`
 		//  Estimated: `6172`
-		// Minimum execution time: 88_209_000 picoseconds.
-		Weight::from_parts(90_095_000, 0)
+		// Minimum execution time: 69_467_000 picoseconds.
+		Weight::from_parts(71_331_000, 0)
 			.saturating_add(Weight::from_parts(0, 6172))
 			.saturating_add(T::DbWeight::get().reads(5))
 			.saturating_add(T::DbWeight::get().writes(4))

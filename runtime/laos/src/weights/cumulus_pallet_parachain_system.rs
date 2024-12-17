@@ -4,7 +4,7 @@
 //! THIS FILE WAS AUTO-GENERATED USING THE SUBSTRATE BENCHMARK CLI VERSION 42.0.1
 //! DATE: 2024-12-17, STEPS: `50`, REPEAT: `20`, LOW RANGE: `[]`, HIGH RANGE: `[]`
 //! WORST CASE MAP SIZE: `1000000`
-//! HOSTNAME: `giove`, CPU: `AMD Ryzen 7 5700G with Radeon Graphics`
+//! HOSTNAME: `titan`, CPU: `12th Gen Intel(R) Core(TM) i7-1260P`
 //! WASM-EXECUTION: `Compiled`, CHAIN: `Some("dev")`, DB CACHE: 1024
 
 // Executed Command:
@@ -45,11 +45,11 @@ impl<T: frame_system::Config> cumulus_pallet_parachain_system::WeightInfo for We
 		// Proof Size summary in bytes:
 		//  Measured:  `12`
 		//  Estimated: `3517`
-		// Minimum execution time: 3_353_000 picoseconds.
-		Weight::from_parts(3_772_000, 0)
+		// Minimum execution time: 1_754_000 picoseconds.
+		Weight::from_parts(1_789_000, 0)
 			.saturating_add(Weight::from_parts(0, 3517))
-			// Standard Error: 49_064
-			.saturating_add(Weight::from_parts(173_072_566, 0).saturating_mul(n.into()))
+			// Standard Error: 86_894
+			.saturating_add(Weight::from_parts(138_221_471, 0).saturating_mul(n.into()))
 			.saturating_add(T::DbWeight::get().reads(3))
 			.saturating_add(T::DbWeight::get().writes(4))
 			.saturating_add(T::DbWeight::get().writes((1_u64).saturating_mul(n.into())))

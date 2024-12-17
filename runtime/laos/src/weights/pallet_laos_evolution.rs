@@ -4,7 +4,7 @@
 //! THIS FILE WAS AUTO-GENERATED USING THE SUBSTRATE BENCHMARK CLI VERSION 42.0.1
 //! DATE: 2024-12-17, STEPS: `50`, REPEAT: `20`, LOW RANGE: `[]`, HIGH RANGE: `[]`
 //! WORST CASE MAP SIZE: `1000000`
-//! HOSTNAME: `giove`, CPU: `AMD Ryzen 7 5700G with Radeon Graphics`
+//! HOSTNAME: `titan`, CPU: `12th Gen Intel(R) Core(TM) i7-1260P`
 //! WASM-EXECUTION: `Compiled`, CHAIN: `Some("dev")`, DB CACHE: 1024
 
 // Executed Command:
@@ -34,8 +34,8 @@ impl<T: frame_system::Config> pallet_laos_evolution::WeightInfo for WeightInfo<T
 		// Proof Size summary in bytes:
 		//  Measured:  `0`
 		//  Estimated: `0`
-		// Minimum execution time: 1_397_000 picoseconds.
-		Weight::from_parts(1_466_000, 0)
+		// Minimum execution time: 118_000 picoseconds.
+		Weight::from_parts(138_000, 0)
 			.saturating_add(Weight::from_parts(0, 0))
 	}
 	/// Storage: `LaosEvolution::CollectionCounter` (r:1 w:1)
@@ -54,8 +54,8 @@ impl<T: frame_system::Config> pallet_laos_evolution::WeightInfo for WeightInfo<T
 		// Proof Size summary in bytes:
 		//  Measured:  `442`
 		//  Estimated: `3907`
-		// Minimum execution time: 25_074_000 picoseconds.
-		Weight::from_parts(25_702_000, 0)
+		// Minimum execution time: 17_602_000 picoseconds.
+		Weight::from_parts(18_756_000, 0)
 			.saturating_add(Weight::from_parts(0, 3907))
 			.saturating_add(T::DbWeight::get().reads(4))
 			.saturating_add(T::DbWeight::get().writes(5))
@@ -69,11 +69,11 @@ impl<T: frame_system::Config> pallet_laos_evolution::WeightInfo for WeightInfo<T
 		// Proof Size summary in bytes:
 		//  Measured:  `173`
 		//  Estimated: `4051`
-		// Minimum execution time: 18_159_000 picoseconds.
-		Weight::from_parts(20_182_183, 0)
+		// Minimum execution time: 12_708_000 picoseconds.
+		Weight::from_parts(14_357_623, 0)
 			.saturating_add(Weight::from_parts(0, 4051))
-			// Standard Error: 100
-			.saturating_add(Weight::from_parts(1_556, 0).saturating_mul(s.into()))
+			// Standard Error: 86
+			.saturating_add(Weight::from_parts(1_070, 0).saturating_mul(s.into()))
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
@@ -86,11 +86,11 @@ impl<T: frame_system::Config> pallet_laos_evolution::WeightInfo for WeightInfo<T
 		// Proof Size summary in bytes:
 		//  Measured:  `298`
 		//  Estimated: `4051`
-		// Minimum execution time: 18_020_000 picoseconds.
-		Weight::from_parts(19_489_579, 0)
+		// Minimum execution time: 12_882_000 picoseconds.
+		Weight::from_parts(14_031_958, 0)
 			.saturating_add(Weight::from_parts(0, 4051))
-			// Standard Error: 72
-			.saturating_add(Weight::from_parts(1_426, 0).saturating_mul(s.into()))
+			// Standard Error: 74
+			.saturating_add(Weight::from_parts(1_282, 0).saturating_mul(s.into()))
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
@@ -100,8 +100,8 @@ impl<T: frame_system::Config> pallet_laos_evolution::WeightInfo for WeightInfo<T
 		// Proof Size summary in bytes:
 		//  Measured:  `173`
 		//  Estimated: `3509`
-		// Minimum execution time: 9_848_000 picoseconds.
-		Weight::from_parts(10_127_000, 0)
+		// Minimum execution time: 6_471_000 picoseconds.
+		Weight::from_parts(6_821_000, 0)
 			.saturating_add(Weight::from_parts(0, 3509))
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
@@ -112,8 +112,8 @@ impl<T: frame_system::Config> pallet_laos_evolution::WeightInfo for WeightInfo<T
 		// Proof Size summary in bytes:
 		//  Measured:  `173`
 		//  Estimated: `3509`
-		// Minimum execution time: 6_635_000 picoseconds.
-		Weight::from_parts(7_124_000, 0)
+		// Minimum execution time: 4_280_000 picoseconds.
+		Weight::from_parts(4_609_000, 0)
 			.saturating_add(Weight::from_parts(0, 3509))
 			.saturating_add(T::DbWeight::get().reads(1))
 	}
@@ -123,8 +123,8 @@ impl<T: frame_system::Config> pallet_laos_evolution::WeightInfo for WeightInfo<T
 		// Proof Size summary in bytes:
 		//  Measured:  `340`
 		//  Estimated: `4051`
-		// Minimum execution time: 8_591_000 picoseconds.
-		Weight::from_parts(9_010_000, 0)
+		// Minimum execution time: 6_055_000 picoseconds.
+		Weight::from_parts(6_213_000, 0)
 			.saturating_add(Weight::from_parts(0, 4051))
 			.saturating_add(T::DbWeight::get().reads(1))
 	}
@@ -136,8 +136,8 @@ impl<T: frame_system::Config> pallet_laos_evolution::WeightInfo for WeightInfo<T
 		// Proof Size summary in bytes:
 		//  Measured:  `76`
 		//  Estimated: `1493`
-		// Minimum execution time: 8_172_000 picoseconds.
-		Weight::from_parts(8_591_000, 0)
+		// Minimum execution time: 5_156_000 picoseconds.
+		Weight::from_parts(5_523_000, 0)
 			.saturating_add(Weight::from_parts(0, 1493))
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(2))
@@ -151,11 +151,11 @@ impl<T: frame_system::Config> pallet_laos_evolution::WeightInfo for WeightInfo<T
 		// Proof Size summary in bytes:
 		//  Measured:  `173`
 		//  Estimated: `4051`
-		// Minimum execution time: 18_229_000 picoseconds.
-		Weight::from_parts(19_380_484, 0)
+		// Minimum execution time: 12_197_000 picoseconds.
+		Weight::from_parts(13_373_908, 0)
 			.saturating_add(Weight::from_parts(0, 4051))
-			// Standard Error: 74
-			.saturating_add(Weight::from_parts(2_148, 0).saturating_mul(s.into()))
+			// Standard Error: 91
+			.saturating_add(Weight::from_parts(2_159, 0).saturating_mul(s.into()))
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
@@ -168,11 +168,11 @@ impl<T: frame_system::Config> pallet_laos_evolution::WeightInfo for WeightInfo<T
 		// Proof Size summary in bytes:
 		//  Measured:  `298`
 		//  Estimated: `4051`
-		// Minimum execution time: 17_041_000 picoseconds.
-		Weight::from_parts(17_862_990, 0)
+		// Minimum execution time: 11_337_000 picoseconds.
+		Weight::from_parts(12_449_345, 0)
 			.saturating_add(Weight::from_parts(0, 4051))
-			// Standard Error: 67
-			.saturating_add(Weight::from_parts(920, 0).saturating_mul(s.into()))
+			// Standard Error: 75
+			.saturating_add(Weight::from_parts(1_577, 0).saturating_mul(s.into()))
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
@@ -182,8 +182,8 @@ impl<T: frame_system::Config> pallet_laos_evolution::WeightInfo for WeightInfo<T
 		// Proof Size summary in bytes:
 		//  Measured:  `173`
 		//  Estimated: `3509`
-		// Minimum execution time: 9_428_000 picoseconds.
-		Weight::from_parts(10_057_000, 0)
+		// Minimum execution time: 6_221_000 picoseconds.
+		Weight::from_parts(6_438_000, 0)
 			.saturating_add(Weight::from_parts(0, 3509))
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
