@@ -43,7 +43,7 @@ describeWithExistingNode(
 			// If LAOS cannot be upgraded cause the cooldown is active (last upgrade's cooldown hasn't beeen completed)
 			// we check that the upgrade is rejected. Otherwise, the upgrade goes on
 			if (
-				Array.from(upgradeCooldowns.entries()).find(
+				upgradeCooldowns.entries().some(
 					([_index, [paraID, _blockNumber]]) => paraID.toNumber() === LAOS_PARA_ID
 				)
 			) {
