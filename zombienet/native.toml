@@ -23,21 +23,10 @@ chain = "local"
 force_decorator = "generic-evm"
 
   [[parachains.collators]]
-  name = "laos0"
+  name = "laos"
   ws_port = 9999
   command = "{{ZOMBIENET_LAOS_COMMAND}}"
   validator = true
   args = ["--log=xcm=trace,aura=trace,txpool=trace,basic-authorship=trace"]
 
-  [[parachains.collators]]
-  name = "laos1"
-  command = "{{ZOMBIENET_LAOS_COMMAND}}"
-  validator = true
-  args = ["--log=xcm=trace,aura=trace,txpool=trace,basic-authorship=trace"]
-
-    [[parachains.collators]]
-  name = "laos2"
-  command = "{{ZOMBIENET_LAOS_COMMAND}}"
-  validator = true
-  args = ["--log=xcm=trace,aura=trace,txpool=trace,basic-authorship=trace"]
 
