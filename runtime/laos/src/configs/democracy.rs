@@ -168,6 +168,7 @@ mod tests {
 						proposal_length_bound
 					)
 				);
+				assert!(pallet_democracy::pallet::NextExternal::<Runtime>::get().is_none());
 
 				// the same preimage cannot be proposed again as we're still in the cooloff period
 				assert_noop!(
@@ -178,22 +179,23 @@ mod tests {
 					pallet_democracy::Error::<Runtime>::ProposalBlacklisted
 				);
 
-				// retrieving the block until which the proposal is blacklisted
+				// retrieving the block number at which the proposal is no longer blacklisted
 				let cooloff_block =
 					pallet_democracy::pallet::Blacklist::<Runtime>::get(preimage_hash)
 						.map(|item| item.0)
 						.unwrap();
 
-				// the same preimage can be re-proposed as the cooloff period is over
+				// the same preimage can be proposed again as the cooloff period is over
 				frame_system::Pallet::<Runtime>::set_block_number(cooloff_block);
 				assert_ok!(pallet_democracy::Pallet::<Runtime>::external_propose(
 					council_origin.clone().into(),
 					preimage
 				));
+				assert!(pallet_democracy::pallet::NextExternal::<Runtime>::get().is_some());
 
 				// alice cannot veto the external proposal as she already vetoed it.
-				// the call executes successfully, but the dispatch of `veto_external` produces the
-				// `AlreadyVetoed` error
+				// NOTE: the call executes successfully, but the dispatch of `veto_external`
+				// emits `AlreadyVetoed`
 				assert_ok!(
 					pallet_collective::Pallet::<Runtime, pallet_collective::Instance2>::execute(
 						RuntimeOrigin::signed(alice),
