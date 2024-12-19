@@ -16,19 +16,9 @@
 
 use crate::{ParachainSystem, Runtime};
 
-use frame_support::{parameter_types, weights::Weight};
-use pallet_balances::WeightInfo;
-use pallet_treasury::migration::cleanup_proposals::Migration as TreasuryMigration;
-
-parameter_types! {
-	/// Weight for balance unreservations
-	pub BalanceUnreserveWeight: Weight = pallet_balances::weights::SubstrateWeight::<Runtime>::force_unreserve();
-}
-
 pub type Migrations = (
 	cumulus_pallet_xcmp_queue::migration::v4::MigrationToV4<Runtime>,
 	cumulus_pallet_xcmp_queue::migration::v5::MigrateV4ToV5<Runtime>,
-	TreasuryMigration<Runtime, (), BalanceUnreserveWeight>,
 );
 
 impl cumulus_pallet_xcmp_queue::migration::v5::V5Config for Runtime {
