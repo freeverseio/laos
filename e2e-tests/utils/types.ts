@@ -50,13 +50,13 @@ type ethereumPairs = {
 	faith: KeyringPair;
 };
 
-type chains = { laos: ApiPromise };
+type zombieChains = { laos: ApiPromise; polkadot: ApiPromise };
 
-type xcmChains = chains & { assetHub: ApiPromise };
+type chopsticksChains = { laos: ApiPromise; assetHub: ApiPromise };
 
 export interface CustomSuiteContext extends Suite {
 	web3: Web3;
-	chains: chains;
+	chains: zombieChains;
 	substratePairs: substratePairs;
 	ethereumPairs: ethereumPairs;
 	laosItems: laosItems;
@@ -64,7 +64,7 @@ export interface CustomSuiteContext extends Suite {
 }
 
 export interface XcmSuiteContext extends Suite {
-	chains: xcmChains;
+	chains: chopsticksChains;
 	substratePairs: substratePairs;
 	ethereumPairs: ethereumPairs;
 	laosItems: laosItems;

@@ -16,3 +16,32 @@ export async function getFinalizedBlockNumber(api: ApiPromise): Promise<BN> {
 		);
 	});
 }
+
+/**
+ * Checks that a specific event is included in a specific block.
+ * @param {ApiPromise} api - The ApiPromise to interact with the chain.
+ * @param {(event: EventRecord) => boolean} filter - A function that filters events.
+ * @param {string} blockHash - The hash corresponding to the block where we would like to find the event.
+ * @returns {Promise<EventRecord | null>} - A promise that resolves in the event found in the block.
+ */
+export async function checkEventInBlock(
+	api: ApiPromise,
+	filter: (event: EventRecord) => boolean,
+	blockHash: string
+): Promise<EventRecord | null> {
+	return new Promise(async (resolve, reject) => {
+		let event: EventRecord | null = null;
+		const apiAt = await api.at(blockHash);
+		const events = await apiAt.query.system.events();
+		events.forEach((eventRecord) => {
+			if (filter(eventRecord)) {
+				event = eventRecord;
+			}
+		});
+		if (event) {
+			resolve(event);
+		} else {
+			reject(new Error(`Event not found in block ${blockHash}`));
+		}
+	});
+}

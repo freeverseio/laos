@@ -12,12 +12,14 @@ export const RUNTIME_SPEC_NAME = "laos";
 export const RUNTIME_SPEC_VERSION = 2590;
 export const RUNTIME_IMPL_VERSION = 0;
 
-// Nodes endpoints
+// Zombienet endpoints
 export const ZOMBIE_LAOS_NODE_IP = "127.0.0.1:9999";
+export const ZOMBIE_POLKADOT_NODE_IP = "127.0.0.1:9944";
 
-// XCM nodes endpoints
+// Chopsticks endpoints
 export const CHOPSTICKS_LAOS_NODE_IP = "127.0.0.1:8000";
 export const CHOPSTICKS_ASSET_HUB_NODE_IP = "127.0.0.1:8001";
+export const CHOPSTICKS_POLKADOT_IP = "127.0.0.1:8002";
 
 // Ethereum chain constants
 export const CHAIN_ID = 667;
