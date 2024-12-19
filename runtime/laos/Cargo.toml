@@ -50,6 +50,7 @@ pallet-transaction-payment-rpc-runtime-api = { workspace = true }
 pallet-vesting = { workspace = true }
 pallet-proxy = { workspace = true }
 pallet-utility = { workspace = true }
+pallet-bounties = { workspace = true }
 pallet-treasury-funding = { workspace = true }
 sp-api = { workspace = true }
 sp-io = { workspace = true }
@@ -162,6 +163,7 @@ std = [
 	"pallet-multisig/std",
 	"pallet-timestamp/std",
 	"pallet-identity/std",
+	"pallet-bounties/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-vesting/std",
 	"pallet-precompiles-benchmark/std",
@@ -232,6 +234,7 @@ runtime-benchmarks = [
 	"pallet-multisig/runtime-benchmarks",
 	"pallet-democracy/runtime-benchmarks",
 	"pallet-treasury/runtime-benchmarks",
+	"pallet-bounties/runtime-benchmarks",
 	"pallet-treasury-funding/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"pallet-elections-phragmen/runtime-benchmarks",
@@ -276,6 +279,7 @@ try-runtime = [
 	"pallet-collective/try-runtime",
 	"pallet-membership/try-runtime",
 	"pallet-preimage/try-runtime",
+	"pallet-bounties/try-runtime",
 	"pallet-democracy/try-runtime",
 	"pallet-laos-evolution/try-runtime",
 	"pallet-multisig/try-runtime",
