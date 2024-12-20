@@ -9,7 +9,7 @@ use sp_runtime::Permill;
 
 parameter_types! {
 	pub const BountyDepositBase: Balance = UNIT;
-	pub const BountyDepositPayoutDelay: BlockNumber = 0;
+	pub const BountyDepositPayoutDelay: BlockNumber = prod_or_fast!(7 * DAYS, 5 * MINUTES);
 	pub const BountyUpdatePeriod: BlockNumber = prod_or_fast!(7 * DAYS, 5 * MINUTES);
 	pub const MaximumReasonLength: u32 = 16384;
 	pub const CuratorDepositMultiplier: Permill = Permill::from_percent(50);
