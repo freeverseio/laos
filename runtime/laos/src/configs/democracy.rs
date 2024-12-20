@@ -8,6 +8,7 @@ use crate::{
 };
 use frame_support::{parameter_types, traits::EitherOfDiverse};
 use frame_system::{EnsureRoot, EnsureSigned};
+use pallet_collective::EnsureMember;
 use parachains_common::{DAYS, HOURS, MINUTES};
 use polkadot_runtime_common::prod_or_fast;
 
@@ -76,7 +77,7 @@ impl pallet_democracy::Config for Runtime {
 	type SubmitOrigin = EnsureSigned<AccountId>;
 	// Any single technical committee member may veto a coming council proposal, however they can
 	// only do it once and it lasts only for the cool-off period.
-	type VetoOrigin = pallet_collective::EnsureMember<AccountId, TechnicalCommittee>;
+	type VetoOrigin = EnsureMember<AccountId, TechnicalCommittee>;
 	type VoteLockingPeriod = EnactmentPeriod;
 	/// How often (in blocks) to check for new votes.
 	type VotingPeriod = VotingPeriod;
@@ -91,10 +92,11 @@ mod tests {
 		AccountId, RuntimeCall, RuntimeOrigin,
 	};
 	use core::str::FromStr;
-	use frame_support::{assert_noop, assert_ok, error::BadOrigin, traits::StorePreimage};
+	use frame_support::{
+		assert_noop, assert_ok,
+		traits::{Contains, StorePreimage},
+	};
 
-	// TODO
-	#[ignore]
 	#[test]
 	fn can_veto_proposal() {
 		let alice = AccountId::from_str(ALICE).unwrap();
@@ -110,21 +112,37 @@ mod tests {
 				let call_to_bound = RuntimeCall::System(call_to_execute);
 				let preimage = pallet_preimage::Pallet::<Runtime>::bound(call_to_bound).unwrap();
 				let preimage_hash = preimage.hash();
+				let proposal_length_bound = 60_u32;
+
+				let council_origin =
+					OriginCaller::Council(pallet_collective::RawOrigin::Members(1, 1));
+				let veto_call =
+					Box::new(RuntimeCall::Democracy(pallet_democracy::Call::veto_external {
+						proposal_hash: preimage_hash,
+					}));
 
 				// adding the external proposal
 				assert_ok!(pallet_democracy::Pallet::<Runtime>::external_propose(
-					OriginCaller::Council(pallet_collective::RawOrigin::Members(1, 1)).into(),
+					council_origin.clone().into(),
 					preimage.clone()
 				));
 
+				// checking that alice does not belong to the technical committee
+				assert!(
+					!pallet_membership::Pallet::<Runtime, pallet_membership::Instance2>::contains(
+						&alice
+					)
+				);
+
 				// alice cannot veto the external proposal as she does not belong to the technical
-				// committee yet
+				// committee
 				assert_noop!(
-					pallet_democracy::Pallet::<Runtime>::veto_external(
+					pallet_collective::Pallet::<Runtime, pallet_collective::Instance2>::execute(
 						RuntimeOrigin::signed(alice),
-						preimage_hash
+						veto_call.clone(),
+						proposal_length_bound
 					),
-					BadOrigin
+					pallet_collective::Error::<Runtime, pallet_collective::Instance2>::NotMember
 				);
 
 				// adding alice to the technical committee
@@ -135,34 +153,71 @@ mod tests {
 				)
 				.unwrap();
 
-				// alice can now veto the proposal
-				assert_ok!(pallet_democracy::Pallet::<Runtime>::veto_external(
-					RuntimeOrigin::signed(alice),
-					preimage_hash
-				));
+				// checking that alice belongs to the technical committee
+				assert!(
+					pallet_membership::Pallet::<Runtime, pallet_membership::Instance2>::contains(
+						&alice
+					)
+				);
+
+				// alice can veto the proposal
+				assert_ok!(
+					pallet_collective::Pallet::<Runtime, pallet_collective::Instance2>::execute(
+						RuntimeOrigin::signed(alice),
+						veto_call,
+						proposal_length_bound
+					)
+				);
+				assert!(pallet_democracy::pallet::NextExternal::<Runtime>::get().is_none());
+
 				// the same preimage cannot be proposed again as we're still in the cooloff period
 				assert_noop!(
 					pallet_democracy::Pallet::<Runtime>::external_propose(
-						OriginCaller::Council(pallet_collective::RawOrigin::Members(1, 1)).into(),
+						council_origin.clone().into(),
 						preimage.clone()
 					),
 					pallet_democracy::Error::<Runtime>::ProposalBlacklisted
 				);
 
-				// the same preimage can be re-proposed as the cooloff period is over
-				frame_system::Pallet::<Runtime>::set_block_number(50402);
+				// retrieving the block number at which the proposal is no longer blacklisted
+				let cooloff_block =
+					pallet_democracy::pallet::Blacklist::<Runtime>::get(preimage_hash)
+						.map(|item| item.0)
+						.unwrap();
+
+				// the same preimage can be proposed again as the cooloff period is over
+				frame_system::Pallet::<Runtime>::set_block_number(cooloff_block);
 				assert_ok!(pallet_democracy::Pallet::<Runtime>::external_propose(
-					OriginCaller::Council(pallet_collective::RawOrigin::Members(1, 1)).into(),
+					council_origin.clone().into(),
 					preimage
 				));
-				// alice cannot veto the external proposal again as she already vetoed it
-				assert_noop!(
-					pallet_democracy::Pallet::<Runtime>::veto_external(
+				assert!(pallet_democracy::pallet::NextExternal::<Runtime>::get().is_some());
+
+				// alice cannot veto the external proposal as she already vetoed it.
+				// NOTE: the call executes successfully, but the dispatch of `veto_external`
+				// emits `AlreadyVetoed`
+				assert_ok!(
+					pallet_collective::Pallet::<Runtime, pallet_collective::Instance2>::execute(
 						RuntimeOrigin::signed(alice),
-						preimage_hash
-					),
-					pallet_democracy::Error::<Runtime>::AlreadyVetoed
+						Box::new(RuntimeCall::Democracy(pallet_democracy::Call::veto_external {
+							proposal_hash: preimage_hash,
+						})),
+						proposal_length_bound,
+					)
 				);
+				let events = frame_system::Pallet::<Runtime>::events();
+				match events.last().unwrap().event {
+					RuntimeEvent::TechnicalCommittee(
+						pallet_collective::Event::MemberExecuted { result, .. },
+					) => {
+						assert!(
+							sp_runtime::DispatchError::from(
+								pallet_democracy::Error::<Runtime>::AlreadyVetoed
+							) == result.unwrap_err()
+						);
+					},
+					_ => panic!("event is not 'MemberExecuted'"),
+				};
 			});
 	}
 }

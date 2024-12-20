@@ -5,6 +5,7 @@ import { sovereignAccountOf, siblingParachainLocation, relayChainLocation } from
 import { CustomSuiteContext, XcmSuiteContext } from "@utils/types";
 import {
 	ZOMBIE_LAOS_NODE_IP,
+	ZOMBIE_POLKADOT_NODE_IP,
 	CHOPSTICKS_LAOS_NODE_IP,
 	CHOPSTICKS_ASSET_HUB_NODE_IP,
 	ALITH_PRIVATE_KEY,
@@ -23,8 +24,14 @@ import {
  * @param {() => void} cb - The test itself
  * @param {string} [providerLaosNodeIP] - An optional IP to connect with the LAOS node. By default, it's connected to
  * zombienet.
+ * @param {string} [providerPolkadotNodeIP] - An optional IP to connect with the Polkadot node. By default, it's connected to zombienet.
  */
-export function describeWithExistingNode(title: string, cb: () => void, providerLaosNodeIP?: string) {
+export function describeWithExistingNode(
+	title: string,
+	cb: () => void,
+	providerLaosNodeIP?: string,
+	providerPolkadotNodeIP?: string
+) {
 	describe(title, function (this: CustomSuiteContext) {
 		before(async function () {
 			this.web3 = new Web3(providerLaosNodeIP ? `http://${providerLaosNodeIP}` : `http://${ZOMBIE_LAOS_NODE_IP}`);
@@ -51,19 +58,25 @@ export function describeWithExistingNode(title: string, cb: () => void, provider
 			this.web3.eth.accounts.wallet.add(BALTATHAR_PRIVATE_KEY);
 			this.web3.eth.accounts.wallet.add(FAITH_PRIVATE_KEY);
 
-			let provider = new WsProvider(
+			const laosProvider = new WsProvider(
 				providerLaosNodeIP ? `ws://${providerLaosNodeIP}` : `ws://${ZOMBIE_LAOS_NODE_IP}`
 			);
-			const apiLaos = await new ApiPromise({ provider }).isReady;
+			const apiLaos = await new ApiPromise({ provider: laosProvider }).isReady;
 
-			this.chains = { laos: apiLaos };
-			this.wsProvider = provider;
+			const polkadotProvider = new WsProvider(
+				providerPolkadotNodeIP ? `ws://${providerPolkadotNodeIP}` : `ws://${ZOMBIE_POLKADOT_NODE_IP}`
+			);
+			const apiPolkadot = await new ApiPromise({ provider: polkadotProvider }).isReady;
+
+			this.chains = { laos: apiLaos, polkadot: apiPolkadot };
+			this.wsProvider = laosProvider;
 		});
 
 		cb();
 
 		after(async function () {
 			this.chains.laos.disconnect();
+			this.chains.polkadot.disconnect();
 		});
 	});
 }
