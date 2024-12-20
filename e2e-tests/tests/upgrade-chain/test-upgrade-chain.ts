@@ -3,13 +3,20 @@ import path from "path";
 import { existsSync, readFileSync } from "fs";
 import { step } from "mocha-steps";
 import { describeWithExistingNode } from "@utils/setups";
-import { CHOPSTICKS_LAOS_NODE_IP, RUNTIME_SPEC_VERSION, TARGET_PATH } from "@utils/constants";
+import {
+	CHOPSTICKS_LAOS_NODE_IP,
+	CHOPSTICKS_POLKADOT_IP,
+	LAOS_PARA_ID,
+	RUNTIME_SPEC_VERSION,
+	TARGET_PATH,
+} from "@utils/constants";
 import { sendTxAndWaitForFinalization } from "@utils/transactions";
+import { checkEventInBlock } from "@utils/blocks";
 
 describeWithExistingNode(
 	"Runtime upgrade",
 	function () {
-		step("Runtime spec increases", async function () {
+		step("Runtime upgrade is performed if possible", async function () {
 			const runtimePath = path.join(
 				TARGET_PATH,
 				"release/wbuild/laos-runtime/laos_runtime.compact.compressed.wasm"
@@ -31,16 +38,45 @@ describeWithExistingNode(
 
 			const tx = this.chains.laos.tx.sudo.sudo(this.chains.laos.tx.system.setCode(`0x${wasmFile}`));
 
-			await sendTxAndWaitForFinalization(this.chains.laos, tx, this.ethereumPairs.alith);
+			const upgradeCooldowns = await this.chains.polkadot.query.paras.upgradeCooldowns();
 
-			// Advance some blocks so the upgrade takes place
-			await this.wsProvider.send("dev_newBlock", [{ count: 5 }]);
+			// If LAOS cannot be upgraded cause the cooldown is active (last upgrade's cooldown hasn't beeen completed)
+			// we check that the upgrade is rejected. Otherwise, the upgrade goes on
+			if (
+				Array.from(upgradeCooldowns.entries()).some(
+					([_index, [paraID, _blockNumber]]) => paraID.toNumber() === LAOS_PARA_ID
+				)
+			) {
+				const finalizedBlock = await sendTxAndWaitForFinalization(
+					this.chains.laos,
+					tx,
+					this.ethereumPairs.alith
+				);
+				const event = await checkEventInBlock(
+					this.chains.laos,
+					({ event }) => this.chains.laos.events.sudo.Sudid.is(event),
+					finalizedBlock
+				);
 
-			const updatedSpecVersion = this.chains.laos.consts.system.version.specVersion.toNumber();
+				const { index, error } = event.event.data.toJSON()[0]["err"]["module"];
 
-			expect(updatedSpecVersion === RUNTIME_SPEC_VERSION, "Runtime version wasn't upgraded").to.be.true;
+				expect(index, "parachain System pallet index is 1").to.be.equal(1);
+				expect(error, "parachain System ProhibitedByPolkadot error index is 0x01000000").to.be.equal(
+					"0x01000000"
+				);
+			} else {
+				await sendTxAndWaitForFinalization(this.chains.laos, tx, this.ethereumPairs.alith);
+
+				// Advance a block so the upgrade takes place
+				await this.wsProvider.send("dev_newBlock", [{ count: 1 }]);
+
+				const updatedSpecVersion = this.chains.laos.consts.system.version.specVersion.toNumber();
+
+				expect(updatedSpecVersion, "Runtime version wasn't upgraded").to.be.equal(RUNTIME_SPEC_VERSION);
+			}
 		});
 	},
-	// Override LAOS node ip as this test is run with chopsticks
-	CHOPSTICKS_LAOS_NODE_IP
+	// Override node IPs as this test is run with chopsticks
+	CHOPSTICKS_LAOS_NODE_IP,
+	CHOPSTICKS_POLKADOT_IP
 );
