@@ -44063,8 +44063,8 @@
               "name": "BountyDepositPayoutDelay",
               "ty": 4,
               "value": [
-                0,
-                0,
+                224,
+                196,
                 0,
                 0
               ],
