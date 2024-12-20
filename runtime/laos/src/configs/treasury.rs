@@ -27,7 +27,7 @@ parameter_types! {
 }
 
 type RejectOrigin = EitherOfDiverse<EnsureRoot<AccountId>, CouncilMajority>;
-type SpendOrigin = EnsureWithSuccess<CouncilMajority, MaxBalance>;
+type SpendOrigin = EnsureWithSuccess<CouncilMajority, AccountId, MaxBalance>;
 
 impl pallet_treasury::Config for Runtime {
 	type AssetKind = ();
