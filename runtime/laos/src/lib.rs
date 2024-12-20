@@ -155,6 +155,7 @@ construct_runtime!(
 		Scheduler: pallet_scheduler = 45,
 		Democracy: pallet_democracy = 46,
 		TechnicalCommitteeMembership: pallet_membership::<Instance2> = 47,
+		Bounties: pallet_bounties = 48,
 
 		// Frontier
 		Ethereum: pallet_ethereum = 50,
