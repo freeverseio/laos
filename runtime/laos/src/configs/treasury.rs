@@ -11,7 +11,7 @@ use frame_support::{
 	},
 	PalletId,
 };
-use frame_system::{EnsureRoot, EnsureRootWithSuccess};
+use frame_system::{EnsureRoot, EnsureWithSuccess};
 use parachains_common::{DAYS, MINUTES};
 use polkadot_runtime_common::prod_or_fast;
 use sp_runtime::traits::IdentityLookup;
@@ -27,7 +27,7 @@ parameter_types! {
 }
 
 type RejectOrigin = EitherOfDiverse<EnsureRoot<AccountId>, CouncilMajority>;
-type SpendOrigin = EnsureRootWithSuccess<AccountId, MaxBalance>;
+type SpendOrigin = EnsureWithSuccess<CouncilMajority, MaxBalance>;
 
 impl pallet_treasury::Config for Runtime {
 	type AssetKind = ();
