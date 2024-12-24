@@ -38,5 +38,6 @@ frame_benchmarking::define_benchmarks!(
 	[pallet_democracy, Democracy]
 	[pallet_membership, TechnicalCommitteeMembership]
 	[pallet_treasury_funding, TreasuryFunding]
+	[pallet_bounties, Bounties]
 	// TODO pallet_xcm?
 );
