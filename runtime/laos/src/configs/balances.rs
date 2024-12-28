@@ -25,7 +25,7 @@ parameter_types! {
 	/// In such attacks, the reset of the nonce upon account deletion can be exploited.
 	/// By setting the ExistentialDeposit to zero, we prevent the scenario where an account's
 	/// balance drops to a level that would trigger its deletion and subsequent nonce reset.
-	pub const ExistentialDeposit: Balance = 0;
+	pub const ExistentialDeposit: Balance = 1;
 	pub const MaxLocks: u32 = 50;
 	pub const MaxFreezes: u32 = 50;
 	pub const MaxHolds: u32 = 50;
