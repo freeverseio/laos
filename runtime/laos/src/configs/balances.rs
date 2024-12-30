@@ -15,7 +15,7 @@
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 use crate::{
-	Balance, currency::UNIT, Runtime, RuntimeEvent, RuntimeFreezeReason, RuntimeHoldReason, System,
+	currency::UNIT, Balance, Runtime, RuntimeEvent, RuntimeFreezeReason, RuntimeHoldReason, System,
 };
 use frame_support::parameter_types;
 
@@ -27,10 +27,10 @@ parameter_types! {
 	/// In such attacks, the reset of the nonce upon account deletion can be exploited.
 	/// By setting the ExistentialDeposit to zero, we prevent the scenario where an account's
 	/// balance drops to a level that would trigger its deletion and subsequent nonce reset.
-  const ExistentialDeposit: Balance = 0;
+  pub const ExistentialDeposit: Balance = 0;
   /// For benchmark purposes, pallet balances and pallet bounties need ED to be greater than 0.
   /// This may be removed in the future (https://github.com/paritytech/polkadot-sdk/issues/7009).
-  const BenchExistentialDeposit: Balance = 1 * UNIT;
+  pub const BenchExistentialDeposit: Balance = 1 * UNIT;
   pub const MaxLocks: u32 = 50;
 	pub const MaxFreezes: u32 = 50;
 	pub const MaxHolds: u32 = 50;
