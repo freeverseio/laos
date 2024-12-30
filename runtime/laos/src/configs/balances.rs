@@ -27,12 +27,10 @@ parameter_types! {
 	/// In such attacks, the reset of the nonce upon account deletion can be exploited.
 	/// By setting the ExistentialDeposit to zero, we prevent the scenario where an account's
 	/// balance drops to a level that would trigger its deletion and subsequent nonce reset.
+  const ExistentialDeposit: Balance = 0;
   /// For benchmark purposes, pallet balances and pallet bounties need ED to be greater than 0.
   /// This may be removed in the future (https://github.com/paritytech/polkadot-sdk/issues/7009).
-  #[cfg(feature = "runtime-benchmarks")]
-  const ExistentialDeposit: Balance = 1 * UNIT;
-  #[cfg(not(feature = "runtime-benchmarks"))]
-  const ExistentialDeposit: Balance = 0;
+  const BenchExistentialDeposit: Balance = 1 * UNIT;
   pub const MaxLocks: u32 = 50;
 	pub const MaxFreezes: u32 = 50;
 	pub const MaxHolds: u32 = 50;
@@ -44,6 +42,9 @@ impl pallet_balances::Config for Runtime {
 	type Balance = Balance;
 	type RuntimeEvent = RuntimeEvent;
 	type DustRemoval = ();
+	#[cfg(feature = "runtime-benchmarks")]
+	type ExistentialDeposit = BenchExistentialDeposit;
+	#[cfg(not(feature = "runtime-benchmarks"))]
 	type ExistentialDeposit = ExistentialDeposit;
 	type AccountStore = System;
 	type MaxReserves = MaxReserves;
