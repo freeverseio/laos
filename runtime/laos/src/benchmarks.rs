@@ -39,5 +39,6 @@ frame_benchmarking::define_benchmarks!(
 	[pallet_membership, TechnicalCommitteeMembership]
 	[pallet_treasury_funding, TreasuryFunding]
 	[pallet_bounties, Bounties]
+  [pallet_balances, Balances]
 	// TODO pallet_xcm?
 );

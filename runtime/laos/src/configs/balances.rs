@@ -15,7 +15,7 @@
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 use crate::{
-	currency::UNIT, Balance, Runtime, RuntimeEvent, RuntimeFreezeReason, RuntimeHoldReason, System,
+	currency::UNIT, Balance, Runtime, RuntimeEvent,weights, RuntimeFreezeReason, RuntimeHoldReason, System,
 };
 use frame_support::parameter_types;
 
@@ -30,7 +30,7 @@ parameter_types! {
   pub const ExistentialDeposit: Balance = 0;
   /// For benchmark purposes, pallet balances and pallet bounties need ED to be greater than 0.
   /// This may be removed in the future (https://github.com/paritytech/polkadot-sdk/issues/7009).
-  pub const BenchExistentialDeposit: Balance = 1 * UNIT;
+  pub const BenchExistentialDeposit: Balance = UNIT;
   pub const MaxLocks: u32 = 50;
 	pub const MaxFreezes: u32 = 50;
 	pub const MaxHolds: u32 = 50;
@@ -53,5 +53,5 @@ impl pallet_balances::Config for Runtime {
 	type RuntimeFreezeReason = RuntimeFreezeReason;
 	type RuntimeHoldReason = RuntimeHoldReason;
 	type MaxFreezes = MaxFreezes;
-	type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>; // See: https://github.com/freeverseio/laos/pull/533#issuecomment-2034913428
+	type WeightInfo = weights::pallet_balances::WeightInfo<Runtime>;
 }

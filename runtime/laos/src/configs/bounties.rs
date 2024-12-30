@@ -1,6 +1,6 @@
 use crate::{
 	currency::{MILLIUNIT, UNIT},
-	Balance, BlockNumber, Runtime, RuntimeEvent, Treasury,
+	weights, Balance, BlockNumber, Runtime, RuntimeEvent, Treasury,
 };
 use frame_support::parameter_types;
 use parachains_common::{DAYS, MINUTES};
@@ -32,8 +32,5 @@ impl pallet_bounties::Config for Runtime {
 	type DataDepositPerByte = DataDepositPerByte;
 	type MaximumReasonLength = MaximumReasonLength;
 	type OnSlash = Treasury;
-	// TODO the benchmarks fail as they try to fund the treasury by calling:
-	// "Currency::minimum_balance().saturating_mul(1_000_000_000u32.into())"
-	// Currency::minimum_balance() returns the ED, which is 0 in our runtime
-	type WeightInfo = pallet_bounties::weights::SubstrateWeight<Runtime>;
+	type WeightInfo = weights::pallet_bounties::WeightInfo<Runtime>;
 }
