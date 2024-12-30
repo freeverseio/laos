@@ -23,6 +23,8 @@ pub mod cumulus_pallet_parachain_system;
 pub mod cumulus_pallet_xcmp_queue;
 pub mod extrinsic_weights;
 pub mod pallet_asset_metadata_extender;
+pub mod pallet_balances;
+pub mod pallet_bounties;
 pub mod pallet_collective;
 pub mod pallet_democracy;
 pub mod pallet_elections_phragmen;
@@ -45,5 +47,4 @@ pub mod pallet_utility;
 pub mod pallet_vesting;
 pub mod paritydb_weights;
 pub mod rocksdb_weights;
-
 pub use rocksdb_weights::constants::RocksDbWeight;
