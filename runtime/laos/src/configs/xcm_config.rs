@@ -25,8 +25,6 @@ use frame_support::{
 	weights::Weight,
 };
 use frame_system::{EnsureRoot, RawOrigin as SystemRawOrigin};
-#[cfg(feature = "paseo")]
-use hex_literal::hex;
 use pallet_xcm::XcmPassthrough;
 use polkadot_parachain_primitives::primitives::Sibling;
 use sp_runtime::traits::TryConvert;
@@ -42,7 +40,6 @@ use xcm_builder::{
 use xcm_executor::XcmExecutor;
 
 pub const ASSET_HUB_ID: u32 = 1_000;
-pub const LAOS_ID: u32 = 3_370;
 pub const RELAY_NETWORK: NetworkId = NetworkId::Polkadot;
 
 parameter_types! {
@@ -170,7 +167,7 @@ impl frame_support::traits::ContainsPair<Asset, Location> for Reserves {
 		}
 		match location.unpack() {
 			(1, interior) =>
-				matches!(interior.first(), Some(Parachain(sibling_para_id)) if sibling_para_id.ne(&LAOS_ID)),
+				matches!(interior.first(), Some(Parachain(sibling_para_id)) if sibling_para_id.ne(&u32::from(ParachainInfo::parachain_id()))),
 			_ => false,
 		}
 	}
@@ -338,7 +335,7 @@ mod tests {
 
 		// The first parameter passed to contains may be any location as it's not used by the
 		// function. We use HereLocation for simplicity.
-		assert!(OnlyTeleportNative::contains(&(HereLocation::get(), assets)));
+		assert!(OnlySendNative::contains(&(HereLocation::get(), assets)));
 	}
 
 	#[test]
@@ -350,6 +347,6 @@ mod tests {
 
 		// The first parameter passed to contains may be any location as it's not used by the
 		// function. We use HereLocation for simplicity.
-		assert!(!OnlyTeleportNative::contains(&(HereLocation::get(), assets)));
+		assert!(!OnlySendNative::contains(&(HereLocation::get(), assets)));
 	}
 }
