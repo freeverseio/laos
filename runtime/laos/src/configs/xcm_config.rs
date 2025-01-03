@@ -41,7 +41,8 @@ use xcm_builder::{
 };
 use xcm_executor::XcmExecutor;
 
-pub const ASSET_HUB_ID: u32 = 1000;
+pub const ASSET_HUB_ID: u32 = 1_000;
+pub const LAOS_ID: u32 = 3_370;
 pub const RELAY_NETWORK: NetworkId = NetworkId::Polkadot;
 
 parameter_types! {
@@ -160,6 +161,21 @@ parameter_types! {
 
 pub type TrustedTeleporters = xcm_builder::Case<AssetHubTrustedTeleporter>;
 
+pub struct Reserves;
+impl frame_support::traits::ContainsPair<Asset, Location> for Reserves {
+	fn contains(asset: &Asset, location: &Location) -> bool {
+		match asset {
+			Asset { id: asset_id, fun: Fungible(_) } if asset_id.0 == HereLocation::get() => (),
+			_ => return false,
+		}
+		match location.unpack() {
+			(1, interior) =>
+				matches!(interior.first(), Some(Parachain(sibling_para_id)) if sibling_para_id.ne(&LAOS_ID)),
+			_ => false,
+		}
+	}
+}
+
 pub struct XcmConfig;
 impl xcm_executor::Config for XcmConfig {
 	type RuntimeCall = RuntimeCall;
@@ -169,7 +185,7 @@ impl xcm_executor::Config for XcmConfig {
 	// Converts XCM origins to local dispatch origins.
 	type OriginConverter = XcmOriginToTransactDispatchOrigin;
 	// No reserve transfer accepted
-	type IsReserve = ();
+	type IsReserve = Reserves;
 	// This defines tuples of (Asset, Location) we trust as teleports (either from or to LAOS)
 	type IsTeleporter = TrustedTeleporters;
 	type UniversalLocation = UniversalLocation;
@@ -220,12 +236,12 @@ pub type XcmRouter = xcm_builder::WithUniqueTopic<(
 	crate::XcmpQueue,
 )>;
 
-//Filter all teleports that aren't the native asset
-pub struct OnlyTeleportNative;
-impl Contains<(Location, Vec<Asset>)> for OnlyTeleportNative {
+//Filter all teleports/reserves that aren't the native asset
+pub struct OnlySendNative;
+impl Contains<(Location, Vec<Asset>)> for OnlySendNative {
 	fn contains(t: &(Location, Vec<Asset>)) -> bool {
 		t.1.iter().all(|asset| {
-			log::trace!(target: "xcm::OnlyTeleportNative", "Asset to be teleported: {:?}", asset);
+			log::trace!(target: "xcm::OnlySendNative", "Asset to be sent out: {:?}", asset);
 			if let Asset { id: asset_id, fun: Fungible(_) } = asset {
 				asset_id.0 == HereLocation::get()
 			} else {
@@ -245,9 +261,9 @@ impl pallet_xcm::Config for Runtime {
 	type XcmExecuteFilter = Nothing;
 	type XcmExecutor = XcmExecutor<XcmConfig>;
 	// This filter wheter an origin may teleport out different assets.
-	type XcmTeleportFilter = OnlyTeleportNative;
+	type XcmTeleportFilter = OnlySendNative;
 	// Deny all reserve asset transfers.
-	type XcmReserveTransferFilter = Nothing;
+	type XcmReserveTransferFilter = OnlySendNative;
 	// Calculates the weight of XCM messages.
 	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
 	type UniversalLocation = UniversalLocation;
