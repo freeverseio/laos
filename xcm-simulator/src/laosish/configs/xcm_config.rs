@@ -146,6 +146,21 @@ parameter_types! {
 
 pub type TrustedTeleporters = xcm_builder::Case<AssetHubTrustedTeleporter>;
 
+pub struct Reserves;
+impl frame_support::traits::ContainsPair<Asset, Location> for Reserves {
+	fn contains(asset: &Asset, location: &Location) -> bool {
+		match asset {
+			Asset { id: asset_id, fun: Fungible(_) } if asset_id.0 == HereLocation::get() => (),
+			_ => return false,
+		}
+		match location.unpack() {
+			(1, interior) =>
+				matches!(interior.first(), Some(Parachain(sibling_para_id)) if sibling_para_id.ne(&crate::PARA_LAOSISH_ID)),
+			_ => false,
+		}
+	}
+}
+
 pub struct XcmConfig;
 impl xcm_executor::Config for XcmConfig {
 	type RuntimeCall = RuntimeCall;
@@ -153,7 +168,7 @@ impl xcm_executor::Config for XcmConfig {
 	// How to withdraw and deposit an asset.
 	type AssetTransactor = LocalAssetTransactor;
 	type OriginConverter = XcmOriginToTransactDispatchOrigin;
-	type IsReserve = (); // no reserve trasfer are accepted
+	type IsReserve = Reserves;
 	type IsTeleporter = TrustedTeleporters;
 	type UniversalLocation = UniversalLocation;
 	type Barrier = Barrier;
@@ -186,7 +201,7 @@ pub type XcmRouter = EnsureDecodableXcm<crate::ParachainXcmRouter<MsgQueue>>;
 
 //Filter all teleports/reserves that aren't the native asset
 pub struct OnlySendNative;
-impl Contains<(Location, Vec<Asset>)> for OnlyTeleportNative {
+impl Contains<(Location, Vec<Asset>)> for OnlySendNative {
 	fn contains(t: &(Location, Vec<Asset>)) -> bool {
 		t.1.iter().all(|asset| {
 			log::trace!(target: "xcm::OnlySendNative", "Asset to be sent out: {:?}", asset);
