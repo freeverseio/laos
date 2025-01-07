@@ -1,0 +1,150 @@
+endpoint: wss://wss.api.moonbeam.network
+mock-signature-host: true
+db: ./db.sqlite
+runtime-log-level: 5
+wasm-override: ./moonbeam_runtime.wasm # TODO remove me
+
+import-storage:
+  System:
+    Account:
+      - - - "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac"
+        - providers: 1
+          data:
+            free: "100000000000000000000000"
+  OpenTechCommitteeCollective:
+    Members: ["0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac"]
+  TreasuryCouncilCollective:
+    Members: ["0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac"]
+  AuthorFilter:
+    EligibleRatio: 100
+    EligibleCount: 100
+  AssetManager:
+    # Asset ID <-> Parachain location
+    AssetIdType: [
+      [
+        ["283870493414747423842723289889816153531"],
+        {
+          Xcm: {
+            Parents: 1,
+            Interior: {
+              X1: {
+                Parachain: 3370,
+              }
+            }
+          }
+        }
+      ]
+    ]
+    AssetTypeId: [
+      [
+        [
+          {
+            Xcm: {
+              Parents: 1,
+              Interior: {
+                X1: {
+                  Parachain: 3370
+                }
+              }
+            }
+          }
+        ],
+        "283870493414747423842723289889816153531"
+      ]
+    ]
+  Assets:
+    # LAOS Foreign asset and metadata
+    Asset: [
+      [
+        [
+          "283870493414747423842723289889816153531"
+        ],
+        {
+          Owner: "0x6D6f646c617373746d6E67720000000000000000",
+          Issuer: "0x6D6f646c617373746d6E67720000000000000000",
+          Admin: "0x6D6f646c617373746d6E67720000000000000000",
+          Freezer: "0x6D6f646c617373746d6E67720000000000000000",
+          Supply: "10000000000000000000000",
+          Deposit: 0,
+          MinBalance: 0,
+          IsSufficient: true,
+          Accounts: 1,
+          Sufficients: 1,
+          Approvals: 0,
+          Status: Live,
+        }
+      ]
+    ]
+    Metadata: [
+      [
+        [
+          "283870493414747423842723289889816153531"
+        ],
+        {
+          Deposit: 0,
+          Name: LAOS Token,
+          Symbol: xcLAOS,
+          Decimals: 18,
+          IsFrozen: false,
+        }
+      ]
+    ]
+    # Funding LAOS SA with LAOS
+    Account: [
+      [
+        [
+          "283870493414747423842723289889816153531",
+          "0x7369626c2a0d0000000000000000000000000000" # LAOS SA
+        ],
+        {
+          Balance: "10000000000000000000000",
+          Status: Liquid,
+          Reason: Sufficient,
+          Extra: null,
+        }
+      ]
+    ]
+  # GLMR <-> LAOS conversion
+  XcmWeightTrader:
+    SupportedAssets: [
+      [
+        [
+          {
+            Parents: 1,
+            Interior: {
+              X1: [
+                {
+                  Parachain: 3370
+                }
+              ]
+            }
+          }
+        ],
+        [
+          true
+          "1000000000000000000"
+        ]
+      ]
+    ]
+  # LAOS XCM supported versions
+  PolkadotXcm:
+    SupportedVersion: [
+      [
+        [
+          4,
+          {
+            V4: {
+              Parents: 1,
+              Interior: {
+                X1: [
+                  {
+                    Parachain: 3370
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        3
+      ]
+    ]
