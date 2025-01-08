@@ -3,6 +3,9 @@ use super::*;
 pub type AssetHubAssetsCall =
 	pallet_assets::Call<asset_hub::Runtime, asset_hub::ForeignAssetsInstance>;
 
+pub type ParachainAssetsCall =
+	pallet_assets::Call<parachain::Runtime, parachain::ForeignAssetsInstance>;
+
 #[test]
 fn alish_has_tokens() {
 	MockNet::reset();
@@ -143,11 +146,10 @@ fn xcmp_remark_para_b() {
 fn xcmp_create_foreign_asset_in_para_b() {
 	MockNet::reset();
 
-	let para_a_native_asset_location =
-		xcm::v3::Location::new(1, [xcm::v3::Junction::Parachain(PARA_LAOSISH_ID)]);
+	let laosish_native_asset_location = Location::new(1, [Junction::Parachain(PARA_LAOSISH_ID)]);
 
 	let create_asset = parachain::RuntimeCall::ForeignAssets(ForeignAssetsCall::create {
-		id: para_a_native_asset_location,
+		id: laosish_native_asset_location,
 		admin: sibling_account_id(PARA_LAOSISH_ID),
 		min_balance: 1000,
 	});
@@ -241,4 +243,33 @@ fn roundtrip_teleport_laosish_to_assethub() {
 			INITIAL_BALANCE - (teleport_amount_1 - teleport_amount_2)
 		);
 	});
+}
+
+#[test]
+fn roundtrip_reserve_transfer_works_for_parachains_trusting_laos_as_laos_reserve(){
+	MockNet::reset();
+
+	let laosish_native_asset_location = Location::new(1, [Junction::Parachain(PARA_LAOSISH_ID)]);
+
+	let create_asset = parachain::RuntimeCall::ForeignAssets(ParachainAssetsCall::create {
+		id: laosish_native_asset_location,
+		admin: sibling_account_id(PARA_LAOSISH_ID),
+		min_balance: 1,
+	});
+
+	let alith: laosish::AccountId = ALITH.into();
+
+	Laosish::execute_with(|| {
+		assert_ok!(LaosishPalletXcm::send_xcm(
+			Here,
+			(Parent, Parachain(PARA_A_ID)),
+			Xcm(vec![Transact {
+				origin_kind: OriginKind::Xcm,
+				require_weight_at_most: Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024),
+				call: create_asset.encode().into(),
+			}]),
+		));
+
+	});
+
 }
