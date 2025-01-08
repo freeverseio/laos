@@ -258,6 +258,7 @@ fn roundtrip_reserve_transfer_laosish_to_para_a() {
 	});
 
 	let transfer_amount_1 = 100;
+	let transfer_amount_2 = 10;
 
 	let alith: laosish::AccountId = ALITH.into();
 
@@ -293,5 +294,26 @@ fn roundtrip_reserve_transfer_laosish_to_para_a() {
 			parachain::ForeignAssets::balance((Parent, Parachain(PARA_LAOSISH_ID)).into(), &ALICE),
 			transfer_amount_1
 		);
-	})
+
+		assert_ok!(ParachainPalletXcm::limited_reserve_transfer_assets(
+			parachain::RuntimeOrigin::signed(ALICE),
+			Box::new((Parent, Parachain(PARA_LAOSISH_ID)).into()),
+			Box::new(AccountKey20 { network: None, key: ALITH }.into()),
+			Box::new(((Parent, Parachain(PARA_LAOSISH_ID)), transfer_amount_2).into()),
+			0,
+			WeightLimit::Unlimited
+		));
+
+		assert_eq!(
+			parachain::ForeignAssets::balance((Parent, Parachain(PARA_LAOSISH_ID)).into(), &ALICE),
+			transfer_amount_1 - transfer_amount_2
+		);
+	});
+
+	Laosish::execute_with(|| {
+		assert_eq!(
+			laosish::Balances::free_balance(alith),
+			INITIAL_BALANCE - (transfer_amount_1 - transfer_amount_2)
+		);
+	});
 }
