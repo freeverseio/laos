@@ -150,12 +150,9 @@ pub struct Reserves;
 impl frame_support::traits::ContainsPair<Asset, Location> for Reserves {
 	fn contains(asset: &Asset, location: &Location) -> bool {
 		match asset {
-			Asset { id: asset_id, fun: Fungible(_) } if asset_id.0 == HereLocation::get() => (),
-			_ => return false,
-		}
-		match location.unpack() {
-			(1, interior) =>
-				matches!(interior.first(), Some(Parachain(sibling_para_id)) if sibling_para_id.ne(&crate::PARA_LAOSISH_ID)),
+			Asset { id: asset_id, fun: Fungible(_) }
+				if asset_id.0 == HereLocation::get() && location == &HereLocation::get() =>
+				true,
 			_ => false,
 		}
 	}
