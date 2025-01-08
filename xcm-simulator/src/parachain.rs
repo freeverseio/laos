@@ -328,9 +328,9 @@ impl pallet_assets::Config<TrustBackedAssetsInstance> for Runtime {
 #[cfg(feature = "runtime-benchmarks")]
 pub struct XcmBenchmarkHelper;
 #[cfg(feature = "runtime-benchmarks")]
-impl pallet_assets::BenchmarkHelper<xcm::v3::Location> for XcmBenchmarkHelper {
-	fn create_asset_id_parameter(id: u32) -> xcm::v3::Location {
-		xcm::v3::Location::new(1, xcm::v3::Junction::Parachain(id))
+impl pallet_assets::BenchmarkHelper<xcm::v4::Location> for XcmBenchmarkHelper {
+	fn create_asset_id_parameter(id: u32) -> xcm::v4::Location {
+		xcm::v4::Location::new(1, xcm::v4::Junction::Parachain(id))
 	}
 }
 
