@@ -246,7 +246,7 @@ fn roundtrip_teleport_laosish_to_assethub() {
 }
 
 #[test]
-fn roundtrip_reserve_transfer_works_for_parachains_trusting_laos_as_laos_reserve(){
+fn roundtrip_reserve_transfer_laosish_to_para_a() {
 	MockNet::reset();
 
 	let laosish_native_asset_location = Location::new(1, [Junction::Parachain(PARA_LAOSISH_ID)]);
@@ -269,7 +269,5 @@ fn roundtrip_reserve_transfer_works_for_parachains_trusting_laos_as_laos_reserve
 				call: create_asset.encode().into(),
 			}]),
 		));
-
 	});
-
 }
