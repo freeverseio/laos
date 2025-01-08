@@ -98,6 +98,11 @@ decl_test_network! {
 	}
 }
 
+pub fn laosish_sibling_account_id(para: u32) -> laosish::AccountId {
+	let location = (Parent, Parachain(para));
+	laosish::configs::xcm_config::LocationToAccountId::convert_location(&location.into()).unwrap()
+}
+
 pub fn parent_account_id() -> parachain::AccountId {
 	let location = (Parent,);
 	parachain::LocationToAccountId::convert_location(&location.into()).unwrap()

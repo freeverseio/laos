@@ -161,12 +161,7 @@ pub type TrustedTeleporters = xcm_builder::Case<AssetHubTrustedTeleporter>;
 pub struct Reserves;
 impl frame_support::traits::ContainsPair<Asset, Location> for Reserves {
 	fn contains(asset: &Asset, location: &Location) -> bool {
-		match asset {
-			Asset { id: asset_id, fun: Fungible(_) }
-				if asset_id.0 == HereLocation::get() && location == &HereLocation::get() =>
-				true,
-			_ => false,
-		}
+		matches!(asset, Asset { id: asset_id, fun: Fungible(_) } if asset_id.0 == HereLocation::get() && location == &HereLocation::get())
 	}
 }
 
