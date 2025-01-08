@@ -64,12 +64,12 @@ import-storage:
           Issuer: "0x6D6f646c617373746d6E67720000000000000000",
           Admin: "0x6D6f646c617373746d6E67720000000000000000",
           Freezer: "0x6D6f646c617373746d6E67720000000000000000",
-          Supply: "10000000000000000000000",
+          Supply: 0,
           Deposit: 0,
           MinBalance: 0,
           IsSufficient: true,
-          Accounts: 1,
-          Sufficients: 1,
+          Accounts: 0,
+          Sufficients: 0,
           Approvals: 0,
           Status: Live,
         }
@@ -89,22 +89,7 @@ import-storage:
         }
       ]
     ]
-    # Funding LAOS SA with LAOS
-    Account: [
-      [
-        [
-          "283870493414747423842723289889816153531",
-          "0x7369626c2a0d0000000000000000000000000000" # LAOS SA
-        ],
-        {
-          Balance: "10000000000000000000000",
-          Status: Liquid,
-          Reason: Sufficient,
-          Extra: null,
-        }
-      ]
-    ]
-  # GLMR <-> LAOS conversion
+  # GLMR <-> LAOS conversion (1:1)
   XcmWeightTrader:
     SupportedAssets: [
       [
