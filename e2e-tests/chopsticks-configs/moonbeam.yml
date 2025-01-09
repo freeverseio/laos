@@ -2,7 +2,6 @@ endpoint: wss://wss.api.moonbeam.network
 mock-signature-host: true
 db: ./db.sqlite
 runtime-log-level: 5
-wasm-override: ./moonbeam_runtime.wasm # TODO remove me
 
 import-storage:
   System:

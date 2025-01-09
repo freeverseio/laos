@@ -113,7 +113,7 @@ describeWithExistingNodeXcm("Teleport Asset Hub <-> LAOS", function () {
 			},
 		});
 
-		const amount = ONE_LAOS.muln(1);
+		const amount = ONE_LAOS;
 		const assets = this.chains.assetHub.createType("XcmVersionedAssets", {
 			V4: [
 				{

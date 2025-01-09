@@ -114,7 +114,7 @@ describeWithExistingNodeXcm("Reserve transfer LAOS <-> Moonbeam", function () {
 	});
 
 	step("Reserve transfer from Moonbeam to LAOS", async function () {
-		const beneficiary = this.chains.assetHub.createType("XcmVersionedLocation", {
+		const beneficiary = this.chains.moonbeam.createType("XcmVersionedLocation", {
 			V4: {
 				parents: "0",
 				interior: {
@@ -129,8 +129,8 @@ describeWithExistingNodeXcm("Reserve transfer LAOS <-> Moonbeam", function () {
 			},
 		});
 
-		const amount = ONE_LAOS.muln(1);
-		const assets = this.chains.assetHub.createType("XcmVersionedAssets", {
+		const amount = ONE_LAOS;
+		const assets = this.chains.moonbeam.createType("XcmVersionedAssets", {
 			V4: [
 				{
 					id: siblingParachainLocation(LAOS_PARA_ID),
@@ -143,20 +143,14 @@ describeWithExistingNodeXcm("Reserve transfer LAOS <-> Moonbeam", function () {
 		const fee_asset_item = "0";
 		const weight_limit = "Unlimited";
 
-		const charlieBalanceBefore = hexToBn(
-			(
-				await this.chains.assetHub.query.foreignAssets.account(
-					this.assetHubItems.laosAsset,
-					this.substratePairs.charlie.address
-				)
-			).toJSON()?.["balance"] ?? 0
-		);
 		const beneficiaryBalanceBefore = (
 			await this.chains.laos.query.system.account(this.ethereumPairs.baltathar.address)
 		).data.free;
+		const moonbeamSABalanceBefore = (await this.chains.laos.query.system.account(this.laosItems.moonbeamSA)).data
+			.free;
 
-		const call = this.chains.assetHub.tx.polkadotXcm.limitedTeleportAssets(
-			this.assetHubItems.laosLocation,
+		const call = this.chains.moonbeam.tx.polkadotXcm.transferAssets(
+			this.moonbeamItems.laosLocation,
 			beneficiary,
 			assets,
 			fee_asset_item,
@@ -164,7 +158,7 @@ describeWithExistingNodeXcm("Reserve transfer LAOS <-> Moonbeam", function () {
 		);
 
 		const laosBestBlockBeforeSending = await getFinalizedBlockNumber(this.chains.laos);
-		await sendTxAndWaitForFinalization(this.chains.assetHub, call, this.substratePairs.baltathar);
+		await sendTxAndWaitForFinalization(this.chains.moonbeam, call, this.ethereumPairs.baltathar);
 		// Check that $LAOS has been sent back to Laos
 		const event = await checkEventAfterXcm(
 			this.chains.laos,
@@ -178,25 +172,22 @@ describeWithExistingNodeXcm("Reserve transfer LAOS <-> Moonbeam", function () {
 		);
 
 		expect(event).to.not.be.null;
-		const [receiver, realAmountReceived] = event.event.data;
-		expect(receiver.toString()).to.equal(this.ethereumPairs.baltathar.address);
-		const charlieBalance = hexToBn(
-			(
-				await this.chains.assetHub.query.foreignAssets.account(
-					this.assetHubItems.laosAsset,
-					this.substratePairs.charlie.address
-				)
-			).toJSON()["balance"]
-		);
-		expect(
-			charlieBalanceBefore.sub(amount).eq(charlieBalance),
-			"Charlie's balance should decrease by the amount teleported"
-		);
+		const [_, realAmountReceived] = event.event.data;
+
 		const beneficiaryBalance = (await this.chains.laos.query.system.account(this.ethereumPairs.baltathar.address))
 			.data.free;
 		expect(
 			beneficiaryBalanceBefore.add(new BN(realAmountReceived.toString())).eq(beneficiaryBalance),
-			"Alith's balance should increase by the amount received in the teleport"
+			"Baltathar's balance should increase by the amount received in the reserve transfer"
+		);
+
+		// check that moonbeam SA balance has been reduced
+		const realMoonbeamSABalance = (await this.chains.laos.query.system.account(this.laosItems.moonbeamSA)).data
+			.free;
+		const supposedMoonbeamSABalance = moonbeamSABalanceBefore.add(amount);
+		expect(
+			supposedMoonbeamSABalance.eq(realMoonbeamSABalance),
+			"Moonbeam's SA balance has not decreased by the amount of the reserve transfer"
 		);
 	});
 });
