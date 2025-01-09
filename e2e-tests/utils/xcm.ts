@@ -1,5 +1,5 @@
-import { bnToU8a, stringToU8a } from "@polkadot/util";
-import { encodeAddress } from "@polkadot/util-crypto";
+import { bnToU8a, stringToU8a, u8aToHex } from "@polkadot/util";
+import { decodeAddress, encodeAddress } from "@polkadot/util-crypto";
 import { ApiPromise } from "@polkadot/api";
 import { EventRecord } from "@polkadot/types/interfaces";
 import BN from "bn.js";
@@ -20,6 +20,18 @@ export function sovereignAccountOf(paraId: number): string {
 	let zeroPadding = new Uint8Array(32 - typeEncoded.length - paraIdEncoded.length).fill(0);
 	let address = concatUint8Arrays(typeEncoded, paraIdEncoded, zeroPadding);
 	return encodeAddress(address, POLKADOT_PREFIX);
+}
+
+/**
+ * Converts a Substrate SS58 address to an Ethereum H160 address
+ * @param {string} address - The Substrate SS58 address
+ * @returns {string} - The Ethereum H160 address
+ */
+export function substrateToEthereum(address: string): string {
+	const substrateBytes = decodeAddress(address);
+	// Take the first 20 bytes to create the Ethereum address
+	const ethBytes = substrateBytes.slice(0, 20);
+	return u8aToHex(ethBytes);
 }
 
 /**
