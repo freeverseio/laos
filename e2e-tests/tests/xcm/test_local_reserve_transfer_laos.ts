@@ -149,6 +149,7 @@ describeWithExistingNodeXcm("Local Reserve transfer LAOS <-> Moonbeam", function
 		const moonbeamSABalanceBefore = (await this.chains.laos.query.system.account(this.laosItems.moonbeamSA)).data
 			.free;
 
+		// We call transferAssets instead of limitedReserveTransferAssets here due to moonbeam disable this extrinsic in their XCM maintenances. transferAssets executes a reserve transfer under the hood for this asset so this is OK.
 		const call = this.chains.moonbeam.tx.polkadotXcm.transferAssets(
 			this.moonbeamItems.laosLocation,
 			beneficiary,
