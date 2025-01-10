@@ -246,7 +246,7 @@ fn roundtrip_teleport_laosish_to_assethub() {
 }
 
 #[test]
-fn roundtrip_reserve_transfer_laosish_to_para_a() {
+fn roundtrip_local_reserve_transfer_laosish_to_para_a() {
 	MockNet::reset();
 
 	let laosish_native_asset_location = Location::new(1, [Junction::Parachain(PARA_LAOSISH_ID)]);
@@ -314,6 +314,11 @@ fn roundtrip_reserve_transfer_laosish_to_para_a() {
 		assert_eq!(
 			laosish::Balances::free_balance(alith),
 			INITIAL_BALANCE - (transfer_amount_1 - transfer_amount_2)
+		);
+
+		assert_eq!(
+			laosish::Balances::free_balance(laosish_sibling_account_id(PARA_A_ID)),
+			transfer_amount_1 - transfer_amount_2
 		);
 	});
 }
