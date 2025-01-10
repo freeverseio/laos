@@ -80,7 +80,7 @@ describeWithExistingNodeXcm("Reserve transfer LAOS <-> Moonbeam", function () {
 
 		expect(event).to.not.be.null;
 		const [assetId, owner, realAmountReceived] = event.event.data;
-		expect(new BN(assetId.toString()).eq(this.moonbeamItems.laosAsset));
+		expect(new BN(assetId.toString()).eq(this.moonbeamItems.laosAsset)).to.be.true;
 		expect(owner.toString()).to.equal(this.ethereumPairs.baltathar.address);
 		const baltatharBalance = hexToBn(
 			(
@@ -93,7 +93,7 @@ describeWithExistingNodeXcm("Reserve transfer LAOS <-> Moonbeam", function () {
 		expect(
 			baltatharBalanceBefore.add(new BN(realAmountReceived.toString())).eq(baltatharBalance),
 			"Baltathar's balance should increase by the amount received"
-		);
+		).to.be.true;
 		const realAlithBalance = (
 			await this.chains.laos.query.system.account(this.ethereumPairs.alith.address as string)
 		).data.free;
@@ -101,7 +101,7 @@ describeWithExistingNodeXcm("Reserve transfer LAOS <-> Moonbeam", function () {
 		expect(
 			supposedAlithBalance.sub(realAlithBalance).lte(ONE_LAOS),
 			"Alith's balance should decrease by the amount of the reserve transfer, disregarding fees"
-		);
+		).to.be.true;
 
 		// with reserve transfers, in LAOS, Alith's amount is transferred to Moonbeam's SA
 		const realMoonbeamSABalance = (await this.chains.laos.query.system.account(this.laosItems.moonbeamSA)).data
@@ -110,7 +110,7 @@ describeWithExistingNodeXcm("Reserve transfer LAOS <-> Moonbeam", function () {
 		expect(
 			supposedMoonbeamSABalance.eq(realMoonbeamSABalance),
 			"Moonbeam's SA balance has not increased by the amount of the reserve transfer"
-		);
+		).to.be.true;
 	});
 
 	step("Reserve transfer from Moonbeam to LAOS", async function () {
@@ -179,15 +179,15 @@ describeWithExistingNodeXcm("Reserve transfer LAOS <-> Moonbeam", function () {
 		expect(
 			beneficiaryBalanceBefore.add(new BN(realAmountReceived.toString())).eq(beneficiaryBalance),
 			"Baltathar's balance should increase by the amount received in the reserve transfer"
-		);
+		).to.be.true;
 
 		// check that moonbeam SA balance has been reduced
 		const realMoonbeamSABalance = (await this.chains.laos.query.system.account(this.laosItems.moonbeamSA)).data
 			.free;
-		const supposedMoonbeamSABalance = moonbeamSABalanceBefore.add(amount);
+		const supposedMoonbeamSABalance = moonbeamSABalanceBefore.sub(amount);
 		expect(
 			supposedMoonbeamSABalance.eq(realMoonbeamSABalance),
 			"Moonbeam's SA balance has not decreased by the amount of the reserve transfer"
-		);
+		).to.be.true;
 	});
 });

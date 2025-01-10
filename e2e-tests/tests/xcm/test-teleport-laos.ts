@@ -86,7 +86,7 @@ describeWithExistingNodeXcm("Teleport Asset Hub <-> LAOS", function () {
 		expect(
 			charlieBalanceBefore.add(new BN(realAmountReceived.toString())).eq(charlieBalance),
 			"Charlie's balance should increase by the amount received"
-		);
+		).to.be.true;
 		const realAlithBalance = (
 			await this.chains.laos.query.system.account(this.ethereumPairs.alith.address as string)
 		).data.free;
@@ -94,7 +94,7 @@ describeWithExistingNodeXcm("Teleport Asset Hub <-> LAOS", function () {
 		expect(
 			supposedAlithBalance.sub(realAlithBalance).lte(ONE_LAOS),
 			"Alith's balance should decrease by the amount teleported, disregarding fees"
-		);
+		).to.be.true;
 	});
 
 	step("Teleport back from AssetHub to Laos", async function () {
@@ -175,12 +175,12 @@ describeWithExistingNodeXcm("Teleport Asset Hub <-> LAOS", function () {
 		expect(
 			charlieBalanceBefore.sub(amount).eq(charlieBalance),
 			"Charlie's balance should decrease by the amount teleported"
-		);
+		).to.be.true;
 		const beneficiaryBalance = (await this.chains.laos.query.system.account(this.ethereumPairs.baltathar.address))
 			.data.free;
 		expect(
 			beneficiaryBalanceBefore.add(new BN(realAmountReceived.toString())).eq(beneficiaryBalance),
 			"Alith's balance should increase by the amount received in the teleport"
-		);
+		).to.be.true;
 	});
 });
