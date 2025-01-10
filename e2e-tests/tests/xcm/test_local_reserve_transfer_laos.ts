@@ -9,8 +9,8 @@ import { sendTxAndWaitForFinalization } from "@utils/transactions";
 import { getFinalizedBlockNumber } from "@utils/blocks";
 import { hexToBn } from "@polkadot/util";
 
-describeWithExistingNodeXcm("Reserve transfer LAOS <-> Moonbeam", function () {
-	step("Reserve transfer from LAOS to Moonbeam", async function () {
+describeWithExistingNodeXcm("Local Reserve transfer LAOS <-> Moonbeam", function () {
+	step("Local Reserve transfer from LAOS to Moonbeam", async function () {
 		const beneficiary = this.chains.laos.createType("XcmVersionedLocation", {
 			V4: {
 				parents: "0",
