@@ -156,10 +156,14 @@ parameter_types! {
 	pub AssetHubTrustedTeleporter: (AssetFilter, Location) = (NativeTokenFilter::get(), AssetHubLocation::get());
 }
 
+// The teleporters we trust:
+// - Asset Hub as teleporter of the LAOS token.
 pub type TrustedTeleporters = xcm_builder::Case<AssetHubTrustedTeleporter>;
 
-pub struct Reserves;
-impl frame_support::traits::ContainsPair<Asset, Location> for Reserves {
+// The reserves we trust:
+// - LAOS as a reserve of the LAOS token.
+pub struct TrustedReserves;
+impl frame_support::traits::ContainsPair<Asset, Location> for TrustedReserves {
 	fn contains(asset: &Asset, location: &Location) -> bool {
 		matches!(asset, Asset { id: asset_id, fun: Fungible(_) } if asset_id.0 == HereLocation::get() && location == &HereLocation::get())
 	}
@@ -173,9 +177,9 @@ impl xcm_executor::Config for XcmConfig {
 	type AssetTransactor = LocalAssetTransactor;
 	// Converts XCM origins to local dispatch origins.
 	type OriginConverter = XcmOriginToTransactDispatchOrigin;
-	// No reserve transfer accepted
-	type IsReserve = Reserves;
-	// This defines tuples of (Asset, Location) we trust as teleports (either from or to LAOS)
+	// This defines which locations we trust as reserve of which assets.
+	type IsReserve = TrustedReserves;
+	// This defines which locations we trust as teleportes of which assets.
 	type IsTeleporter = TrustedTeleporters;
 	type UniversalLocation = UniversalLocation;
 	// Filters and allows XCM messages based on security policies.
@@ -225,7 +229,7 @@ pub type XcmRouter = xcm_builder::WithUniqueTopic<(
 	crate::XcmpQueue,
 )>;
 
-//Filter all teleports/reserves that aren't the native asset
+//Filter all teleports/reserves that aren't the LAOS token
 pub struct OnlySendNative;
 impl Contains<(Location, Vec<Asset>)> for OnlySendNative {
 	fn contains(t: &(Location, Vec<Asset>)) -> bool {
@@ -249,9 +253,9 @@ impl pallet_xcm::Config for Runtime {
 	type ExecuteXcmOrigin = EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
 	type XcmExecuteFilter = Nothing;
 	type XcmExecutor = XcmExecutor<XcmConfig>;
-	// This filter wheter an origin may teleport out different assets.
+	// This filter wheter an origin may teleport out an asset.
 	type XcmTeleportFilter = OnlySendNative;
-	// Deny all reserve asset transfers.
+	// This filter wheter an origin may execute a reserve transfer of an asset.
 	type XcmReserveTransferFilter = OnlySendNative;
 	// Calculates the weight of XCM messages.
 	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
