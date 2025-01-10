@@ -25,8 +25,6 @@ use frame_support::{
 	weights::Weight,
 };
 use frame_system::{EnsureRoot, RawOrigin as SystemRawOrigin};
-#[cfg(feature = "paseo")]
-use hex_literal::hex;
 use pallet_xcm::XcmPassthrough;
 use polkadot_parachain_primitives::primitives::Sibling;
 use sp_runtime::traits::TryConvert;
@@ -41,7 +39,7 @@ use xcm_builder::{
 };
 use xcm_executor::XcmExecutor;
 
-pub const ASSET_HUB_ID: u32 = 1000;
+pub const ASSET_HUB_ID: u32 = 1_000;
 pub const RELAY_NETWORK: NetworkId = NetworkId::Polkadot;
 
 parameter_types! {
@@ -158,7 +156,18 @@ parameter_types! {
 	pub AssetHubTrustedTeleporter: (AssetFilter, Location) = (NativeTokenFilter::get(), AssetHubLocation::get());
 }
 
+// The teleporters we trust:
+// - Asset Hub as teleporter of the LAOS token.
 pub type TrustedTeleporters = xcm_builder::Case<AssetHubTrustedTeleporter>;
+
+// The reserves we trust:
+// - LAOS as a reserve of the LAOS token.
+pub struct TrustedReserves;
+impl frame_support::traits::ContainsPair<Asset, Location> for TrustedReserves {
+	fn contains(asset: &Asset, location: &Location) -> bool {
+		matches!(asset, Asset { id: asset_id, fun: Fungible(_) } if asset_id.0 == HereLocation::get() && location == &HereLocation::get())
+	}
+}
 
 pub struct XcmConfig;
 impl xcm_executor::Config for XcmConfig {
@@ -168,9 +177,9 @@ impl xcm_executor::Config for XcmConfig {
 	type AssetTransactor = LocalAssetTransactor;
 	// Converts XCM origins to local dispatch origins.
 	type OriginConverter = XcmOriginToTransactDispatchOrigin;
-	// No reserve transfer accepted
-	type IsReserve = ();
-	// This defines tuples of (Asset, Location) we trust as teleports (either from or to LAOS)
+	// This defines which locations we trust as reserve of which assets.
+	type IsReserve = TrustedReserves;
+	// This defines which locations we trust as teleportes of which assets.
 	type IsTeleporter = TrustedTeleporters;
 	type UniversalLocation = UniversalLocation;
 	// Filters and allows XCM messages based on security policies.
@@ -220,12 +229,12 @@ pub type XcmRouter = xcm_builder::WithUniqueTopic<(
 	crate::XcmpQueue,
 )>;
 
-//Filter all teleports that aren't the native asset
-pub struct OnlyTeleportNative;
-impl Contains<(Location, Vec<Asset>)> for OnlyTeleportNative {
+//Filter all teleports/reserves that aren't the LAOS token
+pub struct OnlySendNative;
+impl Contains<(Location, Vec<Asset>)> for OnlySendNative {
 	fn contains(t: &(Location, Vec<Asset>)) -> bool {
 		t.1.iter().all(|asset| {
-			log::trace!(target: "xcm::OnlyTeleportNative", "Asset to be teleported: {:?}", asset);
+			log::trace!(target: "xcm::OnlySendNative", "Asset to be sent out: {:?}", asset);
 			if let Asset { id: asset_id, fun: Fungible(_) } = asset {
 				asset_id.0 == HereLocation::get()
 			} else {
@@ -244,10 +253,10 @@ impl pallet_xcm::Config for Runtime {
 	type ExecuteXcmOrigin = EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
 	type XcmExecuteFilter = Nothing;
 	type XcmExecutor = XcmExecutor<XcmConfig>;
-	// This filter wheter an origin may teleport out different assets.
-	type XcmTeleportFilter = OnlyTeleportNative;
-	// Deny all reserve asset transfers.
-	type XcmReserveTransferFilter = Nothing;
+	// This filter wheter an origin may teleport out an asset.
+	type XcmTeleportFilter = OnlySendNative;
+	// This filter wheter an origin may execute a reserve transfer of an asset.
+	type XcmReserveTransferFilter = OnlySendNative;
 	// Calculates the weight of XCM messages.
 	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
 	type UniversalLocation = UniversalLocation;
@@ -322,7 +331,7 @@ mod tests {
 
 		// The first parameter passed to contains may be any location as it's not used by the
 		// function. We use HereLocation for simplicity.
-		assert!(OnlyTeleportNative::contains(&(HereLocation::get(), assets)));
+		assert!(OnlySendNative::contains(&(HereLocation::get(), assets)));
 	}
 
 	#[test]
@@ -334,6 +343,6 @@ mod tests {
 
 		// The first parameter passed to contains may be any location as it's not used by the
 		// function. We use HereLocation for simplicity.
-		assert!(!OnlyTeleportNative::contains(&(HereLocation::get(), assets)));
+		assert!(!OnlySendNative::contains(&(HereLocation::get(), assets)));
 	}
 }

@@ -576,13 +576,12 @@ fn ump_transfer_balance() {
 
 #[test]
 fn force_create_a_foreign_asset_in_para_b() {
-	let para_a_native_asset_location =
-		xcm::v3::Location::new(1, [xcm::v3::Junction::Parachain(PARA_A_ID)]);
+	let para_a_native_asset_location = Location::new(1, [Junction::Parachain(PARA_A_ID)]);
 
 	ParaB::execute_with(|| {
 		assert_ok!(parachain::ForeignAssets::force_create(
 			parachain::RuntimeOrigin::root(),
-			para_a_native_asset_location,
+			para_a_native_asset_location.clone(),
 			ALICE,
 			false,
 			1000,
@@ -688,8 +687,7 @@ fn xcmp_create_asset_in_para_b() {
 fn xcmp_create_foreign_asset() {
 	MockNet::reset();
 
-	let para_a_native_asset_location =
-		xcm::v3::Location::new(1, [xcm::v3::Junction::Parachain(PARA_A_ID)]);
+	let para_a_native_asset_location = Location::new(1, [Junction::Parachain(PARA_A_ID)]);
 
 	let create_asset = parachain::RuntimeCall::ForeignAssets(ForeignAssetsCall::create {
 		id: para_a_native_asset_location,

@@ -19,7 +19,8 @@ export const ZOMBIE_POLKADOT_NODE_IP = "127.0.0.1:9944";
 // Chopsticks endpoints
 export const CHOPSTICKS_LAOS_NODE_IP = "127.0.0.1:8000";
 export const CHOPSTICKS_ASSET_HUB_NODE_IP = "127.0.0.1:8001";
-export const CHOPSTICKS_POLKADOT_IP = "127.0.0.1:8002";
+export const CHOPSTICKS_MOONBEAM_NODE_IP = "127.0.0.1:8002";
+export const CHOPSTICKS_POLKADOT_IP = "127.0.0.1:8003";
 
 // Ethereum chain constants
 export const CHAIN_ID = 667;
@@ -28,6 +29,10 @@ export const GAS_PRICE = "0x3B9ACA00";
 // Parachain IDs
 export const ASSET_HUB_PARA_ID = 1000;
 export const LAOS_PARA_ID = 3370;
+export const MOONBEAM_PARA_ID = 2004;
+
+// Asset IDs
+export const LAOS_ID_MOONBEAM = new BN("283870493414747423842723289889816153531");
 
 // Chain prefix
 export const POLKADOT_PREFIX = 0;

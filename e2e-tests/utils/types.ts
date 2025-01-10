@@ -4,6 +4,7 @@ import { XcmVersionedLocation, StagingXcmV3MultiLocation } from "@polkadot/types
 import { KeyringPair } from "@polkadot/keyring/types";
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import Web3 from "web3";
+import BN from "bn.js";
 
 type assetHubItems = {
 	accounts: {
@@ -30,9 +31,16 @@ type assetHubItems = {
 	relayAsset: StagingXcmV3MultiLocation;
 };
 
+type moonbeamItems = {
+	laosLocation: XcmVersionedLocation;
+	laosAsset: BN;
+};
+
 type laosItems = {
 	assetHubLocation: XcmVersionedLocation;
+	moonbeamLocation: XcmVersionedLocation;
 	relayChainLocation: XcmVersionedLocation;
+	moonbeamSA: string;
 };
 
 type substratePairs = {
@@ -52,7 +60,7 @@ type ethereumPairs = {
 
 type zombieChains = { laos: ApiPromise; polkadot: ApiPromise };
 
-type chopsticksChains = { laos: ApiPromise; assetHub: ApiPromise };
+type chopsticksChains = { laos: ApiPromise; assetHub: ApiPromise; moonbeam: ApiPromise };
 
 export interface CustomSuiteContext extends Suite {
 	web3: Web3;
@@ -69,4 +77,5 @@ export interface XcmSuiteContext extends Suite {
 	ethereumPairs: ethereumPairs;
 	laosItems: laosItems;
 	assetHubItems: assetHubItems;
+	moonbeamItems: moonbeamItems;
 }

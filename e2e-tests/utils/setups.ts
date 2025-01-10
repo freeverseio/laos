@@ -1,7 +1,7 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { Keyring } from "@polkadot/api";
 import Web3 from "web3";
-import { sovereignAccountOf, siblingParachainLocation, relayChainLocation } from "@utils/xcm";
+import { sovereignAccountOf, siblingParachainLocation, relayChainLocation, substrateToEthereum } from "@utils/xcm";
 import { CustomSuiteContext, XcmSuiteContext } from "@utils/types";
 import {
 	ZOMBIE_LAOS_NODE_IP,
@@ -14,6 +14,9 @@ import {
 	LAOS_PARA_ID,
 	ASSET_HUB_PARA_ID,
 	POLKADOT_PREFIX,
+	MOONBEAM_PARA_ID,
+	CHOPSTICKS_MOONBEAM_NODE_IP,
+	LAOS_ID_MOONBEAM,
 } from "@utils/constants";
 
 /**
@@ -116,7 +119,10 @@ export function describeWithExistingNodeXcm(title: string, cb: () => void) {
 			const assetHubProvider = new WsProvider(`ws://${CHOPSTICKS_ASSET_HUB_NODE_IP}`);
 			const apiAssetHub = await ApiPromise.create({ provider: assetHubProvider });
 
-			this.chains = { laos: apiLaos, assetHub: apiAssetHub };
+			const moonbeamProvider = new WsProvider(`ws://${CHOPSTICKS_MOONBEAM_NODE_IP}`);
+			const apiMoonbeam = await ApiPromise.create({ provider: moonbeamProvider });
+
+			this.chains = { laos: apiLaos, assetHub: apiAssetHub, moonbeam: apiMoonbeam };
 
 			this.assetHubItems = {
 				accounts: {
@@ -151,11 +157,23 @@ export function describeWithExistingNodeXcm(title: string, cb: () => void) {
 				"MultiAddress",
 				this.assetHubItems.laosSA
 			);
+
+			this.moonbeamItems = {
+				laosLocation: apiMoonbeam.createType("XcmVersionedLocation", {
+					V4: siblingParachainLocation(LAOS_PARA_ID),
+				}),
+				laosAsset: LAOS_ID_MOONBEAM,
+			};
+
 			this.laosItems = {
 				assetHubLocation: apiLaos.createType("XcmVersionedLocation", {
 					V4: siblingParachainLocation(ASSET_HUB_PARA_ID),
 				}),
+				moonbeamLocation: apiLaos.createType("XcmVersionedLocation", {
+					V4: siblingParachainLocation(MOONBEAM_PARA_ID),
+				}),
 				relayChainLocation: apiLaos.createType("XcmVersionedLocation", { V4: relayChainLocation() }),
+				moonbeamSA: substrateToEthereum(sovereignAccountOf(MOONBEAM_PARA_ID)),
 			};
 		});
 
@@ -164,6 +182,7 @@ export function describeWithExistingNodeXcm(title: string, cb: () => void) {
 		after(async function () {
 			this.chains.laos.disconnect();
 			this.chains.assetHub.disconnect();
+			this.chains.moonbeam.disconnect();
 		});
 	});
 }

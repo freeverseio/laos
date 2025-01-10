@@ -44,9 +44,10 @@ use xcm::latest::prelude::*;
 use xcm_builder::{
 	Account32Hash, AccountId32Aliases, AllowUnpaidExecutionFrom, ConvertedConcreteId,
 	EnsureDecodableXcm, EnsureXcmOrigin, FixedRateOfFungible, FixedWeightBounds,
-	FrameTransactionalProcessor, FungibleAdapter, GlobalConsensusParachainConvertsFor, IsConcrete,
-	NativeAsset, NoChecking, NonFungiblesAdapter, ParentIsPreset, SiblingParachainConvertsVia,
-	SignedAccountId32AsNative, SignedToAccountId32, SovereignSignedViaLocation,
+	FrameTransactionalProcessor, FungibleAdapter, FungiblesAdapter,
+	GlobalConsensusParachainConvertsFor, IsConcrete, MatchedConvertedConcreteId, NativeAsset,
+	NoChecking, NonFungiblesAdapter, ParentIsPreset, SiblingParachainConvertsVia,
+	SignedAccountId32AsNative, SignedToAccountId32, SovereignSignedViaLocation, StartsWith,
 };
 use xcm_executor::{
 	traits::{ConvertLocation, JustTry},
@@ -161,8 +162,10 @@ parameter_types! {
 
 parameter_types! {
 	pub const KsmLocation: Location = Location::parent();
+	pub const HereLocation: Location = Location::here();
 	pub const RelayNetwork: NetworkId = NetworkId::Kusama;
 	pub UniversalLocation: InteriorLocation = [GlobalConsensus(RelayNetwork::get()), Parachain(MsgQueue::parachain_id().into())].into();
+	pub CheckingAccount: AccountId = PolkadotXcm::check_account();
 }
 
 pub type LocationToAccountId = (
@@ -185,6 +188,34 @@ parameter_types! {
 	pub const MaxAssetsIntoHolding: u32 = 64;
 	pub ForeignPrefix: Location = (Parent,).into();
 }
+
+/// Type that matches foreign assets.
+/// We do this by matching on all possible Locations and excluding the ones
+/// inside our local chain.
+pub type ForeignAssetsMatcher = MatchedConvertedConcreteId<
+	Location,                                // Asset id.
+	Balance,                                 // Balance type.
+	EverythingBut<StartsWith<HereLocation>>, // Location matcher.
+	JustTry,                                 // How to convert from Location to AssetId.
+	JustTry,                                 // How to convert from u128 to Balance.
+>;
+
+/// AssetTransactor for handling other parachains' native tokens.
+pub type ForeignFungiblesTransactor = FungiblesAdapter<
+	// Use this implementation of the `fungibles::*` traits.
+	// `Balances` is the name given to the balances pallet in this particular example.
+	ForeignAssets,
+	// This transactor deals with the native token of sibling parachains.
+	ForeignAssetsMatcher,
+	// How we convert from a Location to an account id.
+	LocationToAccountId,
+	// The `AccountId` type.
+	AccountId,
+	// Not tracking teleports since we only use reserve asset transfers.
+	NoChecking,
+	// The account for checking.
+	CheckingAccount,
+>;
 
 pub type LocalAssetTransactor = (
 	FungibleAdapter<Balances, IsConcrete<KsmLocation>, LocationToAccountId, AccountId, ()>,
@@ -214,7 +245,7 @@ pub struct XcmConfig;
 impl Config for XcmConfig {
 	type RuntimeCall = RuntimeCall;
 	type XcmSender = XcmRouter;
-	type AssetTransactor = LocalAssetTransactor;
+	type AssetTransactor = (LocalAssetTransactor, ForeignFungiblesTransactor);
 	type OriginConverter = XcmOriginToCallOrigin;
 	type IsReserve = (NativeAsset, TrustedReserves);
 	type IsTeleporter = TrustedTeleporters;
@@ -328,9 +359,9 @@ impl pallet_assets::Config<TrustBackedAssetsInstance> for Runtime {
 #[cfg(feature = "runtime-benchmarks")]
 pub struct XcmBenchmarkHelper;
 #[cfg(feature = "runtime-benchmarks")]
-impl pallet_assets::BenchmarkHelper<xcm::v3::Location> for XcmBenchmarkHelper {
-	fn create_asset_id_parameter(id: u32) -> xcm::v3::Location {
-		xcm::v3::Location::new(1, xcm::v3::Junction::Parachain(id))
+impl pallet_assets::BenchmarkHelper<xcm::v4::Location> for XcmBenchmarkHelper {
+	fn create_asset_id_parameter(id: u32) -> xcm::v4::Location {
+		xcm::v4::Location::new(1, xcm::v4::Junction::Parachain(id))
 	}
 }
 
@@ -342,14 +373,14 @@ pub type ForeignAssetsInstance = pallet_assets::Instance2;
 impl pallet_assets::Config<ForeignAssetsInstance> for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Balance = Balance;
-	type AssetId = xcm::v3::Location;
-	type AssetIdParameter = xcm::v3::Location;
+	type AssetId = Location;
+	type AssetIdParameter = Location;
 	type Currency = Balances;
 	type CreateOrigin = ForeignCreators<
-		FromSiblingParachain<parachain_info::Pallet<Runtime>, xcm::v3::Location>,
+		FromSiblingParachain<parachain_info::Pallet<Runtime>, Location>,
 		ForeignCreatorsSovereignAccountOf,
 		AccountId,
-		xcm::v3::Location,
+		Location,
 	>;
 	type ForceOrigin = EnsureRoot<AccountId>;
 	type AssetDeposit = frame_support::traits::ConstU128<1_000>;

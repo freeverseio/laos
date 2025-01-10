@@ -160,7 +160,8 @@ jobs:
           npx @acala-network/chopsticks xcm \
             -r polkadot \
             -p laos \
-            -p chopsticks-configs/asset_hub.yml &
+            -p chopsticks-configs/asset_hub.yml \
+            -p chopsticks-configs/moonbeam.yml &
           echo "Chopsticks started"
         working-directory: ./e2e-tests
 
