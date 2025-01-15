@@ -22,13 +22,13 @@ jobs:
           cargo build --release --locked
 
       - name: Save LAOS binary
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with: 
           name: laos-binary
           path: ./target/release/laos
 
       - name: Save LAOS runtime
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: laos-runtime
           path: ./target/release/wbuild/laos-runtime/laos_runtime.compact.compressed.wasm
@@ -72,7 +72,7 @@ jobs:
           cache-key: npm 
 
       - name: Download LAOS binary
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: laos-binary
           path: ./target/release
@@ -140,7 +140,7 @@ jobs:
           cache-key: npm
 
       - name: Download LAOS runtime
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: laos-runtime
           path: ./target/release/wbuild/laos-runtime
