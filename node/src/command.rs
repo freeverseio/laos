@@ -22,6 +22,7 @@ use fc_db::kv::frontier_database_dir;
 use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
 use laos_runtime::Block;
 use log::info;
+use polkadot_service::WestendChainSpec;
 use sc_cli::{
 	ChainSpec, CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams,
 	NetworkParams, Result, SharedParams, SubstrateCli,
@@ -135,7 +136,13 @@ impl SubstrateCli for RelayChainCli {
 	}
 
 	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
-		polkadot_cli::Cli::from_iter([RelayChainCli::executable_name()].iter()).load_spec(id)
+		match id {
+			"moonbeam-alphanet" => Ok(Box::new(WestendChainSpec::from_json_bytes(
+				&include_bytes!("../../specs/westend-alphanet-raw-specs.json")[..],
+			)?)),
+			_ => polkadot_cli::Cli::from_iter([RelayChainCli::executable_name()].iter())
+				.load_spec(id),
+		}
 	}
 }
 
