@@ -1,5 +1,5 @@
 import { Suite } from "mocha";
-import { MultiAddress, AccountId } from "@polkadot/types/interfaces";
+import { MultiAddress, AccountId, Xcm } from "@polkadot/types/interfaces";
 import { XcmVersionedLocation, StagingXcmV3MultiLocation } from "@polkadot/types/lookup";
 import { KeyringPair } from "@polkadot/keyring/types";
 import { ApiPromise, WsProvider } from "@polkadot/api";
@@ -37,15 +37,17 @@ type moonbeamItems = {
 };
 
 type hydrationItems = {
-  laosLocation: XcmVersionedLocation;
-  laosAsset: BN;
-}
+	laosLocation: XcmVersionedLocation;
+	laosAsset: BN;
+};
 
 type laosItems = {
 	assetHubLocation: XcmVersionedLocation;
 	moonbeamLocation: XcmVersionedLocation;
+	hydrationLocation: XcmVersionedLocation;
 	relayChainLocation: XcmVersionedLocation;
 	moonbeamSA: string;
+	hydrationSA: string;
 };
 
 type substratePairs = {
@@ -83,5 +85,5 @@ export interface XcmSuiteContext extends Suite {
 	laosItems: laosItems;
 	assetHubItems: assetHubItems;
 	moonbeamItems: moonbeamItems;
-  hydrationItems: hydrationItems;
+	hydrationItems: hydrationItems;
 }
