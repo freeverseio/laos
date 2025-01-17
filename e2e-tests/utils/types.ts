@@ -36,6 +36,11 @@ type moonbeamItems = {
 	laosAsset: BN;
 };
 
+type hydrationItems = {
+  laosLocation: XcmVersionedLocation;
+  laosAsset: BN;
+}
+
 type laosItems = {
 	assetHubLocation: XcmVersionedLocation;
 	moonbeamLocation: XcmVersionedLocation;
@@ -60,7 +65,7 @@ type ethereumPairs = {
 
 type zombieChains = { laos: ApiPromise; polkadot: ApiPromise };
 
-type chopsticksChains = { laos: ApiPromise; assetHub: ApiPromise; moonbeam: ApiPromise };
+type chopsticksChains = { laos: ApiPromise; assetHub: ApiPromise; moonbeam: ApiPromise; hydration: ApiPromise };
 
 export interface CustomSuiteContext extends Suite {
 	web3: Web3;
@@ -78,4 +83,5 @@ export interface XcmSuiteContext extends Suite {
 	laosItems: laosItems;
 	assetHubItems: assetHubItems;
 	moonbeamItems: moonbeamItems;
+  hydrationItems: hydrationItems;
 }
