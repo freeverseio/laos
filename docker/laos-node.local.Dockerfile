@@ -1,10 +1,10 @@
-FROM docker.io/library/ubuntu:22.04
+FROM docker.io/library/ubuntu:24.04
 
 # show backtraces
 ENV RUST_BACKTRACE 1
 
 # Create user
-RUN useradd -m -u 1000 -U -s /bin/sh -d /laos laos 
+RUN useradd -m -u 2000 -U -s /bin/sh -d /laos laos 
 
 # Set up directories and permissions
 RUN mkdir -p /data /laos/.local/share && \
