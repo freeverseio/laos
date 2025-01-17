@@ -25,7 +25,7 @@
         "balances": {
           "balances": [
             [
-              "0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac",
+              "0x506543b5d64A0083Dd0faA386FfE41b75141A31C",
               800000000000000000000000000
             ],
             [
@@ -253,16 +253,16 @@
         "session": {
           "keys": [
             [
-              "0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac",
-              "0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac",
+              "0x506543b5d64A0083Dd0faA386FfE41b75141A31C",
+              "0x506543b5d64A0083Dd0faA386FfE41b75141A31C",
               {
-                "aura": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+                "aura": "5D7TF21C8jKHSKpeUFf37QWRqYnjR5LsoQWY9yY5Q4k42zEQ"
               }
             ]
           ]
         },
         "sudo": {
-          "key": "0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac"
+          "key": "0x506543b5d64A0083Dd0faA386FfE41b75141A31C"
         },
         "system": {},
         "technicalCommittee": {
