@@ -1,10 +1,10 @@
-FROM docker.io/library/ubuntu:22.04
+FROM docker.io/library/ubuntu:24.04
 
 # show backtraces
 ENV RUST_BACKTRACE 1
 
 # Create user
-RUN useradd -m -u 1000 -U -s /bin/sh -d /laos laos 
+RUN useradd -m -u 1001 -U -s /bin/sh -d /laos laos 
 
 # Set up directories and permissions
 RUN mkdir -p /data /laos/.local/share && \
@@ -15,7 +15,7 @@ RUN mkdir -p /data /laos/.local/share && \
 USER laos
 
 # copy the compiled binary to the container
-COPY --chown=laos:laos --chmod=774 target/release/laos /usr/bin/laos
+COPY --chown=laos:laos --chmod=777 target/release/laos /usr/bin/laos
 
 # check if executable works in this container
 RUN /usr/bin/laos --version
