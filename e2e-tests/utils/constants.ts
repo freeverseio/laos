@@ -37,8 +37,9 @@ export const HYDRATION_PARA_ID = 2034;
 export const LAOS_ID_MOONBEAM = new BN("283870493414747423842723289889816153531");
 export const LAOS_ID_HYDRATION = new BN("3370");
 
-// Chain prefix
+// Chain prefixes
 export const POLKADOT_PREFIX = 0;
+export const HYDRATION_PREFIX = 63;
 
 // Monetary units
 export const ONE_LAOS = new BN("1000000000000000000");

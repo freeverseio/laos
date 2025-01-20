@@ -1,5 +1,5 @@
 import { Suite } from "mocha";
-import { MultiAddress, AccountId, Xcm } from "@polkadot/types/interfaces";
+import { MultiAddress, AccountId } from "@polkadot/types/interfaces";
 import { XcmVersionedLocation, StagingXcmV3MultiLocation } from "@polkadot/types/lookup";
 import { KeyringPair } from "@polkadot/keyring/types";
 import { ApiPromise, WsProvider } from "@polkadot/api";
@@ -37,6 +37,9 @@ type moonbeamItems = {
 };
 
 type hydrationItems = {
+  accounts: {
+    alice: AccountId;
+  };
 	laosLocation: XcmVersionedLocation;
 	laosAsset: BN;
 };
@@ -58,6 +61,10 @@ type substratePairs = {
 	eve: KeyringPair;
 	ferdie: KeyringPair;
 };
+
+type hydrationPairs = {
+  alice: KeyringPair;
+}
 
 type ethereumPairs = {
 	alith: KeyringPair;
@@ -81,6 +88,7 @@ export interface CustomSuiteContext extends Suite {
 export interface XcmSuiteContext extends Suite {
 	chains: chopsticksChains;
 	substratePairs: substratePairs;
+  hydrationPairs: hydrationPairs;
 	ethereumPairs: ethereumPairs;
 	laosItems: laosItems;
 	assetHubItems: assetHubItems;

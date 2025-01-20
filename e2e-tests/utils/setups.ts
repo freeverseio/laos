@@ -14,6 +14,7 @@ import {
 	LAOS_PARA_ID,
 	ASSET_HUB_PARA_ID,
 	POLKADOT_PREFIX,
+  HYDRATION_PREFIX,
 	MOONBEAM_PARA_ID,
 	HYDRATION_PARA_ID,
 	CHOPSTICKS_MOONBEAM_NODE_IP,
@@ -108,6 +109,9 @@ export function describeWithExistingNodeXcm(title: string, cb: () => void) {
 				ferdie: keyring.addFromUri("//Ferdie"),
 			};
 
+      keyring = new Keyring({ type: "sr25519", ss58Format: HYDRATION_PREFIX });
+      this.hydrationPairs = { alice: keyring.addFromUri("//Alice") };
+
 			keyring = new Keyring({ type: "ethereum" });
 
 			this.ethereumPairs = {
@@ -172,6 +176,7 @@ export function describeWithExistingNodeXcm(title: string, cb: () => void) {
 			};
 
 			this.hydrationItems = {
+        accounts: { alice: apiHydration.createType("AccountId", this.hydrationPairs.alice.address )},
 				laosLocation: apiHydration.createType("XcmVersionedLocation", {
 					V4: siblingParachainLocation(LAOS_PARA_ID),
 				}),

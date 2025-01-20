@@ -2,7 +2,7 @@ import BN from "bn.js";
 import { expect } from "chai";
 import { step } from "mocha-steps";
 
-import { LAOS_PARA_ID, ONE_LAOS } from "@utils/constants";
+import { LAOS_PARA_ID, ONE_LAOS, LAOS_ID_HYDRATION } from "@utils/constants";
 import { describeWithExistingNodeXcm } from "@utils/setups";
 import { siblingParachainLocation, hereLocation, checkEventAfterXcm } from "@utils/xcm";
 import { sendTxAndWaitForFinalization } from "@utils/transactions";
@@ -201,8 +201,8 @@ describeWithExistingNodeXcm("Local Reserve transfer LAOS <-> Hydration", functio
 				interior: {
 					X1: [
 						{
-							AccountKey20: {
-								key: this.ethereumPairs.baltathar.address,
+							AccountId32: {
+								id: this.hydrationItems.accounts.alice.toHex(),
 							},
 						},
 					],
@@ -225,58 +225,46 @@ describeWithExistingNodeXcm("Local Reserve transfer LAOS <-> Hydration", functio
 		const fee_asset_item = "0";
 		const weight_limit = "Unlimited";
 
-		const baltatharBalanceBefore = hexToBn(
-			(
-				await this.chains.moonbeam.query.assets.account(
-					this.moonbeamItems.laosAsset,
-					this.ethereumPairs.baltathar.address
-				)
-			).toJSON()?.["balance"] ?? 0
-		);
+		const aliceBalanceBefore = new BN((await this.chains.hydration.query.tokens.accounts(this.hydrationItems.accounts.alice, LAOS_ID_HYDRATION)).free);
 		const alithBalanceBefore = (
 			await this.chains.laos.query.system.account(this.ethereumPairs.alith.address as string)
 		).data.free;
-		const moonbeamSABalanceBefore = (await this.chains.laos.query.system.account(this.laosItems.moonbeamSA)).data
+		const hydrationSABalanceBefore = (await this.chains.laos.query.system.account(this.laosItems.hydrationSA)).data
 			.free;
 
 		const call = this.chains.laos.tx.polkadotXcm.limitedReserveTransferAssets(
-			this.laosItems.moonbeamLocation,
+			this.laosItems.hydrationLocation,
 			beneficiary,
 			assets,
 			fee_asset_item,
 			weight_limit
 		);
 
-		const moonbeamBestBlockBeforeSending = await getFinalizedBlockNumber(this.chains.moonbeam);
+		const hydrationBestBlockBeforeSending = await getFinalizedBlockNumber(this.chains.hydration);
 		await sendTxAndWaitForFinalization(this.chains.laos, call, this.ethereumPairs.alith);
 
-		// Check that $LAOS has been sent to Moonbeam
+		// Check that $LAOS has been sent to Hydration
 		const event = await checkEventAfterXcm(
-			this.chains.moonbeam,
+			this.chains.hydration,
 			({ event }) => {
 				return (
-					this.chains.moonbeam.events.assets.Issued.is(event) &&
-					event.data[1].toString() == this.ethereumPairs.baltathar.address
+					this.chains.hydration.events.tokens.Deposited.is(event) &&
+          event.data[1].toString() == this.hydrationItems.accounts.alice
 				);
 			},
-			moonbeamBestBlockBeforeSending
+			hydrationBestBlockBeforeSending
 		);
 
 		expect(event).to.not.be.null;
 		const [assetId, owner, realAmountReceived] = event.event.data;
-		expect(new BN(assetId.toString()).eq(this.moonbeamItems.laosAsset)).to.be.true;
-		expect(owner.toString()).to.equal(this.ethereumPairs.baltathar.address);
-		const baltatharBalance = hexToBn(
-			(
-				await this.chains.moonbeam.query.assets.account(
-					this.moonbeamItems.laosAsset,
-					this.ethereumPairs.baltathar.address
-				)
-			).toJSON()["balance"]
-		);
-		expect(
-			baltatharBalanceBefore.add(new BN(realAmountReceived.toString())).eq(baltatharBalance),
-			"Baltathar's balance should increase by the amount received"
+		expect(new BN(assetId.toString()).eq(this.hydrationItems.laosAsset)).to.be.true;
+		expect(owner.toString()).to.equal(this.hydrationPairs.alice.address);
+
+		const aliceBalance = new BN((await this.chains.hydration.query.tokens.accounts(this.hydrationItems.accounts.alice, LAOS_ID_HYDRATION)).free);
+		
+    expect(
+			aliceBalanceBefore.add(new BN(realAmountReceived.toString())).eq(aliceBalance),
+			"Alice's balance should increase by the amount received"
 		).to.be.true;
 		const realAlithBalance = (
 			await this.chains.laos.query.system.account(this.ethereumPairs.alith.address as string)
@@ -287,18 +275,18 @@ describeWithExistingNodeXcm("Local Reserve transfer LAOS <-> Hydration", functio
 			"Alith's balance should decrease by the amount of the reserve transfer, disregarding fees"
 		).to.be.true;
 
-		// with reserve transfers, in LAOS, Alith's amount is transferred to Moonbeam's SA
-		const realMoonbeamSABalance = (await this.chains.laos.query.system.account(this.laosItems.moonbeamSA)).data
+		// with reserve transfers, in LAOS, Alith's amount is transferred to Hydration's SA
+		const realHydrationSABalance = (await this.chains.laos.query.system.account(this.laosItems.hydrationSA)).data
 			.free;
-		const supposedMoonbeamSABalance = moonbeamSABalanceBefore.add(amount);
+		const supposedHydrationSABalance = hydrationSABalanceBefore.add(amount);
 		expect(
-			supposedMoonbeamSABalance.eq(realMoonbeamSABalance),
-			"Moonbeam's SA balance has not increased by the amount of the reserve transfer"
+			supposedHydrationSABalance.eq(realHydrationSABalance),
+			"Hydration's SA balance has not increased by the amount of the reserve transfer"
 		).to.be.true;
 	});
 
 	step("Reserve transfer from Hydration to LAOS", async function () {
-		const beneficiary = this.chains.moonbeam.createType("XcmVersionedLocation", {
+		const beneficiary = this.chains.hydration.createType("XcmVersionedLocation", {
 			V4: {
 				parents: "0",
 				interior: {
@@ -314,7 +302,7 @@ describeWithExistingNodeXcm("Local Reserve transfer LAOS <-> Hydration", functio
 		});
 
 		const amount = ONE_LAOS;
-		const assets = this.chains.moonbeam.createType("XcmVersionedAssets", {
+		const assets = this.chains.hydration.createType("XcmVersionedAssets", {
 			V4: [
 				{
 					id: siblingParachainLocation(LAOS_PARA_ID),
@@ -330,12 +318,11 @@ describeWithExistingNodeXcm("Local Reserve transfer LAOS <-> Hydration", functio
 		const beneficiaryBalanceBefore = (
 			await this.chains.laos.query.system.account(this.ethereumPairs.baltathar.address)
 		).data.free;
-		const moonbeamSABalanceBefore = (await this.chains.laos.query.system.account(this.laosItems.moonbeamSA)).data
+		const hydrationSABalanceBefore = (await this.chains.laos.query.system.account(this.laosItems.hydrationSA)).data
 			.free;
 
-		// We call transferAssets instead of limitedReserveTransferAssets here due to moonbeam disable this extrinsic in their XCM maintenances. transferAssets executes a reserve transfer under the hood for this asset so this is OK.
-		const call = this.chains.moonbeam.tx.polkadotXcm.transferAssets(
-			this.moonbeamItems.laosLocation,
+		const call = this.chains.hydration.tx.polkadotXcm.limitedReserveTransferAssets(
+			this.hydrationItems.laosLocation,
 			beneficiary,
 			assets,
 			fee_asset_item,
@@ -343,7 +330,7 @@ describeWithExistingNodeXcm("Local Reserve transfer LAOS <-> Hydration", functio
 		);
 
 		const laosBestBlockBeforeSending = await getFinalizedBlockNumber(this.chains.laos);
-		await sendTxAndWaitForFinalization(this.chains.moonbeam, call, this.ethereumPairs.baltathar);
+		await sendTxAndWaitForFinalization(this.chains.hydration, call, this.hydrationPairs.alice);
 		// Check that $LAOS has been sent back to Laos
 		const event = await checkEventAfterXcm(
 			this.chains.laos,
@@ -366,13 +353,13 @@ describeWithExistingNodeXcm("Local Reserve transfer LAOS <-> Hydration", functio
 			"Baltathar's balance should increase by the amount received in the reserve transfer"
 		).to.be.true;
 
-		// check that moonbeam SA balance has been reduced
-		const realMoonbeamSABalance = (await this.chains.laos.query.system.account(this.laosItems.moonbeamSA)).data
+		// check that hydration SA balance has been reduced
+		const realHydrationSABalance = (await this.chains.laos.query.system.account(this.laosItems.hydrationSA)).data
 			.free;
-		const supposedMoonbeamSABalance = moonbeamSABalanceBefore.sub(amount);
+		const supposedHydrationSABalance = hydrationSABalanceBefore.sub(amount);
 		expect(
-			supposedMoonbeamSABalance.eq(realMoonbeamSABalance),
-			"Moonbeam's SA balance has not decreased by the amount of the reserve transfer"
+			supposedHydrationSABalance.eq(realHydrationSABalance),
+			"Hydration's SA balance has not decreased by the amount of the reserve transfer"
 		).to.be.true;
 	});
 });
