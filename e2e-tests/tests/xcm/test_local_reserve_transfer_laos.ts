@@ -225,7 +225,11 @@ describeWithExistingNodeXcm("Local Reserve transfer LAOS <-> Hydration", functio
 		const fee_asset_item = "0";
 		const weight_limit = "Unlimited";
 
-		const aliceBalanceBefore = new BN((await this.chains.hydration.query.tokens.accounts(this.hydrationItems.accounts.alice, LAOS_ID_HYDRATION)).free);
+		const aliceBalanceBefore = new BN(
+			(
+				await this.chains.hydration.query.tokens.accounts(this.hydrationItems.accounts.alice, LAOS_ID_HYDRATION)
+			).free
+		);
 		const alithBalanceBefore = (
 			await this.chains.laos.query.system.account(this.ethereumPairs.alith.address as string)
 		).data.free;
@@ -249,7 +253,7 @@ describeWithExistingNodeXcm("Local Reserve transfer LAOS <-> Hydration", functio
 			({ event }) => {
 				return (
 					this.chains.hydration.events.tokens.Deposited.is(event) &&
-          event.data[1].toString() == this.hydrationItems.accounts.alice
+					event.data[1].toString() == this.hydrationItems.accounts.alice
 				);
 			},
 			hydrationBestBlockBeforeSending
@@ -260,9 +264,13 @@ describeWithExistingNodeXcm("Local Reserve transfer LAOS <-> Hydration", functio
 		expect(new BN(assetId.toString()).eq(this.hydrationItems.laosAsset)).to.be.true;
 		expect(owner.toString()).to.equal(this.hydrationPairs.alice.address);
 
-		const aliceBalance = new BN((await this.chains.hydration.query.tokens.accounts(this.hydrationItems.accounts.alice, LAOS_ID_HYDRATION)).free);
-		
-    expect(
+		const aliceBalance = new BN(
+			(
+				await this.chains.hydration.query.tokens.accounts(this.hydrationItems.accounts.alice, LAOS_ID_HYDRATION)
+			).free
+		);
+
+		expect(
 			aliceBalanceBefore.add(new BN(realAmountReceived.toString())).eq(aliceBalance),
 			"Alice's balance should increase by the amount received"
 		).to.be.true;

@@ -14,7 +14,7 @@ import {
 	LAOS_PARA_ID,
 	ASSET_HUB_PARA_ID,
 	POLKADOT_PREFIX,
-  HYDRATION_PREFIX,
+	HYDRATION_PREFIX,
 	MOONBEAM_PARA_ID,
 	HYDRATION_PARA_ID,
 	CHOPSTICKS_MOONBEAM_NODE_IP,
@@ -44,7 +44,7 @@ export function describeWithExistingNode(
 			this.web3 = new Web3(providerLaosNodeIP ? `http://${providerLaosNodeIP}` : `http://${ZOMBIE_LAOS_NODE_IP}`);
 
 			let keyring = new Keyring({ type: "sr25519" });
-			this.substratePairs = {
+			this.polkadotPairs = {
 				alice: keyring.addFromUri("//Alice"),
 				bob: keyring.addFromUri("//Bob"),
 				charlie: keyring.addFromUri("//Charlie"),
@@ -100,7 +100,7 @@ export function describeWithExistingNodeXcm(title: string, cb: () => void) {
 		before(async function () {
 			// In Xcm tests we use chopsticks and fork Paseo, which uses prefixed addresses.
 			let keyring = new Keyring({ type: "sr25519", ss58Format: POLKADOT_PREFIX });
-			this.substratePairs = {
+			this.polkadotPairs = {
 				alice: keyring.addFromUri("//Alice"),
 				bob: keyring.addFromUri("//Bob"),
 				charlie: keyring.addFromUri("//Charlie"),
@@ -109,8 +109,8 @@ export function describeWithExistingNodeXcm(title: string, cb: () => void) {
 				ferdie: keyring.addFromUri("//Ferdie"),
 			};
 
-      keyring = new Keyring({ type: "sr25519", ss58Format: HYDRATION_PREFIX });
-      this.hydrationPairs = { alice: keyring.addFromUri("//Alice") };
+			keyring = new Keyring({ type: "sr25519", ss58Format: HYDRATION_PREFIX });
+			this.hydrationPairs = { alice: keyring.addFromUri("//Alice") };
 
 			keyring = new Keyring({ type: "ethereum" });
 
@@ -136,22 +136,22 @@ export function describeWithExistingNodeXcm(title: string, cb: () => void) {
 
 			this.assetHubItems = {
 				accounts: {
-					alice: apiAssetHub.createType("AccountId", this.substratePairs.alice.address),
-					bob: apiAssetHub.createType("AccountId", this.substratePairs.bob.address),
-					charlie: apiAssetHub.createType("AccountId", this.substratePairs.charlie.address),
-					dave: apiAssetHub.createType("AccountId", this.substratePairs.dave.address),
-					eve: apiAssetHub.createType("AccountId", this.substratePairs.eve.address),
-					ferdie: apiAssetHub.createType("AccountId", this.substratePairs.ferdie.address),
+					alice: apiAssetHub.createType("AccountId", this.polkadotPairs.alice.address),
+					bob: apiAssetHub.createType("AccountId", this.polkadotPairs.bob.address),
+					charlie: apiAssetHub.createType("AccountId", this.polkadotPairs.charlie.address),
+					dave: apiAssetHub.createType("AccountId", this.polkadotPairs.dave.address),
+					eve: apiAssetHub.createType("AccountId", this.polkadotPairs.eve.address),
+					ferdie: apiAssetHub.createType("AccountId", this.polkadotPairs.ferdie.address),
 				},
 				laosSA: sovereignAccountOf(LAOS_PARA_ID),
 
 				multiAddresses: {
-					alice: apiAssetHub.createType("MultiAddress", this.substratePairs.alice.address),
-					bob: apiAssetHub.createType("MultiAddress", this.substratePairs.bob.address),
-					charlie: apiAssetHub.createType("MultiAddress", this.substratePairs.charlie.address),
-					dave: apiAssetHub.createType("MultiAddress", this.substratePairs.dave.address),
-					eve: apiAssetHub.createType("MultiAddress", this.substratePairs.eve.address),
-					ferdie: apiAssetHub.createType("MultiAddress", this.substratePairs.ferdie.address),
+					alice: apiAssetHub.createType("MultiAddress", this.polkadotPairs.alice.address),
+					bob: apiAssetHub.createType("MultiAddress", this.polkadotPairs.bob.address),
+					charlie: apiAssetHub.createType("MultiAddress", this.polkadotPairs.charlie.address),
+					dave: apiAssetHub.createType("MultiAddress", this.polkadotPairs.dave.address),
+					eve: apiAssetHub.createType("MultiAddress", this.polkadotPairs.eve.address),
+					ferdie: apiAssetHub.createType("MultiAddress", this.polkadotPairs.ferdie.address),
 				},
 				laosLocation: apiAssetHub.createType("XcmVersionedLocation", {
 					V4: siblingParachainLocation(LAOS_PARA_ID),
@@ -176,7 +176,7 @@ export function describeWithExistingNodeXcm(title: string, cb: () => void) {
 			};
 
 			this.hydrationItems = {
-        accounts: { alice: apiHydration.createType("AccountId", this.hydrationPairs.alice.address )},
+				accounts: { alice: apiHydration.createType("AccountId", this.hydrationPairs.alice.address) },
 				laosLocation: apiHydration.createType("XcmVersionedLocation", {
 					V4: siblingParachainLocation(LAOS_PARA_ID),
 				}),
