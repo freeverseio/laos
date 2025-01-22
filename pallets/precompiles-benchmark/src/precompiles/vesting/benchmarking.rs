@@ -193,7 +193,9 @@ mod benchmarks {
 	}
 
 	#[benchmark]
-	fn precompile_vesting_vesting(m: Linear<0, { <T as pallet_vesting::Config>::MAX_VESTING_SCHEDULES }>) {
+	fn precompile_vesting_vesting(
+		m: Linear<0, { <T as pallet_vesting::Config>::MAX_VESTING_SCHEDULES }>,
+	) {
 		let caller: T::AccountId = whitelisted_caller();
 		let caller_origin = T::RuntimeOrigin::from(RawOrigin::from(Some(caller.clone())));
 		let mut handle = MockHandle::new(T::AccountIdToH160::convert(caller.clone()));

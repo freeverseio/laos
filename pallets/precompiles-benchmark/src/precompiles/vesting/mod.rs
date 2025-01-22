@@ -70,7 +70,9 @@ where
 			Some(v) => {
 				register_cost::<Runtime>(
 					handle,
-					<Runtime as crate::Config>::WeightInfo::precompile_vesting_vesting(v.len() as u32),
+					<Runtime as crate::Config>::WeightInfo::precompile_vesting_vesting(
+						v.len() as u32
+					),
 				)?;
 				let mut output: Vec<VestingInfo> = Vec::with_capacity(v.len());
 
