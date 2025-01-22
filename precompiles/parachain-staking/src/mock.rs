@@ -22,14 +22,15 @@ use frame_support::{
 	weights::Weight,
 };
 use frame_system::pallet_prelude::BlockNumberFor;
-use pallet_evm::{EnsureAddressNever, EnsureAddressRoot};
-use pallet_parachain_staking::{rewards, AwardedPts, InflationInfo, Points, Range};
+use pallet_evm::{EnsureAddressNever, EnsureAddressRoot, FrameSystemAccountProvider};
+use pallet_parachain_staking::{AwardedPts, InflationInfo, Points, Range};
 use precompile_utils::{
 	precompile_set::*,
 	testing::{Alice, MockAccount},
 };
 use sp_consensus_slots::Slot;
 use sp_core::{H256, U256};
+use sp_io;
 use sp_runtime::{
 	traits::{BlakeTwo256, IdentityLookup},
 	BuildStorage, Perbill, Percent,
@@ -63,6 +64,7 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = Everything;
 	type DbWeight = ();
 	type RuntimeOrigin = RuntimeOrigin;
+	type RuntimeTask = RuntimeTask;
 	type Nonce = u64;
 	type Block = Block;
 	type RuntimeCall = RuntimeCall;
@@ -83,7 +85,6 @@ impl frame_system::Config for Runtime {
 	type SS58Prefix = SS58Prefix;
 	type OnSetCode = ();
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
-	type RuntimeTask = ();
 	type SingleBlockMigrations = ();
 	type MultiBlockMigrator = ();
 	type PreInherents = ();
@@ -94,7 +95,6 @@ impl frame_system::Config for Runtime {
 parameter_types! {
 	pub const ExistentialDeposit: u128 = 0;
 }
-
 impl pallet_balances::Config for Runtime {
 	type MaxReserves = ();
 	type ReserveIdentifier = [u8; 4];
@@ -127,6 +127,7 @@ parameter_types! {
 		let block_gas_limit = BlockGasLimit::get().min(u64::MAX.into()).low_u64();
 		block_gas_limit.saturating_div(BLOCK_STORAGE_LIMIT)
 	};
+	pub SuicideQuickClearLimit: u32 = 0;
 }
 
 pub type Precompiles<R> =
@@ -153,9 +154,11 @@ impl pallet_evm::Config for Runtime {
 	type FindAuthor = ();
 	type OnCreate = ();
 	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
+	type SuicideQuickClearLimit = SuicideQuickClearLimit;
+	type GasLimitStorageGrowthRatio = GasLimitStorageGrowthRatio;
 	type Timestamp = Timestamp;
 	type WeightInfo = pallet_evm::weights::SubstrateWeight<Runtime>;
-	type SuicideQuickClearLimit = ();
+	type AccountProvider = FrameSystemAccountProvider<Runtime>;
 }
 
 parameter_types! {
@@ -217,14 +220,15 @@ impl pallet_parachain_staking::Config for Runtime {
 	type MinCandidateStk = MinCandidateStk;
 	type MinDelegation = MinDelegation;
 	type BlockAuthor = BlockAuthor;
+	type PayoutCollatorReward = ();
 	type OnCollatorPayout = ();
-	type PayoutReward = rewards::TransferFromRewardsAccount;
 	type OnInactiveCollator = ();
 	type OnNewRound = ();
 	type SlotProvider = StakingRoundSlotProvider;
 	type WeightInfo = ();
 	type MaxCandidates = MaxCandidates;
-	type SlotsPerYear = frame_support::traits::ConstU32<{ 31_557_600 / 6 }>;
+	type SlotDuration = frame_support::traits::ConstU64<6_000>;
+	type BlockTime = frame_support::traits::ConstU64<6_000>;
 }
 
 pub(crate) struct ExtBuilder {
@@ -245,7 +249,11 @@ impl Default for ExtBuilder {
 			delegations: vec![],
 			collators: vec![],
 			inflation: InflationInfo {
-				expect: Range { min: 700, ideal: 700, max: 700 },
+				expect: Range {
+					min: 700,
+					ideal: 700,
+					max: 700,
+				},
 				// not used
 				annual: Range {
 					min: Perbill::from_percent(50),
@@ -278,8 +286,10 @@ impl ExtBuilder {
 		mut self,
 		delegations: Vec<(AccountId, AccountId, Balance)>,
 	) -> Self {
-		self.delegations =
-			delegations.into_iter().map(|d| (d.0, d.1, d.2, Percent::zero())).collect();
+		self.delegations = delegations
+			.into_iter()
+			.map(|d| (d.0, d.1, d.2, Percent::zero()))
+			.collect();
 		self
 	}
 
@@ -287,7 +297,10 @@ impl ExtBuilder {
 		mut self,
 		delegations: Vec<(AccountId, AccountId, Balance, Percent)>,
 	) -> Self {
-		self.delegations = delegations.into_iter().map(|d| (d.0, d.1, d.2, d.3)).collect();
+		self.delegations = delegations
+			.into_iter()
+			.map(|d| (d.0, d.1, d.2, d.3))
+			.collect();
 		self
 	}
 
@@ -302,9 +315,11 @@ impl ExtBuilder {
 			.build_storage()
 			.expect("Frame system builds valid default genesis config");
 
-		pallet_balances::GenesisConfig::<Runtime> { balances: self.balances }
-			.assimilate_storage(&mut t)
-			.expect("Pallet balances storage can be assimilated");
+		pallet_balances::GenesisConfig::<Runtime> {
+			balances: self.balances,
+		}
+		.assimilate_storage(&mut t)
+		.expect("Pallet balances storage can be assimilated");
 		pallet_parachain_staking::GenesisConfig::<Runtime> {
 			candidates: self.collators,
 			delegations: self.delegations,
@@ -313,7 +328,6 @@ impl ExtBuilder {
 			parachain_bond_reserve_percent: GENESIS_PARACHAIN_BOND_RESERVE_PERCENT,
 			blocks_per_round: GENESIS_BLOCKS_PER_ROUND,
 			num_selected_candidates: GENESIS_NUM_SELECTED_CANDIDATES,
-			rewards_account: None,
 		}
 		.assimilate_storage(&mut t)
 		.expect("Parachain Staking's storage can be assimilated");
@@ -350,5 +364,8 @@ pub(crate) fn roll_to_round_begin(round: BlockNumber) {
 }
 
 pub(crate) fn events() -> Vec<RuntimeEvent> {
-	System::events().into_iter().map(|r| r.event).collect::<Vec<_>>()
+	System::events()
+		.into_iter()
+		.map(|r| r.event)
+		.collect::<Vec<_>>()
 }
