@@ -45,7 +45,7 @@ describeWithExistingNodeXcm("Teleport Asset Hub <-> LAOS", function () {
 			(
 				await this.chains.assetHub.query.foreignAssets.account(
 					this.assetHubItems.laosAsset,
-					this.substratePairs.charlie.address
+					this.polkadotPairs.charlie.address
 				)
 			).toJSON()?.["balance"] ?? 0
 		);
@@ -74,12 +74,12 @@ describeWithExistingNodeXcm("Teleport Asset Hub <-> LAOS", function () {
 		expect(event).to.not.be.null;
 		const [assetId, owner, realAmountReceived] = event.event.data;
 		expect(assetId.toJSON()).to.deep.equal(this.assetHubItems.laosAsset.toJSON());
-		expect(owner.toString()).to.equal(this.substratePairs.charlie.address);
+		expect(owner.toString()).to.equal(this.polkadotPairs.charlie.address);
 		const charlieBalance = hexToBn(
 			(
 				await this.chains.assetHub.query.foreignAssets.account(
 					this.assetHubItems.laosAsset,
-					this.substratePairs.charlie.address
+					this.polkadotPairs.charlie.address
 				)
 			).toJSON()["balance"]
 		);
@@ -131,7 +131,7 @@ describeWithExistingNodeXcm("Teleport Asset Hub <-> LAOS", function () {
 			(
 				await this.chains.assetHub.query.foreignAssets.account(
 					this.assetHubItems.laosAsset,
-					this.substratePairs.charlie.address
+					this.polkadotPairs.charlie.address
 				)
 			).toJSON()?.["balance"] ?? 0
 		);
@@ -148,7 +148,7 @@ describeWithExistingNodeXcm("Teleport Asset Hub <-> LAOS", function () {
 		);
 
 		const laosBestBlockBeforeSending = await getFinalizedBlockNumber(this.chains.laos);
-		await sendTxAndWaitForFinalization(this.chains.assetHub, call, this.substratePairs.charlie);
+		await sendTxAndWaitForFinalization(this.chains.assetHub, call, this.polkadotPairs.charlie);
 		// Check that $LAOS has been sent back to Laos
 		const event = await checkEventAfterXcm(
 			this.chains.laos,
@@ -168,7 +168,7 @@ describeWithExistingNodeXcm("Teleport Asset Hub <-> LAOS", function () {
 			(
 				await this.chains.assetHub.query.foreignAssets.account(
 					this.assetHubItems.laosAsset,
-					this.substratePairs.charlie.address
+					this.polkadotPairs.charlie.address
 				)
 			).toJSON()["balance"]
 		);
