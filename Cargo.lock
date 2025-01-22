@@ -7759,6 +7759,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "log",
+ "num_enum",
  "pallet-balances",
  "pallet-evm",
  "pallet-parachain-staking",
