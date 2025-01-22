@@ -9557,10 +9557,8 @@ version = "17.0.1"
 source = "git+https://github.com/paritytech/polkadot-sdk?branch=stable2407#47155f85a877e8c26b2249e31cdb4deb485b4067"
 dependencies = [
  "async-trait",
- "bitvec",
  "frame-benchmarking",
  "frame-benchmarking-cli",
- "frame-metadata-hash-extension",
  "frame-support",
  "frame-system",
  "frame-system-rpc-runtime-api",
@@ -9614,7 +9612,6 @@ dependencies = [
  "polkadot-runtime-parachains",
  "polkadot-statement-distribution",
  "rococo-runtime",
- "rococo-runtime-constants",
  "sc-authority-discovery",
  "sc-basic-authorship",
  "sc-block-builder",

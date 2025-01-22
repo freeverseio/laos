@@ -53,8 +53,8 @@ substrate-frame-rpc-system = { workspace = true }
 substrate-prometheus-endpoint = { workspace = true }
 
 # Polkadot
-polkadot-cli = { workspace = true, features = ["rococo-native"] }
-polkadot-service = { workspace = true, features = ["rococo-native"] }
+polkadot-cli = { workspace = true }
+polkadot-service = { workspace = true }
 polkadot-primitives = { workspace = true }
 xcm = { workspace = true }
 laos-primitives = { workspace = true }
