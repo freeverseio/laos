@@ -53,8 +53,8 @@ mod tests {
 
 	use super::*;
 	use crate::{
-		tests::{ExtBuilder, ALICE, BOB},
-		Council, RuntimeCall, RuntimeOrigin, TechnicalCommittee,
+		tests::{ExtBuilder, BOB, CHARLIE},
+		Council, Preimage, RuntimeCall, RuntimeOrigin, TechnicalCommittee,
 	};
 	use core::str::FromStr;
 	use frame_support::{assert_ok, dispatch::GetDispatchInfo, traits::PreimageProvider};
@@ -62,8 +62,47 @@ mod tests {
 	use sp_runtime::traits::Hash;
 
 	#[test]
+	fn root_can_note_preimage() {
+		ExtBuilder::default().build().execute_with(|| {
+			let system_remark_calldata = RuntimeCall::System(frame_system::Call::remark {
+				remark: "Hello world!".as_bytes().to_vec(),
+			})
+			.encode();
+
+			let hashed_calldata =
+				<Runtime as frame_system::Config>::Hashing::hash(&system_remark_calldata);
+
+			// The preimage doesn't exist
+			assert!(<pallet_preimage::Pallet<Runtime> as PreimageProvider<
+				<Runtime as frame_system::Config>::Hash,
+			>>::get_preimage(&hashed_calldata)
+			.is_none());
+
+			assert_ok!(Preimage::note_preimage(
+				RuntimeOrigin::root(),
+				system_remark_calldata.clone(),
+			));
+
+			// The preimage exists due to root has created it. Its value is
+			// exactly the system remark calldata
+			assert!(<pallet_preimage::Pallet<Runtime> as PreimageProvider<
+				<Runtime as frame_system::Config>::Hash,
+			>>::get_preimage(&hashed_calldata)
+			.is_some());
+
+			assert_eq!(
+				<pallet_preimage::Pallet<Runtime> as PreimageProvider<
+					<Runtime as frame_system::Config>::Hash,
+				>>::get_preimage(&hashed_calldata)
+				.expect("The previous assert ensures that this is Some; qed"),
+				system_remark_calldata
+			);
+		});
+	}
+
+	#[test]
 	fn council_can_note_preimage() {
-		let alice = AccountId::from_str(ALICE).expect("ALICE is a valid H160 address; qed");
+		let charlie = AccountId::from_str(CHARLIE).expect("CHARLIE is a valid H160 address; qed");
 		let bob = AccountId::from_str(BOB).expect("BOB is a valid H160 address;qed");
 
 		ExtBuilder::default().build().execute_with(|| {
@@ -90,7 +129,7 @@ mod tests {
 			});
 
 			assert_ok!(Council::propose(
-				RuntimeOrigin::signed(alice),
+				RuntimeOrigin::signed(charlie),
 				threshold,
 				Box::new(proposal.clone()),
 				lenght_bound
@@ -103,7 +142,7 @@ mod tests {
 			let proposal_weight_bound = proposal.get_dispatch_info().weight;
 
 			assert_ok!(Council::vote(
-				RuntimeOrigin::signed(alice),
+				RuntimeOrigin::signed(charlie),
 				proposal_hash,
 				proposal_index,
 				true
@@ -117,14 +156,14 @@ mod tests {
 			));
 
 			assert_ok!(Council::close(
-				RuntimeOrigin::signed(alice),
+				RuntimeOrigin::signed(charlie),
 				proposal_hash,
 				proposal_index,
 				proposal_weight_bound,
 				lenght_bound
 			));
 
-			// The preimage exists due to the technical committee has created it. Its value is
+			// The preimage exists due to the council has created it. Its value is
 			// exactly the system remark calldata
 			assert!(<pallet_preimage::Pallet<Runtime> as PreimageProvider<
 				<Runtime as frame_system::Config>::Hash,
@@ -143,7 +182,7 @@ mod tests {
 
 	#[test]
 	fn technical_committee_can_note_preimage() {
-		let alice = AccountId::from_str(ALICE).expect("ALICE is a valid H160 address; qed");
+		let charlie = AccountId::from_str(CHARLIE).expect("CHARLIE is a valid H160 address; qed");
 		let bob = AccountId::from_str(BOB).expect("BOB is a valid H160 address;qed");
 
 		ExtBuilder::default().build().execute_with(|| {
@@ -170,7 +209,7 @@ mod tests {
 			});
 
 			assert_ok!(TechnicalCommittee::propose(
-				RuntimeOrigin::signed(alice),
+				RuntimeOrigin::signed(charlie),
 				threshold,
 				Box::new(proposal.clone()),
 				lenght_bound
@@ -183,7 +222,7 @@ mod tests {
 			let proposal_weight_bound = proposal.get_dispatch_info().weight;
 
 			assert_ok!(TechnicalCommittee::vote(
-				RuntimeOrigin::signed(alice),
+				RuntimeOrigin::signed(charlie),
 				proposal_hash,
 				proposal_index,
 				true
@@ -197,7 +236,7 @@ mod tests {
 			));
 
 			assert_ok!(TechnicalCommittee::close(
-				RuntimeOrigin::signed(alice),
+				RuntimeOrigin::signed(charlie),
 				proposal_hash,
 				proposal_index,
 				proposal_weight_bound,
