@@ -108,3 +108,5 @@ try-runtime = [
 	"polkadot-service/try-runtime",
 	"sp-runtime/try-runtime",
 ]
+
+warp-sync-test = []

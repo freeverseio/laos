@@ -1,9 +1,11 @@
 use reqwest::blocking::Client;
 use serde_json::{json, Value};
-use std::io::{BufRead, BufReader};
-use std::process::{Child, Command, Stdio};
-use std::thread;
-use std::time::{Duration, Instant};
+use std::{
+	io::{BufRead, BufReader},
+	process::{Child, Command, Stdio},
+	thread,
+	time::{Duration, Instant},
+};
 
 const RPC_PORT: u32 = 9933;
 const TIMEOUT: Duration = Duration::from_secs(80); // It usually takes around 60 seconds to sync
