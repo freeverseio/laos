@@ -20,14 +20,17 @@ mod metadata;
 mod precompile_tests;
 mod version_tests;
 
-use core::str::FromStr;
+use core::{marker::PhantomData, str::FromStr};
 use sp_runtime::BuildStorage;
 
 use super::*;
-use crate::{currency::UNIT, AccountId, Balances, Runtime};
+use crate::{
+	configs::collective::MaxMembersTechnicalCommittee, currency::UNIT, AccountId, Balances, Runtime,
+};
 use fp_rpc::runtime_decl_for_ethereum_runtime_rpc_api::EthereumRuntimeRPCApiV5;
 use frame_support::{
 	assert_ok,
+	storage::bounded_vec::BoundedVec,
 	traits::{
 		tokens::{fungible::Balanced, Precision},
 		Currency, WithdrawReasons,
@@ -58,6 +61,20 @@ impl ExtBuilder {
 			.build_storage()
 			.unwrap();
 
+		let alice = AccountId::from_str(ALICE).expect("This shouldn't fail");
+		let bob = AccountId::from_str(BOB).expect("This shouldn't fail");
+
+		let mut technical_committee_members =
+			BoundedVec::with_bounded_capacity(MaxMembersTechnicalCommittee::get() as usize);
+
+		technical_committee_members
+			.try_push(alice)
+			.expect("The technical committee bound is greater than 2 members;qed");
+
+		technical_committee_members
+			.try_push(bob)
+			.expect("The technical committee bound is greater than 2 members;qed");
+
 		// get deduplicated list of all accounts and balances
 		let all_accounts = self
 			.balances
@@ -79,6 +96,13 @@ impl ExtBuilder {
 			candidates: self.candidates,
 			blocks_per_round: 10,
 			..Default::default()
+		}
+		.assimilate_storage(&mut t)
+		.unwrap();
+
+		pallet_membership::GenesisConfig::<crate::Runtime, pallet_membership::Instance2> {
+			members: technical_committee_members,
+			phantom: PhantomData,
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();

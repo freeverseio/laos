@@ -21,7 +21,7 @@ mod balances;
 mod base_fee;
 mod benchmark;
 mod bounties;
-mod collective;
+pub(crate) mod collective;
 pub mod cumulus_parachain_system;
 mod cumulus_xcmp_queue;
 mod democracy;
