@@ -28,7 +28,7 @@ fn is_synced() -> bool {
 		Ok(resp) => resp,
 		Err(err) => {
 			eprintln!("[rpc] Node is not ready or connection failed: {err}");
-			// By returning `true` here, we treat "no response" as "still syncing"
+			// By returning `false` here, we treat "no response" as "still syncing"
 			return false;
 		},
 	};
@@ -48,7 +48,6 @@ fn is_synced() -> bool {
 fn spawn_laos_warp() -> Child {
 	let laos_bin = std::path::Path::new("..").join("target").join("release").join("laos");
 
-	// Ensure the path is correct
 	if !laos_bin.exists() {
 		panic!("Executable not found: {:?}", laos_bin);
 	}
@@ -88,8 +87,8 @@ fn warp_sync() {
 	}
 	let synced = is_synced();
 
-	child.kill();
-	handle_stderr.join();
+	let _ = child.kill();
+	let _ = handle_stderr.join();
 
-	assert!(synced, "Node was not fully synced within the timeout.");
+	assert!(synced, "Node was not fully synced within the timeout");
 }

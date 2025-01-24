@@ -70,7 +70,17 @@ jobs:
         with:
           cache-key: test
 
-      - name: Sync Test
+      - name: Download LAOS binary
+        uses: actions/download-artifact@v4
+        with:
+          name: laos-binary
+          path: ./target/release
+          
+      - name: Give executable permissions to LAOS binary
+        run: |
+          chmod +x ./target/release/laos
+          
+      - name: Warp Sync
         run: |
           SKIP_WASM_BUILD=1 cargo test --features warp-sync-test --locked
 
