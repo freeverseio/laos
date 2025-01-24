@@ -14,6 +14,7 @@ serde = { workspace = true, features = ["derive"] }
 jsonrpsee = { workspace = true, features = ["server"] }
 hex-literal = { workspace = true }
 serde_json = { workspace = true, default-features = true }
+reqwest = { workspace = true, features = ["json", "blocking"] }
 
 # Local
 laos-runtime = { workspace = true, features = ["std"] }
