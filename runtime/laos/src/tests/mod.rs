@@ -20,14 +20,17 @@ mod metadata;
 mod precompile_tests;
 mod version_tests;
 
-use core::str::FromStr;
+use core::{marker::PhantomData, str::FromStr};
 use sp_runtime::BuildStorage;
 
 use super::*;
-use crate::{currency::UNIT, AccountId, Balances, Runtime};
+use crate::{
+	configs::collective::MaxMembersTechnicalCommittee, currency::UNIT, AccountId, Balances, Runtime,
+};
 use fp_rpc::runtime_decl_for_ethereum_runtime_rpc_api::EthereumRuntimeRPCApiV5;
 use frame_support::{
 	assert_ok,
+	storage::bounded_vec::BoundedVec,
 	traits::{
 		tokens::{fungible::Balanced, Precision},
 		Currency, WithdrawReasons,
@@ -58,6 +61,20 @@ impl ExtBuilder {
 			.build_storage()
 			.unwrap();
 
+		let bob = AccountId::from_str(BOB).expect("This shouldn't fail");
+		let charlie = AccountId::from_str(CHARLIE).expect("This shouldn't fail");
+
+		let mut technical_committee_and_council_members =
+			BoundedVec::with_bounded_capacity(MaxMembersTechnicalCommittee::get() as usize);
+
+		technical_committee_and_council_members
+			.try_push(bob)
+			.expect("The technical committee bound is greater than 2 members;qed");
+
+		technical_committee_and_council_members
+			.try_push(charlie)
+			.expect("The technical committee bound is greater than 2 members;qed");
+
 		// get deduplicated list of all accounts and balances
 		let all_accounts = self
 			.balances
@@ -83,6 +100,20 @@ impl ExtBuilder {
 		.assimilate_storage(&mut t)
 		.unwrap();
 
+		pallet_membership::GenesisConfig::<crate::Runtime, pallet_membership::Instance2> {
+			members: technical_committee_and_council_members.clone(),
+			phantom: PhantomData,
+		}
+		.assimilate_storage(&mut t)
+		.unwrap();
+
+		pallet_collective::GenesisConfig::<crate::Runtime, pallet_membership::Instance1> {
+			phantom: PhantomData,
+			members: technical_committee_and_council_members.into_inner(),
+		}
+		.assimilate_storage(&mut t)
+		.unwrap();
+
 		t.into()
 	}
 }
@@ -93,6 +124,7 @@ pub(crate) fn new_test_ext() -> sp_io::TestExternalities {
 
 pub(crate) const ALICE: &str = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
 pub(crate) const BOB: &str = "0x6c2b9c9b5007740e52d80dddb8e197b0c844f239";
+pub(crate) const CHARLIE: &str = "0x798d4Ba9baf0064Ec19eB4F0a1a45785ae9D6DFc";
 
 #[test]
 fn minimum_balance_should_be_0() {
