@@ -64,14 +64,14 @@ impl ExtBuilder {
 		let alice = AccountId::from_str(ALICE).expect("This shouldn't fail");
 		let bob = AccountId::from_str(BOB).expect("This shouldn't fail");
 
-		let mut technical_committee_members =
+		let mut technical_committee_and_council_members =
 			BoundedVec::with_bounded_capacity(MaxMembersTechnicalCommittee::get() as usize);
 
-		technical_committee_members
+		technical_committee_and_council_members
 			.try_push(alice)
 			.expect("The technical committee bound is greater than 2 members;qed");
 
-		technical_committee_members
+		technical_committee_and_council_members
 			.try_push(bob)
 			.expect("The technical committee bound is greater than 2 members;qed");
 
@@ -101,8 +101,15 @@ impl ExtBuilder {
 		.unwrap();
 
 		pallet_membership::GenesisConfig::<crate::Runtime, pallet_membership::Instance2> {
-			members: technical_committee_members,
+			members: technical_committee_and_council_members.clone(),
 			phantom: PhantomData,
+		}
+		.assimilate_storage(&mut t)
+		.unwrap();
+
+		pallet_collective::GenesisConfig::<crate::Runtime, pallet_membership::Instance1> {
+			phantom: PhantomData,
+			members: technical_committee_and_council_members.into_inner(),
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();
