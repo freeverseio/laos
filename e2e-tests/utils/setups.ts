@@ -14,9 +14,13 @@ import {
 	LAOS_PARA_ID,
 	ASSET_HUB_PARA_ID,
 	POLKADOT_PREFIX,
+	HYDRATION_PREFIX,
 	MOONBEAM_PARA_ID,
+	HYDRATION_PARA_ID,
 	CHOPSTICKS_MOONBEAM_NODE_IP,
+	CHOPSTICKS_HYDRATION_NODE_IP,
 	LAOS_ID_MOONBEAM,
+	LAOS_ID_HYDRATION,
 } from "@utils/constants";
 
 /**
@@ -40,7 +44,7 @@ export function describeWithExistingNode(
 			this.web3 = new Web3(providerLaosNodeIP ? `http://${providerLaosNodeIP}` : `http://${ZOMBIE_LAOS_NODE_IP}`);
 
 			let keyring = new Keyring({ type: "sr25519" });
-			this.substratePairs = {
+			this.polkadotPairs = {
 				alice: keyring.addFromUri("//Alice"),
 				bob: keyring.addFromUri("//Bob"),
 				charlie: keyring.addFromUri("//Charlie"),
@@ -96,7 +100,7 @@ export function describeWithExistingNodeXcm(title: string, cb: () => void) {
 		before(async function () {
 			// In Xcm tests we use chopsticks and fork Paseo, which uses prefixed addresses.
 			let keyring = new Keyring({ type: "sr25519", ss58Format: POLKADOT_PREFIX });
-			this.substratePairs = {
+			this.polkadotPairs = {
 				alice: keyring.addFromUri("//Alice"),
 				bob: keyring.addFromUri("//Bob"),
 				charlie: keyring.addFromUri("//Charlie"),
@@ -104,6 +108,9 @@ export function describeWithExistingNodeXcm(title: string, cb: () => void) {
 				eve: keyring.addFromUri("//Eve"),
 				ferdie: keyring.addFromUri("//Ferdie"),
 			};
+
+			keyring = new Keyring({ type: "sr25519", ss58Format: HYDRATION_PREFIX });
+			this.hydrationPairs = { alice: keyring.addFromUri("//Alice") };
 
 			keyring = new Keyring({ type: "ethereum" });
 
@@ -122,26 +129,29 @@ export function describeWithExistingNodeXcm(title: string, cb: () => void) {
 			const moonbeamProvider = new WsProvider(`ws://${CHOPSTICKS_MOONBEAM_NODE_IP}`);
 			const apiMoonbeam = await ApiPromise.create({ provider: moonbeamProvider });
 
-			this.chains = { laos: apiLaos, assetHub: apiAssetHub, moonbeam: apiMoonbeam };
+			const hydrationProvider = new WsProvider(`ws://${CHOPSTICKS_HYDRATION_NODE_IP}`);
+			const apiHydration = await ApiPromise.create({ provider: hydrationProvider });
+
+			this.chains = { laos: apiLaos, assetHub: apiAssetHub, moonbeam: apiMoonbeam, hydration: apiHydration };
 
 			this.assetHubItems = {
 				accounts: {
-					alice: apiAssetHub.createType("AccountId", this.substratePairs.alice.address),
-					bob: apiAssetHub.createType("AccountId", this.substratePairs.bob.address),
-					charlie: apiAssetHub.createType("AccountId", this.substratePairs.charlie.address),
-					dave: apiAssetHub.createType("AccountId", this.substratePairs.dave.address),
-					eve: apiAssetHub.createType("AccountId", this.substratePairs.eve.address),
-					ferdie: apiAssetHub.createType("AccountId", this.substratePairs.ferdie.address),
+					alice: apiAssetHub.createType("AccountId", this.polkadotPairs.alice.address),
+					bob: apiAssetHub.createType("AccountId", this.polkadotPairs.bob.address),
+					charlie: apiAssetHub.createType("AccountId", this.polkadotPairs.charlie.address),
+					dave: apiAssetHub.createType("AccountId", this.polkadotPairs.dave.address),
+					eve: apiAssetHub.createType("AccountId", this.polkadotPairs.eve.address),
+					ferdie: apiAssetHub.createType("AccountId", this.polkadotPairs.ferdie.address),
 				},
 				laosSA: sovereignAccountOf(LAOS_PARA_ID),
 
 				multiAddresses: {
-					alice: apiAssetHub.createType("MultiAddress", this.substratePairs.alice.address),
-					bob: apiAssetHub.createType("MultiAddress", this.substratePairs.bob.address),
-					charlie: apiAssetHub.createType("MultiAddress", this.substratePairs.charlie.address),
-					dave: apiAssetHub.createType("MultiAddress", this.substratePairs.dave.address),
-					eve: apiAssetHub.createType("MultiAddress", this.substratePairs.eve.address),
-					ferdie: apiAssetHub.createType("MultiAddress", this.substratePairs.ferdie.address),
+					alice: apiAssetHub.createType("MultiAddress", this.polkadotPairs.alice.address),
+					bob: apiAssetHub.createType("MultiAddress", this.polkadotPairs.bob.address),
+					charlie: apiAssetHub.createType("MultiAddress", this.polkadotPairs.charlie.address),
+					dave: apiAssetHub.createType("MultiAddress", this.polkadotPairs.dave.address),
+					eve: apiAssetHub.createType("MultiAddress", this.polkadotPairs.eve.address),
+					ferdie: apiAssetHub.createType("MultiAddress", this.polkadotPairs.ferdie.address),
 				},
 				laosLocation: apiAssetHub.createType("XcmVersionedLocation", {
 					V4: siblingParachainLocation(LAOS_PARA_ID),
@@ -165,6 +175,14 @@ export function describeWithExistingNodeXcm(title: string, cb: () => void) {
 				laosAsset: LAOS_ID_MOONBEAM,
 			};
 
+			this.hydrationItems = {
+				accounts: { alice: apiHydration.createType("AccountId", this.hydrationPairs.alice.address) },
+				laosLocation: apiHydration.createType("XcmVersionedLocation", {
+					V4: siblingParachainLocation(LAOS_PARA_ID),
+				}),
+				laosAsset: LAOS_ID_HYDRATION,
+			};
+
 			this.laosItems = {
 				assetHubLocation: apiLaos.createType("XcmVersionedLocation", {
 					V4: siblingParachainLocation(ASSET_HUB_PARA_ID),
@@ -172,8 +190,12 @@ export function describeWithExistingNodeXcm(title: string, cb: () => void) {
 				moonbeamLocation: apiLaos.createType("XcmVersionedLocation", {
 					V4: siblingParachainLocation(MOONBEAM_PARA_ID),
 				}),
+				hydrationLocation: apiLaos.createType("XcmVersionedLocation", {
+					v4: siblingParachainLocation(HYDRATION_PARA_ID),
+				}),
 				relayChainLocation: apiLaos.createType("XcmVersionedLocation", { V4: relayChainLocation() }),
 				moonbeamSA: substrateToEthereum(sovereignAccountOf(MOONBEAM_PARA_ID)),
+				hydrationSA: substrateToEthereum(sovereignAccountOf(HYDRATION_PARA_ID)),
 			};
 		});
 
@@ -183,6 +205,7 @@ export function describeWithExistingNodeXcm(title: string, cb: () => void) {
 			this.chains.laos.disconnect();
 			this.chains.assetHub.disconnect();
 			this.chains.moonbeam.disconnect();
+			this.chains.hydration.disconnect();
 		});
 	});
 }

@@ -166,6 +166,7 @@ construct_runtime!(
 		// LAOS pallets
 		LaosEvolution: pallet_laos_evolution = 100,
 		AssetMetadataExtender: pallet_asset_metadata_extender = 101,
+		#[cfg(feature = "runtime-benchmarks")]
 		PrecompilesBenchmark: pallet_precompiles_benchmark = 102,
 		TreasuryFunding: pallet_treasury_funding = 103,
 	}

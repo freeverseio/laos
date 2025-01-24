@@ -1,0 +1,64 @@
+endpoint: wss://hydradx-rpc.dwellir.com
+mock-signature-host: true
+db: ./db.sqlite
+runtime-log-level: 5
+
+import-storage:
+  System:
+    Account:
+      - - - 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY # Alice
+        - providers: 1
+          data:
+            free: 1000000000000000
+  AssetRegistry:
+    Assets: [
+      [
+        [3370],
+        {
+          name: LAOS Network Token,
+          assetType: Token,
+          existentialDeposit: 0,
+          symbol: LAOS,
+          decimals: 18,
+          xcmRateLimit: null,
+          isSufficient: true
+        }
+      ]
+    ]
+    AssetIds: [
+      [
+        ["LAOS Network Token"],
+        3370
+      ]
+    ]
+    AssetLocations: [
+      [
+        [3370],
+        {
+          Parents: 1,
+          Interior: {
+            X1: {Parachain: 3370}
+          }
+        }
+      ]
+    ]
+    LocationAssets: [
+      [
+        [
+          {
+            Parents: 1,
+            Interior: {
+              X1: {Parachain: 3370}
+            }
+          }
+        ],
+        3370
+      ]
+    ]
+  MultiTransactionPayment:
+    AcceptedCurrencies: [
+      [
+        [3370],
+        "1000000000000000000"
+      ]
+    ]

@@ -36,20 +36,34 @@ type moonbeamItems = {
 	laosAsset: BN;
 };
 
+type hydrationItems = {
+	accounts: {
+		alice: AccountId;
+	};
+	laosLocation: XcmVersionedLocation;
+	laosAsset: BN;
+};
+
 type laosItems = {
 	assetHubLocation: XcmVersionedLocation;
 	moonbeamLocation: XcmVersionedLocation;
+	hydrationLocation: XcmVersionedLocation;
 	relayChainLocation: XcmVersionedLocation;
 	moonbeamSA: string;
+	hydrationSA: string;
 };
 
-type substratePairs = {
+type polkadotPairs = {
 	alice: KeyringPair;
 	bob: KeyringPair;
 	charlie: KeyringPair;
 	dave: KeyringPair;
 	eve: KeyringPair;
 	ferdie: KeyringPair;
+};
+
+type hydrationPairs = {
+	alice: KeyringPair;
 };
 
 type ethereumPairs = {
@@ -60,12 +74,12 @@ type ethereumPairs = {
 
 type zombieChains = { laos: ApiPromise; polkadot: ApiPromise };
 
-type chopsticksChains = { laos: ApiPromise; assetHub: ApiPromise; moonbeam: ApiPromise };
+type chopsticksChains = { laos: ApiPromise; assetHub: ApiPromise; moonbeam: ApiPromise; hydration: ApiPromise };
 
 export interface CustomSuiteContext extends Suite {
 	web3: Web3;
 	chains: zombieChains;
-	substratePairs: substratePairs;
+	polkadotPairs: polkadotPairs;
 	ethereumPairs: ethereumPairs;
 	laosItems: laosItems;
 	wsProvider: WsProvider;
@@ -73,9 +87,11 @@ export interface CustomSuiteContext extends Suite {
 
 export interface XcmSuiteContext extends Suite {
 	chains: chopsticksChains;
-	substratePairs: substratePairs;
+	polkadotPairs: polkadotPairs;
+	hydrationPairs: hydrationPairs;
 	ethereumPairs: ethereumPairs;
 	laosItems: laosItems;
 	assetHubItems: assetHubItems;
 	moonbeamItems: moonbeamItems;
+	hydrationItems: hydrationItems;
 }

@@ -44775,16 +44775,6 @@
           "docs": []
         },
         {
-          "name": "PrecompilesBenchmark",
-          "storage": null,
-          "calls": null,
-          "event": null,
-          "constants": [],
-          "error": null,
-          "index": 102,
-          "docs": []
-        },
-        {
           "name": "TreasuryFunding",
           "storage": null,
           "calls": {
