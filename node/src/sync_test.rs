@@ -31,7 +31,7 @@ fn is_synced() -> bool {
 		},
 	};
 
-	Parse JSON or assume "still syncing" on failure
+	// Parse JSON or assume "still syncing" on failure
 	let response_json: Value = match response.json() {
 		Ok(json) => json,
 		Err(err) => {
@@ -82,8 +82,8 @@ fn warp_sync() {
 	let start = Instant::now();
 
 	while !is_synced() && start.elapsed() < TIMEOUT {
-        thread::sleep(Duration::from_secs(5));
-    }
+		thread::sleep(Duration::from_secs(5));
+	}
 	let synced = is_synced();
 
 	child.kill();
