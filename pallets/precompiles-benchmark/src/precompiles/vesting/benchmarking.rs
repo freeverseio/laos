@@ -135,7 +135,7 @@ mod benchmarks {
 	use frame_support::traits::tokens::currency::Currency;
 
 	#[benchmark]
-	fn precompile_vest() {
+	fn precompile_vesting_vest() {
 		let caller: T::AccountId = whitelisted_caller();
 		let caller_origin = T::RuntimeOrigin::from(RawOrigin::from(Some(caller.clone())));
 		let min_transfer = T::MinVestedTransfer::get();
@@ -162,7 +162,7 @@ mod benchmarks {
 	}
 
 	#[benchmark]
-	fn precompile_vest_other() {
+	fn precompile_vesting_vest_other() {
 		let caller: T::AccountId = whitelisted_caller();
 		let caller_origin = T::RuntimeOrigin::from(RawOrigin::from(Some(caller.clone())));
 		let mut handle = MockHandle::new(T::AccountIdToH160::convert(caller.clone()));
@@ -193,7 +193,9 @@ mod benchmarks {
 	}
 
 	#[benchmark]
-	fn precompile_vesting(m: Linear<0, { <T as pallet_vesting::Config>::MAX_VESTING_SCHEDULES }>) {
+	fn precompile_vesting_vesting(
+		m: Linear<0, { <T as pallet_vesting::Config>::MAX_VESTING_SCHEDULES }>,
+	) {
 		let caller: T::AccountId = whitelisted_caller();
 		let caller_origin = T::RuntimeOrigin::from(RawOrigin::from(Some(caller.clone())));
 		let mut handle = MockHandle::new(T::AccountIdToH160::convert(caller.clone()));

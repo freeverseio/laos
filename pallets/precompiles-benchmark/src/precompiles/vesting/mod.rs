@@ -70,7 +70,9 @@ where
 			Some(v) => {
 				register_cost::<Runtime>(
 					handle,
-					<Runtime as crate::Config>::WeightInfo::precompile_vesting(v.len() as u32),
+					<Runtime as crate::Config>::WeightInfo::precompile_vesting_vesting(
+						v.len() as u32
+					),
 				)?;
 				let mut output: Vec<VestingInfo> = Vec::with_capacity(v.len());
 
@@ -87,7 +89,7 @@ where
 			None => {
 				register_cost::<Runtime>(
 					handle,
-					<Runtime as crate::Config>::WeightInfo::precompile_vesting(0),
+					<Runtime as crate::Config>::WeightInfo::precompile_vesting_vesting(0),
 				)?;
 				Ok(Vec::new())
 			},
@@ -98,7 +100,7 @@ where
 	pub fn vest(handle: &mut impl PrecompileHandle) -> EvmResult<()> {
 		register_cost::<Runtime>(
 			handle,
-			<Runtime as crate::Config>::WeightInfo::precompile_vest(),
+			<Runtime as crate::Config>::WeightInfo::precompile_vesting_vest(),
 		)?;
 
 		match PalletVesting::<Runtime>::vest(
@@ -115,7 +117,7 @@ where
 	pub fn vest_other(handle: &mut impl PrecompileHandle, account: Address) -> EvmResult<()> {
 		register_cost::<Runtime>(
 			handle,
-			<Runtime as crate::Config>::WeightInfo::precompile_vest_other(),
+			<Runtime as crate::Config>::WeightInfo::precompile_vesting_vest_other(),
 		)?;
 
 		let origin = <Runtime as frame_system::Config>::RuntimeOrigin::from(RawOrigin::from(Some(
