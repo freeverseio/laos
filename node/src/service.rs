@@ -343,8 +343,8 @@ async fn start_node_impl(
 		pending_create_inherent_data_providers: move |_, ()| async move {
 			// Timestamp should be in the future so the new slot is calculated correctly
 			let additional_duration = Duration::from_millis(MILLISECS_PER_BLOCK); // SLOT_DURATION
-			let new_timestamp = sp_timestamp::InherentDataProvider::from_system_time().timestamp()
-				+ additional_duration.as_millis() as u64;
+			let new_timestamp = sp_timestamp::InherentDataProvider::from_system_time().timestamp() +
+				additional_duration.as_millis() as u64;
 			let timestamp_provider = sp_timestamp::InherentDataProvider::new(new_timestamp);
 
 			// Patch from https://github.com/darwinia-network/darwinia/pull/1608

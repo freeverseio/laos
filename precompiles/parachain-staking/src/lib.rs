@@ -285,8 +285,8 @@ where
 		// Twox64Concat(8) + AccountId(20) + Balance(16)
 		// + (AccountId(20) + Balance(16) * MaxTopDelegationsPerCandidate)
 		handle.record_db_read::<Runtime>(
-			44 + ((36
-				* <Runtime as pallet_parachain_staking::Config>::MaxTopDelegationsPerCandidate::get(
+			44 + ((36 *
+				<Runtime as pallet_parachain_staking::Config>::MaxTopDelegationsPerCandidate::get(
 				)) as usize),
 		)?;
 		let is_in_top_delegations =

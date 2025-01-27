@@ -3948,8 +3948,8 @@ fn multiple_delegations() {
 			assert_eq!(ParachainStaking::delegator_state(7).unwrap().delegations.0.len(), 2usize);
 			assert_eq!(ParachainStaking::delegator_state(6).unwrap().total(), 40);
 			assert_eq!(ParachainStaking::delegator_state(6).unwrap().delegations.0.len(), 4usize);
-			assert_eq!(Balances::locks(6)[0].amount, 40);
-			assert_eq!(Balances::locks(7)[0].amount, 90);
+			assert_eq!(Balances::locks(&6)[0].amount, 40);
+			assert_eq!(Balances::locks(&7)[0].amount, 90);
 			assert_eq!(ParachainStaking::get_delegator_stakable_free_balance(&6), 60);
 			assert_eq!(ParachainStaking::get_delegator_stakable_free_balance(&7), 10);
 			roll_to_round_begin(8);

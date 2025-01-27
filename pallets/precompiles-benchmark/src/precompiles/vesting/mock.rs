@@ -133,6 +133,7 @@ pub type LaosPrecompiles<Test> =
 frame_support::parameter_types! {
 	pub BlockGasLimit: U256 = U256::from(BLOCK_GAS_LIMIT);
 	pub const GasLimitPovSizeRatio: u64 = BLOCK_GAS_LIMIT.saturating_div(MAX_POV_SIZE);
+	pub const GasLimitStorageGrowthRatio: u64 = 366; // TODO
 	/// 1 weight to 1 gas, for testing purposes
 	pub WeightPerGas: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(1, 0);
 	pub PrecompilesInstance: LaosPrecompiles<Test> = LaosPrecompiles::new();
@@ -157,9 +158,10 @@ impl pallet_evm::Config for Test {
 	type OnCreate = ();
 	type FindAuthor = FindAuthorTruncated;
 	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
+	type GasLimitStorageGrowthRatio = GasLimitStorageGrowthRatio;
 	type Timestamp = Timestamp;
 	type WeightInfo = ();
-	type SuicideQuickClearLimit = ();
+	type AccountProvider = pallet_evm::FrameSystemAccountProvider<Test>;
 }
 
 #[derive(Default)]
