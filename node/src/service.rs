@@ -256,11 +256,13 @@ async fn start_node_impl(
 
 	let validator = parachain_config.role.is_authority();
 	let prometheus_registry = parachain_config.prometheus_registry().cloned();
+	let maybe_registry = parachain_config.prometheus_config.as_ref().map(|cfg| &cfg.registry);
 	let import_queue_service = import_queue.service();
-	let net_config =
-		sc_network::config::FullNetworkConfiguration::<_, _, sc_network::NetworkWorker<_, _>>::new(
-			&parachain_config.network,
-		);
+	let net_config = sc_network::config::FullNetworkConfiguration::<
+		_,
+		_,
+		sc_network::NetworkWorker<_, _>,
+	>::new(&parachain_config.network, maybe_registry.cloned());
 
 	let (network, system_rpc_tx, tx_handler_controller, start_network, sync_service) =
 		build_network(BuildNetworkParams {
@@ -340,8 +342,8 @@ async fn start_node_impl(
 		pending_create_inherent_data_providers: move |_, ()| async move {
 			// Timestamp should be in the future so the new slot is calculated correctly
 			let additional_duration = Duration::from_millis(MILLISECS_PER_BLOCK); // SLOT_DURATION
-			let new_timestamp = sp_timestamp::InherentDataProvider::from_system_time().timestamp() +
-				additional_duration.as_millis() as u64;
+			let new_timestamp = sp_timestamp::InherentDataProvider::from_system_time().timestamp()
+				+ additional_duration.as_millis() as u64;
 			let timestamp_provider = sp_timestamp::InherentDataProvider::new(new_timestamp);
 
 			// Patch from https://github.com/darwinia-network/darwinia/pull/1608
