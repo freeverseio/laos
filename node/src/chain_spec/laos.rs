@@ -93,6 +93,7 @@ fn create_test_genesis_config() -> serde_json::Value {
 				predefined_accounts::ALITH.into(),
 				template_session_keys(get_collator_keys_from_seed("Alice")),
 			)],
+			..Default::default()
 		},
 		polkadot_xcm: laos_runtime::PolkadotXcmConfig {
 			safe_xcm_version: Some(SAFE_XCM_VERSION),
