@@ -46,13 +46,19 @@ fn is_synced() -> bool {
 }
 
 fn spawn_laos_warp() -> Child {
-	let laos_bin = std::path::Path::new("..").join("target").join("release").join("laos");
+	let laos_bin = std::env::current_dir()
+        .expect("the directory node exists and it doesn't have restricted permissions, this shouldn't fail;qed;")
+        .parent()
+        .expect("the root directory of the repo exists and it doesn't have restricted permissions, this shouldn't fail;qed;")
+        .join("target")
+        .join("release")
+        .join("laos");
 
 	if !laos_bin.exists() {
 		panic!("Executable not found: {:?}", laos_bin);
 	}
 	Command::new(laos_bin)
-		.args(&[
+		.args([
 			"--sync=warp",
 			"--chain=laos",
 			"--tmp",

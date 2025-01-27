@@ -82,7 +82,7 @@ jobs:
           
       - name: Warp Sync
         run: |
-          SKIP_WASM_BUILD=1 cargo test --features warp-sync-test --locked
+          SKIP_WASM_BUILD=1 cargo test --no-default-features --features warp-sync-test --locked
 
 
   zombie-tests:
