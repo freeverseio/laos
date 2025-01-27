@@ -8,7 +8,7 @@ use std::{
 };
 
 const RPC_PORT: u32 = 9933;
-const TIMEOUT: Duration = Duration::from_secs(80); // It usually takes around 60 seconds to sync
+const TIMEOUT: Duration = Duration::from_secs(90);
 
 fn is_synced() -> bool {
 	let request_body = json!({
