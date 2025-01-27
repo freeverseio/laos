@@ -30,7 +30,7 @@ use sc_client_api::{
 	client::BlockchainEvents,
 	UsageProvider,
 };
-pub use sc_rpc::{DenyUnsafe, SubscriptionTaskExecutor};
+pub use sc_rpc::SubscriptionTaskExecutor;
 use sc_transaction_pool::ChainApi;
 use sc_transaction_pool_api::TransactionPool;
 use sp_api::{CallApiAt, ProvideRuntimeApi};
@@ -51,8 +51,6 @@ pub struct FullDeps<C, P, A: ChainApi, CT, CIDP> {
 	pub client: Arc<C>,
 	/// Transaction pool instance.
 	pub pool: Arc<P>,
-	/// Whether to deny unsafe calls
-	pub deny_unsafe: DenyUnsafe,
 	/// Ethereum-compatibility specific dependencies.
 	pub eth: EthDeps<C, P, A, CT, Block, CIDP>,
 }
@@ -105,9 +103,9 @@ where
 	use substrate_frame_rpc_system::System;
 
 	let mut io = RpcExtension::new(());
-	let FullDeps { client, pool, deny_unsafe, eth } = deps;
+	let FullDeps { client, pool, eth } = deps;
 
-	io.merge(System::new(client.clone(), pool, deny_unsafe).into_rpc())?;
+	io.merge(System::new(client.clone(), pool).into_rpc())?;
 	io.merge(TransactionPayment::new(client).into_rpc())?;
 
 	// Ethereum compatibility RPCs

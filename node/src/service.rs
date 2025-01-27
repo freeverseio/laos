@@ -310,7 +310,7 @@ async fn start_node_impl(
 	let pubsub_notification_sinks = Arc::new(pubsub_notification_sinks);
 
 	// for ethereum-compatibility rpc.
-	parachain_config.rpc_id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
+	parachain_config.rpc.id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
 
 	let eth_rpc_params = crate::rpc::EthDeps {
 		client: client.clone(),
@@ -379,11 +379,10 @@ async fn start_node_impl(
 		let transaction_pool = transaction_pool.clone();
 		let pubsub_notification_sinks = pubsub_notification_sinks.clone();
 
-		Box::new(move |deny_unsafe, subscription_task_executor| {
+		Box::new(move |subscription_task_executor| {
 			let deps = crate::rpc::FullDeps {
 				client: client.clone(),
 				pool: transaction_pool.clone(),
-				deny_unsafe,
 				eth: eth_rpc_params.clone(),
 			};
 
@@ -430,7 +429,7 @@ async fn start_node_impl(
 		// Here you can check whether the hardware meets your chains' requirements. Putting a link
 		// in there and swapping out the requirements for your own are probably a good idea. The
 		// requirements for a para-chain are dictated by its relay-chain.
-		match SUBSTRATE_REFERENCE_HARDWARE.check_hardware(&hwbench) {
+		match SUBSTRATE_REFERENCE_HARDWARE.check_hardware(&hwbench, validator) {
 			Err(err) if validator => {
 				log::warn!(
 				"⚠️  The hardware does not meet the minimal requirements {} for role 'Authority'.",
