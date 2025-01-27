@@ -109,4 +109,4 @@ try-runtime = [
 	"sp-runtime/try-runtime",
 ]
 
-warp-sync-test = []
+sync-test = []
