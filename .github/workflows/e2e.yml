@@ -58,6 +58,32 @@ jobs:
           npm run fmt-check
         working-directory: ./e2e-tests
 
+  sync-test:
+    needs: [build, lint]
+    runs-on:
+      group: laos
+      labels: ubuntu-16-cores
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/cache
+        with:
+          cache-key: test
+
+      - name: Download LAOS binary
+        uses: actions/download-artifact@v4
+        with:
+          name: laos-binary
+          path: ./target/release
+          
+      - name: Give executable permissions to LAOS binary
+        run: |
+          chmod +x ./target/release/laos
+          
+      - name: Warp Sync
+        run: |
+          SKIP_WASM_BUILD=1 cargo test --features sync-test --locked warp
+
 
   zombie-tests:
       needs: [build, lint]
