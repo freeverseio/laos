@@ -26,6 +26,8 @@ mod command;
 mod custom_tx_pool;
 mod eth;
 mod rpc;
+#[cfg(feature = "sync-test")]
+mod sync_test;
 fn main() -> sc_cli::Result<()> {
 	command::run()
 }
