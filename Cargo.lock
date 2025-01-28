@@ -5089,7 +5089,7 @@ dependencies = [
 
 [[package]]
 name = "laos"
-version = "0.27.90"
+version = "0.28.0"
 dependencies = [
  "clap",
  "cumulus-client-cli",
@@ -5177,7 +5177,7 @@ dependencies = [
 
 [[package]]
 name = "laos-runtime"
-version = "0.27.90"
+version = "0.28.0"
 dependencies = [
  "assert-json-diff",
  "cumulus-pallet-aura-ext",
