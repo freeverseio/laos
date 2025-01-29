@@ -149,10 +149,15 @@ parameter_types! {
 		(TokenLocation::get().into(), 1_000_000_000_000, 1024 * 1024);
 	pub const MaxInstructions: u32 = 100;
 	pub const MaxAssetsIntoHolding: u32 = 64;
+		pub NftCollectionOnRelay: AssetFilter
+		= Wild(AllOf { fun: WildNonFungible, id: AssetId(GeneralIndex(1).into()) });
+	pub NftCollectionForChild: (AssetFilter, Location)
+		= (NftCollectionOnRelay::get(), Parachain(1).into());
 }
 
 pub type XcmRouter = EnsureDecodableXcm<super::RelayChainXcmRouter>;
 pub type Barrier = AllowUnpaidExecutionFrom<Everything>;
+pub type TrustedTeleporters = xcm_builder::Case<NftCollectionForChild>;
 
 pub struct XcmConfig;
 impl Config for XcmConfig {
@@ -161,7 +166,7 @@ impl Config for XcmConfig {
 	type AssetTransactor = LocalAssetTransactor;
 	type OriginConverter = LocalOriginConverter;
 	type IsReserve = ();
-	type IsTeleporter = ();
+	type IsTeleporter = TrustedTeleporters;
 	type UniversalLocation = UniversalLocation;
 	type Barrier = Barrier;
 	type Weigher = FixedWeightBounds<BaseXcmWeight, RuntimeCall, MaxInstructions>;
