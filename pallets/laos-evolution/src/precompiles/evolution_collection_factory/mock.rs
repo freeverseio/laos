@@ -135,7 +135,7 @@ pub type LaosPrecompiles<Test> = PrecompileSetBuilder<
 frame_support::parameter_types! {
 	pub BlockGasLimit: U256 = U256::from(BLOCK_GAS_LIMIT);
 	pub const GasLimitPovSizeRatio: u64 = BLOCK_GAS_LIMIT.saturating_div(MAX_POV_SIZE);
-	pub const GasLimitStorageGrowthRatio: u64 = 366; // TODO
+	pub const GasLimitStorageGrowthRatio: u64 = 91;
 	/// 1 weight to 1 gas, for testing purposes
 	pub WeightPerGas: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(1, 0);
 	pub PrecompilesInstance: LaosPrecompiles<Test> = LaosPrecompiles::new();
