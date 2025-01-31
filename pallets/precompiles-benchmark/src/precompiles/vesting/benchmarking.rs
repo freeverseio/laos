@@ -123,6 +123,9 @@ type BalanceOf<Runtime> = <<Runtime as pallet_vesting::Config>::Currency as Curr
 	<Runtime as frame_system::Config>::AccountId,
 >>::Balance;
 
+// TODO: We'll open a PR to parity to include this annotation in the macro expansion, as it's
+// effectively creating multiple bounds locations
+#[allow(clippy::multiple_bound_locations)]
 #[benchmarks(
 	where
 		T: Config + pallet_vesting::Config,

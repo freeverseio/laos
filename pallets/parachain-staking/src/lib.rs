@@ -47,6 +47,11 @@
 //! To leave the set of delegators and revoke all delegations, call `leave_delegators`.
 
 #![cfg_attr(not(feature = "std"), no_std)]
+// TODO: This line is needed cause from frontier2409 and rust 1.81 onwards, manual inspect clippy
+// flag is giving a false positive in all our pallets. From this issue: https://github.com/rust-lang/rust-clippy/issues/13185
+// it seems that the flag --manual-inspect may not be 100% ready yet, as it's giving problems to
+// different codes. Maybe we can remove this attribute in the future
+#![allow(clippy::manual_inspect)]
 
 mod auto_compound;
 mod delegation_requests;
