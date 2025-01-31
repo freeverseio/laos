@@ -123,8 +123,10 @@ type BalanceOf<Runtime> = <<Runtime as pallet_vesting::Config>::Currency as Curr
 	<Runtime as frame_system::Config>::AccountId,
 >>::Balance;
 
-// TODO: We'll open a PR to parity to include this annotation in the macro expansion, as it's
-// effectively creating multiple bounds locations
+// The benchmarks macro will add <T:Config> to all benchmark functions and as we specify a where
+// clause, that'll be added to. This triggers the clippy::multiple_bound_locations warning designed
+// to don't confuse developers by repeating trait bound locations. As this will be macro generated
+// code that nobody will see, it's ok to annotate the module with it. 
 #[allow(clippy::multiple_bound_locations)]
 #[benchmarks(
 	where
