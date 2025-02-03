@@ -37,6 +37,9 @@ const GAS_PER_SECOND: u64 = 40_000_000;
 /// u64 works for approximations because Weight is a very small unit compared to gas.
 const WEIGHT_PER_GAS: u64 = WEIGHT_REF_TIME_PER_SECOND / GAS_PER_SECOND;
 
+// The amount of bytes we allow our storage to grow per block: 40 KB
+const BLOCK_STORAGE_LIMIT: u64 = 40 * 1024;
+
 parameter_types! {
 	pub BlockGasLimit: U256 = U256::from(NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT.ref_time() / WEIGHT_PER_GAS);
 	pub PrecompilesInstance: LaosPrecompiles<Runtime> = LaosPrecompiles::<_>::new();
@@ -47,9 +50,9 @@ parameter_types! {
 	///     (max_extrinsic.ref_time() / max_extrinsic.proof_size()) / WEIGHT_PER_GAS
 	/// )
 	pub const GasLimitPovSizeRatio: u64 = 4;
-	/// The amount of gas per storage (in bytes): BLOCK_GAS_LIMIT / BLOCK_STORAGE_LIMIT
-	/// The current definition of BLOCK_STORAGE_LIMIT is 160 KB, resulting in a value of 91.
-	pub const GasLimitStorageGrowthRatio: u64 = 91;
+	/// The amount of gas per storage (in bytes): BLOCK_GAS_LIMIT / BLOCK_STORAGE_LIMIT.
+	/// (15_000_000)/(40 KB) = 366
+	pub const GasLimitStorageGrowthRatio: u64 = 366;
 }
 
 impl pallet_evm::Config for Runtime {
@@ -292,10 +295,8 @@ mod tests {
 
 	#[test]
 	fn test_storage_growth_ratio_is_correct() {
-		// This is the highest amount of new storage that can be created in a block 160 KB
-		let block_storage_limit = 160 * 1024;
 		let expected_storage_growth_ratio =
-			BlockGasLimit::get().low_u64().saturating_div(block_storage_limit);
+			BlockGasLimit::get().low_u64().saturating_div(BLOCK_STORAGE_LIMIT);
 		let actual_storage_growth_ratio =
 			<Runtime as pallet_evm::Config>::GasLimitStorageGrowthRatio::get();
 		assert_eq!(
