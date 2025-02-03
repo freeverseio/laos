@@ -48,8 +48,11 @@ parameter_types! {
 	/// )
 	pub const GasLimitPovSizeRatio: u64 = 4;
 	/// The amount of gas per storage (in bytes): BLOCK_GAS_LIMIT / BLOCK_STORAGE_LIMIT.
-	/// (15_000_000)/(40 KB) = 366
-	pub const GasLimitStorageGrowthRatio: u64 = 366;
+	/// (15_000_000)/(160 KB) = 91
+	/// This ratio is applied to every tx in order to ensure it doesn't store more data than
+	/// expected. Eg,a tx with gas_limit 1_000_000 would be allowed to store up to 1_000_000/91 = 10.989KB of
+	/// data.
+	pub const GasLimitStorageGrowthRatio: u64 = 91;
 }
 
 impl pallet_evm::Config for Runtime {
@@ -292,8 +295,8 @@ mod tests {
 
 	#[test]
 	fn test_storage_growth_ratio_is_correct() {
-		// The amount of bytes we allow our storage to grow per block: 40 KB
-		const BLOCK_STORAGE_LIMIT: u64 = 40 * 1024;
+		// The amount of bytes we allow our storage to grow per block: 160 KB
+		const BLOCK_STORAGE_LIMIT: u64 = 160 * 1024;
 
 		let expected_storage_growth_ratio =
 			BlockGasLimit::get().low_u64().saturating_div(BLOCK_STORAGE_LIMIT);
