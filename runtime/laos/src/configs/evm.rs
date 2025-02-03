@@ -37,9 +37,6 @@ const GAS_PER_SECOND: u64 = 40_000_000;
 /// u64 works for approximations because Weight is a very small unit compared to gas.
 const WEIGHT_PER_GAS: u64 = WEIGHT_REF_TIME_PER_SECOND / GAS_PER_SECOND;
 
-// The amount of bytes we allow our storage to grow per block: 40 KB
-const BLOCK_STORAGE_LIMIT: u64 = 40 * 1024;
-
 parameter_types! {
 	pub BlockGasLimit: U256 = U256::from(NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT.ref_time() / WEIGHT_PER_GAS);
 	pub PrecompilesInstance: LaosPrecompiles<Runtime> = LaosPrecompiles::<_>::new();
@@ -295,6 +292,9 @@ mod tests {
 
 	#[test]
 	fn test_storage_growth_ratio_is_correct() {
+		// The amount of bytes we allow our storage to grow per block: 40 KB
+		const BLOCK_STORAGE_LIMIT: u64 = 40 * 1024;
+
 		let expected_storage_growth_ratio =
 			BlockGasLimit::get().low_u64().saturating_div(BLOCK_STORAGE_LIMIT);
 		let actual_storage_growth_ratio =
