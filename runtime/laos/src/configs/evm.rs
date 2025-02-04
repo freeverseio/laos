@@ -24,7 +24,7 @@ use frame_support::{
 	weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight},
 };
 use laos_primitives::{MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO};
-use sp_core::{ConstU32, U256};
+use sp_core::U256;
 
 /// Current approximation of the gas/s consumption considering
 /// EVM execution over compiled WASM (on 4.4Ghz CPU).
@@ -47,9 +47,16 @@ parameter_types! {
 	///     (max_extrinsic.ref_time() / max_extrinsic.proof_size()) / WEIGHT_PER_GAS
 	/// )
 	pub const GasLimitPovSizeRatio: u64 = 4;
+	/// The amount of gas per storage (in bytes): BLOCK_GAS_LIMIT / BLOCK_STORAGE_LIMIT.
+	/// (15_000_000)/(160 KB) = 91
+	/// This ratio is applied to every tx in order to ensure it doesn't store more data than
+	/// expected. Eg,a tx with gas_limit 1_000_000 would be allowed to store up to 1_000_000/91 = 10.989KB of
+	/// data.
+	pub const GasLimitStorageGrowthRatio: u64 = 91;
 }
 
 impl pallet_evm::Config for Runtime {
+	type AccountProvider = pallet_evm::FrameSystemAccountProvider<Runtime>;
 	type AddressMapping = pallet_evm::IdentityAddressMapping;
 	type BlockGasLimit = BlockGasLimit;
 	type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
@@ -59,6 +66,7 @@ impl pallet_evm::Config for Runtime {
 	type FeeCalculator = BaseFee;
 	type FindAuthor = CustomFindAuthor<pallet_session::FindAccountFromAuthorIndex<Self, Aura>>;
 	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
+	type GasLimitStorageGrowthRatio = GasLimitStorageGrowthRatio;
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
 	type OnChargeTransaction = pallet_evm::EVMFungibleAdapter<Balances, ToAuthor<Self>>;
 	type OnCreate = ();
@@ -66,7 +74,6 @@ impl pallet_evm::Config for Runtime {
 	type PrecompilesValue = PrecompilesInstance;
 	type Runner = pallet_evm::runner::stack::Runner<Self>;
 	type RuntimeEvent = RuntimeEvent;
-	type SuicideQuickClearLimit = ConstU32<0>;
 	type Timestamp = Timestamp;
 	type WeightPerGas = WeightPerGas;
 	type WithdrawOrigin = pallet_evm::EnsureAddressNever<AccountId>;
@@ -284,5 +291,20 @@ mod tests {
 					1184
 				);
 			});
+	}
+
+	#[test]
+	fn test_storage_growth_ratio_is_correct() {
+		// The amount of bytes we allow our storage to grow per block: 160 KB
+		const BLOCK_STORAGE_LIMIT: u64 = 160 * 1024;
+
+		let expected_storage_growth_ratio =
+			BlockGasLimit::get().low_u64().saturating_div(BLOCK_STORAGE_LIMIT);
+		let actual_storage_growth_ratio =
+			<Runtime as pallet_evm::Config>::GasLimitStorageGrowthRatio::get();
+		assert_eq!(
+			expected_storage_growth_ratio, actual_storage_growth_ratio,
+			"Storage growth ratio is not correct"
+		);
 	}
 }

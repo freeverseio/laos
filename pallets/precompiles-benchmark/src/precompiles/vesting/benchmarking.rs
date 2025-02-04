@@ -123,6 +123,13 @@ type BalanceOf<Runtime> = <<Runtime as pallet_vesting::Config>::Currency as Curr
 	<Runtime as frame_system::Config>::AccountId,
 >>::Balance;
 
+// The benchmarks macro will add <T:Config> to all benchmark functions and as we specify a where
+// clause, that'll be added to. This triggers the clippy::multiple_bound_locations warning designed
+// to don't confuse developers by repeating trait bound locations. As this will be macro generated
+// code that nobody will see, it's ok to annotate the module with it.
+// TODO: When this PR: https://github.com/paritytech/polkadot-sdk/pull/7418 becomes stable,
+// we will be able to remove this annotation.
+#[allow(clippy::multiple_bound_locations)]
 #[benchmarks(
 	where
 		T: Config + pallet_vesting::Config,

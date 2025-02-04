@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 //! Benchmarking setup for pallet-treasury-funding
-#![cfg(feature = "runtime-benchmarks")]
 
 use super::*;
 use frame_benchmarking::v2::*;
