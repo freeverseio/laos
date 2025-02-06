@@ -5318,6 +5318,7 @@ dependencies = [
  "staging-xcm-executor",
  "substrate-wasm-builder",
  "test-utils",
+ "xcm-runtime-apis",
 ]
 
 [[package]]
@@ -9654,6 +9655,7 @@ dependencies = [
  "async-trait",
  "frame-benchmarking",
  "frame-benchmarking-cli",
+ "frame-metadata-hash-extension",
  "frame-system",
  "frame-system-rpc-runtime-api",
  "futures",
@@ -9702,6 +9704,7 @@ dependencies = [
  "polkadot-runtime-parachains",
  "polkadot-statement-distribution",
  "rococo-runtime",
+ "rococo-runtime-constants",
  "sc-authority-discovery",
  "sc-basic-authorship",
  "sc-chain-spec",

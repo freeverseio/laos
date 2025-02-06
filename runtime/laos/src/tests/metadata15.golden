@@ -37752,6 +37752,366 @@
             "id": 653,
             "type": {
               "path": [
+                "Result"
+              ],
+              "params": [
+                {
+                  "name": "T",
+                  "type": 654
+                },
+                {
+                  "name": "E",
+                  "type": 663
+                }
+              ],
+              "def": {
+                "variant": {
+                  "variants": [
+                    {
+                      "name": "Ok",
+                      "fields": [
+                        {
+                          "type": 654
+                        }
+                      ],
+                      "index": 0
+                    },
+                    {
+                      "name": "Err",
+                      "fields": [
+                        {
+                          "type": 663
+                        }
+                      ],
+                      "index": 1
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": 654,
+            "type": {
+              "path": [
+                "xcm_runtime_apis",
+                "dry_run",
+                "CallDryRunEffects"
+              ],
+              "params": [
+                {
+                  "name": "Event",
+                  "type": 22
+                }
+              ],
+              "def": {
+                "composite": {
+                  "fields": [
+                    {
+                      "name": "execution_result",
+                      "type": 655,
+                      "typeName": "DispatchResultWithPostInfo"
+                    },
+                    {
+                      "name": "emitted_events",
+                      "type": 658,
+                      "typeName": "Vec<Event>"
+                    },
+                    {
+                      "name": "local_xcm",
+                      "type": 659,
+                      "typeName": "Option<VersionedXcm<()>>"
+                    },
+                    {
+                      "name": "forwarded_xcms",
+                      "type": 660,
+                      "typeName": "Vec<(VersionedLocation, Vec<VersionedXcm<()>>)>"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": 655,
+            "type": {
+              "path": [
+                "Result"
+              ],
+              "params": [
+                {
+                  "name": "T",
+                  "type": 656
+                },
+                {
+                  "name": "E",
+                  "type": 657
+                }
+              ],
+              "def": {
+                "variant": {
+                  "variants": [
+                    {
+                      "name": "Ok",
+                      "fields": [
+                        {
+                          "type": 656
+                        }
+                      ],
+                      "index": 0
+                    },
+                    {
+                      "name": "Err",
+                      "fields": [
+                        {
+                          "type": 657
+                        }
+                      ],
+                      "index": 1
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": 656,
+            "type": {
+              "path": [
+                "frame_support",
+                "dispatch",
+                "PostDispatchInfo"
+              ],
+              "def": {
+                "composite": {
+                  "fields": [
+                    {
+                      "name": "actual_weight",
+                      "type": 188,
+                      "typeName": "Option<Weight>"
+                    },
+                    {
+                      "name": "pays_fee",
+                      "type": 26,
+                      "typeName": "Pays"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": 657,
+            "type": {
+              "path": [
+                "sp_runtime",
+                "DispatchErrorWithPostInfo"
+              ],
+              "params": [
+                {
+                  "name": "Info",
+                  "type": 656
+                }
+              ],
+              "def": {
+                "composite": {
+                  "fields": [
+                    {
+                      "name": "post_info",
+                      "type": 656,
+                      "typeName": "Info"
+                    },
+                    {
+                      "name": "error",
+                      "type": 27,
+                      "typeName": "DispatchError"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": 658,
+            "type": {
+              "def": {
+                "sequence": {
+                  "type": 22
+                }
+              }
+            }
+          },
+          {
+            "id": 659,
+            "type": {
+              "path": [
+                "Option"
+              ],
+              "params": [
+                {
+                  "name": "T",
+                  "type": 310
+                }
+              ],
+              "def": {
+                "variant": {
+                  "variants": [
+                    {
+                      "name": "None",
+                      "index": 0
+                    },
+                    {
+                      "name": "Some",
+                      "fields": [
+                        {
+                          "type": 310
+                        }
+                      ],
+                      "index": 1
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": 660,
+            "type": {
+              "def": {
+                "sequence": {
+                  "type": 661
+                }
+              }
+            }
+          },
+          {
+            "id": 661,
+            "type": {
+              "def": {
+                "tuple": [
+                  131,
+                  662
+                ]
+              }
+            }
+          },
+          {
+            "id": 662,
+            "type": {
+              "def": {
+                "sequence": {
+                  "type": 310
+                }
+              }
+            }
+          },
+          {
+            "id": 663,
+            "type": {
+              "path": [
+                "xcm_runtime_apis",
+                "dry_run",
+                "Error"
+              ],
+              "def": {
+                "variant": {
+                  "variants": [
+                    {
+                      "name": "Unimplemented",
+                      "index": 0
+                    },
+                    {
+                      "name": "VersionedConversionFailed",
+                      "index": 1
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": 664,
+            "type": {
+              "path": [
+                "Result"
+              ],
+              "params": [
+                {
+                  "name": "T",
+                  "type": 665
+                },
+                {
+                  "name": "E",
+                  "type": 663
+                }
+              ],
+              "def": {
+                "variant": {
+                  "variants": [
+                    {
+                      "name": "Ok",
+                      "fields": [
+                        {
+                          "type": 665
+                        }
+                      ],
+                      "index": 0
+                    },
+                    {
+                      "name": "Err",
+                      "fields": [
+                        {
+                          "type": 663
+                        }
+                      ],
+                      "index": 1
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": 665,
+            "type": {
+              "path": [
+                "xcm_runtime_apis",
+                "dry_run",
+                "XcmDryRunEffects"
+              ],
+              "params": [
+                {
+                  "name": "Event",
+                  "type": 22
+                }
+              ],
+              "def": {
+                "composite": {
+                  "fields": [
+                    {
+                      "name": "execution_result",
+                      "type": 59,
+                      "typeName": "Outcome"
+                    },
+                    {
+                      "name": "emitted_events",
+                      "type": 658,
+                      "typeName": "Vec<Event>"
+                    },
+                    {
+                      "name": "forwarded_xcms",
+                      "type": 660,
+                      "typeName": "Vec<(VersionedLocation, Vec<VersionedXcm<()>>)>"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": 666,
+            "type": {
+              "path": [
                 "laos_runtime",
                 "RuntimeError"
               ],
@@ -38661,7 +39021,7 @@
                 0,
                 0,
                 0,
-                56,
+                60,
                 221,
                 113,
                 141,
@@ -38826,6 +39186,18 @@
                 71,
                 239,
                 214,
+                1,
+                0,
+                0,
+                0,
+                145,
+                177,
+                200,
+                177,
+                99,
+                40,
+                235,
+                146,
                 1,
                 0,
                 0,
@@ -45576,12 +45948,62 @@
           "docs": [
             " API to interact with RuntimeGenesisConfig for the runtime"
           ]
+        },
+        {
+          "name": "DryRunApi",
+          "methods": [
+            {
+              "name": "dry_run_call",
+              "inputs": [
+                {
+                  "name": "origin",
+                  "ty": 245
+                },
+                {
+                  "name": "call",
+                  "ty": 242
+                }
+              ],
+              "output": 653,
+              "docs": [
+                " Dry run call."
+              ]
+            },
+            {
+              "name": "dry_run_xcm",
+              "inputs": [
+                {
+                  "name": "origin_location",
+                  "ty": 131
+                },
+                {
+                  "name": "xcm",
+                  "ty": 336
+                }
+              ],
+              "output": 664,
+              "docs": [
+                " Dry run XCM program"
+              ]
+            }
+          ],
+          "docs": [
+            " API for dry-running extrinsics and XCM programs to get the programs that need to be passed to the fees API.",
+            "",
+            " All calls return a vector of tuples (location, xcm) where each \"xcm\" is executed in \"location\".",
+            " If there's local execution, the location will be \"Here\".",
+            " This vector can be used to calculate both execution and delivery fees.",
+            "",
+            " Calls or XCMs might fail when executed, this doesn't mean the result of these calls will be an `Err`.",
+            " In those cases, there might still be a valid result, with the execution error inside it.",
+            " The only reasons why these calls might return an error are listed in the [`Error`] enum."
+          ]
         }
       ],
       "outer_enums": {
         "call_enum_ty": 242,
         "event_enum_ty": 22,
-        "error_enum_ty": 653
+        "error_enum_ty": 666
       },
       "custom": {
         "map": {}
