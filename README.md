@@ -7,10 +7,12 @@ LAOS is the Universal layer 1 for digital assets across all blockchains, introdu
 LAOS' main documentation can be found here:
 - **[LAOS Whitepaper](https://github.com/freeverseio/laos-whitepaper/blob/main/laos.pdf)**, for an in-depth, fully detailed description.
 - **[LAOS Developer Docs](https://docs.laosnetwork.io/)**, to start building your DApp using LAOS.
-- **[LAOS Litepaper](https://laosnetwork.io/downloads/LAOS_litepaper.pdf)**, for a high-level, use case oriented description.
 
-LAOS is fully open source and decentralized. The main code repositories are:
+LAOS is fully open-source and decentralized:  
+- **[LAOS' Subsquare integration](https://laos.subsquare.io/)** enables decentralized governance by LAOS token holders.  
+- **[LAOS Tokenomics](https://docs.laosnetwork.io/tokenomics/token-distribution)** provides details on the initial token distribution and its vesting conditions over the first years.  
 
+The main code repositories are:
 * **[The LAOS Parachain](#the-laos-parachain-monorepo)**. You are already in it. To streamline the development process and encourage diverse contributions, all core components of the Parachain were integrated in this single monorepo.
 
 * **[The Universal ERC721 Solidity Templates](https://github.com/freeverseio/laos-erc721)**. This template contains the minimal extensions of the ERC721 OpenZeppelin implementation that enables bridgeless minting and evolution in any EVM chain.
@@ -20,12 +22,11 @@ and LAOS Mainnet started producing blocks on July 3rd, 2024.
 
 ### LAOS Sigma Testnet
 
-LAOS Sigma serves as the testnet for LAOS, currently maintained by the LAOS Foundation.
-All development undergoes final testing in LAOS Sigma before being integrated in LAOS Mainnet.
+LAOS Sigma serves as the testnet for LAOS.
+All core development undergoes final testing in LAOS Sigma before being integrated in LAOS Mainnet.
 
 You may use LAOS Sigma to test staking, or to develop and test your DApp, before launching to LAOS Mainnet.
 
-* Testnet: **LAOS Sigma**
 * Substrate RPC endpoint: [wss://rpc.laossigma.laosfoundation.io](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Frpc.laossigma.laosfoundation.io#/rpc)   
 * EVM Public RPC endpoint: https://rpc.laossigma.laosfoundation.io
 * EVM block explorer: https://sigma.explorer.laosnetwork.io/
@@ -36,9 +37,10 @@ You may use LAOS Sigma to test staking, or to develop and test your DApp, before
 ### LAOS Mainnet
 
 LAOS Mainnet is secured by Polkadot's validators by being a Parachains since July 3rd, 2024.
-Check [LAOS Roadmap](https://laosnetwork.io/roadmap-after-tge) for a list of features planned to be activated during the next months.
 
 * Substrate RPC endpoint: [wss://rpc.laos.laosfoundation.io](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Frpc.laos.laosfoundation.io#/rpc)   
+* EVM Public RPC endpoint: https://rpc.laos.laosfoundation.io
+* EVM block explorer: https://explorer.laosnetwork.io/
 * ParaId: 3370
 * EVM Chain ID: 6283
 * Chainlist Entry: https://chainlist.org/chain/6283
