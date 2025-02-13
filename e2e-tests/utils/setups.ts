@@ -15,11 +15,8 @@ import {
 	ASSET_HUB_PARA_ID,
 	POLKADOT_PREFIX,
 	HYDRATION_PREFIX,
-	MOONBEAM_PARA_ID,
 	HYDRATION_PARA_ID,
-	CHOPSTICKS_MOONBEAM_NODE_IP,
 	CHOPSTICKS_HYDRATION_NODE_IP,
-	LAOS_ID_MOONBEAM,
 	LAOS_ID_HYDRATION,
 } from "@utils/constants";
 
@@ -126,13 +123,10 @@ export function describeWithExistingNodeXcm(title: string, cb: () => void) {
 			const assetHubProvider = new WsProvider(`ws://${CHOPSTICKS_ASSET_HUB_NODE_IP}`);
 			const apiAssetHub = await ApiPromise.create({ provider: assetHubProvider });
 
-			const moonbeamProvider = new WsProvider(`ws://${CHOPSTICKS_MOONBEAM_NODE_IP}`);
-			const apiMoonbeam = await ApiPromise.create({ provider: moonbeamProvider });
-
 			const hydrationProvider = new WsProvider(`ws://${CHOPSTICKS_HYDRATION_NODE_IP}`);
 			const apiHydration = await ApiPromise.create({ provider: hydrationProvider });
 
-			this.chains = { laos: apiLaos, assetHub: apiAssetHub, moonbeam: apiMoonbeam, hydration: apiHydration };
+			this.chains = { laos: apiLaos, assetHub: apiAssetHub, hydration: apiHydration };
 
 			this.assetHubItems = {
 				accounts: {
@@ -168,13 +162,6 @@ export function describeWithExistingNodeXcm(title: string, cb: () => void) {
 				this.assetHubItems.laosSA
 			);
 
-			this.moonbeamItems = {
-				laosLocation: apiMoonbeam.createType("XcmVersionedLocation", {
-					V4: siblingParachainLocation(LAOS_PARA_ID),
-				}),
-				laosAsset: LAOS_ID_MOONBEAM,
-			};
-
 			this.hydrationItems = {
 				accounts: { alice: apiHydration.createType("AccountId", this.hydrationPairs.alice.address) },
 				laosLocation: apiHydration.createType("XcmVersionedLocation", {
@@ -187,14 +174,10 @@ export function describeWithExistingNodeXcm(title: string, cb: () => void) {
 				assetHubLocation: apiLaos.createType("XcmVersionedLocation", {
 					V4: siblingParachainLocation(ASSET_HUB_PARA_ID),
 				}),
-				moonbeamLocation: apiLaos.createType("XcmVersionedLocation", {
-					V4: siblingParachainLocation(MOONBEAM_PARA_ID),
-				}),
 				hydrationLocation: apiLaos.createType("XcmVersionedLocation", {
 					v4: siblingParachainLocation(HYDRATION_PARA_ID),
 				}),
 				relayChainLocation: apiLaos.createType("XcmVersionedLocation", { V4: relayChainLocation() }),
-				moonbeamSA: substrateToEthereum(sovereignAccountOf(MOONBEAM_PARA_ID)),
 				hydrationSA: substrateToEthereum(sovereignAccountOf(HYDRATION_PARA_ID)),
 			};
 		});
@@ -204,7 +187,6 @@ export function describeWithExistingNodeXcm(title: string, cb: () => void) {
 		after(async function () {
 			this.chains.laos.disconnect();
 			this.chains.assetHub.disconnect();
-			this.chains.moonbeam.disconnect();
 			this.chains.hydration.disconnect();
 		});
 	});

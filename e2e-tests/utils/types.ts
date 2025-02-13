@@ -31,11 +31,6 @@ type assetHubItems = {
 	relayAsset: StagingXcmV3MultiLocation;
 };
 
-type moonbeamItems = {
-	laosLocation: XcmVersionedLocation;
-	laosAsset: BN;
-};
-
 type hydrationItems = {
 	accounts: {
 		alice: AccountId;
@@ -46,10 +41,8 @@ type hydrationItems = {
 
 type laosItems = {
 	assetHubLocation: XcmVersionedLocation;
-	moonbeamLocation: XcmVersionedLocation;
 	hydrationLocation: XcmVersionedLocation;
 	relayChainLocation: XcmVersionedLocation;
-	moonbeamSA: string;
 	hydrationSA: string;
 };
 
@@ -74,7 +67,7 @@ type ethereumPairs = {
 
 type zombieChains = { laos: ApiPromise; polkadot: ApiPromise };
 
-type chopsticksChains = { laos: ApiPromise; assetHub: ApiPromise; moonbeam: ApiPromise; hydration: ApiPromise };
+type chopsticksChains = { laos: ApiPromise; assetHub: ApiPromise; hydration: ApiPromise };
 
 export interface CustomSuiteContext extends Suite {
 	web3: Web3;
@@ -92,6 +85,5 @@ export interface XcmSuiteContext extends Suite {
 	ethereumPairs: ethereumPairs;
 	laosItems: laosItems;
 	assetHubItems: assetHubItems;
-	moonbeamItems: moonbeamItems;
 	hydrationItems: hydrationItems;
 }
