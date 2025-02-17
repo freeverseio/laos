@@ -86,12 +86,6 @@ impl ExtBuilder {
 			.assimilate_storage(&mut t)
 			.unwrap();
 
-		pallet_sudo::GenesisConfig::<crate::Runtime> {
-			key: Some(AccountId::from_str(BOB).unwrap()),
-		}
-		.assimilate_storage(&mut t)
-		.unwrap();
-
 		pallet_parachain_staking::GenesisConfig::<crate::Runtime> {
 			candidates: self.candidates,
 			blocks_per_round: 10,
