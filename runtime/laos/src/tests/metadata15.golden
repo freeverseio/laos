@@ -37761,7 +37761,7 @@
                 },
                 {
                   "name": "E",
-                  "type": 663
+                  "type": 655
                 }
               ],
               "def": {
@@ -37772,6 +37772,308 @@
                       "fields": [
                         {
                           "type": 654
+                        }
+                      ],
+                      "index": 0
+                    },
+                    {
+                      "name": "Err",
+                      "fields": [
+                        {
+                          "type": 655
+                        }
+                      ],
+                      "index": 1
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": 654,
+            "type": {
+              "def": {
+                "sequence": {
+                  "type": 348
+                }
+              }
+            }
+          },
+          {
+            "id": 655,
+            "type": {
+              "path": [
+                "xcm_runtime_apis",
+                "fees",
+                "Error"
+              ],
+              "def": {
+                "variant": {
+                  "variants": [
+                    {
+                      "name": "Unimplemented",
+                      "index": 0
+                    },
+                    {
+                      "name": "VersionedConversionFailed",
+                      "index": 1
+                    },
+                    {
+                      "name": "WeightNotComputable",
+                      "index": 2
+                    },
+                    {
+                      "name": "UnhandledXcmVersion",
+                      "index": 3
+                    },
+                    {
+                      "name": "AssetNotFound",
+                      "index": 4
+                    },
+                    {
+                      "name": "Unroutable",
+                      "index": 5
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": 656,
+            "type": {
+              "path": [
+                "Result"
+              ],
+              "params": [
+                {
+                  "name": "T",
+                  "type": 10
+                },
+                {
+                  "name": "E",
+                  "type": 655
+                }
+              ],
+              "def": {
+                "variant": {
+                  "variants": [
+                    {
+                      "name": "Ok",
+                      "fields": [
+                        {
+                          "type": 10
+                        }
+                      ],
+                      "index": 0
+                    },
+                    {
+                      "name": "Err",
+                      "fields": [
+                        {
+                          "type": 655
+                        }
+                      ],
+                      "index": 1
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": 657,
+            "type": {
+              "path": [
+                "Result"
+              ],
+              "params": [
+                {
+                  "name": "T",
+                  "type": 6
+                },
+                {
+                  "name": "E",
+                  "type": 655
+                }
+              ],
+              "def": {
+                "variant": {
+                  "variants": [
+                    {
+                      "name": "Ok",
+                      "fields": [
+                        {
+                          "type": 6
+                        }
+                      ],
+                      "index": 0
+                    },
+                    {
+                      "name": "Err",
+                      "fields": [
+                        {
+                          "type": 655
+                        }
+                      ],
+                      "index": 1
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": 658,
+            "type": {
+              "path": [
+                "Result"
+              ],
+              "params": [
+                {
+                  "name": "T",
+                  "type": 106
+                },
+                {
+                  "name": "E",
+                  "type": 655
+                }
+              ],
+              "def": {
+                "variant": {
+                  "variants": [
+                    {
+                      "name": "Ok",
+                      "fields": [
+                        {
+                          "type": 106
+                        }
+                      ],
+                      "index": 0
+                    },
+                    {
+                      "name": "Err",
+                      "fields": [
+                        {
+                          "type": 655
+                        }
+                      ],
+                      "index": 1
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": 659,
+            "type": {
+              "path": [
+                "Result"
+              ],
+              "params": [
+                {
+                  "name": "T",
+                  "type": 660
+                },
+                {
+                  "name": "E",
+                  "type": 669
+                }
+              ],
+              "def": {
+                "variant": {
+                  "variants": [
+                    {
+                      "name": "Ok",
+                      "fields": [
+                        {
+                          "type": 660
+                        }
+                      ],
+                      "index": 0
+                    },
+                    {
+                      "name": "Err",
+                      "fields": [
+                        {
+                          "type": 669
+                        }
+                      ],
+                      "index": 1
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": 660,
+            "type": {
+              "path": [
+                "xcm_runtime_apis",
+                "dry_run",
+                "CallDryRunEffects"
+              ],
+              "params": [
+                {
+                  "name": "Event",
+                  "type": 22
+                }
+              ],
+              "def": {
+                "composite": {
+                  "fields": [
+                    {
+                      "name": "execution_result",
+                      "type": 661,
+                      "typeName": "DispatchResultWithPostInfo"
+                    },
+                    {
+                      "name": "emitted_events",
+                      "type": 664,
+                      "typeName": "Vec<Event>"
+                    },
+                    {
+                      "name": "local_xcm",
+                      "type": 665,
+                      "typeName": "Option<VersionedXcm<()>>"
+                    },
+                    {
+                      "name": "forwarded_xcms",
+                      "type": 666,
+                      "typeName": "Vec<(VersionedLocation, Vec<VersionedXcm<()>>)>"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": 661,
+            "type": {
+              "path": [
+                "Result"
+              ],
+              "params": [
+                {
+                  "name": "T",
+                  "type": 662
+                },
+                {
+                  "name": "E",
+                  "type": 663
+                }
+              ],
+              "def": {
+                "variant": {
+                  "variants": [
+                    {
+                      "name": "Ok",
+                      "fields": [
+                        {
+                          "type": 662
                         }
                       ],
                       "index": 0
@@ -37791,91 +38093,7 @@
             }
           },
           {
-            "id": 654,
-            "type": {
-              "path": [
-                "xcm_runtime_apis",
-                "dry_run",
-                "CallDryRunEffects"
-              ],
-              "params": [
-                {
-                  "name": "Event",
-                  "type": 22
-                }
-              ],
-              "def": {
-                "composite": {
-                  "fields": [
-                    {
-                      "name": "execution_result",
-                      "type": 655,
-                      "typeName": "DispatchResultWithPostInfo"
-                    },
-                    {
-                      "name": "emitted_events",
-                      "type": 658,
-                      "typeName": "Vec<Event>"
-                    },
-                    {
-                      "name": "local_xcm",
-                      "type": 659,
-                      "typeName": "Option<VersionedXcm<()>>"
-                    },
-                    {
-                      "name": "forwarded_xcms",
-                      "type": 660,
-                      "typeName": "Vec<(VersionedLocation, Vec<VersionedXcm<()>>)>"
-                    }
-                  ]
-                }
-              }
-            }
-          },
-          {
-            "id": 655,
-            "type": {
-              "path": [
-                "Result"
-              ],
-              "params": [
-                {
-                  "name": "T",
-                  "type": 656
-                },
-                {
-                  "name": "E",
-                  "type": 657
-                }
-              ],
-              "def": {
-                "variant": {
-                  "variants": [
-                    {
-                      "name": "Ok",
-                      "fields": [
-                        {
-                          "type": 656
-                        }
-                      ],
-                      "index": 0
-                    },
-                    {
-                      "name": "Err",
-                      "fields": [
-                        {
-                          "type": 657
-                        }
-                      ],
-                      "index": 1
-                    }
-                  ]
-                }
-              }
-            }
-          },
-          {
-            "id": 656,
+            "id": 662,
             "type": {
               "path": [
                 "frame_support",
@@ -37901,7 +38119,7 @@
             }
           },
           {
-            "id": 657,
+            "id": 663,
             "type": {
               "path": [
                 "sp_runtime",
@@ -37910,7 +38128,7 @@
               "params": [
                 {
                   "name": "Info",
-                  "type": 656
+                  "type": 662
                 }
               ],
               "def": {
@@ -37918,7 +38136,7 @@
                   "fields": [
                     {
                       "name": "post_info",
-                      "type": 656,
+                      "type": 662,
                       "typeName": "Info"
                     },
                     {
@@ -37932,7 +38150,7 @@
             }
           },
           {
-            "id": 658,
+            "id": 664,
             "type": {
               "def": {
                 "sequence": {
@@ -37942,7 +38160,7 @@
             }
           },
           {
-            "id": 659,
+            "id": 665,
             "type": {
               "path": [
                 "Option"
@@ -37975,28 +38193,28 @@
             }
           },
           {
-            "id": 660,
+            "id": 666,
             "type": {
               "def": {
                 "sequence": {
-                  "type": 661
+                  "type": 667
                 }
               }
             }
           },
           {
-            "id": 661,
+            "id": 667,
             "type": {
               "def": {
                 "tuple": [
                   131,
-                  662
+                  668
                 ]
               }
             }
           },
           {
-            "id": 662,
+            "id": 668,
             "type": {
               "def": {
                 "sequence": {
@@ -38006,7 +38224,7 @@
             }
           },
           {
-            "id": 663,
+            "id": 669,
             "type": {
               "path": [
                 "xcm_runtime_apis",
@@ -38030,7 +38248,7 @@
             }
           },
           {
-            "id": 664,
+            "id": 670,
             "type": {
               "path": [
                 "Result"
@@ -38038,11 +38256,11 @@
               "params": [
                 {
                   "name": "T",
-                  "type": 665
+                  "type": 671
                 },
                 {
                   "name": "E",
-                  "type": 663
+                  "type": 669
                 }
               ],
               "def": {
@@ -38052,7 +38270,7 @@
                       "name": "Ok",
                       "fields": [
                         {
-                          "type": 665
+                          "type": 671
                         }
                       ],
                       "index": 0
@@ -38061,7 +38279,7 @@
                       "name": "Err",
                       "fields": [
                         {
-                          "type": 663
+                          "type": 669
                         }
                       ],
                       "index": 1
@@ -38072,7 +38290,7 @@
             }
           },
           {
-            "id": 665,
+            "id": 671,
             "type": {
               "path": [
                 "xcm_runtime_apis",
@@ -38095,12 +38313,12 @@
                     },
                     {
                       "name": "emitted_events",
-                      "type": 658,
+                      "type": 664,
                       "typeName": "Vec<Event>"
                     },
                     {
                       "name": "forwarded_xcms",
-                      "type": 660,
+                      "type": 666,
                       "typeName": "Vec<(VersionedLocation, Vec<VersionedXcm<()>>)>"
                     }
                   ]
@@ -38109,7 +38327,7 @@
             }
           },
           {
-            "id": 666,
+            "id": 672,
             "type": {
               "path": [
                 "laos_runtime",
@@ -39021,7 +39239,7 @@
                 0,
                 0,
                 0,
-                60,
+                64,
                 221,
                 113,
                 141,
@@ -39186,6 +39404,18 @@
                 71,
                 239,
                 214,
+                1,
+                0,
+                0,
+                0,
+                111,
+                245,
+                46,
+                232,
+                88,
+                230,
+                197,
+                189,
                 1,
                 0,
                 0,
@@ -45950,6 +46180,104 @@
           ]
         },
         {
+          "name": "XcmPaymentApi",
+          "methods": [
+            {
+              "name": "query_acceptable_payment_assets",
+              "inputs": [
+                {
+                  "name": "xcm_version",
+                  "ty": 4
+                }
+              ],
+              "output": 653,
+              "docs": [
+                " Returns a list of acceptable payment assets.",
+                "",
+                " # Arguments",
+                "",
+                " * `xcm_version`: Version."
+              ]
+            },
+            {
+              "name": "query_xcm_weight",
+              "inputs": [
+                {
+                  "name": "message",
+                  "ty": 310
+                }
+              ],
+              "output": 656,
+              "docs": [
+                " Returns a weight needed to execute a XCM.",
+                "",
+                " # Arguments",
+                "",
+                " * `message`: `VersionedXcm`."
+              ]
+            },
+            {
+              "name": "query_weight_to_asset_fee",
+              "inputs": [
+                {
+                  "name": "weight",
+                  "ty": 10
+                },
+                {
+                  "name": "asset",
+                  "ty": 348
+                }
+              ],
+              "output": 657,
+              "docs": [
+                " Converts a weight into a fee for the specified `AssetId`.",
+                "",
+                " # Arguments",
+                "",
+                " * `weight`: convertible `Weight`.",
+                " * `asset`: `VersionedAssetId`."
+              ]
+            },
+            {
+              "name": "query_delivery_fees",
+              "inputs": [
+                {
+                  "name": "destination",
+                  "ty": 131
+                },
+                {
+                  "name": "message",
+                  "ty": 310
+                }
+              ],
+              "output": 658,
+              "docs": [
+                " Get delivery fees for sending a specific `message` to a `destination`.",
+                " These always come in a specific asset, defined by the chain.",
+                "",
+                " # Arguments",
+                " * `message`: The message that'll be sent, necessary because most delivery fees are based on the",
+                "   size of the message.",
+                " * `destination`: The destination to send the message to. Different destinations may use",
+                "   different senders that charge different fees."
+              ]
+            }
+          ],
+          "docs": [
+            " A trait of XCM payment API.",
+            "",
+            " API provides functionality for obtaining:",
+            "",
+            " * the weight required to execute an XCM message,",
+            " * a list of acceptable `AssetId`s for message execution payment,",
+            " * the cost of the weight in the specified acceptable `AssetId`.",
+            " * the fees for an XCM message delivery.",
+            "",
+            " To determine the execution weight of the calls required for",
+            " [`xcm::latest::Instruction::Transact`] instruction, `TransactionPaymentCallApi` can be used."
+          ]
+        },
+        {
           "name": "DryRunApi",
           "methods": [
             {
@@ -45964,7 +46292,7 @@
                   "ty": 242
                 }
               ],
-              "output": 653,
+              "output": 659,
               "docs": [
                 " Dry run call."
               ]
@@ -45981,7 +46309,7 @@
                   "ty": 336
                 }
               ],
-              "output": 664,
+              "output": 670,
               "docs": [
                 " Dry run XCM program"
               ]
@@ -46003,7 +46331,7 @@
       "outer_enums": {
         "call_enum_ty": 242,
         "event_enum_ty": 22,
-        "error_enum_ty": 666
+        "error_enum_ty": 672
       },
       "custom": {
         "map": {}
