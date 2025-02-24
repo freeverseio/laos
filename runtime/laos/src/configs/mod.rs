@@ -37,7 +37,6 @@ mod preimage;
 mod proxy;
 mod scheduler;
 mod session;
-mod sudo;
 pub mod system;
 mod timestamp;
 mod transaction_payment;

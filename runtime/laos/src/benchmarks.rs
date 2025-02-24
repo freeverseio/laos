@@ -16,7 +16,6 @@
 
 frame_benchmarking::define_benchmarks!(
 	[pallet_timestamp, Timestamp]
-	[pallet_sudo, Sudo]
 	[pallet_utility, Utility]
 	[pallet_multisig, Multisig]
 	[pallet_proxy, Proxy]
