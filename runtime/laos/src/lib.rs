@@ -31,6 +31,7 @@ mod weights;
 pub use configs::laos_evolution::REVERT_BYTECODE;
 use configs::xcm_config;
 use core::marker::PhantomData;
+use cumulus_primitives_core::AssetId;
 use fp_rpc::TransactionStatus;
 use frame_support::{
 	construct_runtime,
@@ -644,24 +645,18 @@ impl_runtime_apis! {
 
 	impl xcm_runtime_apis::fees::XcmPaymentApi<Block> for Runtime {
 		fn query_acceptable_payment_assets(xcm_version: xcm::Version) -> Result<Vec<VersionedAssetId>, XcmPaymentApiError> {
-			unimplemented!();
-
-			// let mut acceptable_assets = AcceptedFundingAsset::all_ids();
-			// acceptable_assets.push(Location::here());
-			// let acceptable_assets = acceptable_assets.into_iter().map(|a| a.into()).collect::<Vec<xcm::v4::AssetId>>();
-
-			// PolkadotXcm::query_acceptable_payment_assets(xcm_version, acceptable_assets)
+			let acceptable_assets = vec![AssetId(xcm_config::HereLocation::get())];
+			PolkadotXcm::query_acceptable_payment_assets(xcm_version, acceptable_assets)
 		}
 
 		fn query_weight_to_asset_fee(weight: Weight, asset: VersionedAssetId) -> Result<u128, XcmPaymentApiError> {
-			unimplemented!();
-			// let location: Location = xcm::v4::AssetId::try_from(asset).map_err(|_| XcmPaymentApiError::VersionedConversionFailed)?.0;
-			// let native_fee = TransactionPayment::weight_to_fee(weight);
-			// if location == Location::here() {
-			// 	return Ok(native_fee)
-			// }
-			// PLMCToFundingAssetBalance::to_asset_balance(native_fee, location).map_err(|_| XcmPaymentApiError::AssetNotFound)
+			let location = xcm::v4::AssetId::try_from(asset).map_err(|_| XcmPaymentApiError::VersionedConversionFailed)?.0;
+			if location != xcm_config::HereLocation::get() {
+				return Err(XcmPaymentApiError::AssetNotFound);
+			}
 
+			let native_fee = TransactionPayment::weight_to_fee(weight);
+			Ok(native_fee)
 		}
 
 		fn query_xcm_weight(message: VersionedXcm<()>) -> Result<Weight, XcmPaymentApiError> {
