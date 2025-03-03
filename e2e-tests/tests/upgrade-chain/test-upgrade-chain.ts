@@ -1,5 +1,6 @@
 import { expect } from "chai";
 import path from "path";
+import { blake2AsHex } from "@polkadot/util-crypto";
 import { existsSync, readFileSync } from "fs";
 import { step } from "mocha-steps";
 import { describeWithExistingNode } from "@utils/setups";
@@ -26,8 +27,6 @@ describeWithExistingNode(
 				throw new Error(`Unable to find LAOS wasm at ${runtimePath}`);
 			}
 
-			const wasmFile = readFileSync(runtimePath).toString("hex");
-
 			const liveSpecVersion = this.chains.laos.consts.system.version.specVersion.toNumber();
 
 			// The runtime version in LAOS is at smaller than the development version
@@ -36,7 +35,11 @@ describeWithExistingNode(
 				"developed runtime version is not greater than the live chain version"
 			).to.be.true;
 
-			const tx = this.chains.laos.tx.sudo.sudo(this.chains.laos.tx.system.setCode(`0x${wasmFile}`));
+			const wasmFile = readFileSync(runtimePath).toString("hex");
+			const wasmHex = `0x${wasmFile}`;
+			const wasmHash = blake2AsHex(wasmHex);
+			this.wsProvider.send("dev_setStorage", [{ ["system"]: { ["authorizedUpgrade"]: `${wasmHash}01` } }]);
+			const tx = this.chains.laos.tx.system.applyAuthorizedUpgrade(wasmHex);
 
 			const upgradeCooldowns = await this.chains.polkadot.query.paras.upgradeCooldowns();
 
