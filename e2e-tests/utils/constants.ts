@@ -9,7 +9,7 @@ import ParachainStaking from "../build/contracts/ParachainStaking.sol/ParachainS
 
 // Runtime specs
 export const RUNTIME_SPEC_NAME = "laos";
-export const RUNTIME_SPEC_VERSION = 2990;
+export const RUNTIME_SPEC_VERSION = 3090;
 export const RUNTIME_IMPL_VERSION = 0;
 
 // Zombienet endpoints
