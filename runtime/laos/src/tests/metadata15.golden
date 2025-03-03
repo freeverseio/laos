@@ -38760,7 +38760,7 @@
                 0,
                 0,
                 0,
-                60,
+                64,
                 221,
                 113,
                 141,
@@ -38925,6 +38925,18 @@
                 71,
                 239,
                 214,
+                1,
+                0,
+                0,
+                0,
+                111,
+                245,
+                46,
+                232,
+                88,
+                230,
+                197,
+                189,
                 1,
                 0,
                 0,
@@ -45653,6 +45665,104 @@
           ],
           "docs": [
             " API to interact with RuntimeGenesisConfig for the runtime"
+          ]
+        },
+        {
+          "name": "XcmPaymentApi",
+          "methods": [
+            {
+              "name": "query_acceptable_payment_assets",
+              "inputs": [
+                {
+                  "name": "xcm_version",
+                  "ty": 4
+                }
+              ],
+              "output": 653,
+              "docs": [
+                " Returns a list of acceptable payment assets.",
+                "",
+                " # Arguments",
+                "",
+                " * `xcm_version`: Version."
+              ]
+            },
+            {
+              "name": "query_xcm_weight",
+              "inputs": [
+                {
+                  "name": "message",
+                  "ty": 310
+                }
+              ],
+              "output": 656,
+              "docs": [
+                " Returns a weight needed to execute a XCM.",
+                "",
+                " # Arguments",
+                "",
+                " * `message`: `VersionedXcm`."
+              ]
+            },
+            {
+              "name": "query_weight_to_asset_fee",
+              "inputs": [
+                {
+                  "name": "weight",
+                  "ty": 10
+                },
+                {
+                  "name": "asset",
+                  "ty": 348
+                }
+              ],
+              "output": 657,
+              "docs": [
+                " Converts a weight into a fee for the specified `AssetId`.",
+                "",
+                " # Arguments",
+                "",
+                " * `weight`: convertible `Weight`.",
+                " * `asset`: `VersionedAssetId`."
+              ]
+            },
+            {
+              "name": "query_delivery_fees",
+              "inputs": [
+                {
+                  "name": "destination",
+                  "ty": 131
+                },
+                {
+                  "name": "message",
+                  "ty": 310
+                }
+              ],
+              "output": 658,
+              "docs": [
+                " Get delivery fees for sending a specific `message` to a `destination`.",
+                " These always come in a specific asset, defined by the chain.",
+                "",
+                " # Arguments",
+                " * `message`: The message that'll be sent, necessary because most delivery fees are based on the",
+                "   size of the message.",
+                " * `destination`: The destination to send the message to. Different destinations may use",
+                "   different senders that charge different fees."
+              ]
+            }
+          ],
+          "docs": [
+            " A trait of XCM payment API.",
+            "",
+            " API provides functionality for obtaining:",
+            "",
+            " * the weight required to execute an XCM message,",
+            " * a list of acceptable `AssetId`s for message execution payment,",
+            " * the cost of the weight in the specified acceptable `AssetId`.",
+            " * the fees for an XCM message delivery.",
+            "",
+            " To determine the execution weight of the calls required for",
+            " [`xcm::latest::Instruction::Transact`] instruction, `TransactionPaymentCallApi` can be used."
           ]
         },
         {
