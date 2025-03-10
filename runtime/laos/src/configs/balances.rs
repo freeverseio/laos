@@ -15,8 +15,7 @@
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 use crate::{
-	currency::UNIT, weights, Balance, Runtime, RuntimeEvent, RuntimeFreezeReason,
-	RuntimeHoldReason, System,
+	weights, Balance, Runtime, RuntimeEvent, RuntimeFreezeReason, RuntimeHoldReason, System,
 };
 use frame_support::parameter_types;
 
