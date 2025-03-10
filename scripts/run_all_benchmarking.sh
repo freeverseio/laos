@@ -48,6 +48,7 @@ while getopts 'bfp:vd' flag; do
       ;;
     d)
       # Development mode
+      echo "[+] Running in development mode !!!!!!"
       dev_mode=true
       ;;
     *)
