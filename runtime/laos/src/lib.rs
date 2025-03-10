@@ -60,7 +60,9 @@ use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
-use xcm::{VersionedAssetId, VersionedAssets, VersionedLocation, VersionedXcm, prelude::XcmVersion};
+use xcm::{
+	prelude::XcmVersion, VersionedAssetId, VersionedAssets, VersionedLocation, VersionedXcm,
+};
 use xcm_runtime_apis::{
 	dry_run::{CallDryRunEffects, Error as XcmDryRunApiError, XcmDryRunEffects},
 	fees::Error as XcmPaymentApiError,
