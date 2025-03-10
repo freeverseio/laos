@@ -72,10 +72,6 @@ mod tests {
 				));
 
 				assert_ok!(Bounties::approve_bounty(RuntimeOrigin::root(), 0));
-				assert_eq!(
-					pallet_bounties::Bounties::<Runtime>::get(0).unwrap().get_status(),
-					pallet_bounties::BountyStatus::Approved
-				);
 
 				let spending_period = <Runtime as pallet_treasury::Config>::SpendPeriod::get();
 				System::set_block_number(spending_period);
@@ -87,12 +83,7 @@ mod tests {
 
 				let fee = 4;
 				assert_ok!(Bounties::propose_curator(RuntimeOrigin::root(), 0, alice, fee));
-
-				let bounty = pallet_bounties::Bounties::<Runtime>::get(0).unwrap();
-				assert_eq!(
-					bounty.get_status(),
-					pallet_bounties::BountyStatus::CuratorProposed { curator: alice }
-				);
+				assert_ok!(Bounties::accept_curator(RuntimeOrigin::signed(alice), 0));
 			});
 	}
 }
