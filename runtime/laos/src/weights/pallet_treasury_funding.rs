@@ -42,8 +42,8 @@ impl<T: frame_system::Config> pallet_treasury_funding::WeightInfo for WeightInfo
 		// Proof Size summary in bytes:
 		//  Measured:  `499`
 		//  Estimated: `6172`
-		// Minimum execution time: 89_473_000 picoseconds.
-		Weight::from_parts(92_390_000, 0)
+		// Minimum execution time: 79_050_000 picoseconds.
+		Weight::from_parts(81_255_000, 0)
 			.saturating_add(Weight::from_parts(0, 6172))
 			.saturating_add(T::DbWeight::get().reads(5))
 			.saturating_add(T::DbWeight::get().writes(4))
