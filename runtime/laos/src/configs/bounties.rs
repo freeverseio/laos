@@ -34,3 +34,56 @@ impl pallet_bounties::Config for Runtime {
 	type OnSlash = Treasury;
 	type WeightInfo = weights::pallet_bounties::WeightInfo<Runtime>;
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use crate::{
+		tests::{ExtBuilder, ALICE, BOB},
+		AccountId, Balances, Bounties, RuntimeOrigin, System,
+	};
+	use frame_support::{
+		assert_noop, assert_ok,
+		traits::{Currency, OnInitialize},
+	};
+	use std::str::FromStr;
+
+	#[test]
+	fn test_assign_curator() {
+		let alice = AccountId::from_str(ALICE).unwrap();
+		let bob = AccountId::from_str(BOB).unwrap();
+
+		ExtBuilder::default()
+			.with_balances(vec![(alice, 1000 * UNIT), (bob, 1000 * UNIT)])
+			.build()
+			.execute_with(|| {
+				System::set_block_number(1);
+				Balances::make_free_balance_be(&Treasury::account_id(), 1_000_000 * UNIT);
+
+				assert_noop!(
+					Bounties::propose_curator(RuntimeOrigin::root(), 0, alice, 4),
+					pallet_bounties::Error::<Runtime>::InvalidIndex
+				);
+
+				assert_ok!(Bounties::propose_bounty(
+					RuntimeOrigin::signed(bob),
+					23 * UNIT,
+					b"12345".to_vec()
+				));
+
+				assert_ok!(Bounties::approve_bounty(RuntimeOrigin::root(), 0));
+
+				let spending_period = <Runtime as pallet_treasury::Config>::SpendPeriod::get();
+				System::set_block_number(spending_period);
+				<Treasury as OnInitialize<u32>>::on_initialize(spending_period);
+				assert_eq!(
+					pallet_bounties::Bounties::<Runtime>::get(0).unwrap().get_status(),
+					pallet_bounties::BountyStatus::Funded
+				);
+
+				let fee = 4;
+				assert_ok!(Bounties::propose_curator(RuntimeOrigin::root(), 0, alice, fee));
+				assert_ok!(Bounties::accept_curator(RuntimeOrigin::signed(alice), 0));
+			});
+	}
+}
