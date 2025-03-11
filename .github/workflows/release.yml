@@ -2,8 +2,8 @@ name: Release
 
 on:
   push:
-    tags:
-      - '*'
+    # tags:
+    #   - '*'
 
 env:
   SUBWASM_VERSION: 0.20.0
