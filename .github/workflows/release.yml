@@ -2,8 +2,8 @@ name: Release
 
 on:
   push:
-    # tags:
-    #   - '*'
+    tags:
+      - '*'
 
 env:
   SUBWASM_VERSION: 0.20.0
@@ -36,7 +36,7 @@ jobs:
   prepare-release:
     needs: check-version
     runs-on: ubuntu-latest
-    # if: ${{ needs.check-version.outputs.is_release_version == 'true' }}
+    if: ${{ needs.check-version.outputs.is_release_version == 'true' }}
     strategy:
       matrix:
         runtime:
