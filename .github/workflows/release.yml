@@ -51,6 +51,7 @@ jobs:
         id: srtool_build
         uses: chevdor/srtool-actions@v0.9.2
         with:
+          tag: "1.81.0"
           chain: ${{ matrix.runtime.name }}
           package: ${{ matrix.runtime.package }}
           runtime_dir: ${{ matrix.runtime.path }}
