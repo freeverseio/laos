@@ -6,10 +6,7 @@ on:
 
 jobs:
   build:
-    runs-on:
-      group: laos
-      labels: ubuntu-16-cores
-
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup
@@ -34,9 +31,7 @@ jobs:
           path: ./target/release/wbuild/laos-runtime/laos_runtime.compact.compressed.wasm
 
   lint:
-    runs-on:
-      group: laos
-      labels: ubuntu-16-cores
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/cache-npm
@@ -60,9 +55,7 @@ jobs:
 
   sync-test:
     needs: [build, lint]
-    runs-on:
-      group: laos
-      labels: ubuntu-16-cores
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup
@@ -87,10 +80,7 @@ jobs:
 
   zombie-tests:
       needs: [build, lint]
-      runs-on:
-        group: laos
-        labels: ubuntu-16-cores
-
+      runs-on: ubuntu-latest
       steps: 
       - uses: actions/checkout@v3
       - uses: ./.github/actions/cache-npm
@@ -155,10 +145,7 @@ jobs:
 
   chopsticks-tests:
     needs: [build, lint]
-    runs-on:
-      group: laos
-      labels: ubuntu-16-cores
-
+    runs-on: ubuntu-latest
     steps: 
       - uses: actions/checkout@v3
       - uses: ./.github/actions/cache-npm
