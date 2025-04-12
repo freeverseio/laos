@@ -172,7 +172,7 @@ jobs:
         run: |
           npx @acala-network/chopsticks xcm \
             -r polkadot \
-            -p laos \
+            -p chopsticks-configs/laos.yml \
             -p chopsticks-configs/asset_hub.yml \
             -p hydradx &&
           echo "Chopsticks started"
