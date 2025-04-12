@@ -174,7 +174,7 @@ jobs:
             -r polkadot \
             -p chopsticks-configs/laos.yml \
             -p chopsticks-configs/asset_hub.yml \
-            -p hydradx &&
+            -p hydradx &
           echo "Chopsticks started"
         working-directory: ./e2e-tests
 
