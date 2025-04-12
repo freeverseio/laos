@@ -107,9 +107,7 @@ jobs:
 
   dockerize_and_push:
     needs: check-version
-    runs-on: 
-      group: laos
-      labels: ubuntu-16-cores
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup

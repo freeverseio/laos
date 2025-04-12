@@ -6,9 +6,7 @@ on:
 
 jobs:
   check:
-    runs-on:
-      group: laos
-      labels: ubuntu-16-cores
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup
@@ -20,9 +18,7 @@ jobs:
           cargo check --all-targets --release --features runtime-benchmarks --features try-runtime 
 
   build_and_push:
-    runs-on:
-      group: laos
-      labels: ubuntu-16-cores
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup
@@ -46,9 +42,7 @@ jobs:
           tags: freeverseio/laos-node:${{ github.sha }}
 
   lint:
-    runs-on:
-      group: laos
-      labels: ubuntu-16-cores
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup
@@ -70,9 +64,7 @@ jobs:
           SKIP_WASM_BUILD=1 cargo clippy --all-targets --workspace --features runtime-benchmarks --features try-runtime -- -D warnings
 
   test:
-    runs-on:
-      group: laos
-      labels: ubuntu-16-cores
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup
@@ -85,9 +77,7 @@ jobs:
           SKIP_WASM_BUILD=1 cargo test --locked
 
   try-runtime:
-    runs-on:
-      group: laos
-      labels: ubuntu-16-cores
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup
