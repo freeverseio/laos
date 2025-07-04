@@ -33,7 +33,7 @@ const ED: Balance = 0;
 /// For benchmark purposes, pallet balances and pallet bounties need ED to be greater than 0.
 /// This may be removed in the future (https://github.com/paritytech/polkadot-sdk/issues/7009).
 #[cfg(feature = "runtime-benchmarks")]
-const ED: Balance = UNIT;
+const ED: Balance = 100;
 
 parameter_types! {
 	pub const ExistentialDeposit: Balance = ED;
