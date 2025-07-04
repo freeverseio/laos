@@ -130,8 +130,7 @@ construct_runtime!(
 		ParachainSystem: cumulus_pallet_parachain_system = 1,
 		Timestamp: pallet_timestamp = 2,
 		ParachainInfo: parachain_info = 3,
-		#[cfg(feature = "runtime-benchmarks")]
-		Sudo: pallet_sudo = 4,
+		// Sudo: pallet_sudo = 4,
 		Utility: pallet_utility = 5,
 		Multisig: pallet_multisig = 6,
 		Proxy: pallet_proxy = 7,
