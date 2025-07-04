@@ -64,7 +64,10 @@ done
 if [ "$skip_build" != true ]
 then
   echo "[+] Compiling Substrate benchmarks..."
-  cargo build --locked --features=runtime-benchmarks --release --bin laos
+  if ! cargo build --locked --features=runtime-benchmarks --release --bin laos; then
+    echo "[-] Failed to compile Substrate benchmarks. Exiting..."
+    exit 1
+  fi
 fi
 
 # The executable to use.
