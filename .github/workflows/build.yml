@@ -76,6 +76,19 @@ jobs:
         run: |
           SKIP_WASM_BUILD=1 cargo test --locked
 
+  benchmarks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/cache
+        with:
+          cache-key: benchmarks
+
+      - name: Benchmarks
+        run: |
+          ./scripts/run_all_benchmarking.sh -d
+
   try-runtime:
     runs-on: ubuntu-latest
     steps:
