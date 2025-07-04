@@ -21,8 +21,7 @@
 #
 # Should be run on a reference machine to gain accurate benchmarks
 # current reference machine: https://github.com/paritytech/substrate/pull/5848
-
-while getopts 'bfp:vd' flag; do
+while getopts 'bfp:vdn' flag; do
   case "${flag}" in
     b)
       # Skip build.
@@ -51,6 +50,10 @@ while getopts 'bfp:vd' flag; do
       echo "[+] Running in development mode !!!!!!"
       dev_mode=true
       ;;
+    n)
+      # Skip machine benchmarking
+      no_machine_bench=true
+      ;;
     *)
       # Exit early.
       echo "Bad options. Check Script."
@@ -58,7 +61,6 @@ while getopts 'bfp:vd' flag; do
       ;;
   esac
 done
-
 if [ "$skip_build" != true ]
 then
   echo "[+] Compiling Substrate benchmarks..."
@@ -133,13 +135,15 @@ for PALLET in "${PALLETS[@]}"; do
   fi
 done
 
-echo "[+] Benchmarking the machine..."
-OUTPUT=$(
-  $SUBSTRATE benchmark machine --chain=dev 2>&1
-)
-if [ $? -ne 0 ]; then
-  # Do not write the error to the error file since it is not a benchmarking error.
-  echo "[-] Failed the machine benchmark:\n$OUTPUT"
+if [ "$no_machine_bench" != true ]; then
+  echo "[+] Benchmarking the machine..."
+  OUTPUT=$(
+    $SUBSTRATE benchmark machine --chain=dev 2>&1
+  )
+  if [ $? -ne 0 ]; then
+    # Do not write the error to the error file since it is not a benchmarking error.
+    echo "[-] Failed the machine benchmark:\n$OUTPUT"
+  fi
 fi
 
 # Check if the error file exists.

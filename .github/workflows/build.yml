@@ -87,7 +87,7 @@ jobs:
 
       - name: Benchmarks
         run: |
-          ./scripts/run_all_benchmarking.sh -d
+          ./scripts/run_all_benchmarking.sh -d -n
 
   try-runtime:
     runs-on: ubuntu-latest
