@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
-#[cfg(feature = "runtime-benchmarks")]
-use crate::currency::UNIT;
 use crate::{
 	weights, Balance, Runtime, RuntimeEvent, RuntimeFreezeReason, RuntimeHoldReason, System,
 };
