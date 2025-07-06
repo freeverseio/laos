@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
-#[cfg(feature = "runtime-benchmarks")]
-use crate::currency::UNIT;
 use crate::{
 	weights, Balance, Runtime, RuntimeEvent, RuntimeFreezeReason, RuntimeHoldReason, System,
 };
@@ -33,7 +31,7 @@ const ED: Balance = 0;
 /// For benchmark purposes, pallet balances and pallet bounties need ED to be greater than 0.
 /// This may be removed in the future (https://github.com/paritytech/polkadot-sdk/issues/7009).
 #[cfg(feature = "runtime-benchmarks")]
-const ED: Balance = UNIT;
+const ED: Balance = 100;
 
 parameter_types! {
 	pub const ExistentialDeposit: Balance = ED;

@@ -9,7 +9,7 @@ import ParachainStaking from "../build/contracts/ParachainStaking.sol/ParachainS
 
 // Runtime specs
 export const RUNTIME_SPEC_NAME = "laos";
-export const RUNTIME_SPEC_VERSION = 10100;
+export const RUNTIME_SPEC_VERSION = 10190;
 export const RUNTIME_IMPL_VERSION = 0;
 
 // Zombienet endpoints
@@ -36,7 +36,7 @@ export const LAOS_ID_HYDRATION = new BN("3370");
 
 // Chain prefixes
 export const POLKADOT_PREFIX = 0;
-export const HYDRATION_PREFIX = 63;
+export const HYDRATION_PREFIX = 0;
 
 // Monetary units
 export const ONE_LAOS = new BN("1000000000000000000");
