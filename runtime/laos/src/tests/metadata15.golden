@@ -41653,7 +41653,22 @@
           "event": {
             "ty": 56
           },
-          "constants": [],
+          "constants": [
+            {
+              "name": "AdvertisedXcmVersion",
+              "ty": 4,
+              "value": [
+                4,
+                0,
+                0,
+                0
+              ],
+              "docs": [
+                " The latest supported version that we advertise. Generally just set it to",
+                " `pallet_xcm::CurrentXcmVersion`."
+              ]
+            }
+          ],
           "error": {
             "ty": 500
           },
