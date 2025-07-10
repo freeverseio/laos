@@ -15,9 +15,6 @@ parameter_types! {
 }
 
 impl pallet_scheduler::Config for Runtime {
-	#[cfg(feature = "runtime-benchmarks")]
-	type MaxScheduledPerBlock = ConstU32<512>;
-	#[cfg(not(feature = "runtime-benchmarks"))]
 	type MaxScheduledPerBlock = ConstU32<50>;
 	type MaximumWeight = MaximumSchedulerWeight;
 	type OriginPrivilegeCmp = EqualPrivilegeOnly;

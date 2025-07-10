@@ -108,7 +108,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("laos"),
 	impl_name: create_runtime_str!("laos"),
 	authoring_version: 1,
-	spec_version: 10100,
+	spec_version: 10190,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -164,7 +164,7 @@ construct_runtime!(
 		Scheduler: pallet_scheduler = 45,
 		Democracy: pallet_democracy = 46,
 		TechnicalCommitteeMembership: pallet_membership::<Instance2> = 47,
-		Bounties: pallet_bounties = 48,
+		// Bounties: pallet_bounties = 48,
 
 		// Frontier
 		Ethereum: pallet_ethereum = 50,
