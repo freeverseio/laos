@@ -15,16 +15,22 @@
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 use crate::{
-	weights::RocksDbWeight, AccountId, Balance, Block, PalletInfo, Runtime, RuntimeCall,
-	RuntimeEvent, RuntimeOrigin, RuntimeTask, RuntimeVersion, VERSION,
+	weights::RocksDbWeight, AccountId, Balance, Block, MultiBlockMigrations, PalletInfo, Runtime,
+	RuntimeCall, RuntimeEvent, RuntimeOrigin, RuntimeTask, RuntimeVersion, VERSION,
 };
 use frame_support::{parameter_types, traits::Everything};
-use sp_runtime::traits::{BlakeTwo256, IdentityLookup};
+use sp_runtime::{
+	traits::{BlakeTwo256, IdentityLookup},
+	Perbill,
+};
+use sp_weights::Weight;
 
 parameter_types! {
 	pub const Version: RuntimeVersion = VERSION;
 	pub const SS58Prefix: u16 = 42;
 	pub const BlockHashCount: u32 = 256;
+	pub MbmServiceWeight: Weight =
+		Perbill::from_percent(80) * laos_primitives::RuntimeBlockWeights::get().max_block;
 }
 
 impl frame_system::Config for Runtime {
@@ -75,12 +81,26 @@ impl frame_system::Config for Runtime {
 	/// The action to take on a Runtime Upgrade
 	type OnSetCode = cumulus_pallet_parachain_system::ParachainSetCode<Self>;
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
-	type SingleBlockMigrations = ();
-	type MultiBlockMigrator = ();
+	type SingleBlockMigrations = crate::migrations::Migrations;
+	type MultiBlockMigrator = MultiBlockMigrations;
 	type PreInherents = ();
 	type PostInherents = ();
 	type PostTransactions = ();
 	type ExtensionsWeightInfo = ();
+}
+
+impl pallet_migrations::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	#[cfg(not(feature = "runtime-benchmarks"))]
+	type Migrations = pallet_identity::migration::v2::LazyMigrationV1ToV2<Runtime>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type Migrations = pallet_migrations::mock_helpers::MockedMigrations;
+	type CursorMaxLen = frame_support::traits::ConstU32<65_536>;
+	type IdentifierMaxLen = frame_support::traits::ConstU32<256>;
+	type MigrationStatusHandler = ();
+	type FailedMigrationHandler = frame_support::migrations::FreezeChainOnFailedMigration;
+	type MaxServiceWeight = MbmServiceWeight;
+	type WeightInfo = pallet_migrations::weights::SubstrateWeight<Runtime>;
 }
 
 // tests

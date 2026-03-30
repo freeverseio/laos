@@ -88,8 +88,10 @@ type ParachainBlockImport = TParachainBlockImport<Block, FrontierBlockImport, Pa
 
 type FrontierBlockImport = TFrontierBlockImport<Block, Arc<ParachainClient>, ParachainClient>;
 
-type ParachainTransactionPool =
-	sc_transaction_pool::BasicPool<sc_transaction_pool::FullChainApi<ParachainClient, Block>, Block>;
+type ParachainTransactionPool = sc_transaction_pool::BasicPool<
+	sc_transaction_pool::FullChainApi<ParachainClient, Block>,
+	Block,
+>;
 
 type NetworkTransactionPool = sc_transaction_pool::TransactionPoolHandle<Block, ParachainClient>;
 
@@ -369,14 +371,15 @@ async fn start_node_impl(
 		import_queue,
 		keystore_container,
 		transaction_pool,
-		other: (
-			block_import,
-			mut telemetry,
-			telemetry_worker_handle,
-			frontier_backend,
-			overrides,
-			raw_transaction_pool,
-		),
+		other:
+			(
+				block_import,
+				mut telemetry,
+				telemetry_worker_handle,
+				frontier_backend,
+				overrides,
+				raw_transaction_pool,
+			),
 		..
 	} = new_partial(&parachain_config, &eth_config)?;
 

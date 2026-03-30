@@ -114,6 +114,7 @@ frame-support = { git = "https://github.com/paritytech/polkadot-sdk", tag = "pol
 frame-system = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-stable2412-6", default-features = false }
 frame-executive = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-stable2412-6", default-features = false }
 frame-system-rpc-runtime-api = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-stable2412-6", default-features = false }
+pallet-migrations = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-stable2412-6", default-features = false }
 pallet-aura = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-stable2412-6", default-features = false }
 pallet-authorship = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-stable2412-6", default-features = false }
 pallet-session = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-stable2412-6", default-features = false, features = ["historical"] }
@@ -143,7 +144,7 @@ frame-try-runtime = { git = "https://github.com/paritytech/polkadot-sdk", tag = 
 # (wasm)
 # To make it compatible with frontier
 evm = { version = "0.41.1", default-features = false }
-ethereum = { version = "0.15.0", default-features = false }
+ethereum = { git = "https://github.com/rust-ethereum/ethereum", rev = "3be0d8fd4c2ad1ba216b69ef65b9382612efc8ba", default-features = false }
 
 # Frontier
 # (wasm)

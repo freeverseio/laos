@@ -178,6 +178,7 @@ construct_runtime!(
 		#[cfg(feature = "runtime-benchmarks")]
 		PrecompilesBenchmark: pallet_precompiles_benchmark = 102,
 		TreasuryFunding: pallet_treasury_funding = 103,
+		MultiBlockMigrations: pallet_migrations = 104,
 	}
 );
 
@@ -204,7 +205,7 @@ type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPalletsWithSystem,
-	migrations::Migrations,
+	(),
 >;
 
 #[cfg(test)]
