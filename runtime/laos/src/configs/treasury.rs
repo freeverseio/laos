@@ -11,7 +11,7 @@ use frame_support::{
 	},
 	PalletId,
 };
-use frame_system::{EnsureRoot, EnsureWithSuccess};
+use frame_system::{EnsureRoot, EnsureWithSuccess, Pallet as System};
 use parachains_common::{DAYS, MINUTES};
 use polkadot_runtime_common::prod_or_fast;
 use sp_runtime::traits::IdentityLookup;
@@ -38,6 +38,7 @@ impl pallet_treasury::Config for Runtime {
 	type BalanceConverter = UnityAssetBalanceConversion;
 	type Beneficiary = AccountId;
 	type BeneficiaryLookup = IdentityLookup<Self::Beneficiary>;
+	type BlockNumberProvider = System<Runtime>;
 	type Burn = Burn;
 	type BurnDestination = ();
 	type Currency = Balances;

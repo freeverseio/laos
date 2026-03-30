@@ -112,7 +112,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
-	state_version: 1,
+	system_version: 1,
 };
 
 /// The version information used to identify this runtime when compiled natively.
@@ -331,8 +331,7 @@ impl_runtime_apis! {
 		}
 
 		fn storage_at(address: H160, index: U256) -> H256 {
-			let mut tmp = [0u8; 32];
-			index.to_big_endian(&mut tmp);
+			let tmp = index.to_big_endian();
 			pallet_evm::AccountStorages::<Runtime>::get(address, H256::from_slice(&tmp[..]))
 		}
 
@@ -516,7 +515,7 @@ impl_runtime_apis! {
 
 	impl fp_rpc::ConvertTransactionRuntimeApi<Block> for Runtime {
 		fn convert_transaction(transaction: EthereumTransaction) -> <Block as BlockT>::Extrinsic {
-			UncheckedExtrinsic::new_unsigned(
+			UncheckedExtrinsic::new_bare(
 				pallet_ethereum::Call::<Runtime>::transact { transaction }.into(),
 			)
 		}
@@ -652,13 +651,13 @@ impl_runtime_apis! {
 		}
 
 		fn query_weight_to_asset_fee(weight: Weight, asset: VersionedAssetId) -> Result<u128, XcmPaymentApiError> {
-			let location = xcm::v4::AssetId::try_from(asset).map_err(|_| XcmPaymentApiError::VersionedConversionFailed)?.0;
-			if location != xcm_config::HereLocation::get() {
-				return Err(XcmPaymentApiError::AssetNotFound);
+			match asset.try_as::<AssetId>() {
+				Ok(asset_id) if asset_id.0 == xcm_config::HereLocation::get() => {
+					let native_fee = TransactionPayment::weight_to_fee(weight);
+					Ok(native_fee)
+				},
+				_ => Err(XcmPaymentApiError::AssetNotFound),
 			}
-
-			let native_fee = TransactionPayment::weight_to_fee(weight);
-			Ok(native_fee)
 		}
 
 		fn query_xcm_weight(message: VersionedXcm<()>) -> Result<Weight, XcmPaymentApiError> {

@@ -273,7 +273,7 @@ fn slot_and_owner_to_token_id(slot: Slot, owner: H160) -> TokenId {
 	// Copy the owner address bytes into the array
 	bytes[12..].copy_from_slice(&owner.0);
 
-	TokenId::from(bytes)
+	TokenId::from_big_endian(&bytes)
 }
 
 /// `ASSET_PRECOMPILE_ADDRESS_PREFIX` is a predefined prefix used to identify collection addresses.

@@ -64,6 +64,7 @@ impl pallet_transaction_payment::Config for Runtime {
 	type WeightToFee = ConstantMultiplier<Balance, WeightToFee>;
 	type LengthToFee = LengthToFee;
 	type FeeMultiplierUpdate = SlowAdjustingFeeUpdate<Self>;
+	type WeightInfo = pallet_transaction_payment::weights::SubstrateWeight<Runtime>;
 }
 
 mod tests {

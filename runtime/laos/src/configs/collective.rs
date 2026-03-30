@@ -30,11 +30,14 @@ pub type AllOfTechnicalCommittee =
 pub type CouncilCollective = pallet_collective::Instance1;
 impl pallet_collective::Config<CouncilCollective> for Runtime {
 	type DefaultVote = pallet_collective::MoreThanMajorityThenPrimeDefaultVote;
+	type DisapproveOrigin = EnsureRoot<AccountId>;
+	type KillOrigin = EnsureRoot<AccountId>;
 	type MaxMembers = MaxMembersCouncil;
 	type MaxProposalWeight = MaxProposalWeight;
 	type MaxProposals = MaxProposals;
 	type MotionDuration = MotionDuration;
 	type Proposal = RuntimeCall;
+	type Consideration = ();
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeOrigin = RuntimeOrigin;
 	type SetMembersOrigin = EnsureRoot<AccountId>;
@@ -44,11 +47,14 @@ impl pallet_collective::Config<CouncilCollective> for Runtime {
 pub type TechnicalCommittee = pallet_collective::Instance2;
 impl pallet_collective::Config<TechnicalCommittee> for Runtime {
 	type DefaultVote = pallet_collective::MoreThanMajorityThenPrimeDefaultVote;
+	type DisapproveOrigin = EnsureRoot<AccountId>;
+	type KillOrigin = EnsureRoot<AccountId>;
 	type MaxMembers = MaxMembersTechnicalCommittee;
 	type MaxProposalWeight = MaxProposalWeight;
 	type MaxProposals = MaxProposals;
 	type MotionDuration = MotionDuration;
 	type Proposal = RuntimeCall;
+	type Consideration = ();
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeOrigin = RuntimeOrigin;
 	// the root can select the technical committee

@@ -149,8 +149,7 @@ where
 			token_uri_bounded.clone(),
 		) {
 			Ok(()) => {
-				let mut token_id_bytes = [0u8; 32];
-				token_id.to_big_endian(&mut token_id_bytes);
+				let token_id_bytes = token_id.to_big_endian();
 
 				log2(
 					handle.context().address,

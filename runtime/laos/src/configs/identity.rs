@@ -11,6 +11,8 @@ parameter_types! {
 	pub const MaxAdditionalFields: u32 = 100;
 	pub const MaxRegistrars: u32 = 20;
 	pub const PendingUsernameExpiration: u32 = 7 * DAYS;
+	pub const UsernameDeposit: Balance = calculate_deposit(0, 32);
+	pub const UsernameGracePeriod: u32 = 3 * DAYS;
 	pub const MaxSuffixLength: u32 = 7;
 	pub const MaxUsernameLength: u32 = 32;
 	pub const BasicDeposit: Balance = calculate_deposit(1, 258);
@@ -28,6 +30,7 @@ impl pallet_identity::Config for Runtime {
 	type BasicDeposit = BasicDeposit;
 	// Does not add any item to the storage but takes 1 bytes
 	type ByteDeposit = ByteDeposit;
+	type UsernameDeposit = UsernameDeposit;
 	// Add one item in storage and take 53 bytes
 	type SubAccountDeposit = SubAccountDeposit;
 	type MaxSubAccounts = MaxSubAccounts;
@@ -40,6 +43,7 @@ impl pallet_identity::Config for Runtime {
 	type SigningPublicKey = <Signature as sp_runtime::traits::Verify>::Signer;
 	type UsernameAuthorityOrigin = EnsureRoot<AccountId>;
 	type PendingUsernameExpiration = PendingUsernameExpiration;
+	type UsernameGracePeriod = UsernameGracePeriod;
 	type MaxSuffixLength = MaxSuffixLength;
 	type MaxUsernameLength = MaxUsernameLength;
 	type WeightInfo = pallet_identity::weights::SubstrateWeight<Runtime>; // TODO is not recommended use default weights but currently there is a function within the

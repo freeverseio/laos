@@ -295,7 +295,7 @@ pub fn run() -> Result<()> {
 			runner.sync_run(|config| {
 				let PartialComponents { client, other, .. } =
 					crate::service::new_partial(&config, &cli.eth)?;
-				let (_, _, _, frontier_backend, _) = other;
+				let (_, _, _, frontier_backend, _, _) = other;
 				let frontier_backend = match frontier_backend {
 					fc_db::Backend::KeyValue(kv) => kv,
 					_ => panic!("Only fc_db::Backend::KeyValue supported"),
