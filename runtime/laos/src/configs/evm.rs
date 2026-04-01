@@ -194,9 +194,8 @@ mod tests {
 					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
 						wrong_address_weight,
 					);
-				let call_gas = <Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
-					call_weight,
-				);
+				let call_gas =
+					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(call_weight);
 				assert!(wrong_address_gas > 0);
 				assert!(call_gas > wrong_address_gas);
 
@@ -208,7 +207,8 @@ mod tests {
 					call_weight
 						.ref_time()
 						.saturating_sub(wrong_address_weight.ref_time())
-						.abs_diff(weights_from_benchmarking.ref_time()) <= 1_000,
+						.abs_diff(weights_from_benchmarking.ref_time()) <=
+						1_000,
 				);
 				assert_eq!(
 					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
@@ -273,9 +273,8 @@ mod tests {
 					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
 						wrong_address_weight,
 					);
-				let call_gas = <Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
-					call_weight,
-				);
+				let call_gas =
+					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(call_weight);
 				assert!(wrong_address_gas > 0);
 				assert!(call_gas > wrong_address_gas);
 

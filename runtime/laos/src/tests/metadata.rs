@@ -20,7 +20,9 @@ fn test_metadata_v15_contains_expected_runtime_shape() {
 		assert!(pallets.len() >= 30, "unexpectedly small pallet list in V15 metadata");
 		for pallet_name in ["System", "Timestamp", "Scheduler", "Preimage", "EVM", "Ethereum"] {
 			assert!(
-				pallets.iter().any(|pallet| pallet.get("name") == Some(&Value::String(pallet_name.into()))),
+				pallets
+					.iter()
+					.any(|pallet| pallet.get("name") == Some(&Value::String(pallet_name.into()))),
 				"missing expected pallet `{pallet_name}` in V15 metadata"
 			);
 		}
