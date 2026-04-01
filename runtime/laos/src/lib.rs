@@ -51,11 +51,12 @@ use precompiles::LaosPrecompiles;
 use sp_api::impl_runtime_apis;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata, H160, H256, U256};
 use sp_runtime::{
-	create_runtime_str, generic, impl_opaque_keys,
+	generic, impl_opaque_keys,
 	traits::{Block as BlockT, Get, UniqueSaturatedInto},
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, Permill,
 };
+use sp_std::borrow::Cow;
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
@@ -105,8 +106,8 @@ pub const MILLISECS_PER_BLOCK: u64 = 12000;
 /// Version of the runtime
 #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
-	spec_name: create_runtime_str!("laos"),
-	impl_name: create_runtime_str!("laos"),
+	spec_name: Cow::Borrowed("laos"),
+	impl_name: Cow::Borrowed("laos"),
 	authoring_version: 1,
 	spec_version: 10101,
 	impl_version: 0,

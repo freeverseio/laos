@@ -52,6 +52,8 @@
 // it seems that the flag --manual-inspect may not be 100% ready yet, as it's giving problems to
 // different codes. Maybe we can remove this attribute in the future
 #![allow(clippy::manual_inspect)]
+// FRAME dispatchable expansion currently triggers a false-positive useless-conversion lint.
+#![allow(clippy::useless_conversion)]
 
 mod auto_compound;
 mod delegation_requests;
@@ -827,6 +829,7 @@ pub mod pallet {
 		}
 	}
 
+	#[allow(clippy::useless_conversion)]
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 		/// Set the expectations for total staked. These expectations determine the issuance for

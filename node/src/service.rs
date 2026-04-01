@@ -15,6 +15,7 @@
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 //! Service and ServiceFactory implementation. Specialized wrapper over substrate service.
+#![allow(clippy::result_large_err)]
 
 // std
 use std::{path::Path, sync::Arc, time::Duration};
