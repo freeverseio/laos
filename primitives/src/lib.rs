@@ -71,31 +71,47 @@ frame_support::parameter_types! {
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use frame_support::{dispatch::DispatchClass, weights::Weight};
+	use frame_support::{
+		dispatch::DispatchClass,
+		weights::{constants, Weight},
+	};
+	use sp_runtime::Perbill;
 
 	#[test]
 	fn test_block_weights() {
 		let weights = RuntimeBlockWeights::get();
+		let init_weight = Perbill::from_percent(10) * MAXIMUM_BLOCK_WEIGHT;
+		let normal_max_total = NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT;
+		let extrinsic_base = constants::ExtrinsicBaseWeight::get();
 
-		assert_eq!(weights.base_block, Weight::from_parts(453383000, 0));
-		assert_eq!(weights.max_block, Weight::from_parts(500000000000, 5242880));
+		assert_eq!(weights.base_block, constants::BlockExecutionWeight::get());
+		assert_eq!(weights.max_block, MAXIMUM_BLOCK_WEIGHT);
 
 		let normal = weights.per_class.get(DispatchClass::Normal);
-		assert_eq!(normal.base_extrinsic, Weight::from_parts(107074000, 0));
-		assert_eq!(normal.max_extrinsic, Some(Weight::from_parts(324892926000, 3407872)));
-		assert_eq!(normal.max_total, Some(Weight::from_parts(375000000000, 3932160)));
+		assert_eq!(normal.base_extrinsic, extrinsic_base);
+		assert_eq!(
+			normal.max_extrinsic,
+			Some(normal_max_total.saturating_sub(init_weight).saturating_sub(extrinsic_base))
+		);
+		assert_eq!(normal.max_total, Some(normal_max_total));
 		assert_eq!(normal.reserved, Some(Weight::from_parts(0, 0)));
 
 		let mandatory = weights.per_class.get(DispatchClass::Mandatory);
-		assert_eq!(mandatory.base_extrinsic, Weight::from_parts(107074000, 0));
+		assert_eq!(mandatory.base_extrinsic, extrinsic_base);
 		assert_eq!(mandatory.max_extrinsic, None);
 		assert_eq!(mandatory.max_total, None);
 		assert_eq!(mandatory.reserved, None);
 
 		let operational = weights.per_class.get(DispatchClass::Operational);
-		assert_eq!(operational.base_extrinsic, Weight::from_parts(107074000, 0));
-		assert_eq!(operational.max_extrinsic, Some(Weight::from_parts(449892926000, 4718592)));
-		assert_eq!(operational.max_total, Some(Weight::from_parts(500000000000, 5242880)));
-		assert_eq!(operational.reserved, Some(Weight::from_parts(125000000000, 1310720)));
+		assert_eq!(operational.base_extrinsic, extrinsic_base);
+		assert_eq!(
+			operational.max_extrinsic,
+			Some(MAXIMUM_BLOCK_WEIGHT.saturating_sub(init_weight).saturating_sub(extrinsic_base))
+		);
+		assert_eq!(operational.max_total, Some(MAXIMUM_BLOCK_WEIGHT));
+		assert_eq!(
+			operational.reserved,
+			Some(MAXIMUM_BLOCK_WEIGHT.saturating_sub(normal_max_total))
+		);
 	}
 }

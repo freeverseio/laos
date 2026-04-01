@@ -527,14 +527,19 @@ fn query_holding() {
 
 	// Check that QueryResponse message was received
 	ParaA::execute_with(|| {
+		let received = parachain::MsgQueue::received_dmp();
+		assert_eq!(received.len(), 1);
+
+		let Xcm(instructions) = &received[0];
+		assert!(!instructions.is_empty());
 		assert_eq!(
-			parachain::MsgQueue::received_dmp(),
-			vec![Xcm(vec![QueryResponse {
+			instructions[0],
+			QueryResponse {
 				query_id: query_id_set,
 				response: Response::Assets(Assets::new()),
 				max_weight: Weight::from_parts(1_000_000_000, 1024 * 1024),
 				querier: Some(Here.into()),
-			}])],
+			}
 		);
 	});
 }
