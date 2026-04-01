@@ -32,7 +32,7 @@ fn ump_laosish() {
 			Parent,
 			Xcm(vec![Transact {
 				origin_kind: OriginKind::SovereignAccount,
-				require_weight_at_most: Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024),
+				fallback_max_weight: Some(Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024)),
 				call: remark.encode().into(),
 			}]),
 		));
@@ -61,7 +61,7 @@ fn dmp_laosish_of_remark_tx_should_be_unallowed() {
 			Parachain(PARA_LAOSISH_ID),
 			Xcm(vec![Transact {
 				origin_kind: OriginKind::SovereignAccount,
-				require_weight_at_most: Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024),
+				fallback_max_weight: Some(Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024)),
 				call: remark.encode().into(),
 			}]),
 		));
@@ -98,7 +98,7 @@ fn ump_transfer_balance() {
 			Parent,
 			Xcm(vec![Transact {
 				origin_kind: OriginKind::SovereignAccount,
-				require_weight_at_most: Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024),
+				fallback_max_weight: Some(Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024)),
 				call: transfer.encode().into(),
 			}]),
 		));
@@ -128,7 +128,7 @@ fn xcmp_remark_para_b() {
 			(Parent, Parachain(PARA_B_ID)),
 			Xcm(vec![Transact {
 				origin_kind: OriginKind::SovereignAccount,
-				require_weight_at_most: Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024),
+				fallback_max_weight: Some(Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024)),
 				call: remark.encode().into(),
 			}]),
 		));
@@ -160,7 +160,7 @@ fn xcmp_create_foreign_asset_in_para_b() {
 			(Parent, Parachain(PARA_B_ID)),
 			Xcm(vec![Transact {
 				origin_kind: OriginKind::Xcm,
-				require_weight_at_most: Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024),
+				fallback_max_weight: Some(Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024)),
 				call: create_asset.encode().into(),
 			}]),
 		));
@@ -197,7 +197,7 @@ fn roundtrip_teleport_laosish_to_assethub() {
 			(Parent, Parachain(PARA_ASSETHUB_ID)),
 			Xcm(vec![Transact {
 				origin_kind: OriginKind::Xcm,
-				require_weight_at_most: Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024),
+				fallback_max_weight: Some(Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024)),
 				call: create_asset.encode().into(),
 			}]),
 		));
@@ -268,7 +268,7 @@ fn roundtrip_local_reserve_transfer_laosish_to_para_a() {
 			(Parent, Parachain(PARA_A_ID)),
 			Xcm(vec![Transact {
 				origin_kind: OriginKind::Xcm,
-				require_weight_at_most: Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024),
+				fallback_max_weight: Some(Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024)),
 				call: create_asset.encode().into(),
 			}]),
 		));

@@ -73,7 +73,7 @@ fn mint(
 
 	let res = precompiles().execute(&mut handle).unwrap().unwrap();
 
-	TokenId::from(res.output.as_slice())
+	TokenId::from_big_endian(res.output.as_slice())
 }
 
 #[test]
@@ -268,8 +268,7 @@ fn evolve_generates_log() {
 		let token_uri: UnboundedString = Vec::new().into();
 		let token_id = mint(alice, collection_address, 0.try_into().unwrap(), token_uri.clone());
 
-		let mut token_id_bytes = [0u8; 32];
-		token_id.to_big_endian(&mut token_id_bytes);
+		let token_id_bytes = token_id.to_big_endian();
 
 		precompiles()
 			.prepare_test(

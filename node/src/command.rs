@@ -13,6 +13,7 @@
 
 // You should have received a copy of the GNU General Public License
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
+#![allow(clippy::result_large_err)]
 
 use cumulus_client_service::storage_proof_size::HostFunctions as ReclaimHostFunctions;
 use cumulus_primitives_core::ParaId;
@@ -295,7 +296,7 @@ pub fn run() -> Result<()> {
 			runner.sync_run(|config| {
 				let PartialComponents { client, other, .. } =
 					crate::service::new_partial(&config, &cli.eth)?;
-				let (_, _, _, frontier_backend, _) = other;
+				let (_, _, _, frontier_backend, _, _) = other;
 				let frontier_backend = match frontier_backend {
 					fc_db::Backend::KeyValue(kv) => kv,
 					_ => panic!("Only fc_db::Backend::KeyValue supported"),

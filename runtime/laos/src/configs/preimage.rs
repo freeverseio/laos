@@ -139,7 +139,7 @@ mod tests {
 			let proposal_hash =
 				pallet_collective::pallet::Proposals::<Runtime, pallet_collective::Instance1>::get(
 				)[proposal_index as usize];
-			let proposal_weight_bound = proposal.get_dispatch_info().weight;
+			let proposal_weight_bound = proposal.get_dispatch_info().call_weight;
 
 			assert_ok!(Council::vote(
 				RuntimeOrigin::signed(charlie),
@@ -219,7 +219,7 @@ mod tests {
 			let proposal_hash =
 				pallet_collective::pallet::Proposals::<Runtime, pallet_collective::Instance2>::get(
 				)[proposal_index as usize];
-			let proposal_weight_bound = proposal.get_dispatch_info().weight;
+			let proposal_weight_bound = proposal.get_dispatch_info().call_weight;
 
 			assert_ok!(TechnicalCommittee::vote(
 				RuntimeOrigin::signed(charlie),

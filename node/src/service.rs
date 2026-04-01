@@ -15,10 +15,12 @@
 // along with LAOS.  If not, see <http://www.gnu.org/licenses/>.
 
 //! Service and ServiceFactory implementation. Specialized wrapper over substrate service.
+#![allow(clippy::result_large_err)]
 
 // std
 use std::{path::Path, sync::Arc, time::Duration};
 
+use async_trait::async_trait;
 use cumulus_client_cli::CollatorOptions;
 // Local Runtime Types
 use laos_runtime::{opaque::Block, types::TransactionConverter, Hash};
@@ -48,7 +50,11 @@ use sc_executor::{HeapAllocStrategy, WasmExecutor, DEFAULT_HEAP_ALLOC_STRATEGY};
 use sc_network::NetworkBlock;
 use sc_service::{Configuration, PartialComponents, TFullBackend, TFullClient, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryHandle, TelemetryWorker, TelemetryWorkerHandle};
-use sc_transaction_pool_api::OffchainTransactionPoolFactory;
+use sc_transaction_pool_api::{
+	ChainEvent, ImportNotificationStream, LocalTransactionPool, OffchainTransactionPoolFactory,
+	PoolFuture, PoolStatus, ReadyTransactions, TransactionFor, TransactionPool, TransactionSource,
+	TransactionStatusStreamFor, TxHash,
+};
 use sp_consensus_aura::{Slot, SlotDuration};
 use sp_core::U256;
 use sp_keystore::KeystorePtr;
@@ -83,6 +89,130 @@ type ParachainBlockImport = TParachainBlockImport<Block, FrontierBlockImport, Pa
 
 type FrontierBlockImport = TFrontierBlockImport<Block, Arc<ParachainClient>, ParachainClient>;
 
+type ParachainTransactionPool = sc_transaction_pool::BasicPool<
+	sc_transaction_pool::FullChainApi<ParachainClient, Block>,
+	Block,
+>;
+
+type NetworkTransactionPool = sc_transaction_pool::TransactionPoolHandle<Block, ParachainClient>;
+
+struct SharedTransactionPool(Arc<ParachainTransactionPool>);
+
+impl TransactionPool for SharedTransactionPool {
+	type Block = <ParachainTransactionPool as TransactionPool>::Block;
+	type Hash = <ParachainTransactionPool as TransactionPool>::Hash;
+	type InPoolTransaction = <ParachainTransactionPool as TransactionPool>::InPoolTransaction;
+	type Error = <ParachainTransactionPool as TransactionPool>::Error;
+
+	fn submit_at(
+		&self,
+		at: <Self::Block as sp_runtime::traits::Block>::Hash,
+		source: TransactionSource,
+		xts: Vec<TransactionFor<Self>>,
+	) -> PoolFuture<Vec<Result<TxHash<Self>, Self::Error>>, Self::Error> {
+		self.0.submit_at(at, source, xts)
+	}
+
+	fn submit_one(
+		&self,
+		at: <Self::Block as sp_runtime::traits::Block>::Hash,
+		source: TransactionSource,
+		xt: TransactionFor<Self>,
+	) -> PoolFuture<TxHash<Self>, Self::Error> {
+		self.0.submit_one(at, source, xt)
+	}
+
+	fn submit_and_watch(
+		&self,
+		at: <Self::Block as sp_runtime::traits::Block>::Hash,
+		source: TransactionSource,
+		xt: TransactionFor<Self>,
+	) -> PoolFuture<std::pin::Pin<Box<TransactionStatusStreamFor<Self>>>, Self::Error> {
+		self.0.submit_and_watch(at, source, xt)
+	}
+
+	fn ready_at(
+		&self,
+		at: <Self::Block as sp_runtime::traits::Block>::Hash,
+	) -> std::pin::Pin<
+		Box<
+			dyn futures::Future<
+					Output = Box<dyn ReadyTransactions<Item = Arc<Self::InPoolTransaction>> + Send>,
+				> + Send,
+		>,
+	> {
+		self.0.ready_at(at)
+	}
+
+	fn ready(&self) -> Box<dyn ReadyTransactions<Item = Arc<Self::InPoolTransaction>> + Send> {
+		self.0.ready()
+	}
+
+	fn remove_invalid(&self, hashes: &[TxHash<Self>]) -> Vec<Arc<Self::InPoolTransaction>> {
+		self.0.remove_invalid(hashes)
+	}
+
+	fn futures(&self) -> Vec<Self::InPoolTransaction> {
+		self.0.futures()
+	}
+
+	fn status(&self) -> PoolStatus {
+		self.0.status()
+	}
+
+	fn import_notification_stream(&self) -> ImportNotificationStream<TxHash<Self>> {
+		self.0.import_notification_stream()
+	}
+
+	fn on_broadcasted(&self, propagations: std::collections::HashMap<TxHash<Self>, Vec<String>>) {
+		self.0.on_broadcasted(propagations)
+	}
+
+	fn hash_of(&self, xt: &TransactionFor<Self>) -> TxHash<Self> {
+		self.0.hash_of(xt)
+	}
+
+	fn ready_transaction(&self, hash: &TxHash<Self>) -> Option<Arc<Self::InPoolTransaction>> {
+		self.0.ready_transaction(hash)
+	}
+
+	fn ready_at_with_timeout(
+		&self,
+		at: <Self::Block as sp_runtime::traits::Block>::Hash,
+		timeout: Duration,
+	) -> std::pin::Pin<
+		Box<
+			dyn futures::Future<
+					Output = Box<dyn ReadyTransactions<Item = Arc<Self::InPoolTransaction>> + Send>,
+				> + Send
+				+ '_,
+		>,
+	> {
+		self.0.ready_at_with_timeout(at, timeout)
+	}
+}
+
+#[async_trait]
+impl sc_transaction_pool_api::MaintainedTransactionPool for SharedTransactionPool {
+	async fn maintain(&self, event: ChainEvent<Self::Block>) {
+		self.0.maintain(event).await
+	}
+}
+
+impl LocalTransactionPool for SharedTransactionPool {
+	type Block = <ParachainTransactionPool as LocalTransactionPool>::Block;
+	type Hash = <ParachainTransactionPool as LocalTransactionPool>::Hash;
+	type Error = <ParachainTransactionPool as LocalTransactionPool>::Error;
+
+	fn submit_local(
+		&self,
+		at: <Self::Block as sp_runtime::traits::Block>::Hash,
+		xt: sc_transaction_pool_api::LocalTransactionFor<Self>,
+	) -> Result<Self::Hash, Self::Error> {
+		self.0.submit_local(at, xt)
+	}
+}
+
 /// Starts a `ServiceBuilder` for a full service.
 ///
 /// Use this macro if you don't actually need the full service, but just the builder in order to
@@ -97,13 +227,14 @@ pub fn new_partial(
 		ParachainBackend,
 		(),
 		sc_consensus::DefaultImportQueue<Block>,
-		sc_transaction_pool::FullPool<Block, ParachainClient>,
+		NetworkTransactionPool,
 		(
 			ParachainBlockImport,
 			Option<Telemetry>,
 			Option<TelemetryWorkerHandle>,
 			fc_db::Backend<Block, ParachainClient>,
 			Arc<dyn StorageOverride<Block>>,
+			Arc<ParachainTransactionPool>,
 		),
 	>,
 	sc_service::Error,
@@ -146,13 +277,16 @@ pub fn new_partial(
 		telemetry
 	});
 
-	let transaction_pool = sc_transaction_pool::BasicPool::new_full(
-		config.transaction_pool.clone(),
+	let raw_transaction_pool = Arc::new(sc_transaction_pool::BasicPool::new_full(
+		Default::default(),
 		config.role.is_authority().into(),
 		config.prometheus_registry(),
 		task_manager.spawn_essential_handle(),
 		client.clone(),
-	);
+	));
+	let transaction_pool = Arc::new(sc_transaction_pool::TransactionPoolWrapper(Box::new(
+		SharedTransactionPool(raw_transaction_pool.clone()),
+	)));
 
 	let overrides = Arc::new(StorageOverrideHandler::new(client.clone()));
 	// TODO This is copied from frontier. It should be imported instead after https://github.com/paritytech/frontier/issues/333 is solved
@@ -212,6 +346,7 @@ pub fn new_partial(
 			telemetry_worker_handle,
 			frontier_backend,
 			overrides,
+			raw_transaction_pool,
 		),
 	})
 }
@@ -237,7 +372,15 @@ async fn start_node_impl(
 		import_queue,
 		keystore_container,
 		transaction_pool,
-		other: (block_import, mut telemetry, telemetry_worker_handle, frontier_backend, overrides),
+		other:
+			(
+				block_import,
+				mut telemetry,
+				telemetry_worker_handle,
+				frontier_backend,
+				overrides,
+				raw_transaction_pool,
+			),
 		..
 	} = new_partial(&parachain_config, &eth_config)?;
 
@@ -294,7 +437,7 @@ async fn start_node_impl(
 				network_provider: Arc::new(network.clone()),
 				enable_http_requests: true,
 				custom_extensions: |_| vec![],
-			})
+			})?
 			.run(client.clone(), task_manager.spawn_handle())
 			.boxed(),
 		);
@@ -315,8 +458,8 @@ async fn start_node_impl(
 
 	let eth_rpc_params = crate::rpc::EthDeps {
 		client: client.clone(),
-		pool: transaction_pool.clone(),
-		graph: transaction_pool.pool().clone(),
+		pool: raw_transaction_pool.clone(),
+		graph: raw_transaction_pool.pool().clone(),
 		converter: Some(TransactionConverter),
 		is_authority: parachain_config.role.is_authority(),
 		enable_dev_signer: eth_config.enable_dev_signer,
@@ -377,13 +520,13 @@ async fn start_node_impl(
 
 	let rpc_builder = {
 		let client = client.clone();
-		let transaction_pool = transaction_pool.clone();
+		let raw_transaction_pool = raw_transaction_pool.clone();
 		let pubsub_notification_sinks = pubsub_notification_sinks.clone();
 
 		Box::new(move |subscription_task_executor| {
 			let deps = crate::rpc::FullDeps {
 				client: client.clone(),
-				pool: transaction_pool.clone(),
+				pool: raw_transaction_pool.clone(),
 				eth: eth_rpc_params.clone(),
 			};
 
@@ -486,7 +629,7 @@ async fn start_node_impl(
 			telemetry.as_ref().map(|t| t.handle()),
 			&task_manager,
 			relay_chain_interface.clone(),
-			transaction_pool,
+			raw_transaction_pool,
 			keystore_container.keystore(),
 			relay_chain_slot_duration,
 			para_id,
@@ -546,7 +689,7 @@ fn start_consensus(
 	telemetry: Option<TelemetryHandle>,
 	task_manager: &TaskManager,
 	relay_chain_interface: Arc<dyn RelayChainInterface>,
-	transaction_pool: Arc<sc_transaction_pool::FullPool<Block, ParachainClient>>,
+	transaction_pool: Arc<ParachainTransactionPool>,
 	keystore: KeystorePtr,
 	relay_chain_slot_duration: Duration,
 	para_id: ParaId,

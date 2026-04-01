@@ -63,7 +63,7 @@ fn dmp() {
 			Parachain(1),
 			Xcm(vec![Transact {
 				origin_kind: OriginKind::SovereignAccount,
-				require_weight_at_most: Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024),
+				fallback_max_weight: Some(Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024)),
 				call: remark.encode().into(),
 			}]),
 		));
@@ -91,7 +91,7 @@ fn ump() {
 			Parent,
 			Xcm(vec![Transact {
 				origin_kind: OriginKind::SovereignAccount,
-				require_weight_at_most: Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024),
+				fallback_max_weight: Some(Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024)),
 				call: remark.encode().into(),
 			}]),
 		));
@@ -119,7 +119,7 @@ fn xcmp() {
 			(Parent, Parachain(2)),
 			Xcm(vec![Transact {
 				origin_kind: OriginKind::SovereignAccount,
-				require_weight_at_most: Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024),
+				fallback_max_weight: Some(Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024)),
 				call: remark.encode().into(),
 			}]),
 		));
@@ -410,7 +410,7 @@ fn reserve_asset_class_create_and_reserve_transfer() {
 
 		let message = Xcm(vec![Transact {
 			origin_kind: OriginKind::Xcm,
-			require_weight_at_most: Weight::from_parts(1_000_000_000, 1024 * 1024),
+			fallback_max_weight: Some(Weight::from_parts(1_000_000_000, 1024 * 1024)),
 			call: parachain::RuntimeCall::from(
 				pallet_uniques::Call::<parachain::Runtime>::create {
 					collection: (Parent, 2u64).into(),
@@ -527,14 +527,19 @@ fn query_holding() {
 
 	// Check that QueryResponse message was received
 	ParaA::execute_with(|| {
+		let received = parachain::MsgQueue::received_dmp();
+		assert_eq!(received.len(), 1);
+
+		let Xcm(instructions) = &received[0];
+		assert!(!instructions.is_empty());
 		assert_eq!(
-			parachain::MsgQueue::received_dmp(),
-			vec![Xcm(vec![QueryResponse {
+			instructions[0],
+			QueryResponse {
 				query_id: query_id_set,
 				response: Response::Assets(Assets::new()),
 				max_weight: Weight::from_parts(1_000_000_000, 1024 * 1024),
 				querier: Some(Here.into()),
-			}])],
+			}
 		);
 	});
 }
@@ -558,7 +563,7 @@ fn ump_transfer_balance() {
 			Parent,
 			Xcm(vec![Transact {
 				origin_kind: OriginKind::SovereignAccount,
-				require_weight_at_most: Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024),
+				fallback_max_weight: Some(Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024)),
 				call: transfer.encode().into(),
 			}]),
 		));
@@ -636,7 +641,7 @@ fn xcmp_transfer_native_tokens() {
 			(Parent, Parachain(PARA_B_ID)),
 			Xcm(vec![Transact {
 				origin_kind: OriginKind::SovereignAccount,
-				require_weight_at_most: Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024),
+				fallback_max_weight: Some(Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024)),
 				call: transfer.encode().into(),
 			}]),
 		));
@@ -669,7 +674,7 @@ fn xcmp_create_asset_in_para_b() {
 			(Parent, Parachain(PARA_B_ID)),
 			Xcm(vec![Transact {
 				origin_kind: OriginKind::SovereignAccount,
-				require_weight_at_most: Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024),
+				fallback_max_weight: Some(Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024)),
 				call: create_asset.encode().into(),
 			}]),
 		));
@@ -701,7 +706,7 @@ fn xcmp_create_foreign_asset() {
 			(Parent, Parachain(PARA_B_ID)),
 			Xcm(vec![Transact {
 				origin_kind: OriginKind::Xcm,
-				require_weight_at_most: Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024),
+				fallback_max_weight: Some(Weight::from_parts(INITIAL_BALANCE as u64, 1024 * 1024)),
 				call: create_asset.encode().into(),
 			}]),
 		));

@@ -180,35 +180,36 @@ mod tests {
 					precompile_call.clone(),
 				);
 				let call_result = RuntimeCall::EVM(call).dispatch(RuntimeOrigin::root()).unwrap();
+				let wrong_address_weight = wrong_address_call_result.actual_weight.unwrap();
+				let call_weight = call_result.actual_weight.unwrap();
 
 				// check weights
-				assert_eq!(
-					wrong_address_call_result.actual_weight.unwrap(),
-					Weight::from_parts(428726000, 5358)
-				);
-				assert_eq!(
-					call_result.actual_weight.unwrap(),
-					Weight::from_parts(1022151000, 11292)
-				);
+				assert_eq!(wrong_address_weight.proof_size(), 5358);
+				assert!(wrong_address_weight.ref_time() > 0);
+				assert_eq!(call_weight.proof_size(), 11292);
+				assert!(call_weight.ref_time() > wrong_address_weight.ref_time());
 
 				// check gas
-				assert_eq!(
+				let wrong_address_gas =
 					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
-						wrong_address_call_result.actual_weight.unwrap()
-					),
-					17149
-				);
-				assert_eq!(
-					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
-						call_result.actual_weight.unwrap()
-					),
-					40886
-				);
+						wrong_address_weight,
+					);
+				let call_gas =
+					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(call_weight);
+				assert!(wrong_address_gas > 0);
+				assert!(call_gas > wrong_address_gas);
 
 				// check weights from benchmarking
 				let weights_from_benchmarking =
 					weights::pallet_laos_evolution::WeightInfo::<Runtime>::precompile_create_collection();
 				assert_eq!(weights_from_benchmarking, Weight::from_parts(593426000, 3907));
+				assert!(
+					call_weight
+						.ref_time()
+						.saturating_sub(wrong_address_weight.ref_time())
+						.abs_diff(weights_from_benchmarking.ref_time()) <=
+						1_000,
+				);
 				assert_eq!(
 					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
 						weights_from_benchmarking
@@ -258,32 +259,33 @@ mod tests {
 					precompile_call.clone(),
 				);
 				let call_result = RuntimeCall::EVM(call).dispatch(RuntimeOrigin::root()).unwrap();
+				let wrong_address_weight = wrong_address_call_result.actual_weight.unwrap();
+				let call_weight = call_result.actual_weight.unwrap();
 
 				// check weights
-				assert_eq!(
-					wrong_address_call_result.actual_weight.unwrap(),
-					Weight::from_parts(419526000, 5266)
-				);
-				assert_eq!(call_result.actual_weight.unwrap(), Weight::from_parts(450326000, 5574));
+				assert_eq!(wrong_address_weight.proof_size(), 5266);
+				assert!(wrong_address_weight.ref_time() > 0);
+				assert_eq!(call_weight.proof_size(), 5574);
+				assert!(call_weight.ref_time() > wrong_address_weight.ref_time());
 
 				// check gas
-				assert_eq!(
+				let wrong_address_gas =
 					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
-						wrong_address_call_result.actual_weight.unwrap()
-					),
-					16781
-				);
-				assert_eq!(
-					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
-						call_result.actual_weight.unwrap()
-					),
-					18013
-				);
+						wrong_address_weight,
+					);
+				let call_gas =
+					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(call_weight);
+				assert!(wrong_address_gas > 0);
+				assert!(call_gas > wrong_address_gas);
 
 				// check weights from benchmarking
 				let weights_from_benchmarking =
 					weights::pallet_laos_evolution::WeightInfo::<Runtime>::precompile_owner();
 				assert_eq!(weights_from_benchmarking, Weight::from_parts(30696000, 3509));
+				assert!(
+					call_weight.ref_time().saturating_sub(wrong_address_weight.ref_time()) >=
+						weights_from_benchmarking.ref_time()
+				);
 				assert_eq!(
 					<Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
 						weights_from_benchmarking

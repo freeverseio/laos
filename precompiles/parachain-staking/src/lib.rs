@@ -290,10 +290,9 @@ where
 				)) as usize),
 		)?;
 		let is_in_top_delegations =
-			pallet_parachain_staking::Pallet::<Runtime>::top_delegations(&candidate)
-				.map_or(false, |delegations| {
-					delegations.delegations.into_iter().any(|b| b.owner == delegator)
-				});
+			pallet_parachain_staking::Pallet::<Runtime>::top_delegations(&candidate).is_some_and(
+				|delegations| delegations.delegations.into_iter().any(|b| b.owner == delegator),
+			);
 
 		Ok(is_in_top_delegations)
 	}

@@ -48,6 +48,7 @@ impl pallet_balances::Config for Runtime {
 	type Balance = Balance;
 	type RuntimeEvent = RuntimeEvent;
 	type DustRemoval = ();
+	type DoneSlashHandler = ();
 	type ExistentialDeposit = ExistentialDeposit;
 	type AccountStore = System;
 	type MaxReserves = MaxReserves;

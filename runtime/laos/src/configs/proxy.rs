@@ -64,17 +64,13 @@ impl pallet_proxy::Config for Runtime {
 	RuntimeDebug,
 	MaxEncodedLen,
 	TypeInfo,
+	Default,
 )]
 pub enum ProxyType {
 	/// Represents a proxy type that allows any call to be proxied.
+	#[default]
 	Any = 0,
 	Staking = 3,
-}
-
-impl Default for ProxyType {
-	fn default() -> Self {
-		Self::Any
-	}
 }
 
 impl InstanceFilter<RuntimeCall> for ProxyType {

@@ -34,6 +34,7 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type OnSystemEvent = ();
 	type SelfParaId = ParachainInfo;
+	type SelectCore = cumulus_pallet_parachain_system::DefaultCoreSelector<Runtime>;
 	type OutboundXcmpMessageSource = XcmpQueue;
 	type ReservedDmpWeight = ReservedDmpWeight;
 	type XcmpMessageHandler = XcmpQueue;
@@ -69,7 +70,6 @@ struct CheckInherents;
 // Parity has decided to depreciate this trait, but does not offer a satisfactory replacement,
 // see issue: https://github.com/paritytech/polkadot-sdk/issues/2841
 #[allow(deprecated)]
-
 impl cumulus_pallet_parachain_system::CheckInherents<Block> for CheckInherents {
 	fn check_inherents(
 		block: &Block,
