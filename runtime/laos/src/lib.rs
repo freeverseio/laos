@@ -56,8 +56,7 @@ use sp_runtime::{
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, Permill,
 };
-use sp_std::borrow::Cow;
-use sp_std::prelude::*;
+use sp_std::{borrow::Cow, prelude::*};
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
