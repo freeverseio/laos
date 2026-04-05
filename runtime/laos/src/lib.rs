@@ -108,7 +108,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("laos"),
 	impl_name: create_runtime_str!("laos"),
 	authoring_version: 1,
-	spec_version: 10101,
+	spec_version: 10102,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
