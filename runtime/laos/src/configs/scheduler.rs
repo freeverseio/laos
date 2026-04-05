@@ -8,10 +8,9 @@ use frame_support::{
 };
 use frame_system::EnsureRoot;
 use laos_primitives::RuntimeBlockWeights;
-pub use parachains_common::NORMAL_DISPATCH_RATIO;
 
 parameter_types! {
-	pub MaximumSchedulerWeight: Weight = NORMAL_DISPATCH_RATIO * RuntimeBlockWeights::get().max_block;
+	pub MaximumSchedulerWeight: Weight = RuntimeBlockWeights::get().max_block;
 }
 
 impl pallet_scheduler::Config for Runtime {
