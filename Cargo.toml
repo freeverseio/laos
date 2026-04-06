@@ -147,35 +147,35 @@ ethereum = { version = "0.15.0", default-features = false }
 
 # Frontier
 # (wasm)
-pallet-base-fee = { git = "https://github.com/paritytech/frontier", branch = "stable2409", default-features = false }
-pallet-evm = { git = "https://github.com/paritytech/frontier", branch = "stable2409", default-features = false }
-pallet-ethereum = { git = "https://github.com/paritytech/frontier", branch = "stable2409", default-features = false }
-pallet-evm-chain-id = { git = "https://github.com/paritytech/frontier", branch = "stable2409", default-features = false }
-pallet-evm-precompile-modexp = { git = "https://github.com/paritytech/frontier", branch = "stable2409", default-features = false }
-pallet-evm-precompile-simple = { git = "https://github.com/paritytech/frontier", branch = "stable2409", default-features = false }
-pallet-evm-precompile-bn128 = { git = "https://github.com/paritytech/frontier", branch = "stable2409", default-features = false }
-pallet-evm-precompile-blake2 = { git = "https://github.com/paritytech/frontier", branch = "stable2409", default-features = false }
-pallet-hotfix-sufficients = { git = "https://github.com/paritytech/frontier", branch = "stable2409", default-features = false }
-pallet-evm-precompile-sha3fips = { git = "https://github.com/paritytech/frontier", branch = "stable2409", default-features = false }
-pallet-dynamic-fee = { git = "https://github.com/paritytech/frontier", branch = "stable2409", default-features = false }
-fp-self-contained = { git = "https://github.com/paritytech/frontier", branch = "stable2409", default-features = false }
-fp-rpc = { git = "https://github.com/paritytech/frontier", branch = "stable2409", default-features = false }
-fp-evm = { git = "https://github.com/paritytech/frontier", branch = "stable2409", default-features = false }
-fp-account = { git = "https://github.com/paritytech/frontier", branch = "stable2409", default-features = false }
+pallet-base-fee = { git = "https://github.com/laosfoundation/frontier", branch = "stable2409-laos", default-features = false }
+pallet-evm = { git = "https://github.com/laosfoundation/frontier", branch = "stable2409-laos", default-features = false }
+pallet-ethereum = { git = "https://github.com/laosfoundation/frontier", branch = "stable2409-laos", default-features = false }
+pallet-evm-chain-id = { git = "https://github.com/laosfoundation/frontier", branch = "stable2409-laos", default-features = false }
+pallet-evm-precompile-modexp = { git = "https://github.com/laosfoundation/frontier", branch = "stable2409-laos", default-features = false }
+pallet-evm-precompile-simple = { git = "https://github.com/laosfoundation/frontier", branch = "stable2409-laos", default-features = false }
+pallet-evm-precompile-bn128 = { git = "https://github.com/laosfoundation/frontier", branch = "stable2409-laos", default-features = false }
+pallet-evm-precompile-blake2 = { git = "https://github.com/laosfoundation/frontier", branch = "stable2409-laos", default-features = false }
+pallet-hotfix-sufficients = { git = "https://github.com/laosfoundation/frontier", branch = "stable2409-laos", default-features = false }
+pallet-evm-precompile-sha3fips = { git = "https://github.com/laosfoundation/frontier", branch = "stable2409-laos", default-features = false }
+pallet-dynamic-fee = { git = "https://github.com/laosfoundation/frontier", branch = "stable2409-laos", default-features = false }
+fp-self-contained = { git = "https://github.com/laosfoundation/frontier", branch = "stable2409-laos", default-features = false }
+fp-rpc = { git = "https://github.com/laosfoundation/frontier", branch = "stable2409-laos", default-features = false }
+fp-evm = { git = "https://github.com/laosfoundation/frontier", branch = "stable2409-laos", default-features = false }
+fp-account = { git = "https://github.com/laosfoundation/frontier", branch = "stable2409-laos", default-features = false }
 
 # Utils
-precompile-utils = { git = "https://github.com/paritytech/frontier", branch = "stable2409", default-features = false }
+precompile-utils = { git = "https://github.com/laosfoundation/frontier", branch = "stable2409-laos", default-features = false }
 
 # Frontier
 # (native)
-fc-api = { git = "https://github.com/paritytech/frontier", branch = "stable2409" }
-fc-cli = { git = "https://github.com/paritytech/frontier", branch = "stable2409" }
-fc-rpc = { git = "https://github.com/paritytech/frontier", branch = "stable2409", features = [ "rpc-binary-search-estimate" ] }
-fc-rpc-core = { git = "https://github.com/paritytech/frontier", branch = "stable2409" }
-fc-mapping-sync = { git = "https://github.com/paritytech/frontier", branch = "stable2409" }
-fc-db = { git = "https://github.com/paritytech/frontier", branch = "stable2409" }
-fc-consensus = { git = "https://github.com/paritytech/frontier", branch = "stable2409" }
-fp-dynamic-fee = { git = "https://github.com/paritytech/frontier", branch = "stable2409" }
+fc-api = { git = "https://github.com/laosfoundation/frontier", branch = "stable2409-laos" }
+fc-cli = { git = "https://github.com/laosfoundation/frontier", branch = "stable2409-laos" }
+fc-rpc = { git = "https://github.com/laosfoundation/frontier", branch = "stable2409-laos", features = [ "rpc-binary-search-estimate" ] }
+fc-rpc-core = { git = "https://github.com/laosfoundation/frontier", branch = "stable2409-laos" }
+fc-mapping-sync = { git = "https://github.com/laosfoundation/frontier", branch = "stable2409-laos" }
+fc-db = { git = "https://github.com/laosfoundation/frontier", branch = "stable2409-laos" }
+fc-consensus = { git = "https://github.com/laosfoundation/frontier", branch = "stable2409-laos" }
+fp-dynamic-fee = { git = "https://github.com/laosfoundation/frontier", branch = "stable2409-laos" }
 
 # Cumulus
 # (wasm)
@@ -246,85 +246,3 @@ test-utils = { path = "./utils/test", default-features = false }
 # runtime
 laos-runtime = { path = "./runtime/laos", default-features = false }
 
-[patch."https://github.com/paritytech/polkadot-sdk"]
-frame-support = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-frame-system = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-api = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-application-crypto = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-arithmetic = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-core = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-crypto-hashing = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-debug-derive = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-externalities = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-genesis-builder = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-inherents = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-io = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-keystore = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-metadata-ir = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-panic-handler = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-runtime = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-runtime-interface = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-staking = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-state-machine = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-std = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-storage = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-tracing = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-trie = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-version = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-wasm-interface = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-weights = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-staging-xcm = { package = "staging-xcm", git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-substrate-bip39 = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-fork-tree = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sc-allocator = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sc-block-builder = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sc-chain-spec = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sc-cli = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sc-client-api = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sc-client-db = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sc-consensus = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sc-consensus-aura = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sc-consensus-slots = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sc-executor = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sc-executor-common = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sc-executor-polkavm = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sc-executor-wasmtime = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sc-informant = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sc-keystore = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sc-mixnet = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sc-network = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sc-network-common = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sc-network-light = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sc-network-sync = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sc-network-transactions = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sc-network-types = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sc-rpc = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sc-rpc-api = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sc-rpc-server = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sc-rpc-spec-v2 = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sc-service = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sc-state-db = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sc-sysinfo = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sc-telemetry = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sc-tracing = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sc-transaction-pool = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sc-transaction-pool-api = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sc-utils = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-block-builder = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-blockchain = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-consensus = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-consensus-aura = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-consensus-grandpa = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-consensus-slots = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-database = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-keyring = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-maybe-compressed-blob = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-mixnet = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-offchain = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-rpc = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-session = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-statement-store = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-timestamp = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-transaction-pool = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-sp-transaction-storage-proof = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }
-substrate-prometheus-endpoint = { git = "https://github.com/laosfoundation/polkadot-sdk", branch = "stable2409-laos" }

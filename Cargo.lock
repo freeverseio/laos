@@ -1977,7 +1977,7 @@ dependencies = [
  "cumulus-primitives-parachain-inherent",
  "cumulus-primitives-proof-size-hostfunction",
  "environmental",
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "impl-trait-for-tuples",
@@ -2018,7 +2018,7 @@ name = "cumulus-pallet-session-benchmarking"
 version = "19.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "pallet-session",
@@ -2049,7 +2049,7 @@ dependencies = [
  "bounded-collections",
  "bp-xcm-bridge-hub-router",
  "cumulus-primitives-core",
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -3141,7 +3141,7 @@ dependencies = [
 [[package]]
 name = "fc-api"
 version = "1.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=stable2409#a012990acd6f9ecd90c15e63abbb3f12704c4bd8"
+source = "git+https://github.com/laosfoundation/frontier?branch=stable2409-laos#736e8ebea6cdb08d234f3bf0ce2ca1a83a8a2aa5"
 dependencies = [
  "async-trait",
  "fp-storage",
@@ -3153,7 +3153,7 @@ dependencies = [
 [[package]]
 name = "fc-cli"
 version = "1.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=stable2409#a012990acd6f9ecd90c15e63abbb3f12704c4bd8"
+source = "git+https://github.com/laosfoundation/frontier?branch=stable2409-laos#736e8ebea6cdb08d234f3bf0ce2ca1a83a8a2aa5"
 dependencies = [
  "clap",
  "ethereum-types",
@@ -3171,7 +3171,7 @@ dependencies = [
 [[package]]
 name = "fc-consensus"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=stable2409#a012990acd6f9ecd90c15e63abbb3f12704c4bd8"
+source = "git+https://github.com/laosfoundation/frontier?branch=stable2409-laos#736e8ebea6cdb08d234f3bf0ce2ca1a83a8a2aa5"
 dependencies = [
  "async-trait",
  "fp-consensus",
@@ -3187,7 +3187,7 @@ dependencies = [
 [[package]]
 name = "fc-db"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=stable2409#a012990acd6f9ecd90c15e63abbb3f12704c4bd8"
+source = "git+https://github.com/laosfoundation/frontier?branch=stable2409-laos#736e8ebea6cdb08d234f3bf0ce2ca1a83a8a2aa5"
 dependencies = [
  "async-trait",
  "ethereum",
@@ -3217,7 +3217,7 @@ dependencies = [
 [[package]]
 name = "fc-mapping-sync"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=stable2409#a012990acd6f9ecd90c15e63abbb3f12704c4bd8"
+source = "git+https://github.com/laosfoundation/frontier?branch=stable2409-laos#736e8ebea6cdb08d234f3bf0ce2ca1a83a8a2aa5"
 dependencies = [
  "fc-db",
  "fc-storage",
@@ -3240,7 +3240,7 @@ dependencies = [
 [[package]]
 name = "fc-rpc"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=stable2409#a012990acd6f9ecd90c15e63abbb3f12704c4bd8"
+source = "git+https://github.com/laosfoundation/frontier?branch=stable2409-laos#736e8ebea6cdb08d234f3bf0ce2ca1a83a8a2aa5"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -3294,7 +3294,7 @@ dependencies = [
 [[package]]
 name = "fc-rpc-core"
 version = "1.1.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=stable2409#a012990acd6f9ecd90c15e63abbb3f12704c4bd8"
+source = "git+https://github.com/laosfoundation/frontier?branch=stable2409-laos#736e8ebea6cdb08d234f3bf0ce2ca1a83a8a2aa5"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -3309,7 +3309,7 @@ dependencies = [
 [[package]]
 name = "fc-storage"
 version = "1.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=stable2409#a012990acd6f9ecd90c15e63abbb3f12704c4bd8"
+source = "git+https://github.com/laosfoundation/frontier?branch=stable2409-laos#736e8ebea6cdb08d234f3bf0ce2ca1a83a8a2aa5"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -3492,7 +3492,7 @@ dependencies = [
 [[package]]
 name = "fp-account"
 version = "1.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=stable2409#a012990acd6f9ecd90c15e63abbb3f12704c4bd8"
+source = "git+https://github.com/laosfoundation/frontier?branch=stable2409-laos#736e8ebea6cdb08d234f3bf0ce2ca1a83a8a2aa5"
 dependencies = [
  "hex",
  "impl-serde",
@@ -3511,7 +3511,7 @@ dependencies = [
 [[package]]
 name = "fp-consensus"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=stable2409#a012990acd6f9ecd90c15e63abbb3f12704c4bd8"
+source = "git+https://github.com/laosfoundation/frontier?branch=stable2409-laos#736e8ebea6cdb08d234f3bf0ce2ca1a83a8a2aa5"
 dependencies = [
  "ethereum",
  "parity-scale-codec",
@@ -3522,7 +3522,7 @@ dependencies = [
 [[package]]
 name = "fp-dynamic-fee"
 version = "1.0.0"
-source = "git+https://github.com/paritytech/frontier?branch=stable2409#a012990acd6f9ecd90c15e63abbb3f12704c4bd8"
+source = "git+https://github.com/laosfoundation/frontier?branch=stable2409-laos#736e8ebea6cdb08d234f3bf0ce2ca1a83a8a2aa5"
 dependencies = [
  "async-trait",
  "sp-core",
@@ -3532,7 +3532,7 @@ dependencies = [
 [[package]]
 name = "fp-ethereum"
 version = "1.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=stable2409#a012990acd6f9ecd90c15e63abbb3f12704c4bd8"
+source = "git+https://github.com/laosfoundation/frontier?branch=stable2409-laos#736e8ebea6cdb08d234f3bf0ce2ca1a83a8a2aa5"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -3544,7 +3544,7 @@ dependencies = [
 [[package]]
 name = "fp-evm"
 version = "3.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=stable2409#a012990acd6f9ecd90c15e63abbb3f12704c4bd8"
+source = "git+https://github.com/laosfoundation/frontier?branch=stable2409-laos#736e8ebea6cdb08d234f3bf0ce2ca1a83a8a2aa5"
 dependencies = [
  "environmental",
  "evm 0.42.0",
@@ -3560,7 +3560,7 @@ dependencies = [
 [[package]]
 name = "fp-rpc"
 version = "3.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=stable2409#a012990acd6f9ecd90c15e63abbb3f12704c4bd8"
+source = "git+https://github.com/laosfoundation/frontier?branch=stable2409-laos#736e8ebea6cdb08d234f3bf0ce2ca1a83a8a2aa5"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -3576,7 +3576,7 @@ dependencies = [
 [[package]]
 name = "fp-self-contained"
 version = "1.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=stable2409#a012990acd6f9ecd90c15e63abbb3f12704c4bd8"
+source = "git+https://github.com/laosfoundation/frontier?branch=stable2409-laos#736e8ebea6cdb08d234f3bf0ce2ca1a83a8a2aa5"
 dependencies = [
  "frame-support",
  "parity-scale-codec",
@@ -3588,7 +3588,7 @@ dependencies = [
 [[package]]
 name = "fp-storage"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/frontier?branch=stable2409#a012990acd6f9ecd90c15e63abbb3f12704c4bd8"
+source = "git+https://github.com/laosfoundation/frontier?branch=stable2409-laos#736e8ebea6cdb08d234f3bf0ce2ca1a83a8a2aa5"
 dependencies = [
  "parity-scale-codec",
  "serde",
@@ -3603,34 +3603,10 @@ checksum = "6c2141d6d6c8512188a7891b4b01590a45f6dac67afb4f255c4124dbb86d4eaa"
 [[package]]
 name = "frame-benchmarking"
 version = "38.1.1"
-source = "git+https://github.com/paritytech/polkadot-sdk?branch=stable2409#298f676c91d64f15f38ea7fd78f125c5889ab09c"
-dependencies = [
- "frame-support",
- "frame-support-procedural 30.0.6 (git+https://github.com/paritytech/polkadot-sdk?branch=stable2409)",
- "frame-system",
- "linregress",
- "log",
- "parity-scale-codec",
- "paste",
- "scale-info",
- "serde",
- "sp-api",
- "sp-application-crypto",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-runtime-interface",
- "sp-storage",
- "static_assertions",
-]
-
-[[package]]
-name = "frame-benchmarking"
-version = "38.1.1"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
  "frame-support",
- "frame-support-procedural 30.0.6 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-support-procedural",
  "frame-system",
  "linregress",
  "log",
@@ -3658,7 +3634,7 @@ dependencies = [
  "chrono",
  "clap",
  "comfy-table",
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "gethostname",
@@ -3781,7 +3757,7 @@ dependencies = [
  "docify",
  "environmental",
  "frame-metadata",
- "frame-support-procedural 30.0.6 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-support-procedural",
  "impl-trait-for-tuples",
  "k256",
  "log",
@@ -3814,26 +3790,6 @@ dependencies = [
 [[package]]
 name = "frame-support-procedural"
 version = "30.0.6"
-source = "git+https://github.com/paritytech/polkadot-sdk?branch=stable2409#298f676c91d64f15f38ea7fd78f125c5889ab09c"
-dependencies = [
- "Inflector",
- "cfg-expr",
- "derive-syn-parse",
- "docify",
- "expander",
- "frame-support-procedural-tools 13.0.0 (git+https://github.com/paritytech/polkadot-sdk?branch=stable2409)",
- "itertools 0.11.0",
- "macro_magic",
- "proc-macro-warning 1.84.1",
- "proc-macro2",
- "quote",
- "sp-crypto-hashing",
- "syn 2.0.100",
-]
-
-[[package]]
-name = "frame-support-procedural"
-version = "30.0.6"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
  "Inflector",
@@ -3841,7 +3797,7 @@ dependencies = [
  "derive-syn-parse",
  "docify",
  "expander",
- "frame-support-procedural-tools 13.0.0 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-support-procedural-tools",
  "itertools 0.11.0",
  "macro_magic",
  "proc-macro-warning 1.84.1",
@@ -3854,32 +3810,10 @@ dependencies = [
 [[package]]
 name = "frame-support-procedural-tools"
 version = "13.0.0"
-source = "git+https://github.com/paritytech/polkadot-sdk?branch=stable2409#298f676c91d64f15f38ea7fd78f125c5889ab09c"
-dependencies = [
- "frame-support-procedural-tools-derive 12.0.0 (git+https://github.com/paritytech/polkadot-sdk?branch=stable2409)",
- "proc-macro-crate 3.3.0",
- "proc-macro2",
- "quote",
- "syn 2.0.100",
-]
-
-[[package]]
-name = "frame-support-procedural-tools"
-version = "13.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-support-procedural-tools-derive 12.0.0 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-support-procedural-tools-derive",
  "proc-macro-crate 3.3.0",
- "proc-macro2",
- "quote",
- "syn 2.0.100",
-]
-
-[[package]]
-name = "frame-support-procedural-tools-derive"
-version = "12.0.0"
-source = "git+https://github.com/paritytech/polkadot-sdk?branch=stable2409#298f676c91d64f15f38ea7fd78f125c5889ab09c"
-dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.100",
@@ -3920,7 +3854,7 @@ name = "frame-system-benchmarking"
 version = "38.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "parity-scale-codec",
@@ -5408,7 +5342,7 @@ dependencies = [
  "fp-dynamic-fee",
  "fp-evm",
  "fp-rpc",
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-benchmarking-cli",
  "futures",
  "hex-literal",
@@ -5489,7 +5423,7 @@ dependencies = [
  "fp-evm",
  "fp-rpc",
  "fp-self-contained",
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-executive",
  "frame-metadata",
  "frame-support",
@@ -7312,7 +7246,7 @@ name = "pallet-asset-conversion"
 version = "20.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -7330,7 +7264,7 @@ name = "pallet-asset-metadata-extender"
 version = "0.1.0"
 dependencies = [
  "fp-evm",
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "hex",
@@ -7351,7 +7285,7 @@ name = "pallet-asset-rate"
 version = "17.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "parity-scale-codec",
@@ -7365,7 +7299,7 @@ name = "pallet-asset-tx-payment"
 version = "38.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "pallet-transaction-payment",
@@ -7382,7 +7316,7 @@ name = "pallet-assets"
 version = "40.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "impl-trait-for-tuples",
@@ -7442,7 +7376,7 @@ name = "pallet-babe"
 version = "38.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -7467,7 +7401,7 @@ source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-l
 dependencies = [
  "aquamarine",
  "docify",
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-election-provider-support",
  "frame-support",
  "frame-system",
@@ -7487,7 +7421,7 @@ version = "39.0.1"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
  "docify",
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -7499,7 +7433,7 @@ dependencies = [
 [[package]]
 name = "pallet-base-fee"
 version = "1.0.0"
-source = "git+https://github.com/paritytech/frontier?branch=stable2409#a012990acd6f9ecd90c15e63abbb3f12704c4bd8"
+source = "git+https://github.com/laosfoundation/frontier?branch=stable2409-laos#736e8ebea6cdb08d234f3bf0ce2ca1a83a8a2aa5"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -7536,7 +7470,7 @@ source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-l
 dependencies = [
  "array-bytes",
  "binary-merkle-tree",
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -7559,7 +7493,7 @@ name = "pallet-bounties"
 version = "37.0.2"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -7577,7 +7511,7 @@ version = "0.17.2"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
  "bitvec",
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -7594,7 +7528,7 @@ name = "pallet-child-bounties"
 version = "37.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -7612,7 +7546,7 @@ name = "pallet-collator-selection"
 version = "19.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -7631,7 +7565,7 @@ name = "pallet-collective"
 version = "38.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -7648,7 +7582,7 @@ version = "38.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
  "assert_matches",
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "parity-scale-codec",
@@ -7678,7 +7612,7 @@ name = "pallet-democracy"
 version = "38.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -7695,7 +7629,7 @@ name = "pallet-election-provider-multi-phase"
 version = "37.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-election-provider-support",
  "frame-support",
  "frame-system",
@@ -7717,7 +7651,7 @@ name = "pallet-election-provider-support-benchmarking"
 version = "37.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-election-provider-support",
  "frame-system",
  "parity-scale-codec",
@@ -7730,7 +7664,7 @@ name = "pallet-elections-phragmen"
 version = "39.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -7746,7 +7680,7 @@ dependencies = [
 [[package]]
 name = "pallet-ethereum"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=stable2409#a012990acd6f9ecd90c15e63abbb3f12704c4bd8"
+source = "git+https://github.com/laosfoundation/frontier?branch=stable2409-laos#736e8ebea6cdb08d234f3bf0ce2ca1a83a8a2aa5"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -7769,13 +7703,13 @@ dependencies = [
 [[package]]
 name = "pallet-evm"
 version = "6.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=stable2409#a012990acd6f9ecd90c15e63abbb3f12704c4bd8"
+source = "git+https://github.com/laosfoundation/frontier?branch=stable2409-laos#736e8ebea6cdb08d234f3bf0ce2ca1a83a8a2aa5"
 dependencies = [
  "environmental",
  "evm 0.42.0",
  "fp-account",
  "fp-evm",
- "frame-benchmarking 38.1.1 (git+https://github.com/paritytech/polkadot-sdk?branch=stable2409)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "hash-db",
@@ -7792,7 +7726,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-chain-id"
 version = "1.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=stable2409#a012990acd6f9ecd90c15e63abbb3f12704c4bd8"
+source = "git+https://github.com/laosfoundation/frontier?branch=stable2409-laos#736e8ebea6cdb08d234f3bf0ce2ca1a83a8a2aa5"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -7803,7 +7737,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-blake2"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=stable2409#a012990acd6f9ecd90c15e63abbb3f12704c4bd8"
+source = "git+https://github.com/laosfoundation/frontier?branch=stable2409-laos#736e8ebea6cdb08d234f3bf0ce2ca1a83a8a2aa5"
 dependencies = [
  "fp-evm",
 ]
@@ -7811,7 +7745,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-bn128"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=stable2409#a012990acd6f9ecd90c15e63abbb3f12704c4bd8"
+source = "git+https://github.com/laosfoundation/frontier?branch=stable2409-laos#736e8ebea6cdb08d234f3bf0ce2ca1a83a8a2aa5"
 dependencies = [
  "fp-evm",
  "sp-core",
@@ -7821,7 +7755,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-modexp"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=stable2409#a012990acd6f9ecd90c15e63abbb3f12704c4bd8"
+source = "git+https://github.com/laosfoundation/frontier?branch=stable2409-laos#736e8ebea6cdb08d234f3bf0ce2ca1a83a8a2aa5"
 dependencies = [
  "fp-evm",
  "num",
@@ -7856,7 +7790,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-simple"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=stable2409#a012990acd6f9ecd90c15e63abbb3f12704c4bd8"
+source = "git+https://github.com/laosfoundation/frontier?branch=stable2409-laos#736e8ebea6cdb08d234f3bf0ce2ca1a83a8a2aa5"
 dependencies = [
  "fp-evm",
  "ripemd",
@@ -7869,7 +7803,7 @@ version = "37.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
  "docify",
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-election-provider-support",
  "frame-support",
  "frame-system",
@@ -7886,7 +7820,7 @@ name = "pallet-grandpa"
 version = "38.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -7909,7 +7843,7 @@ version = "38.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
  "enumflags2",
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -7924,7 +7858,7 @@ name = "pallet-im-online"
 version = "37.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -7943,7 +7877,7 @@ name = "pallet-indices"
 version = "38.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "parity-scale-codec",
@@ -7960,7 +7894,7 @@ version = "4.0.0-dev"
 dependencies = [
  "evm 0.41.1",
  "fp-evm",
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "hex",
@@ -7982,7 +7916,7 @@ name = "pallet-membership"
 version = "38.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -7999,7 +7933,7 @@ version = "41.0.2"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
  "environmental",
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -8017,7 +7951,7 @@ name = "pallet-mmr"
 version = "38.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -8034,7 +7968,7 @@ name = "pallet-multisig"
 version = "38.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -8049,7 +7983,7 @@ name = "pallet-nis"
 version = "38.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "parity-scale-codec",
@@ -8082,7 +8016,7 @@ name = "pallet-nomination-pools-benchmarking"
 version = "36.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-election-provider-support",
  "frame-support",
  "frame-system",
@@ -8128,7 +8062,7 @@ name = "pallet-offences-benchmarking"
 version = "38.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-election-provider-support",
  "frame-support",
  "frame-system",
@@ -8150,7 +8084,7 @@ dependencies = [
 name = "pallet-parachain-staking"
 version = "3.0.0"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -8174,7 +8108,7 @@ version = "0.9.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
  "docify",
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "parity-scale-codec",
@@ -8190,7 +8124,7 @@ name = "pallet-precompiles-benchmark"
 version = "0.1.0"
 dependencies = [
  "fp-evm",
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "hex",
@@ -8213,7 +8147,7 @@ name = "pallet-preimage"
 version = "38.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -8229,7 +8163,7 @@ name = "pallet-proxy"
 version = "38.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "parity-scale-codec",
@@ -8243,7 +8177,7 @@ name = "pallet-ranked-collective"
 version = "38.2.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "impl-trait-for-tuples",
@@ -8261,7 +8195,7 @@ name = "pallet-recovery"
 version = "38.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "parity-scale-codec",
@@ -8276,7 +8210,7 @@ version = "38.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
  "assert_matches",
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -8308,7 +8242,7 @@ version = "39.1.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
  "docify",
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -8345,7 +8279,7 @@ name = "pallet-session-benchmarking"
 version = "38.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "pallet-session",
@@ -8361,7 +8295,7 @@ name = "pallet-society"
 version = "38.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -8378,7 +8312,7 @@ name = "pallet-staking"
 version = "38.0.1"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-election-provider-support",
  "frame-support",
  "frame-system",
@@ -8419,7 +8353,7 @@ name = "pallet-state-trie-migration"
 version = "40.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -8436,7 +8370,7 @@ version = "38.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
  "docify",
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "parity-scale-codec",
@@ -8451,7 +8385,7 @@ version = "37.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
  "docify",
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -8469,7 +8403,7 @@ name = "pallet-tips"
 version = "37.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -8531,7 +8465,7 @@ version = "37.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
  "docify",
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "impl-trait-for-tuples",
@@ -8547,7 +8481,7 @@ dependencies = [
 name = "pallet-treasury-funding"
 version = "0.1.0"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -8566,7 +8500,7 @@ name = "pallet-uniques"
 version = "38.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -8580,7 +8514,7 @@ name = "pallet-utility"
 version = "38.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "parity-scale-codec",
@@ -8595,7 +8529,7 @@ name = "pallet-vesting"
 version = "38.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -8609,7 +8543,7 @@ name = "pallet-whitelist"
 version = "37.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "parity-scale-codec",
@@ -8624,7 +8558,7 @@ version = "17.0.5"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
  "bounded-collections",
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "hex-literal",
@@ -8648,7 +8582,7 @@ name = "pallet-xcm-benchmarks"
 version = "17.0.1"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "parity-scale-codec",
@@ -9806,7 +9740,7 @@ version = "17.0.1"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
  "bitvec",
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-election-provider-support",
  "frame-support",
  "frame-system",
@@ -9856,7 +9790,7 @@ version = "17.0.0"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
  "bs58 0.5.1",
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "parity-scale-codec",
  "polkadot-primitives",
  "sp-tracing",
@@ -9870,7 +9804,7 @@ dependencies = [
  "bitflags 1.3.2",
  "bitvec",
  "derive_more 0.99.19",
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "impl-trait-for-tuples",
@@ -9917,7 +9851,7 @@ version = "19.0.2"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
  "async-trait",
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-benchmarking-cli",
  "frame-metadata-hash-extension",
  "frame-system",
@@ -10215,7 +10149,7 @@ dependencies = [
 [[package]]
 name = "precompile-utils"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/frontier?branch=stable2409#a012990acd6f9ecd90c15e63abbb3f12704c4bd8"
+source = "git+https://github.com/laosfoundation/frontier?branch=stable2409-laos#736e8ebea6cdb08d234f3bf0ce2ca1a83a8a2aa5"
 dependencies = [
  "derive_more 1.0.0",
  "environmental",
@@ -10244,7 +10178,7 @@ dependencies = [
 [[package]]
 name = "precompile-utils-macro"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/frontier?branch=stable2409#a012990acd6f9ecd90c15e63abbb3f12704c4bd8"
+source = "git+https://github.com/laosfoundation/frontier?branch=stable2409-laos#736e8ebea6cdb08d234f3bf0ce2ca1a83a8a2aa5"
 dependencies = [
  "case",
  "num_enum",
@@ -11095,7 +11029,7 @@ source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-l
 dependencies = [
  "binary-merkle-tree",
  "bitvec",
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-executive",
  "frame-metadata-hash-extension",
  "frame-support",
@@ -14362,7 +14296,7 @@ version = "17.0.3"
 source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos#6001418f80a670f3a880ba563a0a6b13e2ff22fc"
 dependencies = [
  "environmental",
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-support",
  "impl-trait-for-tuples",
  "parity-scale-codec",
@@ -16044,7 +15978,7 @@ source = "git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-l
 dependencies = [
  "binary-merkle-tree",
  "bitvec",
- "frame-benchmarking 38.1.1 (git+https://github.com/laosfoundation/polkadot-sdk?branch=stable2409-laos)",
+ "frame-benchmarking",
  "frame-election-provider-support",
  "frame-executive",
  "frame-metadata-hash-extension",
