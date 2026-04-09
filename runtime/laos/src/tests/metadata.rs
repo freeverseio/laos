@@ -4,6 +4,7 @@ use assert_json_diff::assert_json_eq;
 use frame_metadata::RuntimeMetadataPrefixed;
 use parity_scale_codec::Decode;
 use serde_json::Value;
+use std::{env, fs, path::PathBuf};
 
 #[test]
 fn test_metadata_matches_golden_json() {
@@ -22,6 +23,18 @@ fn test_metadata_matches_golden_json() {
 		// Serialize metadata directly to a serde_json::Value
 		let metadata_value: Value = serde_json::to_value(metadata)
 			.expect("Failed to serialize current metadata to JSON Value");
+
+		if env::var_os("UPDATE_METADATA_GOLDEN").is_some() {
+			let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+			path.push("src/tests/metadata15.golden");
+			fs::write(
+				path,
+				serde_json::to_string_pretty(&metadata_value)
+					.expect("Failed to format current metadata as pretty JSON"),
+			)
+			.expect("Failed to update golden JSON metadata");
+			return;
+		}
 
 		assert_json_eq!(metadata_value, golden_metadata);
 	});
