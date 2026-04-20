@@ -1,0 +1,165 @@
+{
+  "capturedAt": "2026-04-20T10:42:00+02:00",
+  "lastUpdated": "2026-04-20T11:47:00+02:00",
+  "confirmedMappings": {
+    "note": "IP→peerID pairs confirmed from node mismatch warnings in logs on 2026-04-20",
+    "peers": [
+      {
+        "ip": "193.39.195.54",
+        "port": 30300,
+        "peerId": "12D3KooWHJBMZgt7ymAdTRtadPcGXpJw79vBGe8z53r9JMkZW7Ha",
+        "multiaddress": "/ip4/193.39.195.54/tcp/30300/p2p/12D3KooWHJBMZgt7ymAdTRtadPcGXpJw79vBGe8z53r9JMkZW7Ha",
+        "note": "non-standard port, likely NOT a Laos parachain peer"
+      },
+      {
+        "ip": "216.66.25.6",
+        "port": 30046,
+        "peerId": "12D3KooWFUrQxhpebe1SP3NAEUHvuX1Exwb3RUCkZoqnyS17rWSj",
+        "multiaddress": "/ip4/216.66.25.6/tcp/30046/p2p/12D3KooWFUrQxhpebe1SP3NAEUHvuX1Exwb3RUCkZoqnyS17rWSj",
+        "note": "non-standard port, likely NOT a Laos parachain peer"
+      },
+      {
+        "ip": "51.161.216.83",
+        "port": 30333,
+        "peerId": "12D3KooWQL9x8vTytBqs3fvgwDT5psWBkxdhjHRMoiudnebvpfq4",
+        "multiaddress": "/ip4/51.161.216.83/tcp/30333/p2p/12D3KooWQL9x8vTytBqs3fvgwDT5psWBkxdhjHRMoiudnebvpfq4",
+        "note": "port 30333 - CONFIRMED Laos parachain peer"
+      },
+      {
+        "ip": "212.237.216.15",
+        "port": 30333,
+        "peerId": "12D3KooWPjAFK52k84akNEXnpDX4JPgaXQ1QBo2Z6QKoEJi4N7hs",
+        "multiaddress": "/ip4/212.237.216.15/tcp/30333/p2p/12D3KooWPjAFK52k84akNEXnpDX4JPgaXQ1QBo2Z6QKoEJi4N7hs",
+        "note": "port 30333 - CONFIRMED Laos parachain peer"
+      }
+    ],
+    "futureRestartCommand": "./target/release/laos --chain specs/laos.raw.json --base-path \"/Volumes/My Passport for Mac/laos-data\" --bootnodes \"/ip4/51.161.216.83/tcp/30333/p2p/12D3KooWQL9x8vTytBqs3fvgwDT5psWBkxdhjHRMoiudnebvpfq4\" --bootnodes \"/ip4/212.237.216.15/tcp/30333/p2p/12D3KooWPjAFK52k84akNEXnpDX4JPgaXQ1QBo2Z6QKoEJi4N7hs\""
+  },
+  "nodeInfo": {
+    "localPeerId": "12D3KooWFwzHsB3TMiNd6Na8BcnthqhFhFcN1oJNn7dWW3wkAooH",
+    "localListenAddresses": [
+      "/ip4/192.168.1.130/tcp/30333/ws/p2p/12D3KooWFwzHsB3TMiNd6Na8BcnthqhFhFcN1oJNn7dWW3wkAooH",
+      "/ip6/::1/tcp/30333/ws/p2p/12D3KooWFwzHsB3TMiNd6Na8BcnthqhFhFcN1oJNn7dWW3wkAooH",
+      "/ip4/127.0.0.1/tcp/30333/ws/p2p/12D3KooWFwzHsB3TMiNd6Na8BcnthqhFhFcN1oJNn7dWW3wkAooH"
+    ],
+    "health": {
+      "peers": 4,
+      "isSyncing": true,
+      "shouldHavePeers": true
+    }
+  },
+  "connectedPeers": [
+    {
+      "peerId": "12D3KooWAh5ujDRWxGk1G5KtG53U4P1RY46MPPCCc1Z9Mt2j7NXB",
+      "roles": "AUTHORITY",
+      "isBootnode": false,
+      "bestHash": "0xb94c9b7f6ae942a4da1a31b7249fa363135f992ee78cd2cef20588d735fe47a4",
+      "bestNumber": 4277837
+    },
+    {
+      "peerId": "12D3KooWF9Rqmae6LXe3JgKzbtmhGTpk1FfKXQ44sSH3mVERkfBR",
+      "roles": "AUTHORITY",
+      "isBootnode": false,
+      "bestHash": "0x76cdcde9b9fa4922ae9a61ca5958f3c78e387c9dd2acfab909ac60269e838099",
+      "bestNumber": 4277838
+    },
+    {
+      "peerId": "12D3KooWJreosetYYjnicnVb5jdHCX5VdCTrFUdgv19am5Wupidm",
+      "roles": "AUTHORITY",
+      "isBootnode": false,
+      "bestHash": "0x76cdcde9b9fa4922ae9a61ca5958f3c78e387c9dd2acfab909ac60269e838099",
+      "bestNumber": 4277838
+    }
+  ],
+  "notes": {
+    "botnodeConclusion": "There was only ONE bootnode in the chainspec. All other connected peers are regular peers discovered via Kademlia DHT. The 3 remaining connected peers (AUTHORITY roles) are NOT bootnodes.",
+    "peerIdToIpMapping": "The IP for the bootnode peer (12D3KooWHDtH8G4kEVsVNCTjeJKacdRkSEWejopxxcb7nGaHAJa3) is confirmed from the chainspec. The IPs for the other 3 peerIds cannot be directly mapped via RPC — they are among the ESTABLISHED connections listed below.",
+    "afterBotnodeGoesDown": "The node's peerstore (saved automatically to disk) will maintain connections to the 3 AUTHORITY peers and the 17 other established connections. A restart should reconnect automatically without needing --bootnodes."
+  },
+  "establishedTcpConnections": {
+    "capturedAt": "2026-04-20T10:42:00+02:00",
+    "source": "lsof + netstat on pid 25920",
+    "connections": [
+      {
+        "remoteIp": "193.39.195.54",
+        "remotePort": 30300,
+        "isBootnode": false
+      },
+      {
+        "remoteIp": "65.108.194.113",
+        "remotePort": 30363,
+        "isBootnode": false
+      },
+      {
+        "remoteIp": "149.50.106.8",
+        "remotePort": 30513,
+        "isBootnode": false
+      },
+      {
+        "remoteIp": "51.161.216.83",
+        "remotePort": 30333,
+        "isBootnode": false
+      },
+      {
+        "remoteIp": "216.66.25.6",
+        "remotePort": 30046,
+        "isBootnode": false
+      },
+      {
+        "remoteIp": "15.235.53.236",
+        "remotePort": 30334,
+        "isBootnode": false
+      },
+      {
+        "remoteIp": "212.237.216.15",
+        "remotePort": 30333,
+        "isBootnode": false
+      },
+      {
+        "remoteIp": "52.52.128.194",
+        "remotePort": 30333,
+        "isBootnode": false
+      },
+      {
+        "remoteIp": "44.221.141.182",
+        "remotePort": 30333,
+        "isBootnode": false
+      },
+      {
+        "remoteIp": "35.79.223.237",
+        "remotePort": 30334,
+        "isBootnode": false
+      },
+      {
+        "remoteIp": "203.96.179.131",
+        "remotePort": 30334,
+        "isBootnode": false
+      },
+      {
+        "remoteIp": "34.238.227.244",
+        "remotePort": 30334,
+        "isBootnode": false
+      },
+      {
+        "remoteIp": "85.9.202.135",
+        "remotePort": 30334,
+        "isBootnode": false
+      },
+      {
+        "remoteIp": "18.204.126.98",
+        "remotePort": 30334,
+        "isBootnode": false
+      },
+      {
+        "remoteIp": "173.249.5.78",
+        "remotePort": 30334,
+        "isBootnode": false
+      },
+      {
+        "remoteIp": "116.203.99.140",
+        "remotePort": 30334,
+        "isBootnode": false
+      }
+    ]
+  }
+}
