@@ -7,7 +7,7 @@ LAOS (ParaId **3370**, Core **8** on Polkadot) is currently operating under a **
 | Parameter | Value |
 |---|---|
 | Relay chain block | **~31,472,400** |
-| Coretime chain timeslice | **~404,640** |
+| Coretime chain timeslice | **393,405** |
 | Estimated calendar date | **~May 8, 2026** |
 | Time remaining (from document creation) | ~18 days |
 
@@ -100,10 +100,10 @@ This is the simplest path to renewing LAOS coretime. You only need a browser and
 
 - [ ] **A Polkadot wallet browser extension** installed — recommended: [Talisman](https://talisman.xyz) or [SubWallet](https://subwallet.app). Both are free and work on Chrome/Brave/Firefox.
 - [ ] **Your own account** already set up in the extension (any Polkadot-compatible account will do — it does not need to be affiliated with LAOS or the LAOS Foundation).
-- [ ] **At least 11 DOT available** in your account on the **Polkadot Relay Chain** (10.3 DOT for the renewal + ~0.5 DOT for transaction fees). If your DOT is already on the Coretime Chain, skip Step 2.
+- [ ] **At least 11 DOT available** in your account on the **Polkadot Coretime Chain** (10.3 DOT for the renewal + ~0.5 DOT for transaction fees). DOT on the Relay Chain or Asset Hub needs to be teleported first — see Step 2.
 
-> [!NOTE]
-> The prices shown on Lastic's website are displayed in a different format than the raw on-chain values. Always confirm the exact amount in your wallet's signing popup before approving.
+> [!IMPORTANT]
+> **The renewal window does not open until ~May 8, 2026.** Attempting to submit `broker.renew(8)` before that date will fail with `Broker: NotAllowed`. See [When Exactly Can You Renew?](#when-exactly-can-you-renew) for a full explanation.
 
 ---
 
@@ -119,64 +119,105 @@ This is the simplest path to renewing LAOS coretime. You only need a browser and
 
 ### Step 2 — Move DOT to the Coretime Chain (Teleport)
 
-Coretime is paid on the **Polkadot Coretime Chain**, not the Relay Chain. You need to teleport DOT across first.
+Coretime is paid on the **Polkadot Coretime Chain**. If your DOT is already there, skip this step.
 
-1. Go to **[https://www.lastic.xyz/polkadot/teleport](https://www.lastic.xyz/polkadot/teleport)**
-2. Click **"CONNECT WALLET"** in the top-right corner and approve the connection in Talisman.
-3. Make sure **"Network: Polkadot Coretime"** is shown in the top-right dropdown. If not, click it and switch.
-4. On the Teleport page you'll see:
-   - **From**: Polkadot (Relay Chain)
-   - **To**: Polkadot Coretime Chain
-5. Enter the amount: **`11`** DOT (this covers the 10.3 DOT cost + fees)
-6. Click **"TELEPORT"** and approve the transaction in Talisman.
+> Check via [Talisman's portfolio](https://app.talisman.xyz) — look for **"Polkadot Coretime"** in the network list. If it shows a balance, you're ready.
+
+#### My DOT is on Asset Hub (direct teleport — recommended)
+
+You can teleport directly from Asset Hub to the Coretime Chain in a single step using Polkadot.js Apps — no intermediate hop via the Relay Chain needed.
+
+1. Go to [Polkadot.js Apps connected to Asset Hub](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Fpolkadot-asset-hub-rpc.polkadot.io#/accounts)
+2. Navigate to **Accounts → Teleport**
+3. Select your account as the sender
+4. Set **destination chain** to **Polkadot Coretime Chain**
+5. Enter amount: **`11`** DOT
+6. Click **Teleport** and sign with your wallet
 7. Wait ~30–60 seconds. The DOT will arrive on the Coretime Chain.
 
-> If you already have DOT on the Coretime Chain (check via [Talisman's portfolio](https://app.talisman.xyz) — look for "Polkadot Coretime" network), skip this step.
+> [!NOTE]
+> If Polkadot.js Apps does not offer "Polkadot Coretime Chain" as a teleport destination from Asset Hub, use the two-hop path: Asset Hub → Relay Chain first (via **Accounts → Teleport**, destination: Polkadot Relay Chain), then Relay Chain → Coretime Chain (see below).
+
+#### My DOT is on the Relay Chain
+
+1. Go to [Polkadot.js Apps connected to the Relay Chain](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Frpc.ibp.network%2Fpolkadot#/accounts)
+2. Navigate to **Accounts → Teleport**
+3. Set **destination chain** to **Polkadot Coretime Chain**
+4. Enter amount: **`11`** DOT and sign
+5. Wait ~30–60 seconds.
+
+Alternatively, use Lastic's teleport UI: **[https://www.lastic.xyz/polkadot/teleport](https://www.lastic.xyz/polkadot/teleport)** (note: Lastic only reads Relay Chain balances, not Asset Hub).
 
 ---
 
-### Step 3 — Renew LAOS coretime on Lastic
-
-1. Go to **[https://www.lastic.xyz/polkadot/renewal](https://www.lastic.xyz/polkadot/renewal)**
-2. Make sure your wallet is still connected (look for the address in the top-right; if it says "CONNECT WALLET", click it again).
-3. You'll see:
-   - A **timeline bar** showing the current sale phase ("Renewal Period" / "Linearly decreasing price" / "Stable price")
-   - A table titled **"CORES THAT NEED TO BE RENEWED!"** listing chains by Para ID
-4. Scroll down through the table pages (use the **"Next"** button at the bottom) to find **Para ID 3370**.
-5. Verify the row shows:
-   - **Para ID**: 3370
-   - **Core**: 8
-   - **Price**: ~10.3 DOT
-6. Click the **"RENEW"** button on that row.
-7. Talisman will pop up asking you to sign the transaction. Review the details and click **"Approve"**.
-8. Done. The renewal is complete once the transaction is included (usually within 30 seconds).
+### Step 3 — Renew LAOS coretime via Polkadot.js Apps
 
 > [!IMPORTANT]
-> You must renew while the sale is **not yet sold out**. The Lastic timeline shows where in the current period you are. The "Renewal Period" at the start of each cycle is the safest window. Do NOT wait until the lease expiry date.
+> **The renewal window opens ~May 8, 2026** — not before. Attempting to submit earlier will fail with `Broker: NotAllowed`. See [When Exactly Can You Renew?](#when-exactly-can-you-renew) for a full explanation of why.
+
+Once the window is open (confirm via the check in Step 2 of the advanced guide below), submit the renewal:
+
+1. Go to:
+   ```
+   https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Fsys.ibp.network%2Fcoretime-polkadot#/extrinsics
+   ```
+2. In the **signing account** dropdown, select your account (the one with DOT on the Coretime Chain).
+3. Select pallet: **`broker`**
+4. Select extrinsic: **`renew`**
+5. Fill in the parameter — `core`: **`8`**
+
+   > **Why core 8?** Coretime is assigned to physical compute slots called *cores*, not directly to parachains. Core 8 is the slot currently assigned to LAOS (ParaId 3370). `broker.renew(8)` tells the chain to renew that slot's assignment — the chain already knows Core 8 belongs to LAOS.
+
+6. Click **Submit Transaction** and sign with Talisman.
+7. Wait ~30 seconds for inclusion.
+
+> [!NOTE]
+> **Why not Lastic?** Lastic's renewal table only shows chains whose renewal period matches the *current* sale's `regionBegin`. LAOS's renewal is for the *next* period (`when: 393,405`), so it will not appear in Lastic's table until the new sale starts on ~May 8. Polkadot.js Apps is always reliable.
 
 ---
 
 ### Step 4 — Verify the renewal worked
 
-1. Go to **[https://www.lastic.xyz/polkadot/paraId-execution](https://www.lastic.xyz/polkadot/paraId-execution)**
-2. In the **"ParaId"** search box, type **`3370`** and press Enter.
-3. The row for 3370 should show status **"Currently Active"** with an updated lease/region period.
-4. You can also check on Subscan: **[https://polkadot.subscan.io/parachain/3370](https://polkadot.subscan.io/parachain/3370)** — scroll to "Associated Coretime" to see the new assignment.
+1. In Polkadot.js Apps (still on Coretime Chain), go to **Developer → Chain State → broker → workload(8)**.
+   - The result should include `task: 3370` for the upcoming timeslice.
+2. Check on Subscan: **[https://polkadot.subscan.io/parachain/3370](https://polkadot.subscan.io/parachain/3370)** — scroll to "Associated Coretime" to see the new assignment.
+3. You can also check [Lastic ParaID Execution](https://www.lastic.xyz/polkadot/paraId-execution) — search for `3370` and confirm status **"Currently Active"**.
 
 ---
 
-### Timeline: when can you renew?
+### When Exactly Can You Renew?
 
-The Lastic timeline on the renewal page shows four phases per 28-day cycle:
+The `broker.renew()` extrinsic uses the **broker pallet's timing model** and has two hard requirements:
 
-| Phase | When | What happens |
+1. The current sale must be in its **Interlude phase** (the first ~7 days of each sale cycle, before the open market begins)
+2. The current sale's `regionBegin` must match LAOS's `potentialRenewals.when` (**393,405**)
+
+As of April 22, 2026, the active sale has:
+
+```
+broker.saleInfo:
+  saleStart:    30,766,791   ← open market already started (interlude is over)
+  regionBegin:  388,365      ← does NOT match LAOS's when: 393,405
+  regionEnd:    393,405
+```
+
+Both conditions fail today: the interlude for this sale has already ended, and the `regionBegin` (388,365) does not match LAOS's renewal key (393,405). This is why `broker.renew(8)` returns `Broker: NotAllowed`.
+
+**The window opens when the next sale starts**, which happens at relay block **393,405 × 80 = 31,472,400 ≈ May 8, 2026** — the same moment the current region ends. The next sale's interlude then runs for ~7 days:
+
+| Event | Relay block | Approx. date |
 |---|---|---|
-| **Renewal Period** | Days 1–7 of each cycle | ✅ Best time — fixed priority price (10.3 DOT for LAOS) |
-| **Linearly Decreasing Price** | Days 8–21 | ✅ Can still renew, but prices fluctuate with Dutch auction |
-| **Stable Price** | Days 21–28 | ✅ Can still renew at floor price (10 DOT) |
-| **Sold Out** | If all 77 cores are taken | ❌ Cannot renew until next cycle — avoid this! |
+| Current region ends → **renewal window opens** | **31,472,400** | **~May 8, 2026** |
+| Interlude ends → open market begins | ~31,573,200 | ~May 15, 2026 |
+| Next region ends (next renewal due) | ~31,875,600 | ~June 12, 2026 |
 
-The current sale has 55 cores unsold (22/77 sold), so there is plenty of room — but renewals still need to happen within the cycle to take effect before the legacy lease expires on ~May 8.
+**How to confirm the window is open** before submitting:
+
+1. Go to **Developer → Chain State → broker → saleInfo()** on the Coretime Chain
+2. Check `regionBegin` — it must equal **`393,405`** (not 388,365)
+3. Check the current relay block — it must be **less than** `saleStart` (meaning the interlude is still active)
+
+If both conditions are true, `broker.renew(8)` will succeed.
 
 ---
 
@@ -239,15 +280,17 @@ Alternatively, connect manually:
 1. Open Polkadot.js Apps → click the network logo (top left)
 2. Search for "Coretime" and select **Polkadot Coretime Chain**
 
-### Step 2 — Check the Current Sale / Interlude Phase
+### Step 2 — Confirm the Renewal Window Is Open
 
-Before submitting, verify the sale is in the **Interlude or Renewal** period (this is when priority renewals can be submitted, before the open market sale begins):
+Before submitting, verify that the next sale has started and its interlude is active. **This is the most important check — submitting outside this window always fails with `Broker: NotAllowed`.**
 
 1. Go to **Developer → Chain State**
 2. Select pallet `broker`, query `saleInfo()`
-3. Check `saleStart` vs. current block, and whether a `leadinLength` or `interludeLength` period is active
+3. Verify:
+   - `regionBegin` = **`393,405`** (if it still shows 388,365, the window has not opened yet)
+   - Current relay block < `saleStart` (if current block ≥ saleStart, the interlude has ended and only the open market is active)
 
-The renewal window typically opens a few days before the sale period ends. **Do not wait until the lease expires** — submit the renewal as early as possible.
+The window opens at relay block **~31,472,400 (~May 8, 2026)**. Before that date, `broker.renew(8)` will always be rejected.
 
 ### Step 3 — Verify LAOS Has a Renewal Right
 
@@ -285,14 +328,20 @@ You can also use [Lastic.xyz](https://www.lastic.xyz) to monitor the coretime as
 
 ## Timeline and Urgency
 
-| Calendar date | Action |
-|---|---|
-| Now (April 20, 2026) | Confirm renewal right exists via `broker.potentialRenewals()` |
-| **ASAP** | Submit `broker.renew(8)` from any account with ≥11 DOT on the Coretime Chain |
-| ~May 8, 2026 | Relay block 31,472,400 — lease expires. If renewal was submitted: block production continues uninterrupted. If not: LAOS stops producing blocks. |
+| Calendar date | Relay block | Action |
+|---|---|---|
+| Now (April 22, 2026) | ~31,242,000 | Confirm `broker.potentialRenewals()` shows `core: 8, task: 3370`. Get DOT onto the Coretime Chain now (teleport from Asset Hub or Relay Chain). |
+| Now → May 8 | 31,242,000 → 31,472,400 | **Cannot renew yet** — `broker.renew(8)` returns `NotAllowed`. Current sale's `regionBegin` is 388,365, not 393,405. |
+| **~May 8, 2026** | **31,472,400** | **Renewal window opens.** New sale starts with `regionBegin: 393,405`. Submit `broker.renew(8)` immediately. |
+| May 8 → May 15 | 31,472,400 → 31,573,200 | Interlude period — **safest renewal window** at fixed price (10.3 DOT). |
+| May 15 → ~June 5 | 31,573,200 → ~31,875,600 | Open market phase — can still renew but price may vary. |
+| **May 8 + no renewal** | 31,472,400+ | ❌ LAOS stops producing blocks if `broker.renew(8)` was never submitted. |
 
 > [!CAUTION]
-> Do not wait until the lease expiry block to act. Coretime sales operate in time windows and the renewal right may need to be exercised during a specific interlude period before the block is hit.
+> The renewal window opens **the same day the lease expires** (~May 8). Someone must be ready to submit `broker.renew(8)` on that date. Missing the 7-day interlude window (May 8–15) is the highest risk — after that, open market prices apply and cores could sell out.
+
+> [!TIP]
+> Prepare everything before May 8: install Talisman, get DOT onto the Coretime Chain, and have the Polkadot.js Apps extrinsic page bookmarked. On May 8, just check that `saleInfo().regionBegin = 393,405` and submit.
 
 ---
 
@@ -304,7 +353,9 @@ You can also use [Lastic.xyz](https://www.lastic.xyz) to monitor the coretime as
 | What action is required? | Submit `broker.renew(8)` on the Polkadot Coretime Chain |
 | Who can submit it? | **Anyone** — `broker.renew()` is permissionless; any account with enough DOT on the Coretime Chain can do it |
 | What chain is the extrinsic submitted on? | **Polkadot Coretime Chain** (not the LAOS parachain, not the Relay Chain) |
-| When does the lease expire? | ~May 8, 2026 (relay block ~31,472,400, timeslice ~404,640) |
+| When does the lease expire? | ~May 8, 2026 (relay block ~31,472,400, timeslice 393,405) |
+| **When does the renewal window open?** | **~May 8, 2026** — when `broker.saleInfo().regionBegin` changes to `393,405` |
+| Why does `broker.renew()` fail before May 8? | The broker pallet looks up `potentialRenewals[core=8, when=regionBegin]`. Today's sale has `regionBegin=388,365`, not `393,405` — so the lookup fails with `NotAllowed` |
 | **Cost of next renewal** | **10.3 DOT** (~$52 at $5/DOT) — locked in via priority renewal right |
 | Ongoing annual cost | ~130 DOT/year at 3% bump per period (~$650/year at $5/DOT) |
 | Will nodes need a restart? | No restart is required — the transition is transparent to collators |
